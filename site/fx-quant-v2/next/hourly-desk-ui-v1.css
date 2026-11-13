@@ -1,0 +1,19 @@
+/* Hourly independent cross-asset edition. Reuse approved DARK DESK palette. */
+.hourly-market-desk .morning-first-read{margin-top:18px}
+.hourly-market-desk .morning-first-read .morning-section-label:not(:first-child){margin-top:17px}
+.hourly-desk-check{margin:14px 0 18px;padding:17px 23px;border:1px solid rgba(141,190,205,.20);border-radius:12px;background:rgba(14,35,51,.65)}
+.hourly-desk-check p{line-height:1.7;margin:0 0 10px;color:#d2e2e8;font-size:13px}
+.hourly-desk-check p:last-child{margin-bottom:0}
+.hourly-desk-check strong{color:#c7edda}
+.hourly-desk-news{margin-top:18px}
+.hourly-desk-news-body{display:grid;gap:15px;padding:18px}
+.hourly-desk-story{padding:18px 19px;border:1px solid rgba(141,190,205,.19);border-radius:10px;background:rgba(9,26,40,.78)}
+.hourly-desk-story h3{font-size:16px;color:#e7f3f6;line-height:1.35;margin:8px 0}
+.hourly-desk-story p{font-size:13px;color:#c5d9e3;line-height:1.7}
+.hourly-desk-citations{font-size:12px;color:#9eb8c6;margin-top:11px}
+.hourly-desk-citations a{color:#99cfe7;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:560px){
+ .hourly-desk-check{padding:15px}
+ .hourly-desk-news-body{padding:12px}
+ .hourly-desk-story{padding:14px}
+}

@@ -1,0 +1,129 @@
+name: FX Quant Next Independent AI Hourly Desk
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/home/run_independent_hourly_alert_v1.py'
+      - 'validation/home/test_run_independent_hourly_alert_v1.py'
+      - 'validation/home/CHATGPT_ALERT_EDITORIAL_V3_CANONICAL.md'
+      - '.github/workflows/next-independent-ai-hourly-desk-v1.yml'
+      - 'validation/publishing/test_next_independent_hourly_desk_v1.cjs'
+      - 'site/fx-quant-v2/next/hourly-desk-ui-v1.js'
+      - 'site/fx-quant-v2/next/hourly-desk-ui-v1.css'
+      - 'site/fx-quant-v2/next/app.js'
+      - 'site/fx-quant-v2/next/index.html'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/home/run_independent_hourly_alert_v1.py'
+      - 'validation/home/test_run_independent_hourly_alert_v1.py'
+      - 'validation/home/CHATGPT_ALERT_EDITORIAL_V3_CANONICAL.md'
+      - '.github/workflows/next-independent-ai-hourly-desk-v1.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: next-independent-hourly-market-desk-v1
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Validate identical editorial V3 and sourced AI response contract
+        run: |
+          python -m unittest validation.home.test_run_independent_hourly_alert_v1 -v
+          node validation/publishing/test_next_independent_hourly_desk_v1.cjs
+      - name: Verify independent ChatGPT boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'METODO DI INTERPRETAZIONE «SERAFINI»' validation/home/CHATGPT_ALERT_EDITORIAL_V3_CANONICAL.md
+  generate-and-publish:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: write
+    env:
+      MARKET_DESK_API_KEY: ${{ secrets.FXQ_MARKET_DESK_API_KEY }}
+      MARKET_DESK_MODEL: gpt-6.1-terra
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, fetch-depth: 1}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Check independent AI provider
+        id: access
+        shell: bash
+        run: |
+          if [ -n "${MARKET_DESK_API_KEY:-}" ]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+            echo 'Provider configured, generating separate market desk.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'FXQ_MARKET_DESK_API_KEY missing: hourly desk inactive, last public edition preserved. All ChatGPT alerts unchanged.' >> "$GITHUB_STEP_SUMMARY"
+            echo '::notice::Independent hourly site desk requires FXQ_MARKET_DESK_API_KEY.'
+          fi
+      - name: Recover last published independent edition
+        if: steps.access.outputs.ready == 'true'
+        shell: bash
+        run: |
+          git fetch origin gh-pages --depth=1 --no-tags
+          if git show origin/gh-pages:site/fx-quant-v2/next/hourly-market-desk-current.json > "$RUNNER_TEMP/previous-market-desk.json" 2>/dev/null; then
+            echo 'Last edition loaded for anti-duplication.'
+          else
+            printf '{}\n' > "$RUNNER_TEMP/previous-market-desk.json"
+          fi
+      - name: Research global markets and write source-checked V3 edition
+        if: steps.access.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/home/run_independent_hourly_alert_v1.py \
+            --root . \
+            --previous "$RUNNER_TEMP/previous-market-desk.json" \
+            --output "$RUNNER_TEMP/hourly-market-desk-current.json"
+      - name: Publish only new Next market desk data
+        if: steps.access.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            git fetch origin gh-pages --no-tags
+            dir="$RUNNER_TEMP/hourly-page-$attempt"
+            git worktree add --detach "$dir" origin/gh-pages
+            mkdir -p "$dir/site/fx-quant-v2/next"
+            cp "$RUNNER_TEMP/hourly-market-desk-current.json" "$dir/site/fx-quant-v2/next/hourly-market-desk-current.json"
+            (
+              cd "$dir"
+              git add -- site/fx-quant-v2/next/hourly-market-desk-current.json
+              if git diff --cached --quiet; then exit 0; fi
+              git config user.name 'github-actions[bot]'
+              git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+              git commit -m "Publish separate hourly V3 market desk; ChatGPT alerts untouched"
+              git push origin HEAD:gh-pages
+            ) && {
+              echo 'Standalone market desk published to gh-pages.' >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            }
+            if [ "$attempt" = 3 ]; then
+              echo 'Publication conflict; old valid edition preserved' >&2
+              exit 1
+            fi
+            sleep 3
+          done
+      - name: Preserve the issued desk for audit
+        if: steps.access.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-independent-hourly-desk-${{ github.run_id }}
+          path: ${{ runner.temp }}/hourly-market-desk-current.json
+          retention-days: 14
