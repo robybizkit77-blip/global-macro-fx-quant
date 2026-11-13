@@ -291,7 +291,7 @@
   return '<article class="market-letter market-dashboard morning-dashboard"'+
    (correction?' data-home-calendar-reconciled="true"':'')+
    ' aria-label="Morning Macro e Forex Research Desk">'+
-   '<div class="morning-edition-header"><span>FX QUANT / MACRO & FX RESEARCH DESK</span>'+
+   '<div class="morning-edition-header"><span>FX QUANT / MORNING MACRO & FX RESEARCH DESK</span>'+
    '<span>Edizione '+date(feed.edition_date)+' · FX BCE '+date(sources.fx_fixing)+
    ' · Tassi '+date(sources.rates)+'</span></div>'+
    '<div class="morning-archive-note'+(current?' current':'')+'">'+text(note)+'</div>'+
