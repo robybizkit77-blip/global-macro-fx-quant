@@ -100,7 +100,7 @@
     '</article></div></section>'+
     '<section class="hourly-research-lens" aria-label="Analisi economica integrata">'+
     '<div class="hourly-lens-heading"><span class="morning-section-label">COSA STA SUCCEDENDO E PERCHÉ CONTA</span>'+
-    '<h2>Dentro il quadro macro</h2></div>'+
+    '<h2>Le connessioni tra i mercati</h2></div>'+
     '<div class="hourly-lens-body"><p>'+safe(followThrough)+'</p>'+
     (isContinuation?
      '<details class="hourly-full-analysis"><summary>Lettura completa del desk</summary>'+
