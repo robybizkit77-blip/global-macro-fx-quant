@@ -43,7 +43,12 @@ assert(out.includes('class="hourly-decision-grid"'),'Three-part decision map mus
 assert(out.includes('class="hourly-navigation-grid"'),'Direct research tools navigation must be present');
 assert(out.includes('class="hourly-evidence-peek"'),'At-a-glance headlines must show evidence');
 assert(out.includes('Dentro il quadro macro'),'Long-form economic context must remain accessible');
-assert(out.includes('Lettura completa del desk'),'Full canonical judgment remains accessible');
+assert(out.includes(sample.desk_judgment),'The full canonical market judgment must be visible when no lead repetition exists');
+const consecutive=structuredClone(sample);
+consecutive.desk_judgment=sample.lead+' La persistenza dipende dai nuovi dati e dalla conferma delle coppie FX.';
+const repeated=render(consecutive);
+assert(repeated.includes('Lettura completa del desk')&&repeated.includes(consecutive.desk_judgment),
+ 'When the judgment starts with the lead, preserve the complete text in an expandable dossier');
 assert(out.includes(sample.desk_judgment),'The original full market judgment cannot be dropped');
 assert(out.includes(sample.fx_implications),'Original FX implications must not be rewritten');
 assert(out.includes(sample.what_changed)&&out.includes(sample.contrary_evidence)&&out.includes(sample.watch),
