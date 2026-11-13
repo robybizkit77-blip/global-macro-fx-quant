@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-13T00:09:24Z",
+  "generated_at_utc": "2026-11-13T07:49:17Z",
   "evaluation_date_europe_rome": "2026-11-13",
   "reference_only": true,
   "policy": {
@@ -15,7 +15,7 @@
     "ois_official": {
       "USD": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-11",
+        "as_of": "2026-11-12",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "EUR": {
@@ -141,13 +141,13 @@
     "government_rates": {
       "USD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-10",
-        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-10",
-        "government_2y_pct": 4.73,
-        "government_10y_pct": 4.98,
-        "10y_minus_2y_bp": 25.0,
-        "change_2y_bp": 12.0,
-        "change_10y_bp": 3.0
+        "as_of": "2026-11-12",
+        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-12",
+        "government_2y_pct": 4.86,
+        "government_10y_pct": 5.1,
+        "10y_minus_2y_bp": 24.0,
+        "change_2y_bp": 40.0,
+        "change_10y_bp": 26.0
       },
       "EUR": {
         "state": "AVAILABLE_CERTIFIED",
@@ -171,13 +171,13 @@
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-11",
-        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-11",
-        "government_2y_pct": 1.861,
-        "government_10y_pct": 2.84,
-        "10y_minus_2y_bp": 97.9,
-        "change_2y_bp": -3.0,
-        "change_10y_bp": -1.5
+        "as_of": "2026-11-12",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-12",
+        "government_2y_pct": 1.857,
+        "government_10y_pct": 2.841,
+        "10y_minus_2y_bp": 98.4,
+        "change_2y_bp": -0.3,
+        "change_10y_bp": 3.5
       },
       "CHF": {
         "state": "STALE",
@@ -195,9 +195,14 @@
         "change_10y_bp": -5.0
       },
       "AUD": {
-        "state": "STALE",
-        "as_of": "2026-11-04",
-        "reason": "Age 9d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-11-11",
+        "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily · 2026-11-11",
+        "government_2y_pct": 4.808,
+        "government_10y_pct": 5.044,
+        "10y_minus_2y_bp": 23.6,
+        "change_2y_bp": -1.8,
+        "change_10y_bp": -3.8
       },
       "NZD": {
         "state": "STALE",
