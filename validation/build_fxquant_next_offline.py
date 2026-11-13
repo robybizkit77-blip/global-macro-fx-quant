@@ -26,6 +26,9 @@ SOURCES = {
     "cotPrice": "site/fx-quant-v2/design-studio-cot-v1-data.json",
     "risk": "site/fx-quant-v2/cross-asset-live-data.json",
     "ois": "site/fx-quant-v2/ois-pricing-snapshot.json",
+    "oisOperational": "live_data/sections/OIS_OPERATIONAL_VIEW.json",
+    "oisSameContract": "site/fx-quant-v2/ois-same-contract-repricing-research.json",
+    "nzdDirectionalProxy": "live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
     "news": "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
     "themes": "live_data/sections/TOP_THEMES.json",
 }
@@ -37,13 +40,14 @@ def main() -> None:
     cot_js = (SITE / "cot-studio.js").read_text(encoding="utf-8")
     cot_css = (SITE / "cot-studio.css").read_text(encoding="utf-8")
     rates_js = (SITE / "rates-studio.js").read_text(encoding="utf-8")
+    pricing_move_js = (SITE / "rates-pricing-moves-v1.js").read_text(encoding="utf-8")
     rates_css = (SITE / "rates-studio.css").read_text(encoding="utf-8")
     macro_js = (SITE / "macro-studio.js").read_text(encoding="utf-8")
     macro_css = (SITE / "macro-studio.css").read_text(encoding="utf-8")
     currency_js = (SITE / "currency-studio.js").read_text(encoding="utf-8")
     currency_css = (SITE / "currency-studio.css").read_text(encoding="utf-8")
     docs = {k: json.loads((ROOT / path).read_text(encoding="utf-8")) for k, path in SOURCES.items()}
-    assert len(docs) == 14
+    assert len(docs) == 17
     assert docs["pairs"].get("pair_count") == 28
     assert docs["dxy"].get("not_official_ice") is True
 
@@ -59,6 +63,7 @@ def main() -> None:
     contents = contents.replace('<link rel="stylesheet" href="./macro-studio.css?v=2">', "<style>"+macro_css+"</style>")
     contents = contents.replace('<link rel="stylesheet" href="./currency-studio.css?v=2">', "<style>"+currency_css+"</style>")
     contents = contents.replace('<script src="./cot-studio.js?v=1" defer></script>', "<script>"+cot_js+"</script>")
+    contents = contents.replace('<script src="./rates-pricing-moves-v1.js?v=1" defer></script>', "<script>"+pricing_move_js+"</script>")
     rates_js_links = [x for x in contents.splitlines()
                       if '<script src="./rates-studio.js?v=' in x]
     assert len(rates_js_links) == 1, "Exactly one versioned Rates script expected"
@@ -84,7 +89,10 @@ def main() -> None:
  'V250_COT_CHART_DATA.json':'cotHistory',
  'design-studio-cot-v1-data.json':'cotPrice',
  'cross-asset-live-data.json':'risk','ois-pricing-snapshot.json':'ois',
- 'NEWS_PULSE_OPERATIONAL.json':'news','TOP_THEMES.json':'themes'};
+ 'NEWS_PULSE_OPERATIONAL.json':'news','TOP_THEMES.json':'themes',
+ 'OIS_OPERATIONAL_VIEW.json':'oisOperational',
+ 'ois-same-contract-repricing-research.json':'oisSameContract',
+ 'NZD_CB_PRICING_DIRECTIONAL_PROXY.json':'nzdDirectionalProxy'};
  const original=window.fetch?window.fetch.bind(window):null;
  window.fetch=function(input,options){
    const key=Object.entries(targets).find(([name])=>String(input).includes(name))?.[1];
