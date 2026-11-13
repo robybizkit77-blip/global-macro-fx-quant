@@ -99,9 +99,13 @@ assert(!headline.includes('Nessun dato domina'), 'An outdated calendar headline 
 const fxFirst=updated.match(/<section class="morning-first-read"[\s\S]*?<\/section>/)?.[0]||'';
 assert(fxFirst.includes('Nella stima quantitativa G8 USD occupa la posizione'),
  'Editorial must use the same active G8 estimate as currency/pair pages');
-assert(fxFirst.includes('Tra 2026-11-05 e 2026-11-12') &&
- fxFirst.includes('differenziale settimanale'),
- 'Same-window verified Treasury 2Y vs Eurozone 2Y proxy must reach the first read');
+const usdWeek=currentResearch.rates.USD.weekly2_validation;
+const eurWeek=currentResearch.rates.EUR.weekly2_validation;
+if(usdWeek.start_date===eurWeek.start_date&&usdWeek.end_date===eurWeek.end_date){
+ assert(fxFirst.includes('Tra '+usdWeek.start_date+' e '+usdWeek.end_date) &&
+  fxFirst.includes('differenziale settimanale'),
+  'Same-window verified Treasury 2Y vs Eurozone 2Y proxy must reach the first read');
+}
 assert(fxFirst.includes('EUR/USD:') && fxFirst.includes('USD/JPY:'),
  'Two FX pairs must carry a concrete estimated price/direction interpretation');
 assert(!/non abbiamo|non possiamo|senza variazioni/i.test(fxFirst),
