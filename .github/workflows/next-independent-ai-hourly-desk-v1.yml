@@ -45,7 +45,6 @@ jobs:
         run: |
           set -euo pipefail
           grep -q 'METODO DI INTERPRETAZIONE «SERAFINI»' validation/home/CHATGPT_ALERT_EDITORIAL_V3_CANONICAL.md
-          ! grep -Eq 'mcp__Automations|Automations__update|CHATGPT_AUTOMATION_ID' .github/workflows/next-independent-ai-hourly-desk-v1.yml
   generate-and-publish:
     if: github.event_name != 'pull_request'
     needs: validate
