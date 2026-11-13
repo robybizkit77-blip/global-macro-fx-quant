@@ -108,7 +108,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 155.79999999999998,
+              "bp": 147.79999999999998,
               "material": true,
               "side": "AUD"
             }
@@ -138,7 +138,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 155.79999999999998,
+            "bp": 147.79999999999998,
             "material": true,
             "side": "AUD"
           }
@@ -680,7 +680,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -5.200000000000049,
+              "bp": -7.200000000000006,
               "material": false,
               "side": "—"
             }
@@ -710,7 +710,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -5.200000000000049,
+            "bp": -7.200000000000006,
             "material": false,
             "side": "—"
           }
@@ -831,7 +831,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 296.3,
+              "bp": 304.3,
               "material": true,
               "side": "CAD"
             }
@@ -861,7 +861,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 296.3,
+            "bp": 304.3,
             "material": true,
             "side": "CAD"
           }
@@ -950,7 +950,7 @@
               "side": "B"
             },
             "ratesGap": {
-              "bp": 139.3,
+              "bp": 147.3,
               "material": true,
               "side": "CAD"
             }
@@ -980,7 +980,7 @@
             "side": "B"
           },
           "ratesGap": {
-            "bp": 139.3,
+            "bp": 147.3,
             "material": true,
             "side": "CAD"
           }
@@ -1374,7 +1374,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": -17.48584271000002,
+              "bp": -25.48584271000003,
               "material": false,
               "side": "—"
             }
@@ -1404,7 +1404,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": -17.48584271000002,
+            "bp": -25.48584271000003,
             "material": false,
             "side": "—"
           }
@@ -2035,7 +2035,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -178.48584271000004,
+              "bp": -180.48584271000001,
               "material": true,
               "side": "USD"
             }
@@ -2065,7 +2065,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -178.48584271000004,
+            "bp": -180.48584271000001,
             "material": true,
             "side": "USD"
           }
@@ -2304,7 +2304,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 136.2482282704806,
+              "bp": 128.2482282704806,
               "material": true,
               "side": "GBP"
             }
@@ -2334,7 +2334,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 136.2482282704806,
+            "bp": 128.2482282704806,
             "material": true,
             "side": "GBP"
           }
@@ -2839,7 +2839,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -24.75177172951941,
+              "bp": -26.75177172951937,
               "material": false,
               "side": "—"
             }
@@ -2869,7 +2869,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -24.75177172951941,
+            "bp": -26.75177172951937,
             "material": false,
             "side": "—"
           }
@@ -2956,7 +2956,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 64.00000000000001,
+              "bp": 56.00000000000001,
               "material": false,
               "side": "—"
             }
@@ -2986,7 +2986,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 64.00000000000001,
+            "bp": 56.00000000000001,
             "material": false,
             "side": "—"
           }
@@ -3375,7 +3375,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -97.00000000000001,
+              "bp": -98.99999999999997,
               "material": true,
               "side": "USD"
             }
@@ -3405,7 +3405,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -97.00000000000001,
+            "bp": -98.99999999999997,
             "material": true,
             "side": "USD"
           }
@@ -3525,7 +3525,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 161.00000000000003,
+              "bp": 154.99999999999997,
               "material": true,
               "side": "USD"
             }
@@ -3555,7 +3555,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 161.00000000000003,
+            "bp": 154.99999999999997,
             "material": true,
             "side": "USD"
           }
@@ -3677,7 +3677,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 457.30000000000007,
+              "bp": 459.3,
               "material": true,
               "side": "USD"
             }
@@ -3707,7 +3707,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 457.30000000000007,
+            "bp": 459.3,
             "material": true,
             "side": "USD"
           }
@@ -3828,7 +3828,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 300.3,
+              "bp": 302.29999999999995,
               "material": true,
               "side": "USD"
             }
@@ -3858,7 +3858,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 300.3,
+            "bp": 302.29999999999995,
             "material": true,
             "side": "USD"
           }
