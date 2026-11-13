@@ -30,3 +30,21 @@
 .cal-event .cal-review-state{border-left:2px solid var(--amber);padding:7px 0 7px 11px;color:var(--soft)}
 .cal-event .cal-review-state strong{color:var(--amber)}
 .cal-upcoming-group{margin-top:16px}
+
+/* Calendar-only research journey: event, relative rates and pair. */
+.cal-panel .cal-event{gap:11px}
+.cal-panel .cal-driver-reading{color:var(--soft);line-height:1.68}
+.cal-panel .cal-event-path{margin-top:2px;padding:13px 12px 11px;background:linear-gradient(120deg,rgba(16,47,60,.74),rgba(10,29,43,.55));border:1px solid rgba(113,182,198,.24);border-radius:9px}
+.cal-panel .cal-event-path-label{display:block;margin-bottom:9px;color:#96c9d5;font-size:9px;font-weight:780;letter-spacing:.085em}
+.cal-panel .cal-event-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.cal-panel .cal-event-actions a{display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0;padding:10px 9px;border:1px solid rgba(129,192,210,.22);border-radius:7px;background:rgba(9,33,48,.8);text-decoration:none;color:#d2edf4;font-size:10.5px;line-height:1.4;font-weight:720}
+.cal-panel .cal-event-actions a:last-child{color:#a7e7cc;border-color:rgba(121,205,174,.29)}
+.cal-panel .cal-event-actions a:hover{border-color:rgba(154,219,227,.75);background:rgba(21,59,70,.86)}
+.cal-panel .cal-event-actions a:focus-visible,.cal-panel .cal-event-evidence summary:focus-visible{outline:2px solid #9fdef0;outline-offset:3px}
+.cal-panel .cal-event-evidence{border:1px solid rgba(129,174,192,.2);border-radius:8px;padding:0 11px;background:rgba(5,20,33,.23)}
+.cal-panel .cal-event-evidence summary{color:#a9cddd;font-size:10.5px;font-weight:730;padding:10px 2px;cursor:pointer;line-height:1.4}
+.cal-panel .cal-event-evidence[open] summary{border-bottom:1px solid rgba(134,185,204,.18)}
+.cal-panel .cal-event-evidence-body{display:grid;gap:10px;padding:10px 2px 12px}
+.cal-panel .cal-event-evidence-body .cal-verify{margin-top:0}
+@media(max-width:520px){.cal-panel .cal-event-path{padding:11px 9px}.cal-panel .cal-event-actions{gap:5px}.cal-panel .cal-event-actions a{padding:9px 6px;font-size:9px}}
+@media(prefers-reduced-motion:reduce){.cal-panel .cal-event-actions a{transition:none}}
