@@ -7,6 +7,11 @@ on:
       - 'validation/home/test_run_independent_hourly_alert_v1.py'
       - 'validation/home/CHATGPT_ALERT_EDITORIAL_V3_CANONICAL.md'
       - '.github/workflows/next-independent-ai-hourly-desk-v1.yml'
+      - 'validation/publishing/test_next_independent_hourly_desk_v1.cjs'
+      - 'site/fx-quant-v2/next/hourly-desk-ui-v1.js'
+      - 'site/fx-quant-v2/next/hourly-desk-ui-v1.css'
+      - 'site/fx-quant-v2/next/app.js'
+      - 'site/fx-quant-v2/next/index.html'
   push:
     branches: [main]
     paths:
@@ -32,7 +37,9 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - name: Validate identical editorial V3 and sourced AI response contract
-        run: python -m unittest validation.home.test_run_independent_hourly_alert_v1 -v
+        run: |
+          python -m unittest validation.home.test_run_independent_hourly_alert_v1 -v
+          node validation/publishing/test_next_independent_hourly_desk_v1.cjs
       - name: Verify independent ChatGPT boundary
         shell: bash
         run: |
