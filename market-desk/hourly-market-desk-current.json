@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-13T20:10:40.753724Z",
-  "edition_time_rome": "2026-11-13 21:10",
-  "material_digest": "1ae44c531c5a4aee5022166f2ce4bfc71080ed8b1073e7ddce2c8214021433e9",
+  "generated_at_utc": "2026-11-13T21:27:06.441173Z",
+  "edition_time_rome": "2026-11-13 22:27",
+  "material_digest": "976b0b80e7cbf3ad74247eb196790d7ee41f8d4bc2590cc7d80059f6b00c9214",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
@@ -55,6 +55,17 @@
       ]
     },
     {
+      "headline": "Agencies extend comment period for proposed third-party risk management guidance",
+      "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+      "kind": "NEWS",
+      "published_date": "2026-11-13",
+      "event_date": "2026-11-13",
+      "market_area": "BANCHE CENTRALI",
+      "sources": [
+        "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20261113a.htm"
+      ]
+    },
+    {
       "headline": "Hydropower generation in the Southwest fell to record lows this summer",
       "analysis": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio. Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
       "kind": "FOLLOW_UP",
@@ -63,17 +74,6 @@
       "market_area": "ENERGIA",
       "sources": [
         "https://www.eia.gov/todayinenergy/detail.php?id=68445"
-      ]
-    },
-    {
-      "headline": "The Bank of England, the Monetary Authority of Singapore, and the Bank of Thailand: Project Meridian FX APAC",
-      "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-13",
-      "event_date": "2026-11-13",
-      "market_area": "BANCHE CENTRALI",
-      "sources": [
-        "https://www.bankofengland.co.uk/news/2026/november/the-boe-monetary-authority-of-singapore-and-bank-of-thailand-media-release"
       ]
     }
   ],
@@ -87,15 +87,15 @@
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
-      "https://www.bankofengland.co.uk/news/2026/november/the-boe-monetary-authority-of-singapore-and-bank-of-thailand-media-release",
       "https://www.bls.gov/news.release/cpi.htm",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "https://www.eia.gov/todayinenergy/detail.php?id=68445"
+      "https://www.eia.gov/todayinenergy/detail.php?id=68445",
+      "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20261113a.htm"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-13",
-      "rss_checked_at_utc": "2026-11-13T20:10:40.753724Z",
+      "rss_checked_at_utc": "2026-11-13T21:27:06.441173Z",
       "commodities": "2026-11-13"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-13T20:10:40.753724Z",
+      "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
+      "material_digest": "1ae44c531c5a4aee5022166f2ce4bfc71080ed8b1073e7ddce2c8214021433e9"
+    },
     {
       "generated_at_utc": "2026-11-13T18:53:05.550247Z",
       "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
