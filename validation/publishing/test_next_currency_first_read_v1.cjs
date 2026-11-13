@@ -66,7 +66,7 @@ assert(fallback.includes('orient-ranking-unavailable'),'Do not rank absent commo
 assert(fallback.includes('class="country-orient-list"'),'Keep currency selection even without rank data');
 assert(!fallback.includes('class="orient-rank-row '),'Do not fabricate ranking rows');
 const page=read(dir+'index.html');
-assert(page.includes('currency-studio.js?v=15')&&page.includes('currency-studio.css?v=7'));
+assert(page.includes('currency-studio.js?v=16')&&page.includes('currency-studio.css?v=7'));
 assert(page.includes('currency-strength-reading.js?v=1'));
 assert(page.indexOf('currency-strength-reading.js')<page.indexOf('currency-studio.js'));
 assert(page.indexOf('pair-rankings.js')<page.indexOf('app.js'),
