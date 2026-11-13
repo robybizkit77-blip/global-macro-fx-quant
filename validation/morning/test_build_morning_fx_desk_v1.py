@@ -135,7 +135,8 @@ class MorningFXDeskTests(unittest.TestCase):
         self.assertEqual(x["event_status"],"EVENT_TODAY")
         self.assertEqual(x["catalyst"]["date"],"2026-11-13")
         self.assertEqual(x["catalyst"]["time_rome"],"14:30")
-        self.assertIn("Producer Price Index",x["headline"])
+        self.assertIn("PPI USA",x["headline"])
+        self.assertIn("Producer Price Index",x["catalyst"]["title"])
         self.assertNotIn("Nessun dato domina",x["lead"])
         self.assertFalse(x["eligible_for_fx_signal"])
 
