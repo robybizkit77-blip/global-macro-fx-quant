@@ -110,7 +110,8 @@ const research={streams:{
  VIX:stream('2026-11-12',18.7,17.49,[['2026-11-09',19.5],['2026-11-10',17.49],['2026-11-12',18.7]]),
  HY_OAS:stream('2026-11-12',3.2,3.3,[['2026-11-09',3.5],['2026-11-10',3.3],['2026-11-12',3.2]])
 }};
-const pulseHTML=win.FXQuantHourlyDesk.render({feed:pulseFeed,risk:research,esc,date,dayNow:today});
+const displayDate=s=>s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4);
+const pulseHTML=win.FXQuantHourlyDesk.render({feed:pulseFeed,risk:research,esc,date:displayDate,dayNow:today});
 assert(pulseHTML.includes('IL MERCATO IN UN COLPO D’OCCHIO'),'Visual pulse must remain narrative-first and dated');
 assert((pulseHTML.match(/class="hourly-pulse-tile /g)||[]).length===5,'FX + S&P + VIX + HY + commodities, no unsupported extra tile');
 assert(pulseHTML.includes('USD ↑')&&pulseHTML.includes('Oro ↑ · WTI ↓'),'Directional claims must follow cited text');
@@ -127,7 +128,7 @@ assert(pulseHTML.includes('class="hourly-decision-grid"')&&pulseHTML.includes(sa
 const unsupported=structuredClone(research);
 unsupported.streams.VIX.quality='ESTIMATED';
 unsupported.streams.HY_OAS.date='2026-10-01';
-const filtered=win.FXQuantHomePulse.render({feed:pulseFeed,risk:unsupported,esc,date,dayNow:today});
+const filtered=win.FXQuantHomePulse.render({feed:pulseFeed,risk:unsupported,esc,date:displayDate,dayNow:today});
 assert(!filtered.includes('Indice VIX')&&!filtered.includes('Spread HY'),
  'No estimate or stale record can be promoted into a market pulse');
 assert.equal(win.FXQuantHomePulse.render({feed:pulseFeed,risk:null,esc,date,dayNow:today}),'',
