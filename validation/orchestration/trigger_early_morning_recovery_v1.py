@@ -1,5 +1,9 @@
 """Separate early trigger for a missing pre-08:00 data refresh.
 
+The 05:00 Rome opening admits already observed 05:04 operational source
+completion events while retaining the same strict max-two manual recovery
+budget, active-run guard and 07:30 cutoff.
+
 No market-data changes here. Check actual run steps; never infer completion from
 a green workflow whose production job was skipped (e.g. CET/CEST counterpart).
 """
@@ -26,7 +30,7 @@ def local(stamp: str) -> dt.datetime:
 
 def choose(now: dt.datetime, runs: list[dict], jobs: dict[int, list[dict]]) -> dict:
     t = now.astimezone(ROME)
-    if t.weekday() >= 5 or not (dt.time(5, 15) <= t.time() <= dt.time(7, 30)):
+    if t.weekday() >= 5 or not (dt.time(5, 0) <= t.time() <= dt.time(7, 30)):
         return {"action": "SKIP_OUTSIDE_RECOVERY_WINDOW"}
     existing_manual = 0
     active = False
@@ -41,7 +45,7 @@ def choose(now: dt.datetime, runs: list[dict], jobs: dict[int, list[dict]]) -> d
             continue
         if r.get("event") not in ("schedule", "workflow_dispatch"):
             continue
-        if r["event"] == "workflow_dispatch" and created.time() >= dt.time(5, 15):
+        if r["event"] == "workflow_dispatch" and created.time() >= dt.time(5, 0):
             existing_manual += 1
         # A queued/in-progress manual recovery already owns the work. A
         # scheduled run only blocks if it entered the actual production step.
