@@ -1,7 +1,35 @@
 {
   "content_as_of": "2026-11-13",
-  "generated_at_utc": "2026-11-13T14:33:36.087024Z",
+  "generated_at_utc": "2026-11-13T16:29:56.651050Z",
   "items": [
+    {
+      "as_of": "2026-11-13",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "1 USD = 159.99819 JPY al fixing 2026-11-13; variazione vs 2026-11-12. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "USDJPY",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-12",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "USD/JPY: +0.19% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-13",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "EUR",
+      "confidence": "A",
+      "detail": "1 EUR = 1.10520 USD al fixing 2026-11-13; variazione vs 2026-11-12. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "EURUSD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-12",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "EUR/USD: -0.26% fra due fixing BCE"
+    },
     {
       "as_of": "2026-11-13",
       "category": "FUTURES_IMPLIED_REPRICING",
@@ -12,6 +40,20 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
       "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-11-13",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "1 AUD = 0.96746 CAD al fixing 2026-11-13; variazione vs 2026-11-12. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "AUDCAD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-12",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "AUD/CAD: -0.45% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-12",
@@ -37,20 +79,6 @@
     },
     {
       "as_of": "2026-11-12",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "1 USD = 159.69678 JPY al fixing 2026-11-12; variazione vs 2026-11-11. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "USDJPY",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-11",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "USD/JPY: +0.29% fra due fixing BCE"
-    },
-    {
-      "as_of": "2026-11-12",
       "category": "MARKET_GOVERNMENT_RATES",
       "ccy": "USD",
       "confidence": "A",
@@ -60,6 +88,32 @@
       "reference_previous_date": "2026-11-10",
       "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-12",
       "title": "USD: governativo 2Y +13.0 pb, 10Y +12.0 pb"
+    },
+    {
+      "as_of": "2026-11-12",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 7592.40; confronto con chiusura 2026-11-11. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-11",
+      "source": "S&P Dow Jones Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+      "title": "S&P 500: -0.35% nella chiusura del 2026-11-12"
+    },
+    {
+      "as_of": "2026-11-12",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 25366.09; confronto con chiusura 2026-11-11. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-11",
+      "source": "Nasdaq, Inc. via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
+      "title": "Nasdaq Composite: -0.39% nella chiusura del 2026-11-12"
     },
     {
       "as_of": "2026-11-12",
@@ -76,17 +130,29 @@
     },
     {
       "as_of": "2026-11-12",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "EUR",
-      "confidence": "A",
-      "detail": "1 EUR = 1.10810 USD al fixing 2026-11-12; variazione vs 2026-11-11. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 3.20%; confronto con chiusura 2026-11-11. Dato di mercato storico, non prova di un evento causale o di flussi.",
       "importance": "MEDIUM",
-      "pair": "EURUSD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
       "reference_previous_date": "2026-11-11",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "EUR/USD: -0.41% fra due fixing BCE"
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
+      "title": "Credito HY OAS: -10.0 pb nella chiusura del 2026-11-12"
+    },
+    {
+      "as_of": "2026-11-12",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 0.89%; confronto con chiusura 2026-11-11. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-11",
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
+      "title": "Credito IG OAS: -1.0 pb nella chiusura del 2026-11-12"
     },
     {
       "as_of": "2026-11-12",
@@ -124,72 +190,6 @@
       "title": "AUD: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
     },
     {
-      "as_of": "2026-11-12",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "1 AUD = 0.97187 CAD al fixing 2026-11-12; variazione vs 2026-11-11. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "AUDCAD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-11",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "AUD/CAD: -0.46% fra due fixing BCE"
-    },
-    {
-      "as_of": "2026-11-11",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 25466.19; confronto con chiusura 2026-11-10. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "HIGH",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-10",
-      "source": "Nasdaq, Inc. via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
-      "title": "Nasdaq Composite: +1.60% nella chiusura del 2026-11-11"
-    },
-    {
-      "as_of": "2026-11-11",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 7619.38; confronto con chiusura 2026-11-10. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-10",
-      "source": "S&P Dow Jones Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-      "title": "S&P 500: +1.31% nella chiusura del 2026-11-11"
-    },
-    {
-      "as_of": "2026-11-11",
-      "category": "MARKET_CREDIT_OAS",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 3.30%; confronto con chiusura 2026-11-09. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-09",
-      "source": "ICE Data Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
-      "title": "Credito HY OAS: -4.0 pb nella chiusura del 2026-11-11"
-    },
-    {
-      "as_of": "2026-11-11",
-      "category": "MARKET_CREDIT_OAS",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 0.90%; confronto con chiusura 2026-11-09. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-09",
-      "source": "ICE Data Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
-      "title": "Credito IG OAS: -1.0 pb nella chiusura del 2026-11-11"
-    },
-    {
       "as_of": "2026-11-10",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "USD",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-13T14:33:36.087024Z",
+  "last_checked_at_utc": "2026-11-13T16:29:56.651050Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
