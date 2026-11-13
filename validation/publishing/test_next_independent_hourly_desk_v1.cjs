@@ -12,7 +12,7 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const date=s=>s;
 const today=()=> '2026-11-13';
 const sample={
- schema:'GMFQ_NEXT_INDEPENDENT_HOURLY_AI_DESK_V1',
+ schema:'GMFQ_NEXT_FREE_HOURLY_DESK_V1',
  status:'ACTIVE',generated_at_utc:'2026-11-13T12:50:00Z',
  edition_time_rome:'2026-11-13 13:50',
  headline:'Le aspettative monetarie si confrontano con il rischio globale',
@@ -29,7 +29,7 @@ const sample={
  provenance:{web_source_urls:['https://www.bls.gov/news.release/ppi.htm']}
 };
 const render=feed=>win.FXQuantHourlyDesk.render({feed,esc,date,dayNow:today});
-assert.equal(render(null),null,'No AI edition = existing Morning remains');
+assert.equal(render(null),null,'No free edition = existing Morning remains');
 assert.equal(render({...sample,status:'AWAITING_SECRET'}),null);
 assert.equal(render({...sample,generated_at_utc:'2026-10-01T14:00:00Z'}),null);
 const out=render(sample);
@@ -50,15 +50,17 @@ xss.headline='<script>alert(1)</script> mercato';
 assert(render(xss).includes('&lt;script&gt;alert(1)&lt;/script&gt;'));
 const app=fs.readFileSync(path.join(ROOT,next,'app.js'),'utf8');
 const index=fs.readFileSync(path.join(ROOT,next,'index.html'),'utf8');
-assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent AI research');
+assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent free research');
 assert(app.includes("fetch('./hourly-market-desk-current.json'"),'Optional fetch endpoint missing');
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
-assert(index.includes('hourly-desk-ui-v1.js?v=1'));
+assert(index.includes('hourly-desk-ui-v1.js?v=2'));
 assert(index.includes('hourly-desk-ui-v1.css?v=1'));
-assert(index.includes('app.js?v=18.45-hourly'));
+assert(index.includes('app.js?v=18.46-free-desk'));
 const workflow=fs.readFileSync(path.join(ROOT,'.github/workflows/next-independent-ai-hourly-desk-v1.yml'),'utf8');
 assert(workflow.includes("cron: '17 * * * *'"));
-assert(workflow.includes("secrets.FXQ_MARKET_DESK_API_KEY"));
+assert(!workflow.includes("secrets.FXQ_MARKET_DESK_API_KEY"));
+assert(workflow.includes("build_free_hourly_desk_v1.py"));
+assert(!workflow.includes("api.openai.com"));
 assert(!/Automations__update|automations\.update|CHATGPT_AUTOMATION_ID/.test(workflow));
 assert(workflow.includes("github.event_name != 'pull_request'"));
 assert(workflow.includes('site/fx-quant-v2/next/hourly-market-desk-current.json'));
