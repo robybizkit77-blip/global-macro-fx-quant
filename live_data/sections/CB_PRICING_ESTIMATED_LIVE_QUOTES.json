@@ -7,7 +7,7 @@
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3Z2027",
           "contract_description": "Dec 2027",
           "expiration": "2028-03-14",
@@ -22,7 +22,7 @@
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3H2027",
           "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
           "expiration": "2027-06-15",
@@ -38,7 +38,7 @@
         },
         "6m": {
           "accrual_start": "2027-06-16",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-14",
@@ -65,7 +65,7 @@
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "FST3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-15",
@@ -79,7 +79,7 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 2,
           "contract": "FST3X2026",
           "contract_description": "Nov 2026",
           "expiration": "2027-02-17",
@@ -93,7 +93,7 @@
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 2,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
@@ -115,7 +115,7 @@
       "status": "LIVE_SECONDARY_READY"
     },
     "USD": {
-      "as_of": "2026-11-11",
+      "as_of": "2026-11-12",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
@@ -124,17 +124,17 @@
           "contract": "ZQV2027",
           "contract_description": "Oct 2027",
           "expiration": "2027-11-01",
-          "futures_price": 95.32,
+          "futures_price": 95.205,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-11-11T21:06:01Z",
-          "quote_as_of": "2026-11-11",
+          "price_valid_until": "2026-11-12T21:15:01Z",
+          "quote_as_of": "2026-11-12",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.68,
+          "rate": 4.795,
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQG2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-03-01",
@@ -152,13 +152,13 @@
           "contract": "ZQJ2027",
           "contract_description": "Apr 2027",
           "expiration": "2027-05-03",
-          "futures_price": 95.5,
+          "futures_price": 95.465,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-11-11T19:25:23Z",
-          "quote_as_of": "2026-11-11",
+          "price_valid_until": "2026-11-12T19:31:20Z",
+          "quote_as_of": "2026-11-12",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.5,
+          "rate": 4.535,
           "symbol": "CBOT:ZQJ2027"
         }
       },
@@ -170,7 +170,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-11-12T18:52:03.503726Z",
+  "generated_at_utc": "2026-11-13T00:11:06.953301Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
