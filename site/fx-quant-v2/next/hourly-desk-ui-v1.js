@@ -10,7 +10,7 @@
 
  // Source titles remain unchanged in JSON; this display-only Italian label
  // never claims to translate an unseen article or infer a policy decision.
- const englishTitle=s=>/\b(the|and|this|summer|fell|record lows|hydropower|generation|electricity|published|release|outlook for|business outlook|survey of|monetary policy|financial stability|project meridian|oil production|crude oil|natural gas|supply outlook|energy consumption)\b/i.test(String(s||''));
+ const englishTitle=s=>/\b(the|and|this|summer|fell|record lows|hydropower|generation|electricity|published|releases?|released|energy study|outlook for|business outlook|survey of|monetary policy|financial stability|project meridian|oil production|crude oil|natural gas|supply outlook|energy consumption)\b/i.test(String(s||''));
  const titleItaliano=n=>{
   const original=String(n?.headline||'').trim();
   if(!englishTitle(original))return original;
