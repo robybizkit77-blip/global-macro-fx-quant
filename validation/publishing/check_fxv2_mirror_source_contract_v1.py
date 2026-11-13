@@ -62,12 +62,28 @@ def validate(root: Path = ROOT) -> dict:
     if quant.get("eligible_for_signals") is not False:
         raise ValueError("TEMPORAL_RESEARCH_SIGNAL_PROMOTION_FORBIDDEN")
 
+    # Preserve the canonical *market* orientation of each FX pair (EUR/AUD
+    # is not AUD/EUR). Coverage is assessed on unordered currency identities,
+    # while both research files must retain exactly the same oriented keys.
     expected_pairs = {
-        "/".join(sorted((a, b)))
+        frozenset((a, b))
         for i, a in enumerate(sorted(G8)) for b in sorted(G8)[i + 1:]
     }
-    if (set(pricing["pairs"]) != expected_pairs or
-            set(quant["pairs"]) != expected_pairs):
+    def identities(keys):
+        out = []
+        for key in keys:
+            parts = key.split("/")
+            if (len(parts) != 2 or parts[0] not in G8 or
+                    parts[1] not in G8 or parts[0] == parts[1]):
+                raise ValueError("RESEARCH_PAIR_KEY_INVALID")
+            out.append(frozenset(parts))
+        return out
+
+    pkeys = set(pricing["pairs"])
+    qkeys = set(quant["pairs"])
+    if (pkeys != qkeys or
+            set(identities(pkeys)) != expected_pairs or
+            set(identities(qkeys)) != expected_pairs):
         raise ValueError("RESEARCH_PAIR_UNIVERSE_MISMATCH")
 
     return {"status": "SOURCE_CONTRACT_PASS", "files": len(items),
