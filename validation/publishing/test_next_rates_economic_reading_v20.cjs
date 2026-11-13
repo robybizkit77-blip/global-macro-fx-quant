@@ -52,7 +52,20 @@ assert.match(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-12-01',change_1d_bp:
 const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const rates=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/rates-studio.js'),'utf8');
 assert(page.includes('rates-economic-reading.js?v=20'));
-assert(page.includes('rates-studio.js?v=2'));
+assert(page.includes('rates-studio.js?v=3'));
+assert(page.includes('rates-studio.css?v=2'));
+assert(page.includes('app.js?v=18.53-rates-fx-context'));
+assert(rates.includes('fxRelativeEvidence(c,other)'), 'Rates first read needs a FX handoff');
+assert(rates.includes('root.FXQuantRatesBridge.snapshot('),
+ 'FX movement must come from certified common-date 2Y/ECB bridge, not a new correlation');
+assert(rates.includes('data-fx-proof=')&&rates.includes('data-rates-openpair='),
+ 'Verified/unavailable evidence tiers and real pair deep links are mandatory');
+assert(app.includes("e.target.closest('[data-rates-openpair]')")&&
+ app.includes("if(!get('pairs')?.pairs?.[pair])return;"),
+ 'Pair handoff must fail closed if pair source is absent');
+const ratesCss=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/rates-studio.css'),'utf8');
+assert(ratesCss.includes('.rates-fx-handoff')&&ratesCss.includes('max-width:600px')&&
+ ratesCss.includes(':focus-visible'),'Rates evidence design must be responsive and keyboard accessible');
 assert(page.indexOf('rates-economic-reading.js')<page.indexOf('rates-studio.js'));
 assert(rates.includes('m.headline')&&rates.includes('m.pricingEvidence')&&rates.includes('m.watch'));
 console.log('NEXT_RATES_V20_PASS: G8 8/8, four curve regimes, source-date and stale guards, 6M unavailable/non-simultaneous/same-date.');
