@@ -7,7 +7,29 @@ const root=path.resolve(__dirname,'../..'),next='site/fx-quant-v2/next/';
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const json=p=>JSON.parse(read(p));
 const ranking=require(path.join(root,next,'pair-rankings.js'));
-const calendar=json('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json');
+// Historical 12 Nov scenario is a frozen test fixture, NOT the rolling
+// operational calendar (whose last_checked date and past events change daily).
+// The production function must still reject future-dated source checks.
+const liveCalendar=json('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json');
+assert.equal(liveCalendar.schema,'GMFQ_CALENDAR_OPERATIONAL_VIEW_V3');
+assert(Array.isArray(liveCalendar.events));
+const calendar={
+ schema:liveCalendar.schema,
+ last_checked_at_utc:'2026-11-12T07:30:00Z',
+ events:[
+  {ccy:'GBP',date:'2026-11-12',status:'UPCOMING',importance:'HIGH',
+   quality:'OFFICIAL_CONFIRMED',event_type:'GROWTH',title:'GDP first quarterly estimate, UK'},
+  {ccy:'CHF',date:'2026-11-16',status:'UPCOMING',importance:'HIGH',
+   quality:'OFFICIAL_PROVISIONAL',event_type:'GROWTH',title:'Swiss GDP flash'},
+  {ccy:'AUD',date:'2026-11-19',status:'UPCOMING',importance:'HIGH',
+   quality:'OFFICIAL_CONFIRMED',event_type:'LABOUR',title:'Labour Force, Australia'},
+  {ccy:'JPY',date:'2026-11-20',status:'UPCOMING',importance:'HIGH',
+   quality:'OFFICIAL_CONFIRMED',event_type:'INFLATION',title:'Japan Consumer Price Index'},
+  {ccy:'USD',date:'2026-12-09',status:'UPCOMING',importance:'HIGH',
+   quality:'OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER',event_type:'CENTRAL_BANK_DECISION',
+   title:'Fed · decisione di politica monetaria'}
+ ]
+};
 const date='2026-11-12';
 const pair=k=>({key:k,base:k.slice(0,3),quote:k.slice(3)});
 const uk=ranking.pairCatalystWatch(pair('GBPUSD'),calendar,date);
