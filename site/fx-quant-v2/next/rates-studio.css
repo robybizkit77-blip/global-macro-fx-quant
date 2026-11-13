@@ -105,3 +105,28 @@
 @media(max-width:1400px){.rates-country-strip{grid-template-columns:repeat(4,minmax(0,1fr))}.rates-research-grid,.rates-pricing-grid{grid-template-columns:1fr}.rates-primary-plot .chart{height:280px}}
 @media(max-width:810px){.rates-section-head{display:block}.rates-section-head>p{margin-top:10px;max-width:770px}.rates-hero{grid-template-columns:minmax(0,1fr) 180px}.rates-hero-title{padding:23px}.rates-hero-orbit{width:137px;height:137px}.rates-hero-orbit strong{font-size:28px}.rates-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.rates-stat:nth-child(3){border-left:0;border-top:1px solid #315568}.rates-stat:nth-child(4){border-top:1px solid #315568}}
 @media(max-width:600px){.rates-status{font-size:9px}.rates-country-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.rates-country{padding:12px}.rates-country strong{font-size:19px}.rates-hero{grid-template-columns:1fr}.rates-hero-title{padding:22px 19px}.rates-hero-title h2{font-size:28px}.rates-hero-side{border-left:0;border-top:1px solid #416a78;min-height:148px}.rates-hero-orbit{height:112px;width:112px}.rates-hero-orbit strong{font-size:23px}.rates-stats{margin-bottom:30px}.rates-stat{padding:13px}.rates-stat strong{font-size:19px}.rates-section-head h2{font-size:26px}.rates-section-head>p{font-size:11px}.rates-primary-plot,.rates-qa-panel,.rates-figure,.rates-instrument-card,.rates-reprice,.rates-spread{padding:16px 12px}.rates-primary-plot .chart,.rates-spread .chart{height:210px}.rates-controls .pill{font-size:9px;padding:5px 7px}.rates-shape-slot{height:126px}.rates-shape-col strong{font-size:15px}.rates-repricing-cards{grid-template-columns:1fr 1fr}.rates-repricing-cards>div{padding:11px}.rates-compare-select{gap:9px}.rates-compare-select label{min-width:150px}.rates-explain-grid,.rates-definitions{grid-template-columns:1fr}.rates-explain-grid article{padding:18px}.rates-end-note{display:block;padding:20px}.rates-end-note>.action-primary{margin-top:19px}.rates-universe-table{min-width:900px}}
+
+/* Rates / dated FX evidence bridge. Only this studio is affected. */
+.rates-fx-handoff{margin:0 0 34px;border:1px solid #426e78;border-radius:14px;overflow:hidden;background:linear-gradient(125deg,#16394c,#102a3c)}
+.rates-fx-heading{padding:22px 24px 14px}
+.rates-fx-heading h2{font:760 clamp(19px,2.05vw,28px)/1.33 Manrope,sans-serif;letter-spacing:-.04em;margin:9px 0 0}
+.rates-fx-heading h2 em{font-style:normal;color:#9de1cf}
+.rates-fx-content{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(250px,.8fr);border-top:1px solid rgba(119,175,199,.18);border-bottom:1px solid rgba(119,175,199,.18)}
+.rates-fx-story,.rates-fx-pricing{padding:21px 24px;min-width:0}
+.rates-fx-story{border-right:1px solid rgba(119,175,199,.18)}
+.rates-fx-handoff .micro-over{font-size:9px;letter-spacing:.075em;color:#92cbd7}
+.rates-fx-story h3{font:760 18px/1.4 Manrope,sans-serif;margin:10px 0}
+.rates-fx-story p,.rates-fx-pricing p{font-size:12px;line-height:1.78;color:#c4dce7;margin:7px 0 12px}
+.rates-fx-story small,.rates-fx-pricing small{display:block;font-size:10px;line-height:1.7;color:#92b3c4}
+.rates-fx-unavailable .rates-fx-story{border-left:3px solid #e2b780}
+.rates-fx-unavailable .rates-fx-story h3{color:#f0cd9f}
+.rates-fx-pricing{background:rgba(9,31,44,.3)}
+.rates-fx-actions{display:flex;flex-wrap:wrap;align-items:center;gap:9px;padding:12px 22px}
+.rates-fx-actions button,.rates-fx-actions a{display:inline-flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;font-weight:730;text-decoration:none;border-radius:8px;padding:11px 13px;color:#cef7e9;background:#1d5a5a;border:1px solid #6bb4a7;cursor:pointer}
+.rates-fx-actions a{color:#cae7f2;background:#193b50;border-color:#4c7a89}
+.rates-fx-actions button:hover,.rates-fx-actions a:hover{filter:brightness(1.13)}
+.rates-fx-actions button:focus-visible,.rates-fx-actions a:focus-visible{outline:2px solid #a0e4f0;outline-offset:3px}
+.rates-fx-actions>span{font-size:10px;color:#93b4c2;margin-left:auto}
+@media(max-width:960px){.rates-fx-content{grid-template-columns:1fr}.rates-fx-story{border-right:0;border-bottom:1px solid rgba(119,175,199,.18)}}
+@media(max-width:600px){.rates-fx-heading{padding:19px 17px 13px}.rates-fx-story,.rates-fx-pricing{padding:16px 17px}.rates-fx-actions{padding:12px 16px}.rates-fx-actions>span{margin-left:0;width:100%}}
+@media(prefers-reduced-motion:reduce){.rates-fx-actions button,.rates-fx-actions a{transition:none}}

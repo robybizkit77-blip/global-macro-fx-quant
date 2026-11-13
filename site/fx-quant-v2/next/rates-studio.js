@@ -71,6 +71,57 @@ function make(api){
      policy:finite(policy)?fmt(policy,3)+'%':b?.rate_text||'—'
    };
  }
+ function fxRelativeEvidence(c,other){
+  const model=get('pairs'),universe=model?.pairs||{};
+  const direct=c+other,reverse=other+c;
+  const pair=universe[direct]?direct:universe[reverse]?reverse:null;
+  const r=usable(c),peer=usable(other),o=dataO(c),h=rpRate(c,'6m');
+  const asof=model?.price_asof;
+  const pricing=h?'6M '+c+' · '+(o?.kind||'strumento non specificato')+
+   ' · '+(o?.quality||'qualità da verificare')+' · '+date(h.as_of)+'. '+
+   (finite(h.change_1d_bp)?'Variazione 1D '+sign(h.change_1d_bp,1,' pb')+'.':
+   'Variazione 1D assente: non attribuiamo alcun repricing.') :
+   '6M '+c+' non disponibile: non attribuiamo un repricing.';
+  let status='unavailable',headline='Il confronto tra tassi e cambio non è ancora verificabile.';
+  let observation='Occorrono rendimenti governativi 2Y e fixing BCE su date comuni, abbastanza recenti.';
+  let proof='Rendimenti '+c+' '+date(r?.date)+' · '+other+' '+date(peer?.date)+
+   ' · fixing del modello '+date(asof)+'.';
+  if(pair&&root.FXQuantRatesBridge?.snapshot){
+   const x=root.FXQuantRatesBridge.snapshot(
+    get('rates'),get('currencyPrices'),pair,asof,dayNow(),
+    get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'));
+   if(x?.ready&&x.short&&x.latest?.date){
+    status='ready';
+    const m=x.short,d=m.direction;
+    headline=d==='STESSO SEGNO'?'Prezzo FX e spread 2Y si sono mossi nello stesso verso.':
+     d==='SEGNO OPPOSTO'?'Prezzo FX e spread 2Y si sono mossi in versi opposti.':
+     'La relazione tra prezzo FX e spread 2Y non è conclusiva.';
+    observation='Fra '+date(m.start)+' e '+date(m.end)+
+     ' ('+m.n+' intervalli, '+(m.n+1)+' date comuni): '+pair.slice(0,3)+'/'+pair.slice(3)+
+     ' '+sign(m.fxPct,2,'%')+'; spread governativo 2Y ('+pair.slice(0,3)+
+     ' − '+pair.slice(3)+') '+sign(m.spreadBp,1,' pb')+'.';
+    proof='Dati allineati al '+date(x.latest.date)+'. '+
+     (x.lag>0?'Il fixing più recente ('+date(asof)+') NON è stato abbinato a un tasso di un altro giorno. ':'')+
+     (x.medium&&x.medium.direction!==d?'Sui 20 intervalli il segno cambia: persistenza da verificare. ':'')+
+     x.kind+'.';
+   }else if(x?.reason){observation=x.reason;}
+  }
+  const link=pair?'<button type="button" data-rates-openpair="'+esc(pair)+'" '+
+   'aria-label="Apri '+esc(pair.slice(0,3)+'/'+pair.slice(3))+' nel dossier FX">'+
+   'Apri '+esc(pair.slice(0,3)+'/'+pair.slice(3))+' <span aria-hidden="true">↗</span></button>':'';
+  return '<section class="rates-fx-handoff rates-fx-'+status+'" data-fx-proof="'+status+
+   '" data-fx-pair="'+esc(pair||'')+'" aria-label="Tassi e prezzo Forex su date comuni">'+
+   '<div class="rates-fx-heading"><span class="chapter-kicker">DAL CALENDARIO AL FOREX · '+esc(c)+' VS '+esc(other)+'</span>'+
+   '<h2>Il differenziale di tasso <em>trova conferma nel cambio?</em></h2></div>'+
+   '<div class="rates-fx-content"><div class="rates-fx-story"><span class="micro-over">'+
+   (status==='ready'?'PROVA OSSERVATA · DATE COMUNI':'PROVA NON DISPONIBILE')+'</span>'+
+   '<h3>'+esc(headline)+'</h3><p>'+esc(observation)+'</p><small>'+esc(proof)+'</small></div>'+
+   '<aside class="rates-fx-pricing"><span class="micro-over">ASPETTATIVE / 6M</span><p>'+esc(pricing)+
+   '</p><small>I rendimenti 2Y sono governativi, NON OIS. Direzioni concordi o discordi non dimostrano causalità né indicano un trade.</small></aside></div>'+
+   '<div class="rates-fx-actions">'+link+
+   '<a href="#currencies">Confronta '+esc(c)+' nel G8 <span aria-hidden="true">↗</span></a>'+
+   '<span>Coppia di ricerca, non segnale operativo</span></div></section>';
+ }
  function govCard(c){
    const r=usable(c),row=sovereignRows(c),first=row[0],last=row.at(-1),prev=row.at(-2),f=selectedReading(c);
    const spread=last?(last.y10-last.y2)*100:null;
@@ -216,6 +267,7 @@ function make(api){
     +'<div class="rates-chipline"><span class="badge '+(freshness(r?.date)==='STORICO'?'warning':'info')+'">'+esc(freshness(r?.date))+'</span><span>'+esc(r?.quality||'QUALITÀ DA VERIFICARE')+'</span></div></div>'
     +'<div class="rates-hero-side"><div class="rates-hero-orbit"><span>CURVE SLOPE</span><strong>'+sign(r?(r['10Y']-r['2Y'])*100:null,1)+'</strong><small>punti base · '+date(r?.date)+'</small></div></div></section>'
     +govCard(c)
+    +fxRelativeEvidence(c,other)
     +'<section class="rates-chapter"><div class="rates-section-head"><div><span class="chapter-kicker">02 / SOVEREIGN CURVE LAB</span><h2>Quali scadenze <em>stanno cambiando?</em></h2></div><p>Ogni grafico nasce dalle osservazioni 2Y e 10Y comuni. Cambia periodo e misura la pendenza, senza confondere la forma con il driver economico.</p></div>'
     +'<div class="rates-research-grid"><div class="rates-primary-plot">'+govPlot(c)+'</div>'+historicalSovereign(c)+'</div></section>'
     +'<section class="rates-chapter"><div class="rates-section-head"><div><span class="chapter-kicker">03 / CENTRAL BANK PRICING</span><h2>Le aspettative non sono <em>il tasso ufficiale.</em></h2></div><p>Confronta i livelli 3M, 6M e 12M senza mescolare OIS e futures. Guarda quali scadenze hanno una variazione 1D/1W verificabile.</p></div>'
