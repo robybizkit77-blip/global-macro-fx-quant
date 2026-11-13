@@ -19,6 +19,16 @@ class MorningPublicProofTests(unittest.TestCase):
         self.edition["edition_date"]="2026-11-11"
         self.edition["observation_cutoff_exclusive"]="2026-11-11"
         self.edition["edition_status"]="MORNING_SNAPSHOT"
+        # The canonical site edition advances every morning. Rebase the
+        # historical 11 November test fixture *entirely*, including its chart
+        # source dates; otherwise an actual 13 November chart is intentionally
+        # rejected as future information in the historical 11 November case.
+        for chart in self.edition["charts"]:
+            if chart.get("as_of", "") >= "2026-11-11":
+                chart["as_of"] = "2026-11-10"
+            for point in chart.get("points", []):
+                if point.get("date", "") >= "2026-11-11":
+                    point["date"] = "2026-11-10"
 
     def test_public_audit_waits_for_editorial_writer(self):
         workflow = (ROOT/".github/workflows/fxv2-morning-public-proof.yml").read_text(encoding="utf-8")
