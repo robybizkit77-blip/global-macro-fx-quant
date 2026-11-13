@@ -76,7 +76,7 @@ assert(app.includes("fetch('../../../market-desk/hourly-market-desk-current.json
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
 assert(index.includes('hourly-desk-ui-v1.js?v=3'));
 assert(index.includes('hourly-desk-ui-v1.css?v=2'));
-assert(index.includes('app.js?v=18.46-free-desk'));
+assert(index.includes('app.js?v=18.47-free-desk-persist'));
 const css=fs.readFileSync(path.join(ROOT,next,'hourly-desk-ui-v1.css'),'utf8');
 assert(css.includes('.hourly-hero-grid')&&css.includes('.hourly-navigation-grid')&&css.includes('.hourly-desk-news-body'),
  'The new workbench CSS must style every major hierarchy layer');
