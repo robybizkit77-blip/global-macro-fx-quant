@@ -99,7 +99,7 @@ assert(!headline.includes('Nessun dato domina'), 'An outdated calendar headline 
 const fxFirst=updated.match(/<section class="morning-first-read"[\s\S]*?<\/section>/)?.[0]||'';
 assert(fxFirst.includes('Nella stima quantitativa G8 USD occupa la posizione'),
  'Editorial must use the same active G8 estimate as currency/pair pages');
-assert(fxFirst.includes('Tra 05/11/2026 e 12/11/2026') &&
+assert(fxFirst.includes('Tra 2026-11-05 e 2026-11-12') &&
  fxFirst.includes('differenziale settimanale'),
  'Same-window verified Treasury 2Y vs Eurozone 2Y proxy must reach the first read');
 assert(fxFirst.includes('EUR/USD:') && fxFirst.includes('USD/JPY:'),
