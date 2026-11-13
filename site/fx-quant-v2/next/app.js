@@ -944,35 +944,38 @@ function news(){
  const type=state.newsMode==='pulse'?'MERCATI / OSSERVAZIONI DATATE':'COMUNICAZIONI UFFICIALI';
  const newsCard=x=>'<article class="timeline-item news-evidence-item" data-news-kind="'+esc(state.newsMode)+'" data-news-asof="'+esc(x.asof)+'">'
   +'<span class="mini-overline">'+esc(x.kind)+' · '+esc(x.ccy||x.source)+' · '+date(x.asof)+(x.time?' · '+esc(x.time)+' IT':'')+'</span>'
-  +'<h3>'+esc(x.title)+'</h3>'
-  +'<p><strong>Il fatto.</strong> '+esc(x.body)+'</p>'
-  +'<p><strong>Perché potrebbe contare.</strong> '+esc(x.why)+'</p>'
-  +'<p><strong>Cosa verificare.</strong> '+esc(x.verify)+'</p>'
-  +'<p class="source-caption"><strong>Reazione di mercato.</strong> '+esc(x.impact)+'</p>'
-  +'<p class="source-caption">Fonte: '+esc(x.source)+' · Qualità: '+esc(x.quality)+
-    (x.url?' · <a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+(state.newsMode==='pulse'?'Verifica la fonte ↗':'Leggi il comunicato ufficiale ↗')+'</a>':'')+'</p></article>';
- return pageHero('NEWS / EVENT MONITOR','Dalla notizia <em>alla prova.</em>',
+  +'<h3>'+esc(x.displayTitle||x.title)+'</h3>'
+  +(state.newsMode==='pulse'&&x.body?'<p class="news-evidence-fact"><strong>Il fatto.</strong> '+esc(x.body)+'</p>':'')
+  +'<p class="news-evidence-meaning"><strong>Perché monitorarla.</strong> '+esc(x.why)+'</p>'
+  +'<div class="news-evidence-citation"><span>'+esc(x.source)+'</span>'
+  +(x.url?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">Fonte originale ↗</a>':'')+'</div>'
+  +'<details class="news-evidence-details"><summary>Verifiche e limiti dell’evidenza</summary>'
+  +'<div class="news-evidence-detail-body"><p><strong>Cosa verificare.</strong> '+esc(x.verify)+'</p>'
+  +'<p><strong>Reazione di mercato.</strong> '+esc(x.impact)+'</p>'
+  +'<p class="source-caption"><strong>Qualità.</strong> '+esc(x.quality)+'</p>'
+  +(x.displayTitle&&x.displayTitle!==x.title?'<p class="source-caption"><strong>Titolo originale.</strong> '+esc(x.title)+'</p>':'')
+  +'</div></details></article>';
+ return pageHero('NOTIZIE / EVENTI','Dalla notizia <em>alla prova.</em>',
     'Distingui ciò che è stato pubblicato da quello che cambia davvero le aspettative. Una variazione dei futures non è automaticamente una sorpresa macro o la reazione a un comunicato.')
   +operationalCalendar
   +'<div class="filters"><div class="pill-controls">'+choose('',[
-    {label:'Market Pulse ('+evidence.pulse.length+')',value:'pulse'},
+    {label:'Movimenti di mercato ('+evidence.pulse.length+')',value:'pulse'},
     {label:'Comunicazioni ufficiali ('+evidence.official.length+')',value:'official'}
    ],state.newsMode,'data-news-mode')+'</div><span class="data-date">Ultima data disponibile '+date(evidence.latest)+'</span></div>'
-  +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">'+type+'</span>'
+  +'<div class="grid tilted news-edition-grid"><section class="panel news-evidence-panel"><div class="panel-head"><div><span class="mini-overline">'+type+'</span>'
   +'<h2>'+(state.newsMode==='pulse'?'Cosa è cambiato nei mercati':'Comunicazioni ufficiali: cosa hanno pubblicato le istituzioni')+'</h2>'
-  +'<p>'+esc(evidence.gap)+'</p></div></div>'
+  +'<p>Prima il fatto documentato, poi la sua rilevanza. Le prove e i limiti restano espandibili.</p></div></div>'
   +'<div class="timeline">'+(list.length?list.slice(0,20).map(newsCard).join(''):
     '<div class="empty"><strong>Nessuna voce con data verificabile</strong><p>Non sostituiamo eventi mancanti con notizie presunte.</p></div>')
   +'</div></section>'
-  +'<section class="panel glow news-research-reading"><span class="mini-overline">IL GIUDIZIO DEL DESK / NEWS</span>'
-  +'<h2 class="focus-headline" style="font-size:22px">Una notizia conta quando cambia una tesi.</h2>'
-  +'<p class="focus-subtitle">'+esc(evidence.gap)+'</p><div class="divider"></div>'
-  +'<div class="flow-track">'
-  +'<div class="flow-item"><label>Fatto</label><p>Fonte, titolo, data e contenuto riportato. Le pubblicazioni ufficiali possono essere importanti anche senza una reazione di prezzo.</p></div>'
-  +'<div class="flow-item"><label>Sorpresa e revisioni</label><p>Le chiusure azionarie, FX, credito e tassi non contengono il consenso di un evento. Senza una coppia effettivo/consenso con vintage verificato non calcoliamo sorprese né attribuiamo revisioni.</p></div>'
-  +'<div class="flow-item"><label>Market pricing e conferme</label><p>Il Pulse mostra chiusure FX, azionarie e creditizie, governativi e strumenti 6M/12M con le rispettive date; non sono reazioni a notizie dimostrate. I comunicati non hanno una finestra FX/OIS pre/post certificata: per attribuire impatto servono dati allineati all’orario.</p></div>'
-  +'</div><div class="notice warn" style="margin-top:14px">'+esc(evidence.quality)+
-   '. Nessun impatto intraday o segnale di trading viene inventato da un titolo.</div></section></div>';
+  +'<aside class="panel glow news-research-reading"><span class="mini-overline">IL GIUDIZIO DEL DESK / NOTIZIE</span>'
+  +'<h2 class="focus-headline">Dalla fonte ai prezzi, senza scorciatoie.</h2>'
+  +'<p class="focus-subtitle">'+esc(evidence.gap)+'</p>'
+  +'<p>Un comunicato non dimostra da solo una sorpresa macro o una reazione FX: servono confronto con le attese e variazioni misurate sulla stessa finestra.</p>'
+  +'<div class="news-research-links"><a href="#rates">Tassi & OIS <span aria-hidden="true">↗</span></a>'
+  +'<a href="#currencies">Valute G8 <span aria-hidden="true">↗</span></a>'
+  +'<a href="#pairs">Coppie FX <span aria-hidden="true">↗</span></a></div>'
+  +'<p class="news-research-quality">'+esc(evidence.quality)+' · Impatto intraday da verificare.</p></aside></div>';
 }
 function quickEntries(){
  const sections=Object.entries(ROUTES).map(([value,label])=>({key:value,label,subtitle:'SEZIONE · Research terminal',kind:'route',value}));
