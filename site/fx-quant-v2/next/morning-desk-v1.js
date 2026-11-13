@@ -286,9 +286,11 @@
      'Il dato sui prezzi orienta la lettura del dollaro attraverso le attese Fed relative: una pressione maggiore tende a sostenere il canale tassi USD, una pressione minore può indebolirlo. ':
      'Il catalizzatore può cambiare l’orientamento delle aspettative monetarie relative. ')+
     'La reazione da seguire è sul differenziale dei rendimenti e su '+pairs+'.'),
-   catalyst:'Nel calendario ufficiale: '+name+' '+when+
-    '. In uno scenario di prezzi più persistenti, osserviamo il rischio di aspettative Fed più restrittive e USD sostenuto dal front-end; '+
-    'in uno scenario più debole, l’opposto. La direzione dipende dalla sorpresa rispetto alle attese, dalla composizione e da '+pairs+
+   catalyst:'Nel calendario ufficiale: '+name+' '+when+'. '+
+    (event.ccy==='USD'&&inflation?
+     'Con prezzi alla produzione più persistenti, osserviamo il rischio di attese Fed più restrittive e di un USD sostenuto dal front-end; con dati più deboli, l’opposto. ':
+     'Una sorpresa macro più forte o più debole può modificare le aspettative relative sulla banca centrale e il pricing della valuta, soprattutto se il mercato aveva già anticipato un esito diverso. ')+
+    'La direzione va confrontata con attese pre-evento, composizione e risposta su '+pairs+
     '. Gli scenari sono condizionali e precedono la pubblicazione.',
    watch:estimate?.watch||
     'Pubblicazione e confronto con attese documentate; tassi relativi e '+pairs+
