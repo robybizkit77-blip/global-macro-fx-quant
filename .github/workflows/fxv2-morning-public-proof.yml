@@ -13,6 +13,8 @@ on:
       - 'validation/morning/test_build_morning_fx_desk_v1.py'
       - 'validation/morning/check_public_morning_fx_desk_v1.py'
       - 'validation/morning/test_check_public_morning_fx_desk_v1.py'
+      - 'validation/morning/plan_source_triggered_morning_v1.py'
+      - 'validation/morning/test_plan_source_triggered_morning_v1.py'
       - 'validation/publishing/test_morning_desk_render_v1.cjs'
       - 'site/fx-quant-v2/next/morning-desk-v1.js'
   push:
@@ -22,10 +24,20 @@ on:
       - 'validation/morning/test_build_morning_fx_desk_v1.py'
       - 'validation/morning/check_public_morning_fx_desk_v1.py'
       - 'validation/morning/test_check_public_morning_fx_desk_v1.py'
+      - 'validation/morning/plan_source_triggered_morning_v1.py'
+      - 'validation/morning/test_plan_source_triggered_morning_v1.py'
       - 'validation/publishing/test_morning_desk_render_v1.cjs'
       - 'site/fx-quant-v2/next/morning-desk-v1.js'
       - '.github/workflows/fxv2-morning-public-proof.yml'
   workflow_dispatch:
+  # Pre-08:00 recovery when GitHub silently drops/delays the 07:11/07:41/07:53
+  # cron events. These are existing, independently completed production events.
+  # A green upstream badge is only a wake-up clock, never source certification.
+  workflow_run:
+    workflows:
+      - 'Calendar News Operational Refresh V1'
+      - 'Macro Persistent Daily V1'
+    types: [completed]
   schedule:
     # UTC pairs target Rome 07:11, 07:41, 07:53 in both CET and CEST.
     # GitHub schedule may run late: measured public time is never backdated.
@@ -55,7 +67,9 @@ jobs:
       - name: Verify 08:00 delivery classification with DST and drift failures
         run: python validation/publishing/test_fxv2_morning_public_v1.py
       - name: Morning FX narrative contract — CPI, aftermath, GDP, no lookahead
-        run: python -m unittest validation.morning.test_build_morning_fx_desk_v1 -v
+        run: |
+          python -m unittest validation.morning.test_build_morning_fx_desk_v1 -v
+          python -m unittest validation.morning.test_plan_source_triggered_morning_v1 -v
       - name: Verify morning public HTTP timeliness classification
         run: python -m unittest validation.morning.test_check_public_morning_fx_desk_v1 -v
       - uses: actions/setup-node@v4
@@ -70,9 +84,17 @@ jobs:
     # Public verification must observe the production outcome, not race it.
     # Still run if production fails, so absence is recorded rather than skipped.
     needs: [contract, morning-editorial]
-    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    if: >-
+      always() &&
+      (github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'workflow_run' &&
+        needs.morning-editorial.outputs.admitted == 'true'))
     runs-on: ubuntu-24.04
     timeout-minutes: 8
+    permissions:
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -83,6 +105,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Wait for real Pages deployment before source-triggered public proof
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          python3 validation/publishing/wait_gh_pages_idle_before_fxv2_push_v1.py \
+            --output "$RUNNER_TEMP/morning-source-event-pages-idle.json" \
+            --attempts 16 --delay 5
       - name: Resolve CET/CEST slot and skip duplicate UTC cron
         id: slot
         env:
@@ -179,7 +211,14 @@ jobs:
   # One immutable edition per Rome weekday; delayed runs never backdate their clock.
   morning-editorial:
     needs: contract
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       (github.event.workflow_run.name == 'Calendar News Operational Refresh V1' ||
+        github.event.workflow_run.name == 'Macro Persistent Daily V1'))
     runs-on: ubuntu-24.04
     timeout-minutes: 28
     permissions:
@@ -187,7 +226,10 @@ jobs:
       actions: read
     concurrency:
       group: fxv2-morning-macro-editorial-production
+      queue: max
       cancel-in-progress: false
+    outputs:
+      admitted: ${{ steps.editorial-slot.outputs.active }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -196,28 +238,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Select correct Rome weekday schedule and reject late reconstruction
+      - name: Select Rome weekday clock or trusted early source event
         id: editorial-slot
         shell: bash
         env:
           CRON_SLOT: ${{ github.event.schedule }}
-        run: |
-          python3 - <<'PY'
-          from datetime import datetime
-          from zoneinfo import ZoneInfo
-          import os
-          rome=datetime.now(ZoneInfo('Europe/Rome'))
-          cron=os.environ.get('CRON_SLOT','')
-          actual_hour=int(cron.split()[1]) if cron else None
-          correct_utc=5 if rome.utcoffset().total_seconds()==7200 else 6
-          active=(rome.weekday()<5 and rome.hour<11 and
-                  (os.environ.get('GITHUB_EVENT_NAME')!='schedule' or actual_hour==correct_utc))
-          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
-              f.write('active='+str(active).lower()+'\n')
-              f.write('edition='+rome.date().isoformat()+'\n')
-          print('MORNING_MACRO_EDITORIAL_SLOT', 'ACTIVE' if active else 'SKIPPED',
-                'clock',rome.isoformat(),'cron',cron)
-          PY
+          PARENT_WORKFLOW: ${{ github.event.workflow_run.name }}
+          PARENT_EVENT: ${{ github.event.workflow_run.event }}
+          PARENT_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          PARENT_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          PARENT_UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
+        run: python3 -m validation.morning.plan_source_triggered_morning_v1
       - name: Create immutable evidence-dated morning edition and mirror to Pages
         if: steps.editorial-slot.outputs.active == 'true'
         shell: bash
