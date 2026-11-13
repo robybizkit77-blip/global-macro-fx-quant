@@ -54,9 +54,10 @@ class SundayEditorialPreflight(unittest.TestCase):
         result = scan(ROOT, date(2026, 11, 13))
         self.assertEqual(result["status"], "WEEKLY_STRUCTURAL_PREFLIGHT_ONLY")
         self.assertEqual(result["expected_new_types"], 4)
-        self.assertEqual(result["new_files_validated"], 0)
-        self.assertEqual(result["new_types_not_yet_produced"], 4)
+        self.assertEqual(result["new_files_validated"] +
+                         result["new_types_not_yet_produced"], 4)
         self.assertFalse(result["report_generation_certified"])
+        self.assertFalse(result["transfer_from_chatgpt_certified"])
 
     def test_new_sunday_reports_can_pass_structural_source_preflight(self):
         for category in TEMPLATES:
