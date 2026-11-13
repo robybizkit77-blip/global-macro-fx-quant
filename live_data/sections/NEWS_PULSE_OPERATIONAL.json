@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-12",
-  "generated_at_utc": "2026-11-13T07:42:55.327288Z",
+  "generated_at_utc": "2026-11-13T08:04:33.541146Z",
   "items": [
     {
       "as_of": "2026-11-12",
@@ -12,6 +12,17 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
       "title": "JPY: repricing implicito da futures più hawkish (+5.2 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-11-12",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "CAD",
+      "confidence": "A",
+      "detail": "Movimento 1D +9.0 bp sul bucket 12M; variazione 1W +18.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+      "title": "CAD: repricing implicito da futures più hawkish (+9.0 bp 12M in 1D)"
     },
     {
       "as_of": "2026-11-12",
@@ -80,6 +91,17 @@
     },
     {
       "as_of": "2026-11-12",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "Movimento 1D +0.0 bp sul bucket 6M; variazione 1W -1.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+      "title": "AUD: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-11-12",
       "category": "MARKET_FX_ECB_FIXING",
       "ccy": "AUD",
       "confidence": "A",
@@ -115,17 +137,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
       "title": "GBP: repricing OIS più hawkish (+6.7 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-11",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "Movimento 1D +4.5 bp sul bucket 12M; variazione 1W -4.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing implicito da futures più hawkish (+4.5 bp 12M in 1D)"
     },
     {
       "as_of": "2026-11-11",
@@ -179,17 +190,6 @@
       "title": "EUR: governativo 2Y +2.7 pb, 10Y +0.9 pb"
     },
     {
-      "as_of": "2026-11-11",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "CAD",
-      "confidence": "A",
-      "detail": "Movimento 1D +0.0 bp sul bucket 6M; variazione 1W +3.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "title": "CAD: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
-    },
-    {
       "as_of": "2026-11-10",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "USD",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-13T07:42:55.327288Z",
+  "last_checked_at_utc": "2026-11-13T08:04:33.541146Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -327,13 +327,13 @@
             "to": "2026-11-02"
           },
           "SIX_MONTH": {
-            "delta_bp": -3.0,
+            "delta_bp": 2.0,
             "first_publication_intraday_PIT_certified": false,
             "from": "2026-10-27",
             "source_type": "OFFICIAL_EXCHANGE_FUTURES_NOT_OIS",
             "start_is_early_first_seen_not_nearest_prerelease": true,
             "status": "DESCRIPTIVE_MULTIDAY_CHANGE_NOT_EVENT_CAUSAL",
-            "to": "2026-11-11"
+            "to": "2026-11-12"
           }
         },
         "pre_event_reference": {
@@ -823,8 +823,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.965,
-            "date": "2026-11-11",
+            "6m_rate_pct": 3.015,
+            "date": "2026-11-12",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -974,7 +974,7 @@
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
             "6m_rate_pct": 4.91,
-            "date": "2026-11-11",
+            "date": "2026-11-12",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -1028,8 +1028,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.965,
-            "date": "2026-11-11",
+            "6m_rate_pct": 3.015,
+            "date": "2026-11-12",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
