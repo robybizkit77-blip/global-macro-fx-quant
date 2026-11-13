@@ -260,3 +260,39 @@
  color:#d9e5e8;font-size:12px;line-height:1.72;overflow-wrap:anywhere
 }
 .morning-dashboard .morning-fx-pulse-catalyst strong{color:#efd09a}
+
+
+/* Commercial first-read contract: one narrative, with supporting evidence on demand.
+   The approved DARK DESK palette is unchanged. */
+.morning-dashboard .morning-first-read{
+ margin-top:17px;padding:20px 24px;background:#0e2434;
+}
+.morning-dashboard .morning-key-meaning{
+ margin:9px 0 13px;max-width:1000px;
+ font-size:clamp(14px,1.5vw,16px);line-height:1.74;color:#e3eff0;
+}
+.morning-dashboard .morning-key-watch{
+ margin:0;padding-top:12px;border-top:1px solid rgba(139,190,210,.18);
+ font-size:13px;line-height:1.7;color:#c1d8e3;
+}
+.morning-dashboard .morning-key-watch strong{color:#a9eed2}
+.morning-dashboard .morning-secondary-research,
+.morning-dashboard .morning-supporting{
+ margin:15px 0 0;
+}
+.morning-dashboard .morning-secondary-research>.morning-fx-pulse{margin:0}
+.morning-dashboard .morning-secondary-research .morning-fx-pulse,
+.morning-dashboard .morning-supporting .morning-evidence,
+.morning-dashboard .morning-supporting .morning-outlook{
+ margin:0;padding:18px;border-top:1px solid rgba(139,190,210,.2);
+}
+.morning-dashboard .morning-catalyst{margin-top:17px}
+.morning-dashboard .morning-research-links{margin-top:21px;margin-bottom:21px}
+@media(max-width:560px){
+ .morning-dashboard .morning-key-meaning{font-size:14px}
+ .morning-dashboard .morning-key-watch{font-size:12px}
+ .morning-dashboard .morning-first-read{padding:17px}
+ .morning-dashboard .morning-secondary-research .morning-fx-pulse,
+ .morning-dashboard .morning-supporting .morning-evidence,
+ .morning-dashboard .morning-supporting .morning-outlook{padding:14px 10px}
+}

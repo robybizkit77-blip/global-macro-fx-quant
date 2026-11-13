@@ -159,18 +159,86 @@
    '</section>';
  }
 
+
+ // The published morning edition is immutable, but the current official
+ // calendar may correct an omitted scheduled event. In that case, reconcile
+ // the FIRST READ without rewriting or disguising the original edition.
+ function localClockInRome(event){
+  if(!goodDay(event?.date)||!/^\d{2}:\d{2}$/.test(event?.time_local||'')||
+     typeof event?.timezone!=='string')return null;
+  try{
+   const probe=new Date(event.date+'T'+event.time_local+':00Z');
+   const formatter=new Intl.DateTimeFormat('en-GB',{
+    timeZone:event.timezone,year:'numeric',month:'2-digit',day:'2-digit',
+    hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+   const parts=Object.fromEntries(formatter.formatToParts(probe)
+    .filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+   const localAsUTC=Date.UTC(Number(parts.year),Number(parts.month)-1,
+    Number(parts.day),Number(parts.hour),Number(parts.minute));
+   const actual=new Date(probe.getTime()-(localAsUTC-probe.getTime()));
+   const check=Object.fromEntries(formatter.formatToParts(actual)
+    .filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+   if([check.year,check.month,check.day].join('-')!==event.date ||
+      check.hour+':'+check.minute!==event.time_local)return null;
+   return new Intl.DateTimeFormat('it-IT',{
+    timeZone:'Europe/Rome',hour:'2-digit',minute:'2-digit',hour12:false
+   }).format(actual);
+  }catch{return null}
+ }
+ function officialReconciliation(feed,calendar,today,date){
+  if(feed?.edition_date!==today)return null;
+  const latest=nextFxCatalysts(calendar,[],today);
+  const event=latest.today;
+  if(!latest.sourceAsOf||!event||event.date!==feed.edition_date||
+     event.quality!=='OFFICIAL_CONFIRMED')return null;
+  const original=(feed.catalyst?.title||'')+' '+(feed.headline||'');
+  if(feed.catalyst?.date===event.date&&
+     original.toLowerCase().includes(event.title.toLowerCase()))return null;
+  const isUSProducer=event.ccy==='USD'&&event.title==='Producer Price Index';
+  const name=isUSProducer?'PPI USA':event.ccy+' · '+event.title;
+  const clock=localClockInRome(event);
+  const when='oggi'+(clock?' alle '+clock+' italiane':'')+
+   ' ('+date(event.date)+')';
+  const pairs=event.ccy==='USD'?'EUR/USD e USD/JPY':
+   event.ccy==='GBP'?'GBP/USD ed EUR/GBP':
+   event.ccy==='JPY'?'USD/JPY ed EUR/JPY':
+   'le coppie che comprendono '+event.ccy;
+  const inflation=event.event_type==='INFLATION';
+  return {
+   headline:name+': la prova è nelle aspettative sui tassi e nel Forex',
+   lead:'Il calendario ufficiale segnala '+name+' '+when+
+    '. La prima edizione non includeva questo appuntamento: lo segnaliamo senza cancellarla. '+
+    'Il punto non è anticipare il risultato, ma capire se i dati modificheranno '+
+    'le aspettative monetarie già incorporate nei prezzi.',
+   meaning:(inflation?
+    'La lettura dei prezzi conta per il dollaro soltanto se cambia la traiettoria attesa della Fed rispetto alle altre banche centrali. ':
+    'Il dato può incidere sulla valuta soltanto attraverso le aspettative economiche e monetarie relative. ')+
+    'Senza variazioni OIS/futures confrontabili e conferma su '+pairs+
+    ' non abbiamo una reazione FX attribuibile all’evento.',
+   catalyst:'Nel calendario ufficiale: '+name+' '+when+
+    '. Non sono disponibili in questo feed consenso da survey, risultato certificato e repricing intraday comparabile. '+
+    'Eventuali sorprese e reazioni richiedono una verifica successiva con fonti e orari coerenti.',
+   watch:'Pubblicazione ufficiale e confronto con attese documentate, movimenti del front-end relativo e '+pairs+
+    '. Separare una reazione effettiva da un movimento precedente o dalla debolezza della controparte.',
+   sourceAsOf:latest.sourceAsOf
+  };
+ }
+
  function build({feed,plot,esc,date,dayNow,currentResearch}){
   if(!sound(feed)||feed.edition_date>dayNow())return null;
   const current=feed.edition_date===dayNow();
-  const title=esc(feed.headline);
+  const correction=officialReconciliation(feed,currentResearch?.calendar,dayNow(),date);
+  const title=esc(correction?.headline||feed.headline);
   const text=x=>esc(String(x||''));
   const safePair=typeof feed.pair==='string'&&/^[A-Z]{6}$/.test(feed.pair)?feed.pair:null;
   const sources=feed.sources||{};
-  const note=!current?'Questa è l’ultima edizione archiviata, non il briefing di oggi. Il motore non ha ancora pubblicato una nuova lettura.':
+  const noteBase=!current?'Questa è l’ultima edizione archiviata, non il briefing di oggi. Il motore non ha ancora pubblicato una nuova lettura.':
    feed.edition_status==='LATE_MORNING_SNAPSHOT'?'Edizione pubblicata dopo l’orario previsto: il ritardo non viene nascosto.':
    feed.edition_status==='RECONSTRUCTION_NOT_POINT_IN_TIME'?
     'Anteprima ricostruita dalle osservazioni disponibili prima della data, non certificata come fotografia point-in-time delle 08:00.':
     'Edizione mattutina congelata: gli eventi pubblicati dopo l’apertura non modificano questo testo.';
+  const note=correction?'Calendario ufficiale aggiornato al '+date(correction.sourceAsOf)+
+   ': la prima edizione non riportava un evento odierno confermato. Il quadro principale qui sotto incorpora la correzione; il testo originario resta consultabile negli approfondimenti.':noteBase;
   // First-read uses only the frozen edition's source-dated evidence.
   // Do not infer a new daily FX move or a monetary-policy surprise.
   const relative=feed.relative_evidence||{};
@@ -196,15 +264,13 @@
   const missing=feed.event_status==='AFTERMATH_UNVERIFIED'?
    'L’effetto dell’evento macro non è ancora verificato: servono dati ufficiali, sorpresa rispetto alle attese, variazioni OIS/futures confrontabili e reazione FX sulle stesse date.':
    'Prima di confermare la tesi servono dati e prezzi confrontabili nel tempo, soprattutto le aspettative sui tassi e la risposta delle singole coppie.';
-  const firstRead='<section class="morning-first-read" aria-label="Lettura immediata del mercato">'+
-   '<div class="morning-section-label">IL QUADRO IN BREVE · PRIMA IL SIGNIFICATO</div>'+
-   '<div class="morning-first-read-grid">'+
-   '<div class="morning-first-item"><span>01 / COSA È CAMBIATO</span><p>'+text(alignedEvidence)+'</p></div>'+
-   '<div class="morning-first-item"><span>02 / CHE COSA SIGNIFICA PER IL FOREX</span><p>'+text(fxMeaning)+'</p></div>'+
-   '<div class="morning-first-item"><span>03 / COSA MANCA PER CONFERMARE</span><p>'+text(missing)+'</p></div>'+
-   '</div><p class="morning-first-watch"><strong>Da controllare.</strong> '+
-   text(feed.watch)+'</p>'+
-   '<div class="morning-first-links"><a href="#pairs">Apri le 28 coppie FX</a><a href="#rates">Verifica Tassi &amp; OIS</a></div>'+
+  const firstRead='<section class="morning-first-read" aria-label="Implicazioni per il Forex">'+
+   '<div class="morning-section-label">PERCHÉ CONTA PER IL FOREX</div>'+
+   '<p class="morning-key-meaning">'+text(correction?.meaning||fxMeaning)+'</p>'+
+   '<p class="morning-key-watch"><strong>Da monitorare.</strong> '+
+    text(correction?.watch||feed.watch)+'</p>'+
+   '<div class="morning-first-links"><a href="#currencies">Forza G8</a>'+
+   '<a href="#pairs">Coppie FX</a><a href="#rates">Verifica Tassi &amp; OIS</a></div>'+
    '</section>';
   const renderChart=(c,i)=>{
    const color=i===0?'#71e0bd':'#77caff';
@@ -220,41 +286,61 @@
   const paragraphs=feed.paragraphs.map(p=>'<p>'+text(p)+'</p>').join('');
   const scenarios=(feed.scenarios||[]).slice(0,2).map((s,i)=>
     '<article class="morning-scenario '+(i===0?'restr':'acc')+'"><h3>'+text(s.title)+'</h3><p>'+text(s.text)+'</p></article>').join('');
-  return '<article class="market-letter market-dashboard morning-dashboard" aria-label="Morning Macro e Forex Research Desk">'+
+  // One clear entry point. Detail, estimates, graphs and alternative scenarios
+  // are available on demand; they do not compete with the main desk narrative.
+  return '<article class="market-letter market-dashboard morning-dashboard"'+
+   (correction?' data-home-calendar-reconciled="true"':'')+
+   ' aria-label="Morning Macro e Forex Research Desk">'+
    '<div class="morning-edition-header"><span>FX QUANT / MORNING MACRO & FX RESEARCH DESK</span>'+
-   '<span>Edizione '+date(feed.edition_date)+' · Fixing '+date(sources.fx_fixing)+
+   '<span>Edizione '+date(feed.edition_date)+' · FX BCE '+date(sources.fx_fixing)+
    ' · Tassi '+date(sources.rates)+'</span></div>'+
    '<div class="morning-archive-note'+(current?' current':'')+'">'+text(note)+'</div>'+
-   (currentResearch?fxResearchPulse({...currentResearch,esc,date,dayNow}):'')+
-   '<header class="morning-lead"><span class="morning-kicker">IL TEMA MACRO DELLA GIORNATA</span>'+
-   '<h1>'+title+'</h1><p class="morning-deck">'+text(feed.lead)+'</p>'+
-   '<div class="morning-edition-tags"><span>Macro → aspettative → Forex</span><span>Eventi datati</span>'+
-   '<span>Osservazioni pre-apertura</span></div></header>'+
+   '<header class="morning-lead"><span class="morning-kicker">IL TEMA CHE CONTA OGGI</span>'+
+   '<h1>'+title+'</h1><p class="morning-deck">'+text(correction?.lead||feed.lead)+'</p>'+
+   '<div class="morning-edition-tags"><span>Macro → aspettative → Forex</span>'+
+   '<span>Fonti datate, nessun segnale automatico</span>'+
+   '<span>'+(feed.edition_status==='MORNING_SNAPSHOT'?
+     'Osservazioni precedenti alla seduta':'Edizione pubblicata in ritardo o ricostruita')+
+   '</span></div></header>'+
    firstRead+
-   '<section class="morning-prose" aria-label="Ragionamento macro completo">'+
-   '<details class="morning-deep-reading"><summary><strong>Leggi il ragionamento completo</strong>'+
-   '<span>Contesto macro, tassi, prezzo e limiti delle evidenze</span></summary>'+
+   '<aside class="morning-catalyst"><div class="morning-section-label">'+
+   (correction?'CATALIZZATORE UFFICIALE · CALENDARIO AGGIORNATO':'IL CATALIZZATORE')+
+   '</div><h2>'+text(correction?'Evento da verificare: '+(correction.headline.split(':')[0]):feed.catalyst?.title)+'</h2>'+
+   '<p>'+text(correction?.catalyst||feed.catalyst?.text||feed.watch)+'</p></aside>'+
+   '<section class="morning-prose" aria-label="Archivio della lettura completa">'+
+   '<details class="morning-deep-reading"><summary><strong>Approfondisci la lettura originale</strong>'+
+   '<span>Contesto, confronto dei tassi e limiti delle evidenze</span></summary>'+
    '<div class="morning-deep-body">'+
-   '<div class="morning-section-label">DA DOVE ARRIVIAMO · COSA PUÒ CAMBIARE OGGI</div>'+
+   (correction?'<p><strong>Edizione originale non riscritta:</strong> '+text(feed.headline)+
+    '. '+text(feed.lead)+'</p>':'')+
+   '<div class="morning-section-label">CONTESTO E VERIFICHE DATATE</div>'+
    paragraphs+'</div></details></section>'+
-   '<aside class="morning-catalyst"><div class="morning-section-label">IL CATALIZZATORE</div>'+
-   '<h2>'+text(feed.catalyst?.title)+'</h2><p>'+text(feed.watch)+'</p></aside>'+
-   '<p class="morning-time-note">Il briefing non viene riscritto retroattivamente dopo la pubblicazione dei dati. Eventuali aggiornamenti post-evento devono avere un orario e fonti propri.</p>'+
-   '<section class="morning-evidence"><div class="morning-section-label">LE EVIDENZE CHE SOSTENGONO LA LETTURA</div>'+
-   '<h2>Due grafici, una sola domanda: il prezzo conferma la tesi?</h2>'+
-   '<p class="morning-subtitle">Selezionati in base al catalizzatore macro, non ripetuti automaticamente per tutte le giornate.</p>'+
-   '<div class="morning-chart-grid">'+feed.charts.map(renderChart).join('')+'</div></section>'+
-   '<section class="morning-outlook"><div class="morning-section-label">COSA POTREBBE CAMBIARE LA TESI</div>'+
-   '<h2>Scenari alternativi da verificare</h2><div class="morning-scenario-grid">'+scenarios+'</div>'+
-   '<aside class="morning-judgment"><strong>Giudizio del desk</strong><p>'+text(feed.verdict)+'</p></aside></section>'+
+   (currentResearch?'<details class="morning-secondary-research morning-deep-reading">'+
+    '<summary><strong>Esplora la forza G8 e le coppie selezionate</strong>'+
+    '<span>Ranking stimato, distinto dall’analisi principale</span></summary>'+
+    fxResearchPulse({...currentResearch,esc,date,dayNow})+'</details>':'')+
+   '<details class="morning-supporting morning-deep-reading"><summary>'+
+   '<strong>Visualizza i due grafici di supporto</strong>'+
+   '<span>Fixing BCE e differenziali governativi datati, non reazioni al dato</span></summary>'+
+   '<section class="morning-evidence"><div class="morning-section-label">EVIDENZA STORICA</div>'+
+   '<div class="morning-chart-grid">'+feed.charts.map(renderChart).join('')+
+   '</div></section></details>'+
+   '<details class="morning-supporting morning-deep-reading"><summary>'+
+   '<strong>Scenari e giudizio dell’edizione originale</strong>'+
+   '<span>Ipotesi condizionali, non raccomandazioni di trading</span></summary>'+
+   '<section class="morning-outlook"><div class="morning-scenario-grid">'+scenarios+
+   '</div><aside class="morning-judgment"><strong>Giudizio della prima edizione</strong>'+
+   '<p>'+text(feed.verdict)+'</p></aside></section></details>'+
    '<nav class="morning-research-links" aria-label="Approfondimenti nel Research Desk">'+
-   '<a href="#macro">Scenario Macro</a><a href="#rates">Tassi & OIS</a>'+
+   '<a href="#macro">Scenario Macro</a><a href="#rates">Tassi &amp; OIS</a>'+
    '<a href="#currencies">Valute G8</a><a href="#pairs">28 coppie FX</a>'+
-   '<a href="#cot">Posizionamento COT</a><a href="#news">Notizie & Calendario</a></nav>'+
-   '<footer class="morning-source-notes"><p>Fonte fixing: BCE al '+date(sources.fx_fixing)+
-   ' · Differenziali: governativi G8 al '+date(sources.rates)+
-   ' · Calendario: fonti ufficiali. '+text((feed.limitations||[]).join(' '))+'</p>'+
-   '<p>Edizione '+text(feed.edition_status)+' · Lettura basata su regole ed evidenze datate, non un giudizio editoriale umano verificato. Nessun segnale o variazione del motore delle 28 coppie.</p></footer>'+
+   '<a href="#cot">COT</a><a href="#news">Calendario</a></nav>'+
+   '<footer class="morning-source-notes"><p>FX BCE '+date(sources.fx_fixing)+
+   ' · Rendimenti governativi '+date(sources.rates)+
+   ' · Eventi: calendario ufficiale verificato separatamente. '+
+   text((feed.limitations||[]).join(' '))+'</p>'+
+   '<p>Edizione '+text(feed.edition_status)+
+   ' · Ricerca basata su regole, non revisione editoriale umana certificata.</p></footer>'+
    '</article>';
  }
  // An independently timestamped post-release note may follow a frozen opening
