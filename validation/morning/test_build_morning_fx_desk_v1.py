@@ -127,6 +127,18 @@ class MorningFXDeskTests(unittest.TestCase):
                 "evidence":x["relative_evidence"],"sources":x["sources"]},
                 ensure_ascii=False),flush=True)
 
+    def test_13_nov_us_producer_prices_is_main_catalyst(self):
+        # Regression: the source schedule must outrank an unrelated EUR/USD 2Y
+        # comparison. Never publish "no official data today" with a HIGH PPI.
+        x=build(ROOT,date(2026,11,13),
+                datetime(2026,11,13,7,20,tzinfo=timezone.utc))
+        self.assertEqual(x["event_status"],"EVENT_TODAY")
+        self.assertEqual(x["catalyst"]["date"],"2026-11-13")
+        self.assertEqual(x["catalyst"]["time_rome"],"14:30")
+        self.assertIn("Producer Price Index",x["headline"])
+        self.assertNotIn("Nessun dato domina",x["lead"])
+        self.assertFalse(x["eligible_for_fx_signal"])
+
     def test_stale_friday_is_blocked_and_provisional_swiss_is_not_promoted(self):
         # Fixed-date arithmetic, not dependent on tomorrow's updated live JSON.
         # Tue 10 -> Fri 13 has two completed missing weekdays (Wed/Thu).
