@@ -46,11 +46,10 @@
  }
  function connect(a,b){
   if(!a||!b||span(a.date,b.date)<1||span(a.date,b.date)>4)return false;
+  if(a.source_class==='BANK_BILL_PROXY_DELTA_REFERENCE'&&b.source_class==='BANK_BILL_PROXY')return true;
   if(a.source_class!==b.source_class)return false;
   if(a.source_class==='SECONDARY_SAME_CONTRACT'||a.source_class==='RELATIVE_SAME_DATE')
    return a.contract===b.contract;
-  if(a.source_class==='BANK_BILL_PROXY_DELTA_REFERENCE'&&b.source_class==='BANK_BILL_PROXY')
-   return true; // One ASX delta-implied, explicitly labeled dotted segment
   if(a.derived||b.derived)return false;
   return true;
  }
