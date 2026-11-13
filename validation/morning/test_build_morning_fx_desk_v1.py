@@ -166,6 +166,20 @@ class MorningFXDeskTests(unittest.TestCase):
         self.assertLess(x["charts"][1]["as_of"],x["edition_date"])
         self.assertAlmostEqual(x["charts"][1]["last_value"],x["charts"][1]["points"][-1]["value"],places=6)
 
+    def test_production_builder_cli_resolves_validation_package(self):
+        # Unit imports alone missed a production-only ModuleNotFoundError.
+        # Exercise the same -m entrypoint used by the publishing workflow.
+        import subprocess
+        import sys
+        workflow = (ROOT / ".github/workflows/fxv2-morning-public-proof.yml").read_text(encoding="utf-8")
+        self.assertIn("python3 -m validation.morning.build_morning_fx_desk_v1", workflow)
+        self.assertNotIn("python3 validation/morning/build_morning_fx_desk_v1.py", workflow)
+        proc = subprocess.run([sys.executable, "-m",
+                               "validation.morning.build_morning_fx_desk_v1", "--help"],
+                              cwd=ROOT, text=True, capture_output=True, timeout=20)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("--edition-date", proc.stdout)
+
     def test_time_and_pair_arithmetic(self):
         self.assertEqual(to_date("not-a-date"),None)
         self.assertEqual(fmt(162.08,0),"162")
