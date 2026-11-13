@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-12",
-  "generated_at_utc": "2026-11-13T07:01:38.771972Z",
+  "generated_at_utc": "2026-11-13T07:42:55.327288Z",
   "items": [
     {
       "as_of": "2026-11-12",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-13T07:01:38.771972Z",
+  "last_checked_at_utc": "2026-11-13T07:42:55.327288Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -394,6 +394,54 @@
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "EUR",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261113~3883f1f187.en.html",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-13T07:20:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-11",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-11",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.0452493418
+          }
+        },
+        "source": "Banca centrale europea",
+        "source_id": "ECB_PRESS",
+        "title": "Isabel Schnabel: Made in Europe",
+        "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261113~3883f1f187.en.html"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "USD",
@@ -749,54 +797,6 @@
         "source_id": "ECB_PRESS",
         "title": "Philip R. Lane: The science and practice of monetary policy communication: the ECB experience",
         "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261110_1~9725b7aa07.en.html"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "EUR",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261110~9422461bad.en.html",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-10T14:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-11",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-11",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0452493418
-          }
-        },
-        "source": "Banca centrale europea",
-        "source_id": "ECB_PRESS",
-        "title": "Piero Cipollone: Cash and the digital euro: two sides of the same coin",
-        "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261110~9422461bad.en.html"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -1163,7 +1163,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-13",
-    "latest_published_at_utc": "2026-11-12T18:30:00Z",
+    "latest_published_at_utc": "2026-11-13T07:20:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1187,9 +1187,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 7,
+        "accepted_items": 8,
         "ccy": "EUR",
-        "entries_rejected": 8,
+        "entries_rejected": 7,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
