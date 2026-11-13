@@ -55,21 +55,27 @@
    'mercati e politica economica';
   return institute+': pubblicazione su '+topic;
  };
+ const sourceHost=u=>((String(u||'').match(/^https:\/\/([^/?#:]+)/i)||[])[1]||'').replace(/^www\./,'');
  const areaIt=s=>({'COMMODITIES':'MATERIE PRIME','ENERGY':'ENERGIA','EQUITIES':'AZIONI','FOLLOW_UP':'APPROFONDIMENTO'}[String(s||'').toUpperCase()]||String(s||''));
  // Event delegation also works after the SPA re-renders the Home.
- function openSources(target){
+ function openSources(target,storyId){
   const desk=target?.closest?.('.hourly-market-desk');
   const dossier=desk?.querySelector?.('details#hourly-desk-news');
   if(!dossier)return false;
   dossier.open=true;
   desk.querySelectorAll?.('[data-hourly-open-sources]')?.forEach?.(b=>b.setAttribute('aria-expanded','true'));
-  dossier.scrollIntoView?.({behavior:root.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',block:'start'});
-  dossier.querySelector?.('summary')?.focus?.({preventScroll:true});
+  const article=typeof storyId==='string'&&/^\d+$/.test(storyId)?
+   dossier.querySelector?.('[data-hourly-article="'+storyId+'"]'):null;
+  const destination=article||dossier;
+  destination.scrollIntoView?.({behavior:root.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',block:'start'});
+  (article||dossier.querySelector?.('summary'))?.focus?.({preventScroll:true});
   return true;
  }
  if(root.document?.addEventListener){
   root.document.addEventListener('click',e=>{
    const target=e.target;
+   const teaser=target?.closest?.('[data-hourly-story-link]');
+   if(teaser){openSources(teaser,teaser.getAttribute('data-hourly-story-link'));return;}
    const button=target?.closest?.('[data-hourly-open-sources]');
    if(button){openSources(button);return;}
    const hero=target?.closest?.('.hourly-hero[data-hourly-hero-to-sources]');
@@ -100,16 +106,19 @@
    if(!links.length)return null;
    const label=n.kind==='PREVIEW'?'Anteprima':n.kind==='FOLLOW_UP'?'Approfondimento':'Notizia';
    const headlineIt=titleItaliano(n),area=areaIt(n.market_area);
-   const article='<article class="hourly-desk-story"><div class="hourly-story-top">'+
+   const article='<article class="hourly-desk-story" data-hourly-article="'+i+'" tabindex="-1"><div class="hourly-story-top">'+
     '<span class="hourly-story-category">'+safe(area)+'</span>'+
     '<span class="hourly-story-date">'+safe(date(n.published_date))+'</span></div>'+
     '<span class="hourly-story-kind">'+label+'</span>'+
     '<h3>'+safe(headlineIt)+'</h3><p>'+safe(n.analysis)+'</p>'+
     '<div class="hourly-desk-citations">Fonti: '+links.map((u,j)=>
-      '<a href="'+safe(u)+'" target="_blank" rel="noopener noreferrer">Fonte '+(j+1)+'</a>'
+      '<a href="'+safe(u)+'" target="_blank" rel="noopener noreferrer" aria-label="Apri la fonte originale '+safe(sourceHost(u))+'">'+safe(sourceHost(u))+' <span aria-hidden="true">↗</span></a>'
     ).join(' · ')+'</div></article>';
-   const preview='<div class="hourly-evidence-peek-item"><span>'+safe(area)+
-    ' · '+safe(date(n.published_date))+'</span><strong>'+safe(headlineIt)+'</strong></div>';
+   const preview='<button type="button" class="hourly-evidence-peek-item" data-hourly-story-link="'+i+'"'+
+    ' aria-controls="hourly-desk-news" aria-label="Apri la notizia: '+safe(headlineIt)+'">'+
+    '<span>'+safe(area)+' · '+safe(date(n.published_date))+'</span>'+ 
+    '<strong>'+safe(headlineIt)+'</strong>'+ 
+    '<small>Leggi l’approfondimento <em aria-hidden="true">↘</em></small></button>';
    return {article,preview};
   }).filter(Boolean);
   if(!news.length)return null;

@@ -76,9 +76,10 @@ assert(win.FXQuantHourlyDesk.titleItaliano({headline:'New energy study released'
 assert(win.FXQuantHourlyDesk.titleItaliano({headline:'Forza del dollaro contro euro',
  market_area:'FOREX',sources:[]})==='Forza del dollaro contro euro',
  'Existing Italian analysis must remain unchanged');
+const selectedArticle={scrolled:false,focused:false,scrollIntoView(){this.scrolled=true},focus(){this.focused=true}};
 const dossier={open:false,scrolled:false,focused:false,
  scrollIntoView(){this.scrolled=true;},
- querySelector(name){return name==='summary'?{focus:()=>{this.focused=true}}:null}};
+ querySelector(name){return name==='summary'?{focus:()=>{this.focused=true}}:name==='[data-hourly-article="0"]'?selectedArticle:null}};
 let attrs={};
 const mockDesk={querySelector:sel=>sel==='details#hourly-desk-news'?dossier:null,
  querySelectorAll:sel=>sel==='[data-hourly-open-sources]'?[{setAttribute:(k,v)=>attrs[k]=v}]:[]};
@@ -87,6 +88,12 @@ assert(win.FXQuantHourlyDesk.openSources(mockButton),
  'Button click must open the correct source dossier');
 assert(dossier.open&&dossier.scrolled&&dossier.focused&&attrs['aria-expanded']==='true',
  'The dossier must expand, scroll into view and receive keyboard focus');
+assert(out.includes('data-hourly-story-link="0"')&&out.includes('data-hourly-article="0"'),
+ 'Evidence previews must link to their exact source article');
+assert(out.includes('aria-label="Apri la notizia:')&&out.includes('bls.gov <span'),
+ 'Native buttons and readable source hostnames replace inert previews and opaque source numbers');
+assert(win.FXQuantHourlyDesk.openSources(mockButton,'0')&&selectedArticle.scrolled&&selectedArticle.focused,
+ 'Direct source preview navigation must open and focus the exact article');
 
 
 const pulseFeed=structuredClone(sample);
@@ -171,16 +178,18 @@ const index=fs.readFileSync(path.join(ROOT,next,'index.html'),'utf8');
 assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent free research');
 assert(app.includes("fetch('../../../market-desk/hourly-market-desk-current.json'"),'Optional fetch endpoint missing');
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
-assert(index.includes('hourly-desk-ui-v1.js?v=5'));
-assert(index.includes('hourly-desk-ui-v1.css?v=3'));
+assert(index.includes('hourly-desk-ui-v1.js?v=6'));
+assert(index.includes('hourly-desk-ui-v1.css?v=4'));
 assert(index.includes('home-market-pulse-v1.js?v=1')&&index.includes('home-market-pulse-v1.css?v=1'),
  'The source-based data visualization must load before the editorial Home UI');
-assert(index.indexOf('home-market-pulse-v1.js?v=1')<index.indexOf('hourly-desk-ui-v1.js?v=5'),
+assert(index.indexOf('home-market-pulse-v1.js?v=1')<index.indexOf('hourly-desk-ui-v1.js?v=6'),
  'Rendering order must preserve the optional pulse addon');
 assert(index.includes('app.js?v=18.48-visual-pulse'));
 const css=fs.readFileSync(path.join(ROOT,next,'hourly-desk-ui-v1.css'),'utf8');
 assert(css.includes('.hourly-hero-grid')&&css.includes('.hourly-navigation-grid')&&css.includes('.hourly-desk-news-body'),
  'The new workbench CSS must style every major hierarchy layer');
+assert(css.includes('button.hourly-evidence-peek-item')&&css.includes('hourly-desk-story[data-hourly-article]'),
+ 'Clickable previews must have accessible desktop/mobile styles');
 assert(css.includes('@media(max-width:630px)')&&css.includes('@media(max-width:860px)'),
  'Premium Home must retain readable mobile and tablet behavior');
 assert(css.includes('prefers-reduced-motion'),'Hover effects must respect reduced-motion accessibility');
