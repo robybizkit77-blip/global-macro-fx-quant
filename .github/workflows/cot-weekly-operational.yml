@@ -14,6 +14,12 @@ on:
       - 'validation/verify_cftc_current_snapshot.py'
   workflow_dispatch:
   schedule:
+    # Existing Saturday retry cadence. Add *same-workflow* Monday 22:20
+    # Europe/Rome recovery for CFTC Friday releases delayed to Monday by
+    # US holidays (2026-11-16, 2026-11-30). Duplicate UTC clocks are DST
+    # alternatives, admitted by the guarded planner, not new workflows.
+    - cron: '20 20 * * 1'
+    - cron: '20 21 * * 1'
     # Europe/Rome Saturday retry cadence: 00:00, 02:00, 05:00, 08:00.
     # The Friday UTC entries cover local midnight under CET/CEST.
     - cron: '0 22 * * 5'
@@ -42,18 +48,12 @@ jobs:
     steps:
       - id: gate
         shell: bash
+        env:
+          CRON_SLOT: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
-          local_time="$(TZ=Europe/Rome date +'%Y-%m-%dT%H:%M:%S%z')"
-          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
-          dow="$(TZ=Europe/Rome date +'%u')"
-          iso_week="$(TZ=Europe/Rome date +'%G-W%V')"
-          allowed='00:00 02:00 05:00 08:00'
-          if [[ "${{ github.event_name }}" != "schedule" || ( "$dow" == "6" && " $allowed " == *" $hhmm "* ) ]]; then should_run=true; else should_run=false; fi
-          echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
-          echo "local_time=$local_time" >> "$GITHUB_OUTPUT"
-          echo "retry_key=cot-new-release-green-$iso_week" >> "$GITHUB_OUTPUT"
-          echo "event=${{ github.event_name }} local_time=$local_time should_run=$should_run"
+          python3 -m unittest validation.orchestration.test_plan_cot_release_window_v1 -v
+          python3 -m validation.orchestration.plan_cot_release_window_v1
 
   observe:
     needs: schedule-gate
