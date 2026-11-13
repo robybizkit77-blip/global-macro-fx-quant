@@ -32,6 +32,8 @@ on:
       - 'validation/publishing/test_wait_fxv2_public_revision_v1.py'
       - 'validation/publishing/check_next_research_library_delivery_v1.py'
       - 'validation/publishing/test_check_next_research_library_delivery_v1.py'
+      - 'validation/publishing/check_next_weekly_editorial_preflight_v1.py'
+      - 'validation/publishing/test_next_weekly_editorial_preflight_v1.py'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
   push:
     branches: [main]
@@ -64,6 +66,8 @@ on:
       - 'validation/publishing/test_wait_fxv2_public_revision_v1.py'
       - 'validation/publishing/check_next_research_library_delivery_v1.py'
       - 'validation/publishing/test_check_next_research_library_delivery_v1.py'
+      - 'validation/publishing/check_next_weekly_editorial_preflight_v1.py'
+      - 'validation/publishing/test_next_weekly_editorial_preflight_v1.py'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
   schedule:
     - cron: '20 8 * * 1-5'
@@ -111,6 +115,8 @@ jobs:
           node validation/qa_fxv2_macro_rates_price_evidence_v1.cjs
           python3 -m unittest validation.publishing.test_wait_fxv2_public_revision_v1 -v
           python3 -m unittest validation.publishing.test_check_next_research_library_delivery_v1 -v
+          python3 -m unittest validation.publishing.test_next_weekly_editorial_preflight_v1 -v
+          python3 -m validation.publishing.check_next_weekly_editorial_preflight_v1
   v2-freshness-audit:
     if: >-
       github.event_name != 'workflow_run' ||
