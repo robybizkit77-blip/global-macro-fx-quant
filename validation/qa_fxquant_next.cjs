@@ -180,7 +180,9 @@ async function g8HistoryJourney(page,label){
  await route(page,'rates');
  const history=locator(page,'#rates-pricing-history');
  await history.locator('[data-rs-history-window="14"]').click();
- assert.equal(await history.getAttribute('data-history-currency'),'USD');
+ const selectedCountry=await locator(page,'#rs-country').inputValue();
+ assert.equal(await history.getAttribute('data-history-currency'),selectedCountry,
+  label+' history must follow the current selected currency, even after prior navigation');
  assert.equal(await locator(page,'#rates-pricing-history [data-rs-history-window="14"]').getAttribute('aria-pressed'),
   'true',label+' historical 14-day window not applied');
  await locator(page,'#rates-pricing-history [data-rate-ccy="EUR"]').click();
