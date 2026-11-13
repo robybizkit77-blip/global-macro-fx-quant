@@ -1,7 +1,7 @@
 {
   "currencies": {
     "AUD": {
-      "as_of": "2026-11-11",
+      "as_of": "2026-11-12",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -9,20 +9,20 @@
       "direction_vs_policy": "MIXED_FRONT_END_UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 4.5,
-          "change_1w_bp": -4.5,
+          "change_1d_bp": 0.0,
+          "change_1w_bp": -1.5,
           "policy_delta_bp": -10.0,
           "rate": 4.75
         },
         "3m": {
-          "change_1d_bp": 0.5,
-          "change_1w_bp": -0.5,
+          "change_1d_bp": 0.0,
+          "change_1w_bp": 0.0,
           "policy_delta_bp": 0.5,
           "rate": 4.855
         },
         "6m": {
-          "change_1d_bp": 2.5,
-          "change_1w_bp": -1.5,
+          "change_1d_bp": 0.0,
+          "change_1w_bp": -1.0,
           "policy_delta_bp": 6.0,
           "rate": 4.91
         }
@@ -34,7 +34,7 @@
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)"
     },
     "CAD": {
-      "as_of": "2026-11-11",
+      "as_of": "2026-11-12",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -42,22 +42,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 0.0,
-          "change_1w_bp": 2.5,
-          "policy_delta_bp": 70.5,
-          "rate": 3.205
+          "change_1d_bp": 9.0,
+          "change_1w_bp": 18.0,
+          "policy_delta_bp": 79.5,
+          "rate": 3.295
         },
         "3m": {
-          "change_1d_bp": 0.0,
-          "change_1w_bp": 0.5,
-          "policy_delta_bp": 23.5,
-          "rate": 2.735
+          "change_1d_bp": 4.0,
+          "change_1w_bp": 6.5,
+          "policy_delta_bp": 27.5,
+          "rate": 2.775
         },
         "6m": {
-          "change_1d_bp": 0.0,
-          "change_1w_bp": 3.0,
-          "policy_delta_bp": 46.5,
-          "rate": 2.965
+          "change_1d_bp": 5.0,
+          "change_1w_bp": 13.0,
+          "policy_delta_bp": 51.5,
+          "rate": 3.015
         }
       },
       "official_status": "ACTIVE",
