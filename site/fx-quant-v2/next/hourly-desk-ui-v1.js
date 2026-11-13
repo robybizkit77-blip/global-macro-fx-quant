@@ -171,14 +171,17 @@
     '<article class="hourly-decision-card hourly-decision-change">'+
     '<span class="hourly-decision-overline">CAMBIAMENTO</span>'+
     '<h3>Cosa è cambiato</h3><p>'+safe(feed.what_changed)+'</p>'+
+    '<a class="hourly-driver-action" href="#macro">Esamina i dati macro <span aria-hidden="true">↗</span></a>'+
     '</article>'+
     '<article class="hourly-decision-card hourly-decision-contrary">'+
     '<span class="hourly-decision-overline">PROVA CONTRARIA</span>'+
     '<h3>La lettura alternativa.</h3><p>'+safe(feed.contrary_evidence)+'</p>'+
+    '<a class="hourly-driver-action" href="#currencies">Confronta le valute <span aria-hidden="true">↗</span></a>'+
     '</article>'+
     '<article class="hourly-decision-card hourly-decision-watch">'+
     '<span class="hourly-decision-overline">PROSSIMA VERIFICA</span>'+
     '<h3>Da monitorare</h3><p>'+safe(feed.watch)+'</p>'+
+    '<a class="hourly-driver-action" href="#news">Notizie e calendario <span aria-hidden="true">↗</span></a>'+
     '</article></div></section>'+
     '<section class="hourly-research-lens" aria-label="Analisi economica integrata">'+
     '<div class="hourly-lens-heading"><span class="morning-section-label">COSA STA SUCCEDENDO E PERCHÉ CONTA</span>'+

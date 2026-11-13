@@ -132,3 +132,31 @@
  .hourly-market-desk .hourly-pulse-tile{transition:none}
  .hourly-market-desk .hourly-pulse-tile:hover{transform:none}
 }
+
+/* Decision cards link to the appropriate existing research sections.
+   No new scores, news inference, or trading signal. */
+.hourly-market-desk .hourly-decision-card{
+ display:flex;flex-direction:column;align-items:stretch;
+}
+.hourly-market-desk .hourly-decision-card>p{flex:1}
+.hourly-market-desk a.hourly-driver-action{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:10px;margin-top:18px;padding:12px 0 2px;
+ border-top:1px solid rgba(139,196,211,.19);
+ color:#9addcf;text-decoration:none;
+ font-size:11px;line-height:1.45;font-weight:750;
+}
+.hourly-market-desk .hourly-decision-contrary a.hourly-driver-action{color:#e8c28e}
+.hourly-market-desk .hourly-decision-watch a.hourly-driver-action{color:#a6d8f4}
+.hourly-market-desk a.hourly-driver-action>span{
+ font-size:17px;line-height:1;transition:transform .16s ease;
+}
+.hourly-market-desk a.hourly-driver-action:hover{text-decoration:underline;text-underline-offset:4px}
+.hourly-market-desk a.hourly-driver-action:hover>span{transform:translate(2px,-2px)}
+.hourly-market-desk a.hourly-driver-action:focus-visible{
+ outline:2px solid #9cdef0;outline-offset:4px;border-radius:2px;
+}
+@media(prefers-reduced-motion:reduce){
+ .hourly-market-desk a.hourly-driver-action>span{transition:none}
+ .hourly-market-desk a.hourly-driver-action:hover>span{transform:none}
+}
