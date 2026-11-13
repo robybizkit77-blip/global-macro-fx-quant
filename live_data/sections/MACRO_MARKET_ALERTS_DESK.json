@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-12T19:59:41Z",
+  "generated_at_utc": "2026-11-13T01:08:47Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-0178244e43df85c4f2ff",
+      "observed_at_utc": "2026-11-12T01:52:00Z",
+      "headline": "Oil settles $3 higher on attacks on Saudi energy sites, Strait of Hormuz disruptions",
+      "summary": "Reuters riporta: Oil settles $3 higher on attacks on Saudi energy sites, Strait of Hormuz disruptions. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNSVNfOWE4dnhlMzA3cExiOE1nR0FNQXFJejNsQTExRExKTlVKNjNjcFRGMWQxMGNmYnNOWFdLaUp0OUo2SHFlNVoxMUo0Y21WazFhVmhZU1VxYlRuWVRfZEtiQ0NGWENEejFpMFRzaUtNbVV3TEhKUHp2aUc0SHJ2VkNzM1BHNU5VeGNNbnRldWZaZUFkTWdDNm9ibk5kQXlOQlRRWHRhdGk5ZEtPZjVjMjE1Q1BJaTZ1NmplRWJVSDlvRFBUQnc?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-941c852e5a7cc76d73ac",
+      "observed_at_utc": "2026-11-12T12:49:56Z",
+      "headline": "Brazil inflation remains above goal despite softer-than-expected October reading",
+      "summary": "Reuters riporta: Brazil inflation remains above goal despite softer-than-expected October reading. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNQVJ6a0pya05jUTVhNXlpbmxpTmRsOEFfM0RuT29icFU3WE4yT0ctazV5bEU0R1hpZGRGZXU3LU9DLXhRQVU2aUYxMHVPSkcwcTRsZVRKN1RFS0FMVWxkZHJDVVgteEdWcFpCUXE5TGt4c1g3R3RRcHhjbDlkSFlDY1F4TnZ6SjVzdXk4MDdFSThUV1BnaTdpd2xOVkpkMFN2WWs4QTJKNmtEWTQyUEZtd09sVlhkX1N2YXRKZDMtLVduUC1wdl81MGpVTQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-4cfc0643456dc5548c75",
+      "observed_at_utc": "2026-11-12T12:46:50Z",
+      "headline": "ECB set for last rate hike in December but inflation risks keep door open for one more: Reuters poll",
+      "summary": "Reuters riporta: ECB set for last rate hike in December but inflation risks keep door open for one more: Reuters poll. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "EUR"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOc1hXaEpuRUhpTnBKTGNYQU9CNnJhRFBYNHdTb2VIOUVyU1VoNmNYcjhNRXdJVTZEQUR4Sm5neEFMOWhwRjF3UW9PLXJuRFNwNG5CSEF5d1hKUTNuQVM0ZXQ5cDBsR04tVDVaT2tGU0VVQWtsZmlNdjROS0ZNdXBUZWF1ZUFTbXZicUE4b0Z0RXo4M3Z6SzFsMXVfZV9QVGMxM1BuMFFZNXktTlloT2dvclB6MA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-4f3fbaf16fb5b8a3f1c1",
       "observed_at_utc": "2026-11-12T16:45:39Z",
@@ -1373,49 +1414,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxORWNMZUNRMk9yWkZHQTk3Z09uRTRzWVNPMTFVTTBpZjRVNWlqUm5CeFU1ajhvbTlMb2M5Z2lsdFpkNWdvOS1ZS3NvOFRfMl9lYlV6b1I2cjY2WG1iZUtYb09VWTJrUlFLeWhmMnphcDlJQzE1ZHUtZkxsWk5USUZpbHp2NjVwUTUzcV94LTJvejhTQXVoTW44WWI2bFE2NzdBSHBvd3ZQNA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-456ec839f32ce566f49d",
-      "observed_at_utc": "2026-11-03T02:38:00Z",
-      "headline": "US has conducted defensive strikes on Iranian targets in the Strait of Hormuz, US official says",
-      "summary": "AP News riporta: US has conducted defensive strikes on Iranian targets in the Strait of Hormuz, US official says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOSlZQOGFnNWxyTG91ZkxGMkdDdlNhd1RuRUZzblYtZGxfOGpReXI2cE5oazAzZkFQRW96Y3VrUkdfenVFWWtPS1BfaFBYYWQ1WVBMVmpuaTZuU3llOGZNMF85QnVGRHAwZlphVWVoaDFiZWhoMWVjalhyTE5na3BVWjVHcmIyWDFoU0FnU2ZBaFZyOE5GRGJqQzdR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-1a4e21e00b687194bc4e",
-      "observed_at_utc": "2026-11-02T18:05:17Z",
-      "headline": "El Nino poses 'meaningful risk' of higher inflation in 2027, SF Fed paper says",
-      "summary": "Reuters riporta: El Nino poses 'meaningful risk' of higher inflation in 2027, SF Fed paper says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPejhFalhZVDhQYVJiOEVjTHlzNm43MG9qTVJaQUtxS0ZZNHFkNmc4aVFaeHVGZnlBLWZLZXpIWDNJZ0RNYWloZHBybU1OeEdaS1NwVERvQkZIaW02VTNWZmk1ang1WkQ1N3B0aTZMUzVJRjNRNnhXSmV3YXlTaTZtYTVXbGg2V1g1UXVvZkFFY2V0SlNkcEwyQzI4Q0JtQVVFazVZcWdsOVdsaVBwUUJXT1NRazg1N0E?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-010810084de26c374df9",
-      "observed_at_utc": "2026-11-02T04:17:00Z",
-      "headline": "Indonesia October inflation eases slightly to 3.23% y/y",
-      "summary": "Reuters riporta: Indonesia October inflation eases slightly to 3.23% y/y. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPR2JfRjRkMmxQTTR6ZWkydWV2ZmVfcHRNa3RKUzJpSXE2MDEySWZaLUpqVWNYRkotRTA0WTd1R0R6OHhFT24yN195bm1BLU9Sa3RPWDcyM3hPYVVUUWkyYkVGdHBWNzF5VmlXT2NSdkdmbHBqczhLSHNMWndDaFJaYU1ULU4zSDZkblNMZ193UFg5SUN0dFFadUVJM0VhZGlNNXJSbzJ5OA?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
