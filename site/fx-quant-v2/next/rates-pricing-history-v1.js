@@ -47,7 +47,10 @@
  function connect(a,b){
   if(!a||!b||span(a.date,b.date)<1||span(a.date,b.date)>4)return false;
   if(a.source_class!==b.source_class)return false;
-  if(a.source_class==='SECONDARY_SAME_CONTRACT')return a.contract===b.contract;
+  if(a.source_class==='SECONDARY_SAME_CONTRACT'||a.source_class==='RELATIVE_SAME_DATE')
+   return a.contract===b.contract;
+  if(a.source_class==='BANK_BILL_PROXY_DELTA_REFERENCE'&&b.source_class==='BANK_BILL_PROXY')
+   return true; // One ASX delta-implied, explicitly labeled dotted segment
   if(a.derived||b.derived)return false;
   return true;
  }
@@ -86,7 +89,8 @@
    }
    flush();
    for(const seg of segments)body+='<polyline fill="none" stroke="'+color+
-    '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="'+
+    '" stroke-width="2.5"'+(seg.some(p=>p.derived)?' stroke-dasharray="5 5"':'')+
+    ' stroke-linejoin="round" stroke-linecap="round" points="'+
     seg.map(p=>X(p.date).toFixed(2)+','+Y(p.rate).toFixed(2)).join(' ')+'"/>';
    for(const p of points){
     const xx=X(p.date),yy=Y(p.rate);
@@ -116,9 +120,7 @@
     derived:false,source_class:'RELATIVE_SAME_DATE'}];
   });
  }
- function spreadLine(points){ // allow consecutive same-date cross-country quotes, not same contracts across currencies
-  return points.map(p=>({...p,source_class:'OFFICIAL_TENOR',contract:null}));
- }
+ function spreadLine(points){ return points; } // Keep both contract IDs; lines break on rollover.
  function historicalMoves(r){
   const arr=r.tenors['6m'],out=[];
   for(let i=1;i<arr.length;i++){
