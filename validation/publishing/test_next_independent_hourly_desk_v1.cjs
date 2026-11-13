@@ -221,8 +221,48 @@ assert(index.includes('home-market-pulse-v1.js?v=2')&&index.includes('home-marke
  'The source-based data visualization must load before the editorial Home UI');
 assert(index.indexOf('home-market-pulse-v1.js?v=2')<index.indexOf('hourly-desk-ui-v1.js?v=8'),
  'Rendering order must preserve the optional pulse addon');
-assert(index.includes('app.js?v=18.49-observed-fx-pulse'));
+assert(index.includes('app.js?v=18.50-single-first-paint'));
 assert(app.includes("currencyPrices:get('currencyPrices')"),'Official ECB fixing history must feed FX observations');
+
+// Regression: on cold navigation an empty-data overview used to render first,
+// then vanish as soon as the hourly desk loaded. Keep loader, not fallback.
+const navStart=app.indexOf('function syncRouteChrome(route){');
+const navEnd=app.indexOf("window.addEventListener('hashchange',navigate);");
+assert(navStart>=0&&navEnd>navStart,'Initial navigation guard must be testable');
+const navSrc=app.slice(navStart,navEnd);
+let painted=0;
+const navEntries=['overview','currencies'].map(route=>({
+ dataset:{route},current:false,
+ setAttribute(k,v){if(k==='aria-current')this.current=v==='page';},
+ removeAttribute(k){if(k==='aria-current')this.current=false;}
+}));
+const breadcrumb={textContent:'Panoramica'};
+const navCtx={
+ firstResearchLoaded:false,state:{route:'overview'},
+ ROUTES:{overview:'Panoramica',currencies:'Valute G8'},
+ location:{hash:'#currencies'},
+ document:{querySelectorAll:()=>navEntries},
+ window:{scrollTo:()=>{}},
+ $:id=>id==='crumb-page'?breadcrumb:
+  id==='app'?{classList:{remove:()=>{}}}:
+  {setAttribute:()=>{}},
+ render:()=>{painted++}
+};
+vm.runInNewContext(navSrc,navCtx,{timeout:2500});
+navCtx.navigate();
+assert.equal(painted,0,'Cold load must not paint empty-data fallback content');
+assert.equal(navCtx.state.route,'currencies','Deep link must remain respected while loading');
+assert.equal(breadcrumb.textContent,'Valute G8','The loading breadcrumb must match the deep link');
+assert(navEntries[1].current&&!navEntries[0].current,'Loading navigation must mark the real route');
+navCtx.firstResearchLoaded=true;
+navCtx.navigate();
+assert.equal(painted,1,'After sources settle the selected route must render exactly once');
+assert(/await Promise\.allSettled\(jobs\);[\s\S]*?state\.data=nextData;[\s\S]*?firstResearchLoaded=true;\s*render\(\);/.test(app),
+ 'Only settled sources may unlock the first full render');
+assert(app.includes("document.addEventListener('visibilitychange'")&&
+ app.includes('lastResearchRefresh=Date.now()'),
+ 'Existing in-place refresh behavior must stay intact');
+
 const css=fs.readFileSync(path.join(ROOT,next,'hourly-desk-ui-v1.css'),'utf8');
 assert(css.includes('.hourly-hero-grid')&&css.includes('.hourly-navigation-grid')&&css.includes('.hourly-desk-news-body'),
  'The new workbench CSS must style every major hierarchy layer');
