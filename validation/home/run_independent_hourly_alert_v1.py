@@ -202,8 +202,8 @@ def validate_editorial(doc,allowed_sources,now):
     for e in doc["news"]:
         if not isinstance(e,dict) or set(e)!=set(NEWS_FIELDS):
             raise ValueError("Incomplete news article")
-        for k in ("headline","analysis","market_area"):
-            if not isinstance(e[k],str) or len(e[k].strip())<(15 if k=="headline" else 25):
+        for k,minimum in (("headline",15),("analysis",25),("market_area",2)):
+            if not isinstance(e[k],str) or len(e[k].strip())<minimum:
                 raise ValueError("Empty/weak news: "+k)
         if e["kind"] not in {"NEWS","FOLLOW_UP","PREVIEW"} or BLOCKED.search(e["analysis"]):
             raise ValueError("Invalid news category or defensive narrative")
