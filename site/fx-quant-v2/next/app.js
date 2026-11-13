@@ -34,6 +34,7 @@ const SOURCES={
  calendar:'../../../live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
+let firstResearchLoaded=false;
 const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairDetailOpen:false,pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
@@ -1021,8 +1022,7 @@ function render(){
   const panel=$('content').querySelector(selector);
   if(panel)panel.open=true;
  }
- $('crumb-page').textContent=ROUTES[route];
- document.querySelectorAll('#nav [data-route]').forEach(a=>{if(a.dataset.route===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+ syncRouteChrome(route);
  const ok=Object.keys(state.data).length,missing=Object.keys(SOURCES).length-ok;
  const caseNow=researchCase(),caseOld=!caseNow.latest||!fresh(caseNow.latest,8);
  const dates=[get('rates')?.USD?.date,get('dxy')?.as_of,get('pairs')?.price_asof].filter(validDay);
@@ -1034,9 +1034,21 @@ function render(){
  document.title='FX Quant Next — '+ROUTES[route];
 }
 function saveWatch(){try{localStorage.setItem('fxquant-next-watch',JSON.stringify([...state.watch]))}catch(e){}}
+function syncRouteChrome(route){
+ $('crumb-page').textContent=ROUTES[route];
+ document.querySelectorAll('#nav [data-route]').forEach(a=>{
+  if(a.dataset.route===route)a.setAttribute('aria-current','page');
+  else a.removeAttribute('aria-current');
+ });
+}
 function navigate(){
  const route=location.hash.slice(1).split('?')[0]||'overview';
- state.route=ROUTES[route]?route:'overview';render();window.scrollTo({top:0,behavior:'instant'});
+ state.route=ROUTES[route]?route:'overview';
+ // On cold entry, keep the HTML loading state until all research sources have
+ // settled. Never flash an empty-data/legacy Home before the hourly edition.
+ if(firstResearchLoaded)render();
+ else syncRouteChrome(state.route);
+ window.scrollTo({top:0,behavior:'instant'});
  $('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false');
 }
 window.addEventListener('hashchange',navigate);
@@ -1222,6 +1234,7 @@ async function loadAll(){
   state.data=nextData;
   state.errors=nextErrors;
   lastResearchRefresh=Date.now();
+  firstResearchLoaded=true;
   render();
  }finally{refreshInProgress=false;}
 }
