@@ -506,7 +506,7 @@ function overview(){
  // Independent FREE GitHub desk replaces the historical morning when—and only when—
  // a source-validated edition actually exists. A missing feed cannot blank Home.
  const hourly=typeof window==='undefined'?null:
-  window.FXQuantHourlyDesk?.render?.({feed:get('hourlyDesk'),risk:get('risk'),currencyPrices:get('currencyPrices'),esc,date,dayNow});
+  window.FXQuantHourlyDesk?.render?.({feed:get('hourlyDesk'),check:get('hourlyCheck'),risk:get('risk'),currencyPrices:get('currencyPrices'),esc,date,dayNow});
  if(hourly)return moneyProof?
   hourly.replace('<section class="hourly-decision-section"',
    moneyProof+'<section class="hourly-decision-section"'):hourly;
@@ -1316,7 +1316,22 @@ async function loadAll(){
  })());
  try{
   await Promise.allSettled(jobs);
-  // Rebuild the entire research from the same fetch cycle. A failed source is
+  // The separate check receipt confirms successful automation execution, NOT
+ // newly released market information. Mismatched receipts fail closed in UI.
+ jobs.push((async()=>{
+  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),10000);
+  try{
+   const r=await fetch('../../../market-desk/hourly-market-desk-check.json',
+    {cache:'no-store',signal:ctl.signal});
+   if(!r.ok)return;
+   const d=await r.json();
+   if(d?.schema==='GMFQ_NEXT_HOURLY_CHECK_V1'&&d.status==='VERIFIED'&&
+    typeof d.checked_at_utc==='string')nextData.hourlyCheck=d;
+  }catch(e){
+   // No check receipt = no verified check timestamp. The editorial feed remains.
+  }finally{clearTimeout(timer)}
+ })());
+ // Rebuild the entire research from the same fetch cycle. A failed source is
   // not silently reused from the previous edition as a current observation.
   state.data=nextData;
   state.errors=nextErrors;

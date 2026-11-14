@@ -710,3 +710,22 @@
  .hourly-market-desk .hourly-decision-card p{font-size:13px}
  .hourly-market-desk .hourly-desk-story p{font-size:13px}
 }
+
+
+/* Independent source-check receipt, visually quieter than the last real edition. */
+.hourly-market-desk .hourly-edition-clock{
+ min-width:0;display:flex;flex-direction:column;align-items:flex-end;
+ gap:4px;text-align:right;line-height:1.55;max-width:64%;
+}
+.hourly-market-desk .hourly-edition-time{color:#b7d7e5;font-weight:730}
+.hourly-market-desk .hourly-edition-check{
+ color:#a4d9c8;letter-spacing:0;font-size:11px;line-height:1.55;
+ overflow-wrap:anywhere;
+}
+.hourly-market-desk .hourly-edition-check[data-hourly-check-status="stale"],
+.hourly-market-desk .hourly-edition-check[data-hourly-check-status="unverified"]{color:#e9bb82}
+@media(max-width:630px){
+ .hourly-market-desk .hourly-edition-bar{align-items:flex-start}
+ .hourly-market-desk .hourly-edition-clock{max-width:100%;align-items:flex-start;text-align:left}
+ .hourly-market-desk .hourly-edition-check{font-size:11px}
+}
