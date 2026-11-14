@@ -26,7 +26,7 @@ class USH8SourceTest(unittest.TestCase):
         x=parse(sample(),today=DAY)
         self.assertEqual(x['dates'][4],ANCHOR_DATE)
         self.assertEqual(x['latest_observation'],'2026-11-11')
-        self.assertEqual(x['values'][0],ANCHOR_VALUE)
+        self.assertEqual(x['values'][4],ANCHOR_VALUE)
 
     def test_latest_first_csv_accepted(self):
         self.assertEqual(parse(sample(reverse=True),today=DAY)['latest_observation'],'2026-11-11')
