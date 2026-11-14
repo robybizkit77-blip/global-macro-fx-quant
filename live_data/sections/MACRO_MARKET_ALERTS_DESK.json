@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-13T22:41:43Z",
+  "generated_at_utc": "2026-11-14T03:21:20Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-e04e21c5b36ae46eaaed",
+      "observed_at_utc": "2026-11-14T00:03:00Z",
+      "headline": "Fed's Jefferson says he is taking his policy cues from inflation",
+      "summary": "Reuters riporta: Fed's Jefferson says he is taking his policy cues from inflation. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQZW1TY0lTUklmN2JmVC0zMm5qMUdfOUFjWk43S1NTS1RpcGx1Ni0tWkJCX1NXWDg1cHdzazZsQUZlREpWRkl2UER3S2t0TjFON1lXeTNNLXA4SXZYYjFjbXh0SnJzcXFGV2FPZkhoc1dNc1ZhUXNTRjdmX3R2SUR0ZlZwcHlnT2F2ZzdLdnNkQ1I5Sy1tRmVGTS1GTEpUTmRTWVlkYXRR?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-f6e616acd3b78d2596e7",
+      "observed_at_utc": "2026-11-13T18:48:40Z",
+      "headline": "Fed likely to need to raise rates amid worsening inflation: Daly",
+      "summary": "Reuters riporta: Fed likely to need to raise rates amid worsening inflation: Daly. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOaHBuM0FNRHlsWlNrX090Q3F6R2VZUTFYRkF3bFZwbDNQMUwxZXpiYmROVUJWWTVKZHRoOExqUkxpcktRYUZodDVncmNVSEdIMDktTDYxMXlWM1hvdXVKRmVfMmtvbTBUd1MyWkxFR3RqTlNJNVk1WFNtc2pnQ0w4QjRTdjlmcFdPUkVUZFVndGdCRWRPMEw3cFZHcjBlc3lhdDY2Vw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-02c9c7c80487d9fe432b",
+      "observed_at_utc": "2026-11-13T15:33:00Z",
+      "headline": "Wholesale inflation declined last month yet remains stubbornly elevated",
+      "summary": "AP News riporta: Wholesale inflation declined last month yet remains stubbornly elevated. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxOM1ZTN0RaNnBTTjB4VmFCQ1JUUndtcWlycGFrNG1FMzZGUFdWMnV0STRUaWRQR3JVbEZHWjN0Y2RVQUxBcVpTZEIyWGw5T2NSSUd4ajFaVGxlY3pCUFJVdElDX19QUGltWEd3ZEJRRW9nSTlCVnBnVlZjMzQzRTZReE5PZmg4bjNzbm1Vd09kZVR4R0VITzg5WHVjWGlCcFk?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-8ae8da9f5dcd9a664476",
       "observed_at_utc": "2026-11-13T21:14:55Z",
@@ -1374,47 +1417,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE92SHB2ZWFTNGtUMGdRbUk0MmdzTldzMk1kTWEtLVJQNDRJUFBvYnFKMEd3QmxNdGlxWGw5anp1a19iSG8wdndjUkpZVG9jbWRiVmIxMm93N2JFNHZp?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-5a8e3a72b85bb1b21af7",
-      "observed_at_utc": "2026-11-04T03:50:00Z",
-      "headline": "Iran's IRGC says four tankers ablaze after hitting mines near Strait of Hormuz",
-      "summary": "Reuters riporta: Iran's IRGC says four tankers ablaze after hitting mines near Strait of Hormuz. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQbjcyLUxfeTMxaHFnbENrc2tqdlowSDFqWU5DUWtqOWhVUUdSYWdSbFpBRGQ4VHI3Rm5DbDVsLTV6bkM4d3FjcmVPRnpsQlJ6RkNSLWNZX0ZtWURvUExKaGZ2M2diWUFvZWZfSE5FN01PR2FXc1pSN1kyeXhHX0ZFS0k4S1FjSDJLc2ZfbGx2cm9TYW9JSThiZVZIeFQxTnVBXzAwYnhlaGxsN3lwQkxOZTdFRVVpc3RPa2J2M0JZNVduZXA3Z2pz?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-cdb3b1d5689a64dfcb72",
-      "observed_at_utc": "2026-11-03T15:43:43Z",
-      "headline": "Mexico analysts slightly lift inflation, growth forecasts",
-      "summary": "Reuters riporta: Mexico analysts slightly lift inflation, growth forecasts. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNM3Vac3pIanBDMDJreFdmYnU5amxGRDUwVXNfVUVhdnoyMGE2R1ZsZUlMMVBxU3UtQ1p0WHVwYTl0M3dhVzQ1a2FqOUJZaERwT2VRNGxZLVJzWlktN0pPYk9mRnFFOU1fdmNwUzhvM2FTV3RDZXNSeTlGcWkyX0NRb1VBLWtWSXQ1WFJiSVBoMmEybmU3NzlfSHBhb3FKR0ViTGZVSGhQckVPZTg?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-5631b0208c424fcc486e",
-      "observed_at_utc": "2026-11-04T01:06:00Z",
-      "headline": "Stocks wilt, dollar slides as early midterm results point to blue sweep",
-      "summary": "Reuters riporta: Stocks wilt, dollar slides as early midterm results point to blue sweep. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMie0FVX3lxTFBWZWFDY2tZeDZfbXdVWnE2QWZwVlNpX3NqVm1OdmR0bDBGTlJjU3dJWG5yWEFpSG4tSHVhY2NEeVBsNnllVFQyb0tWRU1naXZQLWN3Tlk4VE1PV3o2cU1tVHFYX1hDT1ZtRkVWUWtYR3JwWFRyTXZIRldDWQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
