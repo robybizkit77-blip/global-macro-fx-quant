@@ -181,6 +181,34 @@ async function pairJourney(page,label){
  assert.equal(await locator(page,'.fx-rank-all-list button.fx-rank-pair').count(),28,
   label+' full ranking lost after closing dossier');
 }
+async function pairMonetaryJourney(page,label){
+ await route(page,'pairs');
+ await chosenPair(page,'EURGBP',label);
+ const panel=locator(page,'.pair-monetary-bridge[data-pair-monetary-pair="EURGBP"]');
+ assert.equal(await panel.count(),1,label+' monetary 6M bridge missing in EUR/GBP dossier');
+ assert.equal(await panel.locator('.pair-monetary-kpi').count(),2,
+  label+' pair pricing must show 1D and 1W separately');
+ const pairText=await panel.innerText();
+ assert(pairText.includes('Rispetto alla tesi macro.')&&
+        pairText.includes('La verifica sul Forex.'),
+  label+' source movement must be related to macro and price without false causal claims');
+ assert.equal(await panel.locator('[data-pair-open-rates="EURGBP"]').count(),1,
+  label+' no way to inspect monetary evidence in Rates Studio');
+ await panel.locator('[data-pair-open-rates="EURGBP"]').click();
+ await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='rates');
+ assert.equal(await locator(page,'#rs-country').inputValue(),'EUR',
+  label+' pair source leg did not reach Rates');
+ assert.equal(await locator(page,'#rs-other').inputValue(),'GBP',
+  label+' pair quote leg did not reach Rates');
+ assert.equal(await locator(page,'#rates-relative-pricing').count(),1);
+ // Changed selection must not leave the previous pair's monetary card attached.
+ await route(page,'pairs');
+ await chosenPair(page,'USDJPY',label);
+ assert.equal(await locator(page,'.pair-monetary-bridge').getAttribute('data-pair-monetary-pair'),
+  'USDJPY',label+' pair monetary reading did not follow selection');
+ const noPair=await locator(page,'.pair-monetary-bridge').innerText();
+ assert(!noPair.includes('Δ6M RELATIVO · EURGBP'),'A selected pair must not retain another pair');
+}
 async function relative6mJourney(page,label){
  await route(page,'rates');
  await locator(page,'#rs-country').selectOption('EUR');
@@ -299,6 +327,7 @@ async function calendarResearchJourney(page,label){
     for(const key of Object.keys(routes))inspected.push(await inspectRoute(page,label,key));
     await g8Choice(page,label);
     await pairJourney(page,label);
+    await pairMonetaryJourney(page,label);
     await calendarResearchJourney(page,label);
     await pricingWindowJourney(page,label);
     await g8HistoryJourney(page,label);
