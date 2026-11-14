@@ -130,9 +130,13 @@ def parse_report(html,expected,source_url,*,today):
     published=month_date(*pub.groups())
     require(expected<=published<=today,"publication timing inconsistent with observation")
     require((published-expected).days<=7,"observation/publication gap not plausible")
-    require(expected.strftime("%d %B %Y").lstrip("0") in txt or
-            expected.strftime("%d-%m-%Y") in txt or
-            expected.strftime("%d/%m/%Y") in txt,
+    def date_in_report(day):
+        human=f"{day.day} {day.strftime('%B %Y')}"
+        padded=day.strftime("%d %B %Y")
+        return (human in txt or padded in txt or
+                day.strftime("%d-%m-%Y") in txt or
+                day.strftime("%d/%m/%Y") in txt)
+    require(date_in_report(expected),
             "official report header does not match selected Wednesday")
     require("£mn" in txt or "£ mn" in txt or "£ million" in txt,
             "sterling millions unit not verified")
@@ -141,9 +145,7 @@ def parse_report(html,expected,source_url,*,today):
     require(len(candidates)==1,"reserve liability row not uniquely identified")
     current,previous=map(balance,candidates[0][1:3])
     previous_date=expected-timedelta(days=7)
-    require(previous_date.strftime("%d %B %Y").lstrip("0") in txt or
-            previous_date.strftime("%d-%m-%Y") in txt or
-            previous_date.strftime("%d/%m/%Y") in txt,
+    require(date_in_report(previous_date),
             "prior Wednesday date not independently identified")
     move=current-previous
     require(abs(move)<150000 and abs(move)/previous<.25,
