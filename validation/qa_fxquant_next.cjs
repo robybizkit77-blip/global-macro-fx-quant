@@ -243,6 +243,18 @@ async function chosenPair(page,key,label){
   const selected=document.querySelector('#fx-selected-thesis');
   return !!selected?.textContent?.includes(key.slice(0,3)+'/'+key.slice(3));
  },key,{timeout:15000});
+ const detailHead=locator(page,'#fx-selected-thesis');
+ await page.waitForFunction(()=>document.activeElement?.id==='fx-selected-thesis');
+ await page.waitForFunction(()=>{
+  const el=document.getElementById('fx-selected-thesis');
+  if(!el)return false;
+  const top=el.getBoundingClientRect().top;
+  return top>=48&&top<window.innerHeight*.70;
+ });
+ const top=await detailHead.evaluate(el=>el.getBoundingClientRect().top);
+ assert(top>=48,label+' '+key+' dossier heading is behind sticky navigation: '+top);
+ const listSelection=locator(page,'.fx-rank-all-list button.fx-rank-pair[data-pair="'+key+'"]');
+ assert.equal(await listSelection.getAttribute('aria-pressed'),'true',label+' selection not exposed to assistive technology');
  const p=locator(page,'.pairs-reading-compact');
  assert.equal(await p.count(),1,label+' '+key+' first-read missing');
  assert.equal(await p.locator('.pairs-three-answers > div').count(),3,
@@ -288,6 +300,7 @@ async function pairJourney(page,label){
  assert((await locator(page,'[data-watch="EURCHF"]').innerText()).includes('Nella watchlist'),
   label+' selected pair could not be saved');
  await locator(page,'[data-pair-close]').click();
+ await page.waitForFunction(()=>document.activeElement?.id==='fx-ranking-desk');
  assert.equal(await locator(page,'.pairs-reading-compact').count(),0,
   label+' back to 28 pairs did not close opened dossier');
  assert.equal(await locator(page,'.fx-rank-all-list button.fx-rank-pair').count(),28,

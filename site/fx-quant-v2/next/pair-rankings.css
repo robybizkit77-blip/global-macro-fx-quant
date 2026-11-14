@@ -71,3 +71,23 @@
  .fx-rank-detail-head{flex-direction:column;align-items:stretch}
  .fx-rank-back{align-self:flex-start}
 }
+
+/* Pair UX: keep the selected dossier and its return route visible below the sticky toolbar. */
+#fx-ranking-desk,#fx-selected-thesis{scroll-margin-top:96px}
+#fx-ranking-desk:focus-visible,#fx-selected-thesis:focus-visible{outline:2px solid #8bdccb;outline-offset:4px}
+.fx-rank-pair[aria-pressed="true"]{box-shadow:inset 3px 0 0 #7bdbc0}
+/* Reader-first labels inside the complete 28-pair comparison. */
+.fx-rank-pair-id small{font-size:10.5px}
+.fx-rank-pair-copy strong{font-size:12px;line-height:1.55}
+.fx-rank-pair-copy small{font-size:11px;line-height:1.55}
+.fx-rank-pill{font-size:10px}
+.fx-rank-minor,.fx-rank-risk{font-size:10.5px}
+.fx-rank-open{font-size:11px}
+@media(max-width:840px){#fx-ranking-desk,#fx-selected-thesis{scroll-margin-top:79px}}
+@media(max-width:720px){
+ .fx-rank-pair-id strong{font-size:14px}
+ .fx-rank-pair-copy strong{font-size:12.5px}
+ .fx-rank-pair-copy small{font-size:11.5px}
+ .fx-rank-pair-badges{gap:7px}
+ .fx-rank-pair-id strong::after{content:' ›';color:#86d9c6;font-weight:750}
+}
