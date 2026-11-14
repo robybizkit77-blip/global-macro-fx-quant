@@ -54,8 +54,11 @@ async function inspectRoute(page,label,key){
    'Source-dated G8 and pair research must remain attached to Home');
   const monetaryHome=locator(page,'#home-pricing-proof');
   assert.equal(await monetaryHome.count(),1,label+' Home monetary-to-FX chart missing');
-  assert.equal(await monetaryHome.locator('.home-pricing-proof-card').count(),2,
-   label+' must have one USD and one non-USD matched-date FX comparison');
+  const homeCardCount=await monetaryHome.locator('.home-pricing-proof-card').count();
+  assert(homeCardCount>=1&&homeCardCount<=2,
+   label+' must show only one or two evidence-backed FX comparisons, never placeholders');
+  assert.equal(await monetaryHome.locator('[data-home-pricing-available="false"]').count(),0,
+   label+' visible Home still contains unavailable comparison rows');
   assert.equal(await monetaryHome.locator('.home-pricing-proof-sources nav a').count(),3,
    label+' must link original public monetary, futures and BCE observations');
  }else if(key==='currencies'){
@@ -117,14 +120,54 @@ async function homeMoneyJourney(page,label){
  const proof=locator(page,'#home-pricing-proof');
  assert.equal(await proof.count(),1,label+' source-backed Home pricing reading missing');
  const cards=proof.locator('.home-pricing-proof-card');
- assert.equal(await cards.count(),2,label+' two FX examples expected');
+ const count=await cards.count();
+ assert(count>=1&&count<=2,label+' Home needs one or two verified FX examples');
+ assert.equal(await proof.locator('[data-home-pricing-available="false"]').count(),0,
+  label+' unavailable 5/20-session placeholders must never be visible');
+ const visible=await proof.innerText();
+ assert(!/Non disponibile|non è verificabile/i.test(visible),
+  label+' Home monetary comparison still discusses unavailable windows');
  const withUsd=await cards.nth(0).getAttribute('data-home-pricing-pair');
- const withoutUsd=await cards.nth(1).getAttribute('data-home-pricing-pair');
- assert(withUsd.includes('USD')&&!withoutUsd.includes('USD'),
-  label+' examples must be diversified across currencies');
- const copy=await cards.nth(0).innerText();
- assert(copy.includes('Δ RELATIVO 6M')&&copy.includes('CAMBIO'),
-  label+' monetary and fixing returns must share observation dates');
+ assert(withUsd&&withUsd.includes('USD'),label+' first verified cross must include USD');
+ if(count===2){
+  const withoutUsd=await cards.nth(1).getAttribute('data-home-pricing-pair');
+  assert(withoutUsd&&!withoutUsd.includes('USD'),
+   label+' second verified cross must avoid USD');
+  const first=new Set([withUsd.slice(0,3),withUsd.slice(3)]);
+  assert(![withoutUsd.slice(0,3),withoutUsd.slice(3)].some(x=>first.has(x)),
+   label+' two selected comparisons unnecessarily repeat a currency');
+ }
+ for(let i=0;i<count;i++){
+  const card=cards.nth(i);
+  const copy=await card.innerText();
+  assert(copy.includes('Δ RELATIVO 6M')&&copy.includes('CAMBIO'),
+   label+' monetary and fixing returns must share observation dates');
+  const fold=card.locator('details.home-pricing-proof-multi');
+  assert.equal(await fold.count(),1,
+   label+' selected FX pair must have at least one real longer horizon');
+  await fold.locator(':scope > summary').click();
+  const windows=fold.locator('.home-pricing-proof-multi-row');
+  const n=await windows.count();
+  assert(n>=1&&n<=2,label+' expected one or two verified 5/20-session rows');
+  const observed=[];
+  for(let j=0;j<n;j++){
+   const row=windows.nth(j),period=await row.getAttribute('data-home-pricing-sessions');
+   assert(['5','20'].includes(period),label+' unexpected horizon: '+period);
+   observed.push(period);
+   assert.equal(await row.getAttribute('data-home-pricing-available'),'true',
+    label+' a shown horizon must have valid dated 6M/FX evidence');
+   const text=(await row.innerText()).replace(/\s+/g,' ');
+   assert(/\d{2}\/\d{2}\/\d{4}\s*→\s*\d{2}\/\d{2}\/\d{4}/.test(text),
+    label+' missing source-aligned date interval at '+period+' sessions');
+   assert(/Δ 6M.+pb.+FX.+%/.test(text),
+    label+' longer horizon missing numeric 6M/Forex comparison');
+  }
+  assert.equal(new Set(observed).size,n,label+' repeated 5/20-session horizon');
+  const listed=await fold.locator(':scope > summary').innerText();
+  for(const period of observed)assert(listed.includes(period),
+   label+' accordion label omits an available horizon');
+ }
+ await proof.screenshot({path:evidence+'/'+label+'-verified-money-fx.png'});
  await proof.locator('.home-pricing-proof-sources > summary').click();
  assert.equal(await proof.locator('.home-pricing-proof-sources nav a').count(),3);
  await cards.nth(0).locator('[data-command]').click();
