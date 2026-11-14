@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: write
+  pages: write
 
 concurrency:
   group: cad-official-business-credit-research-v1
@@ -70,6 +71,51 @@ jobs:
           git rebase origin/main
           git push origin HEAD:main
           echo "Research sidecar updated; no canonical FX or liquidity mutation." >> "$GITHUB_STEP_SUMMARY"
+      - name: Mirror validated CAD research file to gh-pages with branch lease
+        if: success()
+        id: pages-sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          path=site/fx-quant-v2/next/cad-official-credit-research-v1.js
+          main_sha="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          current_sha="$(git rev-parse HEAD)"
+          test "$main_sha" = "$current_sha" || { echo 'CAD_RESEARCH_MAIN_MOVED_DO_NOT_PUBLISH_STALE'; exit 1; }
+          git fetch origin gh-pages --no-tags
+          remote_sha="$(git rev-parse origin/gh-pages)"
+          git worktree add --detach /tmp/cad-credit-pages origin/gh-pages
+          mkdir -p "/tmp/cad-credit-pages/site/fx-quant-v2/next"
+          cp "$path" "/tmp/cad-credit-pages/$path"
+          cd /tmp/cad-credit-pages
+          if git diff --quiet -- "$path"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "CAD_PAGES_RESEARCH_ALREADY_CURRENT" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          test "$(git diff --name-only)" = "$path"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$path"
+          git commit -m 'Mirror validated BoC CAD credit research only'
+          test "$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')" = "$remote_sha" || {
+            echo 'CAD_RESEARCH_GH_PAGES_MOVED_WITHHELD'; exit 1;
+          }
+          test "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$main_sha" || {
+            echo 'CAD_RESEARCH_MAIN_MOVED_WITHHELD'; exit 1;
+          }
+          git push --force-with-lease=refs/heads/gh-pages:$remote_sha origin HEAD:gh-pages
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "CAD_PAGES_RESEARCH_MIRRORED" >> "$GITHUB_STEP_SUMMARY"
+      - name: Explicitly queue Pages build after GITHUB_TOKEN mirror
+        if: steps.pages-sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          response="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds")"
+          jq -e '.status == "queued" || .status == "building"' <<<"$response" >/dev/null
+          echo "CAD_PAGES_BUILD_REQUEST_ACCEPTED" >> "$GITHUB_STEP_SUMMARY"
       - name: Preserve source receipt
         if: always()
         uses: actions/upload-artifact@v4
