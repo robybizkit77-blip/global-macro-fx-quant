@@ -35,6 +35,12 @@ assert.equal(render(null),null,'No free edition = existing Morning remains');
 assert.equal(render({...sample,status:'AWAITING_SECRET'}),null);
 assert.equal(render({...sample,generated_at_utc:'2026-10-01T14:00:00Z'}),null);
 const out=render(sample);
+assert(out.includes('Ultime novità disponibili'), 'Timestamp must refer to last actual evidence edition, not last refresh check');
+assert(!out.includes('Aggiornamento desk'), 'Misleading fresh-update label must not reappear');
+assert(out.includes('l’orario dell’edizione cambia soltanto quando'), 'Published edition must explain hourly unchanged checks');
+const oldEdition=render({...sample,generated_at_utc:'2026-11-10T12:50:00Z'});
+assert(oldEdition?.includes('Ultima edizione conservata'), 'Dated older editions must be labeled conservatively');
+
 assert(out.includes('data-standalone-market-desk="active"'));
 assert(out.indexOf('IL QUADRO GENERALE DEI MERCATI')<out.indexOf('Notizie e fonti di questa edizione'),
  'Overall narrative must come before article drilldown');
