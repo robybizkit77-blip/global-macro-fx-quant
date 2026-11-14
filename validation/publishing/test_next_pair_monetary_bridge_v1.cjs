@@ -110,7 +110,7 @@ const html=load(rel+'index.html'),app=load(rel+'app.js');
 assert(html.indexOf('rates-relative-pricing-v1.js?v=1')<
  html.indexOf('pair-monetary-bridge-v1.js?v=2')&&
  html.indexOf('pair-monetary-bridge-v1.js?v=2')<
- html.indexOf('app.js?v=18.60-pair-risk-read'));
+ html.indexOf('app.js?v=18.61-policy-liquidity-g8'));
 assert(html.includes('pairs-clarity.css?v=6'));
 assert(app.includes('FXQuantPairMonetary.render'));
 assert(app.includes("e.target.closest('[data-pair-open-rates]')"));
