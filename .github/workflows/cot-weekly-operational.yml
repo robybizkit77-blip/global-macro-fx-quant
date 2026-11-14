@@ -46,6 +46,10 @@ jobs:
       local_time: ${{ steps.gate.outputs.local_time }}
       retry_key: ${{ steps.gate.outputs.retry_key }}
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - id: gate
         shell: bash
         env:
