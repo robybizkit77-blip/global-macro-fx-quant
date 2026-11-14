@@ -121,16 +121,27 @@
 
  function choose({prices,pairs,history,today}={}){
   if(!prices||!pairs||!history||!goodDate(today))return [];
+  const args={prices,pairs,history,today};
+  // Eligibility requires at least one genuinely verified longer horizon.
+  // No empty cards, imputation, magnitude sorting or trade-attractiveness signal.
   const examples=Object.keys(pairs.pairs||{}).filter(x=>/^[A-Z]{6}$/.test(x))
-   .map(pair=>inspectPair(pair,{prices,pairs,history,today})).filter(Boolean);
-  const ranks=items=>items.sort((a,b)=>b.to.localeCompare(a.to)||
-   // Only recency determines eligibility. The next criterion is source quality,
-   // never magnitude or predicted FX opportunity.
-   Number(a.proxy)-Number(b.proxy)||
-   (a.pair==='EURUSD'?-1:b.pair==='EURUSD'?1:0)||
-   a.pair.localeCompare(b.pair));
+   .map(pair=>inspectPair(pair,args)).filter(Boolean)
+   .map(x=>({...x,verifiedWindows:[5,20].filter(n=>
+    Boolean(inspectSessionWindow(x.pair,args,n,x.to)))}))
+   .filter(x=>x.verifiedWindows.length>0);
+  const ranks=(items,first)=>{
+   const shared=x=>first&&[x.base,x.quote].some(ccy=>
+    ccy===first.base||ccy===first.quote)?1:0;
+   return items.sort((a,b)=>
+    b.verifiedWindows.length-a.verifiedWindows.length||
+    b.to.localeCompare(a.to)||
+    Number(a.proxy)-Number(b.proxy)||
+    shared(a)-shared(b)||
+    (a.pair==='EURUSD'?-1:b.pair==='EURUSD'?1:0)||
+    a.pair.localeCompare(b.pair));
+  };
   const usd=ranks(examples.filter(x=>x.base==='USD'||x.quote==='USD'))[0];
-  const other=ranks(examples.filter(x=>x.base!=='USD'&&x.quote!=='USD'))[0];
+  const other=ranks(examples.filter(x=>x.base!=='USD'&&x.quote!=='USD'),usd)[0];
   return [usd,other].filter(Boolean);
  }
 
@@ -154,14 +165,16 @@
     'A 5 sedute '+signal(five.comparison)+'; a 20 sedute '+signal(twenty.comparison)+'.';
   }else if(five){
    longer=x.comparison===five.comparison?
-    'La stessa '+condition(five.comparison)+' compare anche a 5 sedute; a 20 il dato non è verificabile.':
-    'A 5 sedute '+signal(five.comparison)+'; a 20 il dato non è verificabile.';
+    'La stessa '+condition(five.comparison)+' compare anche a 5 sedute.':
+    'A 5 sedute '+signal(five.comparison)+'.';
   }else if(twenty){
-   longer='A 5 sedute il dato non è verificabile; a 20 sedute '+signal(twenty.comparison)+'.';
+   longer=x.comparison===twenty.comparison?
+    'La stessa '+condition(twenty.comparison)+' compare anche a 20 sedute.':
+    'A 20 sedute '+signal(twenty.comparison)+'.';
   }else{
-   longer='Non ci sono confronti verificabili a 5 o 20 sedute per questa coppia.';
+   longer='';
   }
-  return short+' '+longer;
+  return short+(longer?' '+longer:'');
  }
 
 
@@ -209,21 +222,20 @@
    const oldObservation=weekdayLag(x.to,args.today)>=3;
    const headline=(oldObservation?'Questa verifica non è recente e non descrive la seduta attuale. ':'')+
     horizonReading(x,windows);
-   const longRow=(w,n)=>'<div class="home-pricing-proof-multi-row" data-home-pricing-sessions="'+n+'"'+
-    ' data-home-pricing-available="'+(w?'true':'false')+'">'+
+   const available=windows.flatMap((w,i)=>w?[{w,n:[5,20][i]}]:[]);
+   const longRow=({w,n})=>'<div class="home-pricing-proof-multi-row" data-home-pricing-sessions="'+n+'"'+
+    ' data-home-pricing-available="true">'+
     '<strong>'+n+' sedute BCE</strong>'+
-    (w?'<span>'+esc(date(w.from))+' → '+esc(date(w.to))+'</span>'+
-     '<span>Δ 6M '+esc(fmt(w.monetaryBp))+' pb · FX '+esc(fmt(w.fxPct))+'%</span>'+
-     '<em>'+(w.comparison==='SEGNI_COHERENTI'?'Stesso segno':
-      w.comparison==='SEGNI_DIVERGENTI'?'Segni divergenti':'Movimenti contenuti')+
-     (w.proxy?' · proxy ricostruito':'')+'</em>':
-     '<span>Non disponibile: manca il 6M confrontabile nelle due date BCE</span>')+
-    '</div>';
-   const longView='<details class="home-pricing-proof-multi">'+
-    '<summary>Verifica anche 5 e 20 sedute</summary>'+
-    '<div class="home-pricing-proof-multi-grid">'+windows.map((w,i)=>
-     longRow(w,[5,20][i])).join('')+'</div>'+
-    '</details>';
+    '<span>'+esc(date(w.from))+' → '+esc(date(w.to))+'</span>'+
+    '<span>Δ 6M '+esc(fmt(w.monetaryBp))+' pb · FX '+esc(fmt(w.fxPct))+'%</span>'+
+    '<em>'+(w.comparison==='SEGNI_COHERENTI'?'Stesso segno':
+     w.comparison==='SEGNI_DIVERGENTI'?'Segni divergenti':'Movimenti contenuti')+
+    (w.proxy?' · proxy ricostruito':'')+'</em></div>';
+   const longView=available.length?
+    '<details class="home-pricing-proof-multi">'+
+    '<summary>Verifica anche '+available.map(x=>x.n).join(' e ')+' sedute</summary>'+
+    '<div class="home-pricing-proof-multi-grid">'+available.map(longRow).join('')+'</div>'+
+    '</details>':'';
    const labels=x.proxy?'Proxy ricostruito, non osservazione indipendente':
     'Intervallo osservato in archivio, non intraday';
    return '<article class="home-pricing-proof-card" data-home-pricing-pair="'+esc(x.pair)+
@@ -248,16 +260,16 @@
     '<div class="home-pricing-proof-heading"><div>'+
     '<span class="morning-section-label">DALLE ASPETTATIVE AI CAMBI · DATI CONSULTABILI</span>'+
     '<h2>Il Forex sta seguendo il repricing dei tassi?</h2>'+
-    '<p>Due confronti documentati, uno con USD e uno fra altre valute. '+
-    'Sono scelti per recenza delle osservazioni confrontabili, <strong>non per attrattività di trading</strong>.</p></div>'+
+    '<p>'+(picks.length===2?'Due confronti documentati, uno con USD e uno fra altre valute. ':'Un confronto documentato con storico sufficiente. ')+
+    'La scelta privilegia le finestre verificabili e la recenza, <strong>non per attrattività di trading</strong>.</p></div>'+
     '<a href="#rates">Apri le curve OIS/futures ↗</a></div>'+
     sourceLine+
-    '<div class="home-pricing-proof-grid">'+picks.map(row).join('')+'</div>'+
+    '<div class="home-pricing-proof-grid" data-home-pricing-count="'+picks.length+'">'+picks.map(row).join('')+'</div>'+
     '<details class="home-pricing-proof-sources"><summary>Verifica i dati e il metodo</summary>'+
     '<p>Per ogni coppia si confrontano <strong>due variazioni 6M</strong> di strumenti distinti e la variazione del fixing BCE sulla stessa data iniziale e finale. Contratti secondari senza continuità di codice sono esclusi. OIS, futures e proxy non sono equivalenti.</p>'+
     '<p>La soglia di avviso sulla recenza usa 3 giorni feriali, non giorni di negoziazione certificati; non modifica né stima i dati. La data generale dell’archivio non implica che ogni valuta sia aggiornata fino a quel giorno.</p>'+ 
     '<p>Le finestre sono sovrapposte: un segno comune su 1, 5 e 20 sedute non rappresenta tre conferme indipendenti né dimostra un rapporto causale.</p>'+ 
-    '<p>Le finestre a 5 e 20 sedute usano il calendario dei fixing BCE e terminano alla stessa data del confronto breve; richiedono due livelli 6M verificati per entrambe le valute senza cambio di contratto futures. Dove mancano i livelli, il risultato non è stimato.</p>'+ 
+    '<p>Le finestre a 5 e 20 sedute usano il calendario dei fixing BCE e terminano alla stessa data del confronto breve; richiedono due livelli 6M verificati per entrambe le valute senza cambio di contratto futures. Mostriamo solo intervalli verificati; gli altri non sono visualizzati né stimati.</p>'+ 
    '<p>Gli esempi sono retrospettivi, non una graduatoria di opportunità o uno studio causale. '+
     'I livelli disponibili sono archiviati; questa analisi non è un backtest point-in-time. '+
     'Stesso segno non equivale a conferma della tesi macro o a timing di ingresso.</p>'+
