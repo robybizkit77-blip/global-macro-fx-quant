@@ -118,6 +118,54 @@
  NZD:{fx:'Lo storico disponibile della liquidità NZD è breve e non consente inferenze robuste sui flussi. Credito privato in aumento e settlement cash in calo sono una divergenza da testare contro RBNZ e rischio globale.',
   watch:'Aggiornamenti RBNZ su settlement cash e credito, confronto monetario con RBA e comportamento AUD/NZD e NZD/USD.'}
  };
+ function jpyBOJCreditResearch(esc,fmt,now){
+  const x=root.FXQuantJPYBankCreditResearch;
+  if(!x||x.schema!=='GMFQ_NEXT_JPY_BOJ_BANK_CREDIT_RESEARCH_V1'||
+     x.status!=='VERIFIED_BOJ_MD11_MONTHLY_BANK_CREDIT_RESEARCH_ONLY'||
+     x.publisher!=='Bank of Japan'||x.database!=='MD11'||
+     x.series_id!=='DLCLAEDBLTTO'||
+     x.category!=='bank_credit_end_period_stock'||
+     x.unit!=='100 milioni JPY'||x.frequency!=='M'||
+     x.end_of_period!==true||
+     x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     x.first_release_pit_verified!==false||
+     x.original_canonical_last!=='2026-07'||
+     x.original_canonical_value!==6764306||
+     !Number.isInteger(x.matched_canonical_months)||x.matched_canonical_months<12||
+     !Array.isArray(x.dates)||!Array.isArray(x.values)||
+     x.dates.length<3||x.dates.length!==x.values.length||
+     x.dates.at(-1)!==x.last_observation||
+     !/^https:\/\/www\.stat-search\.boj\.or\.jp\/ssi\/mtshtml\//.test(x.source_url))return '';
+  const dates=x.dates,v=x.values;
+  const continuous=dates.every((d,i)=>{
+    if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(d)||!finite(v[i])||v[i]<=2000000||v[i]>=12000000)return false;
+    if(i===0)return true;
+    const year=Number(d.slice(0,4)),month=Number(d.slice(5));
+    const py=Number(dates[i-1].slice(0,4)),pm=Number(dates[i-1].slice(5));
+    return year*12+month-py*12-pm===1;
+  });
+  const period=observationDate(x.last_observation),today=observationDate(now);
+  if(!continuous||!period||!today||dateMs(period)>dateMs(today))return '';
+  const last=v.at(-1),prev=v.at(-2),two=v.at(-3);
+  const move=(last/prev-1)*100,prior=(prev/two-1)*100;
+  if(!finite(move)||!finite(prior)||Math.abs(move)>12||Math.abs(prior)>12)return '';
+  const age=Math.round((dateMs(today)-dateMs(period))/864e5);
+  const freshness=age>110?'STORICO · NUOVA PUBBLICAZIONE DA CONTROLLARE':'SERIE BOJ UFFICIALE DATATA';
+  const pace=move>prior+0.025?'più rapido':move<prior-0.025?'meno rapido':'simile';
+  const moveSigned=q=>(q>0?'+':q<0?'−':'')+fmt(Math.abs(q),2);
+  return '<section class="drivers-cad-official drivers-jpy-official" aria-label="BoJ credito bancario mensile fonte ufficiale separata">'+
+   '<span class="mini-overline">BANK OF JAPAN · CREDITO BANCARIO DI FINE MESE</span>'+
+   '<h3>Giappone: lo stock dei prestiti sale, ma va verificata la trasmissione all’economia.</h3>'+
+   '<p>A '+esc(x.last_observation)+' i prestiti in essere delle banche domestiche sono '+esc(fmt(last/10,2))+
+   ' miliardi JPY, contro '+esc(fmt(prev/10,2))+' miliardi il mese precedente: variazione dello stock '+
+   esc(moveSigned(move))+'%. Il ritmo mensile è '+esc(pace)+' rispetto a quello precedente ('+esc(moveSigned(prior))+'%).</p>'+
+   '<p><b>Contesto:</b> questa serie include conti bancari, fiduciari e delle filiali estere delle banche autorizzate in Giappone; non sono nuovi prestiti e non è l’indice dei saldi presso la BoJ. Il movimento può riflettere anche composizione e fattori di bilancio: non basta per dire che la domanda interna accelera.</p>'+
+   '<p><b>Per lo yen:</b> chiediamoci se crescita, inflazione e dati sul credito cambiano davvero le aspettative BoJ, il differenziale JGB/UST e il carry. Poi controlliamo USD/JPY e i cross yen. Un credito in aumento senza repricing né conferma del prezzo non è un segnale operativo.</p>'+
+   '<div class="drivers-cad-source"><span>'+freshness+' · periodo '+esc(x.last_observation)+
+   ' · MD11 DLCLAEDBLTTO · '+esc(x.matched_canonical_months)+
+   ' mesi storici corrispondenti · livello stock, non nuove erogazioni · vintage del primo rilascio non certificata · ranking FX invariato</span>'+
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: BoJ · Time-Series Data Search ↗</a></div></section>';
+ }
  function gbpBoESecuredCreditReading(esc,fmt,now){
   const x=root.FXQuantGBPBoESecuredCreditResearch;
   if(!x||x.schema!=='GMFQ_NEXT_GBP_BOE_SECURED_CREDIT_GROWTH_V1'||
@@ -409,6 +457,7 @@
    '<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
    '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
    '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>'+
+   (selected==='JPY'?jpyBOJCreditResearch(esc,fmt,today):'')+
    (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):'')+
    (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):'')+
    (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):'')+
