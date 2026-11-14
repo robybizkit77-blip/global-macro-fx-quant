@@ -49,6 +49,7 @@ def main() -> None:
     macro_js = (SITE / "macro-studio.js").read_text(encoding="utf-8")
     macro_css = (SITE / "macro-studio.css").read_text(encoding="utf-8")
     currency_js = (SITE / "currency-studio.js").read_text(encoding="utf-8")
+    g8_pricing_js = (SITE / "g8-pricing-evidence-v1.js").read_text(encoding="utf-8")
     currency_css = (SITE / "currency-studio.css").read_text(encoding="utf-8")
     docs = {k: json.loads((ROOT / path).read_text(encoding="utf-8")) for k, path in SOURCES.items()}
     assert len(docs) == 18
@@ -65,7 +66,9 @@ def main() -> None:
     assert len(rates_css_links) == 1, "Exactly one versioned Rates stylesheet expected"
     contents = contents.replace(rates_css_links[0], "<style>"+rates_css+"</style>")
     contents = contents.replace('<link rel="stylesheet" href="./macro-studio.css?v=2">', "<style>"+macro_css+"</style>")
-    contents = contents.replace('<link rel="stylesheet" href="./currency-studio.css?v=2">', "<style>"+currency_css+"</style>")
+    ccss = [x for x in contents.splitlines() if '<link rel="stylesheet" href="./currency-studio.css?v=' in x]
+    assert len(ccss) == 1, "Expected exactly one G8 stylesheet"
+    contents = contents.replace(ccss[0], "<style>"+currency_css+"</style>")
     contents = contents.replace('<script src="./cot-studio.js?v=1" defer></script>', "<script>"+cot_js+"</script>")
     contents = contents.replace('<script src="./rates-pricing-moves-v1.js?v=1" defer></script>', "<script>"+pricing_move_js+"</script>")
     contents = contents.replace('<script src="./rates-pricing-history-v1.js?v=1" defer></script>', "<script>"+pricing_history_js+"</script>")
@@ -76,7 +79,10 @@ def main() -> None:
     assert len(rates_js_links) == 1, "Exactly one versioned Rates script expected"
     contents = contents.replace(rates_js_links[0], "<script>"+rates_js+"</script>")
     contents = contents.replace('<script src="./macro-studio.js?v=2" defer></script>', "<script>"+macro_js+"</script>")
-    contents = contents.replace('<script src="./currency-studio.js?v=2" defer></script>', "<script>"+currency_js+"</script>")
+    contents = contents.replace('<script src="./g8-pricing-evidence-v1.js?v=1" defer></script>', "<script>"+g8_pricing_js+"</script>")
+    cjs = [x for x in contents.splitlines() if '<script src="./currency-studio.js?v=' in x]
+    assert len(cjs) == 1, "Expected exactly one G8 studio script"
+    contents = contents.replace(cjs[0], "<script>"+currency_js+"</script>")
     contents = contents.replace('<script src="./app.js?v=3" defer></script>', "")
     contents = contents.replace('<span class="live-dot"></span> NEXT / DESIGN LAB', '<span class="live-dot"></span> NEXT / DESIGN LAB')
     contents = contents.replace('NEXT / DESIGN LAB <span class="edition-sep">', 'NEXT / OFFLINE PREVIEW <span class="edition-sep">')
@@ -121,6 +127,7 @@ def main() -> None:
     assert 'FXQuantRates' in contents
     assert 'FXQuantMacro' in contents
     assert 'FXQuantCurrencies' in contents
+    assert 'FXQuantG8PricingEvidence' in contents
     assert 'ECB_G8_PRICE_HISTORY.json' in contents
     assert 'rates-instrument-card' in contents
     assert '<style>' in contents
