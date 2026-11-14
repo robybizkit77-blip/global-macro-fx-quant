@@ -133,6 +133,37 @@
   const other=ranks(examples.filter(x=>x.base!=='USD'&&x.quote!=='USD'))[0];
   return [usd,other].filter(Boolean);
  }
+
+ // Editorial interpretation only: compares the direction of dated observations,
+ // never infers causality or treats overlapping windows as independent tests.
+ function horizonReading(x,windows){
+  const [five,twenty]=windows;
+  const short=x.comparison==='MOVIMENTO_CONTENUTO'?
+   'Nel confronto breve almeno uno dei movimenti è contenuto: il segno non è indicativo.':
+   'Nel confronto breve il 6M relativo si sposta verso '+(x.monetaryBp>0?x.base:x.quote)+
+   ', mentre '+pairText(x.pair)+(x.fxPct>0?' sale.':' scende.');
+  const signal=s=>s==='SEGNI_COHERENTI'?'tassi relativi e cambio hanno lo stesso segno':
+   s==='SEGNI_DIVERGENTI'?'tassi relativi e cambio divergono':
+   'almeno un movimento è contenuto';
+  const condition=s=>s==='SEGNI_COHERENTI'?'coerenza di segno':
+   s==='SEGNI_DIVERGENTI'?'divergenza di segno':'movimenti contenuti';
+  let longer;
+  if(five&&twenty){
+   longer=five.comparison===twenty.comparison&&five.comparison===x.comparison?
+    'La stessa '+condition(x.comparison)+' compare anche sulle finestre a 5 e 20 sedute.':
+    'A 5 sedute '+signal(five.comparison)+'; a 20 sedute '+signal(twenty.comparison)+'.';
+  }else if(five){
+   longer=x.comparison===five.comparison?
+    'La stessa '+condition(five.comparison)+' compare anche a 5 sedute; a 20 il dato non è verificabile.':
+    'A 5 sedute '+signal(five.comparison)+'; a 20 il dato non è verificabile.';
+  }else if(twenty){
+   longer='A 5 sedute il dato non è verificabile; a 20 sedute '+signal(twenty.comparison)+'.';
+  }else{
+   longer='Non ci sono confronti verificabili a 5 o 20 sedute per questa coppia.';
+  }
+  return short+' '+longer;
+ }
+
  function render(args={}){
   const picks=choose(args);
   if(!picks.length)return '';
@@ -141,12 +172,8 @@
    const sign=x.comparison==='SEGNI_COHERENTI'?'Stesso segno, non causalità':
     x.comparison==='SEGNI_DIVERGENTI'?'I segnali divergono':
     'Movimenti contenuti';
-   const headline=x.comparison==='SEGNI_COHERENTI'?
-    'Le variazioni monetarie e il cambio hanno lo stesso segno.':
-    x.comparison==='SEGNI_DIVERGENTI'?
-    'Tassi relativi e prezzo non si muovono nella stessa direzione.':
-    'Il confronto non mostra una direzione netta e condivisa.';
    const windows=[5,20].map(n=>inspectSessionWindow(x.pair,args,n,x.to));
+   const headline=horizonReading(x,windows);
    const longRow=(w,n)=>'<div class="home-pricing-proof-multi-row" data-home-pricing-sessions="'+n+'"'+
     ' data-home-pricing-available="'+(w?'true':'false')+'">'+
     '<strong>'+n+' sedute BCE</strong>'+
@@ -192,6 +219,7 @@
     '<div class="home-pricing-proof-grid">'+picks.map(row).join('')+'</div>'+
     '<details class="home-pricing-proof-sources"><summary>Verifica i dati e il metodo</summary>'+
     '<p>Per ogni coppia si confrontano <strong>due variazioni 6M</strong> di strumenti distinti e la variazione del fixing BCE sulla stessa data iniziale e finale. Contratti secondari senza continuità di codice sono esclusi. OIS, futures e proxy non sono equivalenti.</p>'+
+    '<p>Le finestre sono sovrapposte: un segno comune su 1, 5 e 20 sedute non rappresenta tre conferme indipendenti né dimostra un rapporto causale.</p>'+ 
     '<p>Le finestre a 5 e 20 sedute usano il calendario dei fixing BCE e terminano alla stessa data del confronto breve; richiedono due livelli 6M verificati per entrambe le valute senza cambio di contratto futures. Dove mancano i livelli, il risultato non è stimato.</p>'+ 
    '<p>Gli esempi sono retrospettivi, non una graduatoria di opportunità o uno studio causale. '+
     'I livelli disponibili sono archiviati; questa analisi non è un backtest point-in-time. '+
@@ -201,7 +229,7 @@
     '<a href="../ois-same-contract-repricing-research.json" target="_blank" rel="noopener noreferrer">Identità futures · JSON ↗</a></nav>'+
     '</details></section>';
  }
- const api={inspectPair,inspectSessionWindow,choose,pairReturn,render};
+ const api={inspectPair,inspectSessionWindow,horizonReading,choose,pairReturn,render};
  root.FXQuantHomePricingProof=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
