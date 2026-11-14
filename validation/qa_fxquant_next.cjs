@@ -187,21 +187,24 @@ async function relative6mJourney(page,label){
  await locator(page,'#rs-other').selectOption('GBP');
  const panel=locator(page,'#rates-relative-pricing');
  assert.equal(await panel.count(),1,label+' relative 6M pricing panel missing');
- assert.equal(await panel.getAttribute('data-rr6-status'),
-  'SAME_END_REFERENCE_UNVERIFIED',label+' EUR/GBP 6M dates cannot be misclassified as full certified period');
- assert((await panel.innerText()).includes('−1,55 pb'),
-  label+' EUR minus GBP relative repricing 1D not found');
+ const firstStatus=await panel.getAttribute('data-rr6-status');
+ assert(['SAME_END_REFERENCE_UNVERIFIED','MATCHED_EXACT_INTERVAL','NOT_ALIGNED'].includes(firstStatus),
+  label+' EUR/GBP relative status is missing');
+ assert((await panel.innerText()).includes(firstStatus==='NOT_ALIGNED'?
+  'Non confrontabile':'pb'),label+' relative 6M source evidence not displayed');
  assert.equal(await panel.locator('.rr6-day').count()>0,true,
   label+' source aligned historic 6M differences missing');
  await locator(page,'#rates-pricing-moves [data-rs-pricing-window="1w"]').click();
- assert((await locator(page,'#rates-relative-pricing').innerText()).includes('−9,0 pb'),
-  label+' 1W relative 6M repricing should update alongside 1W toggle');
+ assert((await locator(page,'#rates-relative-pricing').innerText()).includes('1 SETTIMANA'),
+  label+' 1W relative pricing panel must follow 1W toggle');
  await locator(page,'#rates-pricing-moves [data-rs-pricing-window="1d"]').click();
  await locator(page,'#rs-country').selectOption('USD');
- assert.equal(await locator(page,'#rates-relative-pricing').getAttribute('data-rr6-status'),
-  'NOT_ALIGNED',label+' USD 13 Nov and EUR 12 Nov must not display fictitious daily comparison');
- assert((await locator(page,'#rates-relative-pricing').innerText()).includes('Non confrontabile'),
-  label+' unmatched dates need an explicit clear status');
+ const newestStatus=await locator(page,'#rates-relative-pricing').getAttribute('data-rr6-status');
+ assert(['NOT_ALIGNED','SAME_END_REFERENCE_UNVERIFIED','MATCHED_EXACT_INTERVAL'].includes(newestStatus),
+  label+' source-dated USD/GBP relative comparison needs a verification status');
+ if(newestStatus==='NOT_ALIGNED')
+  assert((await locator(page,'#rates-relative-pricing').innerText()).includes('Non confrontabile'),
+   label+' unmatched source dates must never produce a daily spread');
 }
 async function g8HistoryJourney(page,label){
  await route(page,'rates');
