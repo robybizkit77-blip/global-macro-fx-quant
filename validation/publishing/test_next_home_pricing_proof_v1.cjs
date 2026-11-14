@@ -106,10 +106,28 @@ assert.equal(inspectSessionWindow('AUDCAD',{...args,prices:forged},20,aud20.to),
  'Forged BCE price provenance must fail');
 assert.equal(inspectSessionWindow('AUDCAD',args,20,'2026-11-17'),null,
  'Do not inspect dates after as-of');
+assert.deepEqual(selected.map(x=>x.pair),['EURUSD','AUDCAD'],
+ 'Current sources should give an USD pair with 5 sessions and a separate non-USD pair with 5/20');
+assert(selected.every(x=>x.verifiedWindows.length>0),'Never display a pair with no longer comparison');
+assert(selected.every(x=>x.verifiedWindows.every(n=>
+ inspectSessionWindow(x.pair,args,n,x.to))),'Every shown horizon must be recomputable');
+assert(selected[0].verifiedWindows.includes(5));
+assert.deepEqual(selected[1].verifiedWindows,[5,20]);
+assert(![selected[0].base,selected[0].quote].some(ccy=>
+ [selected[1].base,selected[1].quote].includes(ccy)),
+ 'Avoid repeating a currency between equally usable choices');
+assert(html.includes('Verifica anche 5 sedute'));
 assert(html.includes('Verifica anche 5 e 20 sedute'));
 assert(html.includes('data-home-pricing-sessions="5"'));
 assert(html.includes('data-home-pricing-sessions="20"'));
-assert(html.includes('Non disponibile:'),'Unavailable must be explicit');
+assert(!html.includes('Non disponibile'),'Never print unavailable cards');
+assert(!html.includes('non è verificabile'),'Avoid absent-window narration');
+assert(!(html.includes('data-home-pricing-available="false"')),'No invalid window placeholders');
+const noLong=structuredClone(history);
+for(const row of Object.values(noLong.currencies))row.tenors['6m']=
+ row.tenors['6m'].filter(x=>x.date>='2026-11-12');
+assert.equal(choose({...args,history:noLong}).length,0,'When no verified horizons exist, show no examples');
+assert.equal(render({...args,history:noLong}),'','An empty module must not display placeholder panels');
 
 
 const coherent={pair:'EURUSD',base:'EUR',quote:'USD',monetaryBp:2,fxPct:.3,comparison:'SEGNI_COHERENTI'};
@@ -120,7 +138,7 @@ assert(horizonReading(coherent,[{comparison:'SEGNI_COHERENTI'},null])
 assert(horizonReading(divergent,[{comparison:'SEGNI_COHERENTI'},null])
  .includes('A 5 sedute tassi relativi e cambio hanno lo stesso segno'),
  'Cross-window change should not be described as persistence');
-assert(horizonReading(quiet,[null,null]).includes('Non ci sono confronti verificabili'));
+assert(!horizonReading(quiet,[null,null]).includes('Non ci sono confronti'),'No missing window prose');
 assert(horizonReading(coherent,[{comparison:'SEGNI_COHERENTI'},{comparison:'SEGNI_COHERENTI'}])
  .includes('anche sulle finestre a 5 e 20 sedute'));
 assert(horizonReading(coherent,[{comparison:'SEGNI_DIVERGENTI'},{comparison:'SEGNI_COHERENTI'}])
@@ -162,11 +180,11 @@ assert(!early.includes('data-home-pricing-to="2026-11-12"'),
  'Historical evidence must respect requested as-of, not look ahead');
 const source=read(site+'app.js'),index=read(site+'index.html');
 assert(index.indexOf('pair-monetary-bridge-v1.js?v=2')<
- index.indexOf('home-pricing-proof-v1.js?v=4')&&
- index.indexOf('home-pricing-proof-v1.js?v=4')<
+ index.indexOf('home-pricing-proof-v1.js?v=5')&&
+ index.indexOf('home-pricing-proof-v1.js?v=5')<
  index.indexOf('app.js?v=18.58-home-money-pricing'),
  'Home module must load after monetary archive validators and before App');
-assert(index.includes('home-pricing-proof-v1.css?v=3'));
+assert(index.includes('home-pricing-proof-v1.css?v=4'));
 assert(source.includes("window.FXQuantHomePricingProof?.render?.("));
 assert(source.includes("if(hourly)return moneyProof?"));
 assert(source.includes("post+moneyProof+'<section class=\"morning-prose\"'"));
@@ -175,5 +193,6 @@ assert(source.includes(' +moneyProof\n +\'<section class="dashboard-main dashboa
 const css=read(site+'home-pricing-proof-v1.css');
 assert(css.includes('.home-pricing-proof-multi-row'));
 assert(css.includes('.home-pricing-proof-date-context'));
+assert(css.includes('data-home-pricing-count="1"'));
 assert(css.includes('.home-pricing-proof-grid')&&css.includes('max-width:720px')&&css.includes(':focus-visible'));
 console.log('NEXT_HOME_6M_FX_PROOF_PASS: date-aligned EURUSD, 28-pair source selection, nonUSD cross, inversion, no look-ahead, document links');
