@@ -75,3 +75,19 @@
  .drivers-fold>summary{padding:15px}
  .drivers-fold>.drivers-facts,.drivers-fold>.drivers-chart-grid,.drivers-fold>.drivers-source-note{margin:13px}
 }
+
+.drivers-fx-idea{border-left:3px solid #6ec4a4;background:rgba(22,70,67,.19);border-radius:9px;padding:15px 19px;margin:16px 0;color:var(--soft)}
+.drivers-fx-idea>b{color:#97dcc4;font-size:10px;letter-spacing:.095em}
+.drivers-fx-idea p{margin:7px 0 0;font-size:13px;line-height:1.7}
+.drivers-market-audit{border:1px solid rgba(133,176,204,.21);border-radius:12px;background:rgba(8,27,43,.52);margin:15px 0;padding:17px 19px}
+.drivers-market-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;margin-bottom:12px}
+.drivers-market-head>strong{font:750 15px/1.4 Manrope,'DM Sans',sans-serif;color:var(--text)}
+.drivers-market-head>small{font-size:9px;font-weight:750;letter-spacing:.085em;color:#8cb5c6}
+.drivers-market-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.drivers-market-item{min-width:0;padding:12px 14px;border-radius:9px;background:rgba(11,39,55,.65);border:1px solid rgba(122,171,188,.15)}
+.drivers-market-item>span{display:block;font-size:9px;font-weight:850;letter-spacing:.1em;color:#96cde6}
+.drivers-market-item>p{font-size:12px;line-height:1.7;color:#cadde5;margin:9px 0 0;overflow-wrap:anywhere}
+.drivers-market-risk{border-top:1px solid var(--line);margin:14px 0 0;padding-top:12px;font-size:11.5px;line-height:1.7;color:#a6bfce}
+.drivers-market-risk b{color:#dfbd86;font-size:10px;letter-spacing:.06em}
+@media(max-width:790px){.drivers-market-grid{grid-template-columns:1fr}}
+@media(max-width:540px){.drivers-market-audit{padding:13px}.drivers-market-item{padding:11px}}

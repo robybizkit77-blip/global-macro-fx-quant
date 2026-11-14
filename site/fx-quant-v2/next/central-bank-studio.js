@@ -106,10 +106,8 @@
     '<article class="drivers-analysis"><span>WANT · COSA COMUNICA</span><h3>'+esc(wants)+'</h3><p>'+esc(context)+'</p><small>'+esc(b?.official_next||nextTxt)+'</small></article>'+
     '<article class="drivers-analysis"><span>CAN · QUALI VINCOLI MACRO</span><h3>La libertà di manovra dipende dai prossimi dati</h3><p>'+esc(can.text)+'</p><p class="drivers-can-judgment">'+esc(reading)+'</p><small>Date macro: '+esc(can.dates)+'</small></article>'+
    '</div>'+
-   '<div class="drivers-story"><div><span>CHE COSA STA PREZZANDO IL MERCATO</span><p>'+
-     esc(o?'Strumento: '+(o.kind||'non classificato')+' · qualità: '+(o.quality||'da verificare')+' · snapshot '+selectedMarketAsOf+'.':'Nessuno strumento di mercato disponibile per questa valuta.')+
-     ' '+esc(repricing)+' Il prezzo di un future, di un OIS e il tasso ufficiale non sono intercambiabili.</p></div>'+
-     '<div><span>IPOTESI FX · COSA CONFERMARE</span><p>'+esc(FX_TESTS[selected]||'Confronta banca centrale, prezzi monetari relativi e cambio, senza dedurre trade da un voto.')+'</p></div></div>'+
+   '<div class="drivers-fx-idea"><b>IPOTESI ECONOMICA DA TESTARE SUL FOREX</b><p>'+esc(FX_TESTS[selected]||'Confrontare il repricing relativo, la reazione FX e lo scenario alternativo.')+'</p></div>'+
+   (root.FXQuantDriverMarketAudit?.render?.({get,esc,dayNow},selected)||'')+
    '<div class="drivers-facts drivers-policy-facts">'+
    '<div class="drivers-fact"><span>TASSO UFFICIALE / DECISIONE</span><strong>'+esc(b?.rate_text||rate)+'</strong><small>'+esc(last?date(last):'Data non verificabile')+'</small></div>'+
    '<div class="drivers-fact"><span>PROSSIMA RIUNIONE / CALENDARIO</span><strong>'+esc(day(nextMeeting)?date(nextMeeting):'Da verificare')+'</strong><small>'+esc(nextTxt)+'</small></div></div>'+
