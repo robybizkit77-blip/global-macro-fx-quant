@@ -26,12 +26,12 @@ def observed_date(raw):
         return None
     s = str(raw).strip()
     try:
-        if len(s) == 7 and s[4] == "-":
-            y, m = map(int, s.split("-"))
-            return date(y, m, calendar.monthrange(y, m)[1])
-        if len(s) == 7 and "-Q" in s:
+        if len(s) == 7 and s[4:6] == "-Q":
             y, q = int(s[:4]), int(s[-1])
             m = q * 3
+            return date(y, m, calendar.monthrange(y, m)[1])
+        if len(s) == 7 and s[4] == "-":
+            y, m = map(int, s.split("-"))
             return date(y, m, calendar.monthrange(y, m)[1])
         if len(s) >= 10 and s[4] == "-" and s[7] == "-":
             return date.fromisoformat(s[:10])
