@@ -1,8 +1,47 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-14T03:21:20Z",
+  "generated_at_utc": "2026-11-14T11:33:12Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-fe3e81eaf03691430b20",
+      "observed_at_utc": "2026-11-13T07:21:00Z",
+      "headline": "South African rand slides to seven-month low ahead of inflation, rate decision",
+      "summary": "Reuters riporta: South African rand slides to seven-month low ahead of inflation, rate decision. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQZHJUYnA3N1BkeU9GR3djUy1pMzFjNHlJNjJXZWVFb3IwVkJFR1NCV0RwVkFhRld3YjNqam9RWWZTMVc1dnY2WHlOWkZNSzZtOHRqUDQyaTY2MXQxdjEwb1J2dm1Xb1ZVaFhrZURLR2xJbG5rRmlHZkdld01FMEFvak5tbG1MWjFDRk5rWlNHUHdjWVNiSWxYaUdfZV9UTUFpWEpnQjdyXy1LcUg2Vm5CRDdsN241clFaMTdoeXBB?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-ab672f7cf1d4659135f1",
+      "observed_at_utc": "2026-11-13T17:52:53Z",
+      "headline": "FTSE 100 closes at 3-month high as energy and defensive stocks rise",
+      "summary": "Reuters riporta: FTSE 100 closes at 3-month high as energy and defensive stocks rise. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQNTAwX1p6UEtzY3lWN0VsRldsalN2TXdhYWxrTlpFbUQwclZILW0tYWVqQjNKMlhRczRVamRyOVJrVERCZW52SDBBZ3dMLWM4aEs2MGQxOXMybFkwc2dfcDVBWGtiWlJCUElKYU4wMGpQd0IwQ3VpaHNEMHZ2eS1hNTd6NmN3SG16dFZZaV9GSVltcENLZHdHaHdkRVUyWGdaY2tqMzhXVUlmazNpM0E?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-787611e12680f0f4f35a",
+      "observed_at_utc": "2026-11-13T17:17:40Z",
+      "headline": "Neoclouds, AI stocks slide again as Nvidia turmoil rattles sector",
+      "summary": "Reuters riporta: Neoclouds, AI stocks slide again as Nvidia turmoil rattles sector. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPNDEwYUl1V3JQSU1MMUlWQ2k5V0toMnNCNUFZLXFaTldqYTVEWXlrZ0xudEhMNDk4bVJweUxrNThEaGo1VmRhYTRndVJ6djRINHRNQU8yVE9oczQyUUVxRzVjbnNzZlFQbEhTcGV6elkzcjNNVWs3RFhZYVg3a00zNlhxam1xV0ExcVM0ZEIzN05oQl9YTU5vUC1FVXFXU1k3dFpwQmx0d0hGdw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-e04e21c5b36ae46eaaed",
       "observed_at_utc": "2026-11-14T00:03:00Z",
@@ -1376,47 +1415,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQbWpBY1VHMFd5a2tJXzM1RFFFQTl5Y09aVDgza095UkJKVzNnQ3F4VW1pMzBEazJKMGhlS21zUEdCLXJPOVhWdXRnZmlLRHliMDdqYmt2b2ZWYk5FeW85VnBSalpRd1E5b3BVSUZDU2VLMUNiQm41YWw1SUgxV2dWaUFZUkI2MllhY0Z5ZkZHcWNuQmdCaHBKbVRhck1meTRz?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-ccc8ea3fbd0f0cfc9723",
-      "observed_at_utc": "2026-11-04T11:49:22Z",
-      "headline": "ECB rate hike looks nearly certain after inflation rises to three-year high",
-      "summary": "Reuters riporta: ECB rate hike looks nearly certain after inflation rises to three-year high. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "EUR"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxNSnlWVjhZeXhCME9sTHdmcC1RWTdrNUVIbUhhbE1td2t3Z2VDbzh1SW1kSmJJdWU5aVRSeW8tQ3hweVJwTDdVMGR0XzdtM0UtSGhkRnY1NWN6ZUkxR05xb2NadnJuNjEza3d4cDNOcTRnWXJBT2MzYnJjY2hkbjdHUmxoWjVsWGE0UE5NOUx0QQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f8502071d70b1d8d946b",
-      "observed_at_utc": "2026-11-03T20:26:56Z",
-      "headline": "Brazil's Lula not weighing proposal to slash interest rates, minister says",
-      "summary": "Reuters riporta: Brazil's Lula not weighing proposal to slash interest rates, minister says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNcWo0MGtRNFVLaHhob0s1OXhOQ3hGY1A4MGk2NHhlN1FUaTBQeVVOeUJyenFWV1ZJZ3N3bWNJVm5CTUJNSl9JTUh1NlBua29HQ3RWQW83YjE4M3NCMlFvZ1pId0wtcEE2cXR2UThwQU5ZM2E4TXlTNE5vQ1kyT1U2OFllQ1RqdHJqOEN6NlBYemtHd1FPMDB5dGFLTEE0VG5QX1JoV0YwbWxMSVZhREJleHR2NS04T08zTzFwSg?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-cfe09c6e2877aa1332ef",
-      "observed_at_utc": "2026-11-03T10:14:40Z",
-      "headline": "OPEC agrees modest hike in oil supply after Iran softens stance",
-      "summary": "Reuters riporta: OPEC agrees modest hike in oil supply after Iran softens stance. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "COMMODITIES",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE92SHB2ZWFTNGtUMGdRbUk0MmdzTldzMk1kTWEtLVJQNDRJUFBvYnFKMEd3QmxNdGlxWGw5anp1a19iSG8wdndjUkpZVG9jbWRiVmIxMm93N2JFNHZp?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
