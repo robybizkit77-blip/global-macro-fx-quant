@@ -18,11 +18,11 @@
   if(!macro)return {text:'I dati macro osservati non sono disponibili in questo modulo: nessuna capacità di manovra dedotta.',dates:'Non disponibili'};
   const p=macro.inflation,l=macro.labour;
   const inf=finite(p?.latest_value)&&p?.as_of?
-   'Inflazione '+p.latest_value.toLocaleString('it-IT',{maximumFractionDigits:2})+' (unità e trasformazione della serie macro originale), '+(p.direction||'direzione non classificata').toLowerCase()+', dato '+p.as_of+'.':
+   'Inflazione '+p.latest_value.toLocaleString('it-IT',{maximumFractionDigits:2})+(String(p.transformation||'').includes('yoy')?'% a/a':' (metrica della fonte)')+', '+(p.direction||'direzione non classificata').toLowerCase()+', dato '+p.as_of+'.':
    'Inflazione corrente non verificabile.';
   const lab=finite(l?.latest_value)&&l?.as_of?
    'Lavoro: '+(l.label||'indicatore')+' '+l.latest_value.toLocaleString('it-IT',{maximumFractionDigits:2})+
-   ', '+(l.direction||'direzione non classificata').toLowerCase()+', dato '+l.as_of+'.':
+   (/disoccupazione/i.test(l.label||'')?'%':'')+', '+(l.direction||'direzione non classificata').toLowerCase()+', dato '+l.as_of+'.':
    'Indicatore lavoro non verificabile.';
   return {text:inf+' '+lab+' Questi sono vincoli da interpretare, non una previsione automatica del prossimo voto.',
    dates:[p?.as_of,l?.as_of].filter(Boolean).join(' · ')||'Date non disponibili'};
