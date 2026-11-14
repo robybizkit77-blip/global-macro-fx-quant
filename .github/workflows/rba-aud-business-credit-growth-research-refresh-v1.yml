@@ -1,0 +1,126 @@
+name: RBA AUD Business Credit Growth Research Refresh V1
+
+on:
+  workflow_dispatch:
+  schedule:
+    # RBA publishes monthly; check weekday release archive after Australian close.
+    - cron: '47 7 * * 1-5'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/liquidity/refresh_rba_aud_business_credit_growth_v1.py'
+      - 'validation/liquidity/test_refresh_rba_aud_business_credit_growth_v1.py'
+      - '.github/workflows/rba-aud-business-credit-growth-research-refresh-v1.yml'
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: rba-aud-business-credit-growth-research-v1
+  cancel-in-progress: false
+
+jobs:
+  source-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prove break-adjusted growth is not inferred from stock, validate release date
+        run: python -m unittest validation.liquidity.test_refresh_rba_aud_business_credit_growth_v1 -v
+      - name: Snapshot unchanged Core AUD liquidity and FX ranks
+        run: |
+          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/rba-aud-runtime.before
+          sha256sum live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json > /tmp/rba-aud-fx.before
+      - name: Download latest RBA Financial Aggregates release and validate adjusted growth
+        run: |
+          python validation/liquidity/refresh_rba_aud_business_credit_growth_v1.py \
+            --apply --receipt /tmp/rba-aud-business-growth-receipt.json
+          cat /tmp/rba-aud-business-growth-receipt.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Enforce exact source-only mutation boundary
+        run: |
+          sha256sum -c /tmp/rba-aud-runtime.before /tmp/rba-aud-fx.before
+          python - <<'PY'
+          import subprocess
+          whitelist={'site/fx-quant-v2/next/aud-rba-business-credit-growth-research-v1.js'}
+          actual=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert actual<=whitelist,actual
+          print('AUD_RBA_RESEARCH_ONLY_DIFF_PASS',sorted(actual))
+          PY
+      - name: Commit only verified RBA adjusted growth sidecar
+        run: |
+          set -euo pipefail
+          path=site/fx-quant-v2/next/aud-rba-business-credit-growth-research-v1.js
+          if git diff --quiet -- "$path"; then
+            echo 'AUD_RBA_GROWTH_SOURCE_NO_CHANGE' >> "$GITHUB_STEP_SUMMARY"
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -- "$path"
+            git commit -m 'Refresh official RBA break-adjusted business-credit growth (research only)'
+            git fetch origin main --no-tags
+            git rebase origin/main
+            git push origin HEAD:main
+            echo 'AUD_RBA_GROWTH_RESEARCH_ONLY_SAVED' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Mirror validated RBA source only to Pages with exact blob lease
+        id: pages-sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          path=site/fx-quant-v2/next/aud-rba-business-credit-growth-research-v1.js
+          git fetch origin main --no-tags
+          source_blob="$(git hash-object "$path")"
+          test "$(git rev-parse "origin/main:$path")" = "$source_blob" || {
+            echo 'AUD_RBA_GROWTH_SOURCE_MOVED_WITHHELD'; exit 1;
+          }
+          git fetch origin gh-pages --no-tags
+          pages_sha="$(git rev-parse origin/gh-pages)"
+          git worktree add --detach /tmp/rba-aud-growth-pages origin/gh-pages
+          mkdir -p /tmp/rba-aud-growth-pages/site/fx-quant-v2/next
+          cp "$path" "/tmp/rba-aud-growth-pages/$path"
+          cd /tmp/rba-aud-growth-pages
+          if git diff --quiet -- "$path"; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo 'AUD_RBA_GROWTH_PAGES_ALREADY_CURRENT' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          test "$(git diff --name-only)" = "$path"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$path"
+          git commit -m 'Mirror adjusted RBA business-credit growth research only'
+          test "$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')" = "$pages_sha" || {
+            echo 'AUD_RBA_GROWTH_PAGES_RACE_WITHHELD'; exit 1;
+          }
+          git fetch origin main --no-tags
+          test "$(git rev-parse "origin/main:$path")" = "$source_blob" || {
+            echo 'AUD_RBA_GROWTH_SOURCE_RACE_WITHHELD'; exit 1;
+          }
+          git push --force-with-lease=refs/heads/gh-pages:$pages_sha origin HEAD:gh-pages
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+          echo 'AUD_RBA_GROWTH_PAGES_MIRRORED' >> "$GITHUB_STEP_SUMMARY"
+      - name: Explicit Pages build after research mirror
+        if: steps.pages-sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          output="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds")"
+          jq -e '.status == "queued" or .status == "building"' <<<"$output" >/dev/null
+          echo 'AUD_RBA_GROWTH_PAGES_BUILD_QUEUED' >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve provenance and fail-closed receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rba-aud-credit-growth-official-source-receipt
+          path: /tmp/rba-aud-business-growth-receipt.json
+          if-no-files-found: warn
+          retention-days: 14
