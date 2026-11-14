@@ -69,7 +69,9 @@ def parse(data,*,today=None):
         selected[month]=round(value,3)
     months=sorted(selected)
     require(len(months)>=4,"too few usable months")
-    require(months==list(selected),"unusual source chronology")
+    source_order=list(selected)
+    require(source_order==months or source_order==list(reversed(months)),
+            "unusual source chronology")
     require("2026-08" in selected,"issuer source does not overlap verified August 2026")
     overlap=selected["2026-08"]/INITIAL_OBSERVED["2026-08"]-1
     require(abs(overlap)<.03,"August source vintage/series mismatch exceeds 3%")
