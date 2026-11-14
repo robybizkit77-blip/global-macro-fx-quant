@@ -328,6 +328,23 @@ async function macroDriversJourney(page,label){
  const audCanonical=await locator(page,'[data-liq-role="credit"]').innerText();
  assert(audCanonical.includes('31/07/2026')&&!audCanonical.includes('Ultimo 2026-09'),
   label+' AUD native credit stock must not be replaced by research source');
+ await locator(page,'[data-liq-country="JPY"]').click();
+ const bojCreditCard=locator(page,'.drivers-jpy-official');
+ assert.equal(await bojCreditCard.count(),1,
+  label+' official JPY credit research must be visible in the JPY country dossier');
+ const bojSrc=await page.evaluate(()=>window.FXQuantJPYBankCreditResearch);
+ assert.equal(bojSrc?.series_id,'DLCLAEDBLTTO',
+  label+' BoJ MD11 official research source not loaded');
+ const bojText=await bojCreditCard.innerText();
+ const yenBillions=n=>Number(n/10).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
+ assert(bojText.includes(bojSrc.last_observation)&&
+        bojText.includes(yenBillions(bojSrc.values.at(-1)))&&
+        bojText.includes('USD/JPY')&&bojText.includes('JGB/UST')&&
+        bojText.includes('non sono nuovi prestiti'),
+  label+' JPY credit stock, economic limitations and Forex confirmation missing');
+ const jpyNative=await locator(page,'[data-liq-role="credit"]').innerText();
+ assert(jpyNative.includes('2026-07')&&!jpyNative.includes('Ultimo '+bojSrc.last_observation),
+  label+' official JPY research must not overwrite the historical canonical credit record');
  await locator(page,'[data-liq-country="GBP"]').click();
  const officialBoE=locator(page,'.drivers-gbp-official');
  assert.equal(await officialBoE.count(),1,
