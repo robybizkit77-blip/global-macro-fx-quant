@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-13",
-  "generated_at_utc": "2026-11-14T03:21:47.804805Z",
+  "generated_at_utc": "2026-11-14T11:33:36.880865Z",
   "items": [
     {
       "as_of": "2026-11-13",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-14T03:21:47.804805Z",
+  "last_checked_at_utc": "2026-11-14T11:33:36.880865Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1207,10 +1207,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 21,
+        "accepted_items": 19,
         "ccy": "JPY",
         "entries_rejected": 28,
-        "feed_entries_seen": 49,
+        "feed_entries_seen": 47,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
