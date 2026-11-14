@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-13",
-  "generated_at_utc": "2026-11-14T11:33:36.880865Z",
+  "generated_at_utc": "2026-11-14T13:29:30.205992Z",
   "items": [
     {
       "as_of": "2026-11-13",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-14T11:33:36.880865Z",
+  "last_checked_at_utc": "2026-11-14T13:29:30.205992Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -689,116 +689,6 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "JPY",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/boj/other/mei/release/2026/mei261110.xlsx",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-12T08:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 1.642,
-            "date": "2026-11-13",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-12",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-12",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.857
-          }
-        },
-        "source": "Bank of Japan",
-        "source_id": "BOJ_NEWS",
-        "title": "Japanese Government Bonds Held by the Bank of Japan",
-        "url": "https://www.boj.or.jp/en/statistics/boj/other/mei/release/2026/mei261110.xlsx"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "JPY",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/set/bffail/sjgb2610.pdf",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-12T07:30:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 1.642,
-            "date": "2026-11-13",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-12",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-12",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.857
-          }
-        },
-        "source": "Bank of Japan",
-        "source_id": "BOJ_NEWS",
-        "title": "Basic Figures on Fails (Oct.)",
-        "url": "https://www.boj.or.jp/en/statistics/set/bffail/sjgb2610.pdf"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "NZD",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -1174,7 +1064,7 @@
     "schema": "GMFQ_OFFICIAL_RSS_HEADLINES_V1",
     "scope": "G8_CENTRAL_BANK_AND_EIA_OFFICIAL_RELEASES_NOT_GENERAL_MARKET_NEWS",
     "source_count": 9,
-    "source_failures": 0,
+    "source_failures": 1,
     "sources": [
       {
         "accepted_items": 6,
@@ -1207,14 +1097,15 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 19,
+        "accepted_items": 0,
         "ccy": "JPY",
-        "entries_rejected": 28,
-        "feed_entries_seen": 47,
+        "entries_rejected": null,
+        "failure_type": "TimeoutError",
+        "feed_entries_seen": null,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
-        "status": "OK_RECENT_ITEMS"
+        "status": "FETCH_OR_PARSE_FAILED"
       },
       {
         "accepted_items": 0,
@@ -1267,7 +1158,7 @@
         "status": "OK_RECENT_ITEMS"
       }
     ],
-    "status": "VERIFIED_OFFICIAL_RELEASES"
+    "status": "PARTIAL_SOURCES"
   },
   "schema": "GMFQ_NEWS_PULSE_OPERATIONAL_V1",
   "scope": {
