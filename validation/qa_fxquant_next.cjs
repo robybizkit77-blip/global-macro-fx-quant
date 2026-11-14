@@ -111,6 +111,8 @@ async function inspectRoute(page,label,key){
    label+' dated 3M/6M/12M pricing audit must remain accessible');
   assert.equal(await locator(page,'.drivers-links [data-bank-open]').count(),2,
    label+' policy must link directly to source rates and currency');
+  assert.equal(await locator(page,'.drivers-market-audit .drivers-market-item').count(),2,
+   label+' bank policy must link monetary repricing with source-dated FX validation');
  }else if(key==='liquidity'){
   assert.equal(await locator(page,'#liquidity-studio [data-liq-country]').count(),8,
    label+' all eight G8 liquidity choices required');
@@ -120,6 +122,8 @@ async function inspectRoute(page,label,key){
    label+' both source-dated trend charts required');
   assert((await locator(page,'.drivers-source-note').first().innerText()).includes('Copertura storica'),
    label+' no stale series may be presented as current market readings');
+  assert.equal(await locator(page,'.drivers-market-audit .drivers-market-item').count(),2,
+   label+' liquidity hypothesis must be checked against dated 6M and FX price evidence');
  }else if(key==='rates'){
   const bridge=locator(page,'.rates-fx-handoff');
   assert.equal(await bridge.count(),1,label+' rates-to-FX evidence missing');
@@ -264,8 +268,10 @@ async function macroDriversJourney(page,label){
   label+' bank dossier did not follow selection');
  const bank=await locator(page,'.drivers-selection').innerText();
  assert(bank.includes('WANT')&&bank.includes('CAN')&&bank.includes('TASSO UFFICIALE')&&
-  bank.includes('IL MERCATO'),
-  label+' policy decision and monetary pricing distinctions missing');
+  bank.includes('PRICING MONETARIO')&&bank.includes('PREZZO E TESI FX'),
+  label+' policy decision, monetary pricing and FX model must remain distinct');
+ assert(bank.includes('OIS')&&bank.includes('non hanno la stessa data'),
+  label+' mixed-date cross-asset risk must not be described as a synchronized market move');
  await locator(page,'[data-bank-open="rates"]').click();
  await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='rates');
  assert.equal(await locator(page,'#rs-country').inputValue(),'GBP',
@@ -290,6 +296,8 @@ async function macroDriversJourney(page,label){
   label+' liquidity-to-credit divergence narrative missing');
  assert(meaning.includes('STORICO')&&meaning.includes('osservazione precedente'),
   label+' historical source age and observed changes must be explicit');
+ assert(meaning.includes('USD/JPY')&&meaning.includes('non hanno la stessa data'),
+  label+' JPY liquidity FX hypotheses require sourced price and honest asynchronous risk');
  const detail=locator(page,'.drivers-fold');
  await detail.locator('summary').click();
  assert(await detail.evaluate(el=>el.open),label+' financial conditions source details cannot open');
