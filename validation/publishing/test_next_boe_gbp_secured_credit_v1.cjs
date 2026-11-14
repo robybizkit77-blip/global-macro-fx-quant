@@ -1,0 +1,83 @@
+'use strict';
+/* Official BoE LPMVTYI household-secured annual credit growth, not BoE reserves. */
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'../..');
+const mortgage=require(path.join(root,'site/fx-quant-v2/next/gbp-boe-secured-credit-research-v1.js'));
+const reserve=require(path.join(root,'site/fx-quant-v2/next/gbp-boe-reserves-research-v1.js'));
+const studio=require(path.join(root,'site/fx-quant-v2/next/liquidity-credit-studio.js'));
+const native=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NATIVE_LIQ_DATA.json'),'utf8'));
+const entry=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
+assert.match(entry,/gbp-boe-secured-credit-research-v1\.js\?v=\d+/);
+assert.equal(mortgage.schema,'GMFQ_NEXT_GBP_BOE_SECURED_CREDIT_GROWTH_V1');
+assert.equal(mortgage.status,'VERIFIED_BOE_LPMVTYI_SECURED_GROWTH_RESEARCH_ONLY');
+assert.equal(mortgage.publisher,'Bank of England');
+assert.equal(mortgage.series_id,'LPMVTYI');
+assert.equal(mortgage.category,'secured_household_credit_yoy_growth');
+assert.equal(mortgage.frequency,'M');
+assert.equal(mortgage.unit,'percent_yoy');
+assert.equal(mortgage.seasonally_adjusted,true);
+assert.equal(mortgage.first_release_pit_verified,false);
+assert.equal(mortgage.observation_is_not_publication_date,true);
+assert.equal(mortgage.eligible_for_fx_core,false);
+assert.equal(mortgage.eligible_for_backtest,false);
+assert.equal(mortgage.official_september_release_date,'2026-10-29');
+assert.equal(mortgage.last_observation,mortgage.dates.at(-1));
+assert.equal(mortgage.dates.length,mortgage.values.length);
+assert(mortgage.dates.length>=24);
+assert(mortgage.source_url.startsWith('https://www.bankofengland.co.uk/boeapps/database/'));
+for(let i=0;i<mortgage.dates.length;i++){
+ const d=mortgage.dates[i],v=mortgage.values[i];
+ assert.match(d,/^\d{4}-\d{2}$/);
+ assert(Number.isFinite(v)&&v>-15&&v<25);
+ if(i>0){
+  const prev=mortgage.dates[i-1];
+  assert.equal(
+   ((+d.slice(0,4))*12+(+d.slice(5)))-
+   ((+prev.slice(0,4))*12+(+prev.slice(5))),1,
+   'BoE monthly source cannot have a silent gap');
+ }
+}
+for(const [date,ref] of [['2026-07',3.6],['2026-08',3.6],['2026-09',3.4]]){
+ const at=mortgage.dates.indexOf(date);
+ assert(at>=0,'BoE official reference month missing '+date);
+ assert(Math.abs(mortgage.values[at]-ref)<.16,'Official BoE variant drift '+date);
+}
+assert.equal(native.GBP.credit.last_date,'31 Jul 2026');
+assert.equal(native.GBP.credit.last_value,3.6);
+assert.equal(reserve.series_id,'RPWB56A');
+const fmt=(v,n=2)=>Number(v).toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n});
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const api=ccy=>({
+ get:k=>k==='liquidity'?native:null,FX,FLAGS:Object.fromEntries(FX.map(x=>[x,x])),
+ NAMES:Object.fromEntries(FX.map(x=>[x,x])),state:{liqCcy:ccy},
+ plot:()=>'<svg></svg>',pageHero:()=>'<h1>FX</h1>',esc,fmt,date:x=>x,
+ dayNow:()=>'2026-11-14'
+});
+const html=studio.render(api('GBP'));
+assert.match(html,/class="drivers-gbp-credit-bridge"/);
+assert.match(html,/LPMVTYI destagionalizzato/);
+assert.match(html,/punti percentuali/);
+assert.match(html,/non<\/b> al credito aziendale/);
+assert.match(html,/LPMVTYI/);
+assert.match(html,/Money and Credit · 29 ottobre/);
+assert.match(html,/3,4% annuo nel 2026-09/);
+assert.match(html,/3,6% del mese precedente/);
+assert.match(html,/−0,2/);
+assert.match(html,/non sono due misure confrontabili/);
+assert.match(html,/fonte separata dal feed FX/);
+assert.match(html,/RPWB56A/);
+const original=html.split('data-liq-role="credit"')[1]?.split('</div>')[0]||'';
+assert(original.includes('31 Jul 2026')&&!original.includes('2026-09'),
+ 'Research-only September data must not silently change GBP native credit');
+for(const ccy of FX.filter(x=>x!=='GBP')){
+ assert(!studio.render(api(ccy)).includes('drivers-gbp-credit-bridge'),
+  'GBP official secured credit source must be country-scoped: '+ccy);
+}
+console.log('BOE_GBP_SECURED_CREDIT_NEXT_PASS',JSON.stringify({
+ latest:mortgage.last_observation,growthYoY:mortgage.values.at(-1),
+ previous:mortgage.values.at(-2),nativeDate:native.GBP.credit.last_date,
+ monthlyObservations:mortgage.dates.length,
+ sourceOnly:true,pitVerified:false,fxSignal:false
+}));
