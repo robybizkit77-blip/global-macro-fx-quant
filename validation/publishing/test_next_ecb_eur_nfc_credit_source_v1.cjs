@@ -1,0 +1,64 @@
+'use strict';
+/* EUR NFC bank loans — official ECB BSI stock, separate research and FX. */
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'../..');
+const source=require(path.join(root,'site/fx-quant-v2/next/eur-ecb-nfc-credit-research-v1.js'));
+const studio=require(path.join(root,'site/fx-quant-v2/next/liquidity-credit-studio.js'));
+const native=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NATIVE_LIQ_DATA.json'),'utf8'));
+const html=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
+assert.match(html,/eur-ecb-nfc-credit-research-v1\.js\?v=\d+/);
+assert.equal(source.schema,'GMFQ_NEXT_EUR_ECB_NFC_CREDIT_RESEARCH_V1');
+assert.equal(source.status,'VERIFIED_ECB_BSI_NFC_STOCK_RESEARCH_ONLY');
+assert.equal(source.publisher,'European Central Bank / ESCB');
+assert.equal(source.series_id,'BSI.M.U2.N.A.A20.A.1.U2.2240.Z01.E');
+assert.equal(source.category,'nfc_loans_stock');
+assert.equal(source.frequency,'M');
+assert.equal(source.unit,'milioni EUR');
+assert.equal(source.seasonally_adjusted,false);
+assert.equal(source.eligible_for_fx_core,false);
+assert.equal(source.eligible_for_backtest,false);
+assert.equal(source.first_release_pit_verified,false);
+assert.equal(source.observation_is_not_publication_date,true);
+assert(source.source_url.startsWith('https://data.ecb.europa.eu/data/datasets/BSI/'));
+assert.equal(source.latest_observation,source.dates.at(-1));
+assert.equal(source.dates.length,source.values.length);
+assert(source.dates.length>=10);
+for(let i=0;i<source.dates.length;i++){
+ const d=source.dates[i],v=source.values[i];
+ assert.match(d,/^\d{4}-\d{2}$/);
+ assert(Number.isFinite(v)&&v>3000000&&v<9000000);
+ if(i>0) {
+  const prev=source.dates[i-1],diff=((+d.slice(0,4))*12+(+d.slice(5)))-((+prev.slice(0,4))*12+(+prev.slice(5)));
+  assert.equal(diff,1,'month gap or duplicate');
+  assert(Math.abs(v/source.values[i-1]-1)<.1);
+ }
+}
+assert(source.dates.includes('2026-07'));
+assert(Math.abs(source.values[source.dates.indexOf('2026-07')]/5481083.172910931-1)<.02);
+const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+const fmt=(v,n=2)=>Number(v).toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n});
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const api=k=>({get:x=>x==='liquidity'?native:null,FX,
+ FLAGS:Object.fromEntries(FX.map(x=>[x,x])),NAMES:Object.fromEntries(FX.map(x=>[x,x])),
+ state:{liqCcy:k},plot:()=>'<svg></svg>',
+ pageHero:(a,b,c)=>'<h1>'+b+'</h1>',esc,fmt,date:x=>x,
+ dayNow:()=>'2026-11-14'});
+const eur=studio.render(api('EUR'));
+assert.match(eur,/class="drivers-cad-official drivers-eur-official"/);
+assert.match(eur,/BCE \/ ESCB/);
+assert.match(eur,/Prestiti alle imprese dell’Eurozona/);
+assert.match(eur,/Il cumulato di due mesi/);
+assert.match(eur,/non è ancora una sequenza di accelerazione/);
+assert.match(eur,/vintage di prima pubblicazione non verificato/);
+assert.match(eur,/Fonte: BCE/);
+const coreFact=eur.split('data-liq-role="credit"')[1].split('</div>')[0];
+assert(!coreFact.includes('2026-09'),'ECB research must never replace the existing EUR.credit core');
+assert(!studio.render(api('USD')).includes('drivers-eur-official'));
+assert(!studio.render(api('CAD')).includes('drivers-eur-official'));
+console.log('EUR_ECB_NFC_RESEARCH_SIDECAR_PASS',JSON.stringify({
+ sourceDate:source.latest_observation,observations:source.dates.length,
+ latest:source.values.at(-1),nativeAsOf:native.EUR.credit.last_date,
+ firstReleaseUnverified:true,sourceOnly:true
+}));
