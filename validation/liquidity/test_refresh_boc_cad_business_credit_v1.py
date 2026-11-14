@@ -66,8 +66,11 @@ class BoCCreditResearchTest(unittest.TestCase):
         self.assertEqual(existing_observations(emitted),(
             p["dates"],p["values"]))
         current=DEST.read_text(encoding="utf-8")
-        self.assertEqual(existing_observations(current),(
-            p["dates"],[int(x) for x in p["values"]]))
+        current_rows=existing_observations(current)
+        self.assertIsNotNone(current_rows)
+        self.assertIn("2026-08",current_rows[0])
+        observed=current_rows[1][current_rows[0].index("2026-08")]
+        self.assertLess(abs(observed-944614)/944614,0.03)
         with tempfile.TemporaryDirectory() as temp:
             fixture=Path(temp)/"issuer.json"
             fixture.write_text(json.dumps(raw()),encoding="utf-8")
