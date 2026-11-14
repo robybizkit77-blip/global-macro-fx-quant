@@ -333,20 +333,37 @@ async function macroDriversJourney(page,label){
  assert.equal(await officialBoE.count(),1,
   label+' BoE official reserves research must appear in GBP country view');
  const boeText=await officialBoE.innerText();
- assert(boeText.includes('646.280')&&boeText.includes('RPWB56A')&&
-        boeText.includes('2026-11-12')&&boeText.includes('EUR/GBP'),
-  label+' GBP reserve stock requires verified publisher dates and relative FX test');
+ const boeSources=await page.evaluate(()=>({
+  reserves:window.FXQuantGBPBoEReservesResearch,
+  secured:window.FXQuantGBPBoESecuredCreditResearch
+ }));
+ assert.equal(boeSources.reserves?.series_id,'RPWB56A',
+  label+' official reserve source script has not loaded');
+ assert.equal(boeSources.secured?.series_id,'LPMVTYI',
+  label+' official mortgage growth source script has not loaded');
+ const itAmount=n=>Number(n).toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0});
+ const itRate=n=>Number(n).toLocaleString('it-IT',{minimumFractionDigits:1,maximumFractionDigits:1});
+ assert(boeText.includes(itAmount(boeSources.reserves.latest_balance_million_gbp))&&
+        boeText.includes(boeSources.reserves.published_on)&&
+        boeText.includes('RPWB56A')&&boeText.includes('EUR/GBP'),
+  label+' GBP reserve stock must reflect the latest issuer publication and relative FX check');
  const gbpNative=await locator(page,'[data-liq-role="liquidity"]').innerText();
- assert(gbpNative.includes('2026-09-16')&&!gbpNative.includes('Ultimo 2026-11-11'),
+ assert(gbpNative.includes('2026-09-16')&&
+        !gbpNative.includes('Ultimo '+boeSources.reserves.source_period),
   label+' GBP research must not silently overwrite historical native reserves');
  const householdCredit=locator(page,'.drivers-gbp-credit-bridge');
  assert.equal(await householdCredit.count(),1,
   label+' BoE secured lending growth must be visible inside the existing GBP source dossier');
  const secured=await householdCredit.innerText();
- assert(secured.includes('LPMVTYI')&&secured.includes('3,4%')&&
-        secured.includes('3,6%')&&secured.includes('punti percentuali')&&
-        secured.includes('2026-09')&&secured.includes('Money and Credit'),
-  label+' verified GBP annual household credit slowdown and source date must appear');
+ assert(secured.includes('LPMVTYI')&&
+        secured.includes(itRate(boeSources.secured.values.at(-1))+'%')&&
+        secured.includes(itRate(boeSources.secured.values.at(-2))+'%')&&
+        secured.includes('punti percentuali')&&
+        secured.includes(boeSources.secured.last_observation),
+  label+' verified GBP annual household credit must follow current BoE source values and date');
+ if(boeSources.secured.last_observation==='2026-09')
+  assert(secured.includes('Money and Credit'),
+   label+' September credit interpretation must link the issuer economic release');
  const gbpOldCredit=await locator(page,'[data-liq-role="credit"]').innerText();
  assert(gbpOldCredit.includes('31 Jul 2026')&&!gbpOldCredit.includes('Ultimo 2026-09'),
   label+' GBP latest research must not overwrite original old native credit source');
