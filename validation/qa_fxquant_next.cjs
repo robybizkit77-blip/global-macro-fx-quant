@@ -270,8 +270,13 @@ async function chosenPair(page,key,label){
   label+' meaningful confirmation evidence missing');
  assert(weakening.includes('Lo indebolirebbe')&&weakening.length>50,
   label+' meaningful contrary evidence missing');
- assert((await p.locator('.pairs-why-no-entry').innerText()).includes('non equivale'),
-  label+' thesis strength and entry attractiveness must be separated');
+ const riskText=(await p.locator('.pairs-why-no-entry').innerText()).trim();
+ assert(riskText.includes('Rischio operativo.')&&
+        riskText.includes('rapporto rischio/rendimento')&&
+        riskText.includes('non equivale'),
+  label+' '+key+' must explain source-specific risks and unvalidated entry payoff');
+ assert(!/livelli H4 (confermati|verificati)|segnale di ingresso confermato/i.test(riskText),
+  label+' '+key+' cannot claim verified H4 entries from ECB daily fixings');
  const story=await p.innerText();
  for(const word of ['TESI FONDAMENTALE','TRADE ATTRACTIVENESS',
   'Rafforzerebbe il quadro','Lo indebolirebbe','Evento da monitorare'])
