@@ -916,7 +916,7 @@ function pairs(){
   window.FXQuantPairRankings.render({get,FX,FLAGS,state,esc,sign,date,dayNow}):
   '<section class="panel"><p>Ranking non caricato. I feed e le tesi restano consultabili dal selettore.</p></section>';
  const drill=state.pairDetailOpen?
-  '<div class="fx-rank-detail-head" id="fx-selected-thesis"><h2>Tesi completa · '+esc(getPairName(state.pair))+
+  '<div class="fx-rank-detail-head" id="fx-selected-thesis" tabindex="-1"><h2>Tesi completa · '+esc(getPairName(state.pair))+
   '</h2><button type="button" class="fx-rank-back" data-pair-close="1">↑ Torna alla classifica</button></div>'+
   chooser+main+monetary+historyDetail+detail:'';
  return pageHero('FX / PAIR EXPLORER','Dal G8 alle <em>coppie da approfondire.</em>',
@@ -1248,8 +1248,29 @@ document.addEventListener('click',e=>{
  const hw=e.target.closest('[data-hwindow]');if(hw){state.homeWindow=Number(hw.dataset.hwindow);render();return}
  const hp=e.target.closest('[data-home-pair]');if(hp){state.spotPair=hp.dataset.homePair;state.pair=state.spotPair;render();return}
  const c=e.target.closest('[data-ccy]');if(c){state.ccy=c.dataset.ccy;if(state.against===state.ccy)state.against=FX.find(k=>k!==state.ccy);render();return}
- const closePair=e.target.closest('[data-pair-close]');if(closePair){state.pairDetailOpen=false;render();document.getElementById('fx-ranking-desk')?.scrollIntoView({behavior:'smooth',block:'start'});return;}
- const p=e.target.closest('[data-pair]');if(p){state.pair=p.dataset.pair;state.pairDetailOpen=true;if(state.route!=='pairs')location.hash='#pairs';else{render();document.getElementById('fx-selected-thesis')?.scrollIntoView({behavior:'smooth',block:'start'});}return}
+ const pairScrollBehavior=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
+ const closePair=e.target.closest('[data-pair-close]');if(closePair){
+  state.pairDetailOpen=false;render();
+  const ranking=document.getElementById('fx-ranking-desk');
+  if(ranking){
+   ranking.focus({preventScroll:true});
+   ranking.scrollIntoView({behavior:pairScrollBehavior(),block:'start'});
+  }
+  return;
+ }
+ const p=e.target.closest('[data-pair]');if(p){
+  state.pair=p.dataset.pair;state.pairDetailOpen=true;
+  if(state.route!=='pairs')location.hash='#pairs';
+  else{
+   render();
+   const detail=document.getElementById('fx-selected-thesis');
+   if(detail){
+    detail.focus({preventScroll:true});
+    detail.scrollIntoView({behavior:pairScrollBehavior(),block:'start'});
+   }
+  }
+  return;
+ }
  const f=e.target.closest('[data-pfilter]');if(f){state.pairFilter=f.dataset.pfilter;render();return}
  const w=e.target.closest('[data-watch]');if(w){state.watch.has(w.dataset.watch)?state.watch.delete(w.dataset.watch):state.watch.add(w.dataset.watch);saveWatch();render();return}
  const a=e.target.closest('[data-window]');if(a){state.window=Number(a.dataset.window);render();return}
@@ -1271,7 +1292,14 @@ document.addEventListener('toggle',e=>{
  if(e.target?.matches?.('details[data-home-dossier]'))state.homeDossierOpen=e.target.open;
 },true);
 document.addEventListener('change',e=>{
- if(e.target.id==='pair-primary-select'){const k=e.target.value;if(eurPairs()[k]){state.pair=k;state.pairDetailOpen=true;render()}return;}
+ if(e.target.id==='pair-primary-select'){
+  const k=e.target.value;
+  if(eurPairs()[k]){
+   state.pair=k;state.pairDetailOpen=true;render();
+   document.getElementById('pair-primary-select')?.focus({preventScroll:true});
+  }
+  return;
+ }
  if(e.target.id==='cs-other'){state.csOther=e.target.value;render();return;}
  if(e.target.id==='ms-series'){state.msSeriesId=e.target.value;render();return;}
  if(e.target.id==='ms-primary'){state.ccy=e.target.value;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();return;}

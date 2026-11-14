@@ -307,7 +307,7 @@
   };
   const row=(x,i,featured=false)=>'<button class="fx-rank-pair '+
    (featured?'featured ':'')+(state.pair===x.key&&state.pairDetailOpen?'selected ':'')+
-   'tier-'+x.tier+'" type="button" data-pair="'+esc(x.key)+'" aria-label="Apri tesi '+esc(x.name)+'">'+
+   'tier-'+x.tier+'" type="button" data-pair="'+esc(x.key)+'" aria-pressed="'+String(state.pair===x.key&&state.pairDetailOpen)+'" aria-label="Apri tesi '+esc(x.name)+'">'+
    '<span class="fx-rank-number">'+(i+1)+'</span>'+
    '<span class="fx-rank-pair-id"><strong>'+esc(x.name)+'</strong><small>'+
    (x.bias==='NESSUNO'?'NESSUN BIAS':'STIMA '+esc(x.bias))+'</small></span>'+
@@ -332,7 +332,7 @@
   const noTrade=top.some(x=>x.tier===1)?
     'La categoria più alta identifica solo un allineamento da studiare, non un ingresso.':
     'Nessuna coppia ha tutte le conferme: questa è una selezione di ricerca, non una lista di trade.';
-  return '<div class="fx-ranking-desk" id="fx-ranking-desk">'+
+  return '<div class="fx-ranking-desk" id="fx-ranking-desk" tabindex="-1">'+
    '<div class="fx-rank-intro"><div><span class="mini-overline">FX / STIMA OPERATIVA V1</span>'+
    '<h2>Chi mostra più forza relativa? <em>Quali coppie meritano verifica?</em></h2>'+
    '<p>Prima confronta le valute; poi scegli una coppia. La direzione della tesi dipende da macro e variazioni monetarie, mentre il prezzo serve per valutare il momento, non per inventare una spiegazione.</p></div></div>'+
