@@ -77,6 +77,16 @@ class GBPBoESecuredCreditTest(unittest.TestCase):
         self.assertIn('"unit": "percent_yoy"',output)
         self.assertEqual(existing_values(output),(x["dates"],x["values"]))
 
+    def test_initial_empty_research_placeholder_is_not_false_rollback(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source=Path(temp)/"boe.csv"
+            sidecar=Path(temp)/"gbp-secured.js"
+            source.write_text(fixture(),encoding="utf-8")
+            sidecar.write_text("const data={dates:[],values:[]};",encoding="utf-8")
+            receipt=run(destination=sidecar,fixture=source,today=DAY,apply=True)
+            self.assertEqual(receipt["write_state"],"RESEARCH_SIDECAR_ONLY")
+            self.assertEqual(receipt["latest_observation"],"2026-09")
+
     def test_apply_only_research_sidecar_and_idempotence(self):
         with tempfile.TemporaryDirectory() as temp:
             source=Path(temp)/"boe.csv"
