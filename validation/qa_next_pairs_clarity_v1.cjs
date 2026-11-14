@@ -11,7 +11,7 @@ const css=read('site/fx-quant-v2/next/pairs-clarity.css');
 const rankings=read('site/fx-quant-v2/next/pair-rankings.js');
 new vm.Script(app);
 new vm.Script(rankings);
-assert(html.includes('./pairs-clarity.css?v=4'));
+assert(html.includes('./pairs-clarity.css?v=5'));
 assert(/app\.js\?v=18/.test(html));
 assert(css.includes('.pairs-reading-compact'));
 assert(css.includes('@media(max-width:560px)'));
