@@ -245,9 +245,14 @@ async function chosenPair(page,key,label){
  },key,{timeout:15000});
  const detailHead=locator(page,'#fx-selected-thesis');
  await page.waitForFunction(()=>document.activeElement?.id==='fx-selected-thesis');
+ await page.waitForFunction(()=>{
+  const el=document.getElementById('fx-selected-thesis');
+  if(!el)return false;
+  const top=el.getBoundingClientRect().top;
+  return top>=48&&top<window.innerHeight*.70;
+ });
  const top=await detailHead.evaluate(el=>el.getBoundingClientRect().top);
  assert(top>=48,label+' '+key+' dossier heading is behind sticky navigation: '+top);
- const selected=locator(page,'#fx-rank-all-list button.fx-rank-pair[data-pair="'+key+'"]');
  const listSelection=locator(page,'.fx-rank-all-list button.fx-rank-pair[data-pair="'+key+'"]');
  assert.equal(await listSelection.getAttribute('aria-pressed'),'true',label+' selection not exposed to assistive technology');
  const p=locator(page,'.pairs-reading-compact');
