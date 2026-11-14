@@ -56,10 +56,12 @@
   const delta=finite(previous)&&finite(row.last_value)?row.last_value-previous:null;
   let observation='Ultima variazione non verificabile';
   if(finite(delta)){
-   const pct=(String(row.label).match(/yoy|a\/a|percent|%/i))?'punti percentuali':'variazione relativa';
-   const isRate=pct==='punti percentuali';
-   const move=isRate?delta:(Math.abs(previous)>0?100*delta/Math.abs(previous):null);
-   if(finite(move))observation=(move>0?'+':move<0?'−':'')+Math.abs(move).toLocaleString('it-IT',{maximumFractionDigits:2})+(isRate?' punti percentuali':'%')+' dall’osservazione precedente';
+   const survey=/SLOOS|SLOS|Tankan|BLS|standard|lending attitude|disponibilità credito|condizioni credito/i.test(row.label);
+   const isRate=/yoy|a\/a|percent|%/i.test(row.label);
+   const move=survey||isRate?delta:(Math.abs(previous)>0?100*delta/Math.abs(previous):null);
+   if(finite(move))observation=(move>0?'+':move<0?'−':'')+Math.abs(move).toLocaleString('it-IT',{maximumFractionDigits:2})+
+    (survey?' punti della survey':isRate?' punti percentuali':'%')+' dall’osservazione precedente'+
+    (survey?' (segno da interpretare secondo la definizione della survey)':'');
   }
   return {coverage:true,state:overdue?'STORICO':valid?'DATATO':'DATA DA VERIFICARE',tone:overdue?'warn':'neutral',
    message:staleText+' · '+short(row.last_date)+' · '+observation+
@@ -72,22 +74,22 @@
   const cr=direction(row.credit_dir,Boolean(row.credit?.label&&finite(row.credit?.last_value)));
   let headline,meaning;
   if(liq.tone==='down'&&cr.tone==='up'){
-   headline='La liquidità misurata si riduce, ma il credito continua ad aumentare.';
+   headline='Nelle rispettive serie storiche, liquidità in calo e credito in espansione.';
    meaning='I due canali divergono: il credito osservato non conferma una stretta generalizzata, ma la minore liquidità potrebbe aumentare la sensibilità a shock futuri.';
   }else if(liq.tone==='up'&&cr.tone==='up'){
-   headline='Liquidità e credito risultano entrambi in espansione nelle rispettive serie.';
+   headline='Le due serie storiche indicano liquidità e credito in crescita.';
    meaning='È una combinazione compatibile con condizioni finanziarie meno restrittive, ma servono standard di prestito, domanda e tassi per verificarlo.';
   }else if(liq.tone==='down'&&cr.tone==='down'){
-   headline='Liquidità e credito segnalano entrambi un indebolimento.';
+   headline='Le due serie storiche indicano liquidità e credito in calo.';
    meaning='Potenziale freno alla trasmissione finanziaria: la persistenza va verificata con attività economica, spread e politica monetaria.';
   }else if(liq.tone==='flat'&&cr.tone==='up'){
-   headline='Il credito cresce senza una chiara espansione della liquidità osservata.';
+   headline='Credito in crescita, liquidità stabile nell’ultima classificazione storica.';
    meaning='La creazione di credito e la liquidità di banca centrale non misurano la stessa cosa: non sono due conferme indipendenti di allentamento.';
   }else if(liq.tone==='up'&&cr.tone==='flat'){
-   headline='Più liquidità misurata, ma il credito non accelera nella serie disponibile.';
+   headline='Liquidità in crescita, credito classificato stabile nello storico.';
    meaning='La disponibilità di riserve o moneta non implica automaticamente maggiore domanda e concessione di prestiti.';
   }else if(cr.tone==='unknown'){
-   headline='La liquidità è osservabile, ma manca una misura diretta del credito confrontabile.';
+   headline='Liquidità storica disponibile, ma senza serie numerica del credito.';
    meaning='La direzione della liquidità da sola non basta a descrivere la trasmissione all’economia reale. Le survey possono offrire soltanto un contesto distinto.';
   }else{
    headline='I canali di liquidità e credito non danno una conferma univoca.';
