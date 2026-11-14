@@ -139,7 +139,7 @@
      !/^https:\/\/www\.rba\.gov\.au\/statistics\/balance-sheet\/$/.test(x.source_url))return '';
   const age=Math.round((dateMs(today)-dateMs(period))/864e5);
   const movement=x.weekly_movement_million_aud;
-  const signed=(movement>0?'+':movement<0?'−':'')+fmt(Math.abs(movement),0);
+  const signed=(movement>0?'+':movement<0?'−':'')+String(Math.abs(movement)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
   const observation=age>25?'STORICO · DA AGGIORNARE':'SETTIMANALE UFFICIALE';
   return '<div class="drivers-aud-es-bridge" aria-label="Riserve RBA settimanali fonte indipendente">'+
    '<b>SECONDO CANALE, NON SECONDA CONFERMA: LE RISERVE</b>'+
