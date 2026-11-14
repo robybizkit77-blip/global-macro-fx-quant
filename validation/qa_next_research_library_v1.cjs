@@ -14,7 +14,7 @@ const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
 assert.match(index,/research-library\.css\?v=1/);
 assert.match(index,/research-library\.js\?v=10/);
-assert.match(index,/9 sezioni/);
+assert.match(index,/11 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
 assert.match(app,/libraryFilter/);
