@@ -47,7 +47,7 @@ class BoEGBPReservesTest(unittest.TestCase):
         self.assertEqual(d["weekly_change_million_gbp"],5275)
 
     def test_failure_if_source_or_header_does_not_match(self):
-        with self.assertRaisesRegex(ValueError,"issuer"):
+        with self.assertRaisesRegex(ValueError,"no official BoE weekly report links"):
             latest_link('<html><a href="https://untrusted.example/a">x</a></html>',today=DAY)
         with self.assertRaisesRegex(ValueError,"official report header"):
             parse_report(weekly_report(current_date="10 November 2026"),date(2026,11,11),LATEST,today=DAY)
@@ -57,7 +57,7 @@ class BoEGBPReservesTest(unittest.TestCase):
     def test_future_old_and_bad_issuer_values_withheld(self):
         with self.assertRaisesRegex(ValueError,"publication timing"):
             parse_report(weekly_report(published="16 November 2026"),date(2026,11,11),LATEST,today=DAY)
-        with self.assertRaisesRegex(ValueError,"reserve liability row"):
+        with self.assertRaisesRegex(ValueError,"reserve liability meaning"):
             parse_report(weekly_report(label="Notes on issue"),date(2026,11,11),LATEST,today=DAY)
         with self.assertRaisesRegex(ValueError,"sterling millions unit"):
             parse_report(weekly_report(unit="USD billion"),date(2026,11,11),LATEST,today=DAY)
