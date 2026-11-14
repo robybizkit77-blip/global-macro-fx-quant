@@ -24,6 +24,13 @@ class BoCCreditResearchTest(unittest.TestCase):
         self.assertEqual(p["values"][-1],944614)
         self.assertFalse(p["revised_august_2026"])
 
+    def test_reverse_chronology_official_valet_response(self):
+        x=raw()
+        x["observations"].reverse()
+        p=parse(x,today=DAY)
+        self.assertEqual(p["dates"][-1],"2026-08")
+        self.assertEqual(p["values"][-1],944614)
+
     def test_issuer_revision_under_overlap_guard(self):
         x=raw();x["observations"][-1]["V122667770"]["v"]="945500"
         p=parse(x,today=DAY)
