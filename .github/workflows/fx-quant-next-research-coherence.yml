@@ -33,6 +33,9 @@ on:
       - 'validation/publishing/test_next_relative_pricing_v1.cjs'
       - 'validation/publishing/test_next_pair_monetary_bridge_v1.cjs'
       - 'validation/publishing/test_next_g8_pricing_evidence_v1.cjs'
+      - 'validation/publishing/test_next_home_pricing_proof_v1.cjs'
+      - 'site/fx-quant-v2/next/home-pricing-proof-v1.js'
+      - 'site/fx-quant-v2/next/home-pricing-proof-v1.css'
       - 'site/fx-quant-v2/next/g8-pricing-evidence-v1.js'
       - 'site/fx-quant-v2/next/pair-monetary-bridge-v1.js'
       - 'site/fx-quant-v2/next/rates-relative-pricing-v1.js'
@@ -90,6 +93,8 @@ jobs:
         run: node validation/publishing/test_next_pair_monetary_bridge_v1.cjs
       - name: Verify sourced G8 6M evidence for eight currencies
         run: node validation/publishing/test_next_g8_pricing_evidence_v1.cjs
+      - name: Verify Home 6M source repricing and same-date ECB FX observations
+        run: node validation/publishing/test_next_home_pricing_proof_v1.cjs
       - name: Verify per-pair status across all 28 G8 crosses and missing-data guardrails
         run: node validation/qa_next_pair_coverage_v15.cjs
       - name: Verify quarantined RBA F2 daily research source and no Core promotion
