@@ -139,13 +139,14 @@
      !/^https:\/\/www\.bankofengland\.co\.uk\/weekly-report\/\d{4}\/\d{1,2}-[a-z]+-\d{4}$/.test(x.source_url))return '';
   const age=Math.round((dateMs(today)-dateMs(period))/864e5);
   const sign=delta>0?'+':delta<0?'−':'';
+  const groupedMove=String(Math.abs(delta)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
   const direction=delta>0?'sono aumentate':delta<0?'sono diminuite':'sono rimaste invariate';
   const quality=age>25?'STORICO · NUOVO RAPPORTO DA CONTROLLARE':'RAPPORTO SETTIMANALE UFFICIALE';
   return '<section class="drivers-cad-official drivers-gbp-official" aria-label="BoE riserve bancarie fonte ufficiale separata">'+
    '<span class="mini-overline">BANK OF ENGLAND · RISERVE BANCARIE UFFICIALI</span>'+
    '<h3>GBP: le riserve cambiano, ma non è una prova di credito più facile.</h3>'+
    '<p>Al '+esc(x.source_period)+' le riserve delle banche presso la BoE '+esc(direction)+
-   ' di <b>'+sign+esc(fmt(Math.abs(delta),0))+' milioni GBP</b> in una settimana: saldo '+esc(fmt(latest,0))+
+   ' di <b>'+sign+esc(groupedMove)+' milioni GBP</b> in una settimana: saldo '+esc(fmt(latest,0))+
    ' milioni, contro '+esc(fmt(earlier,0))+' milioni al '+esc(x.previous_period)+'.</p>'+
    '<p><b>Cosa sto osservando:</b> uno stock di passività della banca centrale, non un flusso di nuovi prestiti. Anche con riserve in aumento, non possiamo dedurre un allentamento della BoE, nuovi acquisti di asset o domanda di GBP. Il credito garantito del feed nativo ha una data diversa: non va usato come conferma simultanea.</p>'+
    '<p><b>Quale verifica Forex manca?</b> Il mercato deve mostrare se cambia il percorso SONIA relativo a €STR e Fed; poi cerchiamo la risposta di EUR/GBP e GBP/USD, distinguendo fattori GBP da debolezza dell’altra valuta. Senza questo collegamento non emerge un trade dalle sole riserve.</p>'+
