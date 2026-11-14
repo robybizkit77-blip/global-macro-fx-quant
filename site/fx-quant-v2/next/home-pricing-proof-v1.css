@@ -46,3 +46,14 @@ outline:2px solid #a5e8dc;outline-offset:3px}
 .home-pricing-proof-card{padding:13px 12px}}
 @media(max-width:375px){.home-pricing-proof-numbers strong{font-size:17px}
 .home-pricing-proof-card footer button{width:100%}}
+
+/* Optional horizons preserve the approved compact first-read layout. */
+.home-pricing-proof-multi{border-top:1px solid rgba(118,174,195,.20);padding-top:9px}
+.home-pricing-proof-multi summary{font-size:10px;font-weight:760;color:#a8dfd2;cursor:pointer;padding:3px 0}
+.home-pricing-proof-multi summary:focus-visible{outline:2px solid #a5e8dc;outline-offset:3px}
+.home-pricing-proof-multi-grid{display:grid;gap:7px;margin-top:10px}
+.home-pricing-proof-multi-row{display:flex;flex-wrap:wrap;align-items:center;gap:5px 12px;padding:9px 10px;
+background:rgba(22,57,73,.42);border-radius:7px;font-size:10px;line-height:1.55;color:#bad4dc}
+.home-pricing-proof-multi-row strong{color:#e5f5f2}
+.home-pricing-proof-multi-row em{font-style:normal;color:#b4e4cf}
+.home-pricing-proof-multi-row[data-home-pricing-available="false"] span{color:#9aafbf}
