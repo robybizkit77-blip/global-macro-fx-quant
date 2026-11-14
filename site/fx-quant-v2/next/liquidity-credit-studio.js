@@ -118,6 +118,39 @@
  NZD:{fx:'Lo storico disponibile della liquidità NZD è breve e non consente inferenze robuste sui flussi. Credito privato in aumento e settlement cash in calo sono una divergenza da testare contro RBNZ e rischio globale.',
   watch:'Aggiornamenti RBNZ su settlement cash e credito, confronto monetario con RBA e comportamento AUD/NZD e NZD/USD.'}
  };
+ function audRBAAdjustedCredit(esc,fmt,now){
+  const x=root.FXQuantAUDBusinessCreditGrowthResearch;
+  if(!x||x.schema!=='GMFQ_NEXT_AUD_RBA_BUSINESS_CREDIT_GROWTH_V1'||
+     x.status!=='VERIFIED_RBA_FIN_AGG_BUSINESS_GROWTH_RESEARCH_ONLY'||
+     x.publisher!=='Reserve Bank of Australia'||
+     x.category!=='business_credit_growth_adjusted'||
+     x.breaks_adjusted!==true||x.seasonally_adjusted!==true||
+     x.is_credit_stock!==false||x.first_release_pit_verified!==false||
+     x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     x.unit!=='percent'||x.frequency!=='M')return '';
+  const period=observationDate(x.observation_period),release=observationDate(x.release_date),today=observationDate(now);
+  if(!period||!release||!today||dateMs(period)>dateMs(release)||dateMs(release)>dateMs(today)||
+     !/^\d{4}-\d{2}$/.test(x.observation_period)||!/^\d{4}-\d{2}-\d{2}$/.test(x.release_date)||
+     ![x.monthly_growth_pct,x.prior_month_growth_pct,x.annual_growth_pct,x.prior_year_growth_pct].every(v=>finite(v)&&v>-20&&v<30)||
+     !/^https:\/\/www\.rba\.gov\.au\/statistics\/frequency\/fin-agg\/\d{4}\/fin-agg-\d{4}\.html$/.test(x.source_url))return '';
+  const current=x.monthly_growth_pct,prior=x.prior_month_growth_pct,change=current-prior,
+    age=Math.round((dateMs(today)-dateMs(release))/864e5);
+  const diff=Math.abs(change)<0.05?'stabile rispetto ad agosto':
+    change>0?'in accelerazione rispetto al mese precedente':'in decelerazione rispetto al mese precedente';
+  const move=v=>(v>0?'+':'')+fmt(v,1)+'%';
+  const freshness=age>75?'COMUNICATO STORICO · NUOVO RILASCIO DA CONTROLLARE':'COMUNICATO UFFICIALE DATATO';
+  return '<section class="drivers-cad-official drivers-aud-official" aria-label="RBA credito imprese crescita corretta">'+
+   '<span class="mini-overline">RBA · CRESCITA UFFICIALE CORRETTA PER DISCONTINUITÀ</span>'+
+   '<h3>Australia: il credito alle imprese cresce, ma la velocità mensile non accelera.</h3>'+
+   '<p>Nel mese di '+esc(x.observation_period)+' il credito alle imprese cresce del <b>'+esc(move(current))+
+   ' mensile</b>, contro '+esc(move(prior))+' nel mese precedente: andamento '+esc(diff)+
+   '. Su dodici mesi è '+esc(move(x.annual_growth_pct))+
+   ' (contro '+esc(move(x.prior_year_growth_pct))+' nello stesso mese del 2025).</p>'+
+   '<p><b>Perché conta:</b> questa è la crescita RBA corretta per le rotture statistiche, <b>non</b> una percentuale ricavata dai livelli D2 e non un flusso di nuovi prestiti. Il credito resistente può aiutare l’attività, ma va confrontato con costi di finanziamento, domanda, occupazione e inflazione. Per AUD controlliamo il repricing RBA relativo a Fed/BoC, Cina e rischio globale: il credito da solo non identifica un trade.</p>'+
+   '<div class="drivers-cad-source"><span>'+freshness+' · periodo '+esc(x.observation_period)+
+   ' · pubblicato '+esc(x.release_date)+' · rettifiche storiche possibili · prima vintage non certificata · feed FX invariato</span>'+
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: RBA · Financial Aggregates ↗</a></div></section>';
+ }
  function eurECBLoanResearch(esc,fmt,now){
   const x=root.FXQuantEURNFCCreditResearch;
   if(!x||x.schema!=='GMFQ_NEXT_EUR_ECB_NFC_CREDIT_RESEARCH_V1'||
@@ -262,6 +295,7 @@
    '<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
    '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
    '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>'+
+   (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):'')+
    (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):'')+
    (selected==='USD'?usFedCreditResearch(esc,fmt,today):'')+
    (selected==='CAD'?cadIssuerResearch(esc,fmt,today):'')+
