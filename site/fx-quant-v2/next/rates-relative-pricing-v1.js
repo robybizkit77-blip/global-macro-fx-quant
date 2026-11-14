@@ -7,7 +7,7 @@
  const CCY=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
  const finite=x=>typeof x==='number'&&Number.isFinite(x);
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
- const fmt=(n,p=1)=>finite(n)?(n>0?'+':n<0?'−':'')+Math.abs(n).toFixed(p).replace('.',','):'—';
+ const fmt=(n,p=2)=>finite(n)?(n>0?'+':n<0?'−':'')+Math.abs(n).toFixed(p).replace('.',','):'—';
  const date=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)?
   x.slice(8,10)+'/'+x.slice(5,7)+'/'+x.slice(0,4):'n.d.';
  const grade=k=>k==='OIS'?'OIS ufficiale':k==='FUTURES'?'futures ufficiale':
