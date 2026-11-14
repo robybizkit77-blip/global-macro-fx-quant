@@ -53,7 +53,7 @@ const api=ccy=>({
  get:k=>k==='liquidity'?native:null,FX,FLAGS:Object.fromEntries(FX.map(x=>[x,x])),
  NAMES:Object.fromEntries(FX.map(x=>[x,x])),state:{liqCcy:ccy},
  plot:()=>'<svg></svg>',pageHero:()=>'<h1>FX</h1>',esc,fmt,date:x=>x,
- dayNow:()=>'2026-11-14'
+ dayNow:()=>new Date().toISOString().slice(0,10)
 });
 const html=studio.render(api('GBP'));
 assert.match(html,/class="drivers-gbp-credit-bridge"/);
@@ -61,10 +61,19 @@ assert.match(html,/LPMVTYI destagionalizzato/);
 assert.match(html,/punti percentuali/);
 assert.match(html,/non<\/b> al credito aziendale/);
 assert.match(html,/LPMVTYI/);
-assert.match(html,/Money and Credit · 29 ottobre/);
-assert.match(html,/3,4% annuo nel 2026-09/);
-assert.match(html,/3,6% del mese precedente/);
-assert.match(html,/−0,2/);
+assert(html.includes(fmt(mortgage.values.at(-1),1)+'% annuo nel '+mortgage.last_observation),
+ 'The published credit growth figure must follow the latest verified source period');
+assert(html.includes(fmt(mortgage.values.at(-2),1)+'% del mese precedente'),
+ 'Prior-month comparison must be grounded in the source sidecar');
+const delta=mortgage.values.at(-1)-mortgage.values.at(-2);
+const formatted=(delta<0?'−':delta>0?'+':'')+fmt(Math.abs(delta),1);
+assert(html.includes(formatted+' <b>punti percentuali</b>'),
+ 'Monthly change of the annual growth rate is in percentage points');
+if(mortgage.last_observation==='2026-09')
+ assert.match(html,/Money and Credit · 29 ottobre/);
+else
+ assert(!html.includes('Money and Credit · 29 ottobre'),
+  'September 2026 release is not evidence about later reporting months');
 assert.match(html,/non sono due misure confrontabili/);
 assert.match(html,/fonte separata dal feed FX/);
 assert.match(html,/RPWB56A/);
