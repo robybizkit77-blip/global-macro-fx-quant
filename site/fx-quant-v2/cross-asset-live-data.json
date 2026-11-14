@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1",
   "status": "FIVE_STREAMS_VERIFIED",
-  "collected_on": "2026-11-13",
+  "collected_on": "2026-11-14",
   "attempted_sources": [
     "SP500",
     "NASDAQCOM",
@@ -19,16 +19,12 @@
   "source_errors": {},
   "streams": {
     "SP500": {
-      "date": "2026-11-12",
-      "previous_date": "2026-11-11",
-      "value": 7592.4,
-      "previous": 7619.38,
-      "change_1d_pct": -0.3541,
+      "date": "2026-11-13",
+      "previous_date": "2026-11-12",
+      "value": 7561.67,
+      "previous": 7592.4,
+      "change_1d_pct": -0.4047,
       "history": [
-        [
-          "2026-06-24",
-          7358.22
-        ],
         [
           "2026-06-25",
           7357.49
@@ -424,6 +420,10 @@
         [
           "2026-11-12",
           7592.4
+        ],
+        [
+          "2026-11-13",
+          7561.67
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -850,7 +850,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -1268,7 +1268,7 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -1686,21 +1686,17 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "VIX": {
-      "date": "2026-11-12",
-      "previous_date": "2026-11-11",
-      "value": 18.7,
-      "previous": 17.49,
-      "change_1d_pct": 6.9182,
+      "date": "2026-11-13",
+      "previous_date": "2026-11-12",
+      "value": 19.3,
+      "previous": 18.7,
+      "change_1d_pct": 3.2086,
       "history": [
-        [
-          "2026-06-26",
-          18.41
-        ],
         [
           "2026-06-29",
           17.65
@@ -2096,6 +2092,10 @@
         [
           "2026-11-12",
           18.7
+        ],
+        [
+          "2026-11-13",
+          19.3
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
