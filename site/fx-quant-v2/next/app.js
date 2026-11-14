@@ -876,16 +876,24 @@ function pairs(){
  const context='Stima operativa Macro Strength '+date(estimate?.asof)+' · fixing BCE '+date(estimate?.priceAsOf)+
    ' · vecchio motore del '+date(get('pairs')?.macro_baseline_asof)+' archiviato, non utilizzato per il giudizio corrente';
  const watchLabel=state.watch.has(state.pair)?'★ Nella watchlist':'☆ Salva nella watchlist';
+ // A categorical trading assessment is not a new score or a validated entry.
+ const tradeStatus=activePair?.tradeAttractiveness||'NON VALUTABILE';
+ const tradeTone=tradeStatus==='DA VALIDARE'?'awaiting':
+  tradeStatus==='IN ATTESA'?'awaiting':
+  tradeStatus==='BASSA ORA'||tradeStatus==='NON SUPPORTATA'?'caution':'neutral';
  const main='<section class="panel pairs-reading-compact" aria-label="Sintesi operativa della coppia selezionata">'+
   '<div class="pairs-reading-head"><div><span class="mini-overline">IL GIUDIZIO FX · '+esc(getPairName(state.pair))+'</span><h2>'+esc(favMeaning)+'</h2></div>'+
   '<span class="badge info">'+esc(quality)+'</span></div>'+
   '<p class="pairs-primary-story">'+esc(headline)+'</p>'+
   '<div class="pairs-three-answers">'+
    '<div><span>TESI FONDAMENTALE</span><strong>'+esc(activePair?.thesisStrength||'NON VALUTABILE')+'</strong></div>'+
-   '<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(activePair?.tradeAttractiveness||'NON VALUTABILE')+'</strong></div>'+
+   '<div class="pairs-trade-assessment" data-pairs-trade-tone="'+tradeTone+'"><span>TRADE ATTRACTIVENESS</span><strong>'+esc(tradeStatus)+'</strong></div>'+
    '<div><span>TIMING · COSA OSSERVARE</span><strong>'+esc(tradeText)+'</strong></div></div>'+
-  '<p class="pairs-next-action"><strong>Rafforzerebbe il quadro.</strong> '+esc(gate.improve)+
-  ' <strong>Lo indebolirebbe.</strong> '+esc(gate.weaken)+'</p>'+
+  '<p class="pairs-why-no-entry">Una buona tesi fondamentale non equivale a un buon ingresso: timing e rischio/rendimento richiedono conferme autonome.</p>'+
+  '<div class="pairs-conditions" aria-label="Cosa confermerebbe e cosa indebolirebbe la tesi">'+
+   '<article class="pairs-condition pairs-condition-confirm"><strong>Rafforzerebbe il quadro.</strong><p>'+esc(gate.improve)+'</p></article>'+
+   '<article class="pairs-condition pairs-condition-weaken"><strong>Lo indebolirebbe.</strong><p>'+esc(gate.weaken)+'</p></article>'+
+  '</div>'+
   (pairCatalyst?.text?'<p class="pairs-next-action pairs-event-watch"><strong>Evento da monitorare.</strong> '+
    esc(pairCatalyst.text)+'</p>':'')+
   '<p class="pairs-vintage">'+esc(context)+'. '+esc(gate.note)+

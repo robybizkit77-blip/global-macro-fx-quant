@@ -259,6 +259,19 @@ async function chosenPair(page,key,label){
  assert.equal(await p.count(),1,label+' '+key+' first-read missing');
  assert.equal(await p.locator('.pairs-three-answers > div').count(),3,
   label+' thesis, trade attractiveness and entry caveat incomplete');
+ const trade=await p.locator('.pairs-trade-assessment').getAttribute('data-pairs-trade-tone');
+ assert(['neutral','awaiting','caution'].includes(trade),
+  label+' trade status category lost its evidence-based visual treatment');
+ const criteria=p.locator('.pairs-conditions article');
+ assert.equal(await criteria.count(),2,label+' confirmations and invalidations must be separate');
+ const confirming=(await criteria.nth(0).innerText()).trim();
+ const weakening=(await criteria.nth(1).innerText()).trim();
+ assert(confirming.includes('Rafforzerebbe il quadro')&&confirming.length>50,
+  label+' meaningful confirmation evidence missing');
+ assert(weakening.includes('Lo indebolirebbe')&&weakening.length>50,
+  label+' meaningful contrary evidence missing');
+ assert((await p.locator('.pairs-why-no-entry').innerText()).includes('non equivale'),
+  label+' thesis strength and entry attractiveness must be separated');
  const story=await p.innerText();
  for(const word of ['TESI FONDAMENTALE','TRADE ATTRACTIVENESS',
   'Rafforzerebbe il quadro','Lo indebolirebbe','Evento da monitorare'])
