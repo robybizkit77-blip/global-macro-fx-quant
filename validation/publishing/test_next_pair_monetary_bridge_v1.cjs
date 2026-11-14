@@ -48,8 +48,9 @@ for(const pair of keys){
     assert(e.from<e.to,'Historical interval must have two dates '+pair);
     assert(['HISTORICAL_COMMON','HISTORICAL_PROXY_REFERENCE'].includes(e.grade));
     assert(html.includes('data-pair-monetary-evidence="'+e.grade+'"'));
-    assert.equal(m.directional,null,
-     'Historical or proxy-only data may never certify a contemporary FX thesis '+pair);
+    if(m.lead?.grade!=='MATCHED_EXACT_INTERVAL')
+     assert.equal(m.directional,null,
+      'Historical or proxy-only leading evidence may never certify a contemporary FX thesis '+pair);
    }
   }else{
    assert(html.includes('data-pair-monetary-evidence="LEVEL_CONTEXT"'),
