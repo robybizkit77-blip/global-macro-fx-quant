@@ -1,0 +1,132 @@
+name: BoJ JPY Bank Credit Research Refresh V1
+
+on:
+  workflow_dispatch:
+  schedule:
+    # BoJ MD11 monthly statistical release; check business days.
+    - cron: '21 8 * * 1-5'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/liquidity/refresh_boj_jpy_bank_credit_research_v1.py'
+      - 'validation/liquidity/test_refresh_boj_jpy_bank_credit_research_v1.py'
+      - '.github/workflows/boj-jpy-bank-credit-research-refresh-v1.yml'
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: boj-jpy-bank-credit-research-v1
+  cancel-in-progress: false
+
+jobs:
+  source-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify exact BoJ series, 12-month overlap, time continuity and Core isolation
+        run: python -m unittest validation.liquidity.test_refresh_boj_jpy_bank_credit_research_v1 -v
+      - name: Snapshot canonical liquidity and FX-pair rankings
+        run: |
+          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/jpy-credit-runtime.before
+          sha256sum live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json > /tmp/jpy-credit-fx.before
+      - name: Fetch existing official BoJ MD11 exact-series verified candidate
+        run: |
+          python validation/fetch_boj_jpy_bank_credit_candidate.py --out /tmp/boj-jpy-bank-credit-candidate.json
+      - name: Apply only to JPY research sidecar, no native data
+        run: |
+          python validation/liquidity/refresh_boj_jpy_bank_credit_research_v1.py \
+            --candidate /tmp/boj-jpy-bank-credit-candidate.json \
+            --apply --receipt /tmp/boj-jpy-bank-credit-receipt.json
+          cat /tmp/boj-jpy-bank-credit-receipt.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify exact source-only write scope
+        run: |
+          sha256sum -c /tmp/jpy-credit-runtime.before /tmp/jpy-credit-fx.before
+          python - <<'PY'
+          import subprocess
+          allowed={'site/fx-quant-v2/next/jpy-boj-bank-credit-research-v1.js'}
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed<=allowed,changed
+          print('BOJ_JPY_CREDIT_OFFICIAL_SIDE_CAR_ONLY_PASS',sorted(changed))
+          PY
+      - name: Commit verified official series to JPY research file only
+        run: |
+          set -euo pipefail
+          path=site/fx-quant-v2/next/jpy-boj-bank-credit-research-v1.js
+          if git diff --quiet -- "$path"; then
+            echo 'BOJ_JPY_CREDIT_NO_NEW_SOURCE_OBSERVATIONS' >> "$GITHUB_STEP_SUMMARY"
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -- "$path"
+            git commit -m 'Refresh official BoJ JPY bank-credit stock (research only)'
+            git fetch origin main --no-tags
+            git rebase origin/main
+            git push origin HEAD:main
+            echo 'BOJ_JPY_CREDIT_RESEARCH_SOURCE_SAVED' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Mirror verified JPY source file only to GitHub Pages
+        id: pages-sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          path=site/fx-quant-v2/next/jpy-boj-bank-credit-research-v1.js
+          git fetch origin main --no-tags
+          source_blob="$(git hash-object "$path")"
+          test "$(git rev-parse "origin/main:$path")" = "$source_blob" || {
+            echo 'BOJ_JPY_SOURCE_MOVED_WITHHELD'; exit 1;
+          }
+          git fetch origin gh-pages --no-tags
+          pages_sha="$(git rev-parse origin/gh-pages)"
+          git worktree add --detach /tmp/boj-jpy-credit-pages origin/gh-pages
+          mkdir -p /tmp/boj-jpy-credit-pages/site/fx-quant-v2/next
+          cp "$path" "/tmp/boj-jpy-credit-pages/$path"
+          cd /tmp/boj-jpy-credit-pages
+          if git diff --quiet -- "$path"; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo 'BOJ_JPY_PAGES_ALREADY_CURRENT' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          test "$(git diff --name-only)" = "$path"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$path"
+          git commit -m 'Mirror official BoJ JPY credit research only'
+          test "$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')" = "$pages_sha" || {
+            echo 'BOJ_JPY_PAGES_BRANCH_MOVED_WITHHELD'; exit 1;
+          }
+          git fetch origin main --no-tags
+          test "$(git rev-parse "origin/main:$path")" = "$source_blob" || {
+            echo 'BOJ_JPY_SOURCE_BLOB_MOVED_WITHHELD'; exit 1;
+          }
+          git push --force-with-lease=refs/heads/gh-pages:$pages_sha origin HEAD:gh-pages
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+          echo 'BOJ_JPY_PAGES_SOURCE_MIRRORED' >> "$GITHUB_STEP_SUMMARY"
+      - name: Trigger Pages build only after JPY source mirror
+        if: steps.pages-sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          result="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds")"
+          jq -e '.status == "queued" or .status == "building"' <<<"$result" >/dev/null
+          echo 'BOJ_JPY_PAGES_BUILD_ACCEPTED' >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve official JPY source provenance receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boj-jpy-monthly-credit-source-receipt
+          path: |
+            /tmp/boj-jpy-bank-credit-candidate.json
+            /tmp/boj-jpy-bank-credit-receipt.json
+          if-no-files-found: warn
+          retention-days: 14
