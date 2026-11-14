@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'../..');
 const source=require(path.join(root,'site/fx-quant-v2/next/aud-rba-es-balances-research-v1.js'));
+require(path.join(root,'site/fx-quant-v2/next/aud-rba-business-credit-growth-research-v1.js'));
 const studio=require(path.join(root,'site/fx-quant-v2/next/liquidity-credit-studio.js'));
 const native=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NATIVE_LIQ_DATA.json'),'utf8'));
 const idx=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
