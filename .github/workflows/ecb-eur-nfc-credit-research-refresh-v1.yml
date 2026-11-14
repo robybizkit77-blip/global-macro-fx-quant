@@ -1,0 +1,126 @@
+name: ECB EUR NFC Credit Research Refresh V1
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Official ECB BSI monthly releases; check weekdays off the hour.
+    - cron: '23 7 * * 1-5'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/liquidity/refresh_ecb_eur_nfc_credit_v1.py'
+      - 'validation/liquidity/test_refresh_ecb_eur_nfc_credit_v1.py'
+      - '.github/workflows/ecb-eur-nfc-credit-research-refresh-v1.yml'
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: ecb-eur-nfc-credit-research-v1
+  cancel-in-progress: false
+
+jobs:
+  source-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate exact ECB NFC stock, vintage overlap, chronology, and Core isolation
+        run: python -m unittest validation.liquidity.test_refresh_ecb_eur_nfc_credit_v1 -v
+      - name: Snapshot canonical G8 credit and FX ranking
+        run: |
+          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/eur-credit-runtime.before
+          sha256sum live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json > /tmp/eur-credit-fx.before
+      - name: Fetch ECB BSI official NFC credit (research-only)
+        run: |
+          python validation/liquidity/refresh_ecb_eur_nfc_credit_v1.py \
+            --apply --receipt /tmp/eur-credit-ecb-receipt.json
+          cat /tmp/eur-credit-ecb-receipt.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Enforce exact research-only write scope
+        run: |
+          sha256sum -c /tmp/eur-credit-runtime.before /tmp/eur-credit-fx.before
+          python - <<'PY'
+          import subprocess
+          allowed={'site/fx-quant-v2/next/eur-ecb-nfc-credit-research-v1.js'}
+          modified=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert modified<=allowed,modified
+          print('ECB_EUR_NFC_RESEARCH_ONLY_SOURCE_DIFF_PASS',sorted(modified))
+          PY
+      - name: Save only ECB research sidecar, not canonical FX
+        run: |
+          set -euo pipefail
+          path=site/fx-quant-v2/next/eur-ecb-nfc-credit-research-v1.js
+          if git diff --quiet -- "$path"; then
+            echo 'ECB_EUR_NFC_NO_CHANGE' >> "$GITHUB_STEP_SUMMARY"
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -- "$path"
+            git commit -m 'Refresh ECB NFC loans stock (research only)'
+            git fetch origin main --no-tags
+            git rebase origin/main
+            git push origin HEAD:main
+            echo 'ECB_EUR_NFC_RESEARCH_SOURCE_SAVED' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Mirror only validated ECB source sidecar with gh-pages lease
+        id: pages-sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          path=site/fx-quant-v2/next/eur-ecb-nfc-credit-research-v1.js
+          git fetch origin main --no-tags
+          local_blob="$(git hash-object "$path")"
+          test "$(git rev-parse "origin/main:$path")" = "$local_blob" || {
+            echo 'ECB_RESEARCH_REMOTE_BLOB_MOVED_WITHHELD'; exit 1;
+          }
+          git fetch origin gh-pages --no-tags
+          remote_pages="$(git rev-parse origin/gh-pages)"
+          git worktree add --detach /tmp/ecb-eur-credit-pages origin/gh-pages
+          mkdir -p /tmp/ecb-eur-credit-pages/site/fx-quant-v2/next
+          cp "$path" "/tmp/ecb-eur-credit-pages/$path"
+          cd /tmp/ecb-eur-credit-pages
+          if git diff --quiet -- "$path"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo 'ECB_EUR_NFC_PAGES_ALREADY_CURRENT' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          test "$(git diff --name-only)" = "$path"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$path"
+          git commit -m 'Mirror ECB NFC source research only'
+          test "$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')" = "$remote_pages" || {
+            echo 'ECB_EUR_NFC_PAGES_RACE_WITHHELD'; exit 1;
+          }
+          git fetch origin main --no-tags
+          test "$(git rev-parse "origin/main:$path")" = "$local_blob" || {
+            echo 'ECB_EUR_NFC_SOURCE_RACE_WITHHELD'; exit 1;
+          }
+          git push --force-with-lease=refs/heads/gh-pages:$remote_pages origin HEAD:gh-pages
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo 'ECB_EUR_NFC_PAGES_MIRRORED' >> "$GITHUB_STEP_SUMMARY"
+      - name: Queue Pages build after research source mirror
+        if: steps.pages-sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          response="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds")"
+          jq -e '.status == "queued" or .status == "building"' <<<"$response" >/dev/null
+          echo 'ECB_EUR_NFC_PAGES_BUILD_REQUEST_ACCEPTED' >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve issuer check receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecb-eur-nfc-credit-source-receipt
+          path: /tmp/eur-credit-ecb-receipt.json
+          if-no-files-found: warn
+          retention-days: 14
