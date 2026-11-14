@@ -8,7 +8,7 @@ globalThis.FXQuantPricingHistory=require('../../site/fx-quant-v2/next/rates-pric
 globalThis.FXQuantPricingMoves=require('../../site/fx-quant-v2/next/rates-pricing-moves-v1.js');
 globalThis.FXQuantRelativePricing=require('../../site/fx-quant-v2/next/rates-relative-pricing-v1.js');
 globalThis.FXQuantPairMonetary=require('../../site/fx-quant-v2/next/pair-monetary-bridge-v1.js');
-const {inspectPair,inspectSessionWindow,horizonReading,choose,pairReturn,render}=require('../../site/fx-quant-v2/next/home-pricing-proof-v1.js');
+const {inspectPair,inspectSessionWindow,horizonReading,weekdayLag,freshness,choose,pairReturn,render}=require('../../site/fx-quant-v2/next/home-pricing-proof-v1.js');
 const prices=json('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
  pairs=json('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),
  history=json(site+'rates-pricing-history-v1.json'),
@@ -128,6 +128,31 @@ assert(horizonReading(coherent,[{comparison:'SEGNI_DIVERGENTI'},{comparison:'SEG
 assert(html.includes('finestre sono sovrapposte'), 'Overlapping horizons require a nonindependence disclosure');
 assert(html.includes('Nel confronto breve'), 'Home should render a synthetic-free readable FX conclusion');
 
+
+assert.equal(weekdayLag('2026-11-13','2026-11-14'),0,'Weekend is not a stale weekday');
+assert.equal(weekdayLag('2026-11-13','2026-11-16'),1,'Friday to Monday is one weekday');
+assert.equal(weekdayLag('2026-11-13','2026-11-18'),3,'Third weekday triggers editorial warning');
+assert.equal(weekdayLag('2026-11-18','2026-11-13'),null,'Do not accept future source dates');
+assert.equal(freshness({...args,today:'2026-11-14'},selected).stale,false,
+ 'Friday official archive remains current through Saturday');
+assert.equal(freshness({...args,today:'2026-11-19'},selected).stale,true,
+ 'Without future refresh, weekday lag must produce a visible warning');
+const staleHtml=render({...args,today:'2026-11-19'});
+assert(staleHtml.includes('data-home-pricing-freshness="ARCHIVIO_NON_RECENTE"'));
+assert(staleHtml.includes('Questa verifica non è recente'));
+assert(staleHtml.includes('Lettura soltanto storica'));
+const weekendHtml=render({...args,today:'2026-11-14'});
+assert(weekendHtml.includes('data-home-pricing-freshness="CONFRONTO_STORICO_DATATO"'));
+assert(weekendHtml.includes('fixing BCE 13/11/2026'));
+assert(weekendHtml.includes('archivio 6M 13/11/2026'));
+const mismatchedReported=structuredClone(prices);
+mismatchedReported.last_as_of='2026-11-12';
+const mismatch=freshness({...args,prices:mismatchedReported,today:'2026-11-14'},selected);
+assert.equal(mismatch.priceAsOf,'2026-11-12','Prefer conservative reported-vs-observed date');
+const missingDeclared=structuredClone(history);
+delete missingDeclared.as_of;
+assert.equal(freshness({...args,history:missingDeclared,today:'2026-11-14'},selected).stale,true);
+
 const earlier=inspectPair('EURUSD',{...args,today:'2026-11-10'});
 assert(!earlier||earlier.to<='2026-11-10',
  'Only the latest available prior observations may be used, never dates after the stated as-of');
@@ -137,11 +162,11 @@ assert(!early.includes('data-home-pricing-to="2026-11-12"'),
  'Historical evidence must respect requested as-of, not look ahead');
 const source=read(site+'app.js'),index=read(site+'index.html');
 assert(index.indexOf('pair-monetary-bridge-v1.js?v=2')<
- index.indexOf('home-pricing-proof-v1.js?v=3')&&
- index.indexOf('home-pricing-proof-v1.js?v=3')<
+ index.indexOf('home-pricing-proof-v1.js?v=4')&&
+ index.indexOf('home-pricing-proof-v1.js?v=4')<
  index.indexOf('app.js?v=18.58-home-money-pricing'),
  'Home module must load after monetary archive validators and before App');
-assert(index.includes('home-pricing-proof-v1.css?v=2'));
+assert(index.includes('home-pricing-proof-v1.css?v=3'));
 assert(source.includes("window.FXQuantHomePricingProof?.render?.("));
 assert(source.includes("if(hourly)return moneyProof?"));
 assert(source.includes("post+moneyProof+'<section class=\"morning-prose\"'"));
@@ -149,5 +174,6 @@ assert(source.includes(' +moneyProof\n +\'<section class="dashboard-main dashboa
  'Legacy fallback Home also needs the same source-first monetary comparison');
 const css=read(site+'home-pricing-proof-v1.css');
 assert(css.includes('.home-pricing-proof-multi-row'));
+assert(css.includes('.home-pricing-proof-date-context'));
 assert(css.includes('.home-pricing-proof-grid')&&css.includes('max-width:720px')&&css.includes(':focus-visible'));
 console.log('NEXT_HOME_6M_FX_PROOF_PASS: date-aligned EURUSD, 28-pair source selection, nonUSD cross, inversion, no look-ahead, document links');
