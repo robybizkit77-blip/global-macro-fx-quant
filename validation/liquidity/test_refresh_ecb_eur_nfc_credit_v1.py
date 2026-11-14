@@ -45,11 +45,12 @@ class ECBNFCSourceTest(unittest.TestCase):
             parse(fixture().replace(",6,2",",0,2"),today=TODAY)
 
     def test_revised_overlap_recorded_but_wrong_series_withheld(self):
-        modified=fixture().replace(str(ANCHOR_VALUE),str(round(ANCHOR_VALUE*1.004,4)))
+        original=str(round(ANCHOR_VALUE,4))
+        modified=fixture().replace(original,str(round(ANCHOR_VALUE*1.004,4)))
         x=parse(modified,today=TODAY)
         self.assertAlmostEqual(x["anchor_revision_pct"],.4,places=3)
         with self.assertRaisesRegex(ValueError,"diverges"):
-            parse(fixture().replace(str(ANCHOR_VALUE),str(ANCHOR_VALUE*1.05)),today=TODAY)
+            parse(fixture().replace(original,str(round(ANCHOR_VALUE*1.05,4))),today=TODAY)
 
     def test_gap_future_and_duplicate_are_not_published(self):
         rows=fixture().splitlines()
