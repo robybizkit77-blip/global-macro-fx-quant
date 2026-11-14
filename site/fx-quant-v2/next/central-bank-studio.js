@@ -60,6 +60,16 @@
   }).join('');
   return '<div class="drivers-facts">'+horizons+'</div>';
  }
+ const FX_TESTS={
+ USD:'Per il dollaro chiediti se il mercato stia alzando o abbassando il 6M Fed rispetto a BCE e BoJ. Se i Treasury si muovono ma i futures non confermano, la causa può essere diversa. Anche un risk-off può sostenere USD e contrastare il differenziale.',
+ EUR:'Per EUR conta il divario tra comunicazione BCE e nuovi dati di crescita/inflazione, confrontato con Fed e BoE. Verifica variazioni omogenee del 6M e reazioni EUR/USD o EUR/GBP prima di attribuire forza alla BCE.',
+ GBP:'Per GBP il rialzo BoE già deciso non è una sorpresa futura. La questione è se mercato e banca si attendano ulteriori restrizioni rispetto a BCE/Fed, e se EUR/GBP e GBP/USD confermino il nuovo pricing.',
+ JPY:'Per JPY il movimento rilevante è il differenziale rispetto a USD e AUD, non soltanto il livello del tasso BoJ. Un cambio delle attese sui tagli/rialzi e una liquidazione del carry possono influenzare USD/JPY in modo diverso.',
+ CHF:'Per CHF il percorso SNB va confrontato con quello BCE. EUR/CHF può reagire anche alla domanda di rifugio e a eventuali interventi: il differenziale monetario non identifica da solo il flusso.',
+ CAD:'Per CAD confronta percorso BoC e Fed, aspettative di crescita relativa e petrolio. Se il pricing BoC sale ma USD/CAD non segue, cerca un driver alternativo prima di dichiarare una divergenza operativa.',
+ AUD:'Per AUD il pricing RBA va confrontato con Fed e BoC, ma anche con crescita cinese e rischio globale. AUD/USD e AUD/CAD servono a distinguere sorpresa monetaria e risk-on.',
+ NZD:'Per NZD conta soprattutto il repricing RBNZ relativo alla RBA e alla Fed. Una variazione di proxy bancario non equivale a OIS: confronta le fonti, poi il prezzo NZD/AUD e NZD/USD.'
+ };
  function render(api){
   const {get,FX,FLAGS,NAMES,state,pageHero,esc,fmt,date,dayNow}=api;
   const banks=get('cb')||{},ois=get('ois')?.currencies||{},mac=get('macro')?.currencies||{};
@@ -99,7 +109,7 @@
    '<div class="drivers-story"><div><span>CHE COSA STA PREZZANDO IL MERCATO</span><p>'+
      esc(o?'Strumento: '+(o.kind||'non classificato')+' · qualità: '+(o.quality||'da verificare')+' · snapshot '+selectedMarketAsOf+'.':'Nessuno strumento di mercato disponibile per questa valuta.')+
      ' '+esc(repricing)+' Il prezzo di un future, di un OIS e il tasso ufficiale non sono intercambiabili.</p></div>'+
-     '<div><span>LA PROVA FX</span><p>Il tono della banca centrale conta se cambia il percorso relativo atteso rispetto alla controvaluta e se il prezzo FX lo conferma. Senza sorpresa e differenziale datato non attribuiamo un trade alla banca centrale.</p></div></div>'+
+     '<div><span>IPOTESI FX · COSA CONFERMARE</span><p>'+esc(FX_TESTS[selected]||'Confronta banca centrale, prezzi monetari relativi e cambio, senza dedurre trade da un voto.')+'</p></div></div>'+
    '<div class="drivers-facts drivers-policy-facts">'+
    '<div class="drivers-fact"><span>TASSO UFFICIALE / DECISIONE</span><strong>'+esc(b?.rate_text||rate)+'</strong><small>'+esc(last?date(last):'Data non verificabile')+'</small></div>'+
    '<div class="drivers-fact"><span>PROSSIMA RIUNIONE / CALENDARIO</span><strong>'+esc(day(nextMeeting)?date(nextMeeting):'Da verificare')+'</strong><small>'+esc(nextTxt)+'</small></div></div>'+
