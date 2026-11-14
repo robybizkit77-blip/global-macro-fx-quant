@@ -131,6 +131,13 @@ function build(api){
    rankingFn:root.FXQuantPairRankings?.currencyRanking,fallback:G8CONTEXT
   })||{rows:[],priceRanking:null,asof:null};
  }
+ function pricingProof(ccy){
+  return root.FXQuantG8PricingEvidence?.read?.({
+   ccy,today:dayNow(),snapshot:get('ois'),
+   operational:get('oisOperational'),research:get('oisSameContract'),
+   nzd:get('nzdDirectionalProxy'),history:get('oisHistory')
+  })||null;
+ }
  function strengthBoard(){
   const result=strengthView(),estimate=get('estimatedMacro');
   const estimated=estimate?.status==='STIMA_OPERATIVA_NON_VALIDATA';
@@ -146,6 +153,7 @@ function build(api){
     labour:G8INFLAB?.currencies?.[x.ccy],now:dayNow()})||null;
    const rank=current?'#'+current.rank:(x.price.position?'P#'+x.price.position:'—');
    const m=desk?.macro||{},p=desk?.market||{},comparison=desk?.comparison||{};
+   const sixProof=pricingProof(x.ccy);
    const label=current?(current.macroScore>=.25?'Momentum economico positivo':
     current.macroScore<=-.25?'Momentum economico debole':'Momentum economico misto'):
     m.title||'Stima non disponibile';
@@ -180,7 +188,7 @@ function build(api){
     '<span class="strength-name"><b>'+rank+'</b><strong>'+FLAGS[x.ccy]+' '+x.ccy+'</strong></span>'+
     '<span class="strength-brief"><strong>'+esc(label)+'</strong><small>'+esc(directions)+'</small></span>'+
     '<span class="strength-market-brief '+(comparison.state==='DIVERGENZA_DA_STUDIARE'?'divergent':'')+
-     '"><strong>'+esc(marketLabel)+'</strong><small>'+esc(marketDetail)+'</small></span>'+
+     '"><strong>'+esc(sixProof?.label||marketLabel)+'</strong><small>'+esc(sixProof?.short||marketDetail)+'</small></span>'+
     '<span class="strength-price-brief '+tone+'"><strong>'+esc(x.price.label)+
     '</strong><small>Forza FX · 20 fixing</small></span>'+
     '<span class="strength-reading"><strong>'+ (x.ccy===country?'In lettura':'Leggi')+
@@ -245,6 +253,7 @@ function build(api){
   const x=strengthView().rows.find(r=>r.ccy===country);
   const estimated=get('estimatedMacro');
   const cur=estimated?.status==='STIMA_OPERATIVA_NON_VALIDATA'?estimated.by?.[country]:null;
+  const sixProof=pricingProof(country);
   if(!x)return '<p>La lettura G8 non è disponibile finché mancano dati verificabili.</p>';
   const cb=CB[country]||{};
   const desk=root.FXQuantG8Transmission?.one?.({row:x,ois:OIS[country],
@@ -399,9 +408,10 @@ function build(api){
    '</div></div>'+
    '<div class="strength-first-reading">'+
    '<p><strong>Il quadro economico.</strong> '+esc(estimatedEconomic)+'</p>'+
-   '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(estimatedPolicy)+'</p>'+
+   '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(sixProof?.summary||estimatedPolicy)+'</p>'+
    '<p><strong>Che cosa mostra il Forex.</strong> '+esc(priceSummary)+'</p>'+
    '</div>'+
+   (root.FXQuantG8PricingEvidence?.render?.(sixProof)||'')+
    '<p class="strength-first-watch"><strong>Che cosa monitorare.</strong> '+esc(fxMonitorWatch)+'</p>'+
    '<details class="strength-evidence-fold"><summary><strong>Apri numeri, date, stime e fonti di '+country+'</strong>'+
    '<span>Quattro pilastri · Macro / 2Y / attese 6M / prezzo · ricerca Quant separata</span></summary>'+
