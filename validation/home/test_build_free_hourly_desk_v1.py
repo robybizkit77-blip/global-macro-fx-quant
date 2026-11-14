@@ -24,6 +24,8 @@ class FreeDeskTest(unittest.TestCase):
   self.assertNotIn("secrets.FXQ_MARKET_DESK_API_KEY",workflow)
   self.assertNotIn("run_independent_hourly_alert_v1.py",workflow)
   self.assertIn("build_free_hourly_desk_v1.py",workflow)
+  self.assertIn("--check-output",workflow)
+  self.assertIn("hourly-market-desk-check.json",workflow)
   self.assertIn("cron: '17 * * * *'",workflow)
   self.assertNotIn("mcp__Automations",workflow)
  def test_free_overview_is_general_and_source_linked(self):
@@ -55,6 +57,30 @@ class FreeDeskTest(unittest.TestCase):
   self.assertEqual(again,first)
   self.assertEqual(first["generated_at_utc"],again["generated_at_utc"])
   self.assertEqual(first["material_digest"],again["material_digest"])
+
+ def test_hourly_check_receipt_does_not_recycle_edition(self):
+  first=self.build()
+  new_time=NOW+timedelta(hours=1)
+  same=self.build(now=new_time,previous=first)
+  self.assertEqual(first,same)
+  receipt=free.make_check_receipt(new_time,same,previous=first)
+  self.assertEqual(receipt["schema"],"GMFQ_NEXT_HOURLY_CHECK_V1")
+  self.assertEqual(receipt["status"],"VERIFIED")
+  self.assertFalse(receipt["edition_changed"])
+  self.assertEqual(receipt["edition_generated_at_utc"],first["generated_at_utc"])
+  self.assertEqual(receipt["material_digest"],first["material_digest"])
+  self.assertEqual(receipt["checked_at_utc"],"2026-11-13T14:14:00Z")
+  self.assertNotIn("checked_at_utc",same)
+ def test_receipt_new_edition_and_aware_clock(self):
+  first=self.build()
+  receipt=free.make_check_receipt(NOW,first)
+  self.assertTrue(receipt["edition_changed"])
+  self.assertEqual(receipt["edition_generated_at_utc"],receipt["checked_at_utc"])
+  with self.assertRaises(ValueError):
+   free.make_check_receipt(datetime(2026,11,13,13,14),first)
+  with self.assertRaises(ValueError):
+   free.make_check_receipt(NOW,{"schema":free.SCHEMA,"status":"FAILED"})
+
  def test_new_market_input_changes_edition(self):
   first=self.build()
   with tempfile.TemporaryDirectory() as tmp:

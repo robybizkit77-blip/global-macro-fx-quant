@@ -17,6 +17,7 @@ const sample={
  schema:'GMFQ_NEXT_FREE_HOURLY_DESK_V1',
  status:'ACTIVE',generated_at_utc:'2026-11-13T12:50:00Z',
  edition_time_rome:'2026-11-13 13:50',
+  material_digest:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
  headline:'Le aspettative monetarie si confrontano con il rischio globale',
  lead:'Azioni, credito e volatilità offrono segnali di mercato da leggere insieme.',
  desk_judgment:'Il quadro generale resta misto: la crescita e le attese monetarie tirano in direzioni diverse.',
@@ -38,6 +39,38 @@ const out=render(sample);
 assert(out.includes('Ultime novità disponibili'), 'Timestamp must refer to last actual evidence edition, not last refresh check');
 assert(!out.includes('Aggiornamento desk'), 'Misleading fresh-update label must not reappear');
 assert(out.includes('l’orario dell’edizione cambia soltanto quando'), 'Published edition must explain hourly unchanged checks');
+
+const verifiedCheck={
+ schema:'GMFQ_NEXT_HOURLY_CHECK_V1',status:'VERIFIED',
+ checked_at_utc:'2026-11-13T14:14:00Z',
+ edition_generated_at_utc:sample.generated_at_utc,
+ material_digest:sample.material_digest,edition_changed:false
+};
+const checkRender=check=>win.FXQuantHourlyDesk.render({
+ feed:sample,check,esc,date,dayNow:today,nowUtc:'2026-11-13T15:30:00Z'
+});
+const withReceipt=checkRender(verifiedCheck);
+assert(withReceipt.includes('data-hourly-check-status="verified"'));
+assert(withReceipt.includes('Controllo fonti completato')&&
+ withReceipt.includes('Edizione invariata'));
+assert(withReceipt.includes('13:50 Europe/Rome'),
+ 'Unchanged source check must NOT overwrite the true edition time');
+assert(withReceipt.includes('15:14'),'Check timestamp should use Europe/Rome daylight-saving offset');
+const staleCheck=win.FXQuantHourlyDesk.render({
+ feed:sample,check:verifiedCheck,esc,date,dayNow:today,nowUtc:'2026-11-13T19:30:00Z'
+});
+assert(staleCheck.includes('data-hourly-check-status="stale"')&&
+ staleCheck.includes('Verifica non recente'));
+const futureCheck=checkRender({...verifiedCheck,checked_at_utc:'2026-11-14T22:51:00Z'});
+assert(futureCheck.includes('data-hourly-check-status="unverified"'));
+assert(checkRender({...verifiedCheck,material_digest:'WRONG'})
+ .includes('data-hourly-check-status="unverified"'));
+assert(checkRender({...verifiedCheck,edition_generated_at_utc:'2026-11-12T12:50:00Z'})
+ .includes('data-hourly-check-status="unverified"'));
+assert(checkRender(null).includes('orario non verificabile'));
+assert(checkRender({...verifiedCheck,edition_changed:true})
+ .includes('Nuova edizione pubblicata'));
+
 const oldEdition=render({...sample,generated_at_utc:'2026-11-10T12:50:00Z'});
 assert(oldEdition?.includes('Ultima edizione conservata'), 'Dated older editions must be labeled conservatively');
 
@@ -219,13 +252,17 @@ assert(render(xss).includes('&lt;script&gt;alert(1)&lt;/script&gt;'));
 const app=fs.readFileSync(path.join(ROOT,next,'app.js'),'utf8');
 const index=fs.readFileSync(path.join(ROOT,next,'index.html'),'utf8');
 assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent free research');
+assert(app.includes("fetch('../../../market-desk/hourly-market-desk-check.json'"),
+ 'Hourly receipt fetch must be independent of the substantive edition');
+assert(app.includes("check:get('hourlyCheck')"),
+ 'Hourly receipt must be supplied to the Home visualizer');
 assert(app.includes("fetch('../../../market-desk/hourly-market-desk-current.json'"),'Optional fetch endpoint missing');
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
-assert(index.includes('hourly-desk-ui-v1.js?v=8'));
-assert(index.includes('hourly-desk-ui-v1.css?v=5'));
+assert(index.includes('hourly-desk-ui-v1.js?v=9'));
+assert(index.includes('hourly-desk-ui-v1.css?v=6'));
 assert(index.includes('home-market-pulse-v1.js?v=2')&&index.includes('home-market-pulse-v1.css?v=3'),
  'The source-based data visualization must load before the editorial Home UI');
-assert(index.indexOf('home-market-pulse-v1.js?v=2')<index.indexOf('hourly-desk-ui-v1.js?v=8'),
+assert(index.indexOf('home-market-pulse-v1.js?v=2')<index.indexOf('hourly-desk-ui-v1.js?v=9'),
  'Rendering order must preserve the optional pulse addon');
 assert(index.includes('app.js?v=18.58-home-money-pricing'));
 assert(app.includes("currencyPrices:get('currencyPrices')"),'Official ECB fixing history must feed FX observations');
@@ -270,6 +307,7 @@ assert(app.includes("document.addEventListener('visibilitychange'")&&
  'Existing in-place refresh behavior must stay intact');
 
 const css=fs.readFileSync(path.join(ROOT,next,'hourly-desk-ui-v1.css'),'utf8');
+assert(css.includes('.hourly-edition-clock')&&css.includes('data-hourly-check-status'), 'Check stamp must be readable and styled');
 assert(css.includes('.hourly-hero-grid')&&css.includes('.hourly-navigation-grid')&&css.includes('.hourly-desk-news-body'),
  'The new workbench CSS must style every major hierarchy layer');
 assert(css.includes('button.hourly-evidence-peek-item')&&css.includes('hourly-desk-story[data-hourly-article]'),
