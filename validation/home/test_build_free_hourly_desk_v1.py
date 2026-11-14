@@ -34,7 +34,9 @@ class FreeDeskTest(unittest.TestCase):
   self.assertTrue(r["provenance"]["chatgpt_automation_unchanged"])
   self.assertGreaterEqual(len(r["news"]),3)
   self.assertLessEqual(len(r["news"]),6)
-  self.assertIn("dollaro",r["headline"].lower())
+  self.assertTrue(("dollaro" in r["headline"].lower() or
+                   "aspettative monetarie" in r["headline"].lower()),
+                  "Headline must reference observed FX/rates drivers without forcing a USD narrative")
   self.assertIn("euro",r["desk_judgment"])
   self.assertIn("volatilità",r["desk_judgment"])
   self.assertIn("oro",r["desk_judgment"].lower())
