@@ -1196,7 +1196,7 @@ document.addEventListener('click',e=>{
   const focus=$('orient-strength-focus');
   if(focus&&state.route==='currencies'){
    focus.focus({preventScroll:true});
-   focus.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+   focus.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
   }
   return;
  }
