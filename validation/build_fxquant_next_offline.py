@@ -76,8 +76,8 @@ def main() -> None:
     contents = contents.replace('<script src="./rates-pricing-history-v1.js?v=1" defer></script>', "<script>"+pricing_history_js+"</script>")
     contents = contents.replace('<script src="./rates-relative-pricing-v1.js?v=1" defer></script>', "<script>"+relative_pricing_js+"</script>")
     contents = contents.replace('<script src="./pair-monetary-bridge-v1.js?v=2" defer></script>', "<script>"+pair_monetary_js+"</script>")
-    contents = contents.replace('<script src="./home-pricing-proof-v1.js?v=1" defer></script>', "<script>"+home_money_js+"</script>")
-    contents = contents.replace('<link rel="stylesheet" href="./home-pricing-proof-v1.css?v=1">', "<style>"+home_money_css+"</style>")
+    contents = contents.replace('<script src="./home-pricing-proof-v1.js?v=2" defer></script>', "<script>"+home_money_js+"</script>")
+    contents = contents.replace('<link rel="stylesheet" href="./home-pricing-proof-v1.css?v=2">', "<style>"+home_money_css+"</style>")
     rates_js_links = [x for x in contents.splitlines()
                       if '<script src="./rates-studio.js?v=' in x]
     assert len(rates_js_links) == 1, "Exactly one versioned Rates script expected"
