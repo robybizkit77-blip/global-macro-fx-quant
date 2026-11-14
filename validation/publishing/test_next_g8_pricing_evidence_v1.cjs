@@ -67,7 +67,7 @@ const poison=render({...usd,source:'<img src=x onerror=alert(1)>'});
 assert(poison.includes('&lt;img')&&!poison.includes('<img'),'Untrusted source names must be escaped');
 const index=read(dir+'index.html'),studio=read(dir+'currency-studio.js');
 assert(index.indexOf('g8-pricing-evidence-v1.js?v=1')<index.indexOf('currency-studio.js?v=19'));
-assert(index.includes('currency-studio.css?v=8'));
+assert(index.includes('currency-studio.css?v=9'));
 assert(studio.includes('FXQuantG8PricingEvidence?.read'));
 assert(studio.includes('sixProof?.label||marketLabel'));
 assert(studio.includes('sixProof?.summary||estimatedPolicy'));
