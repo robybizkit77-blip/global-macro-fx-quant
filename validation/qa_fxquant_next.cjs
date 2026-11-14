@@ -295,6 +295,12 @@ async function macroDriversJourney(page,label){
  await locator(page,'[data-liq-country="CAD"]').click();
  assert.equal(await locator(page,'[data-liq-country="CAD"]').getAttribute('aria-pressed'),'true');
  const cadDossier=(await locator(page,'.drivers-selection').innerText());
+ const officialCad=locator(page,'.drivers-cad-official');
+ assert.equal(await officialCad.count(),1,
+  label+' CAD official issuer evidence must be present separately from the native feed');
+ const officialText=await officialCad.innerText();
+ assert(officialText.includes('Bank of Canada')&&officialText.includes('V122667770')&&officialText.includes('stock bancario'),
+  label+' CAD evidence must preserve bank source, exact series and stock interpretation');
  assert(cadDossier.includes('Serie non disponibile'),
   label+' missing CAD direct credit must not be invented');
  assert(cadDossier.includes('COPERTURA')&&cadDossier.includes('QUALITÀ TEMPORALE'),
