@@ -10,7 +10,9 @@ const routeNames = {
   currencies: 'Valute G8',
   pairs: 'Coppie FX',
   macro: 'Scenario macro',
+  banks: 'Banche Centrali',
   rates: 'Tassi & OIS',
+  liquidity: 'Liquidità & Credito',
   cot: 'COT',
   risk: 'Rischio',
   news: 'Notizie',
@@ -333,7 +335,7 @@ async function check(browser, label, viewport) {
   try {
     const desktop = await check(browser,'desktop',{width:1440,height:1100});
     const mobile = await check(browser,'mobile',{width:390,height:844});
-    const out = {status:'PASS', audited:'Control Room redirect and nine FX Quant Next sections, including pair chart controls',desktop,mobile};
+    const out = {status:'PASS', audited:'Control Room redirect and eleven FX Quant Next sections, including pair chart controls',desktop,mobile};
     fs.writeFileSync('visual-qa-evidence/final-summary.json',JSON.stringify(out,null,2));
     console.log('FINAL_VISUAL_ACTIVE_ROUTES_PASS',JSON.stringify(out));
   } finally { await browser.close(); }
