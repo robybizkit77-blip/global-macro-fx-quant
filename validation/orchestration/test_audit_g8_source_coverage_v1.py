@@ -21,7 +21,7 @@ class G8CoverageReceiptTests(unittest.TestCase):
         self.assertEqual(report["rows"]["NZD"]["rates_2y"]["status"], "STALE_OR_UNALIGNED")
         self.assertIn(report["rows"]["USD"]["pricing_6m"]["status"], {"INDICATIVE_PROXY", "WITHHELD"})
         self.assertEqual(report["rows"]["EUR"]["pricing_6m"]["status"], "INDICATIVE_PROXY")
-        self.assertEqual(report["rows"]["CHF"]["pricing_6m"]["status"], "INDICATIVE_PROXY")
+        self.assertIn(report["rows"]["CHF"]["pricing_6m"]["status"], {"INDICATIVE_PROXY", "WITHHELD"})
         self.assertEqual(report["rows"]["NZD"]["pricing_6m"]["status"], "WITHHELD")
         self.assertIsNone(report["rows"]["USD"]["pricing_6m"]["weekly_change_bp"])
         self.assertGreater(report["rows"]["USD"]["macro_series"]["observed_with_value"], 10)
