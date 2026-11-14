@@ -87,8 +87,9 @@ def parse(data,*,today=None):
             "latest_observation":months[-1],"revised_august_2026":abs(overlap)>.0000001}
 
 def existing_observations(text):
-    d=re.search(r"\bdates\s*:\s*(\[[^\]]*\])",text)
-    v=re.search(r"\bvalues\s*:\s*(\[[^\]]*\])",text)
+    # Accept both initial literal JS keys and JSON-quoted generated keys.
+    d=re.search(r"['\"]?dates['\"]?\s*:\s*(\[[^\]]*\])",text)
+    v=re.search(r"['\"]?values['\"]?\s*:\s*(\[[^\]]*\])",text)
     if not d or not v:
         return None
     try:
