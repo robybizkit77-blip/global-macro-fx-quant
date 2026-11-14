@@ -118,6 +118,37 @@
  NZD:{fx:'Lo storico disponibile della liquidità NZD è breve e non consente inferenze robuste sui flussi. Credito privato in aumento e settlement cash in calo sono una divergenza da testare contro RBNZ e rischio globale.',
   watch:'Aggiornamenti RBNZ su settlement cash e credito, confronto monetario con RBA e comportamento AUD/NZD e NZD/USD.'}
  };
+ function usFedCreditResearch(esc,fmt,now){
+  const x=root.FXQuantUSBanksCreditResearch;
+  if(!x||x.schema!=='GMFQ_NEXT_US_H8_CREDIT_RESEARCH_V1'||
+     x.status!=='VERIFIED_FED_H8_FRED_MIRROR_RESEARCH_ONLY'||
+     x.publisher!=='Board of Governors of the Federal Reserve System (US)'||
+     x.series_id!=='TOTBKCR'||x.category!=='bank_credit_stock'||
+     x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     x.first_release_pit_verified!==false||x.frequency!=='W'||
+     !Array.isArray(x.dates)||!Array.isArray(x.values)||
+     x.dates.length<2||x.dates.length!==x.values.length)return '';
+  const lastDate=x.dates.at(-1),last=x.values.at(-1),prev=x.values.at(-2);
+  const today=observationDate(now),observed=observationDate(lastDate);
+  if(!today||!observed||dateMs(observed)>dateMs(today)||
+     lastDate!==x.latest_observation||!finite(last)||!finite(prev)||
+     last<=0||prev<=0||!x.dates.every((d,i)=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&(!i||d>x.dates[i-1])))return '';
+  const age=Math.round((dateMs(today)-dateMs(observed))/864e5);
+  const move=(last/prev-1)*100,diff=last-prev;
+  if(!finite(move)||Math.abs(move)>10)return '';
+  const direction=diff>0?'cresce':diff<0?'si riduce':'rimane invariato';
+  const stale=age>28?'PERIODO STORICO':'ULTIMA OSSERVAZIONE SETTIMANALE';
+  return '<section class="drivers-cad-official drivers-us-official" aria-label="Ricerca Fed H.8 separata">'+
+   '<span class="mini-overline">FONTE FED H.8 / FRED · SERIE SEPARATA</span>'+
+   '<h3>Credito bancario USA: cosa cambia nello stock, non necessariamente nei nuovi prestiti.</h3>'+
+   '<p>Nel dato del '+esc(lastDate)+' il credito bancario totale '+direction+': '+esc(fmt(last,2))+
+   ' miliardi USD, '+(diff>0?'+':diff<0?'−':'')+esc(fmt(Math.abs(diff),2))+
+   ' miliardi ('+(diff>0?'+':diff<0?'−':'')+esc(fmt(Math.abs(move),2))+'%) rispetto alla settimana precedente. '+
+   'Questo aggregato Fed comprende anche titoli bancari e non misura direttamente la domanda di nuovi finanziamenti.</p>'+
+   '<p><b>Lettura economica:</b> per giudicare la trasmissione serve capire se crescono i prestiti, se cambiano gli standard SLOOS (attualmente sospesi per discrepanza tra varianti) e se il pricing Fed relativo produce una reazione coerente di USD. Non deduciamo flussi valutari dal solo stock.</p>'+
+   '<div class="drivers-cad-source"><span>'+stale+' · '+esc(lastDate)+' · H.8 TOTBKCR · fonte aggiornata via FRED, vintage iniziale non certificato</span>'+
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: Federal Reserve / FRED ↗</a></div></section>';
+ }
  function cadIssuerResearch(esc,fmt,now){
   const x=root.FXQuantCADCreditResearch;
   if(!x||x.schema!=='GMFQ_NEXT_CAD_BUSINESS_CREDIT_OFFICIAL_RESEARCH_V1'||
@@ -192,6 +223,7 @@
    '<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
    '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
    '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>'+
+   (selected==='USD'?usFedCreditResearch(esc,fmt,today):'')+
    (selected==='CAD'?cadIssuerResearch(esc,fmt,today):'')+
    '<div class="drivers-story"><div><span>IPOTESI DI TRASMISSIONE AL FOREX</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div><div><span>COSA MONITORARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
    (root.FXQuantDriverMarketAudit?.render?.({get,esc,dayNow},selected)||'')+
