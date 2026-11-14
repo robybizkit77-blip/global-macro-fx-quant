@@ -118,6 +118,41 @@
  NZD:{fx:'Lo storico disponibile della liquidità NZD è breve e non consente inferenze robuste sui flussi. Credito privato in aumento e settlement cash in calo sono una divergenza da testare contro RBNZ e rischio globale.',
   watch:'Aggiornamenti RBNZ su settlement cash e credito, confronto monetario con RBA e comportamento AUD/NZD e NZD/USD.'}
  };
+ function gbpBoEReservesResearch(esc,fmt,now){
+  const x=root.FXQuantGBPBoEReservesResearch;
+  if(!x||x.schema!=='GMFQ_NEXT_GBP_BOE_WEEKLY_RESERVES_V1'||
+     x.status!=='VERIFIED_BOE_WEEKLY_RESERVE_STOCK_RESEARCH_ONLY'||
+     x.publisher!=='Bank of England'||x.series_id!=='RPWB56A'||
+     x.source_contract!=='BoE Weekly Report / Sterling Liabilities / Reserves balances'||
+     x.unit!=='milioni GBP'||x.frequency!=='W'||
+     x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     x.first_release_pit_verified!==false||x.seasonally_adjusted!==false||
+     x.asof_canonical_overlap!=='2026-09-16'||x.value_canonical_overlap!==638012)return '';
+  const period=observationDate(x.source_period),previous=observationDate(x.previous_period),
+        published=observationDate(x.published_on),today=observationDate(now);
+  const [latest,earlier,delta]=[x.latest_balance_million_gbp,x.previous_balance_million_gbp,x.weekly_change_million_gbp];
+  if(!period||!previous||!published||!today||
+     dateMs(period)>dateMs(published)||dateMs(published)>dateMs(today)||
+     dateMs(period)-dateMs(previous)!==7*864e5||
+     ![latest,earlier,delta].every(finite)||latest<300000||earlier<300000||
+     latest-earlier!==delta||Math.abs(delta)>150000||
+     !/^https:\/\/www\.bankofengland\.co\.uk\/weekly-report\/\d{4}\/\d{1,2}-[a-z]+-\d{4}$/.test(x.source_url))return '';
+  const age=Math.round((dateMs(today)-dateMs(period))/864e5);
+  const sign=delta>0?'+':delta<0?'−':'';
+  const direction=delta>0?'sono aumentate':delta<0?'sono diminuite':'sono rimaste invariate';
+  const quality=age>25?'STORICO · NUOVO RAPPORTO DA CONTROLLARE':'RAPPORTO SETTIMANALE UFFICIALE';
+  return '<section class="drivers-cad-official drivers-gbp-official" aria-label="BoE riserve bancarie fonte ufficiale separata">'+
+   '<span class="mini-overline">BANK OF ENGLAND · RISERVE BANCARIE UFFICIALI</span>'+
+   '<h3>GBP: le riserve cambiano, ma non è una prova di credito più facile.</h3>'+
+   '<p>Al '+esc(x.source_period)+' le riserve delle banche presso la BoE '+esc(direction)+
+   ' di <b>'+sign+esc(fmt(Math.abs(delta),0))+' milioni GBP</b> in una settimana: saldo '+esc(fmt(latest,0))+
+   ' milioni, contro '+esc(fmt(earlier,0))+' milioni al '+esc(x.previous_period)+'.</p>'+
+   '<p><b>Cosa sto osservando:</b> uno stock di passività della banca centrale, non un flusso di nuovi prestiti. Anche con riserve in aumento, non possiamo dedurre un allentamento della BoE, nuovi acquisti di asset o domanda di GBP. Il credito garantito del feed nativo ha una data diversa: non va usato come conferma simultanea.</p>'+
+   '<p><b>Quale verifica Forex manca?</b> Il mercato deve mostrare se cambia il percorso SONIA relativo a €STR e Fed; poi cerchiamo la risposta di EUR/GBP e GBP/USD, distinguendo fattori GBP da debolezza dell’altra valuta. Senza questo collegamento non emerge un trade dalle sole riserve.</p>'+
+   '<div class="drivers-cad-source"><span>'+quality+' · osservazione '+esc(x.source_period)+
+   ' · pubblicazione '+esc(x.published_on)+' · RPWB56A · dati settimanali, revisioni possibili · fonte separata dal feed FX</span>'+
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: BoE · Weekly Report ↗</a></div></section>';
+ }
  function audRBAESReading(esc,fmt,now){
   const x=root.FXQuantAUDESBalancesResearch;
   if(!x||x.schema!=='GMFQ_NEXT_AUD_RBA_ES_BALANCES_V1'||
@@ -329,6 +364,7 @@
    '<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
    '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
    '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>'+
+   (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):'')+
    (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):'')+
    (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):'')+
    (selected==='USD'?usFedCreditResearch(esc,fmt,today):'')+
