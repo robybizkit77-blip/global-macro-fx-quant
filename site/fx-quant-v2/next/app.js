@@ -871,6 +871,8 @@ function pairs(){
   weaken:'Il giudizio corrente è sospeso: non emerge una tesi direzionale da invalidare.',
   note:'Nessun riferimento di ingresso H4 disponibile.'
  };
+ const riskReading=window.FXQuantPairRankings?.pairRiskReading?.(activePair,pairProfile)||
+  'Il rischio del setup non è classificabile con gli input correnti; nessun ingresso viene dedotto.';
  const pairCatalyst=window.FXQuantPairRankings?.pairCatalystWatch?.(
   activePair,get('calendar'),dayNow())||null;
  const context='Stima operativa Macro Strength '+date(estimate?.asof)+' · fixing BCE '+date(estimate?.priceAsOf)+
@@ -889,7 +891,8 @@ function pairs(){
    '<div><span>TESI FONDAMENTALE</span><strong>'+esc(activePair?.thesisStrength||'NON VALUTABILE')+'</strong></div>'+
    '<div class="pairs-trade-assessment" data-pairs-trade-tone="'+tradeTone+'"><span>TRADE ATTRACTIVENESS</span><strong>'+esc(tradeStatus)+'</strong></div>'+
    '<div><span>TIMING · COSA OSSERVARE</span><strong>'+esc(tradeText)+'</strong></div></div>'+
-  '<p class="pairs-why-no-entry">Una buona tesi fondamentale non equivale a un buon ingresso: timing e rischio/rendimento richiedono conferme autonome.</p>'+
+  '<p class="pairs-why-no-entry"><strong>Rischio operativo.</strong> '+esc(riskReading)+
+   ' Una buona tesi fondamentale non equivale a un buon ingresso.</p>'+
   '<div class="pairs-conditions" aria-label="Cosa confermerebbe e cosa indebolirebbe la tesi">'+
    '<article class="pairs-condition pairs-condition-confirm"><strong>Rafforzerebbe il quadro.</strong><p>'+esc(gate.improve)+'</p></article>'+
    '<article class="pairs-condition pairs-condition-weaken"><strong>Lo indebolirebbe.</strong><p>'+esc(gate.weaken)+'</p></article>'+

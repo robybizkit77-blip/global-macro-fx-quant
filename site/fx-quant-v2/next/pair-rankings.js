@@ -264,6 +264,40 @@
    'Mancano riferimenti daily omogenei per questa tesi: nessun livello di prezzo inventato.'};
 }
 
+
+ // A short, source-bound risk reading for the selected FX pair.
+ // It names visible contradictions, not imagined flows, OHLC or an entry signal.
+ function pairRiskReading(pair,profile){
+  const finalCheck='Prima di valutare un ingresso servono struttura H4/Daily, volatilità, stop, obiettivo, costi e rapporto rischio/rendimento: il modello non li certifica.';
+  if(!pair||typeof pair.key!=='string'||!/^[A-Z]{6}$/.test(pair.key))
+   return 'Manca una tesi corrente verificabile. '+finalCheck;
+  if(![pair.base,pair.quote].includes(pair.favored))
+   return 'La stima non distingue un vantaggio fondamentale fra le due valute. '+finalCheck;
+  const risks=[];
+  const observed=profile?.key===pair.key&&profile?.source==='STIMA_ESPLICITA_V1'&&
+   profile?.fresh===true;
+  if(!observed)
+   risks.push('I fixing daily non sono sufficientemente attuali e coerenti con questa stima: il timing resta sospeso.');
+  if(observed&&profile?.watch?.ready===true&&profile.watch.asof===profile.asof&&
+     profile.watch.adversePassed===true)
+   risks.push('Il fixing BCE ha già oltrepassato il riferimento daily contrario alla tesi: il prezzo la sta mettendo sotto pressione.');
+  else if(observed&&pair.fiveState==='CONTRARIO'&&pair.twentyState==='CONTRARIO')
+   risks.push('Il prezzo è contrario alla valuta favorita sia su 5 sia su 20 fixing BCE: il timing non conferma.');
+  else if(observed&&(pair.fiveState==='CONTRARIO'||pair.twentyState==='CONTRARIO'))
+   risks.push('Uno dei due orizzonti di prezzo BCE (5 o 20 fixing) contraddice la direzione preferita: possibile divergenza di timing.');
+  if(pair.macroState==='CONTRARIA')
+   risks.push('Il momentum macro relativo sostiene la controvaluta, non quella favorita dalla stima.');
+  if(pair.policyState==='CONTRARIA')
+   risks.push('Le variazioni monetarie disponibili sostengono la controvaluta: il repricing non conferma la tesi.');
+  else if(pair.policyState==='ASSENTE')
+   risks.push('Manca una variazione monetaria confrontabile per entrambe le valute; un proxy non colma la lacuna.');
+  if(pair.quality==='CON RISCHI'||pair.quality==='DA CONFERMARE')
+   risks.push('La classificazione delle fonti resta parziale e richiede conferme indipendenti.');
+  const summary=risks.length?risks.slice(0,2).join(' '):
+   'Nei dati disponibili non emerge una contraddizione prioritaria, ma non è una conferma tecnica o di payoff.';
+  return summary+' '+finalCheck;
+ }
+
  function render(api){
   const {get,FLAGS,state,esc,sign,date}=api;
   const est=get('estimatedMacro');
@@ -366,7 +400,7 @@
    '<p>'+esc(est?.warning||'Le osservazioni non consentono oggi una valutazione affidabile.')+'</p>'+
    '</details></section></div>';
  }
- const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,pairDriverReading,pairCatalystWatch,render};
+ const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,pairRiskReading,pairDriverReading,pairCatalystWatch,render};
  root.FXQuantPairRankings=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
