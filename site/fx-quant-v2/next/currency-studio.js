@@ -386,6 +386,11 @@ function build(api){
    desk?.market?.tier==='NON_VERIFICATO'?
    'La variazione monetaria non è verificata. Monitorare nuovi dati e prezzo relativo senza attribuire un segnale ai tassi.':
    'Confrontare le prossime pubblicazioni con consenso, prezzi e tassi, senza inferire causalità.';
+  const fxMonitorWatch=country==='NZD'&&
+   cur?.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'&&
+   !watchSummary.includes('NZD/USD')?
+   watchSummary+' Sul Forex verifica anche NZD/USD e AUD/NZD: tassi e prezzo devono reagire in modo coerente prima di considerare confermata la tesi.':
+   watchSummary;
   return '<section class="strength-focus" id="orient-strength-focus">'+
    '<div class="strength-focus-head"><div>'+
    '<span class="chapter-kicker">02 / LA LETTURA DEL DESK · '+FLAGS[country]+' '+country+'</span>'+
@@ -397,7 +402,7 @@ function build(api){
    '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(estimatedPolicy)+'</p>'+
    '<p><strong>Che cosa mostra il Forex.</strong> '+esc(priceSummary)+'</p>'+
    '</div>'+
-   '<p class="strength-first-watch"><strong>Che cosa monitorare.</strong> '+esc(watchSummary)+'</p>'+
+   '<p class="strength-first-watch"><strong>Che cosa monitorare.</strong> '+esc(fxMonitorWatch)+'</p>'+
    '<details class="strength-evidence-fold"><summary><strong>Apri numeri, date, stime e fonti di '+country+'</strong>'+
    '<span>Quattro pilastri · Macro / 2Y / attese 6M / prezzo · ricerca Quant separata</span></summary>'+
    '<div class="strength-evidence-body"><div class="strength-cards">'+
