@@ -208,6 +208,19 @@ async function pairMonetaryJourney(page,label){
   'USDJPY',label+' pair monetary reading did not follow selection');
  const noPair=await locator(page,'.pair-monetary-bridge').innerText();
  assert(!noPair.includes('Δ6M RELATIVO · EURGBP'),'A selected pair must not retain another pair');
+ await chosenPair(page,'EURUSD',label);
+ const euroPanel=locator(page,'.pair-monetary-bridge[data-pair-monetary-pair="EURUSD"]');
+ assert.equal(await euroPanel.count(),1,label+' EUR/USD source-first monetary card missing');
+ assert.equal(await euroPanel.locator('.pair-monetary-kpi').count(),2,
+  label+' EUR/USD must have two informative research references');
+ const copy=await euroPanel.innerText();
+ assert(copy.includes('−2,75 pb')&&copy.includes('11/11/2026')&&copy.includes('12/11/2026'),
+  label+' EUR/USD must surface the actual historical common interval instead of two empty 6M cards');
+ assert(!copy.includes('non allineato'),
+  label+' EUR/USD has data for an archived common period, empty flags cannot dominate');
+ await euroPanel.locator('.pair-monetary-source > summary').click();
+ assert.equal(await euroPanel.locator('.pair-monetary-links a').count(),4,
+  label+' every displayed monetary number needs inspectable source links');
 }
 async function relative6mJourney(page,label){
  await route(page,'rates');
