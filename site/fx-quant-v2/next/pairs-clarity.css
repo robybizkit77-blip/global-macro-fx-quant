@@ -113,3 +113,30 @@
 .pair-monetary-kpi[data-pair-monetary-evidence^="HISTORICAL"]{border-color:rgba(130,188,175,.46)}
 .pair-monetary-kpi[data-pair-monetary-evidence="LEVEL_CONTEXT"]{background:rgba(16,44,57,.48)}
 @media(max-width:560px){.pair-monetary-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.pair-monetary-links a{font-size:9px;line-height:1.4;min-width:0}}
+
+
+/* Pair dossier: reading hierarchy for a professional, compact first impression.
+   Signals and source judgments are unchanged; emphasis is purely editorial. */
+.pairs-three-answers .pairs-trade-assessment{border-left:3px solid rgba(118,166,184,.72)}
+.pairs-three-answers [data-pairs-trade-tone="awaiting"]{border-left-color:#dbb970}
+.pairs-three-answers [data-pairs-trade-tone="caution"]{border-left-color:#df8186}
+.pairs-three-answers .pairs-trade-assessment[data-pairs-trade-tone="awaiting"] strong{color:#e8cd94}
+.pairs-three-answers .pairs-trade-assessment[data-pairs-trade-tone="caution"] strong{color:#f0adb1}
+.pairs-three-answers span{font-size:10.5px;line-height:1.5}
+.pairs-three-answers strong{font-size:13px;line-height:1.55}
+.pairs-why-no-entry{font-size:11.5px;line-height:1.65;color:#b6d0d9;margin:12px 0 0;max-width:900px}
+.pairs-conditions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0 12px}
+.pairs-condition{padding:15px 16px;min-width:0;border:1px solid rgba(128,169,188,.25);border-radius:10px;background:rgba(9,32,46,.47)}
+.pairs-condition>strong{display:block;font:760 12.5px/1.5 Manrope,'DM Sans',sans-serif;margin:0 0 6px}
+.pairs-condition>p{font-size:12.5px;color:#c8dce4;line-height:1.7;margin:0;overflow-wrap:anywhere}
+.pairs-condition-confirm{border-left:3px solid #55b790}
+.pairs-condition-confirm>strong{color:#9cdebf}
+.pairs-condition-weaken{border-left:3px solid #d8767c}
+.pairs-condition-weaken>strong{color:#edb0b4}
+.pairs-reading-compact .pairs-event-watch{margin:14px 0 13px;padding:11px 13px;border-radius:8px;background:rgba(57,79,98,.18);border:1px solid rgba(133,170,185,.16)}
+@media(max-width:680px){
+ .pairs-conditions{grid-template-columns:minmax(0,1fr);gap:9px;margin-top:16px}
+ .pairs-condition{padding:13px 14px}
+ .pairs-condition>p{font-size:12px}
+ .pairs-why-no-entry{font-size:11.5px}
+}
