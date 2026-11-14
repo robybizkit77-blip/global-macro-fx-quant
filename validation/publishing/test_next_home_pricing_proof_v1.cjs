@@ -8,7 +8,7 @@ globalThis.FXQuantPricingHistory=require('../../site/fx-quant-v2/next/rates-pric
 globalThis.FXQuantPricingMoves=require('../../site/fx-quant-v2/next/rates-pricing-moves-v1.js');
 globalThis.FXQuantRelativePricing=require('../../site/fx-quant-v2/next/rates-relative-pricing-v1.js');
 globalThis.FXQuantPairMonetary=require('../../site/fx-quant-v2/next/pair-monetary-bridge-v1.js');
-const {inspectPair,inspectSessionWindow,choose,pairReturn,render}=require('../../site/fx-quant-v2/next/home-pricing-proof-v1.js');
+const {inspectPair,inspectSessionWindow,horizonReading,choose,pairReturn,render}=require('../../site/fx-quant-v2/next/home-pricing-proof-v1.js');
 const prices=json('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
  pairs=json('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),
  history=json(site+'rates-pricing-history-v1.json'),
@@ -111,6 +111,23 @@ assert(html.includes('data-home-pricing-sessions="5"'));
 assert(html.includes('data-home-pricing-sessions="20"'));
 assert(html.includes('Non disponibile:'),'Unavailable must be explicit');
 
+
+const coherent={pair:'EURUSD',base:'EUR',quote:'USD',monetaryBp:2,fxPct:.3,comparison:'SEGNI_COHERENTI'};
+const divergent={...coherent,fxPct:-.3,comparison:'SEGNI_DIVERGENTI'};
+const quiet={...coherent,monetaryBp:0.01,comparison:'MOVIMENTO_CONTENUTO'};
+assert(horizonReading(coherent,[{comparison:'SEGNI_COHERENTI'},null])
+ .includes('stessa coerenza di segno compare anche a 5 sedute'));
+assert(horizonReading(divergent,[{comparison:'SEGNI_COHERENTI'},null])
+ .includes('A 5 sedute tassi relativi e cambio hanno lo stesso segno'),
+ 'Cross-window change should not be described as persistence');
+assert(horizonReading(quiet,[null,null]).includes('Non ci sono confronti verificabili'));
+assert(horizonReading(coherent,[{comparison:'SEGNI_COHERENTI'},{comparison:'SEGNI_COHERENTI'}])
+ .includes('anche sulle finestre a 5 e 20 sedute'));
+assert(horizonReading(coherent,[{comparison:'SEGNI_DIVERGENTI'},{comparison:'SEGNI_COHERENTI'}])
+ .includes('a 20 sedute tassi relativi e cambio hanno lo stesso segno'));
+assert(html.includes('finestre sono sovrapposte'), 'Overlapping horizons require a nonindependence disclosure');
+assert(html.includes('Nel confronto breve'), 'Home should render a synthetic-free readable FX conclusion');
+
 const earlier=inspectPair('EURUSD',{...args,today:'2026-11-10'});
 assert(!earlier||earlier.to<='2026-11-10',
  'Only the latest available prior observations may be used, never dates after the stated as-of');
@@ -120,8 +137,8 @@ assert(!early.includes('data-home-pricing-to="2026-11-12"'),
  'Historical evidence must respect requested as-of, not look ahead');
 const source=read(site+'app.js'),index=read(site+'index.html');
 assert(index.indexOf('pair-monetary-bridge-v1.js?v=2')<
- index.indexOf('home-pricing-proof-v1.js?v=2')&&
- index.indexOf('home-pricing-proof-v1.js?v=2')<
+ index.indexOf('home-pricing-proof-v1.js?v=3')&&
+ index.indexOf('home-pricing-proof-v1.js?v=3')<
  index.indexOf('app.js?v=18.58-home-money-pricing'),
  'Home module must load after monetary archive validators and before App');
 assert(index.includes('home-pricing-proof-v1.css?v=2'));
