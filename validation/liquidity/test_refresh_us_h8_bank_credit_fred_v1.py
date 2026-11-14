@@ -12,8 +12,8 @@ from validation.liquidity.refresh_us_h8_bank_credit_fred_v1 import (
 DAY=date(2026,11,14)
 
 def sample(*,reverse=False):
-    dates=[date(2026,9,9)+timedelta(days=7*i) for i in range(10)]
-    pairs=[(d.isoformat(),ANCHOR_VALUE+i*10) for i,d in enumerate(dates)]
+    dates=[date(2026,8,12)+timedelta(days=7*i) for i in range(14)]
+    pairs=[(d.isoformat(),ANCHOR_VALUE+(i-4)*10) for i,d in enumerate(dates)]
     if reverse:pairs.reverse()
     buf=io.StringIO()
     w=csv.writer(buf)
@@ -24,7 +24,7 @@ def sample(*,reverse=False):
 class USH8SourceTest(unittest.TestCase):
     def test_source_identity_and_wednesday(self):
         x=parse(sample(),today=DAY)
-        self.assertEqual(x['dates'][0],ANCHOR_DATE)
+        self.assertEqual(x['dates'][4],ANCHOR_DATE)
         self.assertEqual(x['latest_observation'],'2026-11-11')
         self.assertEqual(x['values'][0],ANCHOR_VALUE)
 
@@ -38,13 +38,15 @@ class USH8SourceTest(unittest.TestCase):
     def test_bad_weekday_and_week_gap(self):
         with self.assertRaisesRegex(ValueError,'Wednesday'):
             parse(sample().replace('2026-09-09','2026-09-08'),today=DAY)
+        lines=sample().splitlines()
+        gapped='\n'.join(row for row in lines if not any(x in row for x in ('2026-10-07','2026-10-14','2026-10-21')))+'\n'
         with self.assertRaisesRegex(ValueError,'weekly gap'):
-            parse(sample().replace('2026-09-16','2026-09-17'),today=DAY)
+            parse(gapped,today=DAY)
 
     def test_source_overlap_or_outlier_withheld(self):
         with self.assertRaisesRegex(ValueError,'diverges'):
             parse(sample().replace('19866.6568','24000'),today=DAY)
-        with self.assertRaisesRegex(ValueError,'weekly.*jump'):
+        with self.assertRaisesRegex(ValueError,'week-to-week stock jump'):
             parse(sample().replace(str(ANCHOR_VALUE+10),str(ANCHOR_VALUE+2300)),today=DAY)
 
     def test_source_older_than_35_days_not_current(self):
