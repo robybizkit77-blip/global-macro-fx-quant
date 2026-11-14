@@ -11,6 +11,7 @@ on:
       - 'validation/home/build_free_hourly_desk_v1.py'
       - 'validation/home/test_build_free_hourly_desk_v1.py'
       - 'site/fx-quant-v2/next/hourly-desk-ui-v1.js'
+      - 'site/fx-quant-v2/next/hourly-desk-ui-v1.css'
       - 'site/fx-quant-v2/next/app.js'
       - 'site/fx-quant-v2/next/index.html'
       - 'validation/publishing/test_next_independent_hourly_desk_v1.cjs'
@@ -22,6 +23,7 @@ on:
       - 'validation/home/test_build_free_hourly_desk_v1.py'
       - 'validation/publishing/test_next_independent_hourly_desk_v1.cjs'
       - 'site/fx-quant-v2/next/hourly-desk-ui-v1.js'
+      - 'site/fx-quant-v2/next/hourly-desk-ui-v1.css'
       - 'site/fx-quant-v2/next/app.js'
       - '.github/workflows/next-independent-ai-hourly-desk-v1.yml'
   workflow_dispatch:
