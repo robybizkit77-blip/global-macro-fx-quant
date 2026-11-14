@@ -118,6 +118,39 @@
  NZD:{fx:'Lo storico disponibile della liquidità NZD è breve e non consente inferenze robuste sui flussi. Credito privato in aumento e settlement cash in calo sono una divergenza da testare contro RBNZ e rischio globale.',
   watch:'Aggiornamenti RBNZ su settlement cash e credito, confronto monetario con RBA e comportamento AUD/NZD e NZD/USD.'}
  };
+ function audRBAESReading(esc,fmt,now){
+  const x=root.FXQuantAUDESBalancesResearch;
+  if(!x||x.schema!=='GMFQ_NEXT_AUD_RBA_ES_BALANCES_V1'||
+     x.status!=='VERIFIED_RBA_WEEKLY_ES_BALANCE_RESEARCH_ONLY'||
+     x.publisher!=='Reserve Bank of Australia'||
+     x.source_contract!=='RBA weekly balance sheet / Exchange Settlement balances'||
+     x.frequency!=='W'||x.unit!=='milioni AUD'||
+     x.first_release_pit_verified!==false||
+     x.source_release_timestamp_verified!==false||
+     x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     x.value_canonical_overlap!==173965||x.asof_canonical_overlap!=='2026-09-16')return '';
+  const period=observationDate(x.source_period),today=observationDate(now);
+  if(!period||!today||dateMs(period)>dateMs(today)||
+     !/^\d{4}-\d{2}-\d{2}$/.test(x.source_period)||
+     ![x.latest_balance_million_aud,x.weekly_movement_million_aud,x.previous_implied_million_aud].every(finite)||
+     x.latest_balance_million_aud<10000||x.latest_balance_million_aud>900000||
+     x.previous_implied_million_aud<=0||
+     x.latest_balance_million_aud-x.previous_implied_million_aud!==x.weekly_movement_million_aud||
+     !/^https:\/\/www\.rba\.gov\.au\/statistics\/balance-sheet\/$/.test(x.source_url))return '';
+  const age=Math.round((dateMs(today)-dateMs(period))/864e5);
+  const movement=x.weekly_movement_million_aud;
+  const signed=(movement>0?'+':movement<0?'−':'')+fmt(Math.abs(movement),0);
+  const observation=age>25?'STORICO · DA AGGIORNARE':'SETTIMANALE UFFICIALE';
+  return '<div class="drivers-aud-es-bridge" aria-label="Riserve RBA settimanali fonte indipendente">'+
+   '<b>SECONDO CANALE, NON SECONDA CONFERMA: LE RISERVE</b>'+
+   '<p>Al '+esc(x.source_period)+' i saldi <em>Exchange Settlement</em> delle banche presso RBA sono '+esc(fmt(x.latest_balance_million_aud,0))+
+   ' milioni AUD, '+esc(signed)+' milioni sulla settimana. Il saldo precedente di '+esc(fmt(x.previous_implied_million_aud,0))+
+   ' milioni è <b>ricavato dal movimento pubblicato</b>, non una nuova osservazione indipendente.</p>'+
+   '<p>Queste sono riserve di regolamento tra banche, <b>non</b> nuovi prestiti, liquidità netta trasferita ai mercati o flussi di acquisto AUD. La serie A3 AESAT giornaliera è un riferimento distinto, qui usiamo il bilancio RBA settimanale. Credito mensile e riserve settimanali non vanno sommati per creare un segnale: conta se cambiano costo del funding, attese sui tassi e prezzo Forex.</p>'+
+   '<small>'+observation+' · rilevazione '+esc(x.source_period)+
+   ' · ora esatta del rilascio non verificata · valore precedente implicito · nessuna modifica al ranking FX · '+
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: bilancio settimanale RBA ↗</a></small></div>';
+ }
  function audRBAAdjustedCredit(esc,fmt,now){
   const x=root.FXQuantAUDBusinessCreditGrowthResearch;
   if(!x||x.schema!=='GMFQ_NEXT_AUD_RBA_BUSINESS_CREDIT_GROWTH_V1'||
@@ -147,6 +180,7 @@
    '. Su dodici mesi è '+esc(move(x.annual_growth_pct))+
    ' (contro '+esc(move(x.prior_year_growth_pct))+' nello stesso mese dell’anno precedente).</p>'+
    '<p><b>Perché conta:</b> questa è la crescita RBA corretta per le rotture statistiche, <b>non</b> una percentuale ricavata dai livelli D2 e non un flusso di nuovi prestiti. Il credito resistente può aiutare l’attività, ma va confrontato con costi di finanziamento, domanda, occupazione e inflazione. Per AUD controlliamo il repricing RBA relativo a Fed/BoC, Cina e rischio globale: il credito da solo non identifica un trade.</p>'+
+   audRBAESReading(esc,fmt,now)+
    '<div class="drivers-cad-source"><span>'+freshness+' · periodo '+esc(x.observation_period)+
    ' · pubblicato '+esc(x.release_date)+' · rettifiche storiche possibili · prima vintage non certificata · feed FX invariato</span>'+
    '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: RBA · Financial Aggregates ↗</a></div></section>';
