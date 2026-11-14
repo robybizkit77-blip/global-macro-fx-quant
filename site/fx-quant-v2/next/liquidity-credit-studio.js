@@ -100,6 +100,24 @@
    watch:'Controllare nuove pubblicazioni del credito, survey sugli standard, differenziali monetari, spread IG/HY e la risposta della valuta.',
    liquidity:liq,credit:cr};
  }
+ const FX_LENSES={
+ USD:{fx:'Se la liquidità cresce ma il credito non prende velocità, la trasmissione alla domanda USA potrebbe restare contenuta. Per USD servono Fed pricing relativo e dollaro osservato: in caso di stress la domanda di liquidità rifugio può compensare rendimenti più bassi.',
+  watch:'Nuovo H.8 credito bancario, SLOOS e crescita; confrontare il 6M USA con EUR e JPY su date coerenti, poi EUR/USD e USD/JPY.'},
+ EUR:{fx:'Nella zona euro, credito alle imprese ed eccesso di liquidità BCE descrivono canali diversi. Un recupero dei prestiti potrebbe sostenere la crescita, ma per EUR conta la reazione del pricing BCE rispetto a Fed e BoE.',
+  watch:'Prestiti imprese e survey BLS, attività manifatturiera e variazioni €STR/futures; verificare EUR/USD e EUR/GBP.'},
+ GBP:{fx:'Le riserve BoE non sono un indicatore diretto della domanda di mutui. La crescita del credito garantito è un pezzo del quadro, da collegare a consumi e aspettative BoE prima di dedurre forza GBP.',
+  watch:'Nuove serie su credito famiglie e imprese, survey condizioni e pricing SONIA rispetto a €STR; monitorare EUR/GBP e GBP/USD.'},
+ JPY:{fx:'Riserve BoJ in riduzione e credito bancario in crescita non provano da sole una stretta dell’economia. Per JPY il meccanismo decisivo resta il differenziale con gli altri paesi, insieme al rischio di riduzione del carry.',
+  watch:'Decisioni BoJ, prestiti e riserve, 2Y relativo USA/JPY e futures; osservare USD/JPY e AUD/JPY in fasi risk-off.'},
+ CHF:{fx:'I depositi a vista presso SNB possono variare per molte ragioni, incluse le operazioni monetarie: il calo da solo non prova un cambio di policy. La dinamica CHF può essere dominata dalla domanda di beni rifugio.',
+  watch:'Nuovi sight deposits, credito e tono SNB, differenziale EUR/CHF e condizioni di rischio europee.'},
+ CAD:{fx:'Manca una serie numerica del credito nel layer disponibile. La liquidità di regolamento da sola non dimostra se il credito canadese sta espandendosi. Per CAD servono BoC, domanda interna, petrolio e rischio globale.',
+  watch:'Ripristinare la fonte del credito bancario, nuova SLOS e pricing BoC relativo alla Fed; osservare USD/CAD e AUD/CAD.'},
+ AUD:{fx:'Saldi di regolamento RBA e credito alle imprese rappresentano canali diversi. Un impulso del credito non è sufficiente a sostenere AUD se aspettative RBA, crescita cinese o propensione al rischio divergono.',
+  watch:'Credito imprese, domanda cinese, futures RBA contro Fed e BoC; verificare AUD/USD e AUD/CAD.'},
+ NZD:{fx:'Lo storico disponibile della liquidità NZD è breve e non consente inferenze robuste sui flussi. Credito privato in aumento e settlement cash in calo sono una divergenza da testare contro RBNZ e rischio globale.',
+  watch:'Aggiornamenti RBNZ su settlement cash e credito, confronto monetario con RBA e comportamento NZD/AUD e NZD/USD.'}
+ };
  function render(api){
   const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,date,dayNow}=api;
   const all=get('liquidity')||{};
@@ -140,7 +158,7 @@
    '<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
    '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie mancanti. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
    '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity)+cell('CREDITO',row?.credit,read.credit)+cell('STANDARD E CONDIZIONI',row?.conditions,null)+'</div>'+
-   '<div class="drivers-story"><div><span>PERCHÉ CONTA PER IL FOREX</span><p>'+esc(read.fx)+'</p></div><div><span>COSA MONITORARE</span><p>'+esc(read.watch)+'</p></div></div>'+
+   '<div class="drivers-story"><div><span>IPOTESI DI TRASMISSIONE AL FOREX</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div><div><span>COSA MONITORARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
    '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
    '<div class="drivers-source-note">Ultimo riferimento della scheda: '+esc(row?.as_of||'non dichiarato')+
    '. Copertura storica non significa aggiornamento corrente. Le serie possono avere frequenze, definizioni, unità e date non omogenee.'+
