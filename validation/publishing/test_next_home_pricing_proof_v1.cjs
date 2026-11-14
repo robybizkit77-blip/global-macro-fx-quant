@@ -8,7 +8,7 @@ globalThis.FXQuantPricingHistory=require('../../site/fx-quant-v2/next/rates-pric
 globalThis.FXQuantPricingMoves=require('../../site/fx-quant-v2/next/rates-pricing-moves-v1.js');
 globalThis.FXQuantRelativePricing=require('../../site/fx-quant-v2/next/rates-relative-pricing-v1.js');
 globalThis.FXQuantPairMonetary=require('../../site/fx-quant-v2/next/pair-monetary-bridge-v1.js');
-const {inspectPair,choose,pairReturn,render}=require('../../site/fx-quant-v2/next/home-pricing-proof-v1.js');
+const {inspectPair,inspectSessionWindow,choose,pairReturn,render}=require('../../site/fx-quant-v2/next/home-pricing-proof-v1.js');
 const prices=json('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
  pairs=json('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),
  history=json(site+'rates-pricing-history-v1.json'),
@@ -69,6 +69,48 @@ forged.source_url='https://not-ecb.example/eurfxref-hist.xml';
 assert.equal(choose({...args,prices:forged}).length,0);
 assert.equal(render({...args,prices:forged}),'',
  'A source-confused FX price archive must not produce an invented Home chart');
+
+const eur5=inspectSessionWindow('EURUSD',args,5,eur.to);
+assert(eur5&&eur5.from==='2026-11-05'&&eur5.to==='2026-11-12',
+ 'EURUSD 5 BCE sessions require two source-backed 6M endpoints');
+assert.equal(inspectSessionWindow('EURUSD',args,20,eur.to),null,
+ 'No invented EURUSD 20-session reference when October endpoint is missing');
+const aud20=inspectSessionWindow('AUDCAD',args,20,'2026-11-12');
+assert(aud20&&aud20.from==='2026-10-15'&&aud20.to==='2026-11-12',
+ 'AUDCAD 20-session date range must use BCE fixing sessions');
+for(const selectedPair of selected){
+ for(const n of [5,20]){
+  const win=inspectSessionWindow(selectedPair.pair,args,n,selectedPair.to);
+  if(!win)continue;
+  const dates=prices.rows.map(r=>r.Date).sort(),endIndex=dates.indexOf(win.to);
+  assert.equal(win.from,dates[endIndex-n],'Use exactly N BCE dates');
+  assert.equal(win.to,selectedPair.to,'All horizons end at the daily card date');
+  assert.equal(win.sourceDates.money,win.sourceDates.spot,'Monetary and FX ends agree');
+  assert(Number.isFinite(win.monetaryBp)&&Number.isFinite(win.fxPct));
+ }
+}
+const missingHorizon=structuredClone(history);
+missingHorizon.currencies.AUD.tenors['6m']=
+ missingHorizon.currencies.AUD.tenors['6m'].filter(p=>p.date!==aud20.from);
+assert.equal(inspectSessionWindow('AUDCAD',{...args,history:missingHorizon},20,'2026-11-12'),null,
+ 'Missing monetary start is never estimated');
+const contractBreak=structuredClone(history);
+contractBreak.currencies.USD.tenors['6m'].find(p=>p.date===eur5.from).contract='WRONG_CONTRACT';
+assert.equal(inspectSessionWindow('EURUSD',{...args,history:contractBreak},5,eur5.to),null,
+ 'Do not compare different listed futures contracts');
+const missingPriceHorizon=structuredClone(prices);
+missingPriceHorizon.rows=missingPriceHorizon.rows.filter(p=>p.Date!==aud20.to);
+assert.equal(inspectSessionWindow('AUDCAD',{...args,prices:missingPriceHorizon},20,aud20.to),null,
+ 'A missing BCE price endpoint is not interpolated');
+assert.equal(inspectSessionWindow('AUDCAD',{...args,prices:forged},20,aud20.to),null,
+ 'Forged BCE price provenance must fail');
+assert.equal(inspectSessionWindow('AUDCAD',args,20,'2026-11-17'),null,
+ 'Do not inspect dates after as-of');
+assert(html.includes('Verifica anche 5 e 20 sedute'));
+assert(html.includes('data-home-pricing-sessions="5"'));
+assert(html.includes('data-home-pricing-sessions="20"'));
+assert(html.includes('Non disponibile:'),'Unavailable must be explicit');
+
 const earlier=inspectPair('EURUSD',{...args,today:'2026-11-10'});
 assert(!earlier||earlier.to<='2026-11-10',
  'Only the latest available prior observations may be used, never dates after the stated as-of');
@@ -78,16 +120,17 @@ assert(!early.includes('data-home-pricing-to="2026-11-12"'),
  'Historical evidence must respect requested as-of, not look ahead');
 const source=read(site+'app.js'),index=read(site+'index.html');
 assert(index.indexOf('pair-monetary-bridge-v1.js?v=2')<
- index.indexOf('home-pricing-proof-v1.js?v=1')&&
- index.indexOf('home-pricing-proof-v1.js?v=1')<
+ index.indexOf('home-pricing-proof-v1.js?v=2')&&
+ index.indexOf('home-pricing-proof-v1.js?v=2')<
  index.indexOf('app.js?v=18.58-home-money-pricing'),
  'Home module must load after monetary archive validators and before App');
-assert(index.includes('home-pricing-proof-v1.css?v=1'));
+assert(index.includes('home-pricing-proof-v1.css?v=2'));
 assert(source.includes("window.FXQuantHomePricingProof?.render?.("));
 assert(source.includes("if(hourly)return moneyProof?"));
 assert(source.includes("post+moneyProof+'<section class=\"morning-prose\"'"));
 assert(source.includes(' +moneyProof\n +\'<section class="dashboard-main dashboard-reading-chart">'),
  'Legacy fallback Home also needs the same source-first monetary comparison');
 const css=read(site+'home-pricing-proof-v1.css');
+assert(css.includes('.home-pricing-proof-multi-row'));
 assert(css.includes('.home-pricing-proof-grid')&&css.includes('max-width:720px')&&css.includes(':focus-visible'));
 console.log('NEXT_HOME_6M_FX_PROOF_PASS: date-aligned EURUSD, 28-pair source selection, nonUSD cross, inversion, no look-ahead, document links');

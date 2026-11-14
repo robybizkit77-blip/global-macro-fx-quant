@@ -76,6 +76,49 @@
    sourceDates:{money:observed.to,spot:fx.to},staleness,
    absoluteMonetary:Math.abs(money)};
  }
+
+ // Longer horizons use exactly N BCE fixing sessions and the primary daily
+ // comparison's end date. Never interpolate missing 6M or BCE observations.
+ function inspectSessionWindow(pair,{prices,pairs,history,today}={},sessions,anchor){
+  if(![5,20].includes(sessions)||typeof pair!=='string'||!/^[A-Z]{6}$/.test(pair)||
+   !pairs?.pairs?.[pair]||!goodDate(anchor)||!goodDate(today)||anchor>today||
+   !Array.isArray(prices?.rows))return null;
+  const archive=root.FXQuantPricingHistory,bridge=root.FXQuantPairMonetary;
+  if(!archive?.country||!bridge?.validLeg)return null;
+  const dates=[...new Set(prices.rows.filter(x=>goodDate(x?.Date)&&x.Date<=today)
+   .map(x=>x.Date))].sort();
+  const idx=dates.indexOf(anchor);
+  if(idx<sessions)return null;
+  const from=dates[idx-sessions],to=anchor;
+  const base=pair.slice(0,3),quote=pair.slice(3);
+  if(!currencies.includes(base)||!currencies.includes(quote)||base===quote)return null;
+  const A=archive.country(history,base,60)?.tenors?.['6m']||[];
+  const B=archive.country(history,quote,60)?.tenors?.['6m']||[];
+  const at=(s,day)=>s.find(x=>x.date===day);
+  const a0=at(A,from),a1=at(A,to),b0=at(B,from),b1=at(B,to);
+  const mA=bridge.validLeg(a0,a1,base),mB=bridge.validLeg(b0,b1,quote);
+  if(!mA||!mB)return null;
+  // Same-contract futures must not cross a known intervening rollover.
+  const uninterrupted=(series,start,end,method)=>{
+   if(method!=='SAME_LISTED_CONTRACT')return true;
+   return series.filter(x=>x.date>=from&&x.date<=to).every(x=>
+    x.source_class==='SECONDARY_SAME_CONTRACT'&&x.contract===start.contract&&
+    x.contract===end.contract&&!x.derived);
+  };
+  if(!uninterrupted(A,a0,a1,mA)||!uninterrupted(B,b0,b1,mB))return null;
+  const fx=pairReturn(prices,pair,from,to,today);
+  if(!fx)return null;
+  const aBp=Math.round((a1.rate-a0.rate)*10000)/100,
+   bBp=Math.round((b1.rate-b0.rate)*10000)/100;
+  const monetaryBp=Math.round((aBp-bBp)*100)/100;
+  const comparison=Math.abs(monetaryBp)<.05||Math.abs(fx.percent)<.005?
+   'MOVIMENTO_CONTENUTO':
+   Math.sign(monetaryBp)===Math.sign(fx.percent)?'SEGNI_COHERENTI':'SEGNI_DIVERGENTI';
+  return {pair,base,quote,sessions,from,to,monetaryBp,fxPct:fx.percent,
+   comparison,proxy:mA==='PROXY_DELTA_RECONSTRUCTED'||mB==='PROXY_DELTA_RECONSTRUCTED',
+   sourceDates:{money:to,spot:fx.to},aMethod:mA,bMethod:mB};
+ }
+
  function choose({prices,pairs,history,today}={}){
   if(!prices||!pairs||!history||!goodDate(today))return [];
   const examples=Object.keys(pairs.pairs||{}).filter(x=>/^[A-Z]{6}$/.test(x))
@@ -103,6 +146,22 @@
     x.comparison==='SEGNI_DIVERGENTI'?
     'Tassi relativi e prezzo non si muovono nella stessa direzione.':
     'Il confronto non mostra una direzione netta e condivisa.';
+   const windows=[5,20].map(n=>inspectSessionWindow(x.pair,args,n,x.to));
+   const longRow=(w,n)=>'<div class="home-pricing-proof-multi-row" data-home-pricing-sessions="'+n+'"'+
+    ' data-home-pricing-available="'+(w?'true':'false')+'">'+
+    '<strong>'+n+' sedute BCE</strong>'+
+    (w?'<span>'+esc(date(w.from))+' → '+esc(date(w.to))+'</span>'+
+     '<span>Δ 6M '+esc(fmt(w.monetaryBp))+' pb · FX '+esc(fmt(w.fxPct))+'%</span>'+
+     '<em>'+(w.comparison==='SEGNI_COHERENTI'?'Stesso segno':
+      w.comparison==='SEGNI_DIVERGENTI'?'Segni divergenti':'Movimenti contenuti')+
+     (w.proxy?' · proxy ricostruito':'')+'</em>':
+     '<span>Non disponibile: manca il 6M confrontabile nelle due date BCE</span>')+
+    '</div>';
+   const longView='<details class="home-pricing-proof-multi">'+
+    '<summary>Verifica anche 5 e 20 sedute</summary>'+
+    '<div class="home-pricing-proof-multi-grid">'+windows.map((w,i)=>
+     longRow(w,[5,20][i])).join('')+'</div>'+
+    '</details>';
    const labels=x.proxy?'Proxy ricostruito, non osservazione indipendente':
     'Intervallo osservato in archivio, non intraday';
    return '<article class="home-pricing-proof-card" data-home-pricing-pair="'+esc(x.pair)+
@@ -117,6 +176,7 @@
     '<strong class="'+(x.fxPct>0?'up':x.fxPct<0?'down':'')+'">'+
     esc(fmt(x.fxPct))+'%</strong></div></div>'+
     '<p>'+esc(headline)+' È un confronto storico sulle stesse date, non la prova che i tassi abbiano causato il movimento Forex.</p>'+
+    longView+
     '<footer><span>'+esc(x.kinds.base)+' / '+esc(x.kinds.quote)+' · '+esc(labels)+'</span>'+
     '<button type="button" data-command="pair:'+esc(x.pair)+'" aria-label="Apri il dossier '+esc(pairText(x.pair))+'">Apri dossier FX ↗</button></footer></article>';
   };
@@ -132,7 +192,8 @@
     '<div class="home-pricing-proof-grid">'+picks.map(row).join('')+'</div>'+
     '<details class="home-pricing-proof-sources"><summary>Verifica i dati e il metodo</summary>'+
     '<p>Per ogni coppia si confrontano <strong>due variazioni 6M</strong> di strumenti distinti e la variazione del fixing BCE sulla stessa data iniziale e finale. Contratti secondari senza continuità di codice sono esclusi. OIS, futures e proxy non sono equivalenti.</p>'+
-    '<p>Gli esempi sono retrospettivi, non una graduatoria di opportunità o uno studio causale. '+
+    '<p>Le finestre a 5 e 20 sedute usano il calendario dei fixing BCE e terminano alla stessa data del confronto breve; richiedono due livelli 6M verificati per entrambe le valute senza cambio di contratto futures. Dove mancano i livelli, il risultato non è stimato.</p>'+ 
+   '<p>Gli esempi sono retrospettivi, non una graduatoria di opportunità o uno studio causale. '+
     'I livelli disponibili sono archiviati; questa analisi non è un backtest point-in-time. '+
     'Stesso segno non equivale a conferma della tesi macro o a timing di ingresso.</p>'+
     '<nav><a href="./rates-pricing-history-v1.json" target="_blank" rel="noopener noreferrer">Storico monetario G8 · JSON ↗</a>'+
@@ -140,7 +201,7 @@
     '<a href="../ois-same-contract-repricing-research.json" target="_blank" rel="noopener noreferrer">Identità futures · JSON ↗</a></nav>'+
     '</details></section>';
  }
- const api={inspectPair,choose,pairReturn,render};
+ const api={inspectPair,inspectSessionWindow,choose,pairReturn,render};
  root.FXQuantHomePricingProof=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
