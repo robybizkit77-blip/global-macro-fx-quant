@@ -182,7 +182,7 @@ const source=read(site+'app.js'),index=read(site+'index.html');
 assert(index.indexOf('pair-monetary-bridge-v1.js?v=2')<
  index.indexOf('home-pricing-proof-v1.js?v=5')&&
  index.indexOf('home-pricing-proof-v1.js?v=5')<
- index.indexOf('app.js?v=18.60-pair-risk-read'),
+ index.indexOf('app.js?v=18.61-policy-liquidity-g8'),
  'Home module must load after monetary archive validators and before App');
 assert(index.includes('home-pricing-proof-v1.css?v=4'));
 assert(source.includes("window.FXQuantHomePricingProof?.render?.("));
