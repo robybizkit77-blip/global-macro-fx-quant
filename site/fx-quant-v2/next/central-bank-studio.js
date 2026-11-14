@@ -68,7 +68,7 @@
  CHF:'Per CHF il percorso SNB va confrontato con quello BCE. EUR/CHF può reagire anche alla domanda di rifugio e a eventuali interventi: il differenziale monetario non identifica da solo il flusso.',
  CAD:'Per CAD confronta percorso BoC e Fed, aspettative di crescita relativa e petrolio. Se il pricing BoC sale ma USD/CAD non segue, cerca un driver alternativo prima di dichiarare una divergenza operativa.',
  AUD:'Per AUD il pricing RBA va confrontato con Fed e BoC, ma anche con crescita cinese e rischio globale. AUD/USD e AUD/CAD servono a distinguere sorpresa monetaria e risk-on.',
- NZD:'Per NZD conta soprattutto il repricing RBNZ relativo alla RBA e alla Fed. Una variazione di proxy bancario non equivale a OIS: confronta le fonti, poi il prezzo NZD/AUD e NZD/USD.'
+ NZD:'Per NZD conta soprattutto il repricing RBNZ relativo alla RBA e alla Fed. Una variazione di proxy bancario non equivale a OIS: confronta le fonti, poi il prezzo AUD/NZD e NZD/USD.'
  };
  function render(api){
   const {get,FX,FLAGS,NAMES,state,pageHero,esc,fmt,date,dayNow}=api;
