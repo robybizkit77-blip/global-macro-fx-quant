@@ -52,6 +52,12 @@ async function inspectRoute(page,label,key){
    'Current or archival edition must identify its date/status');
   assert.equal(await locator(page,'.morning-fx-pulse').count(),1,
    'Source-dated G8 and pair research must remain attached to Home');
+  const monetaryHome=locator(page,'#home-pricing-proof');
+  assert.equal(await monetaryHome.count(),1,label+' Home monetary-to-FX chart missing');
+  assert.equal(await monetaryHome.locator('.home-pricing-proof-card').count(),2,
+   label+' must have one USD and one non-USD matched-date FX comparison');
+  assert.equal(await monetaryHome.locator('.home-pricing-proof-sources nav a').count(),3,
+   label+' must link original public monetary, futures and BCE observations');
  }else if(key==='currencies'){
   assert.equal(await locator(page,'#orient-strength-board .strength-row').count(),8,
    'Exactly eight estimated G8 first-read choices required');
@@ -105,6 +111,27 @@ async function inspectRoute(page,label,key){
   assert.equal(await locator(page,'.news-research-reading').count(),1,'News desk context missing');
  }
  return {route:key,h1,characters:ui.length};
+}
+async function homeMoneyJourney(page,label){
+ await route(page,'overview');
+ const proof=locator(page,'#home-pricing-proof');
+ assert.equal(await proof.count(),1,label+' source-backed Home pricing reading missing');
+ const cards=proof.locator('.home-pricing-proof-card');
+ assert.equal(await cards.count(),2,label+' two FX examples expected');
+ const withUsd=await cards.nth(0).getAttribute('data-home-pricing-pair');
+ const withoutUsd=await cards.nth(1).getAttribute('data-home-pricing-pair');
+ assert(withUsd.includes('USD')&&!withoutUsd.includes('USD'),
+  label+' examples must be diversified across currencies');
+ const copy=await cards.nth(0).innerText();
+ assert(copy.includes('Δ RELATIVO 6M')&&copy.includes('CAMBIO'),
+  label+' monetary and fixing returns must share observation dates');
+ await proof.locator('.home-pricing-proof-sources > summary').click();
+ assert.equal(await proof.locator('.home-pricing-proof-sources nav a').count(),3);
+ await cards.nth(0).locator('[data-command]').click();
+ await page.waitForFunction(k=>document.querySelector('#content')?.dataset.view==='pairs'&&
+  document.querySelector('.pair-monetary-bridge')?.dataset.pairMonetaryPair===k,withUsd);
+ assert.equal(await locator(page,'.pair-monetary-bridge').getAttribute('data-pair-monetary-pair'),
+  withUsd,label+' no matching pair dossier opened from Home');
 }
 async function g8Choice(page,label){
  await route(page,'currencies');
@@ -352,6 +379,7 @@ async function calendarResearchJourney(page,label){
     }
     const inspected=[];
     for(const key of Object.keys(routes))inspected.push(await inspectRoute(page,label,key));
+    await homeMoneyJourney(page,label);
     await g8Choice(page,label);
     await pairJourney(page,label);
     await pairMonetaryJourney(page,label);
