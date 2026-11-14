@@ -310,6 +310,16 @@ async function macroDriversJourney(page,label){
  const eurNative=await locator(page,'[data-liq-role="credit"]').innerText();
  assert(eurNative.includes('2026-07')&&!eurNative.includes('Ultimo 2026-09'),
   label+' ECB research must not overwrite the EUR canonical credit value');
+ await locator(page,'[data-liq-country="AUD"]').click();
+ assert.equal(await locator(page,'.drivers-aud-official').count(),1,
+  label+' RBA adjusted business credit growth must be visible in AUD dossier');
+ const audSource=await locator(page,'.drivers-aud-official').innerText();
+ assert(audSource.includes('RBA')&&audSource.includes('D2')&&
+        audSource.includes('pubblicato')&&audSource.includes('rotture statistiche'),
+  label+' AUD card must separate official break-adjusted growth, publication date and D2 stock');
+ const audCanonical=await locator(page,'[data-liq-role="credit"]').innerText();
+ assert(audCanonical.includes('31/07/2026')&&!audCanonical.includes('Ultimo 2026-09'),
+  label+' AUD native credit stock must not be replaced by research source');
  await locator(page,'[data-liq-country="CAD"]').click();
  assert.equal(await locator(page,'[data-liq-country="CAD"]').getAttribute('aria-pressed'),'true');
  const cadDossier=(await locator(page,'.drivers-selection').innerText());
