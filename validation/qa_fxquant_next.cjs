@@ -52,6 +52,25 @@ async function inspectRoute(page,label,key){
    'Current or archival edition must identify its date/status');
   assert.equal(await locator(page,'.morning-fx-pulse').count(),1,
    'Source-dated G8 and pair research must remain attached to Home');
+  const hourly=locator(page,'.hourly-market-desk');
+  if(await hourly.count()){
+   const fonts=await hourly.evaluate(root=>{
+    const px=selector=>{
+     const el=root.querySelector(selector);
+     return el?Number.parseFloat(getComputedStyle(el).fontSize):null;
+    };
+    return {
+     headline: px('.hourly-hero .morning-deck'),
+     decision: px('.hourly-decision-card p'),
+     section: px('.hourly-section-head p'),
+     story: px('.hourly-desk-story p')
+    };
+   });
+   for(const [key,min] of Object.entries({headline:14.5,decision:13,section:12,story:13})){
+    if(fonts[key]!==null)assert(fonts[key]>=min,
+     label+' premium Home '+key+' copy became too small: '+fonts[key]+'px');
+   }
+  }
   const monetaryHome=locator(page,'#home-pricing-proof');
   assert.equal(await monetaryHome.count(),1,label+' Home monetary-to-FX chart missing');
   const homeCardCount=await monetaryHome.locator('.home-pricing-proof-card').count();
