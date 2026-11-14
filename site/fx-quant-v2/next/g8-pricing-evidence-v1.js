@@ -68,7 +68,9 @@
   }
   const one=movement('1d'),week=movement('1w');
   const highlighted=one||week||null;
-  const quote=row.rate;
+  const latestArchive=root.FXQuantPricingHistory?.country?.(history,ccy,60)?.tenors?.['6m']?.at(-1);
+  const quote=number(row.rate)?row.rate:latestArchive?.rate;
+  const effectiveAsOf=row.asof||latestArchive?.date||null;
   const label=highlighted?
    '6M '+ccy+' · '+fmt(highlighted.bp,2)+' pb':
    number(quote)?'6M '+ccy+' · '+pct(quote):
@@ -77,7 +79,7 @@
    (highlighted.type==='ULTIMA_FONTE'?'Δ '+highlighted.window.toUpperCase()+' · ':
     highlighted.type==='PROXY_DELTA_RICOSTRUITO'?'Proxy ricostruito · ':'Storico · ')+
    date(highlighted.from)+' → '+date(highlighted.to):
-   'Livello '+date(row.asof)+' · '+kind(m.kind);
+   'Livello '+date(effectiveAsOf)+' · '+kind(m.kind);
   const summary=highlighted?
    'Il riferimento 6M '+ccy+' ('+kind(m.kind)+') è variato di '+
    fmt(highlighted.bp,2)+' punti base nell’intervallo '+
@@ -90,9 +92,9 @@
     'Ultimo confronto storico disponibile: non equivale a una variazione della seduta corrente.') :
    number(quote)?
     'Il riferimento 6M '+ccy+' ('+kind(m.kind)+') è '+pct(quote)+
-    ' al '+date(row.asof)+'. È un livello datato, non una variazione implicita o una previsione dei tassi.':
+    ' al '+date(effectiveAsOf)+'. È un livello datato, non una variazione implicita o una previsione dei tassi.':
     'Lo storico monetario è consultabile nella pagina Tassi & OIS, senza inventare variazioni.';
-  return {ccy,kind:m.kind,quality:m.quality,source:m.source,rate:quote,asof:row.asof||null,
+  return {ccy,kind:m.kind,quality:m.quality,source:m.source,rate:quote,asof:effectiveAsOf,
    one,week,highlighted,label,short,summary};
  }
  function render(x){
