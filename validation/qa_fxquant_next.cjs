@@ -281,6 +281,13 @@ async function macroDriversJourney(page,label){
  await locator(page,'[data-bank-open="currencies"]').click();
  await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='currencies');
  await route(page,'liquidity');
+ const usH8=locator(page,'.drivers-us-official');
+ assert.equal(await usH8.count(),1,
+  label+' Fed H8 validated source must appear in USD dossier without overwriting native credit');
+ const usH8Text=await usH8.innerText();
+ assert(usH8Text.includes('TOTBKCR')&&usH8Text.includes('FRED')&&
+        usH8Text.includes('titoli bancari'),
+  label+' USD source identity and bank-credit stock interpretation are missing');
  const usSloos=locator(page,'[data-liq-role="conditions"]');
  assert.equal(await usSloos.getAttribute('data-source-safety'),'withheld',
   label+' uncertified USD SLOOS variant must remain withheld');
