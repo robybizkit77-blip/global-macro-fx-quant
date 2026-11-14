@@ -1,0 +1,2620 @@
+{
+  "affects_fx_rankings_or_signals": false,
+  "capture_rome_date": "2026-11-14",
+  "captured_at_rome": "2026-11-14T04:23:33.316410+01:00",
+  "captured_at_utc": "2026-11-14T03:23:33.316410Z",
+  "forecast_evidence": {
+    "asof": "2026-11-14",
+    "currencies": {
+      "AUD": {
+        "backtest": {
+          "absoluteErrorP80": 0.43333333333333335,
+          "baselineMAE": 0.27142857142857146,
+          "directionalAgreementPct": 14.285714285714286,
+          "firstHalfImprovementPct": -13.33333333333333,
+          "improvementPct": -14.912280701754387,
+          "meanAbsoluteError": 0.31190476190476196,
+          "secondHalfImprovementPct": -15.476190476190466,
+          "testObservations": 7
+        },
+        "candidate": false,
+        "ccy": "AUD",
+        "changeUnit": "punti percentuali",
+        "forecast": null,
+        "frequency": "Q",
+        "label": "PIL reale QoQ",
+        "latestPeriod": "2026-06",
+        "method": "SHADOW_MEAN_6_CHANGES_V1",
+        "nextObservationPeriod": "2026-09",
+        "quality": "RETROSPECTIVE_NOT_POINT_IN_TIME",
+        "restrictions": [
+          "Previsione della variazione di una serie osservata, non del PIL complessivo né del cambio FX.",
+          "Backtest pseudo-out-of-sample su storico corrente, potenzialmente revisionato: NON point-in-time.",
+          "Periodo dell’osservazione non equivale alla data di rilascio ufficiale.",
+          "Nessun effetto su classifica G8, pricing monetario, tesi FX o raccomandazioni."
+        ],
+        "seriesId": "AU_REAL_GDP_QOQ_ABS_history_value",
+        "status": "INSUFFICIENT_SAMPLE"
+      },
+      "CAD": {
+        "backtest": {
+          "absoluteErrorP80": 0.35110877902420257,
+          "baselineMAE": 0.25518088762569163,
+          "directionalAgreementPct": 69.64285714285714,
+          "firstHalfImprovementPct": 3.4310766299600504,
+          "improvementPct": 7.954254121373417,
+          "meanAbsoluteError": 0.23488315135476778,
+          "secondHalfImprovementPct": 13.632659855741448,
+          "testObservations": 56
+        },
+        "candidate": false,
+        "ccy": "CAD",
+        "changeUnit": "%",
+        "forecast": null,
+        "frequency": "M",
+        "label": "PIL reale mensile",
+        "latestPeriod": "2026-06",
+        "method": "SHADOW_MEAN_6_CHANGES_V1",
+        "nextObservationPeriod": "2026-07",
+        "quality": "RETROSPECTIVE_NOT_POINT_IN_TIME",
+        "restrictions": [
+          "Previsione della variazione di una serie osservata, non del PIL complessivo né del cambio FX.",
+          "Backtest pseudo-out-of-sample su storico corrente, potenzialmente revisionato: NON point-in-time.",
+          "Periodo dell’osservazione non equivale alla data di rilascio ufficiale.",
+          "Nessun effetto su classifica G8, pricing monetario, tesi FX o raccomandazioni."
+        ],
+        "seriesId": "CA_REAL_GDP_M_history_value",
+        "status": "NO_BENCHMARK_EDGE"
+      },
+      "CHF": {
+        "backtest": {
+          "absoluteErrorP80": 1.379184722791706,
+          "baselineMAE": 0.7717606245287181,
+          "directionalAgreementPct": 44.642857142857146,
+          "firstHalfImprovementPct": -10.136411870908413,
+          "improvementPct": -5.99147468660064,
+          "meanAbsoluteError": 0.8180004669885071,
+          "secondHalfImprovementPct": -1.0745475493907142,
+          "testObservations": 56
+        },
+        "candidate": false,
+        "ccy": "CHF",
+        "changeUnit": "%",
+        "forecast": null,
+        "frequency": "M",
+        "label": "Retail reale",
+        "latestPeriod": "2026-07",
+        "method": "SHADOW_MEAN_6_CHANGES_V1",
+        "nextObservationPeriod": "2026-08",
+        "quality": "RETROSPECTIVE_NOT_POINT_IN_TIME",
+        "restrictions": [
+          "Previsione della variazione di una serie osservata, non del PIL complessivo né del cambio FX.",
+          "Backtest pseudo-out-of-sample su storico corrente, potenzialmente revisionato: NON point-in-time.",
+          "Periodo dell’osservazione non equivale alla data di rilascio ufficiale.",
+          "Nessun effetto su classifica G8, pricing monetario, tesi FX o raccomandazioni."
+        ],
+        "seriesId": "CH_RETAIL_REAL_history_value",
+        "status": "NO_BENCHMARK_EDGE"
+      },
+      "EUR": {
+        "backtest": {
+          "absoluteErrorP80": 0.7694852337583916,
+          "baselineMAE": 0.42068978891239517,
+          "directionalAgreementPct": 48.214285714285715,
+          "firstHalfImprovementPct": -11.481183536935902,
+          "improvementPct": -7.506085292672671,
+          "meanAbsoluteError": 0.45226712328572416,
+          "secondHalfImprovementPct": -3.0071057066519247,
+          "testObservations": 56
+        },
+        "candidate": false,
+        "ccy": "EUR",
+        "changeUnit": "%",
+        "forecast": null,
+        "frequency": "M",
+        "label": "Vendite al dettaglio reali",
+        "latestPeriod": "2026-07",
+        "method": "SHADOW_MEAN_6_CHANGES_V1",
+        "nextObservationPeriod": "2026-08",
+        "quality": "RETROSPECTIVE_NOT_POINT_IN_TIME",
+        "restrictions": [
+          "Previsione della variazione di una serie osservata, non del PIL complessivo né del cambio FX.",
+          "Backtest pseudo-out-of-sample su storico corrente, potenzialmente revisionato: NON point-in-time.",
+          "Periodo dell’osservazione non equivale alla data di rilascio ufficiale.",
+          "Nessun effetto su classifica G8, pricing monetario, tesi FX o raccomandazioni."
+        ],
+        "seriesId": "EA_RETAIL_VOL_history_value",
+        "status": "NO_BENCHMARK_EDGE"
+      },
+      "GBP": {
+        "backtest": {
+          "absoluteErrorP80": 1.550926977487016,
+          "baselineMAE": 1.0075519865552625,
+          "directionalAgreementPct": 44.642857142857146,
+          "firstHalfImprovementPct": -2.2930651692360193,
+          "improvementPct": -5.131126236955197,
+          "meanAbsoluteError": 1.0592507508883628,
+          "secondHalfImprovementPct": -8.547974811889159,
+          "testObservations": 56
+        },
+        "candidate": false,
+        "ccy": "GBP",
+        "changeUnit": "%",
+        "forecast": null,
+        "frequency": "M",
+        "label": "Retail volume",
+        "latestPeriod": "2026-08",
+        "method": "SHADOW_MEAN_6_CHANGES_V1",
+        "nextObservationPeriod": "2026-09",
+        "quality": "RETROSPECTIVE_NOT_POINT_IN_TIME",
+        "restrictions": [
+          "Previsione della variazione di una serie osservata, non del PIL complessivo né del cambio FX.",
+          "Backtest pseudo-out-of-sample su storico corrente, potenzialmente revisionato: NON point-in-time.",
+          "Periodo dell’osservazione non equivale alla data di rilascio ufficiale.",
+          "Nessun effetto su classifica G8, pricing monetario, tesi FX o raccomandazioni."
+        ],
+        "seriesId": "UK_RETAIL_VOL_history_value",
+        "status": "NO_BENCHMARK_EDGE"
+      },
+      "JPY": {
+        "backtest": {
+          "absoluteErrorP80": 1.101474268503296,
+          "baselineMAE": 0.8140115275763724,
+          "directionalAgreementPct": 55.357142857142854,
+          "firstHalfImprovementPct": 7.645653670881158,
+          "improvementPct": 0.7722975313401159,
+          "meanAbsoluteError": 0.8077249366440761,
+          "secondHalfImprovementPct": -3.4975478530094417,
+          "testObservations": 56
+        },
+        "candidate": false,
+        "ccy": "JPY",
+        "changeUnit": "%",
+        "forecast": null,
+        "frequency": "M",
+        "label": "Retail sales",
+        "latestPeriod": "2026-07",
+        "method": "SHADOW_MEAN_6_CHANGES_V1",
+        "nextObservationPeriod": "2026-08",
+        "quality": "RETROSPECTIVE_NOT_POINT_IN_TIME",
+        "restrictions": [
+          "Previsione della variazione di una serie osservata, non del PIL complessivo né del cambio FX.",
+          "Backtest pseudo-out-of-sample su storico corrente, potenzialmente revisionato: NON point-in-time.",
+          "Periodo dell’osservazione non equivale alla data di rilascio ufficiale.",
+          "Nessun effetto su classifica G8, pricing monetario, tesi FX o raccomandazioni."
+        ],
+        "seriesId": "JP_RETAIL_history_value",
+        "status": "NO_BENCHMARK_EDGE"
+      },
+      "NZD": {
+        "backtest": {
+          "absoluteErrorP80": 2.4833333333333334,
+          "baselineMAE": 1.28125,
+          "directionalAgreementPct": 50,
+          "firstHalfImprovementPct": -19.483568075117397,
+          "improvementPct": -14.146341463414647,
+          "meanAbsoluteError": 1.4625000000000001,
+          "secondHalfImprovementPct": -2.1164021164021163,
+          "testObservations": 16
+        },
+        "candidate": false,
+        "ccy": "NZD",
+        "changeUnit": "punti percentuali",
+        "forecast": null,
+        "frequency": "Q",
+        "label": "PIL reale YoY",
+        "latestPeriod": "2026-06",
+        "method": "SHADOW_MEAN_6_CHANGES_V1",
+        "nextObservationPeriod": "2026-09",
+        "quality": "RETROSPECTIVE_NOT_POINT_IN_TIME",
+        "restrictions": [
+          "Previsione della variazione di una serie osservata, non del PIL complessivo né del cambio FX.",
+          "Backtest pseudo-out-of-sample su storico corrente, potenzialmente revisionato: NON point-in-time.",
+          "Periodo dell’osservazione non equivale alla data di rilascio ufficiale.",
+          "Nessun effetto su classifica G8, pricing monetario, tesi FX o raccomandazioni."
+        ],
+        "seriesId": "NZ_REAL_GDP_Q_history_value",
+        "status": "NO_BENCHMARK_EDGE"
+      },
+      "USD": {
+        "backtest": {
+          "absoluteErrorP80": 0.3325614144254011,
+          "baselineMAE": 0.28264655689979945,
+          "directionalAgreementPct": 72.41379310344827,
+          "firstHalfImprovementPct": 9.973150339335746,
+          "improvementPct": 14.565651071347485,
+          "meanAbsoluteError": 0.24147724565659703,
+          "secondHalfImprovementPct": 18.701144377162493,
+          "testObservations": 58
+        },
+        "candidate": true,
+        "ccy": "USD",
+        "changeUnit": "%",
+        "forecast": {
+          "nextChange": 0.3010349479758867,
+          "unit": "%"
+        },
+        "frequency": "M",
+        "label": "Consumi reali",
+        "latestPeriod": "2026-09",
+        "method": "SHADOW_MEAN_6_CHANGES_V1",
+        "nextObservationPeriod": "2026-10",
+        "quality": "RETROSPECTIVE_NOT_POINT_IN_TIME",
+        "restrictions": [
+          "Previsione della variazione di una serie osservata, non del PIL complessivo né del cambio FX.",
+          "Backtest pseudo-out-of-sample su storico corrente, potenzialmente revisionato: NON point-in-time.",
+          "Periodo dell’osservazione non equivale alla data di rilascio ufficiale.",
+          "Nessun effetto su classifica G8, pricing monetario, tesi FX o raccomandazioni."
+        ],
+        "seriesId": "US_PCEC96_history_value",
+        "status": "RESEARCH_CANDIDATE"
+      }
+    },
+    "disclaimer": "Retrospettivo con dati revisionabili e senza release-vintage. Non utilizzare per il timing FX.",
+    "qualified": [
+      "USD"
+    ],
+    "schema": "GMFQ_G8_GROWTH_SHADOW_V1",
+    "status": "RESEARCH_ONLY_NOT_PIT"
+  },
+  "forecast_is_issuer_pre_release_certified": false,
+  "issuer_release_timestamp_verified": false,
+  "issuer_release_vintage_verified": false,
+  "model_is_operational": false,
+  "notice": "Immutable first-seen GitHub snapshot at actual capture time, not an issuer release-vintage; source history may contain revisions prior to capture. Prospective evaluation starts only for forecasts whose target observations are not already in this capture.",
+  "schema": "GMFQ_G8_GROWTH_PROSPECTIVE_CAPTURE_V1",
+  "selected_macro_vintage": {
+    "AUD": {
+      "historical_vintage": "FIRST_SEEN_IN_THIS_SYSTEM_NOT_ISSUER_FIRST_RELEASE",
+      "latest_observation_period": "2026-06",
+      "observations": [
+        {
+          "period": "2018-06",
+          "value": 0.7
+        },
+        {
+          "period": "2018-09",
+          "value": 0.4
+        },
+        {
+          "period": "2018-12",
+          "value": 0.2
+        },
+        {
+          "period": "2019-03",
+          "value": 0.8
+        },
+        {
+          "period": "2019-06",
+          "value": 0.3
+        },
+        {
+          "period": "2019-09",
+          "value": 0.6
+        },
+        {
+          "period": "2019-12",
+          "value": 0.6
+        },
+        {
+          "period": "2020-03",
+          "value": -0.2
+        },
+        {
+          "period": "2020-06",
+          "value": -6.8
+        },
+        {
+          "period": "2020-09",
+          "value": 3.4
+        },
+        {
+          "period": "2020-12",
+          "value": 3.4
+        },
+        {
+          "period": "2021-03",
+          "value": 2.2
+        },
+        {
+          "period": "2021-06",
+          "value": 0.7
+        },
+        {
+          "period": "2021-09",
+          "value": -1.8
+        },
+        {
+          "period": "2021-12",
+          "value": 3.7
+        },
+        {
+          "period": "2022-03",
+          "value": 1.0
+        },
+        {
+          "period": "2022-06",
+          "value": 0.9
+        },
+        {
+          "period": "2022-09",
+          "value": 0.5
+        },
+        {
+          "period": "2022-12",
+          "value": 0.9
+        },
+        {
+          "period": "2023-03",
+          "value": 0.6
+        },
+        {
+          "period": "2023-06",
+          "value": 0.3
+        },
+        {
+          "period": "2023-09",
+          "value": 0.4
+        },
+        {
+          "period": "2023-12",
+          "value": 0.0
+        },
+        {
+          "period": "2024-03",
+          "value": 0.3
+        },
+        {
+          "period": "2024-06",
+          "value": 0.2
+        },
+        {
+          "period": "2024-09",
+          "value": 0.3
+        },
+        {
+          "period": "2024-12",
+          "value": 0.4
+        },
+        {
+          "period": "2025-03",
+          "value": 0.4
+        },
+        {
+          "period": "2025-06",
+          "value": 0.8
+        },
+        {
+          "period": "2025-09",
+          "value": 0.5
+        },
+        {
+          "period": "2025-12",
+          "value": 0.9
+        },
+        {
+          "period": "2026-03",
+          "value": 0.3
+        },
+        {
+          "period": "2026-06",
+          "value": 0.4
+        }
+      ],
+      "series_id": "AU_REAL_GDP_QOQ_ABS_history_value",
+      "series_label": "PIL reale QoQ",
+      "source": "ABS Australian National Accounts · June 2026"
+    },
+    "CAD": {
+      "historical_vintage": "FIRST_SEEN_IN_THIS_SYSTEM_NOT_ISSUER_FIRST_RELEASE",
+      "latest_observation_period": "2026-06",
+      "observations": [
+        {
+          "period": "2019-09",
+          "value": 2098648.0
+        },
+        {
+          "period": "2019-10",
+          "value": 2100483.0
+        },
+        {
+          "period": "2019-11",
+          "value": 2100304.0
+        },
+        {
+          "period": "2019-12",
+          "value": 2110627.0
+        },
+        {
+          "period": "2020-01",
+          "value": 2111589.0
+        },
+        {
+          "period": "2020-02",
+          "value": 2116017.0
+        },
+        {
+          "period": "2020-03",
+          "value": 1956479.0
+        },
+        {
+          "period": "2020-04",
+          "value": 1747938.0
+        },
+        {
+          "period": "2020-05",
+          "value": 1828028.0
+        },
+        {
+          "period": "2020-06",
+          "value": 1936321.0
+        },
+        {
+          "period": "2020-07",
+          "value": 1986120.0
+        },
+        {
+          "period": "2020-08",
+          "value": 2005910.0
+        },
+        {
+          "period": "2020-09",
+          "value": 2024699.0
+        },
+        {
+          "period": "2020-10",
+          "value": 2037348.0
+        },
+        {
+          "period": "2020-11",
+          "value": 2051205.0
+        },
+        {
+          "period": "2020-12",
+          "value": 2056758.0
+        },
+        {
+          "period": "2021-01",
+          "value": 2068509.0
+        },
+        {
+          "period": "2021-02",
+          "value": 2071653.0
+        },
+        {
+          "period": "2021-03",
+          "value": 2093651.0
+        },
+        {
+          "period": "2021-04",
+          "value": 2072052.0
+        },
+        {
+          "period": "2021-05",
+          "value": 2067784.0
+        },
+        {
+          "period": "2021-06",
+          "value": 2087291.0
+        },
+        {
+          "period": "2021-07",
+          "value": 2101493.0
+        },
+        {
+          "period": "2021-08",
+          "value": 2119124.0
+        },
+        {
+          "period": "2021-09",
+          "value": 2129287.0
+        },
+        {
+          "period": "2021-10",
+          "value": 2147254.0
+        },
+        {
+          "period": "2021-11",
+          "value": 2157217.0
+        },
+        {
+          "period": "2021-12",
+          "value": 2166129.0
+        },
+        {
+          "period": "2022-01",
+          "value": 2160859.0
+        },
+        {
+          "period": "2022-02",
+          "value": 2183889.0
+        },
+        {
+          "period": "2022-03",
+          "value": 2196942.0
+        },
+        {
+          "period": "2022-04",
+          "value": 2197345.0
+        },
+        {
+          "period": "2022-05",
+          "value": 2202456.0
+        },
+        {
+          "period": "2022-06",
+          "value": 2211634.0
+        },
+        {
+          "period": "2022-07",
+          "value": 2214919.0
+        },
+        {
+          "period": "2022-08",
+          "value": 2221513.0
+        },
+        {
+          "period": "2022-09",
+          "value": 2226368.0
+        },
+        {
+          "period": "2022-10",
+          "value": 2223909.0
+        },
+        {
+          "period": "2022-11",
+          "value": 2221392.0
+        },
+        {
+          "period": "2022-12",
+          "value": 2214902.0
+        },
+        {
+          "period": "2023-01",
+          "value": 2236190.0
+        },
+        {
+          "period": "2023-02",
+          "value": 2243830.0
+        },
+        {
+          "period": "2023-03",
+          "value": 2250566.0
+        },
+        {
+          "period": "2023-04",
+          "value": 2250710.0
+        },
+        {
+          "period": "2023-05",
+          "value": 2251250.0
+        },
+        {
+          "period": "2023-06",
+          "value": 2248378.0
+        },
+        {
+          "period": "2023-07",
+          "value": 2250903.0
+        },
+        {
+          "period": "2023-08",
+          "value": 2251926.0
+        },
+        {
+          "period": "2023-09",
+          "value": 2251153.0
+        },
+        {
+          "period": "2023-10",
+          "value": 2253540.0
+        },
+        {
+          "period": "2023-11",
+          "value": 2259470.0
+        },
+        {
+          "period": "2023-12",
+          "value": 2256668.0
+        },
+        {
+          "period": "2024-01",
+          "value": 2262764.0
+        },
+        {
+          "period": "2024-02",
+          "value": 2276470.0
+        },
+        {
+          "period": "2024-03",
+          "value": 2277491.0
+        },
+        {
+          "period": "2024-04",
+          "value": 2285643.0
+        },
+        {
+          "period": "2024-05",
+          "value": 2289038.0
+        },
+        {
+          "period": "2024-06",
+          "value": 2294051.0
+        },
+        {
+          "period": "2024-07",
+          "value": 2298623.0
+        },
+        {
+          "period": "2024-08",
+          "value": 2301315.0
+        },
+        {
+          "period": "2024-09",
+          "value": 2307523.0
+        },
+        {
+          "period": "2024-10",
+          "value": 2317073.0
+        },
+        {
+          "period": "2024-11",
+          "value": 2312337.0
+        },
+        {
+          "period": "2024-12",
+          "value": 2317000.0
+        },
+        {
+          "period": "2025-01",
+          "value": 2329713.0
+        },
+        {
+          "period": "2025-02",
+          "value": 2326072.0
+        },
+        {
+          "period": "2025-03",
+          "value": 2330230.0
+        },
+        {
+          "period": "2025-04",
+          "value": 2328390.0
+        },
+        {
+          "period": "2025-05",
+          "value": 2324814.0
+        },
+        {
+          "period": "2025-06",
+          "value": 2322727.0
+        },
+        {
+          "period": "2025-07",
+          "value": 2338957.0
+        },
+        {
+          "period": "2025-08",
+          "value": 2337688.0
+        },
+        {
+          "period": "2025-09",
+          "value": 2342161.0
+        },
+        {
+          "period": "2025-10",
+          "value": 2336171.0
+        },
+        {
+          "period": "2025-11",
+          "value": 2338062.0
+        },
+        {
+          "period": "2025-12",
+          "value": 2340690.0
+        },
+        {
+          "period": "2026-01",
+          "value": 2340294.0
+        },
+        {
+          "period": "2026-02",
+          "value": 2344080.0
+        },
+        {
+          "period": "2026-03",
+          "value": 2340472.0
+        },
+        {
+          "period": "2026-04",
+          "value": 2355245.0
+        },
+        {
+          "period": "2026-05",
+          "value": 2363056.0
+        },
+        {
+          "period": "2026-06",
+          "value": 2369309.0
+        }
+      ],
+      "series_id": "CA_REAL_GDP_M_history_value",
+      "series_label": "PIL reale mensile",
+      "source": "CA_REAL_GDP_M_history.csv"
+    },
+    "CHF": {
+      "historical_vintage": "FIRST_SEEN_IN_THIS_SYSTEM_NOT_ISSUER_FIRST_RELEASE",
+      "latest_observation_period": "2026-07",
+      "observations": [
+        {
+          "period": "2019-10",
+          "value": 94.7
+        },
+        {
+          "period": "2019-11",
+          "value": 95.0
+        },
+        {
+          "period": "2019-12",
+          "value": 95.3
+        },
+        {
+          "period": "2020-01",
+          "value": 95.1
+        },
+        {
+          "period": "2020-02",
+          "value": 95.4
+        },
+        {
+          "period": "2020-03",
+          "value": 88.1
+        },
+        {
+          "period": "2020-04",
+          "value": 76.9
+        },
+        {
+          "period": "2020-05",
+          "value": 100.8
+        },
+        {
+          "period": "2020-06",
+          "value": 99.4
+        },
+        {
+          "period": "2020-07",
+          "value": 99.1
+        },
+        {
+          "period": "2020-08",
+          "value": 98.0
+        },
+        {
+          "period": "2020-09",
+          "value": 96.5
+        },
+        {
+          "period": "2020-10",
+          "value": 100.2
+        },
+        {
+          "period": "2020-11",
+          "value": 97.2
+        },
+        {
+          "period": "2020-12",
+          "value": 100.8
+        },
+        {
+          "period": "2021-01",
+          "value": 94.4
+        },
+        {
+          "period": "2021-02",
+          "value": 88.4
+        },
+        {
+          "period": "2021-03",
+          "value": 108.4
+        },
+        {
+          "period": "2021-04",
+          "value": 106.3
+        },
+        {
+          "period": "2021-05",
+          "value": 103.0
+        },
+        {
+          "period": "2021-06",
+          "value": 100.0
+        },
+        {
+          "period": "2021-07",
+          "value": 97.3
+        },
+        {
+          "period": "2021-08",
+          "value": 98.7
+        },
+        {
+          "period": "2021-09",
+          "value": 98.9
+        },
+        {
+          "period": "2021-10",
+          "value": 102.1
+        },
+        {
+          "period": "2021-11",
+          "value": 101.7
+        },
+        {
+          "period": "2021-12",
+          "value": 101.0
+        },
+        {
+          "period": "2022-01",
+          "value": 100.5
+        },
+        {
+          "period": "2022-02",
+          "value": 100.1
+        },
+        {
+          "period": "2022-03",
+          "value": 101.6
+        },
+        {
+          "period": "2022-04",
+          "value": 100.5
+        },
+        {
+          "period": "2022-05",
+          "value": 100.6
+        },
+        {
+          "period": "2022-06",
+          "value": 100.2
+        },
+        {
+          "period": "2022-07",
+          "value": 99.9
+        },
+        {
+          "period": "2022-08",
+          "value": 100.3
+        },
+        {
+          "period": "2022-09",
+          "value": 100.6
+        },
+        {
+          "period": "2022-10",
+          "value": 99.7
+        },
+        {
+          "period": "2022-11",
+          "value": 99.7
+        },
+        {
+          "period": "2022-12",
+          "value": 97.9
+        },
+        {
+          "period": "2023-01",
+          "value": 98.6
+        },
+        {
+          "period": "2023-02",
+          "value": 99.3
+        },
+        {
+          "period": "2023-03",
+          "value": 99.2
+        },
+        {
+          "period": "2023-04",
+          "value": 96.8
+        },
+        {
+          "period": "2023-05",
+          "value": 99.0
+        },
+        {
+          "period": "2023-06",
+          "value": 100.7
+        },
+        {
+          "period": "2023-07",
+          "value": 97.5
+        },
+        {
+          "period": "2023-08",
+          "value": 98.2
+        },
+        {
+          "period": "2023-09",
+          "value": 97.7
+        },
+        {
+          "period": "2023-10",
+          "value": 97.7
+        },
+        {
+          "period": "2023-11",
+          "value": 98.5
+        },
+        {
+          "period": "2023-12",
+          "value": 97.9
+        },
+        {
+          "period": "2024-01",
+          "value": 98.8
+        },
+        {
+          "period": "2024-02",
+          "value": 99.1
+        },
+        {
+          "period": "2024-03",
+          "value": 99.0
+        },
+        {
+          "period": "2024-04",
+          "value": 99.3
+        },
+        {
+          "period": "2024-05",
+          "value": 99.0
+        },
+        {
+          "period": "2024-06",
+          "value": 97.4
+        },
+        {
+          "period": "2024-07",
+          "value": 100.0
+        },
+        {
+          "period": "2024-08",
+          "value": 101.0
+        },
+        {
+          "period": "2024-09",
+          "value": 99.4
+        },
+        {
+          "period": "2024-10",
+          "value": 99.6
+        },
+        {
+          "period": "2024-11",
+          "value": 99.9
+        },
+        {
+          "period": "2024-12",
+          "value": 100.2
+        },
+        {
+          "period": "2025-01",
+          "value": 101.4
+        },
+        {
+          "period": "2025-02",
+          "value": 101.0
+        },
+        {
+          "period": "2025-03",
+          "value": 100.6
+        },
+        {
+          "period": "2025-04",
+          "value": 100.5
+        },
+        {
+          "period": "2025-05",
+          "value": 99.2
+        },
+        {
+          "period": "2025-06",
+          "value": 101.3
+        },
+        {
+          "period": "2025-07",
+          "value": 100.9
+        },
+        {
+          "period": "2025-08",
+          "value": 101.0
+        },
+        {
+          "period": "2025-09",
+          "value": 101.7
+        },
+        {
+          "period": "2025-10",
+          "value": 101.9
+        },
+        {
+          "period": "2025-11",
+          "value": 101.6
+        },
+        {
+          "period": "2025-12",
+          "value": 102.6
+        },
+        {
+          "period": "2026-01",
+          "value": 101.6
+        },
+        {
+          "period": "2026-02",
+          "value": 101.4
+        },
+        {
+          "period": "2026-03",
+          "value": 102.0
+        },
+        {
+          "period": "2026-04",
+          "value": 101.8
+        },
+        {
+          "period": "2026-05",
+          "value": 102.8
+        },
+        {
+          "period": "2026-06",
+          "value": 103.1
+        },
+        {
+          "period": "2026-07",
+          "value": 103.2
+        }
+      ],
+      "series_id": "CH_RETAIL_REAL_history_value",
+      "series_label": "Retail reale",
+      "source": "CH_RETAIL_REAL_history.csv"
+    },
+    "EUR": {
+      "historical_vintage": "FIRST_SEEN_IN_THIS_SYSTEM_NOT_ISSUER_FIRST_RELEASE",
+      "latest_observation_period": "2026-07",
+      "observations": [
+        {
+          "period": "2019-10",
+          "value": 96.2
+        },
+        {
+          "period": "2019-11",
+          "value": 96.6
+        },
+        {
+          "period": "2019-12",
+          "value": 96.8
+        },
+        {
+          "period": "2020-01",
+          "value": 97.5
+        },
+        {
+          "period": "2020-02",
+          "value": 98.2
+        },
+        {
+          "period": "2020-03",
+          "value": 86.8
+        },
+        {
+          "period": "2020-04",
+          "value": 77.5
+        },
+        {
+          "period": "2020-05",
+          "value": 92.4
+        },
+        {
+          "period": "2020-06",
+          "value": 97.3
+        },
+        {
+          "period": "2020-07",
+          "value": 97.0
+        },
+        {
+          "period": "2020-08",
+          "value": 100.5
+        },
+        {
+          "period": "2020-09",
+          "value": 98.9
+        },
+        {
+          "period": "2020-10",
+          "value": 100.3
+        },
+        {
+          "period": "2020-11",
+          "value": 93.8
+        },
+        {
+          "period": "2020-12",
+          "value": 98.2
+        },
+        {
+          "period": "2021-01",
+          "value": 92.6
+        },
+        {
+          "period": "2021-02",
+          "value": 96.3
+        },
+        {
+          "period": "2021-03",
+          "value": 99.0
+        },
+        {
+          "period": "2021-04",
+          "value": 96.4
+        },
+        {
+          "period": "2021-05",
+          "value": 100.8
+        },
+        {
+          "period": "2021-06",
+          "value": 102.9
+        },
+        {
+          "period": "2021-07",
+          "value": 101.2
+        },
+        {
+          "period": "2021-08",
+          "value": 101.9
+        },
+        {
+          "period": "2021-09",
+          "value": 101.5
+        },
+        {
+          "period": "2021-10",
+          "value": 102.8
+        },
+        {
+          "period": "2021-11",
+          "value": 102.7
+        },
+        {
+          "period": "2021-12",
+          "value": 102.0
+        },
+        {
+          "period": "2022-01",
+          "value": 101.9
+        },
+        {
+          "period": "2022-02",
+          "value": 102.6
+        },
+        {
+          "period": "2022-03",
+          "value": 102.3
+        },
+        {
+          "period": "2022-04",
+          "value": 102.0
+        },
+        {
+          "period": "2022-05",
+          "value": 102.1
+        },
+        {
+          "period": "2022-06",
+          "value": 101.2
+        },
+        {
+          "period": "2022-07",
+          "value": 100.9
+        },
+        {
+          "period": "2022-08",
+          "value": 101.0
+        },
+        {
+          "period": "2022-09",
+          "value": 102.1
+        },
+        {
+          "period": "2022-10",
+          "value": 100.5
+        },
+        {
+          "period": "2022-11",
+          "value": 100.4
+        },
+        {
+          "period": "2022-12",
+          "value": 99.8
+        },
+        {
+          "period": "2023-01",
+          "value": 99.9
+        },
+        {
+          "period": "2023-02",
+          "value": 99.7
+        },
+        {
+          "period": "2023-03",
+          "value": 98.9
+        },
+        {
+          "period": "2023-04",
+          "value": 99.1
+        },
+        {
+          "period": "2023-05",
+          "value": 99.6
+        },
+        {
+          "period": "2023-06",
+          "value": 100.0
+        },
+        {
+          "period": "2023-07",
+          "value": 99.9
+        },
+        {
+          "period": "2023-08",
+          "value": 98.8
+        },
+        {
+          "period": "2023-09",
+          "value": 98.8
+        },
+        {
+          "period": "2023-10",
+          "value": 99.2
+        },
+        {
+          "period": "2023-11",
+          "value": 99.8
+        },
+        {
+          "period": "2023-12",
+          "value": 99.3
+        },
+        {
+          "period": "2024-01",
+          "value": 99.4
+        },
+        {
+          "period": "2024-02",
+          "value": 99.9
+        },
+        {
+          "period": "2024-03",
+          "value": 100.1
+        },
+        {
+          "period": "2024-04",
+          "value": 100.1
+        },
+        {
+          "period": "2024-05",
+          "value": 100.4
+        },
+        {
+          "period": "2024-06",
+          "value": 99.5
+        },
+        {
+          "period": "2024-07",
+          "value": 100.3
+        },
+        {
+          "period": "2024-08",
+          "value": 101.5
+        },
+        {
+          "period": "2024-09",
+          "value": 102.0
+        },
+        {
+          "period": "2024-10",
+          "value": 101.5
+        },
+        {
+          "period": "2024-11",
+          "value": 101.5
+        },
+        {
+          "period": "2024-12",
+          "value": 101.6
+        },
+        {
+          "period": "2025-01",
+          "value": 101.9
+        },
+        {
+          "period": "2025-02",
+          "value": 102.3
+        },
+        {
+          "period": "2025-03",
+          "value": 102.3
+        },
+        {
+          "period": "2025-04",
+          "value": 103.2
+        },
+        {
+          "period": "2025-05",
+          "value": 102.5
+        },
+        {
+          "period": "2025-06",
+          "value": 103.3
+        },
+        {
+          "period": "2025-07",
+          "value": 103.2
+        },
+        {
+          "period": "2025-08",
+          "value": 103.2
+        },
+        {
+          "period": "2025-09",
+          "value": 103.4
+        },
+        {
+          "period": "2025-10",
+          "value": 103.8
+        },
+        {
+          "period": "2025-11",
+          "value": 103.8
+        },
+        {
+          "period": "2025-12",
+          "value": 103.9
+        },
+        {
+          "period": "2026-01",
+          "value": 104.2
+        },
+        {
+          "period": "2026-02",
+          "value": 103.8
+        },
+        {
+          "period": "2026-03",
+          "value": 104.7
+        },
+        {
+          "period": "2026-04",
+          "value": 104.3
+        },
+        {
+          "period": "2026-05",
+          "value": 104.6
+        },
+        {
+          "period": "2026-06",
+          "value": 104.8
+        },
+        {
+          "period": "2026-07",
+          "value": 104.2
+        }
+      ],
+      "series_id": "EA_RETAIL_VOL_history_value",
+      "series_label": "Vendite al dettaglio reali",
+      "source": "EA_RETAIL_VOL_history.csv"
+    },
+    "GBP": {
+      "historical_vintage": "FIRST_SEEN_IN_THIS_SYSTEM_NOT_ISSUER_FIRST_RELEASE",
+      "latest_observation_period": "2026-08",
+      "observations": [
+        {
+          "period": "2019-11",
+          "value": 102.5
+        },
+        {
+          "period": "2019-12",
+          "value": 103.6
+        },
+        {
+          "period": "2020-01",
+          "value": 103.7
+        },
+        {
+          "period": "2020-02",
+          "value": 103.1
+        },
+        {
+          "period": "2020-03",
+          "value": 98.0
+        },
+        {
+          "period": "2020-04",
+          "value": 83.9
+        },
+        {
+          "period": "2020-05",
+          "value": 93.5
+        },
+        {
+          "period": "2020-06",
+          "value": 104.7
+        },
+        {
+          "period": "2020-07",
+          "value": 108.2
+        },
+        {
+          "period": "2020-08",
+          "value": 109.8
+        },
+        {
+          "period": "2020-09",
+          "value": 111.5
+        },
+        {
+          "period": "2020-10",
+          "value": 112.4
+        },
+        {
+          "period": "2020-11",
+          "value": 108.4
+        },
+        {
+          "period": "2020-12",
+          "value": 109.1
+        },
+        {
+          "period": "2021-01",
+          "value": 100.8
+        },
+        {
+          "period": "2021-02",
+          "value": 101.9
+        },
+        {
+          "period": "2021-03",
+          "value": 105.3
+        },
+        {
+          "period": "2021-04",
+          "value": 114.2
+        },
+        {
+          "period": "2021-05",
+          "value": 111.2
+        },
+        {
+          "period": "2021-06",
+          "value": 111.7
+        },
+        {
+          "period": "2021-07",
+          "value": 108.9
+        },
+        {
+          "period": "2021-08",
+          "value": 109.2
+        },
+        {
+          "period": "2021-09",
+          "value": 109.0
+        },
+        {
+          "period": "2021-10",
+          "value": 109.5
+        },
+        {
+          "period": "2021-11",
+          "value": 108.7
+        },
+        {
+          "period": "2021-12",
+          "value": 108.7
+        },
+        {
+          "period": "2022-01",
+          "value": 107.9
+        },
+        {
+          "period": "2022-02",
+          "value": 106.4
+        },
+        {
+          "period": "2022-03",
+          "value": 105.7
+        },
+        {
+          "period": "2022-04",
+          "value": 104.9
+        },
+        {
+          "period": "2022-05",
+          "value": 103.2
+        },
+        {
+          "period": "2022-06",
+          "value": 103.3
+        },
+        {
+          "period": "2022-07",
+          "value": 103.9
+        },
+        {
+          "period": "2022-08",
+          "value": 101.9
+        },
+        {
+          "period": "2022-09",
+          "value": 100.7
+        },
+        {
+          "period": "2022-10",
+          "value": 101.6
+        },
+        {
+          "period": "2022-11",
+          "value": 100.8
+        },
+        {
+          "period": "2022-12",
+          "value": 100.7
+        },
+        {
+          "period": "2023-01",
+          "value": 100.5
+        },
+        {
+          "period": "2023-02",
+          "value": 101.5
+        },
+        {
+          "period": "2023-03",
+          "value": 100.2
+        },
+        {
+          "period": "2023-04",
+          "value": 101.8
+        },
+        {
+          "period": "2023-05",
+          "value": 100.6
+        },
+        {
+          "period": "2023-06",
+          "value": 101.3
+        },
+        {
+          "period": "2023-07",
+          "value": 100.1
+        },
+        {
+          "period": "2023-08",
+          "value": 100.0
+        },
+        {
+          "period": "2023-09",
+          "value": 98.7
+        },
+        {
+          "period": "2023-10",
+          "value": 99.5
+        },
+        {
+          "period": "2023-11",
+          "value": 101.0
+        },
+        {
+          "period": "2023-12",
+          "value": 97.0
+        },
+        {
+          "period": "2024-01",
+          "value": 99.9
+        },
+        {
+          "period": "2024-02",
+          "value": 100.4
+        },
+        {
+          "period": "2024-03",
+          "value": 99.6
+        },
+        {
+          "period": "2024-04",
+          "value": 98.6
+        },
+        {
+          "period": "2024-05",
+          "value": 101.1
+        },
+        {
+          "period": "2024-06",
+          "value": 99.2
+        },
+        {
+          "period": "2024-07",
+          "value": 100.4
+        },
+        {
+          "period": "2024-08",
+          "value": 100.5
+        },
+        {
+          "period": "2024-09",
+          "value": 100.6
+        },
+        {
+          "period": "2024-10",
+          "value": 99.8
+        },
+        {
+          "period": "2024-11",
+          "value": 99.9
+        },
+        {
+          "period": "2024-12",
+          "value": 100.1
+        },
+        {
+          "period": "2025-01",
+          "value": 98.7
+        },
+        {
+          "period": "2025-02",
+          "value": 101.0
+        },
+        {
+          "period": "2025-03",
+          "value": 102.2
+        },
+        {
+          "period": "2025-04",
+          "value": 102.0
+        },
+        {
+          "period": "2025-05",
+          "value": 99.9
+        },
+        {
+          "period": "2025-06",
+          "value": 100.6
+        },
+        {
+          "period": "2025-07",
+          "value": 102.4
+        },
+        {
+          "period": "2025-08",
+          "value": 102.1
+        },
+        {
+          "period": "2025-09",
+          "value": 103.3
+        },
+        {
+          "period": "2025-10",
+          "value": 102.5
+        },
+        {
+          "period": "2025-11",
+          "value": 101.9
+        },
+        {
+          "period": "2025-12",
+          "value": 101.9
+        },
+        {
+          "period": "2026-01",
+          "value": 104.0
+        },
+        {
+          "period": "2026-02",
+          "value": 103.3
+        },
+        {
+          "period": "2026-03",
+          "value": 103.2
+        },
+        {
+          "period": "2026-04",
+          "value": 103.2
+        },
+        {
+          "period": "2026-05",
+          "value": 104.4
+        },
+        {
+          "period": "2026-06",
+          "value": 105.1
+        },
+        {
+          "period": "2026-07",
+          "value": 104.2
+        },
+        {
+          "period": "2026-08",
+          "value": 104.9
+        }
+      ],
+      "series_id": "UK_RETAIL_VOL_history_value",
+      "series_label": "Retail volume",
+      "source": "UK_RETAIL_VOL_history.csv"
+    },
+    "JPY": {
+      "historical_vintage": "FIRST_SEEN_IN_THIS_SYSTEM_NOT_ISSUER_FIRST_RELEASE",
+      "latest_observation_period": "2026-07",
+      "observations": [
+        {
+          "period": "2019-10",
+          "value": 95.8
+        },
+        {
+          "period": "2019-11",
+          "value": 101.4
+        },
+        {
+          "period": "2019-12",
+          "value": 101.8
+        },
+        {
+          "period": "2020-01",
+          "value": 103.2
+        },
+        {
+          "period": "2020-02",
+          "value": 103.3
+        },
+        {
+          "period": "2020-03",
+          "value": 97.8
+        },
+        {
+          "period": "2020-04",
+          "value": 89.6
+        },
+        {
+          "period": "2020-05",
+          "value": 92.2
+        },
+        {
+          "period": "2020-06",
+          "value": 102.2
+        },
+        {
+          "period": "2020-07",
+          "value": 99.2
+        },
+        {
+          "period": "2020-08",
+          "value": 104.0
+        },
+        {
+          "period": "2020-09",
+          "value": 102.3
+        },
+        {
+          "period": "2020-10",
+          "value": 101.6
+        },
+        {
+          "period": "2020-11",
+          "value": 102.0
+        },
+        {
+          "period": "2020-12",
+          "value": 101.6
+        },
+        {
+          "period": "2021-01",
+          "value": 100.9
+        },
+        {
+          "period": "2021-02",
+          "value": 103.2
+        },
+        {
+          "period": "2021-03",
+          "value": 102.6
+        },
+        {
+          "period": "2021-04",
+          "value": 100.3
+        },
+        {
+          "period": "2021-05",
+          "value": 100.3
+        },
+        {
+          "period": "2021-06",
+          "value": 102.3
+        },
+        {
+          "period": "2021-07",
+          "value": 101.9
+        },
+        {
+          "period": "2021-08",
+          "value": 100.7
+        },
+        {
+          "period": "2021-09",
+          "value": 101.4
+        },
+        {
+          "period": "2021-10",
+          "value": 102.2
+        },
+        {
+          "period": "2021-11",
+          "value": 103.9
+        },
+        {
+          "period": "2021-12",
+          "value": 102.7
+        },
+        {
+          "period": "2022-01",
+          "value": 102.3
+        },
+        {
+          "period": "2022-02",
+          "value": 102.2
+        },
+        {
+          "period": "2022-03",
+          "value": 103.1
+        },
+        {
+          "period": "2022-04",
+          "value": 103.5
+        },
+        {
+          "period": "2022-05",
+          "value": 104.2
+        },
+        {
+          "period": "2022-06",
+          "value": 103.8
+        },
+        {
+          "period": "2022-07",
+          "value": 104.7
+        },
+        {
+          "period": "2022-08",
+          "value": 104.9
+        },
+        {
+          "period": "2022-09",
+          "value": 106.1
+        },
+        {
+          "period": "2022-10",
+          "value": 106.5
+        },
+        {
+          "period": "2022-11",
+          "value": 106.3
+        },
+        {
+          "period": "2022-12",
+          "value": 106.6
+        },
+        {
+          "period": "2023-01",
+          "value": 108.0
+        },
+        {
+          "period": "2023-02",
+          "value": 108.4
+        },
+        {
+          "period": "2023-03",
+          "value": 109.5
+        },
+        {
+          "period": "2023-04",
+          "value": 109.5
+        },
+        {
+          "period": "2023-05",
+          "value": 110.5
+        },
+        {
+          "period": "2023-06",
+          "value": 110.0
+        },
+        {
+          "period": "2023-07",
+          "value": 111.4
+        },
+        {
+          "period": "2023-08",
+          "value": 112.3
+        },
+        {
+          "period": "2023-09",
+          "value": 112.5
+        },
+        {
+          "period": "2023-10",
+          "value": 111.4
+        },
+        {
+          "period": "2023-11",
+          "value": 111.8
+        },
+        {
+          "period": "2023-12",
+          "value": 110.1
+        },
+        {
+          "period": "2024-01",
+          "value": 110.8
+        },
+        {
+          "period": "2024-02",
+          "value": 111.3
+        },
+        {
+          "period": "2024-03",
+          "value": 111.5
+        },
+        {
+          "period": "2024-04",
+          "value": 112.0
+        },
+        {
+          "period": "2024-05",
+          "value": 113.0
+        },
+        {
+          "period": "2024-06",
+          "value": 113.8
+        },
+        {
+          "period": "2024-07",
+          "value": 113.9
+        },
+        {
+          "period": "2024-08",
+          "value": 114.5
+        },
+        {
+          "period": "2024-09",
+          "value": 113.0
+        },
+        {
+          "period": "2024-10",
+          "value": 113.0
+        },
+        {
+          "period": "2024-11",
+          "value": 114.6
+        },
+        {
+          "period": "2024-12",
+          "value": 114.4
+        },
+        {
+          "period": "2025-01",
+          "value": 115.5
+        },
+        {
+          "period": "2025-02",
+          "value": 115.5
+        },
+        {
+          "period": "2025-03",
+          "value": 114.8
+        },
+        {
+          "period": "2025-04",
+          "value": 115.5
+        },
+        {
+          "period": "2025-05",
+          "value": 115.0
+        },
+        {
+          "period": "2025-06",
+          "value": 115.5
+        },
+        {
+          "period": "2025-07",
+          "value": 114.3
+        },
+        {
+          "period": "2025-08",
+          "value": 114.1
+        },
+        {
+          "period": "2025-09",
+          "value": 113.8
+        },
+        {
+          "period": "2025-10",
+          "value": 114.6
+        },
+        {
+          "period": "2025-11",
+          "value": 115.4
+        },
+        {
+          "period": "2025-12",
+          "value": 114.2
+        },
+        {
+          "period": "2026-01",
+          "value": 117.6
+        },
+        {
+          "period": "2026-02",
+          "value": 115.3
+        },
+        {
+          "period": "2026-03",
+          "value": 116.4
+        },
+        {
+          "period": "2026-04",
+          "value": 118.8
+        },
+        {
+          "period": "2026-05",
+          "value": 120.8
+        },
+        {
+          "period": "2026-06",
+          "value": 116.1
+        },
+        {
+          "period": "2026-07",
+          "value": 118.5
+        }
+      ],
+      "series_id": "JP_RETAIL_history_value",
+      "series_label": "Retail sales",
+      "source": "JP_RETAIL_history.csv"
+    },
+    "NZD": {
+      "historical_vintage": "FIRST_SEEN_IN_THIS_SYSTEM_NOT_ISSUER_FIRST_RELEASE",
+      "latest_observation_period": "2026-06",
+      "observations": [
+        {
+          "period": "2016-03",
+          "value": 4.1
+        },
+        {
+          "period": "2016-06",
+          "value": 4.2
+        },
+        {
+          "period": "2016-09",
+          "value": 4.2
+        },
+        {
+          "period": "2016-12",
+          "value": 3.4
+        },
+        {
+          "period": "2017-03",
+          "value": 3.3
+        },
+        {
+          "period": "2017-06",
+          "value": 3.2
+        },
+        {
+          "period": "2017-09",
+          "value": 3.0
+        },
+        {
+          "period": "2017-12",
+          "value": 3.7
+        },
+        {
+          "period": "2018-03",
+          "value": 3.4
+        },
+        {
+          "period": "2018-06",
+          "value": 3.5
+        },
+        {
+          "period": "2018-09",
+          "value": 2.9
+        },
+        {
+          "period": "2018-12",
+          "value": 3.5
+        },
+        {
+          "period": "2019-03",
+          "value": 3.4
+        },
+        {
+          "period": "2019-06",
+          "value": 2.6
+        },
+        {
+          "period": "2019-09",
+          "value": 3.3
+        },
+        {
+          "period": "2019-12",
+          "value": 2.8
+        },
+        {
+          "period": "2020-03",
+          "value": 0.8
+        },
+        {
+          "period": "2020-06",
+          "value": -9.7
+        },
+        {
+          "period": "2020-09",
+          "value": 2.2
+        },
+        {
+          "period": "2020-12",
+          "value": 1.6
+        },
+        {
+          "period": "2021-03",
+          "value": 4.7
+        },
+        {
+          "period": "2021-06",
+          "value": 17.8
+        },
+        {
+          "period": "2021-09",
+          "value": -1.2
+        },
+        {
+          "period": "2021-12",
+          "value": 2.3
+        },
+        {
+          "period": "2022-03",
+          "value": 0.3
+        },
+        {
+          "period": "2022-06",
+          "value": 0.5
+        },
+        {
+          "period": "2022-09",
+          "value": 7.0
+        },
+        {
+          "period": "2022-12",
+          "value": 3.1
+        },
+        {
+          "period": "2023-03",
+          "value": 3.2
+        },
+        {
+          "period": "2023-06",
+          "value": 3.1
+        },
+        {
+          "period": "2023-09",
+          "value": 1.2
+        },
+        {
+          "period": "2023-12",
+          "value": 1.4
+        },
+        {
+          "period": "2024-03",
+          "value": 1.5
+        },
+        {
+          "period": "2024-06",
+          "value": 0.1
+        },
+        {
+          "period": "2024-09",
+          "value": -1.2
+        },
+        {
+          "period": "2024-12",
+          "value": -1.6
+        },
+        {
+          "period": "2025-03",
+          "value": -0.7
+        },
+        {
+          "period": "2025-06",
+          "value": -0.9
+        },
+        {
+          "period": "2025-09",
+          "value": 1.2
+        },
+        {
+          "period": "2025-12",
+          "value": 1.6
+        },
+        {
+          "period": "2026-03",
+          "value": 1.7
+        },
+        {
+          "period": "2026-06",
+          "value": 2.6
+        }
+      ],
+      "series_id": "NZ_REAL_GDP_Q_history_value",
+      "series_label": "PIL reale YoY",
+      "source": "NZ_REAL_GDP_Q_history.csv"
+    },
+    "USD": {
+      "historical_vintage": "FIRST_SEEN_IN_THIS_SYSTEM_NOT_ISSUER_FIRST_RELEASE",
+      "latest_observation_period": "2026-09",
+      "observations": [
+        {
+          "period": "2019-10",
+          "value": 14067.2
+        },
+        {
+          "period": "2019-11",
+          "value": 14142.8
+        },
+        {
+          "period": "2019-12",
+          "value": 14165.7
+        },
+        {
+          "period": "2020-01",
+          "value": 14230.7
+        },
+        {
+          "period": "2020-02",
+          "value": 14181.4
+        },
+        {
+          "period": "2020-03",
+          "value": 13249.1
+        },
+        {
+          "period": "2020-04",
+          "value": 11798.6
+        },
+        {
+          "period": "2020-05",
+          "value": 12780.5
+        },
+        {
+          "period": "2020-06",
+          "value": 13476.8
+        },
+        {
+          "period": "2020-07",
+          "value": 13683.5
+        },
+        {
+          "period": "2020-08",
+          "value": 13793.0
+        },
+        {
+          "period": "2020-09",
+          "value": 13964.6
+        },
+        {
+          "period": "2020-10",
+          "value": 14007.1
+        },
+        {
+          "period": "2020-11",
+          "value": 13970.3
+        },
+        {
+          "period": "2020-12",
+          "value": 14026.7
+        },
+        {
+          "period": "2021-01",
+          "value": 14215.2
+        },
+        {
+          "period": "2021-02",
+          "value": 14073.1
+        },
+        {
+          "period": "2021-03",
+          "value": 14682.2
+        },
+        {
+          "period": "2021-04",
+          "value": 14801.6
+        },
+        {
+          "period": "2021-05",
+          "value": 14782.2
+        },
+        {
+          "period": "2021-06",
+          "value": 14899.5
+        },
+        {
+          "period": "2021-07",
+          "value": 14878.5
+        },
+        {
+          "period": "2021-08",
+          "value": 14972.2
+        },
+        {
+          "period": "2021-09",
+          "value": 15002.1
+        },
+        {
+          "period": "2021-10",
+          "value": 15094.3
+        },
+        {
+          "period": "2021-11",
+          "value": 15118.0
+        },
+        {
+          "period": "2021-12",
+          "value": 15062.3
+        },
+        {
+          "period": "2022-01",
+          "value": 15085.8
+        },
+        {
+          "period": "2022-02",
+          "value": 15079.5
+        },
+        {
+          "period": "2022-03",
+          "value": 15152.9
+        },
+        {
+          "period": "2022-04",
+          "value": 15244.4
+        },
+        {
+          "period": "2022-05",
+          "value": 15225.4
+        },
+        {
+          "period": "2022-06",
+          "value": 15222.2
+        },
+        {
+          "period": "2022-07",
+          "value": 15217.9
+        },
+        {
+          "period": "2022-08",
+          "value": 15290.7
+        },
+        {
+          "period": "2022-09",
+          "value": 15313.2
+        },
+        {
+          "period": "2022-10",
+          "value": 15341.8
+        },
+        {
+          "period": "2022-11",
+          "value": 15289.6
+        },
+        {
+          "period": "2022-12",
+          "value": 15278.5
+        },
+        {
+          "period": "2023-01",
+          "value": 15483.1
+        },
+        {
+          "period": "2023-02",
+          "value": 15463.6
+        },
+        {
+          "period": "2023-03",
+          "value": 15459.9
+        },
+        {
+          "period": "2023-04",
+          "value": 15495.1
+        },
+        {
+          "period": "2023-05",
+          "value": 15490.6
+        },
+        {
+          "period": "2023-06",
+          "value": 15525.2
+        },
+        {
+          "period": "2023-07",
+          "value": 15586.4
+        },
+        {
+          "period": "2023-08",
+          "value": 15602.4
+        },
+        {
+          "period": "2023-09",
+          "value": 15638.6
+        },
+        {
+          "period": "2023-10",
+          "value": 15680.8
+        },
+        {
+          "period": "2023-11",
+          "value": 15733.4
+        },
+        {
+          "period": "2023-12",
+          "value": 15780.4
+        },
+        {
+          "period": "2024-01",
+          "value": 15744.7
+        },
+        {
+          "period": "2024-02",
+          "value": 15801.8
+        },
+        {
+          "period": "2024-03",
+          "value": 15854.0
+        },
+        {
+          "period": "2024-04",
+          "value": 15884.2
+        },
+        {
+          "period": "2024-05",
+          "value": 15960.6
+        },
+        {
+          "period": "2024-06",
+          "value": 16013.0
+        },
+        {
+          "period": "2024-07",
+          "value": 16058.8
+        },
+        {
+          "period": "2024-08",
+          "value": 16071.4
+        },
+        {
+          "period": "2024-09",
+          "value": 16165.2
+        },
+        {
+          "period": "2024-10",
+          "value": 16185.1
+        },
+        {
+          "period": "2024-11",
+          "value": 16246.1
+        },
+        {
+          "period": "2024-12",
+          "value": 16370.1
+        },
+        {
+          "period": "2025-01",
+          "value": 16266.3
+        },
+        {
+          "period": "2025-02",
+          "value": 16251.3
+        },
+        {
+          "period": "2025-03",
+          "value": 16362.3
+        },
+        {
+          "period": "2025-04",
+          "value": 16372.0
+        },
+        {
+          "period": "2025-05",
+          "value": 16349.6
+        },
+        {
+          "period": "2025-06",
+          "value": 16413.3
+        },
+        {
+          "period": "2025-07",
+          "value": 16491.2
+        },
+        {
+          "period": "2025-08",
+          "value": 16529.7
+        },
+        {
+          "period": "2025-09",
+          "value": 16557.6
+        },
+        {
+          "period": "2025-10",
+          "value": 16587.7
+        },
+        {
+          "period": "2025-11",
+          "value": 16615.4
+        },
+        {
+          "period": "2025-12",
+          "value": 16610.6
+        },
+        {
+          "period": "2026-01",
+          "value": 16596.8
+        },
+        {
+          "period": "2026-02",
+          "value": 16631.3
+        },
+        {
+          "period": "2026-03",
+          "value": 16674.3
+        },
+        {
+          "period": "2026-04",
+          "value": 16727.4
+        },
+        {
+          "period": "2026-05",
+          "value": 16784.6
+        },
+        {
+          "period": "2026-06",
+          "value": 16854.0
+        },
+        {
+          "period": "2026-07",
+          "value": 16882.2
+        },
+        {
+          "period": "2026-08",
+          "value": 16975.0
+        },
+        {
+          "period": "2026-09",
+          "value": 16977.6
+        }
+      ],
+      "series_id": "US_PCEC96_history_value",
+      "series_label": "Consumi reali",
+      "source": "US_PCEC96_history.csv"
+    }
+  },
+  "source_macro_sha256": "a7f0c3e30641f4d6844de6f71ef6173728812fcb472c41d0d0e612aa10ffc55b",
+  "source_main_commit": "68ef2babaea645b5910d359ae3bb8aac8963407d",
+  "source_model_sha256": "00d4179fd5df2fc44c014b78063dab8702ff87a73eaa46413dc940c631685679",
+  "sources_are_versioned_at_capture": true
+}
