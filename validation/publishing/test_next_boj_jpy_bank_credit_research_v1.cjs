@@ -1,0 +1,79 @@
+'use strict';
+/* Exact BoJ MD11 JPY monthly credit stock; separate from FX Core and BoJ reserves. */
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'../..');
+const source=require(path.join(root,'site/fx-quant-v2/next/jpy-boj-bank-credit-research-v1.js'));
+const studio=require(path.join(root,'site/fx-quant-v2/next/liquidity-credit-studio.js'));
+const native=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NATIVE_LIQ_DATA.json'),'utf8'));
+const index=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
+assert.match(index,/jpy-boj-bank-credit-research-v1\.js\?v=\d+/);
+assert.equal(source.schema,'GMFQ_NEXT_JPY_BOJ_BANK_CREDIT_RESEARCH_V1');
+assert.equal(source.status,'VERIFIED_BOJ_MD11_MONTHLY_BANK_CREDIT_RESEARCH_ONLY');
+assert.equal(source.publisher,'Bank of Japan');
+assert.equal(source.database,'MD11');
+assert.equal(source.series_id,'DLCLAEDBLTTO');
+assert.equal(source.category,'bank_credit_end_period_stock');
+assert.equal(source.unit,'100 milioni JPY');
+assert.equal(source.frequency,'M');
+assert.equal(source.end_of_period,true);
+assert.equal(source.eligible_for_fx_core,false);
+assert.equal(source.eligible_for_backtest,false);
+assert.equal(source.first_release_pit_verified,false);
+assert.equal(source.observation_is_not_publication_date,true);
+assert.equal(source.original_canonical_last,'2026-07');
+assert.equal(source.original_canonical_value,6764306);
+assert(Number.isInteger(source.matched_canonical_months)&&source.matched_canonical_months>=12);
+assert.equal(source.last_observation,source.dates.at(-1));
+assert(source.dates.length>=12);
+assert.equal(source.dates.length,source.values.length);
+const ym=d=>Number(d.slice(0,4))*12+Number(d.slice(5));
+for(let i=0;i<source.dates.length;i++){
+ const d=source.dates[i],v=source.values[i];
+ assert.match(d,/^\d{4}-(0[1-9]|1[0-2])$/);
+ assert(Number.isFinite(v)&&v>2000000&&v<12000000);
+ if(i>0){
+  assert.equal(ym(d)-ym(source.dates[i-1]),1,'no month gaps or duplicates');
+  assert(Math.abs(v/source.values[i-1]-1)<.12);
+ }
+}
+const canonical=native.JPY.credit;
+assert.equal(canonical.last_date,'2026-07');
+assert.equal(canonical.last_value,6764306);
+const overlap=source.dates.indexOf(canonical.last_date);
+assert(overlap!==-1);
+assert.equal(source.values[overlap],canonical.last_value);
+assert(new Date(source.last_observation+'-01')<=new Date());
+const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const fmt=(v,n=2)=>Number(v).toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n});
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const api=ccy=>({
+ get:k=>k==='liquidity'?native:null,FX,FLAGS:Object.fromEntries(FX.map(x=>[x,x])),
+ NAMES:Object.fromEntries(FX.map(x=>[x,x])),state:{liqCcy:ccy},
+ plot:()=>'<svg></svg>',pageHero:()=>'<h1>FX</h1>',
+ esc,fmt,date:x=>x,dayNow:()=>new Date().toISOString().slice(0,10)
+});
+const jp=studio.render(api('JPY'));
+assert.match(jp,/class="drivers-cad-official drivers-jpy-official"/);
+assert.match(jp,/DLCLAEDBLTTO/);
+assert.match(jp,/conti bancari, fiduciari e delle filiali estere/);
+assert.match(jp,/Non sono nuovi prestiti/i);
+assert.match(jp,/USD\/JPY/);
+assert.match(jp,/JGB\/UST/);
+assert.match(jp,/ranking FX invariato/);
+assert(jp.includes(source.last_observation));
+assert(jp.includes(fmt(source.values.at(-1)/10,2)+' miliardi JPY'),
+ 'Source units must convert 100 million yen to billions of yen exactly');
+assert(jp.includes(fmt(source.values.at(-2)/10,2)+' miliardi'));
+const core=jp.split('data-liq-role="credit"')[1]?.split('</div>')[0]||'';
+assert(core.includes('2026-07')&&!core.includes('2026-09'),
+ 'Verified source sidecar must never replace canonical JPY credit dates');
+for(const other of FX.filter(ccy=>ccy!=='JPY'))
+ assert(!studio.render(api(other)).includes('drivers-jpy-official'),
+  'BoJ bank credit source is JPY-only: '+other);
+console.log('BOJ_JPY_OFFICIAL_BANK_CREDIT_RESEARCH_PASS',JSON.stringify({
+ latest:source.last_observation,stock100mYen:source.values.at(-1),
+ previous:source.values.at(-2),matchingMonths:source.matched_canonical_months,
+ newMonths:source.new_after_canonical,canonicalDate:canonical.last_date,
+ fxCoreChanged:false,notNewLoans:true
+}));
