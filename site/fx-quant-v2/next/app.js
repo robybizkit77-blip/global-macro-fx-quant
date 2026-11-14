@@ -498,10 +498,11 @@ function fxHomeDesk(){
 function overview(){
  // Source-first monetary evidence is a separately dated observation,
  // not part of either the hourly editorial analysis or frozen morning report.
- const moneyProof=window.FXQuantHomePricingProof?.render?.({
-  today:dayNow(),prices:get('currencyPrices'),pairs:get('pairs'),
-  history:get('oisHistory')
- })||'';
+ const moneyProof=typeof window==='undefined'?'':
+  (window.FXQuantHomePricingProof?.render?.({
+   today:dayNow(),prices:get('currencyPrices'),pairs:get('pairs'),
+   history:get('oisHistory')
+  })||'');
  // Independent FREE GitHub desk replaces the historical morning when—and only when—
  // a source-validated edition actually exists. A missing feed cannot blank Home.
  const hourly=typeof window==='undefined'?null:
