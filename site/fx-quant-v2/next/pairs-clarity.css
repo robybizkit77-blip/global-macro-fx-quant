@@ -78,3 +78,29 @@
 @media(max-width:560px){
  .decision-desk-current-macro{padding:11px 12px;font-size:12px;line-height:1.7}
 }
+
+/* FX pair dossier: source-aligned 6M monetary repricing, beneath the existing thesis. */
+.pair-monetary-bridge{margin-top:12px;padding:18px 20px;border:1px solid #496e7d;border-radius:12px;background:linear-gradient(125deg,#102e40,#0d2436)}
+.pair-monetary-top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.pair-monetary-kicker{font-size:9px;letter-spacing:.075em;font-weight:770;color:#8bcfdb}
+.pair-monetary-top h3{font:760 clamp(16px,1.7vw,19px)/1.4 Manrope,sans-serif;letter-spacing:-.025em;margin:7px 0 0;color:#e7f4f5}
+.pair-monetary-top>button{border:1px solid #65a99e;border-radius:8px;padding:10px 12px;cursor:pointer;background:#1c5454;color:#d5f7e8;font-size:11px;font-weight:750;white-space:nowrap}
+.pair-monetary-top>button:hover{filter:brightness(1.13)}
+.pair-monetary-top>button:focus-visible,.pair-monetary-source summary:focus-visible{outline:2px solid #a9ede4;outline-offset:3px}
+.pair-monetary-body{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(230px,.7fr);gap:18px;margin-top:16px}
+.pair-monetary-reading h4{font:760 15px/1.45 Manrope,sans-serif;margin:0 0 10px;color:#e9f4f5}
+.pair-monetary-reading p{font-size:11px;line-height:1.78;color:#b9d3de;margin:0 0 10px}
+.pair-monetary-reading p strong{color:#a4e2d0}
+.pair-monetary-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pair-monetary-kpi{display:grid;align-content:center;gap:9px;padding:14px 12px;background:rgba(7,29,41,.6);border:1px solid rgba(115,168,190,.26);border-radius:9px;min-width:0}
+.pair-monetary-kpi span{font-size:9px;color:#a0c6d4;font-weight:780;letter-spacing:.055em}
+.pair-monetary-kpi strong{font:770 clamp(14px,1.5vw,18px)/1.3 Manrope,sans-serif;color:#dcecf1;overflow-wrap:anywhere}
+.pair-monetary-kpi strong.positive{color:#9be5c8}
+.pair-monetary-kpi strong.negative{color:#eea7ad}
+.pair-monetary-kpi small{font-size:9px;line-height:1.55;color:#9cbcca}
+.pair-monetary-source{margin-top:10px;border-top:1px solid rgba(127,171,193,.2)}
+.pair-monetary-source summary{padding:11px 0 4px;cursor:pointer;font-size:10px;font-weight:740;color:#9dceda}
+.pair-monetary-source p{margin:8px 0 0;color:#a7c2d0;line-height:1.65;font-size:10px}
+@media(max-width:900px){.pair-monetary-body{grid-template-columns:1fr}.pair-monetary-values{max-width:520px}}
+@media(max-width:560px){.pair-monetary-bridge{padding:15px 13px}.pair-monetary-top{align-items:stretch;flex-direction:column}.pair-monetary-top>button{text-align:left;white-space:normal}.pair-monetary-kpi{padding:11px 9px}}
+@media(prefers-reduced-motion:reduce){.pair-monetary-top>button{transition:none}}
