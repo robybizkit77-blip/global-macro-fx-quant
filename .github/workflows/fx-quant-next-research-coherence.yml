@@ -37,6 +37,8 @@ on:
       - 'validation/publishing/test_next_fx_driver_market_audit_v1.cjs'
       - 'validation/publishing/test_next_liquidity_source_policy_v1.cjs'
       - 'validation/publishing/test_next_cad_official_credit_source_v1.cjs'
+      - 'validation/publishing/test_next_us_h8_credit_research_v1.cjs'
+      - 'site/fx-quant-v2/next/us-h8-bank-credit-research-v1.js'
       - 'site/fx-quant-v2/next/cad-official-credit-research-v1.js'
       - 'validation/publishing/audit_next_liquidity_freshness_v1.py'
       - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
@@ -109,6 +111,8 @@ jobs:
         run: node validation/publishing/test_next_liquidity_source_policy_v1.cjs
       - name: Verify BoC CAD monthly bank-credit research, no Core promotion
         run: node validation/publishing/test_next_cad_official_credit_source_v1.cjs
+      - name: Verify Fed H8 weekly bank credit and USD research isolation
+        run: node validation/publishing/test_next_us_h8_credit_research_v1.cjs
       - name: Audit G8 liquidity freshness, source age and uncertified publication channels
         run: |
           python3 validation/publishing/audit_next_liquidity_freshness_v1.py --selftest
