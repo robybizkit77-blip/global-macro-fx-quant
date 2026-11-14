@@ -57,6 +57,10 @@ async function inspectRoute(page,label,key){
    'Exactly eight estimated G8 first-read choices required');
   assert.equal(await locator(page,'.strength-first-reading > p').count(),3,
    'Country first read must connect macro, monetary references and price');
+  assert.equal(await locator(page,'#g8-pricing-proof').count(),1,
+   label+' source-first G8 monetary evidence missing');
+  assert.equal(await locator(page,'#g8-pricing-proof .g8-pricing-metric').count(),2,
+   label+' 1D and 1W monetary sources must remain available');
   assert.equal(await locator(page,'.strength-evidence-fold').count(),1,
    'Country provenance must remain accessible on demand');
  }else if(key==='pairs'){
@@ -116,9 +120,19 @@ async function g8Choice(page,label){
  const note=await locator(page,'#orient-strength-focus').innerText();
  assert(note.includes('NZD'),label+' NZD reading did not update');
  assert(note.includes('Che cosa mostra il Forex.'),label+' price mislabeled as causal response');
- assert(note.includes('Il futures ASX bank-bill a sei mesi') &&
-   note.includes('proxy direzionale'),
-  label+' NZD must explain dated 6M bank-bill proxy in the G8 first read');
+ assert(note.includes('6M NZD')&&note.includes('proxy bank-bill'),
+  label+' NZD must explain source-dated bank-bill 6M proxy');
+ const proof=locator(page,'#g8-pricing-proof');
+ assert.equal(await proof.getAttribute('data-g8-pricing-ccy'),'NZD',
+  label+' monetary evidence did not follow NZD');
+ await proof.locator('.g8-pricing-docs > summary').click();
+ assert.equal(await proof.locator('.g8-pricing-docs nav a').count(),3,
+  label+' all G8 money sources should be inspectable');
+ await locator(page,'#orient-strength-board [data-cs-country="EUR"]').click();
+ assert.equal(await locator(page,'#g8-pricing-proof').getAttribute('data-g8-pricing-ccy'),'EUR',
+  label+' monetary source did not update to EUR');
+ assert((await locator(page,'#g8-pricing-proof').innerText()).includes('futures secondari'),
+  label+' EUR research futures must remain labeled as futures');
  assert(note.includes('Che cosa monitorare.') &&
    note.includes('NZD/USD') && note.includes('AUD/NZD'),
   label+' NZD macro/rates proxy must lead to two FX monitoring instruments');
