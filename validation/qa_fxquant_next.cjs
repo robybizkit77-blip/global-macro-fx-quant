@@ -328,6 +328,17 @@ async function macroDriversJourney(page,label){
  const audCanonical=await locator(page,'[data-liq-role="credit"]').innerText();
  assert(audCanonical.includes('31/07/2026')&&!audCanonical.includes('Ultimo 2026-09'),
   label+' AUD native credit stock must not be replaced by research source');
+ await locator(page,'[data-liq-country="GBP"]').click();
+ const officialBoE=locator(page,'.drivers-gbp-official');
+ assert.equal(await officialBoE.count(),1,
+  label+' BoE official reserves research must appear in GBP country view');
+ const boeText=await officialBoE.innerText();
+ assert(boeText.includes('646.280')&&boeText.includes('RPWB56A')&&
+        boeText.includes('2026-11-12')&&boeText.includes('EUR/GBP'),
+  label+' GBP reserve stock requires verified publisher dates and relative FX test');
+ const gbpNative=await locator(page,'[data-liq-role="liquidity"]').innerText();
+ assert(gbpNative.includes('2026-09-16')&&!gbpNative.includes('Ultimo 2026-11-11'),
+  label+' GBP research must not silently overwrite historical native reserves');
  await locator(page,'[data-liq-country="CAD"]').click();
  assert.equal(await locator(page,'[data-liq-country="CAD"]').getAttribute('aria-pressed'),'true');
  const cadDossier=(await locator(page,'.drivers-selection').innerText());
