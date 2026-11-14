@@ -22,6 +22,50 @@
   if(d.includes('STABILE'))return {label:'STABILE',tone:'flat'};
   return {label:'DA VERIFICARE',tone:'unknown'};
  }
+ const MONTHS={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+ function observationDate(label){
+  const x=short(label);
+  const q=x.match(/^(\d{4})-Q([1-4])$/);
+  if(q)return new Date(Date.UTC(Number(q[1]),Number(q[2])*3,0)).toISOString().slice(0,10);
+  const month=x.match(/^(\d{4})-(\d{2})$/);
+  if(month)return new Date(Date.UTC(Number(month[1]),Number(month[2]),0)).toISOString().slice(0,10);
+  const iso=x.match(/^(\d{4}-\d{2}-\d{2})(?:T.*)?$/);
+  if(iso)return iso[1];
+  const european=x.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if(european)return european[3]+'-'+european[2]+'-'+european[1];
+  const british=x.match(/^(\d{1,2}) ([A-Za-z]{3}) (\d{4})$/);
+  if(british&&MONTHS[british[2].toLowerCase()]){
+   return british[3]+'-'+String(MONTHS[british[2].toLowerCase()]).padStart(2,'0')+'-'+british[1].padStart(2,'0');
+  }
+  return null;
+ }
+ const dateMs=d=>d?Date.parse(d+'T12:00:00Z'):NaN;
+ function sourceEvidence(row,now){
+  if(!row?.label||!finite(row.last_value))return {coverage:false,state:'ASSENTE',tone:'unknown',message:'Serie numerica non disponibile: una direzione dichiarata nel dataset non costituisce prova.',delta:null};
+  const last=observationDate(row.last_date),today=observationDate(now);
+  const history=Array.isArray(row.dates)?row.dates:[];
+  const prior=history.length>1?observationDate(history.at(-2)):null;
+  const cadence=last&&prior?Math.round((dateMs(last)-dateMs(prior))/864e5):null;
+  const limit=cadence!==null&&cadence>70?135:cadence!==null&&cadence>15?70:21;
+  const age=last&&today?Math.round((dateMs(today)-dateMs(last))/864e5):null;
+  const valid=age!==null&&age>=0;
+  const overdue=valid&&age>limit;
+  const staleText=!valid?'Data non classificabile':overdue?'Serie storica: aggiornamento da verificare':'Ultima osservazione datata';
+  const values=Array.isArray(row.values)?row.values:[];
+  const previous=values.length>1?values.at(-2):null;
+  const delta=finite(previous)&&finite(row.last_value)?row.last_value-previous:null;
+  let observation='Ultima variazione non verificabile';
+  if(finite(delta)){
+   const pct=(String(row.label).match(/yoy|a\/a|percent|%/i))?'punti percentuali':'variazione relativa';
+   const isRate=pct==='punti percentuali';
+   const move=isRate?delta:(Math.abs(previous)>0?100*delta/Math.abs(previous):null);
+   if(finite(move))observation=(move>0?'+':move<0?'−':'')+Math.abs(move).toLocaleString('it-IT',{maximumFractionDigits:2})+(isRate?' punti percentuali':'%')+' dall’osservazione precedente';
+  }
+  return {coverage:true,state:overdue?'STORICO':valid?'DATATO':'DATA DA VERIFICARE',tone:overdue?'warn':'neutral',
+   message:staleText+' · '+short(row.last_date)+' · '+observation+
+    '. La direzione di scenario può riferirsi a più osservazioni, non a questa singola variazione.',
+   delta};
+ }
  function interpret(row){
   if(!row)return {headline:'Dati G8 non disponibili',meaning:'Nessuna lettura è ricostruita artificialmente.',fx:'Non emerge un collegamento verificabile con il Forex.',watch:'Recuperare la fonte originale e le date.',liquidity:direction('',false),credit:direction('',false)};
   const liq=direction(row.liquidity_dir,Boolean(row.liquidity?.label&&finite(row.liquidity?.last_value)));
@@ -55,16 +99,21 @@
    liquidity:liq,credit:cr};
  }
  function render(api){
-  const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,date}=api;
+  const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,date,dayNow}=api;
   const all=get('liquidity')||{};
   const selected=validCcy(state.liqCcy)?state.liqCcy:'USD';
-  const row=all[selected],read=interpret(row);
+  const row=all[selected],read=interpret(row),today=dayNow();
+  const audits=[row?.liquidity,row?.credit,row?.conditions].map(v=>sourceEvidence(v,today));
+  const covered=audits.filter(x=>x.coverage).length;
   const snap=(s)=>s?.last_date||'data non disponibile';
   const cell=(label,s,d)=>{
-   const exists=Boolean(s?.label&&finite(s.last_value));
+   const exists=Boolean(s?.label&&finite(s.last_value)),audit=sourceEvidence(s,today);
+   const isYoY=/yoy|a\/a/i.test(s?.label||'');
    return '<div class="drivers-fact"><span>'+esc(label)+'</span><strong>'+esc(s?.label||'Serie non disponibile')+'</strong>'+
-    '<small>'+(exists?('Ultimo '+esc(snap(s))+' · '+esc(fmt(s.last_value,2))+(s.unit?' '+esc(s.unit):'')):'Misura non verificabile')+'</small>'+
-    (d?'<b class="drivers-tone" data-tone="'+esc(d.tone)+'">'+esc(d.label)+'</b>':'')+'</div>';
+    '<small>'+(exists?('Ultimo '+esc(snap(s))+' · '+esc(fmt(s.last_value,2))+(s.unit?' '+esc(s.unit):isYoY?'%':'') ):'Misura non verificabile')+'</small>'+
+    '<b class="drivers-tone" data-tone="'+(audit.tone==='warn'?'unknown':esc(audit.tone))+'">'+esc(audit.state)+'</b>'+
+    '<small class="drivers-observation">'+esc(audit.message)+'</small>'+
+    (d?'<b class="drivers-mini-state" data-tone="'+esc(d.tone)+'">Direzione del dataset: '+esc(d.label)+'</b>':'')+'</div>';
   };
   const chart=(s,label,color)=>{
    const pts=series(s);
@@ -85,8 +134,9 @@
    '<div class="drivers-country-grid">'+cards+'</div></section>'+
    '<section class="drivers-panel drivers-selection" aria-label="Dossier liquidità e credito '+selected+'">'+
    '<div class="drivers-head"><div><span class="mini-overline">02 / LETTURA ECONOMICA · '+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
-   '<h2>'+esc(read.headline)+'</h2></div><span class="drivers-status">Dataset '+esc(row?.status||'NON DISPONIBILE')+'</span></div>'+
+   '<h2>'+esc(read.headline)+'</h2></div><span class="drivers-status" data-tone="'+(covered===3?'neutral':'unknown')+'">COPERTURA '+covered+'/3 SERIE</span></div>'+
    '<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
+   '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie mancanti. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
    '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity)+cell('CREDITO',row?.credit,read.credit)+cell('STANDARD E CONDIZIONI',row?.conditions,null)+'</div>'+
    '<div class="drivers-story"><div><span>PERCHÉ CONTA PER IL FOREX</span><p>'+esc(read.fx)+'</p></div><div><span>COSA MONITORARE</span><p>'+esc(read.watch)+'</p></div></div>'+
    '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
@@ -97,7 +147,7 @@
    '<div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità','#69d5ad')+chart(row?.credit,'Credito','#95c6e9')+'</div>'+
    '<p class="drivers-source-note">I grafici conservano i livelli originali nelle rispettive unità; non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>';
  }
- const api={series,direction,interpret,render};
+ const api={series,direction,interpret,observationDate,sourceEvidence,render};
  root.FXQuantLiquidityCredit=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
