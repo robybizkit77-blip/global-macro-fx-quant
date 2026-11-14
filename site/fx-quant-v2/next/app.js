@@ -496,11 +496,19 @@ function fxHomeDesk(){
 }
 
 function overview(){
+ // Source-first monetary evidence is a separately dated observation,
+ // not part of either the hourly editorial analysis or frozen morning report.
+ const moneyProof=window.FXQuantHomePricingProof?.render?.({
+  today:dayNow(),prices:get('currencyPrices'),pairs:get('pairs'),
+  history:get('oisHistory')
+ })||'';
  // Independent FREE GitHub desk replaces the historical morning when—and only when—
  // a source-validated edition actually exists. A missing feed cannot blank Home.
  const hourly=typeof window==='undefined'?null:
   window.FXQuantHourlyDesk?.render?.({feed:get('hourlyDesk'),risk:get('risk'),currencyPrices:get('currencyPrices'),esc,date,dayNow});
- if(hourly)return hourly;
+ if(hourly)return moneyProof?
+  hourly.replace('<section class="hourly-decision-section"',
+   moneyProof+'<section class="hourly-decision-section"'):hourly;
  const morning=get('morningDesk');
  if(typeof window!=='undefined' && window.FXQuantMorningDesk?.build && morning){
   // A new, independently dated FX snapshot must never rewrite the archived
@@ -521,7 +529,9 @@ function overview(){
   });
   if(edition){
    const post=window.FXQuantMorningDesk.postRelease?.(morning,get('news'),esc,dayNow)||'';
-   return post ? edition.replace('<section class="morning-prose"',post+'<section class="morning-prose"') : edition;
+   return post||moneyProof?
+    edition.replace('<section class="morning-prose"',
+     post+moneyProof+'<section class="morning-prose"'):edition;
   }
  }
  const context=researchCase();
@@ -803,6 +813,7 @@ function overview(){
  ' · '+esc(pairData[k].setup?.price?.text||'Prezzo da verificare')+' ↗</button>').join(''):'')+'</div>'
  +'<nav class="dashboard-reading-source-links" aria-label="Verifica la lettura nei dossier"><a href="#currencies">Valute G8 ↗</a><a href="#pairs">28 coppie FX ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#macro">Macro ↗</a><a href="#cot">COT ↗</a><a href="#risk">Rischio ↗</a><a href="#news">Notizie ↗</a></nav>'
  +'<p class="dashboard-reading-quality">I fixing BCE e le 28 coppie guidano la lettura. Macro, tassi, COT, volatilità e credito servono a spiegare o mettere alla prova le tesi FX, non a sostituirle.</p></section>'
+ +moneyProof
  +'<section class="dashboard-main dashboard-reading-chart"><div class="dashboard-section-head"><span>IL PREZZO FX DIETRO LA LETTURA</span><p>Confronta i movimenti delle valute prima di cercare conferme in altri mercati.</p></div>'
  +'<div class="dashboard-chart-grid"><figure class="letter-chart dashboard-chart"><figcaption><span>DATI DI MERCATO</span><strong>Chi sta guadagnando terreno nel G8?</strong><p>Forza relativa nei fixing BCE, confrontabile tra valute e date; nessuna quotazione intraday.</p></figcaption>'
  +'<div class="letter-chart-visual">'+homeScreenChart()+'</div></figure></div></section>'
