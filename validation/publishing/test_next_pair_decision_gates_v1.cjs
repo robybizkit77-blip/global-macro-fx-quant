@@ -51,6 +51,18 @@ const gbpjpy=observe({...p,key:'GBPJPY',base:'GBP',quote:'JPY',favored:'GBP'},{
   favorable:200.5,favorableDirection:'Sopra',adverseDirection:'Sotto'}});
 assert.match(gbpjpy.improve,/sopra 200,500/,'JPY reference displays three decimals');
 assert.match(gbpjpy.weaken,/sotto 196,228/);
+// Source-aware risks are research blockers, not entries.
+const risk=ranking.pairRiskReading;
+assert.equal(typeof risk,'function');
+const complete={...p,quality:'PULITO',twentyState:'COERENTE'};
+const safeProfile={...profile,watch:{...profile.watch,adversePassed:false}};
+assert(risk(complete,safeProfile).includes('rapporto rischio/rendimento'));
+assert.match(risk({...complete,macroState:'CONTRARIA'},safeProfile),/momentum macro relativo/);
+assert.match(risk({...complete,policyState:'CONTRARIA'},safeProfile),/repricing non conferma/);
+assert.match(risk(complete,{...safeProfile,fresh:false}),/fixing daily non sono sufficientemente attuali/);
+assert.match(risk(complete,{...safeProfile,watch:{...safeProfile.watch,adversePassed:true}}),/già oltrepassato/);
+assert.match(risk({...complete,favored:null},safeProfile),/non distingue un vantaggio fondamentale/);
+assert.match(risk({...complete,fiveState:'CONTRARIO',twentyState:'CONTRARIO'},safeProfile),/5 sia su 20 fixing BCE/);
 const app=read(next+'app.js');
 const html=read(next+'index.html');
 const start=app.indexOf('function pairs(){'),end=app.indexOf('\nfunction macro(){',start);
@@ -58,13 +70,13 @@ assert(start>=0 && end>start);
 const pairs=app.slice(start,end);
 for(const required of [
  'const pairProfile=','pairDecisionWatch?.(activePair,pairProfile)',
- 'TESI FONDAMENTALE','TRADE ATTRACTIVENESS','PERCHÉ NON È UN INGRESSO',
+ 'TESI FONDAMENTALE','TRADE ATTRACTIVENESS','Rischio operativo.',
  'Rafforzerebbe il quadro.','Lo indebolirebbe.','pairs-vintage',
- 'pairs-three-answers','pairs-next-action'])assert(pairs.includes(required),required);
+ 'pairs-three-answers','pairs-next-action','esc(riskReading)'])assert(pairs.includes(required),required);
 assert(!pairs.includes("const next=activePair?.missing"),'No duplicated generic watch paragraph');
 assert(pairs.includes("esc(gate.improve)")&&pairs.includes("esc(gate.weaken)"),
  'Every gate must be HTML-escaped');
-assert(html.includes('./pair-rankings.js?v=8'));
-assert(html.includes('./app.js?v=18.43-drivers1'));
+assert(html.includes('./pair-rankings.js?v=10'));
+assert(html.includes('./app.js?v=18.60-pair-risk-read'));
 assert.equal(typeof ranking.selectResearchPairs,'function','Current Top5 remains available');
 console.log('NEXT_PAIR_DECISION_GATES_V1_PASS: directional levels, passed/stale guards, first-read clarity, no fake H4 entries');
