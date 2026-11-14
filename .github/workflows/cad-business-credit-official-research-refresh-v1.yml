@@ -79,9 +79,9 @@ jobs:
         run: |
           set -euo pipefail
           path=site/fx-quant-v2/next/cad-official-credit-research-v1.js
-          main_sha="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
-          current_sha="$(git rev-parse HEAD)"
-          test "$main_sha" = "$current_sha" || { echo 'CAD_RESEARCH_MAIN_MOVED_DO_NOT_PUBLISH_STALE'; exit 1; }
+          git fetch origin main --no-tags
+          local_source="$(git hash-object "$path")"
+          test "$(git rev-parse "origin/main:$path")" = "$local_source" || { echo 'CAD_RESEARCH_SOURCE_CHANGED_WITHHELD'; exit 1; }
           git fetch origin gh-pages --no-tags
           remote_sha="$(git rev-parse origin/gh-pages)"
           git worktree add --detach /tmp/cad-credit-pages origin/gh-pages
@@ -101,8 +101,9 @@ jobs:
           test "$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')" = "$remote_sha" || {
             echo 'CAD_RESEARCH_GH_PAGES_MOVED_WITHHELD'; exit 1;
           }
-          test "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$main_sha" || {
-            echo 'CAD_RESEARCH_MAIN_MOVED_WITHHELD'; exit 1;
+          git fetch origin main --no-tags
+          test "$(git rev-parse "origin/main:$path")" = "$local_source" || {
+            echo 'CAD_RESEARCH_SOURCE_CHANGED_WITHHELD'; exit 1;
           }
           git push --force-with-lease=refs/heads/gh-pages:$remote_sha origin HEAD:gh-pages
           echo "changed=true" >> "$GITHUB_OUTPUT"
