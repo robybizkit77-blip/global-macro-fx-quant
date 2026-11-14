@@ -53,11 +53,12 @@ const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'u
 const rates=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/rates-studio.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
 assert(page.includes('rates-economic-reading.js?v=20'));
-assert(page.includes('rates-studio.js?v=5'));
+assert(page.includes('rates-studio.js?v=6'));
+assert(page.includes('rates-relative-pricing-v1.js?v=1'));
 assert(page.includes('rates-pricing-history-v1.js?v=1'));
 assert(page.includes('rates-pricing-moves-v1.js?v=1'));
-assert(page.includes('rates-studio.css?v=4'));
-assert(page.includes('app.js?v=18.55-full-pricing-history'));
+assert(page.includes('rates-studio.css?v=5'));
+assert(page.includes('app.js?v=18.56-relative-pricing'));
 assert(rates.includes('fxRelativeEvidence(c,other)'), 'Rates first read needs a FX handoff');
 assert(rates.includes('root.FXQuantRatesBridge.snapshot('),
  'FX movement must come from certified common-date 2Y/ECB bridge, not a new correlation');
