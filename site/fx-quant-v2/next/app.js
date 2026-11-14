@@ -7,7 +7,7 @@
 const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
 const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',AUD:'🇦🇺',NZD:'🇳🇿',CAD:'🇨🇦'};
 const NAMES={USD:'Stati Uniti',EUR:'Area euro',GBP:'Regno Unito',JPY:'Giappone',CHF:'Svizzera',AUD:'Australia',NZD:'Nuova Zelanda',CAD:'Canada'};
-const ROUTES={overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie',library:'Research Library'};
+const ROUTES={overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',banks:'Banche Centrali',rates:'Tassi & OIS',liquidity:'Liquidità & Credito',cot:'COT',risk:'Rischio',news:'Notizie',library:'Research Library'};
 const SOURCES={
  rates:'../../../live_data/sections/NATIVE_RATES_DATA.json',
  audDailyResearch:'../aud-rba-f2-history-research.json',
@@ -25,6 +25,7 @@ const SOURCES={
  macroSeries:'../../../live_data/sections/MACRO_SERIES.json',
  cbEstimated:'../../../live_data/sections/CB_PRICING_ESTIMATED.json',
  cb:'../../../live_data/sections/NATIVE_CB_DATA.json',
+ liquidity:'../../../live_data/sections/NATIVE_LIQ_DATA.json',
  cot:'../../../live_data/sections/V247_COT_STORIES.json',
  cotHistory:'../../../live_data/sections/V250_COT_CHART_DATA.json',
  cotPriorReference:'../design-studio-cot-v1-data.json',
@@ -38,7 +39,7 @@ const SOURCES={
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
 let firstResearchLoaded=false;
-const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairDetailOpen:false,pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',rsPricingWindow:'1d',rsHistoryWindow:30,msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
+const state={data:{},errors:{},route:'overview',ccy:'USD',cbCcy:'USD',liqCcy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairDetailOpen:false,pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',rsPricingWindow:'1d',rsHistoryWindow:30,msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -939,6 +940,16 @@ function macro(){
  if(window.FXQuantMacro?.render)return window.FXQuantMacro.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow});
  return pageHero('GLOBAL MACRO / DYNAMICS','Macro Studio non disponibile','Il modulo Macro non è stato caricato. Verifica gli script e le serie storiche.');
 }
+function banks(){
+ if(window.FXQuantCentralBanks?.render)
+  return window.FXQuantCentralBanks.render({get,FX,FLAGS,NAMES,state,pageHero,esc,fmt,date,dayNow});
+ return pageHero('CENTRAL BANKS / WANT × CAN','Banche centrali non disponibili','Il modulo policy G8 non è stato caricato.');
+}
+function liquidity(){
+ if(window.FXQuantLiquidityCredit?.render)
+  return window.FXQuantLiquidityCredit.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,date,dayNow});
+ return pageHero('FINANCIAL CONDITIONS / G8','Liquidità e credito non disponibili','Il modulo G8 non è stato caricato.');
+}
 function rates(){
  if(window.FXQuantRates?.render)return window.FXQuantRates.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow});
  return pageHero('RATES / MONETARY PRICING','Rates Studio non disponibile','Il modulo Rates & OIS non è stato caricato. Verifica il collegamento agli script.');
@@ -1051,8 +1062,8 @@ function render(){
  // Presentation-only hook for route-scoped colors; no change to calculations or data.
  $('content').dataset.view=route;
  state.charts={};state.chartIndex=0;
- const views={overview,currencies,pairs,macro,rates,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
- $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'||route==='library'?'':researchBridge(route))+views[route]();
+ const views={overview,currencies,pairs,macro,banks,rates,liquidity,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
+ $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'||route==='library'||route==='banks'||route==='liquidity'?'':researchBridge(route))+views[route]();
  // Restore after replacing the DOM; nested details must not close when the
  // user changes currency, comparison, return window or research sorting.
  for(const selector of openG8){
@@ -1133,6 +1144,29 @@ function refreshPairPriceChart(focusSelector){
  window.scrollTo({top:scrollTop,behavior:'instant'});
 }
 document.addEventListener('click',e=>{
+ const liqCountry=e.target.closest('[data-liq-country]');
+ if(liqCountry&&state.route==='liquidity'){
+  const c=liqCountry.dataset.liqCountry;
+  if(FX.includes(c)){state.liqCcy=c;state.ccy=c;render();}
+  return;
+ }
+ const bankCountry=e.target.closest('[data-bank-country]');
+ if(bankCountry&&state.route==='banks'){
+  const c=bankCountry.dataset.bankCountry;
+  if(FX.includes(c)){state.cbCcy=c;state.ccy=c;render();}
+  return;
+ }
+ const bankGo=e.target.closest('[data-bank-open]');
+ if(bankGo&&state.route==='banks'){
+  const mode=bankGo.dataset.bankOpen,c=bankGo.dataset.bankTarget;
+  if(FX.includes(c)&&['rates','currencies'].includes(mode)){
+   e.preventDefault();state.ccy=c;
+   if(state.against===c)state.against=FX.find(x=>x!==c);
+   state.route=mode;
+   if(location.hash==='#'+mode)render();else location.hash='#'+mode;
+  }
+  return;
+ }
  const pairOpenRates=e.target.closest('[data-pair-open-rates]');
  if(pairOpenRates&&state.route==='pairs'){
   const k=pairOpenRates.dataset.pairOpenRates;
