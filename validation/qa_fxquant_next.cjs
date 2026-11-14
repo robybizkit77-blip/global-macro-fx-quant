@@ -73,6 +73,11 @@ async function inspectRoute(page,label,key){
   assert.equal(await bridge.count(),1,label+' rates-to-FX evidence missing');
   const proof=await bridge.getAttribute('data-fx-proof');
   assert(['ready','unavailable'].includes(proof),label+' unclassified relative rates proof');
+  const relative=locator(page,'#rates-relative-pricing');
+  assert.equal(await relative.count(),1,label+' relative monetary repricing missing');
+  assert(['NOT_ALIGNED','SAME_END_REFERENCE_UNVERIFIED','MATCHED_EXACT_INTERVAL'].includes(
+   await relative.getAttribute('data-rr6-status')),
+   label+' relative pricing date/provenance status is missing');
   const historyDesk=locator(page,'#rates-pricing-history');
   assert.equal(await historyDesk.count(),1,label+' historical G8 pricing chart not present');
   assert.equal(await historyDesk.locator('.ois-history-currency').count(),8,
@@ -176,6 +181,28 @@ async function pairJourney(page,label){
  assert.equal(await locator(page,'.fx-rank-all-list button.fx-rank-pair').count(),28,
   label+' full ranking lost after closing dossier');
 }
+async function relative6mJourney(page,label){
+ await route(page,'rates');
+ await locator(page,'#rs-country').selectOption('EUR');
+ await locator(page,'#rs-other').selectOption('GBP');
+ const panel=locator(page,'#rates-relative-pricing');
+ assert.equal(await panel.count(),1,label+' relative 6M pricing panel missing');
+ assert.equal(await panel.getAttribute('data-rr6-status'),
+  'SAME_END_REFERENCE_UNVERIFIED',label+' EUR/GBP 6M dates cannot be misclassified as full certified period');
+ assert((await panel.innerText()).includes('−1,55 pb'),
+  label+' EUR minus GBP relative repricing 1D not found');
+ assert.equal(await panel.locator('.rr6-day').count()>0,true,
+  label+' source aligned historic 6M differences missing');
+ await locator(page,'#rates-pricing-moves [data-rs-pricing-window="1w"]').click();
+ assert((await locator(page,'#rates-relative-pricing').innerText()).includes('−9,0 pb'),
+  label+' 1W relative 6M repricing should update alongside 1W toggle');
+ await locator(page,'#rates-pricing-moves [data-rs-pricing-window="1d"]').click();
+ await locator(page,'#rs-country').selectOption('USD');
+ assert.equal(await locator(page,'#rates-relative-pricing').getAttribute('data-rr6-status'),
+  'NOT_ALIGNED',label+' USD 13 Nov and EUR 12 Nov must not display fictitious daily comparison');
+ assert((await locator(page,'#rates-relative-pricing').innerText()).includes('Non confrontabile'),
+  label+' unmatched dates need an explicit clear status');
+}
 async function g8HistoryJourney(page,label){
  await route(page,'rates');
  const history=locator(page,'#rates-pricing-history');
@@ -272,6 +299,7 @@ async function calendarResearchJourney(page,label){
     await calendarResearchJourney(page,label);
     await pricingWindowJourney(page,label);
     await g8HistoryJourney(page,label);
+    await relative6mJourney(page,label);
     assert.equal(errors.length,0,label+' browser errors: '+errors.slice(0,4).join(' | '));
     await locator(page,'#content').screenshot({path:evidence+'/'+label+'-pair-journey.png'});
     reports.push({label,sourceCount:Number(count[1]),routes:inspected,interaction:'PASS'});
