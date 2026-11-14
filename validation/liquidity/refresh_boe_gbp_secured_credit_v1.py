@@ -95,8 +95,8 @@ def rows_from_csv(content):
         vi=norms.index(SERIES)
         di=next((j for j,k in enumerate(norms)
                  if k in ("DATE","DATES","OBSERVATION_DATE","TIME_PERIOD")),None)
-        if di is None and vi>0 and len(norms)>=2 and
-                (norms[0]=="" or "DATE" in norms[0]):di=0
+        if (di is None and vi>0 and len(norms)>=2 and
+                (norms[0]=="" or "DATE" in norms[0])):di=0
         if di is not None:
             header_idx,date_col,value_col=i,di,vi
             break
