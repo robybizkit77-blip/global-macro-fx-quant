@@ -123,19 +123,26 @@
   const all=get('liquidity')||{};
   const selected=validCcy(state.liqCcy)?state.liqCcy:'USD';
   const row=all[selected],read=interpret(row),today=dayNow();
-  const audits=[row?.liquidity,row?.credit,row?.conditions].map(v=>sourceEvidence(v,today));
-  const covered=audits.filter(x=>x.coverage).length;
+  const provenance=root.FXQuantLiquiditySourcePolicy?.review(selected)||null;
+  const policyGate=(role)=>root.FXQuantLiquiditySourcePolicy?.check(selected,role)||null;
+  const roles=['liquidity','credit','conditions'];
+  const audits=roles.map(role=>({role,...sourceEvidence(row?.[role],today)}));
+  const covered=audits.filter(x=>x.coverage&&!policyGate(x.role)?.withheld).length;
   const snap=(s)=>s?.last_date||'data non disponibile';
-  const cell=(label,s,d)=>{
-   const exists=Boolean(s?.label&&finite(s.last_value)),audit=sourceEvidence(s,today);
+  const cell=(label,s,d,role)=>{
+   const gate=policyGate(role),blocked=gate?.withheld===true;
+   const exists=Boolean(s?.label&&finite(s.last_value))&&!blocked,audit=sourceEvidence(s,today);
    const isYoY=/yoy|a\/a/i.test(s?.label||'');
-   return '<div class="drivers-fact"><span>'+esc(label)+'</span><strong>'+esc(s?.label||'Serie non disponibile')+'</strong>'+
-    '<small>'+(exists?('Ultimo '+esc(snap(s))+' · '+esc(fmt(s.last_value,2))+(s.unit?' '+esc(s.unit):isYoY?'%':'') ):'Misura non verificabile')+'</small>'+
-    '<b class="drivers-tone" data-tone="'+(audit.tone==='warn'?'unknown':esc(audit.tone))+'">'+esc(audit.state)+'</b>'+
-    '<small class="drivers-observation">'+esc(audit.message)+'</small>'+
-    (d?'<b class="drivers-mini-state" data-tone="'+esc(d.tone)+'">Direzione del dataset: '+esc(d.label)+'</b>':'')+'</div>';
+   const info=blocked?'Dato sospeso · variante da armonizzare':
+    exists?('Ultimo '+esc(snap(s))+' · '+esc(fmt(s.last_value,2))+(s.unit?' '+esc(s.unit):isYoY?'%':'') ):'Misura non verificabile';
+   return '<div class="drivers-fact" data-liq-role="'+role+'" data-source-safety="'+(blocked?'withheld':gate?.ready?'mapped':'pending')+'"><span>'+esc(label)+'</span><strong>'+esc(s?.label||'Serie non disponibile')+'</strong>'+
+    '<small>'+info+'</small>'+
+    '<b class="drivers-tone" data-tone="'+(blocked?'unknown':audit.tone==='warn'?'unknown':esc(audit.tone))+'">'+esc(blocked?'IN VERIFICA':audit.state)+'</b>'+
+    '<small class="drivers-observation">'+esc(blocked?gate.narrative:audit.message)+'</small>'+
+    (gate?'<small class="drivers-source-provenance">'+esc(gate.label)+' · Registro '+esc(provenance?.as_of||'non verificato')+'</small>':'')+
+    (!blocked&&d?'<b class="drivers-mini-state" data-tone="'+esc(d.tone)+'">Direzione del dataset: '+esc(d.label)+'</b>':'')+'</div>';
   };
-  const chart=(s,label,color)=>{
+    const chart=(s,label,color)=>{
    const pts=series(s);
    return '<article class="drivers-chart"><div class="drivers-chart-label"><strong>'+esc(label)+'</strong><small>'+esc(s?.label||'Serie assente')+' · '+esc(snap(s))+'</small></div>'+
     (pts.length>=2?plot({lines:[{name:s.label,color,values:pts}],label:label+' '+selected}):
@@ -156,11 +163,14 @@
    '<div class="drivers-head"><div><span class="mini-overline">02 / LETTURA ECONOMICA · '+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
    '<h2>'+esc(read.headline)+'</h2></div><span class="drivers-status" data-tone="'+(covered===3?'neutral':'unknown')+'">COPERTURA '+covered+'/3 SERIE</span></div>'+
    '<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
-   '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie mancanti. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
-   '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity)+cell('CREDITO',row?.credit,read.credit)+cell('STANDARD E CONDIZIONI',row?.conditions,null)+'</div>'+
+   '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
+   '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>'+
    '<div class="drivers-story"><div><span>IPOTESI DI TRASMISSIONE AL FOREX</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div><div><span>COSA MONITORARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
    (root.FXQuantDriverMarketAudit?.render?.({get,esc,dayNow},selected)||'')+
    '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
+   '<details class="drivers-source-provenance-fold"><summary>Provenienza e limiti dell’aggiornamento automatico</summary>'+
+    '<p>Il registro delle fonti è una fotografia al '+esc(provenance?.as_of||'data non verificata')+', non la prova che la pipeline abbia aggiornato oggi tutte le serie. Contratti mappati: '+esc(provenance?.verifiedContracts??'n.d.')+'/3. Un contratto pronto non equivale a un dato recente.</p>'+
+    '<ul>'+roles.map(role=>{const g=policyGate(role);return '<li><strong>'+esc(({liquidity:'Liquidità',credit:'Credito',conditions:'Standard e condizioni'})[role])+'</strong>: '+esc(g?.label||'provenienza non verificata')+'. '+esc(g?.narrative||'Verificare il registro fonti.')+'</li>'}).join('')+'</ul></details>'+
    '<div class="drivers-source-note">Ultimo riferimento della scheda: '+esc(row?.as_of||'non dichiarato')+
    '. Copertura storica non significa aggiornamento corrente. Le serie possono avere frequenze, definizioni, unità e date non omogenee.'+
    (row?.current_note?' Contesto della fonte: '+esc(row.current_note):'')+'</div></section>'+
