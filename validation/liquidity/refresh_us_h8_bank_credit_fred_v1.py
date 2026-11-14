@@ -51,8 +51,8 @@ def parse(text,*,today=None):
     require(date_key in columns and SERIES in columns,"exact series/CSV key mismatch")
     observations=[]
     for row in rows:
-        ds=row.get(date_key),raw=row.get(SERIES)
-        token,datum=ds
+        token=row.get(date_key)
+        datum=row.get(SERIES)
         require(isinstance(token,str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}",token),
                 "invalid weekly observation date")
         if datum is None or datum.strip() in (".",""):
