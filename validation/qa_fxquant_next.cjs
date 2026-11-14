@@ -16,7 +16,7 @@ const {chromium}=require('playwright');
 const BASE=process.env.FXQN_BASE||'http://127.0.0.1:8000/site/fx-quant-v2/next/index.html';
 const routes={
  overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',
- macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',
+ macro:'Scenario macro',banks:'Banche Centrali',rates:'Tassi & OIS',liquidity:'Liquidità & Credito',cot:'COT',risk:'Rischio',
  news:'Notizie',library:'Research Library'
 };
 const evidence='fxquant-next-browser-evidence';
@@ -100,6 +100,26 @@ async function inspectRoute(page,label,key){
    'Dossier should start collapsed until the user chooses a cross');
   assert.equal(await locator(page,'.decision-desk-story').count(),0,
    'Old permanently expanded pair dossier must not displace the ranking');
+ }else if(key==='banks'){
+  assert.equal(await locator(page,'#central-bank-studio [data-bank-country]').count(),8,
+   label+' all eight central-bank country choices required');
+  assert.equal(await locator(page,'.drivers-want-can .drivers-analysis').count(),2,
+   label+' official WANT and macro CAN must be separated');
+  assert.equal(await locator(page,'.drivers-policy-facts .drivers-fact').count(),2,
+   label+' policy date and next meeting must be presented separately');
+  assert.equal(await locator(page,'.drivers-fold .drivers-fact').count(),3,
+   label+' dated 3M/6M/12M pricing audit must remain accessible');
+  assert.equal(await locator(page,'.drivers-links [data-bank-open]').count(),2,
+   label+' policy must link directly to source rates and currency');
+ }else if(key==='liquidity'){
+  assert.equal(await locator(page,'#liquidity-studio [data-liq-country]').count(),8,
+   label+' all eight G8 liquidity choices required');
+  assert.equal(await locator(page,'.drivers-facts .drivers-fact').count(),3,
+   label+' liquidity, credit and lending conditions must be separate');
+  assert.equal(await locator(page,'.drivers-chart-grid .drivers-chart').count(),2,
+   label+' both source-dated trend charts required');
+  assert((await locator(page,'.drivers-source-note').first().innerText()).includes('Copertura storica'),
+   label+' no stale series may be presented as current market readings');
  }else if(key==='rates'){
   const bridge=locator(page,'.rates-fx-handoff');
   assert.equal(await bridge.count(),1,label+' rates-to-FX evidence missing');
@@ -234,6 +254,39 @@ async function g8Choice(page,label){
  assert(note.includes('Che cosa monitorare.') &&
    note.includes('NZD/USD') && note.includes('AUD/NZD'),
   label+' NZD macro/rates proxy must lead to two FX monitoring instruments');
+}
+async function macroDriversJourney(page,label){
+ await route(page,'banks');
+ await locator(page,'[data-bank-country="GBP"]').click();
+ assert.equal(await locator(page,'[data-bank-country="GBP"]').getAttribute('aria-pressed'),'true',
+  label+' selecting BoE did not update bank dossier');
+ assert((await locator(page,'.drivers-selection h2').innerText()).includes('Bank of England'),
+  label+' bank dossier did not follow selection');
+ const bank=await locator(page,'.drivers-selection').innerText();
+ assert(bank.includes('WANT')&&bank.includes('CAN')&&bank.includes('TASSO UFFICIALE')&&
+  bank.includes('IL MERCATO'),
+  label+' policy decision and monetary pricing distinctions missing');
+ await locator(page,'[data-bank-open="rates"]').click();
+ await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='rates');
+ assert.equal(await locator(page,'#rs-country').inputValue(),'GBP',
+  label+' bank-to-rates handoff lost selected currency');
+ await route(page,'banks');
+ await locator(page,'[data-bank-country="NZD"]').click();
+ await locator(page,'[data-bank-open="currencies"]').click();
+ await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='currencies');
+ await route(page,'liquidity');
+ await locator(page,'[data-liq-country="CAD"]').click();
+ assert.equal(await locator(page,'[data-liq-country="CAD"]').getAttribute('aria-pressed'),'true');
+ assert((await locator(page,'.drivers-selection').innerText()).includes('Serie non disponibile'),
+  label+' missing CAD direct credit must not be invented');
+ await locator(page,'[data-liq-country="JPY"]').click();
+ const meaning=await locator(page,'.drivers-selection').innerText();
+ assert(meaning.includes('liquidità')&&meaning.includes('credito'),
+  label+' liquidity-to-credit divergence narrative missing');
+ const detail=locator(page,'.drivers-fold');
+ await detail.locator('summary').click();
+ assert(await detail.evaluate(el=>el.open),label+' financial conditions source details cannot open');
+ assert.equal(await locator(page,'.drivers-chart-grid .drivers-chart').count(),2);
 }
 async function chosenPair(page,key,label){
  const button=locator(page,'#fx-ranking-desk button.fx-rank-pair[data-pair="'+key+'"]').first();
@@ -468,7 +521,7 @@ async function calendarResearchJourney(page,label){
      document.querySelector('#sidebar-feed')?.textContent||''),null,{timeout:25000});
     const loaded=await locator(page,'#sidebar-feed').innerText();
     const count=loaded.match(/(\d+)\/(\d+) fonti caricate/);
-    assert(count&&Number(count[1])===Number(count[2])&&Number(count[2])>=18,
+    assert(count&&Number(count[1])===Number(count[2])&&Number(count[2])>=19,
      label+' missing source(s): '+loaded);
     if(label==='mobile'){
      await locator(page,'#menu-toggle').click();
@@ -483,6 +536,7 @@ async function calendarResearchJourney(page,label){
     for(const key of Object.keys(routes))inspected.push(await inspectRoute(page,label,key));
     await homeMoneyJourney(page,label);
     await g8Choice(page,label);
+    await macroDriversJourney(page,label);
     await pairJourney(page,label);
     await pairMonetaryJourney(page,label);
     await calendarResearchJourney(page,label);
