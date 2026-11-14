@@ -222,6 +222,15 @@ async function g8Choice(page,label){
   label+' monetary source did not update to EUR');
  assert((await locator(page,'#g8-pricing-proof').innerText()).includes('futures secondari'),
   label+' EUR research futures must remain labeled as futures');
+ const jump=locator(page,'#orient-strength-board [data-cs-focus]');
+ assert.equal(await jump.count(),1,label+' G8 ranking lost its contextual narrative path');
+ assert((await jump.innerText()).includes('EUR'),label+' G8 narrative CTA did not follow selected EUR');
+ await jump.click();
+ await page.waitForFunction(()=>document.activeElement?.id==='orient-strength-focus');
+ assert((await locator(page,'#orient-strength-focus').getAttribute('tabindex'))==='-1',
+  label+' currency analysis does not support keyboard focus');
+ assert.equal(await locator(page,'#orient-strength-board .strength-row.selected').count(),1,
+  label+' jumping to country analysis must preserve original selection');
  assert(note.includes('Che cosa monitorare.') &&
    note.includes('NZD/USD') && note.includes('AUD/NZD'),
   label+' NZD macro/rates proxy must lead to two FX monitoring instruments');

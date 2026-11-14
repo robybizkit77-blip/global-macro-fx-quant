@@ -473,3 +473,32 @@
 #g8-pricing-proof .g8-pricing-docs nav{display:flex;flex-wrap:wrap;gap:9px 16px}
 #g8-pricing-proof .g8-pricing-docs nav a{color:#a7e0d6;font-size:10px;text-decoration:underline}
 @media(max-width:620px){#g8-pricing-proof{padding:12px 11px}#g8-pricing-proof .g8-pricing-metrics{gap:6px}#g8-pricing-proof .g8-pricing-metric{padding:11px 8px}#g8-pricing-proof .g8-pricing-metric>small{font-size:9px}}
+
+
+/* G8: one clear path from the ranking to the selected economic narrative.
+   No change to price rank, macro model or monetary source method. */
+#orient-strength-board .strength-analysis-next{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+ gap:10px 16px;padding:13px 15px;margin-top:14px;
+ border:1px solid rgba(119,198,185,.33);border-radius:9px;
+ background:linear-gradient(104deg,rgba(30,83,79,.32),rgba(17,52,66,.43));
+}
+#orient-strength-board .strength-analysis-next>span{
+ color:#b7d8dd;font-size:12px;line-height:1.5;
+}
+#orient-strength-board .strength-analysis-next>span strong{color:#e2f4e9}
+#orient-strength-board .strength-analysis-jump{
+ display:inline-flex;align-items:center;justify-content:center;gap:13px;
+ min-height:40px;padding:9px 14px;
+ border:1px solid rgba(119,220,188,.5);border-radius:8px;
+ background:#1b514d;color:#e0f8ed;cursor:pointer;
+ font:760 12.5px/1.45 Manrope,'DM Sans',sans-serif;
+}
+#orient-strength-board .strength-analysis-jump:hover{background:#27675c;border-color:#91e1c4}
+#orient-strength-board .strength-analysis-jump:focus-visible,
+#orient-strength-focus:focus-visible{outline:2px solid #a3e7db;outline-offset:4px}
+#orient-strength-focus{scroll-margin-top:94px}
+@media(max-width:700px){
+ #orient-strength-board .strength-analysis-next{padding:12px;align-items:stretch}
+ #orient-strength-board .strength-analysis-jump{width:100%;min-height:44px}
+}

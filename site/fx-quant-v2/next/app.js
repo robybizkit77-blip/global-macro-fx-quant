@@ -1192,6 +1192,14 @@ document.addEventListener('click',e=>{
  const pv9=e.target.closest('[data-v9-price-window]');if(pv9){const windowSize=Number(pv9.dataset.v9PriceWindow);if(![20,60,120].includes(windowSize))return;state.pairPriceWindow=windowSize;refreshPairPriceChart('[data-v9-price-window="'+windowSize+'"]');return;}
  const cs_ret=e.target.closest('[data-cs-returnwindow]');
  if(cs_ret){state.csReturnWindow=Number(cs_ret.dataset.csReturnwindow);render();return;}
+ const cs_focus=e.target.closest('[data-cs-focus]');if(cs_focus){
+  const focus=$('orient-strength-focus');
+  if(focus&&state.route==='currencies'){
+   focus.focus({preventScroll:true});
+   focus.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  }
+  return;
+ }
  const cs_country=e.target.closest('[data-cs-country]');if(cs_country){selectG8Country(cs_country);return;}
  const cs_other=e.target.closest('[data-cs-other]');if(cs_other){state.csOther=cs_other.dataset.csOther;render();return;}
  const cs_pw=e.target.closest('[data-cs-pricewindow]');if(cs_pw){state.csPriceWindow=Number(cs_pw.dataset.csPricewindow);render();return;}
