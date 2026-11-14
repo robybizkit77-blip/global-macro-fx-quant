@@ -77,8 +77,8 @@ assert(!safe.includes('<img')&&safe.includes('&lt;img'));
 assert(!render({history:{...data,official_ois_created:true},ccy:'GBP'}).includes('<svg'),
  'Official OIS promotion breaks data-readiness gate');
 const page=file('site/fx-quant-v2/next/index.html');
-assert(page.indexOf('rates-pricing-history-v1.js?v=1')<page.indexOf('rates-studio.js?v=5'));
-assert(page.includes('rates-studio.css?v=4'));
+assert(page.indexOf('rates-pricing-history-v1.js?v=1')<page.indexOf('rates-studio.js?v=6'));
+assert(page.includes('rates-studio.css?v=5'));
 const app=file('site/fx-quant-v2/next/app.js');
 assert(app.includes("oisHistory:'./rates-pricing-history-v1.json'"));
 assert(app.includes("data-rs-history-window"));
