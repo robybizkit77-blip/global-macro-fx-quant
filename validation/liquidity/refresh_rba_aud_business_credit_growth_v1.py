@@ -150,7 +150,7 @@ def parse_release(html,*,expected_period,url,today):
     require(-8<=before_mom<=8 and -8<=current_mom<=8,
             "monthly business-credit growth beyond safe bounds")
     require(expected_period in body or
-            (MTH[int(expected_period[5:])]+" "+expected_period[:4]) in body,
+            (next(name for name,index in MTH.items() if index==int(expected_period[5:]))+" "+expected_period[:4]) in body,
             "expected source observation month not present")
     return {
       "observation_period":expected_period,
