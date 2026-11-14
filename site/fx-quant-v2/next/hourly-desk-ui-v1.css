@@ -670,3 +670,43 @@
  .hourly-market-desk button.hourly-evidence-peek-item{transition:none}
  .hourly-market-desk button.hourly-evidence-peek-item:hover{transform:none}
 }
+
+
+/* Premium first-read legibility — scoped to the independent Home edition.
+   Retain DARK DESK colors, hierarchy and editorial layout; no data changes. */
+.hourly-market-desk .hourly-edition-bar{font-size:11px}
+.hourly-market-desk .hourly-research-tag{font-size:10.5px}
+.hourly-market-desk .hourly-hero .morning-deck{
+ font-size:clamp(15px,1.28vw,17px);line-height:1.74;
+}
+.hourly-market-desk .hourly-hero-bottom>span{font-size:11.5px}
+.hourly-market-desk .hourly-hero-actions>a,
+.hourly-market-desk .hourly-hero-sources-button{
+ min-height:42px;font-size:12.5px;justify-content:center;
+}
+.hourly-market-desk .hourly-fx-spotlight>p{font-size:clamp(14.5px,1.18vw,16px)}
+.hourly-market-desk .hourly-spotlight-actions a{
+ min-height:40px;display:inline-flex;align-items:center;font-size:12px;
+}
+.hourly-market-desk .hourly-section-head p{font-size:12.5px}
+.hourly-market-desk .hourly-decision-overline{font-size:10.5px}
+.hourly-market-desk .hourly-decision-card p{font-size:13.5px;line-height:1.76}
+.hourly-market-desk .hourly-lens-body>p{font-size:14px}
+.hourly-market-desk .hourly-full-analysis summary{font-size:12.5px}
+.hourly-market-desk .hourly-route-copy small{font-size:11.5px}
+.hourly-market-desk .hourly-evidence-peek-item>span{font-size:11px}
+.hourly-market-desk .hourly-evidence-peek-item>small{font-size:11.5px}
+.hourly-market-desk .hourly-story-category{font-size:10.5px}
+.hourly-market-desk .hourly-story-date,
+.hourly-market-desk .hourly-story-kind{font-size:11px}
+.hourly-market-desk .hourly-desk-story p{font-size:13.5px;line-height:1.75}
+.hourly-market-desk .hourly-desk-citations{font-size:12px}
+.hourly-market-desk .hourly-desk-language-note,
+.hourly-market-desk .hourly-method-note p{font-size:11.5px}
+@media(max-width:630px){
+ .hourly-market-desk .hourly-hero .morning-deck{font-size:14.5px}
+ .hourly-market-desk .hourly-edition-bar{font-size:10.5px}
+ .hourly-market-desk .hourly-section-head p{font-size:12px}
+ .hourly-market-desk .hourly-decision-card p{font-size:13px}
+ .hourly-market-desk .hourly-desk-story p{font-size:13px}
+}
