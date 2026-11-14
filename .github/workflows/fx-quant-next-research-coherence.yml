@@ -35,6 +35,11 @@ on:
       - 'validation/publishing/test_next_g8_pricing_evidence_v1.cjs'
       - 'validation/publishing/test_next_home_pricing_proof_v1.cjs'
       - 'validation/publishing/test_next_fx_driver_market_audit_v1.cjs'
+      - 'validation/publishing/test_next_liquidity_source_policy_v1.cjs'
+      - 'validation/publishing/audit_next_liquidity_freshness_v1.py'
+      - 'validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'
+      - 'live_data/sections/NATIVE_LIQ_DATA.json'
+      - 'live_data/sections/MACRO_SERIES.json'
       - 'site/fx-quant-v2/next/home-pricing-proof-v1.js'
       - 'site/fx-quant-v2/next/home-pricing-proof-v1.css'
       - 'site/fx-quant-v2/next/g8-pricing-evidence-v1.js'
@@ -98,6 +103,13 @@ jobs:
         run: node validation/publishing/test_next_home_pricing_proof_v1.cjs
       - name: Verify G8 liquidity and bank policy source-to-FX audit, with no invented flows
         run: node validation/publishing/test_next_fx_driver_market_audit_v1.cjs
+      - name: Certify G8 source policy, SLOOS quarantine and non-promoted CAD candidate
+        run: node validation/publishing/test_next_liquidity_source_policy_v1.cjs
+      - name: Audit G8 liquidity freshness, source age and uncertified publication channels
+        run: |
+          python3 validation/publishing/audit_next_liquidity_freshness_v1.py --selftest
+          python3 validation/publishing/audit_next_liquidity_freshness_v1.py --json-out /tmp/next-liquidity-audit.json --md-out /tmp/next-liquidity-audit.md
+          cat /tmp/next-liquidity-audit.md >> "$GITHUB_STEP_SUMMARY"
       - name: Verify per-pair status across all 28 G8 crosses and missing-data guardrails
         run: node validation/qa_next_pair_coverage_v15.cjs
       - name: Verify quarantined RBA F2 daily research source and no Core promotion
