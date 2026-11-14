@@ -27,6 +27,31 @@
   return {text:inf+' '+lab+' Questi sono vincoli da interpretare, non una previsione automatica del prossimo voto.',
    dates:[p?.as_of,l?.as_of].filter(Boolean).join(' · ')||'Date non disponibili'};
  }
+ function constraintReading(macro){
+  const inflation=String(macro?.inflation?.direction||'').toUpperCase();
+  const unemployment=String(macro?.labour?.direction||'').toUpperCase();
+  const unemploymentSeries=/disoccupazione|unemployment/i.test(macro?.labour?.label||'');
+  if(!unemploymentSeries)return 'La direzione del lavoro va interpretata secondo l’indicatore: non basta a qualificare una svolta della politica monetaria.';
+  if(inflation.includes('SALE')&&unemployment.includes('SALE'))
+   return 'Inflazione e disoccupazione in aumento rendono più complesso il compromesso tra stabilità dei prezzi e attività: la banca non ha una scelta automatica.';
+  if(inflation.includes('SALE')&&unemployment.includes('SCENDE'))
+   return 'Inflazione in aumento e disoccupazione in calo rendono meno evidente l’urgenza di allentare. Occorre però verificare la persistenza e le sorprese.';
+  if(inflation.includes('SCENDE')&&unemployment.includes('SALE'))
+   return 'Inflazione in calo e disoccupazione in aumento potrebbero aumentare lo spazio per allentare, ma soltanto se la banca condivide questa diagnosi.';
+  if(inflation.includes('SCENDE')&&unemployment.includes('SCENDE'))
+   return 'Inflazione e disoccupazione in calo danno segnali diversi sulla necessità di allentare: crescita e salari diventano decisivi.';
+  return 'I due indicatori non identificano da soli la capacità di intervenire. Servono composizione, sorprese, salari e crescita.';
+ }
+ function marketMovement(o){
+  const h=o?.horizons?.['6m'];
+  if(!h||!finite(h.rate)||!day(h.as_of))
+   return 'Il pricing a sei mesi non ha livello e data verificabili: nessun nuovo repricing può essere dedotto.';
+  const deltas=[['1D',h.change_1d_bp],['1W',h.change_1w_bp]]
+   .filter(x=>finite(x[1])).map(([t,v])=>t+' '+(v>0?'+':v<0?'−':'')+Math.abs(v).toLocaleString('it-IT',{maximumFractionDigits:1})+' pb');
+  return deltas.length?
+   'Sul 6M il feed riporta '+deltas.join(' · ')+' (osservazione '+h.as_of+'). Questa è una variazione dello strumento dichiarato, non la prova del motivo né della reazione FX.':
+   'Sul 6M è disponibile un livello al '+h.as_of+', ma non una variazione 1D/1W certificata: non possiamo dire che le aspettative stiano cambiando oggi.';
+ }
  function pricing(o,esc,fmt,date){
   const horizons=['3m','6m','12m'].map(k=>{
    const x=o?.horizons?.[k],ok=finite(x?.rate)&&day(x?.as_of);
@@ -39,7 +64,7 @@
   const {get,FX,FLAGS,NAMES,state,pageHero,esc,fmt,date,dayNow}=api;
   const banks=get('cb')||{},ois=get('ois')?.currencies||{},mac=get('macro')?.currencies||{};
   const selected=valid(state.cbCcy)?state.cbCcy:'USD',b=banks[selected],o=ois[selected],m=mac[selected];
-  const stance=classifyAction(b),can=constraint(m);
+  const stance=classifyAction(b),can=constraint(m),reading=constraintReading(m),repricing=marketMovement(o);
   const last=day(b?.last_date)?b.last_date:null;
   const older=last&&dayNow()>=last&&Math.round((Date.parse(dayNow())-Date.parse(last))/864e5)>35;
   const selectedMarketAsOf=o?.as_of||o?.horizons?.['6m']?.as_of||'data non verificata';
@@ -69,11 +94,11 @@
    (older?' · fotografia storica da ricontrollare':'')+'. '+esc(b?.action||'Esito da verificare')+'.</p>'+
    '<div class="drivers-want-can">'+
     '<article class="drivers-analysis"><span>WANT · COSA COMUNICA</span><h3>'+esc(wants)+'</h3><p>'+esc(context)+'</p><small>'+esc(b?.official_next||nextTxt)+'</small></article>'+
-    '<article class="drivers-analysis"><span>CAN · QUALI VINCOLI MACRO</span><h3>La libertà di manovra dipende dai prossimi dati</h3><p>'+esc(can.text)+'</p><small>Date macro: '+esc(can.dates)+'</small></article>'+
+    '<article class="drivers-analysis"><span>CAN · QUALI VINCOLI MACRO</span><h3>La libertà di manovra dipende dai prossimi dati</h3><p>'+esc(can.text)+'</p><p class="drivers-can-judgment">'+esc(reading)+'</p><small>Date macro: '+esc(can.dates)+'</small></article>'+
    '</div>'+
    '<div class="drivers-story"><div><span>CHE COSA STA PREZZANDO IL MERCATO</span><p>'+
      esc(o?'Strumento: '+(o.kind||'non classificato')+' · qualità: '+(o.quality||'da verificare')+' · snapshot '+selectedMarketAsOf+'.':'Nessuno strumento di mercato disponibile per questa valuta.')+
-     ' Il prezzo di un future, di un OIS e il tasso ufficiale non sono intercambiabili.</p></div>'+
+     ' '+esc(repricing)+' Il prezzo di un future, di un OIS e il tasso ufficiale non sono intercambiabili.</p></div>'+
      '<div><span>LA PROVA FX</span><p>Il tono della banca centrale conta se cambia il percorso relativo atteso rispetto alla controvaluta e se il prezzo FX lo conferma. Senza sorpresa e differenziale datato non attribuiamo un trade alla banca centrale.</p></div></div>'+
    '<div class="drivers-facts drivers-policy-facts">'+
    '<div class="drivers-fact"><span>TASSO UFFICIALE / DECISIONE</span><strong>'+esc(b?.rate_text||rate)+'</strong><small>'+esc(last?date(last):'Data non verificabile')+'</small></div>'+
@@ -86,7 +111,7 @@
    pricing(o,esc,fmt,date)+
    '<p class="drivers-source-note">Quote espresse nelle unità della rispettiva fonte. Possono riflettere premi, basis e contratti differenti; non rappresentano una curva OIS uniforme tra le otto valute. Tipo fonte: '+esc(o?.source||'non dichiarata')+'.</p></details>';
  }
- const api={classifyAction,constraint,render};
+ const api={classifyAction,constraint,constraintReading,marketMovement,render};
  root.FXQuantCentralBanks=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
