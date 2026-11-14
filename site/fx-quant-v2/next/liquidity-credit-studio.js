@@ -118,6 +118,45 @@
  NZD:{fx:'Lo storico disponibile della liquidità NZD è breve e non consente inferenze robuste sui flussi. Credito privato in aumento e settlement cash in calo sono una divergenza da testare contro RBNZ e rischio globale.',
   watch:'Aggiornamenti RBNZ su settlement cash e credito, confronto monetario con RBA e comportamento AUD/NZD e NZD/USD.'}
  };
+ function eurECBLoanResearch(esc,fmt,now){
+  const x=root.FXQuantEURNFCCreditResearch;
+  if(!x||x.schema!=='GMFQ_NEXT_EUR_ECB_NFC_CREDIT_RESEARCH_V1'||
+     x.status!=='VERIFIED_ECB_BSI_NFC_STOCK_RESEARCH_ONLY'||
+     x.publisher!=='European Central Bank / ESCB'||
+     x.series_id!=='BSI.M.U2.N.A.A20.A.1.U2.2240.Z01.E'||
+     x.category!=='nfc_loans_stock'||x.frequency!=='M'||
+     x.seasonally_adjusted!==false||x.eligible_for_fx_core!==false||
+     x.eligible_for_backtest!==false||x.first_release_pit_verified!==false||
+     !Array.isArray(x.dates)||!Array.isArray(x.values)||x.dates.length<3||
+     x.dates.length!==x.values.length)return '';
+  const lastDate=x.dates.at(-1),last=x.values.at(-1),prev=x.values.at(-2),before2=x.values.at(-3);
+  const nowDate=observationDate(now),period=observationDate(lastDate);
+  if(!nowDate||!period||dateMs(period)>dateMs(nowDate)||
+     lastDate!==x.latest_observation||![last,prev,before2].every(v=>finite(v)&&v>0)||
+     !x.dates.every((d,i)=>/^\d{4}-\d{2}$/.test(d)&&(!i||d>x.dates[i-1])))return '';
+  const pct=100*(last/prev-1),twoMonths=100*(last/before2-1),
+        age=Math.round((dateMs(nowDate)-dateMs(period))/864e5);
+  if(!finite(pct)||!finite(twoMonths)||Math.abs(pct)>10||Math.abs(twoMonths)>20)return '';
+  const state=pct>0?'in aumento':pct<0?'in diminuzione':'invariato';
+  const sign=v=>v>0?'+':v<0?'−':'';
+  const historical=age>75?'SERIE STORICA, RILASCIO DA RICONTROLLARE':'ULTIMA OSSERVAZIONE DATATA';
+  const reading=pct>0&&twoMonths<0?
+    'L’ultimo mese recupera, ma non compensa interamente il calo precedente: non è ancora una sequenza di accelerazione del credito.':
+    pct>0&&twoMonths>0?
+    'Due mesi cumulati in aumento sono un dato positivo, ma non provano che le banche stiano allentando gli standard o che la domanda sia forte.':
+    'La dinamica recente non è sufficiente a certificare un impulso positivo al credito; servono domanda, tassi sui nuovi prestiti e condizioni BLS.';
+  return '<section class="drivers-cad-official drivers-eur-official" aria-label="Fonte ufficiale BCE separata">'+
+   '<span class="mini-overline">BCE / ESCB · SERIE UFFICIALE SEPARATA</span>'+
+   '<h3>Prestiti alle imprese dell’Eurozona: conta la persistenza, non il solo ultimo mese.</h3>'+
+   '<p>Lo stock dei prestiti alle società non finanziarie è '+esc(state)+' nel '+esc(lastDate)+
+   ': '+esc(fmt(last,0))+' milioni EUR, '+sign(pct)+esc(fmt(Math.abs(pct),2))+
+   '% sul mese precedente. Il cumulato di due mesi è '+sign(twoMonths)+esc(fmt(Math.abs(twoMonths),2))+'%.</p>'+
+   '<p><b>Lettura economica:</b> '+esc(reading)+
+   ' Per EUR va inoltre verificato se la BCE e il mercato dei tassi cambiano idea rispetto alla Fed, e se EUR/USD o EUR/GBP confermano il differenziale.</p>'+
+   '<div class="drivers-cad-source"><span>'+historical+' · '+esc(lastDate)+
+   ' · serie BSI NFC non destagionalizzata · revisioni possibili · vintage di prima pubblicazione non verificato · feed FX invariato</span>'+
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: BCE · Data Portal ↗</a></div></section>';
+ }
  function usFedCreditResearch(esc,fmt,now){
   const x=root.FXQuantUSBanksCreditResearch;
   if(!x||x.schema!=='GMFQ_NEXT_US_H8_CREDIT_RESEARCH_V1'||
@@ -223,6 +262,7 @@
    '<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
    '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
    '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>'+
+   (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):'')+
    (selected==='USD'?usFedCreditResearch(esc,fmt,today):'')+
    (selected==='CAD'?cadIssuerResearch(esc,fmt,today):'')+
    '<div class="drivers-story"><div><span>IPOTESI DI TRASMISSIONE AL FOREX</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div><div><span>COSA MONITORARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
