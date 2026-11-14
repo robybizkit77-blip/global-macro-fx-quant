@@ -57,3 +57,12 @@ background:rgba(22,57,73,.42);border-radius:7px;font-size:10px;line-height:1.55;
 .home-pricing-proof-multi-row strong{color:#e5f5f2}
 .home-pricing-proof-multi-row em{font-style:normal;color:#b4e4cf}
 .home-pricing-proof-multi-row[data-home-pricing-available="false"] span{color:#9aafbf}
+
+/* Source recency is visible but deliberately less prominent than FX research. */
+.home-pricing-proof-date-context{font-size:10px;line-height:1.65;color:#b4ced5;
+ margin:0 0 13px;padding:9px 11px;border-left:2px solid rgba(132,195,197,.55);
+ background:rgba(8,28,42,.30)}
+.home-pricing-proof-date-context strong{color:#d9e7e8;font-weight:740}
+.home-pricing-proof-date-context[data-home-pricing-freshness="ARCHIVIO_NON_RECENTE"]{
+ border-left-color:#e6b27b;background:rgba(131,82,30,.17);color:#ecd4b7}
+.home-pricing-proof-date-context[data-home-pricing-freshness="ARCHIVIO_NON_RECENTE"] strong{color:#ffe0b5}
