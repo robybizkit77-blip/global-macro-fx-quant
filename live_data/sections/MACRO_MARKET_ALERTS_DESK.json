@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-14T11:33:12Z",
+  "generated_at_utc": "2026-11-14T18:11:29Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-f87832046bfcb0a314ca",
+      "observed_at_utc": "2026-11-14T10:31:30Z",
+      "headline": "Iran's navy says oil tanker on fire after hitting mine in Hormuz",
+      "summary": "Reuters riporta: Iran's navy says oil tanker on fire after hitting mine in Hormuz. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPZWt1cHFualJEVktnTTVvd21uVnljc0FqR2dRaWpaRnYwZ3luZ2t1dUlJNVUtLTVlWHJFOS1ocDBlaVZsTFNZdjRMeldFVFE1Q0Jqem9FbU9fMmp1YTBUTUhqTmYzR3FJN1Z1Y1dHY2d0Yjlzb2lBR0JvNllyT3pScjI2SEpkbkhiYzZSWW9Tb3dwemdWaVVmMjBPbXZqd0hOZzdpRDVSZlVlbzBnV1BjMQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-8e9e10ce05092681de0a",
+      "observed_at_utc": "2026-11-14T15:47:44Z",
+      "headline": "Fed's Collins says gradual rate hikes best to manage economic risks",
+      "summary": "Reuters riporta: Fed's Collins says gradual rate hikes best to manage economic risks. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPbHZfX3JqempNenlnSUpVcTd4dXY4djdJU1c2VkZ2Um5fYXkyVTMtYUxBZlBrcXVqQXJkQ0RjejZRQTdBLWxPYzcyRDBfTGxmdUVTekN0TFFWdHNfZFh6ckt0c1RCTVBwZzZjZ3NacWJWSDhvMVRGVDNpR0o2YTBwdmJILTE4eWs2SlQ5YnVHN0ctMFM3bWJsQkhtblRUMjI0amRHcFZLaXNaWWJz?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-b731dc4ecdf428187f00",
+      "observed_at_utc": "2026-11-13T14:15:43Z",
+      "headline": "Oil releases from IEA emergency stocks to pick up through February, agency says",
+      "summary": "Reuters riporta: Oil releases from IEA emergency stocks to pick up through February, agency says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOWV8yTVMtSGlNa3c4cF9Td3Z2aEhzMHJSSXBidUkyeG9QNkxxTHFYUkQzLW90cy1jMm96eE91VEFGdE1BTW5WRk9MRmVad3ZHbHZUNlRCdHppZTNLMlcxNGlTLXZoTTM5LXB3REp6anZEaXFhNzVmaEtTSW90bnItVC1GUUVURHUtaVBPUXEwclVBUGY5Y0c5YnpRZXVieFZzSG96NHdnZ0ZrUkJ6Nkg4MUNEcmdEV0d5VWRCWjIwaw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-fe3e81eaf03691430b20",
       "observed_at_utc": "2026-11-13T07:21:00Z",
@@ -1372,49 +1413,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxNZnJ0US1MMVdHMmJRYTlsNlkwUUtUa0VTcjZLRm8ycnFCNmRPRnUycVFxcDJhMzgyUlNmN3VSTEtxRXoyWXJJb01FVjBmVFdKM0RsVDFDWVRpbk0zeV9TMmlfZDRFZm5DcEFqdWpaVHRvZlpTTEdhYkFNbTJKVVQ5ZnZBRmQ3U2t0U2ttSkFqMA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-8c21e531ef4e2b6a81e5",
-      "observed_at_utc": "2026-11-04T15:08:42Z",
-      "headline": "US services sector activity cools slightly in October; inflation remains elevated",
-      "summary": "Reuters riporta: US services sector activity cools slightly in October; inflation remains elevated. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQVUl4VENzeTZOWHFsMFRKRGtDNG9WUDZ4dVhHNEkyd0xtR2ZaLXEzTlJndWhicHRvblVJLW1BMFowd0hXQXRDUVRDOXZhZnpIZDJoOVFyeGtHZnZOX1BPVXBRTnM4dGlGejJuWXNPWHJwblFVeTdnQ0dYRWFGZFd6ZVk2ZkJtMUloQUh4VkhjQlNrVUJlLU5oWkdqZjI0ekduVFQ4TzNiZXdHQUNMRkhla3VkSko3S01lbUhoUHhuUQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f40a7a25e7f157d909b4",
-      "observed_at_utc": "2026-11-04T11:52:32Z",
-      "headline": "Ghana inflation rises less than expected in October",
-      "summary": "Reuters riporta: Ghana inflation rises less than expected in October. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMingFBVV95cUxPcklGemg4YkRqN1FqR2szRU5ZUTBCVy1Cd0ltWHlWaVpXVFkwZTZQN0YtUEVpTmd0MUYzeF8zblJvOFFmSUZTZnZMSlBQd3E2eUxyQmdpWUZKcWhsVVc0ZHQwcXdvbFVLVmxBaGF3RWlhcExBOHFzUlE1WW1UR3NPM25SRzU3U3ZfVGlSREtxWHd4dEpFdHhRemhBUzQ4dw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-71180682915a0afe80a8",
-      "observed_at_utc": "2026-11-04T21:01:18Z",
-      "headline": "Wall Street ends higher after Democrats win Congress; data center stocks tumble",
-      "summary": "Reuters riporta: Wall Street ends higher after Democrats win Congress; data center stocks tumble. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQbWpBY1VHMFd5a2tJXzM1RFFFQTl5Y09aVDgza095UkJKVzNnQ3F4VW1pMzBEazJKMGhlS21zUEdCLXJPOVhWdXRnZmlLRHliMDdqYmt2b2ZWYk5FeW85VnBSalpRd1E5b3BVSUZDU2VLMUNiQm41YWw1SUgxV2dWaUFZUkI2MllhY0Z5ZkZHcWNuQmdCaHBKbVRhck1meTRz?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
