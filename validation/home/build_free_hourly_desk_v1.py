@@ -367,10 +367,31 @@ def build(root: Path, now: datetime, previous=None, rss=None):
     }
 
 
+
+def make_check_receipt(now: datetime, edition: dict, previous=None):
+    """Independent verification receipt. Never mutate the substantive edition."""
+    if not now.tzinfo or now.utcoffset() is None:
+        raise ValueError("Check time requires an aware clock")
+    if edition.get("schema") != SCHEMA or edition.get("status") != "ACTIVE":
+        raise ValueError("Receipt requires a validated active edition")
+    return {
+        "schema": "GMFQ_NEXT_HOURLY_CHECK_V1",
+        "status": "VERIFIED",
+        "checked_at_utc": now.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "edition_generated_at_utc": edition["generated_at_utc"],
+        "material_digest": edition["material_digest"],
+        "edition_changed": not (isinstance(previous, dict)
+                                and previous.get("schema") == SCHEMA
+                                and previous.get("material_digest") == edition["material_digest"]),
+        "meaning": "Successful source-build verification; not a claim that every source published new data",
+    }
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", default=str(ROOT))
     parser.add_argument("--output", required=True)
+    parser.add_argument("--check-output")  # optional separate hourly verification receipt
     parser.add_argument("--previous")
     parser.add_argument("--rss-json")  # for offline deterministic fixtures
     parser.add_argument("--now")
@@ -384,6 +405,16 @@ def main(argv=None):
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(edition, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if args.check_output:
+        receipt = make_check_receipt(now, edition, previous=prior)
+        check_path = Path(args.check_output)
+        check_path.parent.mkdir(parents=True, exist_ok=True)
+        check_path.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print("FREE_HOURLY_CHECK", json.dumps({
+            "checked_at_utc": receipt["checked_at_utc"],
+            "edition_changed": receipt["edition_changed"],
+            "edition_at_utc": receipt["edition_generated_at_utc"]}))
+
     print("FREE_HOURLY_DESK", json.dumps({
         "status": edition["status"], "date": edition["generated_at_utc"],
         "stories": len(edition["news"]), "digest": edition["material_digest"],

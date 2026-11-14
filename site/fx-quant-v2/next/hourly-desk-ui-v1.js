@@ -83,7 +83,33 @@
   });
  }
 
- function render({feed,risk,currencyPrices,esc,date,dayNow}={}){
+
+ // A successful hourly check is separate from a new market edition.
+ // Treat missing/mismatched/future receipts as unverified, never as "fresh".
+ function checkReading(feed,check,nowUtc){
+  const absent={status:'unverified',label:'Ultimo controllo delle fonti: orario non verificabile'};
+  const iso=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(s);
+  if(check?.schema!=='GMFQ_NEXT_HOURLY_CHECK_V1'||check.status!=='VERIFIED'||
+   typeof check.edition_changed!=='boolean'||!iso(check.checked_at_utc)||
+   !iso(feed?.generated_at_utc)||check.edition_generated_at_utc!==feed.generated_at_utc||
+   typeof feed.material_digest!=='string'||!feed.material_digest||
+   check.material_digest!==feed.material_digest)return absent;
+  const when=Date.parse(check.checked_at_utc),edition=Date.parse(feed.generated_at_utc);
+  const now=iso(nowUtc)&&Number.isFinite(Date.parse(nowUtc))?Date.parse(nowUtc):Date.now();
+  if(!Number.isFinite(when)||!Number.isFinite(edition)||when<edition||when>now+5*60000)return absent;
+  const minutes=(now-when)/60000,stale=minutes>180;
+  const stamp=new Intl.DateTimeFormat('it-IT',{
+   timeZone:'Europe/Rome',day:'2-digit',month:'2-digit',year:'numeric',
+   hour:'2-digit',minute:'2-digit',hourCycle:'h23'
+  }).format(new Date(when));
+  return {status:stale?'stale':'verified',
+   label:(stale?'Ultimo controllo registrato':'Controllo fonti completato')+
+   ' · '+stamp+' Europe/Rome · '+
+   (check.edition_changed?'Nuova edizione pubblicata':'Edizione invariata')+
+   (stale?' · Verifica non recente':'')};
+ }
+
+ function render({feed,check,risk,currencyPrices,esc,date,dayNow,nowUtc}={}){
   if(feed?.schema!==SCHEMA||feed.status!=='ACTIVE'||typeof esc!=='function'||
      !goodDay(feed.generated_at_utc?.slice(0,10))||!goodDay(dayNow?.())||
      feed.generated_at_utc.slice(0,10)>dayNow()||
@@ -98,6 +124,7 @@
   if(days<0||days>14)return null;
   const vintage=days>1?'Ultima edizione conservata':
     'Ultime novità disponibili';
+  const receipt=checkReading(feed,check,nowUtc);
   const sources=feed.provenance.web_source_urls;
   const news=feed.news.map((n,i)=>{
    if(!n||typeof n.headline!=='string'||typeof n.analysis!=='string'||
@@ -143,7 +170,9 @@
     ' data-standalone-market-desk="active" aria-label="Panoramica dei mercati globale e Forex">'+
     '<div class="morning-edition-header hourly-edition-bar">'+
     '<span><span class="hourly-brand-mark" aria-hidden="true"></span> FX QUANT / GLOBAL MACRO DESK</span>'+
-    '<span>'+safe(vintage)+' · '+safe(feed.edition_time_rome)+' Europe/Rome</span></div>'+
+    '<div class="hourly-edition-clock">'+
+    '<span class="hourly-edition-time">'+safe(vintage)+' · '+safe(feed.edition_time_rome)+' Europe/Rome</span>'+
+    '<span class="hourly-edition-check" data-hourly-check-status="'+safe(receipt.status)+'">'+safe(receipt.label)+'</span></div></div>'+
     '<div class="hourly-hero-grid">'+
     '<header class="morning-lead hourly-hero" data-hourly-hero-to-sources="true" aria-label="Il quadro generale dei mercati: clicca per aprire notizie e fonti">'+
     '<div class="hourly-hero-upper"><button type="button" class="morning-kicker hourly-kicker-sources" data-hourly-open-sources aria-controls="hourly-desk-news" aria-expanded="false">IL QUADRO GENERALE DEI MERCATI <span aria-hidden="true">↘</span></button>'+
@@ -211,5 +240,5 @@
     'I dati storici non sono movimenti intraday e l’interpretazione non costituisce un segnale di ingresso.</p>'+
     '</footer></article>';
  }
- root.FXQuantHourlyDesk={render,SCHEMA,titleItaliano,openSources};
+ root.FXQuantHourlyDesk={render,checkReading,SCHEMA,titleItaliano,openSources};
 })(typeof window!=='undefined'?window:globalThis);
