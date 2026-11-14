@@ -66,3 +66,6 @@ background:rgba(22,57,73,.42);border-radius:7px;font-size:10px;line-height:1.55;
 .home-pricing-proof-date-context[data-home-pricing-freshness="ARCHIVIO_NON_RECENTE"]{
  border-left-color:#e6b27b;background:rgba(131,82,30,.17);color:#ecd4b7}
 .home-pricing-proof-date-context[data-home-pricing-freshness="ARCHIVIO_NON_RECENTE"] strong{color:#ffe0b5}
+
+/* A single evidence-backed comparison occupies the available width. */
+.home-pricing-proof-grid[data-home-pricing-count="1"]{grid-template-columns:1fr}
