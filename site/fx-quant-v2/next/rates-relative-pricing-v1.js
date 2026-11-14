@@ -22,7 +22,6 @@
    const ea=A[i],pa=A[i-1],eb=db.get(ea.date),pb=db.get(pa.date);
    if(!eb||!pb||pa.derived||ea.derived||pb.derived||eb.derived)continue;
    if(!bridge.connect(pa,ea)||!bridge.connect(pb,eb))continue;
-   if(!(pa.date<pb.date||pa.date===pb.date))continue;
    const main=(ea.rate-pa.rate)*100,peer=(eb.rate-pb.rate)*100;
    if(!finite(main)||!finite(peer))continue;
    out.push({from:pa.date,to:ea.date,aBp:Math.round(main*100)/100,
@@ -41,7 +40,8 @@
   const ar=a?.rows?.find(x=>x.tenor==='6m'),br=b?.rows?.find(x=>x.tenor==='6m');
   const am=ar?.[mode],bm=br?.[mode];
   const dateMatch=Boolean(am&&bm&&ar.asof&&br.asof&&ar.asof===br.asof&&
-   am.until===bm.until&&am.until===ar.asof&&finite(am.bp)&&finite(bm.bp));
+   am.until===bm.until&&am.until===ar.asof&&finite(am.bp)&&finite(bm.bp)&&
+   !(am.from&&bm.from&&am.from!==bm.from));
   const fromMatch=dateMatch&&am.from&&bm.from&&am.from===bm.from;
   // The older rate dates remain visible; a mismatch never becomes a relative
   // "today" move. A shared end date with an unknown start is indicative only.
