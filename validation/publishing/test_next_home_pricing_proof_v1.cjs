@@ -69,8 +69,9 @@ forged.source_url='https://not-ecb.example/eurfxref-hist.xml';
 assert.equal(choose({...args,prices:forged}).length,0);
 assert.equal(render({...args,prices:forged}),'',
  'A source-confused FX price archive must not produce an invented Home chart');
-assert.equal(inspectPair('EURUSD',{...args,today:'2026-11-10'}),null,
- 'Future archive observations cannot masquerade as earlier FX moves');
+const earlier=inspectPair('EURUSD',{...args,today:'2026-11-10'});
+assert(!earlier||earlier.to<='2026-11-10',
+ 'Only the latest available prior observations may be used, never dates after the stated as-of');
 assert.equal(inspectPair('NOTPAIR',args),null);
 const early=render({...args,today:'2026-11-10'});
 assert(!early.includes('data-home-pricing-to="2026-11-12"'),
