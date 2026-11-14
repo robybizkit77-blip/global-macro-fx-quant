@@ -317,6 +317,14 @@ async function macroDriversJourney(page,label){
  assert(audSource.includes('RBA')&&audSource.includes('D2')&&
         audSource.includes('pubblicato')&&audSource.includes('rotture statistiche'),
   label+' AUD card must separate official break-adjusted growth, publication date and D2 stock');
+ assert(audSource.includes('SECONDO CANALE, NON SECONDA CONFERMA')&&
+        audSource.includes('bilancio settimanale RBA')&&
+        audSource.includes('valore precedente implicito')&&
+        audSource.includes('2026-11-11'),
+  label+' RBA ES weekly evidence must stay distinct from credit growth and FX');
+ const audES=locator(page,'.drivers-aud-es-bridge');
+ assert.equal(await audES.count(),1,
+  label+' RBA ES reserves must appear within the existing AUD editorial dossier');
  const audCanonical=await locator(page,'[data-liq-role="credit"]').innerText();
  assert(audCanonical.includes('31/07/2026')&&!audCanonical.includes('Ultimo 2026-09'),
   label+' AUD native credit stock must not be replaced by research source');
