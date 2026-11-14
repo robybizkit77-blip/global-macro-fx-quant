@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-13",
-  "generated_at_utc": "2026-11-13T22:42:08.589372Z",
+  "generated_at_utc": "2026-11-14T03:21:47.804805Z",
   "items": [
     {
       "as_of": "2026-11-13",
@@ -27,6 +27,32 @@
       "reference_previous_date": "2026-11-12",
       "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-13",
       "title": "USD: governativo 2Y +2.0 pb, 10Y +5.0 pb"
+    },
+    {
+      "as_of": "2026-11-13",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 7561.67; confronto con chiusura 2026-11-12. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-12",
+      "source": "S&P Dow Jones Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+      "title": "S&P 500: -0.40% nella chiusura del 2026-11-13"
+    },
+    {
+      "as_of": "2026-11-13",
+      "category": "MARKET_VOLATILITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 19.30; confronto con chiusura 2026-11-12. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-12",
+      "source": "Cboe Global Markets, VIX daily close",
+      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "title": "VIX: +0.60 punti nella chiusura del 2026-11-13"
     },
     {
       "as_of": "2026-11-13",
@@ -94,19 +120,6 @@
       "category": "MARKET_EQUITY_CLOSE",
       "ccy": "",
       "confidence": "B",
-      "detail": "Livello 7592.40; confronto con chiusura 2026-11-11. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-11",
-      "source": "S&P Dow Jones Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-      "title": "S&P 500: -0.35% nella chiusura del 2026-11-12"
-    },
-    {
-      "as_of": "2026-11-12",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
       "detail": "Livello 25366.09; confronto con chiusura 2026-11-11. Dato di mercato storico, non prova di un evento causale o di flussi.",
       "importance": "MEDIUM",
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -114,19 +127,6 @@
       "source": "Nasdaq, Inc. via FRED",
       "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
       "title": "Nasdaq Composite: -0.39% nella chiusura del 2026-11-12"
-    },
-    {
-      "as_of": "2026-11-12",
-      "category": "MARKET_VOLATILITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 18.70; confronto con chiusura 2026-11-11. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-11",
-      "source": "Cboe Global Markets, VIX daily close",
-      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "title": "VIX: +1.21 punti nella chiusura del 2026-11-12"
     },
     {
       "as_of": "2026-11-12",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-13T22:42:08.589372Z",
+  "last_checked_at_utc": "2026-11-14T03:21:47.804805Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1162,7 +1162,7 @@
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/reserve-bank-files-dcs-disclosure-charge-against-westpac-new-zealand-limited"
       }
     ],
-    "last_attempt_day_rome": "2026-11-13",
+    "last_attempt_day_rome": "2026-11-14",
     "latest_published_at_utc": "2026-11-13T21:15:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
@@ -1187,9 +1187,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 8,
+        "accepted_items": 7,
         "ccy": "EUR",
-        "entries_rejected": 7,
+        "entries_rejected": 8,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -1207,10 +1207,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 23,
+        "accepted_items": 21,
         "ccy": "JPY",
         "entries_rejected": 28,
-        "feed_entries_seen": 51,
+        "feed_entries_seen": 49,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
