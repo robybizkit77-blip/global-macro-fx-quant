@@ -1,0 +1,48 @@
+/* Source-first Home currency-pricing proof. Read-only, no change to the
+ * approved hourly/morning editorial composition or the 28-pair model. */
+.home-pricing-proof{margin:23px 0 24px;padding:21px 21px 19px;border:1px solid rgba(117,186,195,.38);border-radius:14px;
+background:linear-gradient(125deg,#133648,#10283b 85%);color:#e6f3f4}
+.home-pricing-proof *{box-sizing:border-box}
+.home-pricing-proof-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:13px 23px;margin:0 0 17px}
+.home-pricing-proof-heading>div{min-width:0}
+.home-pricing-proof-heading .morning-section-label{color:#a4dfd4}
+.home-pricing-proof-heading h2{font:790 clamp(18px,2vw,24px)/1.26 Manrope,sans-serif;
+letter-spacing:-.025em;color:#eff8f9;margin:9px 0 10px}
+.home-pricing-proof-heading p{font-size:11px;line-height:1.68;color:#afcbd6;margin:0;max-width:780px}
+.home-pricing-proof-heading p strong{color:#b4e7d7}
+.home-pricing-proof-heading>a{font-size:10px;white-space:nowrap;color:#b8e7dd;font-weight:760;
+text-decoration:none;border-bottom:1px solid rgba(148,223,204,.58);padding-bottom:4px}
+.home-pricing-proof-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.home-pricing-proof-card{display:flex;flex-direction:column;gap:12px;border:1px solid rgba(118,174,195,.27);
+border-radius:11px;padding:17px 16px 15px;background:rgba(8,28,42,.49);min-width:0}
+.home-pricing-proof-card header{display:flex;justify-content:space-between;gap:9px;align-items:baseline;flex-wrap:wrap}
+.home-pricing-proof-card header span{font-size:10px;letter-spacing:.055em;font-weight:780;color:#aacfdc}
+.home-pricing-proof-card header strong{font-size:9px;color:#a8e0cf;font-weight:730}
+.home-pricing-proof-card[data-home-pricing-status="SEGNI_DIVERGENTI"] header strong{color:#ebc38c}
+.home-pricing-proof-numbers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.home-pricing-proof-numbers>div{border-radius:7px;background:rgba(22,57,73,.52);padding:11px 10px;min-width:0}
+.home-pricing-proof-numbers small{display:block;font-size:9px;line-height:1.5;color:#aac5d5;margin-bottom:8px;font-weight:740}
+.home-pricing-proof-numbers strong{display:block;font:760 clamp(17px,2vw,24px)/1.2 Manrope,sans-serif;color:#e3f2f4}
+.home-pricing-proof-numbers strong.up{color:#9ee5c8}
+.home-pricing-proof-numbers strong.down{color:#eab0ad}
+.home-pricing-proof-card>p{font-size:10.5px;line-height:1.72;color:#bad4dc;margin:0;flex:1}
+.home-pricing-proof-card footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:9px;
+border-top:1px solid rgba(118,174,195,.21);padding-top:12px}
+.home-pricing-proof-card footer span{font-size:9px;line-height:1.6;color:#a8c6d3;flex:1}
+.home-pricing-proof-card footer button{border:1px solid #78c6b2;color:#d7f4e9;background:#18504f;border-radius:7px;
+font-size:10px;font-weight:780;cursor:pointer;padding:9px 11px;white-space:nowrap}
+.home-pricing-proof-card footer button:hover{filter:brightness(1.17)}
+.home-pricing-proof-card footer button:focus-visible,.home-pricing-proof-sources summary:focus-visible,
+.home-pricing-proof-sources a:focus-visible,.home-pricing-proof-heading>a:focus-visible{
+outline:2px solid #a5e8dc;outline-offset:3px}
+.home-pricing-proof-sources{border-top:1px solid rgba(129,190,196,.22);margin-top:13px}
+.home-pricing-proof-sources summary{padding:13px 0 0;font-size:10px;color:#b6dedc;font-weight:760;cursor:pointer}
+.home-pricing-proof-sources p{font-size:10px;line-height:1.75;color:#aec7d2;margin:10px 0}
+.home-pricing-proof-sources nav{display:flex;flex-wrap:wrap;gap:7px 17px;margin-top:10px}
+.home-pricing-proof-sources nav a{font-size:10px;color:#a1e1d1;text-decoration:underline}
+@media(max-width:920px){.home-pricing-proof-heading{align-items:flex-start;flex-direction:column}}
+@media(max-width:720px){.home-pricing-proof-grid{grid-template-columns:1fr}
+.home-pricing-proof{padding:16px 13px;margin:17px 0}
+.home-pricing-proof-card{padding:13px 12px}}
+@media(max-width:375px){.home-pricing-proof-numbers strong{font-size:17px}
+.home-pricing-proof-card footer button{width:100%}}
