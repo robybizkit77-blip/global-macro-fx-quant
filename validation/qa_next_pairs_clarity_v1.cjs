@@ -22,7 +22,8 @@ for(const key of ['id="pair-primary-select"','28 coppie G8, una sola tesi alla v
  'pairs-reading-compact','pairs-three-answers','pairs-vintage',
  'Come è cambiata la tesi?','Apri grafico, pricing e analisi completa',
  'FXQuantDecisionJourney?.build','FXQuantThesisMonitor?.render',
- 'const pairCatalyst=','pairs-event-watch','pairs-compact-footer']){
+ 'const pairCatalyst=','const riskReading=','esc(riskReading)',
+ 'pairs-event-watch','pairs-compact-footer']){
  assert(pairs.includes(key),'Current pair research layout missing '+key);
 }
 assert(pairs.includes('FXQuantPairMonetary.render')&&pairs.includes('chooser+main+monetary+historyDetail+detail'),
@@ -42,6 +43,8 @@ assert(pairs.includes('const originalDecision='),
  'Full macro/rates/COT/price audit must remain accessible on request');
 assert(pairs.includes("'+originalDecision+'"),
  'The original source research module must be retained within its disclosure');
+assert(rankings.includes('function pairRiskReading('),
+ 'Risk explanation must be source-gated, never an inferred price entry');
 assert(rankings.includes('fx-rank-currency-list')&&rankings.includes('fx-rank-all-list'),
  'Eight currency positions and the 28 relative crosses must lead the page');
 assert(rankings.includes('fx-rank-featured')&&rankings.includes('selectResearchPairs(items,5)'),
