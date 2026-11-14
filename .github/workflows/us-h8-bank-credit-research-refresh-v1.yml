@@ -112,7 +112,7 @@ jobs:
         run: |
           set -euo pipefail
           output="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds")"
-          jq -e '.status == "queued" || .status == "building"' <<<"$output" >/dev/null
+          jq -e '.status == "queued" or .status == "building"' <<<"$output" >/dev/null
           echo "US_H8_PAGES_BUILD_REQUEST_ACCEPTED" >> "$GITHUB_STEP_SUMMARY"
       - name: Preserve source receipt
         if: always()
