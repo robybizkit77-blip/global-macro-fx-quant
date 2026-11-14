@@ -164,16 +164,51 @@
   return short+' '+longer;
  }
 
+
+ // Weekday counts are an editorial freshness guard, not an exchange calendar.
+ // A Friday observation remains recent over the weekend; bank holidays may
+ // make the warning conservative, never create synthetic market sessions.
+ function weekdayLag(from,to){
+  if(!goodDate(from)||!goodDate(to)||from>to)return null;
+  const n=Math.round((strongDate(to)-strongDate(from))/86400000);
+  let count=Math.floor(n/7)*5;
+  const start=new Date(strongDate(from)).getUTCDay();
+  for(let i=1;i<=n%7;i++){const d=(start+i)%7;if(d!==0&&d!==6)count++;}
+  return count;
+ }
+ function freshness({prices,history,today}={},picks=[]){
+  if(!goodDate(today))return {stale:true,status:'DATE_NON_VERIFICABILI',priceAsOf:null,moneyAsOf:null};
+  const raw=Array.isArray(prices?.rows)?prices.rows.map(r=>r?.Date).filter(d=>goodDate(d)&&d<=today).sort():[];
+  const latestRow=raw.at(-1)||null;
+  const reported=goodDate(prices?.last_as_of)&&prices.last_as_of<=today?prices.last_as_of:null;
+  const priceAsOf=latestRow&&reported?(latestRow<reported?latestRow:reported):latestRow;
+  const moneyAsOf=goodDate(history?.as_of)&&history.as_of<=today?history.as_of:null;
+  const fxAge=weekdayLag(priceAsOf,today),moneyAge=weekdayLag(moneyAsOf,today);
+  const evidenceStale=picks.some(p=>{const n=weekdayLag(p.to,today);return n===null||n>=3;});
+  const stale=fxAge===null||moneyAge===null||fxAge>=3||moneyAge>=3||evidenceStale;
+  return {stale,status:stale?'ARCHIVIO_NON_RECENTE':'CONFRONTO_STORICO_DATATO',
+   priceAsOf,moneyAsOf,fxAge,moneyAge,evidenceStale};
+ }
+
  function render(args={}){
   const picks=choose(args);
   if(!picks.length)return '';
   const asof=args.history?.as_of;
+  const status=freshness(args,picks);
+  const sourceLine='<div class="home-pricing-proof-date-context" data-home-pricing-freshness="'+status.status+'">'+
+   '<strong>Ultima data disponibile per fonte</strong> · fixing BCE '+esc(date(status.priceAsOf))+
+   ' · archivio 6M '+esc(date(status.moneyAsOf))+
+   '. Ogni coppia riporta la data effettiva del confronto.'+
+   (status.stale?' <strong>Attenzione: almeno una fonte o un confronto è fermo da 3 o più giorni feriali. Lettura soltanto storica.</strong>':'')+
+   '</div>';
   const row=x=>{
    const sign=x.comparison==='SEGNI_COHERENTI'?'Stesso segno, non causalità':
     x.comparison==='SEGNI_DIVERGENTI'?'I segnali divergono':
     'Movimenti contenuti';
    const windows=[5,20].map(n=>inspectSessionWindow(x.pair,args,n,x.to));
-   const headline=horizonReading(x,windows);
+   const oldObservation=weekdayLag(x.to,args.today)>=3;
+   const headline=(oldObservation?'Questa verifica non è recente e non descrive la seduta attuale. ':'')+
+    horizonReading(x,windows);
    const longRow=(w,n)=>'<div class="home-pricing-proof-multi-row" data-home-pricing-sessions="'+n+'"'+
     ' data-home-pricing-available="'+(w?'true':'false')+'">'+
     '<strong>'+n+' sedute BCE</strong>'+
@@ -216,9 +251,11 @@
     '<p>Due confronti documentati, uno con USD e uno fra altre valute. '+
     'Sono scelti per recenza delle osservazioni confrontabili, <strong>non per attrattività di trading</strong>.</p></div>'+
     '<a href="#rates">Apri le curve OIS/futures ↗</a></div>'+
+    sourceLine+
     '<div class="home-pricing-proof-grid">'+picks.map(row).join('')+'</div>'+
     '<details class="home-pricing-proof-sources"><summary>Verifica i dati e il metodo</summary>'+
     '<p>Per ogni coppia si confrontano <strong>due variazioni 6M</strong> di strumenti distinti e la variazione del fixing BCE sulla stessa data iniziale e finale. Contratti secondari senza continuità di codice sono esclusi. OIS, futures e proxy non sono equivalenti.</p>'+
+    '<p>La soglia di avviso sulla recenza usa 3 giorni feriali, non giorni di negoziazione certificati; non modifica né stima i dati. La data generale dell’archivio non implica che ogni valuta sia aggiornata fino a quel giorno.</p>'+ 
     '<p>Le finestre sono sovrapposte: un segno comune su 1, 5 e 20 sedute non rappresenta tre conferme indipendenti né dimostra un rapporto causale.</p>'+ 
     '<p>Le finestre a 5 e 20 sedute usano il calendario dei fixing BCE e terminano alla stessa data del confronto breve; richiedono due livelli 6M verificati per entrambe le valute senza cambio di contratto futures. Dove mancano i livelli, il risultato non è stimato.</p>'+ 
    '<p>Gli esempi sono retrospettivi, non una graduatoria di opportunità o uno studio causale. '+
@@ -229,7 +266,7 @@
     '<a href="../ois-same-contract-repricing-research.json" target="_blank" rel="noopener noreferrer">Identità futures · JSON ↗</a></nav>'+
     '</details></section>';
  }
- const api={inspectPair,inspectSessionWindow,horizonReading,choose,pairReturn,render};
+ const api={inspectPair,inspectSessionWindow,horizonReading,weekdayLag,freshness,choose,pairReturn,render};
  root.FXQuantHomePricingProof=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
