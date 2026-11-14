@@ -96,8 +96,8 @@
   const today=dayNow(),asOf=feed.generated_at_utc.slice(0,10);
   const days=Math.floor((Date.parse(today+'T12:00:00Z')-Date.parse(asOf+'T12:00:00Z'))/86400000);
   if(days<0||days>14)return null;
-  const vintage=days>1?'Ultima edizione conservata · '+date(asOf):
-    'Aggiornamento desk · '+date(asOf);
+  const vintage=days>1?'Ultima edizione conservata':
+    'Ultime novità disponibili';
   const sources=feed.provenance.web_source_urls;
   const news=feed.news.map((n,i)=>{
    if(!n||typeof n.headline!=='string'||typeof n.analysis!=='string'||
@@ -207,6 +207,7 @@
     '<div class="hourly-desk-news-body">'+news.map(x=>x.article).join('')+'</div></details></section>'+
     '<footer class="morning-source-notes hourly-method-note"><p>Ultima analisi pubblicata: '+
     safe(feed.edition_time_rome)+' (Europe/Rome). Metodo: confronto di dati datati, fonti ufficiali e proxy dichiarati. '+
+    'Il desk verifica le fonti con cadenza oraria; l’orario dell’edizione cambia soltanto quando nuove osservazioni o pubblicazioni modificano le prove. '+
     'I dati storici non sono movimenti intraday e l’interpretazione non costituisce un segnale di ingresso.</p>'+
     '</footer></article>';
  }
