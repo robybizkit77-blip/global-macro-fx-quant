@@ -38,7 +38,7 @@ class BoCCreditResearchTest(unittest.TestCase):
         x=raw();x["observations"][-1]["V122667770"]={"v":"200000"}
         with self.assertRaisesRegex(ValueError,"stock bounds"):parse(x,today=DAY)
         x=raw();x["observations"][-1]={"d":"2026-08-01","OTHER_KEY":{"v":"944614"}}
-        with self.assertRaisesRegex(ValueError,"too few"):parse(x,today=DAY)
+        with self.assertRaisesRegex(ValueError,"overlap"):parse(x,today=DAY)
 
     def test_missing_month_or_duplicate_withheld(self):
         x=raw();x["observations"].pop(2)
