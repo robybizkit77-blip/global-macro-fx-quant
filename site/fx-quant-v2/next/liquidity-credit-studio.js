@@ -164,14 +164,14 @@
      !x.dates.every((d,i)=>/^\d{4}-\d{2}$/.test(d)&&(!i||d>x.dates[i-1])))return '';
   const delta=(last/prev-1)*100,age=Math.round((dateMs(today)-dateMs(period))/864e5);
   if(!Number.isFinite(delta)||Math.abs(delta)>15)return '';
-  const move=delta>0?'aumentano':delta<0?'diminuiscono':'sono invariati';
+  const move=delta>0?'in aumento':delta<0?'in diminuzione':'invariati';
   const quality=age>75?'PERIODO STORICO':'ULTIMA OSSERVAZIONE DATATA';
   return '<section class="drivers-cad-official" aria-label="Fonte ufficiale canadese separata">'+
    '<span class="mini-overline">FONTI · APPROFONDIMENTO UFFICIALE SEPARATO</span>'+
    '<h3>Canada: il credito alle imprese è osservabile, ma non è ancora integrato nel feed G8.</h3>'+
    '<p>La Bank of Canada pubblica il totale dei <b>prestiti alle imprese in essere</b>: '+esc(fmt(last,0))+
-   ' milioni CAD nel '+esc(latest)+', '+move+' del '+esc(fmt(Math.abs(delta),2))+
-   '% rispetto al mese precedente. È la variazione di uno stock bancario, non il flusso di nuovi prestiti.</p>'+
+   ' milioni CAD nel '+esc(latest)+', '+move+' ('+(delta>0?'+':delta<0?'−':'')+esc(fmt(Math.abs(delta),2))+
+   '%) rispetto al mese precedente. È la variazione di uno stock bancario, non il flusso di nuovi prestiti.</p>'+
    '<p>Questa osservazione aiuta a verificare l’ipotesi sulla trasmissione del credito, ma <b>non certifica</b> il canale CAD.credit operativo: definizioni, revisioni e percorso di aggiornamento restano separati. Per CAD servono anche la risposta BoC, il differenziale con la Fed e USD/CAD.</p>'+
    '<div class="drivers-cad-source"><span>'+quality+' · '+esc(latest)+' · serie V122667770 · rilascio point-in-time non verificato</span>'+
    '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: Bank of Canada ↗</a></div></section>';
