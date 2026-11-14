@@ -135,17 +135,17 @@
      !/^https:\/\/www\.rba\.gov\.au\/statistics\/frequency\/fin-agg\/\d{4}\/fin-agg-\d{4}\.html$/.test(x.source_url))return '';
   const current=x.monthly_growth_pct,prior=x.prior_month_growth_pct,change=current-prior,
     age=Math.round((dateMs(today)-dateMs(release))/864e5);
-  const diff=Math.abs(change)<0.05?'stabile rispetto ad agosto':
+  const diff=Math.abs(change)<0.05?'stabile rispetto al mese precedente':
     change>0?'in accelerazione rispetto al mese precedente':'in decelerazione rispetto al mese precedente';
   const move=v=>(v>0?'+':'')+fmt(v,1)+'%';
   const freshness=age>75?'COMUNICATO STORICO · NUOVO RILASCIO DA CONTROLLARE':'COMUNICATO UFFICIALE DATATO';
   return '<section class="drivers-cad-official drivers-aud-official" aria-label="RBA credito imprese crescita corretta">'+
    '<span class="mini-overline">RBA · CRESCITA UFFICIALE CORRETTA PER DISCONTINUITÀ</span>'+
-   '<h3>Australia: il credito alle imprese cresce, ma la velocità mensile non accelera.</h3>'+
+   '<h3>Australia: il credito alle imprese '+esc(current>0?'cresce':current<0?'si riduce':'è invariato')+'; il ritmo mensile è '+esc(Math.abs(change)<0.05?'stabile':change>0?'in accelerazione':'in decelerazione')+'.</h3>'+
    '<p>Nel mese di '+esc(x.observation_period)+' il credito alle imprese cresce del <b>'+esc(move(current))+
    ' mensile</b>, contro '+esc(move(prior))+' nel mese precedente: andamento '+esc(diff)+
    '. Su dodici mesi è '+esc(move(x.annual_growth_pct))+
-   ' (contro '+esc(move(x.prior_year_growth_pct))+' nello stesso mese del 2025).</p>'+
+   ' (contro '+esc(move(x.prior_year_growth_pct))+' nello stesso mese dell’anno precedente).</p>'+
    '<p><b>Perché conta:</b> questa è la crescita RBA corretta per le rotture statistiche, <b>non</b> una percentuale ricavata dai livelli D2 e non un flusso di nuovi prestiti. Il credito resistente può aiutare l’attività, ma va confrontato con costi di finanziamento, domanda, occupazione e inflazione. Per AUD controlliamo il repricing RBA relativo a Fed/BoC, Cina e rischio globale: il credito da solo non identifica un trade.</p>'+
    '<div class="drivers-cad-source"><span>'+freshness+' · periodo '+esc(x.observation_period)+
    ' · pubblicato '+esc(x.release_date)+' · rettifiche storiche possibili · prima vintage non certificata · feed FX invariato</span>'+
