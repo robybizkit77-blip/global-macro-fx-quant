@@ -1,0 +1,126 @@
+name: BoE GBP Secured Credit Growth Research Refresh V1
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Monthly IADB source; probe every weekday after normal UK statistical releases.
+    - cron: '43 9 * * 1-5'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/liquidity/refresh_boe_gbp_secured_credit_v1.py'
+      - 'validation/liquidity/test_refresh_boe_gbp_secured_credit_v1.py'
+      - '.github/workflows/boe-gbp-secured-credit-research-refresh-v1.yml'
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: boe-gbp-secured-credit-research-v1
+  cancel-in-progress: false
+
+jobs:
+  source-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test exact BoE LPMVTYI annual growth, dates, revisions and Core isolation
+        run: python -m unittest validation.liquidity.test_refresh_boe_gbp_secured_credit_v1 -v
+      - name: Snapshot original G8 credit feed and currency-pair ranking
+        run: |
+          sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/boe-secured-runtime.before
+          sha256sum live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json > /tmp/boe-secured-fx.before
+      - name: Fetch exact monthly BoE IADB secured credit and validate against historic source
+        run: |
+          python validation/liquidity/refresh_boe_gbp_secured_credit_v1.py \
+            --apply --receipt /tmp/boe-gbp-secured-credit-receipt.json
+          cat /tmp/boe-gbp-secured-credit-receipt.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Reject changes outside independent research sidecar
+        run: |
+          sha256sum -c /tmp/boe-secured-runtime.before /tmp/boe-secured-fx.before
+          python - <<'PY'
+          import subprocess
+          allowed={'site/fx-quant-v2/next/gbp-boe-secured-credit-research-v1.js'}
+          actual=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert actual<=allowed,actual
+          print('BOE_SECURED_CREDIT_RESEARCH_ONLY_PASS',sorted(actual))
+          PY
+      - name: Commit verified BoE credit source sidecar, not native G8 files
+        run: |
+          set -euo pipefail
+          path=site/fx-quant-v2/next/gbp-boe-secured-credit-research-v1.js
+          if git diff --quiet -- "$path"; then
+            echo 'BOE_GBP_SECURED_SOURCE_NO_CHANGE' >> "$GITHUB_STEP_SUMMARY"
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -- "$path"
+            git commit -m 'Refresh official BoE secured credit growth (research only)'
+            git fetch origin main --no-tags
+            git rebase origin/main
+            git push origin HEAD:main
+            echo 'BOE_GBP_SECURED_RESEARCH_SAVED' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Mirror exact validated BoE sidecar to gh-pages with branch lease
+        id: pages-sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          path=site/fx-quant-v2/next/gbp-boe-secured-credit-research-v1.js
+          git fetch origin main --no-tags
+          source_blob="$(git hash-object "$path")"
+          test "$(git rev-parse "origin/main:$path")" = "$source_blob" || {
+            echo 'BOE_SECURED_SOURCE_MOVED_WITHHELD'; exit 1;
+          }
+          git fetch origin gh-pages --no-tags
+          pages_sha="$(git rev-parse origin/gh-pages)"
+          git worktree add --detach /tmp/boe-secured-pages origin/gh-pages
+          mkdir -p /tmp/boe-secured-pages/site/fx-quant-v2/next
+          cp "$path" "/tmp/boe-secured-pages/$path"
+          cd /tmp/boe-secured-pages
+          if git diff --quiet -- "$path"; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo 'BOE_SECURED_PAGES_ALREADY_CURRENT' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          test "$(git diff --name-only)" = "$path"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$path"
+          git commit -m 'Mirror validated BoE secured-credit growth research only'
+          test "$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')" = "$pages_sha" || {
+            echo 'BOE_SECURED_PAGES_BRANCH_MOVED_WITHHELD'; exit 1;
+          }
+          git fetch origin main --no-tags
+          test "$(git rev-parse "origin/main:$path")" = "$source_blob" || {
+            echo 'BOE_SECURED_SOURCE_BLOB_MOVED_WITHHELD'; exit 1;
+          }
+          git push --force-with-lease=refs/heads/gh-pages:$pages_sha origin HEAD:gh-pages
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+          echo 'BOE_SECURED_PAGES_MIRRORED' >> "$GITHUB_STEP_SUMMARY"
+      - name: Queue Pages build after BoE credit source change
+        if: steps.pages-sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          result="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds")"
+          jq -e '.status == "queued" or .status == "building"' <<<"$result" >/dev/null
+          echo 'BOE_SECURED_PAGES_BUILD_ACCEPTED' >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve BoE source validation and publication receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boe-gbp-secured-lending-growth-receipt
+          path: /tmp/boe-gbp-secured-credit-receipt.json
+          if-no-files-found: warn
+          retention-days: 14
