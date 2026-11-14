@@ -100,3 +100,11 @@
 .drivers-source-provenance-fold>p{font-size:11px;line-height:1.7;color:var(--soft);margin:3px 0 10px}
 .drivers-source-provenance-fold>ul{font-size:10.5px;line-height:1.7;color:var(--soft);padding-left:17px;margin:0 0 13px}
 .drivers-source-provenance-fold>ul>li{margin:7px 0}
+
+/* Separate official CAD issuer evidence; never substitutes native credit. */
+.drivers-cad-official{border:1px solid rgba(103,195,169,.31);border-left:3px solid #70cbb4;border-radius:11px;background:rgba(17,62,61,.22);padding:17px 19px;margin:14px 0 17px}
+.drivers-cad-official h3{font:760 15px/1.45 Manrope,'DM Sans',sans-serif;color:var(--text);margin:9px 0}
+.drivers-cad-official p{font-size:12.5px;color:#c1d8df;line-height:1.7;margin:7px 0}
+.drivers-cad-official .mini-overline{color:#85d5ba}
+.drivers-cad-source{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:15px;padding-top:10px;border-top:1px solid rgba(115,174,174,.2);font-size:10px;line-height:1.5;color:#8faebb}
+.drivers-cad-source a{color:#9adbc7;text-decoration:underline;text-underline-offset:3px}
