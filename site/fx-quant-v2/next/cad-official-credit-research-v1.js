@@ -1,35 +1,79 @@
 'use strict';
-/* Official Bank of Canada monthly business-loans stock, research-only sidecar.
- * This DOES NOT populate NATIVE_LIQ_DATA.CAD.credit, the Core FX ranking,
- * or a point-in-time / first-release vintage.
- * The monthly series is V122667770, business loans total outstanding.
- * Initial values transcribed from issuer's published official table
- * on 2026-11-14; ongoing workflow refreshes only after strict validation.
- */
+/* Source: Bank of Canada Valet V122667770; research only, NOT FX Core. */
 (function(root){
  const data={
-  schema:'GMFQ_NEXT_CAD_BUSINESS_CREDIT_OFFICIAL_RESEARCH_V1',
-  status:'ISSUER_PAGE_VERIFIED_HISTORICAL_RESEARCH',
-  country:'CAD',
-  publisher:'Bank of Canada',
-  series_id:'V122667770',
-  source_url:'https://www.bankofcanada.ca/rates/banking-and-financial-statistics/funds-advanced-and-outstanding-balances-for-new-and-existing-lending-by-chartered-banks/',
-  api_url:'https://www.bankofcanada.ca/valet/observations/V122667770/json?recent=24',
-  label:'Prestiti alle imprese · totale in essere',
-  category:'outstanding_business_loans',
-  units:'milioni CAD',
-  frequency:'M',
-  seasonally_adjusted:'not_verified',
-  first_release_pit_verified:false,
-  eligible_for_fx_core:false,
-  eligible_for_backtest:false,
-  observation_is_not_publication_date:true,
-  last_checked_rome:'2026-11-14',
-  latest_observation:'2026-08',
-  dates:['2026-04','2026-05','2026-06','2026-07','2026-08'],
-  values:[922171,927358,937138,941686,944614],
-  inference:'Livelli di stock, non nuove erogazioni, domanda di prestiti o standard bancari. Serie parallela: non certifica il canale CAD.credit del feed principale.'
- };
+ "schema": "GMFQ_NEXT_CAD_BUSINESS_CREDIT_OFFICIAL_RESEARCH_V1",
+ "status": "VERIFIED_BOCA_VALET_MONTHLY_STOCK_RESEARCH_ONLY",
+ "country": "CAD",
+ "publisher": "Bank of Canada",
+ "series_id": "V122667770",
+ "source_url": "https://www.bankofcanada.ca/rates/banking-and-financial-statistics/funds-advanced-and-outstanding-balances-for-new-and-existing-lending-by-chartered-banks/",
+ "api_url": "https://www.bankofcanada.ca/valet/observations/V122667770/json?recent=24",
+ "label": "Prestiti alle imprese · totale in essere",
+ "category": "outstanding_business_loans",
+ "units": "milioni CAD",
+ "frequency": "M",
+ "seasonally_adjusted": "not_verified",
+ "first_release_pit_verified": false,
+ "eligible_for_fx_core": false,
+ "eligible_for_backtest": false,
+ "observation_is_not_publication_date": true,
+ "last_checked_rome": "2026-11-14",
+ "latest_observation": "2026-08",
+ "dates": [
+  "2024-09",
+  "2024-10",
+  "2024-11",
+  "2024-12",
+  "2025-01",
+  "2025-02",
+  "2025-03",
+  "2025-04",
+  "2025-05",
+  "2025-06",
+  "2025-07",
+  "2025-08",
+  "2025-09",
+  "2025-10",
+  "2025-11",
+  "2025-12",
+  "2026-01",
+  "2026-02",
+  "2026-03",
+  "2026-04",
+  "2026-05",
+  "2026-06",
+  "2026-07",
+  "2026-08"
+ ],
+ "values": [
+  863919.0,
+  864138.0,
+  868145.0,
+  857824.0,
+  858118.0,
+  866559.0,
+  869240.0,
+  877331.0,
+  879234.0,
+  892238.0,
+  893469.0,
+  890592.0,
+  896416.0,
+  897910.0,
+  900725.0,
+  913021.0,
+  906795.0,
+  913900.0,
+  920923.0,
+  922171.0,
+  927358.0,
+  937138.0,
+  941686.0,
+  944614.0
+ ],
+ "inference": "Stock bancario, non nuove erogazioni, domanda di prestiti o standard. Serie separata da NATIVE_LIQ_DATA.CAD.credit."
+};
  root.FXQuantCADCreditResearch=Object.freeze(data);
  if(typeof module!=='undefined'&&module.exports)module.exports=data;
 })(typeof window!=='undefined'?window:globalThis);
