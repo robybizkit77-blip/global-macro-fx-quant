@@ -111,7 +111,7 @@ assert(html.indexOf('rates-relative-pricing-v1.js?v=1')<
  html.indexOf('pair-monetary-bridge-v1.js?v=2')&&
  html.indexOf('pair-monetary-bridge-v1.js?v=2')<
  html.indexOf('app.js?v=18.59-pair-thesis-read'));
-assert(html.includes('pairs-clarity.css?v=5'));
+assert(html.includes('pairs-clarity.css?v=6'));
 assert(app.includes('FXQuantPairMonetary.render'));
 assert(app.includes("e.target.closest('[data-pair-open-rates]')"));
 assert(app.includes('state.ccy=k.slice(0,3);state.against=k.slice(3);'));
