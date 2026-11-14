@@ -274,6 +274,12 @@ function make(api){
        research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),
        today:dayNow()
      })||'<section class="rates-pricing-moves"><p class="rates-missing">Confronto monetario giornaliero non disponibile: dati da verificare.</p></section>')
+    +(root.FXQuantRelativePricing?.render?.({
+       ccy:c,other,window:state.rsPricingWindow||'1d',today:dayNow(),
+       snapshot:get('ois'),operational:get('oisOperational'),
+       research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),
+       history:get('oisHistory'),pairs:get('pairs')
+     })||'<section class="rates-relative-pricing"><p>Il confronto relativo 6M non è disponibile: fonti da verificare.</p></section>')
     +(root.FXQuantPricingHistory?.render?.({
         history:get('oisHistory'),ccy:c,other,
         window:state.rsHistoryWindow||30
