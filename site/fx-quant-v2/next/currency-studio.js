@@ -191,7 +191,7 @@ function build(api){
      '"><strong>'+esc(sixProof?.label||marketLabel)+'</strong><small>'+esc(sixProof?.short||marketDetail)+'</small></span>'+
     '<span class="strength-price-brief '+tone+'"><strong>'+esc(x.price.label)+
     '</strong><small>Forza FX · 20 fixing</small></span>'+
-    '<span class="strength-reading"><strong>'+ (x.ccy===country?'In lettura':'Leggi')+
+    '<span class="strength-reading"><strong>'+ (x.ccy===country?'Selezionata':'Seleziona')+
     ' ›</strong></span></button>';
   }).join('');
   return '<section class="strength-board" id="orient-strength-board" aria-label="Classifica valutaria G8 e lettura macro sintetica">'+
@@ -201,6 +201,10 @@ function build(api){
    '<small>'+esc(rankDate)+'</small></div>'+
    '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>MOMENTUM ECONOMICO</span><span>POLICY / PROXY</span><span>PREZZO</span><span></span></div>'+
    '<div class="strength-rows">'+rows+'</div>'+
+   '<div class="strength-analysis-next">'+
+   '<span>Valuta selezionata · <strong>'+esc(FLAGS[country]||'')+' '+country+'</strong></span>'+
+   '<button type="button" class="strength-analysis-jump" data-cs-focus aria-controls="orient-strength-focus">'+
+   'Apri la lettura di '+country+' <span aria-hidden="true">↓</span></button></div>'+
    '<p class="strength-note">Stima euristica V1, non previsione statistica né segnale. I fixing BCE sono osservati; OIS, futures e 2Y non sono strumenti equivalenti. Il modello strutturale storico del 25 settembre non è usato per questa classifica.</p></section>';
  }
  function shadowResearch(){
@@ -400,7 +404,7 @@ function build(api){
    !watchSummary.includes('NZD/USD')?
    watchSummary+' Sul Forex verifica anche NZD/USD e AUD/NZD: tassi e prezzo devono reagire in modo coerente prima di considerare confermata la tesi.':
    watchSummary;
-  return '<section class="strength-focus" id="orient-strength-focus">'+
+  return '<section class="strength-focus" id="orient-strength-focus" tabindex="-1">'+
    '<div class="strength-focus-head"><div>'+
    '<span class="chapter-kicker">02 / LA LETTURA DEL DESK · '+FLAGS[country]+' '+country+'</span>'+
    '<h2>Che cosa sta succedendo a '+country+'?</h2>'+
