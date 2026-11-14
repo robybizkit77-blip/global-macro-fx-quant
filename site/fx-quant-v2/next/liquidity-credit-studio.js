@@ -142,8 +142,8 @@
    '<span class="mini-overline">FONTE FED H.8 / FRED · SERIE SEPARATA</span>'+
    '<h3>Credito bancario USA: cosa cambia nello stock, non necessariamente nei nuovi prestiti.</h3>'+
    '<p>Nel dato del '+esc(lastDate)+' il credito bancario totale '+direction+': '+esc(fmt(last,2))+
-   ' miliardi USD, variazione '+(diff>0?'+':diff<0?'−':'')+esc(fmt(Math.abs(diff),2))+
-   ' miliardi (+/− '+esc(fmt(Math.abs(move),2))+'% in valore assoluto) rispetto alla settimana precedente. '+
+   ' miliardi USD, '+(diff>0?'+':diff<0?'−':'')+esc(fmt(Math.abs(diff),2))+
+   ' miliardi ('+(diff>0?'+':diff<0?'−':'')+esc(fmt(Math.abs(move),2))+'%) rispetto alla settimana precedente. '+
    'Questo aggregato Fed comprende anche titoli bancari e non misura direttamente la domanda di nuovi finanziamenti.</p>'+
    '<p><b>Lettura economica:</b> per giudicare la trasmissione serve capire se crescono i prestiti, se cambiano gli standard SLOOS (attualmente sospesi per discrepanza tra varianti) e se il pricing Fed relativo produce una reazione coerente di USD. Non deduciamo flussi valutari dal solo stock.</p>'+
    '<div class="drivers-cad-source"><span>'+stale+' · '+esc(lastDate)+' · H.8 TOTBKCR · fonte aggiornata via FRED, vintage iniziale non certificato</span>'+
