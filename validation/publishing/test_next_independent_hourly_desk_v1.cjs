@@ -56,7 +56,9 @@ assert(withReceipt.includes('Controllo fonti completato')&&
 assert(withReceipt.includes('13:50 Europe/Rome'),
  'Unchanged source check must NOT overwrite the true edition time');
 assert(withReceipt.includes('15:14'),'Check timestamp should use Europe/Rome daylight-saving offset');
-const staleCheck=checkRender({...verifiedCheck,checked_at_utc:'2026-11-13T12:51:00Z'});
+const staleCheck=win.FXQuantHourlyDesk.render({
+ feed:sample,check:verifiedCheck,esc,date,dayNow:today,nowUtc:'2026-11-13T19:30:00Z'
+});
 assert(staleCheck.includes('data-hourly-check-status="stale"')&&
  staleCheck.includes('Verifica non recente'));
 const futureCheck=checkRender({...verifiedCheck,checked_at_utc:'2026-11-14T22:51:00Z'});
