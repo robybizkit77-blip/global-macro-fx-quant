@@ -87,7 +87,7 @@ assert(page.indexOf('rates-pricing-history-v1.js?v=1')<
  page.indexOf('rates-studio.js?v=6'),
  'Relative bridge must load after both pricing source modules and before rates studio');
 assert(page.includes('rates-studio.css?v=5'));
-assert(page.includes('app.js?v=18.56-relative-pricing'));
+assert(page.includes('app.js?v=18.57-pair-monetary-bridge'));
 assert(studio.includes('FXQuantRelativePricing?.render'));
 assert(get(base+'rates-studio.css').includes('.rates-relative-pricing'));
 console.log('NEXT_RELATIVE_6M_REPRICING_PASS: matched end dates, mismatched sources, roll, 1W, NZD proxy and Fx dossier');
