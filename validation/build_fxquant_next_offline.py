@@ -49,6 +49,7 @@ def main() -> None:
     macro_js = (SITE / "macro-studio.js").read_text(encoding="utf-8")
     macro_css = (SITE / "macro-studio.css").read_text(encoding="utf-8")
     currency_js = (SITE / "currency-studio.js").read_text(encoding="utf-8")
+    g8_pricing_js = (SITE / "g8-pricing-evidence-v1.js").read_text(encoding="utf-8")
     currency_css = (SITE / "currency-studio.css").read_text(encoding="utf-8")
     docs = {k: json.loads((ROOT / path).read_text(encoding="utf-8")) for k, path in SOURCES.items()}
     assert len(docs) == 18
@@ -76,6 +77,7 @@ def main() -> None:
     assert len(rates_js_links) == 1, "Exactly one versioned Rates script expected"
     contents = contents.replace(rates_js_links[0], "<script>"+rates_js+"</script>")
     contents = contents.replace('<script src="./macro-studio.js?v=2" defer></script>', "<script>"+macro_js+"</script>")
+    contents = contents.replace('<script src="./g8-pricing-evidence-v1.js?v=1" defer></script>', "<script>"+g8_pricing_js+"</script>")
     contents = contents.replace('<script src="./currency-studio.js?v=2" defer></script>', "<script>"+currency_js+"</script>")
     contents = contents.replace('<script src="./app.js?v=3" defer></script>', "")
     contents = contents.replace('<span class="live-dot"></span> NEXT / DESIGN LAB', '<span class="live-dot"></span> NEXT / DESIGN LAB')
