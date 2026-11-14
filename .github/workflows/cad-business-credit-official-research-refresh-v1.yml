@@ -114,7 +114,7 @@ jobs:
         run: |
           set -euo pipefail
           response="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds")"
-          jq -e '.status == "queued" || .status == "building"' <<<"$response" >/dev/null
+          jq -e '.status == "queued" or .status == "building"' <<<"$response" >/dev/null
           echo "CAD_PAGES_BUILD_REQUEST_ACCEPTED" >> "$GITHUB_STEP_SUMMARY"
       - name: Preserve source receipt
         if: always()
