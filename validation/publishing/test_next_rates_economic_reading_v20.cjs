@@ -58,7 +58,7 @@ assert(page.includes('rates-relative-pricing-v1.js?v=1'));
 assert(page.includes('rates-pricing-history-v1.js?v=1'));
 assert(page.includes('rates-pricing-moves-v1.js?v=1'));
 assert(page.includes('rates-studio.css?v=5'));
-assert(page.includes('app.js?v=18.57-pair-monetary-bridge'));
+assert(page.includes('app.js?v=18.58-home-money-pricing'));
 assert(rates.includes('fxRelativeEvidence(c,other)'), 'Rates first read needs a FX handoff');
 assert(rates.includes('root.FXQuantRatesBridge.snapshot('),
  'FX movement must come from certified common-date 2Y/ECB bridge, not a new correlation');

@@ -45,6 +45,8 @@ def main() -> None:
     pricing_history_js = (SITE / "rates-pricing-history-v1.js").read_text(encoding="utf-8")
     relative_pricing_js = (SITE / "rates-relative-pricing-v1.js").read_text(encoding="utf-8")
     pair_monetary_js = (SITE / "pair-monetary-bridge-v1.js").read_text(encoding="utf-8")
+    home_money_js = (SITE / "home-pricing-proof-v1.js").read_text(encoding="utf-8")
+    home_money_css = (SITE / "home-pricing-proof-v1.css").read_text(encoding="utf-8")
     rates_css = (SITE / "rates-studio.css").read_text(encoding="utf-8")
     macro_js = (SITE / "macro-studio.js").read_text(encoding="utf-8")
     macro_css = (SITE / "macro-studio.css").read_text(encoding="utf-8")
@@ -74,6 +76,8 @@ def main() -> None:
     contents = contents.replace('<script src="./rates-pricing-history-v1.js?v=1" defer></script>', "<script>"+pricing_history_js+"</script>")
     contents = contents.replace('<script src="./rates-relative-pricing-v1.js?v=1" defer></script>', "<script>"+relative_pricing_js+"</script>")
     contents = contents.replace('<script src="./pair-monetary-bridge-v1.js?v=2" defer></script>', "<script>"+pair_monetary_js+"</script>")
+    contents = contents.replace('<script src="./home-pricing-proof-v1.js?v=1" defer></script>', "<script>"+home_money_js+"</script>")
+    contents = contents.replace('<link rel="stylesheet" href="./home-pricing-proof-v1.css?v=1">', "<style>"+home_money_css+"</style>")
     rates_js_links = [x for x in contents.splitlines()
                       if '<script src="./rates-studio.js?v=' in x]
     assert len(rates_js_links) == 1, "Exactly one versioned Rates script expected"
@@ -128,6 +132,7 @@ def main() -> None:
     assert 'FXQuantMacro' in contents
     assert 'FXQuantCurrencies' in contents
     assert 'FXQuantG8PricingEvidence' in contents
+    assert 'FXQuantHomePricingProof' in contents
     assert 'ECB_G8_PRICE_HISTORY.json' in contents
     assert 'rates-instrument-card' in contents
     assert '<style>' in contents
