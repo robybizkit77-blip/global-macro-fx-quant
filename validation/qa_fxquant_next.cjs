@@ -281,6 +281,17 @@ async function macroDriversJourney(page,label){
  await locator(page,'[data-bank-open="currencies"]').click();
  await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='currencies');
  await route(page,'liquidity');
+ const usSloos=locator(page,'[data-liq-role="conditions"]');
+ assert.equal(await usSloos.getAttribute('data-source-safety'),'withheld',
+  label+' uncertified USD SLOOS variant must remain withheld');
+ const usSloosText=await usSloos.innerText();
+ assert(usSloosText.includes('Dato sospeso')&&usSloosText.includes('SLOOS IN VERIFICA'),
+  label+' SLOOS discrepancy quarantine must explain the reason');
+ assert(!usSloosText.includes('Ultimo 2026-07-01 · 0,00'),
+  label+' unresolved survey value cannot be published as confirmed evidence');
+ const sourceContract=locator(page,'.drivers-source-provenance-fold');
+ await sourceContract.locator('summary').click();
+ assert(await sourceContract.evaluate(el=>el.open),label+' registry/source provenance cannot open');
  await locator(page,'[data-liq-country="CAD"]').click();
  assert.equal(await locator(page,'[data-liq-country="CAD"]').getAttribute('aria-pressed'),'true');
  const cadDossier=(await locator(page,'.drivers-selection').innerText());
