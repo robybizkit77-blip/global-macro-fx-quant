@@ -1,8 +1,53 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-14T18:11:29Z",
+  "generated_at_utc": "2026-11-14T22:29:46Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c3cf8a022aa0d6052c6c",
+      "observed_at_utc": "2026-11-14T12:58:19Z",
+      "headline": "BoE's Greene says acting proactively now on inflation would 'screw' things up the least",
+      "summary": "Reuters riporta: BoE's Greene says acting proactively now on inflation would 'screw' things up the least. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNM0szVHlEQVpiTXpBWkZXclIxQ0ZXaDdjQnhSdlZVdUt1N0ZXUjdLaXo5a3Y2TG10a3p5d2w0czgwSGcxTjl6a2ZnR0Znd0hrc0dDajZDV21ZX2tDcnRScUswd29RWlFRSl9PNTJjRzVRd2JyT0Z5NHp4ZWhSdDg2b2d1Z1RmNTJMLWZKM0g4NE4xYTlIYzYxNTR2V0NoWE5wenhxXzM0UzBBQXhCV0RaMTdXQXJKeThRTHItZU9kZWpQT0F6cVdZMWl3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-1ec832b87642fc0c06d7",
+      "observed_at_utc": "2026-11-13T22:04:00Z",
+      "headline": "Stocks fall but Wall Street notches a winning week after several turbulent days",
+      "summary": "AP News riporta: Stocks fall but Wall Street notches a winning week after several turbulent days. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxPYzlsZHFSZjhGdjdadGI2VjQ0bVdUX2VXT2lsTk1BQUlLejdKNS0zSEpvUTRhR0I1bjNGQXMtVUZJR1VvUm9jT2xaTXFkTGM1Q1laOHh0YkpONllQTVdTMHgtcUlqUGhFNGotUXRvV2VZT190c3NFWUpRanhyVDNWZ3lfRUgyS3dGZUZHNw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-ff6c4eb5d1a46c87fca1",
+      "observed_at_utc": "2026-11-14T05:00:21Z",
+      "headline": "UK says Iranian boats blocked a British tanker",
+      "summary": "Reuters riporta: UK says Iranian boats blocked a British tanker. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE84UUtYUUNRZnYtM1hhSzhveVpReHdLRHZqMzVEcmhieVhlOFRsRU9BaVpDRUVWUV9VVFBaekgxNGloMTZILUg5LVIyczUtbFJ4ZzcyYm5kODlEQ1VM?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-f87832046bfcb0a314ca",
       "observed_at_utc": "2026-11-14T10:31:30Z",
@@ -1370,49 +1415,6 @@
       "related_pairs": [],
       "source_label": "AP News · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOQ21uZTBtcHVVa1pjcFN6eHhxWllCcEpzV2hpTmN6SWhMY3dqY2dpOWtxd0dtdGFPRV9RSUM1SEhrSDVHUHI3YmIwZzZucVoyZDd2V1hzNGJLT2w4OG5VRGpDRkNYbmJ4V2xadVlUVldoOUJ1THc2RVA0WkFtZmpaRDdWdG9iU3pZX285WkRhRi1MUF90UF9SekFzVjMyRzZNTmZoQmlEMVdmb3lHaUV2WTBZdFU?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-672cfc1e708775ef0830",
-      "observed_at_utc": "2026-11-05T01:54:00Z",
-      "headline": "South Korea to expand anti-piracy unit operations closer to Strait of Hormuz",
-      "summary": "Reuters riporta: South Korea to expand anti-piracy unit operations closer to Strait of Hormuz. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNWmlVV005TWpIcUdLT2ZZaUpORmNMc09CYnNzQnFBRUhJeF8yTklGM20tcHlpZkI3bGpCa2VXQlJfOGd2MEdOTWtpN1BpMnNmUVUyYzF1R2U5SjN4bl90X2xGRDZ2MzY2aGU1WTVYM3otVlRhTjRXR2JMUWp5cGZsZFV1MFUtWG83QW1tMG44aXY3dmg4Zl9GbGFjMEZ5bWhUbGliempaM2dRaE9pZHlHUldkUndDZEtLTkdTUlQ1RQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-56365825a19af2a4fb17",
-      "observed_at_utc": "2026-11-05T02:09:50Z",
-      "headline": "BOJ debated need for more rate hikes, scope for faster moves, September minutes show",
-      "summary": "Reuters riporta: BOJ debated need for more rate hikes, scope for faster moves, September minutes show. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNMGtjWlBTY0pHaGtXZXZ5SnhvXzkyREVPdWJmcU5YRWpRcktiSTc5NnExRXlZbC13WE9aLVdOWktKUGdpSXk0VlE4aTBkbmg0RHhDa2x4YXpDdHhxQTJDMzU2OThrbVFKVTlWVkpfYWF4TEVCYi1yaWJzMFMwcUdkSnN6Q0lwU2FQYVMyYXU2MDFjckNlWC1LbWZPQ2JPaGlSaDNKMUdRRnh4dWJvX2gwWEdaQmttbDIwQ2hlYmtFT0Q?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-7797f4c868c0efc17371",
-      "observed_at_utc": "2026-11-04T13:27:49Z",
-      "headline": "US private payrolls rise in October, ADP says",
-      "summary": "Reuters riporta: US private payrolls rise in October, ADP says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxNZnJ0US1MMVdHMmJRYTlsNlkwUUtUa0VTcjZLRm8ycnFCNmRPRnUycVFxcDJhMzgyUlNmN3VSTEtxRXoyWXJJb01FVjBmVFdKM0RsVDFDWVRpbk0zeV9TMmlfZDRFZm5DcEFqdWpaVHRvZlpTTEdhYkFNbTJKVVQ5ZnZBRmQ3U2t0U2ttSkFqMA?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
