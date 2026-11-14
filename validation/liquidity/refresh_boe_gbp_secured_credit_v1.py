@@ -195,7 +195,7 @@ def run(*,destination=DEST,fixture=None,today=None,apply=False):
     parsed=parse(Path(fixture).read_text(encoding="utf-8") if fixture else fetch(),
                  today=today)
     old=existing_values(destination.read_text(encoding="utf-8")) if destination.exists() else None
-    require(old is None or parsed["last_observation"]>=old[0][-1],
+    require(old is None or not old[0] or parsed["last_observation"]>=old[0][-1],
             "IADB source unexpectedly rolled back latest release")
     modified=old!=(parsed["dates"],parsed["values"])
     receipt={
