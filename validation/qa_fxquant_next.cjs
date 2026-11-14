@@ -299,6 +299,17 @@ async function macroDriversJourney(page,label){
  const sourceContract=locator(page,'.drivers-source-provenance-fold');
  await sourceContract.locator('summary').click();
  assert(await sourceContract.evaluate(el=>el.open),label+' registry/source provenance cannot open');
+ await locator(page,'[data-liq-country="EUR"]').click();
+ const officialECB=locator(page,'.drivers-eur-official');
+ assert.equal(await officialECB.count(),1,
+  label+' certified ECB NFC series must be visible in EUR research without replacing native credit');
+ const ecbText=await officialECB.innerText();
+ assert(ecbText.includes('BCE')&&ecbText.includes('Il cumulato di due mesi')&&
+        ecbText.includes('revisioni possibili')&&ecbText.includes('Fonte: BCE'),
+  label+' EUR credit stock requires dated source and persistence narrative');
+ const eurNative=await locator(page,'[data-liq-role="credit"]').innerText();
+ assert(eurNative.includes('2026-07')&&!eurNative.includes('Ultimo 2026-09'),
+  label+' ECB research must not overwrite the EUR canonical credit value');
  await locator(page,'[data-liq-country="CAD"]').click();
  assert.equal(await locator(page,'[data-liq-country="CAD"]').getAttribute('aria-pressed'),'true');
  const cadDossier=(await locator(page,'.drivers-selection').innerText());
