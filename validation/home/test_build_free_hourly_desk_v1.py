@@ -37,7 +37,9 @@ class FreeDeskTest(unittest.TestCase):
   self.assertTrue(("dollaro" in r["headline"].lower() or
                    "aspettative monetarie" in r["headline"].lower()),
                   "Headline must reference observed FX/rates drivers without forcing a USD narrative")
-  self.assertIn("euro",r["desk_judgment"])
+  self.assertTrue(("euro" in r["desk_judgment"].lower() or
+                   "termini relativi" in r["desk_judgment"].lower()),
+                  "FX judgment must compare monetary expectations, not force an EUR news angle")
   self.assertIn("volatilità",r["desk_judgment"])
   self.assertIn("oro",r["desk_judgment"].lower())
   self.assertIn("petrolio",r["desk_judgment"].lower())
