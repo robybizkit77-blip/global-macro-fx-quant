@@ -221,7 +221,7 @@ assert(index.includes('home-market-pulse-v1.js?v=2')&&index.includes('home-marke
  'The source-based data visualization must load before the editorial Home UI');
 assert(index.indexOf('home-market-pulse-v1.js?v=2')<index.indexOf('hourly-desk-ui-v1.js?v=8'),
  'Rendering order must preserve the optional pulse addon');
-assert(index.includes('app.js?v=18.55-full-pricing-history'));
+assert(index.includes('app.js?v=18.56-relative-pricing'));
 assert(app.includes("currencyPrices:get('currencyPrices')"),'Official ECB fixing history must feed FX observations');
 
 // Regression: on cold navigation an empty-data overview used to render first,
