@@ -118,6 +118,33 @@
  NZD:{fx:'Lo storico disponibile della liquidità NZD è breve e non consente inferenze robuste sui flussi. Credito privato in aumento e settlement cash in calo sono una divergenza da testare contro RBNZ e rischio globale.',
   watch:'Aggiornamenti RBNZ su settlement cash e credito, confronto monetario con RBA e comportamento AUD/NZD e NZD/USD.'}
  };
+ function cadIssuerResearch(esc,fmt,now){
+  const x=root.FXQuantCADCreditResearch;
+  if(!x||x.schema!=='GMFQ_NEXT_CAD_BUSINESS_CREDIT_OFFICIAL_RESEARCH_V1'||
+     x.publisher!=='Bank of Canada'||x.series_id!=='V122667770'||
+     x.category!=='outstanding_business_loans'||x.eligible_for_fx_core!==false||
+     x.eligible_for_backtest!==false||x.first_release_pit_verified!==false||
+     !Array.isArray(x.dates)||!Array.isArray(x.values)||
+     x.values.length!==x.dates.length||x.values.length<2)return '';
+  const latest=x.dates.at(-1),last=x.values.at(-1),prev=x.values.at(-2);
+  const period=observationDate(latest),today=observationDate(now);
+  if(!period||!today||dateMs(period)>dateMs(today)||!finite(last)||!finite(prev)||
+     last<=0||prev<=0||latest!==x.latest_observation||
+     !x.dates.every((d,i)=>/^\d{4}-\d{2}$/.test(d)&&(!i||d>x.dates[i-1])))return '';
+  const delta=(last/prev-1)*100,age=Math.round((dateMs(today)-dateMs(period))/864e5);
+  if(!Number.isFinite(delta)||Math.abs(delta)>15)return '';
+  const move=delta>0?'aumentano':delta<0?'diminuiscono':'sono invariati';
+  const quality=age>75?'PERIODO STORICO':'ULTIMA OSSERVAZIONE DATATA';
+  return '<section class="drivers-cad-official" aria-label="Fonte ufficiale canadese separata">'+
+   '<span class="mini-overline">FONTI · APPROFONDIMENTO UFFICIALE SEPARATO</span>'+
+   '<h3>Canada: il credito alle imprese è osservabile, ma non è ancora integrato nel feed G8.</h3>'+
+   '<p>La Bank of Canada pubblica il totale dei <b>prestiti alle imprese in essere</b>: '+esc(fmt(last,0))+
+   ' milioni CAD nel '+esc(latest)+', '+move+' del '+esc(fmt(Math.abs(delta),2))+
+   '% rispetto al mese precedente. È la variazione di uno stock bancario, non il flusso di nuovi prestiti.</p>'+
+   '<p>Questa osservazione aiuta a verificare l’ipotesi sulla trasmissione del credito, ma <b>non certifica</b> il canale CAD.credit operativo: definizioni, revisioni e percorso di aggiornamento restano separati. Per CAD servono anche la risposta BoC, il differenziale con la Fed e USD/CAD.</p>'+
+   '<div class="drivers-cad-source"><span>'+quality+' · '+esc(latest)+' · serie V122667770 · rilascio point-in-time non verificato</span>'+
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: Bank of Canada ↗</a></div></section>';
+ }
  function render(api){
   const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,date,dayNow}=api;
   const all=get('liquidity')||{};
@@ -165,6 +192,7 @@
    '<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
    '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
    '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>'+
+   (selected==='CAD'?cadIssuerResearch(esc,fmt,today):'')+
    '<div class="drivers-story"><div><span>IPOTESI DI TRASMISSIONE AL FOREX</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div><div><span>COSA MONITORARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
    (root.FXQuantDriverMarketAudit?.render?.({get,esc,dayNow},selected)||'')+
    '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
