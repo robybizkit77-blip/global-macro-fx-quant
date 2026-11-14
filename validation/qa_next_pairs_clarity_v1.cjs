@@ -11,7 +11,7 @@ const css=read('site/fx-quant-v2/next/pairs-clarity.css');
 const rankings=read('site/fx-quant-v2/next/pair-rankings.js');
 new vm.Script(app);
 new vm.Script(rankings);
-assert(html.includes('./pairs-clarity.css?v=3'));
+assert(html.includes('./pairs-clarity.css?v=4'));
 assert(/app\.js\?v=18/.test(html));
 assert(css.includes('.pairs-reading-compact'));
 assert(css.includes('@media(max-width:560px)'));
@@ -25,6 +25,8 @@ for(const key of ['id="pair-primary-select"','28 coppie G8, una sola tesi alla v
  'const pairCatalyst=','pairs-event-watch','pairs-compact-footer']){
  assert(pairs.includes(key),'Current pair research layout missing '+key);
 }
+assert(pairs.includes('FXQuantPairMonetary.render')&&pairs.includes('chooser+main+monetary+historyDetail+detail'),
+ 'Relative 6M must appear only inside the selected pair dossier before advanced pricing');
 assert(pairs.includes('const historyDetail=monitor.ready?'),
  'Do not show an empty comparison if no dated thesis history exists');
 assert(pairs.includes('const drill=state.pairDetailOpen?'),
