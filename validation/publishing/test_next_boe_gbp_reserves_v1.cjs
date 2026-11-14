@@ -42,21 +42,27 @@ const api=ccy=>({
  get:k=>k==='liquidity'?native:null,FX,FLAGS:Object.fromEntries(FX.map(x=>[x,x])),
  NAMES:Object.fromEntries(FX.map(x=>[x,x])),state:{liqCcy:ccy},
  plot:()=>'<svg></svg>',pageHero:()=>'<h1>FX</h1>',
- esc,fmt,date:x=>x,dayNow:()=>'2026-11-14'
+ esc,fmt,date:x=>x,dayNow:()=>new Date().toISOString().slice(0,10)
 });
 const gbp=studio.render(api('GBP'));
 assert.match(gbp,/class="drivers-cad-official drivers-gbp-official"/);
 assert.match(gbp,/BANK OF ENGLAND · RISERVE BANCARIE UFFICIALI/);
 assert.match(gbp,/RPWB56A/);
-assert.match(gbp,/646\.280/);
-assert.match(gbp,/641\.005/);
-assert.match(gbp,/\+5\.275/);
-assert.match(gbp,/pubblicazione 2026-11-12/);
+assert(gbp.includes(fmt(issuer.latest_balance_million_gbp,0)),
+ 'BoE reserve amount must follow the latest official source');
+assert(gbp.includes(fmt(issuer.previous_balance_million_gbp,0)),
+ 'BoE previous amount must follow the latest official source');
+const movement=(issuer.weekly_change_million_gbp>0?'+':issuer.weekly_change_million_gbp<0?'−':'')+
+ String(Math.abs(issuer.weekly_change_million_gbp)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+assert(gbp.includes(movement+' milioni GBP'),
+ 'BoE weekly movement and sign must come from observed source');
+assert(gbp.includes('pubblicazione '+issuer.published_on),
+ 'BoE publication date must reflect source rather than a frozen fixture');
 assert.match(gbp,/fonte separata dal feed FX/);
 assert.match(gbp,/EUR\/GBP e GBP\/USD/);
 assert.match(gbp,/non possiamo dedurre un allentamento/);
 const core=gbp.split('data-liq-role="liquidity"')[1]?.split('</div>')[0]||'';
-assert(core.includes('2026-09-16')&&!core.includes('2026-11-11'),
+assert(core.includes('2026-09-16')&&!core.includes(issuer.source_period),
  'BoE research must never change the canonical weekly GBP liquidity');
 for(const ccy of FX.filter(x=>x!=='GBP'))
  assert(!studio.render(api(ccy)).includes('drivers-gbp-official'),
