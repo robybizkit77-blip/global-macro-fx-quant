@@ -1,0 +1,103 @@
+'use strict';
+/* FX Quant Next — Liquidity & Credit, read-only G8 research.
+ * Source dates and individual credit gaps are never upgraded by publication.
+ * The page explains possible FX transmission, not a mechanical FX signal.
+ */
+(function(root){
+ const finite=x=>typeof x==='number'&&Number.isFinite(x);
+ const validCcy=x=>/^(USD|EUR|GBP|JPY|CHF|CAD|AUD|NZD)$/.test(x||'');
+ const short=x=>String(x??'').trim();
+ const norm=s=>short(s).toUpperCase();
+ function series(s){
+  if(!Array.isArray(s?.dates)||!Array.isArray(s?.values))return [];
+  const rows=s.dates.map((label,i)=>({label:short(label),value:s.values[i]}))
+   .filter(x=>x.label&&finite(x.value)&&x.value>0);
+  return rows.slice(-80);
+ }
+ function direction(raw,exists){
+  if(!exists)return {label:'NON DISPONIBILE',tone:'unknown'};
+  const d=norm(raw);
+  if(d.includes('AUMENTO')||d.includes('CRESCITA'))return {label:'IN AUMENTO',tone:'up'};
+  if(d.includes('CALO')||d.includes('DISCESA'))return {label:'IN CALO',tone:'down'};
+  if(d.includes('STABILE'))return {label:'STABILE',tone:'flat'};
+  return {label:'DA VERIFICARE',tone:'unknown'};
+ }
+ function interpret(row){
+  if(!row)return {headline:'Dati G8 non disponibili',meaning:'Nessuna lettura è ricostruita artificialmente.',fx:'Non emerge un collegamento verificabile con il Forex.',watch:'Recuperare la fonte originale e le date.',liquidity:direction('',false),credit:direction('',false)};
+  const liq=direction(row.liquidity_dir,Boolean(row.liquidity?.label&&finite(row.liquidity?.last_value)));
+  const cr=direction(row.credit_dir,Boolean(row.credit?.label&&finite(row.credit?.last_value)));
+  let headline,meaning;
+  if(liq.tone==='down'&&cr.tone==='up'){
+   headline='La liquidità misurata si riduce, ma il credito continua ad aumentare.';
+   meaning='I due canali divergono: il credito osservato non conferma una stretta generalizzata, ma la minore liquidità potrebbe aumentare la sensibilità a shock futuri.';
+  }else if(liq.tone==='up'&&cr.tone==='up'){
+   headline='Liquidità e credito risultano entrambi in espansione nelle rispettive serie.';
+   meaning='È una combinazione compatibile con condizioni finanziarie meno restrittive, ma servono standard di prestito, domanda e tassi per verificarlo.';
+  }else if(liq.tone==='down'&&cr.tone==='down'){
+   headline='Liquidità e credito segnalano entrambi un indebolimento.';
+   meaning='Potenziale freno alla trasmissione finanziaria: la persistenza va verificata con attività economica, spread e politica monetaria.';
+  }else if(liq.tone==='flat'&&cr.tone==='up'){
+   headline='Il credito cresce senza una chiara espansione della liquidità osservata.';
+   meaning='La creazione di credito e la liquidità di banca centrale non misurano la stessa cosa: non sono due conferme indipendenti di allentamento.';
+  }else if(liq.tone==='up'&&cr.tone==='flat'){
+   headline='Più liquidità misurata, ma il credito non accelera nella serie disponibile.';
+   meaning='La disponibilità di riserve o moneta non implica automaticamente maggiore domanda e concessione di prestiti.';
+  }else if(cr.tone==='unknown'){
+   headline='La liquidità è osservabile, ma manca una misura diretta del credito confrontabile.';
+   meaning='La direzione della liquidità da sola non basta a descrivere la trasmissione all’economia reale. Le survey possono offrire soltanto un contesto distinto.';
+  }else{
+   headline='I canali di liquidità e credito non danno una conferma univoca.';
+   meaning='Il livello, la direzione e la frequenza delle due serie vanno tenuti separati. Non sommiamo aggregati di natura diversa.';
+  }
+  return {headline,meaning,
+   fx:'Per il Forex conta se questa combinazione cambia la crescita relativa, il percorso atteso della banca centrale o la domanda di valuta rifugio. È una trasmissione possibile, non una causalità già dimostrata.',
+   watch:'Controllare nuove pubblicazioni del credito, survey sugli standard, differenziali monetari, spread IG/HY e la risposta della valuta.',
+   liquidity:liq,credit:cr};
+ }
+ function render(api){
+  const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,date}=api;
+  const all=get('liquidity')||{};
+  const selected=validCcy(state.liqCcy)?state.liqCcy:'USD';
+  const row=all[selected],read=interpret(row);
+  const snap=(s)=>s?.last_date||'data non disponibile';
+  const cell=(label,s,d)=>{
+   const exists=Boolean(s?.label&&finite(s.last_value));
+   return '<div class="drivers-fact"><span>'+esc(label)+'</span><strong>'+esc(s?.label||'Serie non disponibile')+'</strong>'+
+    '<small>'+(exists?('Ultimo '+esc(snap(s))+' · '+esc(fmt(s.last_value,2))+(s.unit?' '+esc(s.unit):'')):'Misura non verificabile')+'</small>'+
+    (d?'<b class="drivers-tone" data-tone="'+esc(d.tone)+'">'+esc(d.label)+'</b>':'')+'</div>';
+  };
+  const chart=(s,label,color)=>{
+   const pts=series(s);
+   return '<article class="drivers-chart"><div class="drivers-chart-label"><strong>'+esc(label)+'</strong><small>'+esc(s?.label||'Serie assente')+' · '+esc(snap(s))+'</small></div>'+
+    (pts.length>=2?plot({lines:[{name:s.label,color,values:pts}],label:label+' '+selected}):
+     '<div class="drivers-empty">Storico numerico insufficiente: nessuna curva inventata.</div>')+'</article>';
+  };
+  const cards=FX.map(ccy=>{
+    const item=all[ccy],reading=interpret(item),active=ccy===selected;
+    return '<button class="drivers-country" type="button" data-liq-country="'+ccy+'" aria-pressed="'+String(active)+'">'+
+     '<span class="drivers-country-head"><b>'+esc(FLAGS[ccy]||'')+' '+ccy+'</b><small>'+esc(NAMES[ccy]||ccy)+'</small></span>'+
+     '<span class="drivers-mini-state" data-tone="'+reading.liquidity.tone+'">Liquidità · '+esc(reading.liquidity.label)+'</span>'+
+     '<span class="drivers-mini-state" data-tone="'+reading.credit.tone+'">Credito · '+esc(reading.credit.label)+'</span></button>';
+  }).join('');
+  return pageHero('FINANCIAL CONDITIONS / G8','Liquidità & Credito. <em>Il denaro arriva all’economia?</em>',
+   'Il denaro può aumentare senza generare nuovi prestiti. Osserviamo i due canali per capire se cambiano crescita, pricing e valute.')+
+   '<section class="drivers-panel" id="liquidity-studio"><div class="drivers-head"><div><span class="mini-overline">01 / MAPPA G8</span><h2>Otto economie, due canali distinti</h2><p>Seleziona un paese. Le frecce sono classificazioni delle singole serie storiche, non un indice di liquidità globale né un ranking FX.</p></div><span class="drivers-source-mark">FONTI CON DATE INDIPENDENTI</span></div>'+
+   '<div class="drivers-country-grid">'+cards+'</div></section>'+
+   '<section class="drivers-panel drivers-selection" aria-label="Dossier liquidità e credito '+selected+'">'+
+   '<div class="drivers-head"><div><span class="mini-overline">02 / LETTURA ECONOMICA · '+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
+   '<h2>'+esc(read.headline)+'</h2></div><span class="drivers-status">Dataset '+esc(row?.status||'NON DISPONIBILE')+'</span></div>'+
+   '<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
+   '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity)+cell('CREDITO',row?.credit,read.credit)+cell('STANDARD E CONDIZIONI',row?.conditions,null)+'</div>'+
+   '<div class="drivers-story"><div><span>PERCHÉ CONTA PER IL FOREX</span><p>'+esc(read.fx)+'</p></div><div><span>COSA MONITORARE</span><p>'+esc(read.watch)+'</p></div></div>'+
+   '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
+   '<div class="drivers-source-note">Ultimo riferimento della scheda: '+esc(row?.as_of||'non dichiarato')+
+   '. Copertura storica non significa aggiornamento corrente. Le serie possono avere frequenze, definizioni, unità e date non omogenee.'+
+   (row?.current_note?' Contesto della fonte: '+esc(row.current_note):'')+'</div></section>'+
+   '<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
+   '<div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità','#69d5ad')+chart(row?.credit,'Credito','#95c6e9')+'</div>'+
+   '<p class="drivers-source-note">I grafici conservano i livelli originali nelle rispettive unità; non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>';
+ }
+ const api={series,direction,interpret,render};
+ root.FXQuantLiquidityCredit=api;
+ if(typeof module!=='undefined'&&module.exports)module.exports=api;
+})(typeof window!=='undefined'?window:globalThis);
