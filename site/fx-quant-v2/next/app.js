@@ -881,6 +881,14 @@ function pairs(){
  // Do not show a large empty historical panel when same-day model labels
  // were revised after the archived snapshot. Current estimated rankings do not
  // reuse those archived categorical changes as operational signals.
+ const monetary=window.FXQuantPairMonetary?.render?
+   window.FXQuantPairMonetary.render({
+    pair:state.pair,favored:fav,today:dayNow(),ois:get('ois'),
+    operational:get('oisOperational'),research:get('oisSameContract'),
+    nzd:get('nzdDirectionalProxy'),history:get('oisHistory'),
+    pairs:get('pairs'),prices:get('currencyPrices')
+   }):
+   '<section class="pair-monetary-bridge"><p>Movimento monetario relativo da verificare nella pagina Tassi.</p></section>';
  const historyDetail=monitor.ready?
   '<details class="pairs-optional-panel"><summary><span><strong>Archivio storico · Come è cambiata la tesi?</strong><small>'+esc(report)+'</small></span><span class="pairs-open-icon">+</span></summary>'+
   (window.FXQuantThesisMonitor?.render?.(get('pairs'),get('thesisHistory'),state.pair)||'')+'</details>':'';
@@ -898,7 +906,7 @@ function pairs(){
  const drill=state.pairDetailOpen?
   '<div class="fx-rank-detail-head" id="fx-selected-thesis"><h2>Tesi completa · '+esc(getPairName(state.pair))+
   '</h2><button type="button" class="fx-rank-back" data-pair-close="1">↑ Torna alla classifica</button></div>'+
-  chooser+main+historyDetail+detail:'';
+  chooser+main+monetary+historyDetail+detail:'';
  return pageHero('FX / PAIR EXPLORER','Dal G8 alle <em>coppie da approfondire.</em>',
   'Prima la classifica visiva delle valute e delle 28 coppie; poi, scegliendo una coppia, trovi il ragionamento completo su macro, pricing, COT e prezzo.')
   +ranking+drill+
@@ -1102,6 +1110,17 @@ function refreshPairPriceChart(focusSelector){
  window.scrollTo({top:scrollTop,behavior:'instant'});
 }
 document.addEventListener('click',e=>{
+ const pairOpenRates=e.target.closest('[data-pair-open-rates]');
+ if(pairOpenRates&&state.route==='pairs'){
+  const k=pairOpenRates.dataset.pairOpenRates;
+  if(!/^[A-Z]{6}$/.test(k)||!get('pairs')?.pairs?.[k])return;
+  e.preventDefault();
+  state.ccy=k.slice(0,3);state.against=k.slice(3);
+  state.route='rates';
+  // Keep current 1D/1W choice; rates and pair use the same source.
+  if(location.hash==='#rates')render();else location.hash='#rates';
+  return;
+ }
  const historyWindow=e.target.closest('[data-rs-history-window]');
  if(historyWindow&&state.route==='rates'){
   const range=Number(historyWindow.dataset.rsHistoryWindow);
