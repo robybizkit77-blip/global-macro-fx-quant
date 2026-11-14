@@ -70,7 +70,7 @@ def main() -> None:
     contents = contents.replace('<script src="./rates-pricing-moves-v1.js?v=1" defer></script>', "<script>"+pricing_move_js+"</script>")
     contents = contents.replace('<script src="./rates-pricing-history-v1.js?v=1" defer></script>', "<script>"+pricing_history_js+"</script>")
     contents = contents.replace('<script src="./rates-relative-pricing-v1.js?v=1" defer></script>', "<script>"+relative_pricing_js+"</script>")
-    contents = contents.replace('<script src="./pair-monetary-bridge-v1.js?v=1" defer></script>', "<script>"+pair_monetary_js+"</script>")
+    contents = contents.replace('<script src="./pair-monetary-bridge-v1.js?v=2" defer></script>', "<script>"+pair_monetary_js+"</script>")
     rates_js_links = [x for x in contents.splitlines()
                       if '<script src="./rates-studio.js?v=' in x]
     assert len(rates_js_links) == 1, "Exactly one versioned Rates script expected"
