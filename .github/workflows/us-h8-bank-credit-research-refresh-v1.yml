@@ -76,9 +76,10 @@ jobs:
         run: |
           set -euo pipefail
           path=site/fx-quant-v2/next/us-h8-bank-credit-research-v1.js
-          remote_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
-          test "$remote_main" = "$(git rev-parse HEAD)" || {
-            echo 'US_H8_MAIN_MOVED_WITHHELD_STALE'; exit 1;
+          git fetch origin main --no-tags
+          local_source="$(git hash-object "$path")"
+          test "$(git rev-parse "origin/main:$path")" = "$local_source" || {
+            echo 'US_H8_SOURCE_BLOB_CHANGED_WITHHELD'; exit 1;
           }
           git fetch origin gh-pages --no-tags
           remote_pages="$(git rev-parse origin/gh-pages)"
@@ -99,8 +100,9 @@ jobs:
           test "$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')" = "$remote_pages" || {
             echo 'US_H8_PAGES_BRANCH_MOVED_WITHHELD'; exit 1;
           }
-          test "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$remote_main" || {
-            echo 'US_H8_MAIN_MOVED_WITHHELD'; exit 1;
+          git fetch origin main --no-tags
+          test "$(git rev-parse "origin/main:$path")" = "$local_source" || {
+            echo 'US_H8_REMOTE_SOURCE_CHANGED_WITHHELD'; exit 1;
           }
           git push --force-with-lease=refs/heads/gh-pages:$remote_pages origin HEAD:gh-pages
           echo "changed=true" >> "$GITHUB_OUTPUT"
