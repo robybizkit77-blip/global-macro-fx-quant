@@ -339,6 +339,17 @@ async function macroDriversJourney(page,label){
  const gbpNative=await locator(page,'[data-liq-role="liquidity"]').innerText();
  assert(gbpNative.includes('2026-09-16')&&!gbpNative.includes('Ultimo 2026-11-11'),
   label+' GBP research must not silently overwrite historical native reserves');
+ const householdCredit=locator(page,'.drivers-gbp-credit-bridge');
+ assert.equal(await householdCredit.count(),1,
+  label+' BoE secured lending growth must be visible inside the existing GBP source dossier');
+ const secured=await householdCredit.innerText();
+ assert(secured.includes('LPMVTYI')&&secured.includes('3,4%')&&
+        secured.includes('3,6%')&&secured.includes('punti percentuali')&&
+        secured.includes('2026-09')&&secured.includes('Money and Credit'),
+  label+' verified GBP annual household credit slowdown and source date must appear');
+ const gbpOldCredit=await locator(page,'[data-liq-role="credit"]').innerText();
+ assert(gbpOldCredit.includes('31 Jul 2026')&&!gbpOldCredit.includes('Ultimo 2026-09'),
+  label+' GBP latest research must not overwrite original old native credit source');
  await locator(page,'[data-liq-country="CAD"]').click();
  assert.equal(await locator(page,'[data-liq-country="CAD"]').getAttribute('aria-pressed'),'true');
  const cadDossier=(await locator(page,'.drivers-selection').innerText());
