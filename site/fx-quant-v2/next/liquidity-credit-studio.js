@@ -118,6 +118,49 @@
  NZD:{fx:'Lo storico disponibile della liquidità NZD è breve e non consente inferenze robuste sui flussi. Credito privato in aumento e settlement cash in calo sono una divergenza da testare contro RBNZ e rischio globale.',
   watch:'Aggiornamenti RBNZ su settlement cash e credito, confronto monetario con RBA e comportamento AUD/NZD e NZD/USD.'}
  };
+ function gbpBoESecuredCreditReading(esc,fmt,now){
+  const x=root.FXQuantGBPBoESecuredCreditResearch;
+  if(!x||x.schema!=='GMFQ_NEXT_GBP_BOE_SECURED_CREDIT_GROWTH_V1'||
+     x.status!=='VERIFIED_BOE_LPMVTYI_SECURED_GROWTH_RESEARCH_ONLY'||
+     x.publisher!=='Bank of England'||x.series_id!=='LPMVTYI'||
+     x.category!=='secured_household_credit_yoy_growth'||
+     x.unit!=='percent_yoy'||x.frequency!=='M'||
+     x.seasonally_adjusted!==true||x.first_release_pit_verified!==false||
+     x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     !Array.isArray(x.dates)||!Array.isArray(x.values)||
+     x.dates.length<3||x.values.length!==x.dates.length||
+     x.last_observation!==x.dates.at(-1)||
+     !/^https:\/\/www\.bankofengland\.co\.uk\/boeapps\/database\//.test(x.source_url))return '';
+  const months=x.dates,values=x.values;
+  const validSeries=months.every((month,i)=>
+    /^\d{4}-\d{2}$/.test(month)&&
+    (i===0||month>months[i-1])&&finite(values[i])&&values[i]>-15&&values[i]<25);
+  const period=observationDate(months.at(-1)),today=observationDate(now);
+  if(!validSeries||!period||!today||dateMs(period)>dateMs(today))return '';
+  const jul=months.indexOf('2026-07'),sep=months.indexOf('2026-09');
+  if(jul<0||sep<0||Math.abs(values[jul]-3.6)>.16||Math.abs(values[sep]-3.4)>.16)return '';
+  const last=values.at(-1),prior=values.at(-2),delta=last-prior;
+  if(!Number.isFinite(delta)||Math.abs(delta)>8)return '';
+  const pace=delta<-.049?'in rallentamento':delta>.049?'in accelerazione':'sostanzialmente stabile';
+  const yoyState=last>0?'continua a espandersi su base annua':last<0?'si contrae su base annua':'è invariato su base annua';
+  const signed=v=>(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),1);
+  const age=Math.round((dateMs(today)-dateMs(period))/864e5);
+  const state=age>75?'PERIODO STORICO · NON CORRENTE':'SERIE MENSILE UFFICIALE DATATA';
+  const matchedRelease=x.last_observation==='2026-09'&&x.official_september_release_date==='2026-10-29';
+  return '<div class="drivers-gbp-credit-bridge" aria-label="Credito garantito BoE crescita annuale corretta per stagionalità">'+
+    '<b>SECONDO CANALE · CREDITO ALLE FAMIGLIE, NON RISERVE</b>'+
+    '<p>Il credito garantito alle famiglie '+esc(yoyState)+': <strong>'+esc(fmt(last,1))+
+    '% annuo nel '+esc(x.last_observation)+'</strong>, rispetto al '+esc(fmt(prior,1))+
+    '% del mese precedente. La variazione del tasso è '+esc(signed(delta))+
+    ' <b>punti percentuali</b>: ritmo '+esc(pace)+'. Non è una contrazione del credito quando la crescita resta positiva.</p>'+
+    (matchedRelease?'<p>Il comunicato BoE del 29 ottobre sullo stesso settembre segnala anche nuovi mutui netti per 3,9 miliardi GBP (4,2 ad agosto) e approvazioni per l’acquisto di casa scese a 53.400. È una conferma circoscritta al mercato ipotecario, <b>non</b> al credito aziendale.</p>':'')+
+    '<p>Confronto corretto: le riserve BoE sono uno stock settimanale di passività della banca centrale; questa è la crescita annua mensile dei prestiti ipotecari. Date e perimetri diversi: non sono due misure confrontabili di un unico flusso, né due conferme automatiche su GBP.</p>'+
+    '<small>'+state+' · periodo '+esc(x.last_observation)+
+    ' · LPMVTYI destagionalizzato · vintage iniziale non certificato · feed canonico GBP invariato · '+
+    '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Serie BoE LPMVTYI ↗</a>'+
+    (matchedRelease?' · <a href="'+esc(x.official_september_2026_release)+'" target="_blank" rel="noopener noreferrer">Money and Credit · 29 ottobre ↗</a>':'')+
+    '</small></div>';
+ }
  function gbpBoEReservesResearch(esc,fmt,now){
   const x=root.FXQuantGBPBoEReservesResearch;
   if(!x||x.schema!=='GMFQ_NEXT_GBP_BOE_WEEKLY_RESERVES_V1'||
@@ -148,7 +191,8 @@
    '<p>Al '+esc(x.source_period)+' le riserve delle banche presso la BoE '+esc(direction)+
    ' di <b>'+sign+esc(groupedMove)+' milioni GBP</b> in una settimana: saldo '+esc(fmt(latest,0))+
    ' milioni, contro '+esc(fmt(earlier,0))+' milioni al '+esc(x.previous_period)+'.</p>'+
-   '<p><b>Cosa sto osservando:</b> uno stock di passività della banca centrale, non un flusso di nuovi prestiti. Anche con riserve in aumento, non possiamo dedurre un allentamento della BoE, nuovi acquisti di asset o domanda di GBP. Il credito garantito del feed nativo ha una data diversa: non va usato come conferma simultanea.</p>'+
+   '<p><b>Cosa sto osservando:</b> uno stock di passività della banca centrale, non un flusso di nuovi prestiti. Anche con riserve in aumento, non possiamo dedurre un allentamento della BoE, nuovi acquisti di asset o domanda di GBP. I prestiti garantiti sono una seconda misura economica con frequenza e periodo propri: non vanno sommati ai saldi di riserva.</p>'+
+   gbpBoESecuredCreditReading(esc,fmt,now)+
    '<p><b>Quale verifica Forex manca?</b> Il mercato deve mostrare se cambia il percorso SONIA relativo a €STR e Fed; poi cerchiamo la risposta di EUR/GBP e GBP/USD, distinguendo fattori GBP da debolezza dell’altra valuta. Senza questo collegamento non emerge un trade dalle sole riserve.</p>'+
    '<div class="drivers-cad-source"><span>'+quality+' · osservazione '+esc(x.source_period)+
    ' · pubblicazione '+esc(x.published_on)+' · RPWB56A · dati settimanali, revisioni possibili · fonte separata dal feed FX</span>'+
