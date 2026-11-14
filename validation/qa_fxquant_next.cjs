@@ -277,12 +277,19 @@ async function macroDriversJourney(page,label){
  await route(page,'liquidity');
  await locator(page,'[data-liq-country="CAD"]').click();
  assert.equal(await locator(page,'[data-liq-country="CAD"]').getAttribute('aria-pressed'),'true');
- assert((await locator(page,'.drivers-selection').innerText()).includes('Serie non disponibile'),
+ const cadDossier=(await locator(page,'.drivers-selection').innerText());
+ assert(cadDossier.includes('Serie non disponibile'),
   label+' missing CAD direct credit must not be invented');
+ assert(cadDossier.includes('COPERTURA')&&cadDossier.includes('QUALITÀ TEMPORALE'),
+  label+' liquidity status must reflect actual coverage and dated sources');
+ assert(cadDossier.includes('punti della survey')&&!cadDossier.includes('−208,33%'),
+  label+' signed lending surveys must not be misreported as percentage changes');
  await locator(page,'[data-liq-country="JPY"]').click();
  const meaning=await locator(page,'.drivers-selection').innerText();
- assert(meaning.includes('liquidità')&&meaning.includes('credito'),
+ assert(meaning.toLowerCase().includes('liquidità')&&meaning.toLowerCase().includes('credito'),
   label+' liquidity-to-credit divergence narrative missing');
+ assert(meaning.includes('STORICO')&&meaning.includes('osservazione precedente'),
+  label+' historical source age and observed changes must be explicit');
  const detail=locator(page,'.drivers-fold');
  await detail.locator('summary').click();
  assert(await detail.evaluate(el=>el.open),label+' financial conditions source details cannot open');
