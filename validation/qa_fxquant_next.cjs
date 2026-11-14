@@ -156,8 +156,8 @@ async function homeMoneyJourney(page,label){
    observed.push(period);
    assert.equal(await row.getAttribute('data-home-pricing-available'),'true',
     label+' a shown horizon must have valid dated 6M/FX evidence');
-   const text=await row.innerText();
-   assert(/\\d{2}\\/\\d{2}\\/\\d{4}\\s*→\\s*\\d{2}\\/\\d{2}\\/\\d{4}/.test(text),
+   const text=(await row.innerText()).replace(/\s+/g,' ');
+   assert(/\d{2}\/\d{2}\/\d{4}\s*→\s*\d{2}\/\d{2}\/\d{4}/.test(text),
     label+' missing source-aligned date interval at '+period+' sessions');
    assert(/Δ 6M.+pb.+FX.+%/.test(text),
     label+' longer horizon missing numeric 6M/Forex comparison');
