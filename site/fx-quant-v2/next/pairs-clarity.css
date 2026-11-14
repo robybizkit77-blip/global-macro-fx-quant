@@ -104,3 +104,12 @@
 @media(max-width:900px){.pair-monetary-body{grid-template-columns:1fr}.pair-monetary-values{max-width:520px}}
 @media(max-width:560px){.pair-monetary-bridge{padding:15px 13px}.pair-monetary-top{align-items:stretch;flex-direction:column}.pair-monetary-top>button{text-align:left;white-space:normal}.pair-monetary-kpi{padding:11px 9px}}
 @media(prefers-reduced-motion:reduce){.pair-monetary-top>button{transition:none}}
+
+/* Source links are first-class research evidence, not decorative placeholders. */
+.pair-monetary-links{display:flex;flex-wrap:wrap;gap:8px 13px;margin-top:12px}
+.pair-monetary-links a{display:inline-flex;align-items:center;padding:8px 10px;border:1px solid rgba(116,179,192,.34);border-radius:7px;background:rgba(22,62,73,.48);color:#afe3da;font-size:10px;font-weight:740;text-decoration:none}
+.pair-monetary-links a:hover{background:rgba(34,93,103,.6);color:#e5fff7}
+.pair-monetary-links a:focus-visible{outline:2px solid #a9ede4;outline-offset:3px}
+.pair-monetary-kpi[data-pair-monetary-evidence^="HISTORICAL"]{border-color:rgba(130,188,175,.46)}
+.pair-monetary-kpi[data-pair-monetary-evidence="LEVEL_CONTEXT"]{background:rgba(16,44,57,.48)}
+@media(max-width:560px){.pair-monetary-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.pair-monetary-links a{font-size:9px;line-height:1.4;min-width:0}}
