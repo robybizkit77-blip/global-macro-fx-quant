@@ -486,16 +486,29 @@
       observationDate(row.proxy_as_of)>day||!finite(row.proxy_value)||row.proxy_value<=0)return [];
    const pct=value=>finite(value)?esc((value>0?'+':'')+fmt(value,2))+'%':'dato assente';
    const age=(dateMs(day)-dateMs(observationDate(row.proxy_as_of)))/864e5;
-   return ['<p data-chf-snb-lane="'+esc(key)+'"><b>'+esc(label)+'</b> · '+esc(row.proxy_as_of)+
+   return [{key,row,html:'<p data-chf-snb-lane="'+esc(key)+'"><b>'+esc(label)+'</b> · '+esc(row.proxy_as_of)+
     ' · '+esc(fmt(row.proxy_value/1000,2))+' miliardi CHF. Sul mese '+pct(row.change_1m_pct)+
-    ' · in tre mesi '+pct(row.change_3m_pct)+(age>70?' · dato storico, verificare il nuovo rilascio.':'.')+'</p>'];
+    ' · in tre mesi '+pct(row.change_3m_pct)+(age>70?' · dato storico.':'.')+'</p>'}];
   });
-  if(!entries.length)return '';
+  if(!entries.length)return '<p class="drivers-lead">I dati mensili SNB sono temporaneamente indisponibili.</p>';
+  const read=entries.map(entry=>entry.html).join('');
+  const byKey=Object.fromEntries(entries.map(entry=>[entry.key,entry.row]));
+  const deposits=byKey['CHF.sight_deposits'],credit=byKey['CHF.credit'];
+  const sameMonth=deposits&&credit&&deposits.proxy_as_of===credit.proxy_as_of;
+  const month=sameMonth?deposits.proxy_as_of:'';
+  const monthLabel=month?new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(month+'-01T12:00:00Z')):'';
+  const rateText=(value,label)=>!finite(value)?label+' senza confronto mensile':
+   Math.abs(value)<0.1?label+' quasi ferm'+(label==='Depositi'?'i':'o'):
+   label+(value>0?' in aumento':' in calo');
+  const headline=sameMonth?rateText(deposits.change_1m_pct,'Depositi')+' e '+rateText(credit.change_1m_pct,'credito'):
+   'Depositi e credito secondo le ultime osservazioni disponibili';
+  const creditTrend=credit?.change_3m_pct;
+  const reading=finite(creditTrend)?'Sui tre mesi il credito '+(creditTrend>0?'risulta ancora in crescita':creditTrend<0?'risulta in calo':'è stabile')+'. ':'';
   return '<section class="drivers-cad-official" aria-label="Serie mensili ufficiali SNB">'+
    '<span class="mini-overline">SWISS NATIONAL BANK · SERIE MENSILI</span>'+
-   '<h3>Quanta liquidità resta nel sistema e come si muove il credito?</h3>'+
-   entries.join('')+
-   '<p>Le due misure hanno un perimetro diverso dallo storico del dossier. Il calo dei depositi, da solo, non identifica interventi valutari. Se il credito perde slancio per più mesi, verifica attività interna e attese sui tassi SNB rispetto alla BCE, poi la risposta di EUR/CHF.</p>'+
+   '<h3>'+esc((monthLabel?monthLabel.charAt(0).toUpperCase()+monthLabel.slice(1)+' · ':'')+headline)+'</h3>'+
+   '<p>'+esc(reading)+'Per capire se le condizioni del credito stanno peggiorando, servono più mesi e informazioni sulla facilità di ottenere prestiti.</p>'+
+   read+
    '<div class="drivers-cad-source"><a href="https://data.snb.ch/en/publishingSet/BSTA" target="_blank" rel="noopener noreferrer">Fonte: SNB · Statistiche bancarie mensili ↗</a></div></section>';
  }
  function render(api){
@@ -534,20 +547,23 @@
     const item=ccy==='NZD'&&nzd?nzd:all[ccy],reading=interpret(item),active=ccy===selected;
     return '<button class="drivers-country" type="button" data-liq-country="'+ccy+'" aria-pressed="'+String(active)+'">'+
      '<span class="drivers-country-head"><b>'+esc(FLAGS[ccy]||'')+' '+ccy+'</b><small>'+esc(NAMES[ccy]||ccy)+'</small></span>'+
-     '<span class="drivers-mini-state" data-tone="'+(ccy==='CHF'?'neutral':reading.liquidity.tone)+'">Liquidità · '+esc(ccy==='CHF'?'VEDI DOSSIER':reading.liquidity.label)+'</span>'+
-     '<span class="drivers-mini-state" data-tone="'+(ccy==='CHF'?'neutral':reading.credit.tone)+'">Credito · '+esc(ccy==='CHF'?'VEDI DOSSIER':reading.credit.label)+'</span></button>';
+     (ccy==='CHF'?'<span class="drivers-mini-state" data-tone="neutral">Apri scheda CHF</span>':
+      '<span class="drivers-mini-state" data-tone="'+reading.liquidity.tone+'">Liquidità · '+esc(reading.liquidity.label)+'</span>'+
+      '<span class="drivers-mini-state" data-tone="'+reading.credit.tone+'">Credito · '+esc(reading.credit.label)+'</span>')+'</button>';
   }).join('');
+  const facts='<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+
+   cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>';
   return pageHero('FINANCIAL CONDITIONS / G8','Liquidità & Credito. <em>Il denaro arriva all’economia?</em>',
    'Il denaro può aumentare senza generare nuovi prestiti. Osserviamo i due canali per capire se cambiano crescita, pricing e valute.')+
    '<section class="drivers-panel" id="liquidity-studio"><div class="drivers-head"><div><span class="mini-overline">01 / MAPPA G8</span><h2>Otto economie, due canali distinti</h2><p>Seleziona un paese. Le frecce sono classificazioni delle singole serie storiche, non un indice di liquidità globale né un ranking FX.</p></div><span class="drivers-source-mark">FONTI CON DATE INDIPENDENTI</span></div>'+
    '<div class="drivers-country-grid">'+cards+'</div></section>'+
    '<section class="drivers-panel drivers-selection" aria-label="Dossier liquidità e credito '+selected+'">'+
    '<div class="drivers-head"><div><span class="mini-overline">02 / LETTURA ECONOMICA · '+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
-   '<h2>'+esc(selected==='CHF'?'Depositi a vista e credito nel dossier CHF':read.headline)+'</h2></div><span class="drivers-status" data-tone="'+(covered===3?'neutral':'unknown')+'">COPERTURA '+covered+'/3 SERIE</span></div>'+
-   '<p class="drivers-lead">'+esc(selected==='CHF'?'Depositi e credito si leggono a partire dalle rispettive fonti e date di riferimento.':read.meaning)+'</p>'+
+   '<h2>'+esc(selected==='CHF'?'Liquidità e credito in Svizzera':read.headline)+'</h2></div>'+
+   (selected==='CHF'?'':'<span class="drivers-status" data-tone="'+(covered===3?'neutral':'unknown')+'">COPERTURA '+covered+'/3 SERIE</span>')+'</div>'+
+   (selected==='CHF'?chf:'<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
    '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
-   '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>'+
-   chf+
+   facts)+
    (selected==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):'')+
    (selected==='JPY'?jpyBOJCreditResearch(esc,fmt,today):'')+
    (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):'')+
@@ -558,15 +574,16 @@
    '<div class="drivers-story"><div><span>IPOTESI DI TRASMISSIONE AL FOREX</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div><div><span>COSA MONITORARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
    (root.FXQuantDriverMarketAudit?.render?.({get,esc,dayNow},selected)||'')+
    '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
-   '<details class="drivers-source-provenance-fold"><summary>Provenienza e limiti dell’aggiornamento automatico</summary>'+
+   '<details class="drivers-source-provenance-fold"><summary>'+(selected==='CHF'?'Fonti e storico':'Provenienza e limiti dell’aggiornamento automatico')+'</summary>'+
+   (selected==='CHF'?'<p>Le serie mensili SNB hanno un perimetro diverso dallo storico precedente, che resta in verifica.</p>'+facts:'')+
     '<p>Il registro delle fonti è una fotografia al '+esc(provenance?.as_of||'data non verificata')+', non la prova che la pipeline abbia aggiornato oggi tutte le serie. Contratti mappati: '+esc(provenance?.verifiedContracts??'n.d.')+'/3. Un contratto pronto non equivale a un dato recente.</p>'+
     '<ul>'+roles.map(role=>{const g=policyGate(role);return '<li><strong>'+esc(({liquidity:'Liquidità',credit:'Credito',conditions:'Standard e condizioni'})[role])+'</strong>: '+esc(g?.label||'provenienza non verificata')+'. '+esc(g?.narrative||'Verificare il registro fonti.')+'</li>'}).join('')+'</ul></details>'+
-   '<div class="drivers-source-note">Ultimo riferimento della scheda: '+esc(row?.as_of||'non dichiarato')+
+   (selected==='CHF'?'':'<div class="drivers-source-note">Ultimo riferimento della scheda: '+esc(row?.as_of||'non dichiarato')+
    '. Copertura storica non significa aggiornamento corrente. Le serie possono avere frequenze, definizioni, unità e date non omogenee.'+
-   (row?.current_note?' Contesto della fonte: '+esc(row.current_note):'')+'</div></section>'+
-   '<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
-   '<div class="drivers-chart-grid">'+(selected==='CHF'?'<p class="drivers-source-note">Lo storico CHF resta in verifica. Le osservazioni SNB sono nel dossier sopra.</p>':chart(row?.liquidity,'Liquidità','#69d5ad')+chart(row?.credit,'Credito','#95c6e9'))+'</div>'+
-   '<p class="drivers-source-note">I grafici conservano i livelli originali nelle rispettive unità; non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>';
+   (row?.current_note?' Contesto della fonte: '+esc(row.current_note):'')+'</div>')+'</section>'+
+   (selected==='CHF'?'':'<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
+   '<div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità','#69d5ad')+chart(row?.credit,'Credito','#95c6e9')+'</div>'+
+   '<p class="drivers-source-note">I grafici conservano i livelli originali nelle rispettive unità; non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>');
  }
  const api={series,direction,interpret,observationDate,sourceEvidence,render};
  root.FXQuantLiquidityCredit=api;
