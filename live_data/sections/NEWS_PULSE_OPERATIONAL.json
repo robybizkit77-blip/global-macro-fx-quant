@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-13",
-  "generated_at_utc": "2026-11-15T11:03:58.578136Z",
+  "generated_at_utc": "2026-11-15T13:54:52.905149Z",
   "items": [
     {
       "as_of": "2026-11-13",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-15T11:03:58.578136Z",
+  "last_checked_at_utc": "2026-11-15T13:54:52.905149Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1163,9 +1163,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 3,
+        "accepted_items": 2,
         "ccy": "GBP",
-        "entries_rejected": 47,
+        "entries_rejected": 48,
         "feed_entries_seen": 50,
         "feed_url": "https://www.bankofengland.co.uk/rss/news",
         "source": "Bank of England",
