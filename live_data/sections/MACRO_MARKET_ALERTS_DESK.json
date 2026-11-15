@@ -1,8 +1,23 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-15T17:46:26Z",
+  "generated_at_utc": "2026-11-15T22:53:48Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-cc98ea70cfce7fafc411",
+      "observed_at_utc": "2026-11-15T18:43:43Z",
+      "headline": "Fed 'has some work to do on inflation,' KC Fed chief says",
+      "summary": "Reuters riporta: Fed 'has some work to do on inflation,' KC Fed chief says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxORXg3dWdlUEMzckhPaldaYlFrSXlzQnVLeEJLRGtnMFFpeWh5VXI3akUxWEtLQ3JwSk92b2pvWi1FdjNFWVpBZm9Jck56NDUwQkZDUGZpUG01X3RDLS02enpGcWpnXzc3ZWctengxamdOTDY1MzdYMzgxR0V2THk3Zl9xbXZhTEcyWHEzRDU2YWZ2dTZVaFVpNA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-97886c867015cccf6c21",
       "observed_at_utc": "2026-11-15T13:31:43Z",
@@ -1390,21 +1405,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNWlg3cE0wZk9VZ19wNWlhZ3h0SjN3MWloT1BKU0tiN2Nld0dXOWNmMVBxdE40d3VUMUMtZkI3Vnl2em9IdG5FSnNuZHJiZEgwemE5S2ZkVFNEUHZLMnMtS3J4ZWVWX0I1c1VFc21hM2dMbXVBZ3lmeldiNWVHS0w5TUN6MHY3YjFMVGlrYlZTSlJFRzVzTTlSXzJZei05YmV4ZkpoV09aNVAtOU5DbWdmQ2F1Y1hncUZFY0FMQTh3?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-ff49379f505ad7a61c71",
-      "observed_at_utc": "2026-11-05T22:21:24Z",
-      "headline": "Japanese savers have rediscovered interest rates and banks are feeling it",
-      "summary": "Reuters riporta: Japanese savers have rediscovered interest rates and banks are feeling it. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPQnlnbmp2cDFGYlhlRDFqRFpUYW1zYWFKRDJlWTVQWjZ0Z2lMaXFyejdWNzcxcm1ScDk0aXZkcnF6bnpiYWl0RWZvSzh6NVFPdkVkaWRISnVBY09obk9SZHdXS01MS1BGUWJVd1o3YmJaVDM0Y0VwdzZSbTFWenliWkFCcThIcUJLeFV3OEdNdzF0RkVVWGU5LWhJUHBHWXhvZjZaa0JVY0VsV0oxeVZZQUs0NFA1MG9fbmctel9DVTcydw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
