@@ -2,6 +2,11 @@ name: CHF Residual Proxy Refresh V1
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - validation/estimated/refresh_chf_residual_proxies_v1.py
+      - .github/workflows/chf-residual-proxy-refresh-v1.yml
   push:
     branches:
       - main
@@ -12,7 +17,8 @@ on:
       # Scheduled/manual refresh continues independently; no self-trigger cascade.
       - .github/workflows/chf-residual-proxy-refresh-v1.yml
   schedule:
-    - cron: '35 06 * * 1-5'
+    # Run after the 09:00 Swiss-local statistical release in both seasons.
+    - cron: '35 09 * * 1-5'
 
 permissions:
   contents: write
@@ -29,8 +35,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
           fetch-depth: 0
+          persist-credentials: ${{ github.event_name != 'pull_request' }}
 
       - uses: actions/setup-python@v5
         with:
@@ -72,7 +78,7 @@ jobs:
           PY
 
       - name: Persist changed CHF proxies on main only
-        if: github.ref_name == 'main'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           changed="$(git diff --name-only -- live_data/sections/ESTIMATED_RESIDUAL_GAPS.json)"
