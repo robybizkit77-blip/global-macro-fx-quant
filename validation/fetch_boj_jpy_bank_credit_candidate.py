@@ -3,7 +3,9 @@ import argparse
 import json
 import urllib.parse
 import urllib.request
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 LIQ=Path('live_data/sections/NATIVE_LIQ_DATA.json')
 DEFAULT_OUT=Path('validation/liquidity-jpy-bank-credit-candidate.json')
@@ -13,7 +15,11 @@ CODE='DLCLAEDBLTTO'
 
 
 def fetch():
-    qs=urllib.parse.urlencode({'format':'json','lang':'en','db':DB,'startDate':'202401','endDate':'202612','code':CODE})
+    end_month = datetime.now(ZoneInfo('Asia/Tokyo')).strftime('%Y%m')
+    qs = urllib.parse.urlencode({
+        'format': 'json', 'lang': 'en', 'db': DB, 'startDate': '202401',
+        'endDate': end_month, 'code': CODE,
+    })
     url=BASE+'?'+qs
     req=urllib.request.Request(url,headers={'User-Agent':'global-macro-fx-quant/1.0','Accept':'application/json'})
     with urllib.request.urlopen(req,timeout=45) as r:
