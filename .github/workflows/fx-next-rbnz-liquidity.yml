@@ -1,0 +1,67 @@
+name: FX Quant Next RBNZ Monthly Liquidity Research
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/fx-next-rbnz-liquidity.yml'
+      - 'validation/publishing/collect_next_rbnz_liquidity.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fx-next-rbnz-liquidity.yml'
+      - 'validation/publishing/collect_next_rbnz_liquidity.py'
+  schedule:
+    # Several daily checks around month end cover weekends and delayed releases.
+    - cron: '23 2 28-31,1-5 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read and validate both live source tables
+        run: python3 validation/publishing/collect_next_rbnz_liquidity.py "$RUNNER_TEMP/nzd.js"
+
+  refresh:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    permissions:
+      contents: write
+    concurrency:
+      group: next-rbnz-liquidity-refresh
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Refresh official D10 and C50 data
+        env:
+          TARGET: site/fx-quant-v2/next/nzd-rbnz-liquidity-research-v1.js
+        run: |
+          set -euo pipefail
+          python3 validation/publishing/collect_next_rbnz_liquidity.py "$TARGET" | tee -a "$GITHUB_STEP_SUMMARY"
+          git add -- "$TARGET"
+          if git diff --cached --quiet; then
+            echo "Already current" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m 'Refresh official NZD D10/C50 monthly research'
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            git pull --rebase origin main
+          done
+          exit 1
