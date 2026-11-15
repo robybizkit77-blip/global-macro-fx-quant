@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import math
+import re
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -31,7 +32,7 @@ def get_json(base, params=None):
         return json.load(resp), url
 
 
-def extract_single_series(payload, expected_key_fragment=None):
+def extract_single_series(payload, expected_key):
     series = payload.get('timeseries') if isinstance(payload, dict) else None
     if not isinstance(series, list) or not series:
         raise RuntimeError('SNB payload has no timeseries')
@@ -51,15 +52,10 @@ def extract_single_series(payload, expected_key_fragment=None):
         if not valid:
             continue
         candidates.append((key, meta, valid))
-    if expected_key_fragment:
-        exact = [x for x in candidates if expected_key_fragment in x[0]]
-        if len(exact) == 1:
-            return exact[0]
-        if len(exact) > 1:
-            raise RuntimeError(f'Ambiguous SNB series for {expected_key_fragment}: {len(exact)}')
-    if len(candidates) != 1:
-        raise RuntimeError(f'Expected one usable SNB series, found {len(candidates)}')
-    return candidates[0]
+    exact = [item for item in candidates if item[0] == expected_key]
+    if len(exact) != 1:
+        raise RuntimeError(f'Expected one usable SNB series for {expected_key}, found {len(exact)}')
+    return exact[0]
 
 
 def pct(a, b):
@@ -76,34 +72,54 @@ def last_update(url):
         return {'status': 'UNAVAILABLE_NON_BLOCKING', 'error': str(exc)}
 
 
+def monthly_observations(values, today):
+    dates = [stamp for stamp, _ in values]
+    if (not all(re.fullmatch(r'20\d{2}-(0[1-9]|1[0-2])', stamp) for stamp in dates)
+            or len(dates) != len(set(dates)) or max(dates) >= today.strftime('%Y-%m')):
+        raise RuntimeError('SNB returned invalid, repeated or future monthly periods')
+    return dict(sorted(values))
+
+
+def previous_month_value(values, stamp, lag):
+    year, month = map(int, stamp.split('-'))
+    year, month = divmod(year * 12 + month - 1 - lag, 12)
+    return values.get(f'{year:04}-{month + 1:02}')
+
+
 def main():
+    today = datetime.now(timezone.utc)
+    bounds = {'fromDate': f'{today.year - 1}-01', 'toDate': today.strftime('%Y-%m')}
     credit_payload, credit_request = get_json(CREDIT_URL, {
         'dimSel': CREDIT_DIMSEL,
-        'fromDate': '2025-01',
-        'toDate': '2026-12',
+        **bounds,
     })
     credit_key, credit_meta, credit_vals = extract_single_series(
-        credit_payload, 'bakredinausbm{AV1,A,T1,B}'
+        credit_payload, 'EPB@SNB.bakredinausbm{AV1,A,T1,B}'
     )
-    credit_vals.sort(key=lambda x: x[0])
-    c_date, c_value = credit_vals[-1]
-    c_prev = credit_vals[-2][1] if len(credit_vals) >= 2 else None
-    c_3m = credit_vals[-4][1] if len(credit_vals) >= 4 else None
+    if credit_meta.get('frequency') != 'P1M' or credit_meta.get('unit') != 'In CHF millions' or credit_meta.get('scale') != '':
+        raise RuntimeError('Unexpected SNB credit frequency or unit')
+    credit_vals = monthly_observations(credit_vals, today)
+    c_date = max(credit_vals)
+    c_value = credit_vals[c_date]
+    c_prev = previous_month_value(credit_vals, c_date, 1)
+    c_3m = previous_month_value(credit_vals, c_date, 3)
     if not (100000 <= c_value <= 1000000):
         raise RuntimeError(f'CHF credit value outside plausibility band: {c_value}')
 
     sight_payload, sight_request = get_json(SIGHT_URL, {
         'dimSel': SIGHT_DIMSEL,
-        'fromDate': '2025-01',
-        'toDate': '2026-12',
+        **bounds,
     })
     sight_key, sight_meta, sight_vals = extract_single_series(
         sight_payload, 'BSTA@SNB.MONA_U.BIL.AKT.FMI.GGU{U,T,T,A40}'
     )
-    sight_vals.sort(key=lambda x: x[0])
-    s_date, s_raw = sight_vals[-1]
-    s_prev_raw = sight_vals[-2][1] if len(sight_vals) >= 2 else None
-    s_3m_raw = sight_vals[-4][1] if len(sight_vals) >= 4 else None
+    if sight_meta.get('frequency') != 'P1M' or sight_meta.get('unit') != 'CHF' or sight_meta.get('scale') != '3':
+        raise RuntimeError('Unexpected SNB sight deposits frequency or unit')
+    sight_vals = monthly_observations(sight_vals, today)
+    s_date = max(sight_vals)
+    s_raw = sight_vals[s_date]
+    s_prev_raw = previous_month_value(sight_vals, s_date, 1)
+    s_3m_raw = previous_month_value(sight_vals, s_date, 3)
     # SNB metadata says unit CHF, exponent 3; residual layer stores CHF millions.
     s_value = s_raw / 1000.0
     s_prev = s_prev_raw / 1000.0 if s_prev_raw is not None else None
@@ -115,6 +131,7 @@ def main():
     if doc.get('official_lanes_untouched') is not True:
         raise RuntimeError('Residual governance is not fail-closed')
 
+    original = json.loads(json.dumps(doc))
     credit = doc['lanes']['CHF.credit']
     credit.update({
         'status': 'ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY',
@@ -128,7 +145,6 @@ def main():
         'timeseries_key': credit_key,
         'source_metadata': credit_meta,
         'source_last_update': last_update(CREDIT_LAST_UPDATE),
-        'fetched_at_utc': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
         'official_canonical_untouched': True,
         'interpretation': 'Official SNB dimensional proxy, auto-refreshed. Use direction/momentum/turning point; absolute runtime equivalence remains unproven.'
     })
@@ -146,12 +162,28 @@ def main():
         'timeseries_key': sight_key,
         'source_metadata': sight_meta,
         'source_last_update': last_update(SIGHT_LAST_UPDATE),
-        'fetched_at_utc': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
         'official_canonical_untouched': True,
         'interpretation': 'Official SNB series proxy, auto-refreshed and rescaled from CHF thousands to CHF millions. Use direction/momentum only; runtime level mismatch remains explicit.'
     })
 
-    OUT.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    for name in ('CHF.credit', 'CHF.sight_deposits'):
+        lane, previous = doc['lanes'][name], original['lanes'][name]
+        if lane['proxy_as_of'] < previous['proxy_as_of']:
+            raise RuntimeError(f'{name}: source predates the published observation')
+        if lane['source_last_update'].get('status') == 'UNAVAILABLE_NON_BLOCKING':
+            lane['source_last_update'] = (previous.get('source_last_update') if
+                                          lane['proxy_as_of'] == previous['proxy_as_of'] else
+                                          {'status': 'UNAVAILABLE_NON_BLOCKING'})
+        # Query bounds roll with the calendar. They are not evidence of a release.
+        if {k: v for k, v in lane.items() if k != 'source_endpoint'} == {
+                k: v for k, v in previous.items() if k != 'source_endpoint'}:
+            lane['source_endpoint'] = previous['source_endpoint']
+        if lane != previous:
+            lane['fetched_at_utc'] = today.isoformat().replace('+00:00', 'Z')
+    if doc != original:
+        temp = OUT.with_suffix('.tmp')
+        temp.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+        temp.replace(OUT)
     print(json.dumps({
         'status': 'PASS',
         'credit': {'as_of': c_date, 'value': credit['proxy_value'], 'change_1m_pct': credit['change_1m_pct'], 'key': credit_key},
