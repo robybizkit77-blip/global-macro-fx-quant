@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-14T21:21:53Z",
-  "evaluation_date_europe_rome": "2026-11-14",
+  "generated_at_utc": "2026-11-15T01:46:08Z",
+  "evaluation_date_europe_rome": "2026-11-15",
   "reference_only": true,
   "policy": {
     "fail_closed": true,
@@ -182,7 +182,7 @@
       "CHF": {
         "state": "STALE",
         "as_of": "2026-09-30",
-        "reason": "Age 45d exceeds the 3d alert limit."
+        "reason": "Age 46d exceeds the 3d alert limit."
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
@@ -195,25 +195,20 @@
         "change_10y_bp": 11.0
       },
       "AUD": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-11-11",
-        "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily · 2026-11-11",
-        "government_2y_pct": 4.808,
-        "government_10y_pct": 5.044,
-        "10y_minus_2y_bp": 23.6,
-        "change_2y_bp": -1.8,
-        "change_10y_bp": -3.8
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "NZD": {
         "state": "STALE",
         "as_of": "2026-10-16",
-        "reason": "Age 29d exceeds the 3d alert limit."
+        "reason": "Age 30d exceeds the 3d alert limit."
       }
     },
     "cot_weekly": {
       "state": "STALE",
       "as_of": "2026-11-03",
-      "reason": "Age 11d exceeds the 10d alert limit."
+      "reason": "Age 12d exceeds the 10d alert limit."
     },
     "fx_ecb_fixing": {
       "state": "AVAILABLE_CERTIFIED",
