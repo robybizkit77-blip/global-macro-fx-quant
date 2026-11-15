@@ -71,6 +71,7 @@ on:
     # GITHUB_TOKEN commits do NOT emit a new push workflow. Use the producer's
     # completed run as an independent publication signal after its main write.
     workflows:
+      - 'FX Quant Next RBNZ Monthly Liquidity Research'
       - 'FX Quant V2 AUD Official RBA F2 Research Refresh'
       - 'FX Quant V2 CHF NZD Same-Basis Research Refresh'
       - 'FX Quant V2 Cross-Asset Published Source Refresh'
