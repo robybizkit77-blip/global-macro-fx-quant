@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-15T11:03:34Z",
+  "generated_at_utc": "2026-11-15T17:46:26Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-97886c867015cccf6c21",
+      "observed_at_utc": "2026-11-15T13:31:43Z",
+      "headline": "Gulf bourses slide as Hormuz tensions and houthi strikes rattle traders",
+      "summary": "Reuters riporta: Gulf bourses slide as Hormuz tensions and houthi strikes rattle traders. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPZ1U5SnRYV0N6dE01QU1sOFNRWHR0WndCRG05bDl3UEhURE1jR01ZZ2p4dmFpb1llajB6QzdpRmp3WUZYSkhRRmhHT0tKY2hfWjN1b0U3UzJuUkZ3N3ZpWlU1Sk1pOWJvZ3cxcVVRVmhycW9ON2R1Um5nR3ZSQUtzTHE5aHlMb28wM2xyMzQtdnZHNUFfMWR4ZVZwN2pfc2RmcTRMTEtfY0NHbEh0dUo4N0g5UHNGTGJ3c1E?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-1e8023b86e15fbf8f466",
+      "observed_at_utc": "2026-11-15T04:07:26Z",
+      "headline": "ProShares Inflation Expectations ETF (RINF.N) | Stock Price & Latest News",
+      "summary": "Reuters riporta: ProShares Inflation Expectations ETF (RINF.N) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE1FaG5xVzV3VGJuY29sNEVOeGNIaWNwMzRKaGN5czF5LTdSSnRiNUFERGt3WXJNdEVCUlpVcEFpcGdLTGxvd2NXclBKYktRSWpzNGN3M3JiOEFlTHdWaDAyb1RKU0ZpRWNoeFpz?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-447e9bc083f696653772",
+      "observed_at_utc": "2026-11-14T16:00:00Z",
+      "headline": "Retail sales and Fed minutes in focus next week",
+      "summary": "AP News riporta: Retail sales and Fed minutes in focus next week. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNSjh3amNkSEV6QzBaQTU5U3VQZ3huY1ozMUR0VWFhV25kTVNGcktjRFNJcWdtSExNaDF0NUFiVWtDZmswbVVad0pjal82REhmYVdLakhLQW9pTjlxNWdUSnd2cU9Wb0dnZmZmY2FMa29WYmxBaHlCRy1EbWtFZGlQamk2cFNLZldGWWNfak5ZNFpjWURDM0U0OXNidjdDOEp6Tm9Z?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-c491499050093fa74722",
       "observed_at_utc": "2026-11-15T04:10:52Z",
@@ -1364,51 +1405,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPQnlnbmp2cDFGYlhlRDFqRFpUYW1zYWFKRDJlWTVQWjZ0Z2lMaXFyejdWNzcxcm1ScDk0aXZkcnF6bnpiYWl0RWZvSzh6NVFPdkVkaWRISnVBY09obk9SZHdXS01MS1BGUWJVd1o3YmJaVDM0Y0VwdzZSbTFWenliWkFCcThIcUJLeFV3OEdNdzF0RkVVWGU5LWhJUHBHWXhvZjZaa0JVY0VsV0oxeVZZQUs0NFA1MG9fbmctel9DVTcydw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c9659b572df9d6fa7df3",
-      "observed_at_utc": "2026-11-05T16:31:56Z",
-      "headline": "Traders eye further rate hikes after first BoE increase in three years",
-      "summary": "Reuters riporta: Traders eye further rate hikes after first BoE increase in three years. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPeUF5c3ZEd3FsaktuWWpkTkdFdmNzWHJSYi1LWGF6Vi12ZUNxT3ZIYkZCNEo1YlBENG81bjRLbmZxTlRzdTZ0TWE2TGFQYTBiTmJrMElLWEVGS3F3Q3g5TGFCWnNMbjZvR3FhYnVMTkRFNHNtcHZKYWhxUTI3cEtJaS1tNVFSUW94YTVDdGNOV0hscGhZYkVFazdGSmZaamwxYno1Tmk1TW8xNUYtRmxYbktB?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-a7c3875f57013d2951b4",
-      "observed_at_utc": "2026-11-05T03:46:00Z",
-      "headline": "Gold at over two-week high as dollar, yields weaken; US payrolls data awaited",
-      "summary": "Reuters riporta: Gold at over two-week high as dollar, yields weaken; US payrolls data awaited. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPRGw2bTVBSnBUN1BZcDhwQ0dVSmFIUVhDdGZLazVPNnV2NG5iYkVxXzg5QmRyY21IOWZOcFVRVXJBSU5PT1pXQWh3UHVmVWxhSm15bVh2NTVQZzJGVHpPT2dSSHc2NXlaLUYyQmVGX24xdW84cVN2NXpGcUhGZ0xrNDZSODR1NDNtNW9vc2JJSUVRcGZIMkprZHNONm4wN2VxUzdBX3B1NWxxcDBsWjNnZ05tUzdMRHJNaEJja2oxNC1QLWQt?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-946b48a7463f175f15ac",
-      "observed_at_utc": "2026-11-05T01:06:00Z",
-      "headline": "Dollar little changed as oil prices bounce, payrolls eyed",
-      "summary": "Reuters riporta: Dollar little changed as oil prices bounce, payrolls eyed. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOS3ZvRzF1aTlTZE9WT0NxYkU4TWFHTi04YnhEVXd1VTJRTXdibGtPdGZtTWkwZEVBLU0xNmtZaEc4R2lWZWVSdGJtY1FSdzhIazR5a2YwdDJoRzFFTHN1Z2FNb2l5b2x5SllyTE9sTTZTNkxFODFJVkhxOGhlblRTXzNiLTZpc3FKcXBqRzZUMjYtY3VXOHlnR0hPOFFYTldZaXpzSGNTbzlPNlhUdHF1amJTcFp1dw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
