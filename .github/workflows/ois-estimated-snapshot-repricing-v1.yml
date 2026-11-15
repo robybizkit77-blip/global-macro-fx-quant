@@ -20,6 +20,9 @@ on:
       - 'validation/cb_pricing/test_ois_uncontested_contract_moves_v1.py'
       - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl'
       - 'validation/cb_pricing/test_ois_same_contract_history_v1.py'
+      - 'validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py'
+      - 'validation/cb_pricing/test_fxv2_same_contract_repricing_v1.py'
+      - 'validation/cb_pricing/build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/test_ois_operational_view_v1.py'
       - 'validation/cb_pricing/test_ois_official_runtime_parity_v1.py'
       - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
@@ -56,6 +59,9 @@ on:
       - 'validation/cb_pricing/test_ois_uncontested_contract_moves_v1.py'
       - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl'
       - 'validation/cb_pricing/test_ois_same_contract_history_v1.py'
+      - 'validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py'
+      - 'validation/cb_pricing/test_fxv2_same_contract_repricing_v1.py'
+      - 'validation/cb_pricing/build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/test_ois_operational_view_v1.py'
       - 'validation/cb_pricing/test_ois_official_runtime_parity_v1.py'
       - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
@@ -158,6 +164,13 @@ jobs:
         if: github.event_name != 'pull_request'
         run: python validation/cb_pricing/ois_same_contract_history_v1.py --write
 
+      - name: Rebuild and verify published same-contract futures research
+        run: |
+          python validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py
+          python validation/cb_pricing/test_fxv2_same_contract_repricing_v1.py
+          python validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py --check
+          node validation/qa_fxv2_same_contract_reading_v1.cjs
+
       - name: Audit independently verified clean contracts despite other conflicted tenors
         run: |
           python validation/cb_pricing/ois_uncontested_contract_moves_v1.py \
@@ -199,6 +212,9 @@ jobs:
           python validation/cb_pricing/test_build_ois_source_readiness_view_v1.py
           python validation/cb_pricing/check_ois_readiness_parity_v1.py
           python validation/cb_pricing/test_check_ois_readiness_parity_v1.py
+
+      - name: Refresh dated pricing fallback from the matching operational view
+        run: python validation/cb_pricing/build_fxv2_ois_fallback_v1.py
 
       - name: Self-test and governance checks
         run: |

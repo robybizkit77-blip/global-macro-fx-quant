@@ -103,20 +103,28 @@ def test_readiness_atomic_writer_scope():
     operational="live_data/sections/OIS_OPERATIONAL_VIEW.json"
     same_contract="validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl"
     conflict_journal="validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl"
+    research="site/fx-quant-v2/ois-same-contract-repricing-research.json"
     assert readiness in G8_PATHS and readiness in ESTIMATED_PATHS
     assert operational in G8_PATHS and operational in ESTIMATED_PATHS
     assert same_contract in G8_PATHS and same_contract in ESTIMATED_PATHS
     assert conflict_journal in G8_PATHS and conflict_journal in ESTIMATED_PATHS
-    # Both existing runners can publish matching operational and access data.
+    assert research in G8_PATHS and research in ESTIMATED_PATHS
+    fallback="site/fx-quant-v2/ois-pricing-snapshot.json"
+    assert fallback in G8_PATHS and fallback in ESTIMATED_PATHS
+    # Both existing runners publish matching research and operational data.
     for mode in ("estimated","g8"):
         with tempfile.TemporaryDirectory() as td:
             origin,writer,_=fixture(Path(td))
             base=git("rev-parse","HEAD",cwd=writer)
             write(writer,operational,"new validated operational\n")
             write(writer,readiness,"new matching readiness\n")
+            write(writer,research,"new matching futures research\n")
+            write(writer,fallback,"new matching fallback\n")
             assert persist(base,mode,cwd=writer)["status"]=="PUSHED"
             assert git("--git-dir",str(origin),"show","main:"+operational)=="new validated operational"
             assert git("--git-dir",str(origin),"show","main:"+readiness)=="new matching readiness"
+            assert git("--git-dir",str(origin),"show","main:"+research)=="new matching futures research"
+            assert git("--git-dir",str(origin),"show","main:"+fallback)=="new matching fallback"
     # Concurrent audited readiness change must refuse any stale OIS rebase.
     for mode in ("estimated","g8"):
         with tempfile.TemporaryDirectory() as td:
