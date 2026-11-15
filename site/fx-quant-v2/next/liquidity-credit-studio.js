@@ -410,44 +410,66 @@
    '<div class="drivers-cad-source"><span>'+quality+' · '+esc(latest)+' · serie V122667770 · rilascio point-in-time non verificato</span>'+
    '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: Bank of Canada ↗</a></div></section>';
  }
- // Monthly RBNZ D10/C50 tables reviewed on 2026-11-15.
- const NZD_RELEASE={
-  period:'2026-09',released:'2026-10-30',next:'2026-11-30',
-  values:{liquidity:27036,money:459840,credit:630847},
-  august:{liquidity:26460,money:454671,credit:624663},
+ const NZD_SOURCES={
   d10:'https://www.rbnz.govt.nz/statistics/series/reserve-bank/influences-on-settlement-cash',
   c50:'https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/depository-corporations-money-and-credit-aggregates'
  };
+ const NZD_RELEASE={
+  period:'2026-09',released:'2026-10-30',next:'2026-11-30',
+  history:{
+   '2026-08':{liquidity:26460,money:454671,credit:624663},
+   '2026-09':{liquidity:27036,money:459840,credit:630847}
+  }
+ };
  function nzdDossier(row,today){
-  const release=NZD_RELEASE,day=observationDate(today);
-  if(!row||!day||day<release.released)return null;
-  const entries=Object.entries(release.values);
-  if(!entries.every(([key])=>{
-   const s=row[key];
-   return s?.last_date==='2026-08'&&s.last_value===release.august[key]&&
-    Array.isArray(s.dates)&&Array.isArray(s.values)&&s.dates.length===s.values.length&&
-    s.dates.at(-1)===s.last_date&&s.values.at(-1)===s.last_value&&s.unit==='NZD mln';
+  const release=root.FXQuantNZDRBNZLiquidity||NZD_RELEASE;
+  const day=observationDate(today),roles=['liquidity','money','credit'];
+  if(!row||!day||!release.released||day<release.released||!release.history)return null;
+  const periods=Object.keys(release.history).sort();
+  if(periods.at(-1)!==release.period||periods.length<2||
+     !periods.every(p=>/^20\d{2}-(0[1-9]|1[0-2])$/.test(p)&&roles.every(key=>
+      finite(release.history[p]?.[key])&&release.history[p][key]>0)))return null;
+  if(!roles.every(key=>{
+   const series=row[key];
+   return Array.isArray(series?.dates)&&Array.isArray(series?.values)&&
+    series.dates.length===series.values.length&&series.dates.at(-1)===series.last_date&&
+    series.values.at(-1)===series.last_value&&series.unit==='NZD mln'&&
+    series.last_date<release.period&&release.history[series.last_date]?.[key]===series.last_value;
   }))return null;
-  const updated=Object.fromEntries(entries.map(([key,value])=>{
+  const updated=Object.fromEntries(roles.map(key=>{
    const s=row[key];
-   return [key,{...s,dates:[...s.dates,release.period],values:[...s.values,value],
-    last_date:release.period,last_value:value}];
+   const pending=periods.filter(p=>p>s.last_date);
+   const appended=pending.map(p=>release.history[p][key]);
+   return [key,{...s,dates:[...s.dates,...pending],values:[...s.values,...appended],
+    last_date:release.period,last_value:appended.at(-1)}];
   }));
-  return {...row,...updated,liquidity_dir:'IN AUMENTO',credit_dir:'IN AUMENTO',
-   as_of:release.period+' · pubblicato il 30/10/2026',current_note:null};
+  const direction=s=>s.last_value>s.values.at(-2)?'IN AUMENTO':
+   s.last_value<s.values.at(-2)?'IN CALO':'STABILE';
+  return {...row,...updated,liquidity_dir:direction(updated.liquidity),credit_dir:direction(updated.credit),
+   as_of:release.period+' · pubblicato il '+release.released,current_note:null,rbnzRelease:release};
  }
  function nzdReleaseContext(row,today,esc,fmt){
+  const release=row.rbnzRelease;
+  const delta=(s,offset=1)=>(s.values.at(-offset)/s.values.at(-offset-1)-1)*100;
+  const percent=n=>esc((n>0?'+':n<0?'−':'')+fmt(Math.abs(n),2))+'%';
+  const cash=delta(row.liquidity),credit=delta(row.credit),priorCredit=delta(row.credit,2);
+  const cashText=cash>0?'I saldi di regolamento salgono':cash<0?'I saldi di regolamento scendono':'I saldi di regolamento sono stabili';
+  let creditText='il credito è stabile';
+  if(credit<0)creditText='lo stock di credito cala';
+  if(credit>0)creditText=credit>priorCredit?'il credito accelera':credit<priorCredit?
+   'il credito cresce più lentamente':'il credito cresce allo stesso ritmo';
   return '<section class="drivers-cad-official" aria-label="Dati mensili ufficiali RBNZ">'+
    '<span class="mini-overline">RESERVE BANK OF NEW ZEALAND · D10 E C50</span>'+
-   '<h3>I saldi di regolamento rimbalzano. Il credito cresce più rapidamente.</h3>'+
-   '<p>A settembre i saldi medi di regolamento sono cresciuti del 2,18% dopo il calo di agosto. '+
-   'La moneta ampia è salita a '+esc(fmt(row.money.last_value/1000,2))+' miliardi NZD (+1,14%). '+
-   'Il credito al settore privato è cresciuto dello 0,99% sul mese dopo +0,55% ad agosto. '+
-   'Il dato misura lo stock di credito in essere e comprende prestiti, titoli e altre componenti.</p>'+
-   '<div class="drivers-cad-source"><span>Pubblicato il 30/10/2026 · '+(observationDate(today)<NZD_RELEASE.next?
-    'prossimo rilascio previsto il 30/11/2026':'nuovo rilascio da verificare')+'</span>'+
-   '<a href="'+NZD_RELEASE.d10+'" target="_blank" rel="noopener noreferrer">RBNZ · D10 ↗</a>'+
-   '<a href="'+NZD_RELEASE.c50+'" target="_blank" rel="noopener noreferrer">RBNZ · C50 ↗</a></div></section>';
+   '<h3>'+cashText+' e '+creditText+'.</h3>'+
+   '<p>Nel '+esc(release.period)+' i saldi medi di regolamento variano del '+percent(cash)+
+   ' sul mese. La moneta ampia è a '+esc(fmt(row.money.last_value/1000,2))+' miliardi NZD ('+
+   percent(delta(row.money))+'). Il credito al settore privato segna '+percent(credit)+
+   ' dopo '+percent(priorCredit)+'. Lo stock comprende prestiti, titoli e altre componenti.</p>'+
+   '<div class="drivers-cad-source"><span>Pubblicato il '+esc(release.released)+
+   ' · '+(observationDate(today)<release.next?'prossimo rilascio previsto il '+esc(release.next):
+    'nuovo rilascio da verificare')+'</span>'+
+   '<a href="'+NZD_SOURCES.d10+'" target="_blank" rel="noopener noreferrer">RBNZ · D10 ↗</a>'+
+   '<a href="'+NZD_SOURCES.c50+'" target="_blank" rel="noopener noreferrer">RBNZ · C50 ↗</a></div></section>';
  }
  function render(api){
   const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,date,dayNow}=api;
