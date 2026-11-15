@@ -115,7 +115,7 @@
   watch:'Ripristinare la fonte del credito bancario, nuova SLOS e pricing BoC relativo alla Fed; osservare USD/CAD e AUD/CAD.'},
  AUD:{fx:'Saldi di regolamento RBA e credito alle imprese rappresentano canali diversi. Un impulso del credito non è sufficiente a sostenere AUD se aspettative RBA, crescita cinese o propensione al rischio divergono.',
   watch:'Credito imprese, domanda cinese, futures RBA contro Fed e BoC; verificare AUD/USD e AUD/CAD.'},
- NZD:{fx:'Lo storico disponibile della liquidità NZD è breve e non consente inferenze robuste sui flussi. Credito privato in aumento e settlement cash in calo sono una divergenza da testare contro RBNZ e rischio globale.',
+ NZD:{fx:'Per il NZD conta se la crescita del credito si riflette nella domanda interna e cambia le attese sui tassi RBNZ. I saldi di regolamento risentono anche delle operazioni della banca centrale e del governo. Su AUD/NZD serve poi conferma dal differenziale atteso RBA–RBNZ e dal prezzo.',
   watch:'Aggiornamenti RBNZ su settlement cash e credito, confronto monetario con RBA e comportamento AUD/NZD e NZD/USD.'}
  };
  function jpyBOJCreditResearch(esc,fmt,now){
@@ -410,11 +410,51 @@
    '<div class="drivers-cad-source"><span>'+quality+' · '+esc(latest)+' · serie V122667770 · rilascio point-in-time non verificato</span>'+
    '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: Bank of Canada ↗</a></div></section>';
  }
+ // Monthly RBNZ D10/C50 tables reviewed on 2026-11-15.
+ const NZD_RELEASE={
+  period:'2026-09',released:'2026-10-30',next:'2026-11-30',
+  values:{liquidity:27036,money:459840,credit:630847},
+  august:{liquidity:26460,money:454671,credit:624663},
+  d10:'https://www.rbnz.govt.nz/statistics/series/reserve-bank/influences-on-settlement-cash',
+  c50:'https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/depository-corporations-money-and-credit-aggregates'
+ };
+ function nzdDossier(row,today){
+  const release=NZD_RELEASE,day=observationDate(today);
+  if(!row||!day||day<release.released)return null;
+  const entries=Object.entries(release.values);
+  if(!entries.every(([key])=>{
+   const s=row[key];
+   return s?.last_date==='2026-08'&&s.last_value===release.august[key]&&
+    Array.isArray(s.dates)&&Array.isArray(s.values)&&s.dates.length===s.values.length&&
+    s.dates.at(-1)===s.last_date&&s.values.at(-1)===s.last_value&&s.unit==='NZD mln';
+  }))return null;
+  const updated=Object.fromEntries(entries.map(([key,value])=>{
+   const s=row[key];
+   return [key,{...s,dates:[...s.dates,release.period],values:[...s.values,value],
+    last_date:release.period,last_value:value}];
+  }));
+  return {...row,...updated,liquidity_dir:'IN AUMENTO',credit_dir:'IN AUMENTO',
+   as_of:release.period+' · pubblicato il 30/10/2026',current_note:null};
+ }
+ function nzdReleaseContext(row,today,esc,fmt){
+  return '<section class="drivers-cad-official" aria-label="Dati mensili ufficiali RBNZ">'+
+   '<span class="mini-overline">RESERVE BANK OF NEW ZEALAND · D10 E C50</span>'+
+   '<h3>I saldi di regolamento rimbalzano. Il credito cresce più rapidamente.</h3>'+
+   '<p>A settembre i saldi medi di regolamento sono cresciuti del 2,18% dopo il calo di agosto. '+
+   'La moneta ampia è salita a '+esc(fmt(row.money.last_value/1000,2))+' miliardi NZD (+1,14%). '+
+   'Il credito al settore privato è cresciuto dello 0,99% sul mese dopo +0,55% ad agosto. '+
+   'Il dato misura lo stock di credito in essere e comprende prestiti, titoli e altre componenti.</p>'+
+   '<div class="drivers-cad-source"><span>Pubblicato il 30/10/2026 · '+(observationDate(today)<NZD_RELEASE.next?
+    'prossimo rilascio previsto il 30/11/2026':'nuovo rilascio da verificare')+'</span>'+
+   '<a href="'+NZD_RELEASE.d10+'" target="_blank" rel="noopener noreferrer">RBNZ · D10 ↗</a>'+
+   '<a href="'+NZD_RELEASE.c50+'" target="_blank" rel="noopener noreferrer">RBNZ · C50 ↗</a></div></section>';
+ }
  function render(api){
   const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,date,dayNow}=api;
-  const all=get('liquidity')||{};
+  const all=get('liquidity')||{},today=dayNow();
+  const nzd=nzdDossier(all.NZD,today);
   const selected=validCcy(state.liqCcy)?state.liqCcy:'USD';
-  const row=all[selected],read=interpret(row),today=dayNow();
+  const row=selected==='NZD'&&nzd?nzd:all[selected],read=interpret(row);
   const provenance=root.FXQuantLiquiditySourcePolicy?.review(selected)||null;
   const policyGate=(role)=>root.FXQuantLiquiditySourcePolicy?.check(selected,role)||null;
   const roles=['liquidity','credit','conditions'];
@@ -441,7 +481,7 @@
      '<div class="drivers-empty">Storico numerico insufficiente: nessuna curva inventata.</div>')+'</article>';
   };
   const cards=FX.map(ccy=>{
-    const item=all[ccy],reading=interpret(item),active=ccy===selected;
+    const item=ccy==='NZD'&&nzd?nzd:all[ccy],reading=interpret(item),active=ccy===selected;
     return '<button class="drivers-country" type="button" data-liq-country="'+ccy+'" aria-pressed="'+String(active)+'">'+
      '<span class="drivers-country-head"><b>'+esc(FLAGS[ccy]||'')+' '+ccy+'</b><small>'+esc(NAMES[ccy]||ccy)+'</small></span>'+
      '<span class="drivers-mini-state" data-tone="'+reading.liquidity.tone+'">Liquidità · '+esc(reading.liquidity.label)+'</span>'+
@@ -457,6 +497,7 @@
    '<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
    '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
    '<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>'+
+   (selected==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):'')+
    (selected==='JPY'?jpyBOJCreditResearch(esc,fmt,today):'')+
    (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):'')+
    (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):'')+
