@@ -44,15 +44,18 @@ jobs:
                   # Match cells within their own rows so an error page cannot pass.
                   rows = []
                   for row in re.findall(r"<tr\b[^>]*>(.*?)</tr>", page, re.I | re.S):
-                      cells = re.findall(r"<t[hd]\b[^>]*>(.*?)</t[hd]>", row, re.I | re.S)
+                      cells = re.split(r"<t[hd]\b[^>]*>", row, flags=re.I)[1:]
                       rows.append([" ".join(unescape(re.sub(r"<[^>]+>", " ", cell)).split())
                                    for cell in cells])
                   for label, pair in expected_rows.items():
                       matches = [cells for cells in rows if cells and
-                                 re.sub(r"^\d+\.\s*", "", cells[0]).casefold() ==
-                                 re.sub(r"^\d+\.\s*", "", label).casefold()]
+                                 re.sub(r"^\d+\.\s*", "", label).casefold() in
+                                 " ".join(cells).casefold()]
                       if not any(tuple(cells[-2:]) == pair for cells in matches):
                           print(f"{code} candidate rows: {matches[:3]}", flush=True)
+                          marker = re.search(r"average.{0,200}settlement.{0,100}cash", page, re.I | re.S)
+                          if code == "D10" and marker:
+                              print(repr(page[max(0, marker.start()-200):marker.end()+450]), flush=True)
                           raise ValueError(f"verified August/September rows absent for {label}")
                       print(f"{code} | {label} | August {pair[0]} | September {pair[1]}", flush=True)
               except (HTTPError, URLError, TimeoutError, ValueError) as exc:
