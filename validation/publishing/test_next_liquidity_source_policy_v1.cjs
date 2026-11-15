@@ -52,7 +52,7 @@ for(const ccy of FX){
  const html=page.render(api(ccy));
  assert.equal((html.match(/data-liq-country=/g)||[]).length,8,ccy);
  assert.equal((html.match(/data-liq-role=/g)||[]).length,3,ccy);
- assert(html.includes('Provenienza e limiti dell’aggiornamento automatico'),ccy);
+ assert(html.includes(ccy==='CHF'?'Fonti e storico':'Provenienza e limiti dell’aggiornamento automatico'),ccy);
  assert(!html.includes('[object Object]')&&!/\bundefined\b/.test(html),ccy);
 }
 const usd=page.render(api('USD'));
