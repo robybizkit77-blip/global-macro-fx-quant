@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_FXV2_PRICING_SNAPSHOT_V1",
-  "snapshot_built_from_repo_date": "2026-11-13",
+  "snapshot_built_from_repo_date": "2026-11-15",
   "ui_only": true,
   "eligible_for_fx_engine": false,
   "notes": "Automatically refreshed from dated G8 operational futures/OIS, secondary estimated futures and NZD ASX bank-bill proxy. Each tenor retains its own observation date; no fake OIS, no FX signal.",
@@ -12,21 +12,21 @@
       "as_of": "2026-11-13",
       "horizons": {
         "3m": {
-          "rate": 4.335,
+          "rate": 4.32,
           "as_of": "2026-11-13",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQG2027"
         },
         "6m": {
-          "rate": 4.515,
+          "rate": 4.49,
           "as_of": "2026-11-13",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQJ2027"
         },
         "12m": {
-          "rate": 4.775,
+          "rate": 4.755,
           "as_of": "2026-11-13",
           "change_1d_bp": null,
           "change_1w_bp": null,
@@ -41,21 +41,21 @@
       "as_of": "2026-11-13",
       "horizons": {
         "3m": {
-          "rate": 2.6025,
-          "as_of": "2026-11-12",
+          "rate": 2.5975,
+          "as_of": "2026-11-13",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3X2026"
         },
         "6m": {
-          "rate": 2.8625,
-          "as_of": "2026-11-12",
+          "rate": 2.8525,
+          "as_of": "2026-11-13",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3G2027"
         },
         "12m": {
-          "rate": 3.1725,
+          "rate": 3.145,
           "as_of": "2026-11-13",
           "change_1d_bp": null,
           "change_1w_bp": null,
@@ -128,21 +128,21 @@
       "as_of": "2026-11-13",
       "horizons": {
         "3m": {
-          "rate": 0.16,
+          "rate": 0.155,
           "as_of": "2026-11-13",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3H2027"
         },
         "6m": {
-          "rate": 0.33,
+          "rate": 0.325,
           "as_of": "2026-11-13",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3M2027"
         },
         "12m": {
-          "rate": 0.57,
+          "rate": 0.55,
           "as_of": "2026-11-13",
           "change_1d_bp": null,
           "change_1w_bp": null,

@@ -185,9 +185,14 @@ def build(snapshot: dict, archive: list[dict], quotes: list[dict],
             "observed_dates": len({p["date"] for t in TENORS for p in tenors[t] if not p["derived"]}),
             "derived_reference_points": sum(p["derived"] for t in TENORS for p in tenors[t]),
         }
+    # Build date is the upper bound for accepting observations, not a market date.
+    latest_observation = max(
+        (row["latest_date"] for row in lines.values() if row["latest_date"]),
+        default=None,
+    )
     return {
         "schema": "GMFQ_NEXT_G8_PRICING_HISTORY_V1",
-        "as_of": today, "eligible_for_fx_engine": False,
+        "as_of": latest_observation, "eligible_for_fx_engine": False,
         "eligible_for_backtests_as_official_ois": False,
         "official_ois_created": False,
         "date_gaps_interpolated": False, "excluded_conflicted_contract_days": len(disputed),

@@ -9,6 +9,7 @@ must=[
     "FX Quant V2 CHF NZD Same-Basis Research Refresh",
     "FX Quant V2 Cross-Asset Published Source Refresh",
     "OIS G8 History Persistent Daily V1",
+    "OIS Estimated Snapshot Repricing V1",
     "FX Quant V2 Relative Pricing 28-Pair Research",
     "FX Quant V2 Rates FX Temporal Research Audit",
     "FX Quant V2 Preregistered 6M Prospective Research",

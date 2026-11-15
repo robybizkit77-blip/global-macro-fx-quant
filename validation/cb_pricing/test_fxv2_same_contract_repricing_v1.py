@@ -135,18 +135,32 @@ class SameContractResearchTests(unittest.TestCase):
         r = next(x for x in self.archive if x["currency"] == "EUR"
                  and x["contract"] == "FST3U2027"
                  and x["observation_date"] == "2026-11-02")
-        q = fed["currencies"]["EUR"]["horizons"]["12m"]
-        q.update({"contract": r["contract"], "symbol": r["symbol"],
-                  "expiration": r["expiration"],
-                  "quote_as_of": r["observation_date"],
-                  "futures_price": r["futures_price"], "rate": r["implied_rate"],
-                  "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
-                  "quote_timestamp_verified": True})
-        # The published source capture timestamp is deliberately unchanged:
-        # this is a synthetic replay of a recorded historical quote.
+        for entry in fed["currencies"].values():
+            entry["horizons"] = {}
+            entry["status"] = "LIVE_SECONDARY_INDICATIVE_ONLY"
+            entry.pop("source_conflict_keys", None)
+            entry.pop("source_conflict_status", None)
+        fed["generated_at_utc"] = r["first_seen_at_utc"]
+        fed["currencies"]["EUR"]["horizons"]["12m"] = {
+            "contract": r["contract"],
+            "symbol": r["symbol"],
+            "expiration": r["expiration"],
+            "quote_as_of": r["observation_date"],
+            "futures_price": r["futures_price"],
+            "rate": r["implied_rate"],
+            "quote_timestamp_source": r["source_timestamp_evidence"],
+            "quote_timestamp_verified": True,
+            "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
+        }
+        disputed = ["EUR", r["contract"], "2026-10-30"]
+        self.assertTrue(any(event["key"] == disputed for event in self.conflicts))
+        without_dispute = [event for event in self.conflicts if event["key"] != disputed]
+        control = build(fed, self.archive, without_dispute)["currencies"]["EUR"]["12m"]
+        self.assertEqual(control["one_day"]["from_date"], "2026-10-30")
         result = build(fed, self.archive, self.conflicts)
         row = result["currencies"]["EUR"]["12m"]
         self.assertEqual(row["as_of"], "2026-11-02")
+        self.assertEqual(row["rate_pct"], r["implied_rate"])
         self.assertIsNone(row["change_1d_bp"])
         self.assertIsNone(row["one_day"])
         self.assertIsNone(row["change_1w_bp"])

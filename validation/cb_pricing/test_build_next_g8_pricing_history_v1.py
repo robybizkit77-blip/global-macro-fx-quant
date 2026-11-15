@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import json
 import unittest
+from datetime import date, timedelta
 from pathlib import Path
 
 from build_next_g8_pricing_history_v1 import (
@@ -47,6 +48,17 @@ class TestG8History(unittest.TestCase):
                 if c=="NZD":
                     self.assertTrue(all(p["source_class"].startswith("BANK_BILL_PROXY")
                                         for p in points))
+
+    def test_rebuild_without_new_bars_keeps_last_observation_date(self):
+        snapshot = copy.deepcopy(self.snapshot)
+        build_day = date.fromisoformat(snapshot["snapshot_built_from_repo_date"])
+        snapshot["snapshot_built_from_repo_date"] = (build_day + timedelta(days=1)).isoformat()
+        rebuilt = build(snapshot, self.archive, self.quotes, self.conflicts, self.nzd)
+        latest = max(point["date"] for row in rebuilt["currencies"].values()
+                     for points in row["tenors"].values() for point in points
+                     if not point["derived"])
+        self.assertEqual(rebuilt["as_of"], latest)
+        self.assertEqual(rebuilt, self.actual)
 
     def test_quarantined_conflicts_cannot_enter_history(self):
         excluded={tuple(e["key"]) for e in self.conflicts

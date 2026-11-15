@@ -5,7 +5,7 @@
   "eligible_for_backtests_as_official_ois": false,
   "official_ois_created": false,
   "date_gaps_interpolated": false,
-  "excluded_conflicted_contract_days": 10,
+  "excluded_conflicted_contract_days": 17,
   "note": "Archive quotes have source dates but may be collected later. Official published 3M/6M/12M futures tenor series can rotate contracts. Secondary rates always retain their listed contract identity; NZD past references are derived from ASX proxy deltas, not independent observations. No meeting probabilities or signals.",
   "currencies": {
     "USD": {
@@ -149,14 +149,6 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-12T08:58:28.664155Z"
-          },
-          {
-            "date": "2026-11-13",
-            "rate": 4.335,
-            "contract": "ZQG2027",
-            "source_class": "SECONDARY_SAME_CONTRACT",
-            "derived": false,
-            "captured_at_utc": "2026-11-13T10:48:19.723620Z"
           }
         ],
         "6m": [
@@ -287,14 +279,6 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-13T00:11:06.953301Z"
-          },
-          {
-            "date": "2026-11-13",
-            "rate": 4.515,
-            "contract": "ZQJ2027",
-            "source_class": "SECONDARY_SAME_CONTRACT",
-            "derived": false,
-            "captured_at_utc": "2026-11-13T22:21:22.976940Z"
           }
         ],
         "12m": [
@@ -441,19 +425,11 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-13T00:11:06.953301Z"
-          },
-          {
-            "date": "2026-11-13",
-            "rate": 4.775,
-            "contract": "ZQV2027",
-            "source_class": "SECONDARY_SAME_CONTRACT",
-            "derived": false,
-            "captured_at_utc": "2026-11-13T22:21:22.976940Z"
           }
         ]
       },
-      "latest_date": "2026-11-13",
-      "observed_dates": 19,
+      "latest_date": "2026-11-12",
+      "observed_dates": 18,
       "derived_reference_points": 0
     },
     "EUR": {
@@ -605,6 +581,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-13T13:04:31.202434Z"
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 2.5975,
+            "contract": "FST3X2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-15T01:47:08.692174Z"
           }
         ],
         "6m": [
@@ -751,6 +735,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-13T22:21:22.976940Z"
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 2.8525,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-15T01:47:08.692174Z"
           }
         ],
         "12m": [
@@ -889,14 +881,6 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-12T08:58:28.664155Z"
-          },
-          {
-            "date": "2026-11-13",
-            "rate": 3.1725,
-            "contract": "FST3U2027",
-            "source_class": "SECONDARY_SAME_CONTRACT",
-            "derived": false,
-            "captured_at_utc": "2026-11-13T10:48:19.723620Z"
           }
         ]
       },
@@ -1833,14 +1817,6 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-12T14:38:33.921676Z"
-          },
-          {
-            "date": "2026-11-13",
-            "rate": 0.16,
-            "contract": "SA3H2027",
-            "source_class": "SECONDARY_SAME_CONTRACT",
-            "derived": false,
-            "captured_at_utc": "2026-11-13T14:44:30.503850Z"
           }
         ],
         "6m": [
@@ -1979,14 +1955,6 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-12T13:50:59.200715Z"
-          },
-          {
-            "date": "2026-11-13",
-            "rate": 0.33,
-            "contract": "SA3M2027",
-            "source_class": "SECONDARY_SAME_CONTRACT",
-            "derived": false,
-            "captured_at_utc": "2026-11-13T13:57:53.680856Z"
           }
         ],
         "12m": [
@@ -2125,19 +2093,11 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-12T08:58:28.664155Z"
-          },
-          {
-            "date": "2026-11-13",
-            "rate": 0.57,
-            "contract": "SA3Z2027",
-            "source_class": "SECONDARY_SAME_CONTRACT",
-            "derived": false,
-            "captured_at_utc": "2026-11-13T10:48:19.723620Z"
           }
         ]
       },
-      "latest_date": "2026-11-13",
-      "observed_dates": 20,
+      "latest_date": "2026-11-12",
+      "observed_dates": 19,
       "derived_reference_points": 0
     },
     "AUD": {
