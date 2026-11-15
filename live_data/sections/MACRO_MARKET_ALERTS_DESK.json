@@ -1,8 +1,47 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-15T02:44:19Z",
+  "generated_at_utc": "2026-11-15T11:03:34Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c491499050093fa74722",
+      "observed_at_utc": "2026-11-15T04:10:52Z",
+      "headline": "ProShares Investment Grade-Interest Rate Hdg ETF (IGHG.N) | Stock Price & Latest News",
+      "summary": "Reuters riporta: ProShares Investment Grade-Interest Rate Hdg ETF (IGHG.N) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE1ldWpsU0hZbEdjRFA3WkFyemF4X1Z0LWNVMHM4YU1WU1dzRWFxd1c4Y1pqZXlNY1hyYnBuanZjXzVaVlhOel9PSEZEUFFCaE5EdjJGVHBxRnVMbkstanhHSGpac1ZMUkdxNVFjOVRB?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-ce0f51309a3b6cb1a7b8",
+      "observed_at_utc": "2026-11-15T00:16:42Z",
+      "headline": "JPMorgan Inflation Managed Bond ETF (JCPI.N) | Stock Price & Latest News",
+      "summary": "Reuters riporta: JPMorgan Inflation Managed Bond ETF (JCPI.N) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE54bXROVllJenE5YjBRSmpWNjRWdnRMTFgyYl8zNUJJdEMzZy10MUJYVnphOHhkYlNlakhhUTlmS0hVZXJycmJIdk1HOVlncDVUS1paUmkzUGozLXJKYmZyeWdxQkZrdDJlN0M3SlF3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-a562fe33113b4f0da70a",
+      "observed_at_utc": "2026-11-14T23:46:00Z",
+      "headline": "New Orleans port sues to get control of tanker that crashed into cruise ship on Mississippi River",
+      "summary": "AP News riporta: New Orleans port sues to get control of tanker that crashed into cruise ship on Mississippi River. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNSkpYTERHb0JjNU1SY2JyaXFOREZsSzkxdTZVa1lXVW1xVjV3ZTdqZmhFLXl3eExxZmdPY1B2dURNSmRwQVczSG81emlfOEh0NTNhcW44cVBFcU03Y2hadEFmVlRPVHR3bDRPX0p0ZF9JR3B3QkZQUnVxVUZfMXNsSzJDclQ1elJ6ZVBHZGZpRXVUM09KcmgxWmdHajA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-95e1637c076018caac8f",
       "observed_at_utc": "2026-11-14T22:54:19Z",
@@ -1370,51 +1409,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOS3ZvRzF1aTlTZE9WT0NxYkU4TWFHTi04YnhEVXd1VTJRTXdibGtPdGZtTWkwZEVBLU0xNmtZaEc4R2lWZWVSdGJtY1FSdzhIazR5a2YwdDJoRzFFTHN1Z2FNb2l5b2x5SllyTE9sTTZTNkxFODFJVkhxOGhlblRTXzNiLTZpc3FKcXBqRzZUMjYtY3VXOHlnR0hPOFFYTldZaXpzSGNTbzlPNlhUdHF1amJTcFp1dw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-d29a1d244d0a389f8e1e",
-      "observed_at_utc": "2026-11-05T16:47:29Z",
-      "headline": "Tankers hit in Hormuz as Iran keeps up pressure after US vote",
-      "summary": "Reuters riporta: Tankers hit in Hormuz as Iran keeps up pressure after US vote. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQS25WaGR6RHltaldweFlqblRLWTQwanRGbVY4Vm5YZXBVdUVacG5DSTU3SXd1N00zTDROTTlYaGlnQzZPQUlmeUNPRlExc01kSUUwTFkwQUpWTWlXZEtkdTZmQktpWXUwcGt6dVBHbjkyb25ISjB1N0tOaWNJRHBoNk9iSzBJMURrM2dlemVvVnU5aHplVko3aGlQc296enRpdDlLNWJDWGtLWDZZVWc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-8ae18ac43ad7879be6c5",
-      "observed_at_utc": "2026-11-05T18:07:06Z",
-      "headline": "Fed's Hammack, Barkin favor gradual rate-hike path to lower inflation",
-      "summary": "Reuters riporta: Fed's Hammack, Barkin favor gradual rate-hike path to lower inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPTDI4cDU1ODdtRUFrTlZiTjZUbUlKNjZicWpjOHp0YnhONENvNEhMemJ3bWNyR1Rpd0d5akp3Yk1FVElzaDlBenRLRkttdjFvOXFZaGt6dm05WWdZZXpqcU5vazJSY2p3UEx6dkFtM18tNU5nVFZEb0dFY3NHUkRGZlAxS2xJVHZPWWFYOWNUd1lsU2VnbEliTXZDYnp1Um5aX2M1a3Fn?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-af1fae14518e25b15dbc",
-      "observed_at_utc": "2026-11-05T12:58:29Z",
-      "headline": "Instant view: Bank of England delivers first rate hike in three years, gilt yields rise",
-      "summary": "Reuters riporta: Instant view: Bank of England delivers first rate hike in three years, gilt yields rise. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNX1NmeDl4ZndpQkllbEZoTmVYQzFUSXpCeFNTRnByV05HcVlaYXl0RkY4b0htT1dYTkhQZG9DNldqcmtna1gyNVhkdTZwWmR3NTBZb0gtUm9kWnlfQzVhMWJCTzVYSGhpLXkxS085ZGpwVUVEbWlTWmItbElUTzFqTEwydEJTSUVheFJsTGNjdnlfRW1RaURzWm5KOGs5Rmx1bUV4SUxpTWNaMlNhWGxPU2lnNkt0cXc?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
