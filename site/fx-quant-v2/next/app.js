@@ -26,6 +26,7 @@ const SOURCES={
  cbEstimated:'../../../live_data/sections/CB_PRICING_ESTIMATED.json',
  cb:'../../../live_data/sections/NATIVE_CB_DATA.json',
  liquidity:'../../../live_data/sections/NATIVE_LIQ_DATA.json',
+ residualResearch:'../../../live_data/sections/ESTIMATED_RESIDUAL_GAPS.json',
  cot:'../../../live_data/sections/V247_COT_STORIES.json',
  cotHistory:'../../../live_data/sections/V250_COT_CHART_DATA.json',
  cotPriorReference:'../design-studio-cot-v1-data.json',
