@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-13",
-  "generated_at_utc": "2026-11-15T13:54:52.905149Z",
+  "generated_at_utc": "2026-11-15T17:46:51.440928Z",
   "items": [
     {
       "as_of": "2026-11-13",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-15T13:54:52.905149Z",
+  "last_checked_at_utc": "2026-11-15T17:46:51.440928Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1071,61 +1071,6 @@
         "source_id": "RBA_PRESS",
         "title": "Designation of Prosegur Australia Pty Ltd under the Cash Distribution Framework Act 2026",
         "url": "https://www.rba.gov.au/media-releases/2026/mr-26-31.html"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "CAD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/11/joint-statement-of-the-government-of-canada-and-the-bank-of-canada-on-the-renewal-of-the-monetary-policy-framework-2026/",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-05T16:00:19Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 3.015,
-            "date": "2026-11-12",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-12",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-12",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.33
-          }
-        },
-        "source": "Bank of Canada",
-        "source_id": "BOC_PRESS",
-        "title": "Joint Statement of the Government of Canada and the Bank of Canada on the Renewal of the Monetary Policy Framework",
-        "url": "https://www.bankofcanada.ca/2026/11/joint-statement-of-the-government-of-canada-and-the-bank-of-canada-on-the-renewal-of-the-monetary-policy-framework-2026/"
       }
     ],
     "last_attempt_day_rome": "2026-11-15",
@@ -1143,9 +1088,9 @@
     "source_failures": 0,
     "sources": [
       {
-        "accepted_items": 6,
+        "accepted_items": 5,
         "ccy": "USD",
-        "entries_rejected": 14,
+        "entries_rejected": 15,
         "feed_entries_seen": 20,
         "feed_url": "https://www.federalreserve.gov/feeds/press_all.xml",
         "source": "Federal Reserve Board",
@@ -1193,9 +1138,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 2,
+        "accepted_items": 1,
         "ccy": "CAD",
-        "entries_rejected": 8,
+        "entries_rejected": 9,
         "feed_entries_seen": 10,
         "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
         "source": "Bank of Canada",
@@ -1223,9 +1168,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 4,
+        "accepted_items": 3,
         "ccy": "ENERGY",
-        "entries_rejected": 23,
+        "entries_rejected": 24,
         "feed_entries_seen": 27,
         "feed_url": "https://www.eia.gov/rss/todayinenergy.xml",
         "source": "U.S. Energy Information Administration",
