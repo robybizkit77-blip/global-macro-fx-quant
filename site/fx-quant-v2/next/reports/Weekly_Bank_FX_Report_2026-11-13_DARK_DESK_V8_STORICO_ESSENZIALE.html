@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+
+<html lang="it"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/><meta content="dark" name="color-scheme"/><meta content="#07111f" name="theme-color"/><title>Weekly Bank FX Research Desk · 13 novembre 2026 · DARK DESK V8 · Campione ampliato e storico essenziale</title><style>
+*{box-sizing:border-box}
+:root{
+  --bg1:#05101b; --bg2:#091523; --bg3:#07111f;
+  --card1:#0f1c2f; --card2:#0b1727; --line:#223a56; --line2:#1b2e44;
+  --text:#eef4fb; --muted:#9db0c7; --muted2:#7e94ad;
+  --accent:#6fd2ff; --good:#81c6a7; --warn:#d8ba77; --bad:#d69098; --info:#88b4dc;
+  --gooddeep:#214336; --warndeep:#4b3c20; --baddeep:#48272c; --infodeep:#20374c;
+  --shadow:0 18px 40px rgba(0,0,0,.22);
+}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at top right, rgba(35,92,145,.18), transparent 28%),
+    linear-gradient(180deg,var(--bg1),var(--bg2) 35%,var(--bg3));
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  line-height:1.55
+}
+.wrap{max-width:980px;margin:auto;padding:18px}
+.hero{
+  padding:28px 26px;
+  border:1px solid #2a4c70;
+  border-radius:28px;
+  background:
+    radial-gradient(circle at 88% 0, rgba(69,138,212,.22), transparent 30%),
+    radial-gradient(circle at 0 100%, rgba(26,70,112,.14), transparent 35%),
+    linear-gradient(135deg,#0d1c31,#10263f 52%, #0b1e34);
+  box-shadow:0 24px 55px rgba(0,0,0,.26)
+}
+.eyebrow,.sec,.label{
+  font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)
+}
+.hero h1{
+  font-size:36px;line-height:1.02;margin:8px 0 10px;
+  letter-spacing:-.03em
+}
+.muted{color:var(--muted)}
+.note{
+  font-size:11px;color:#b4c2d5;margin-top:12px;
+  padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.035);
+  border:1px solid rgba(148,182,214,.15)
+}
+.sec{
+  margin:30px 4px 12px;
+  font-size:11px;
+  color:#7fd9ff
+}
+.grid{display:grid;gap:12px}
+.four{grid-template-columns:repeat(4,1fr)}
+.two{grid-template-columns:repeat(2,1fr)}
+.card,.snap{
+  background:linear-gradient(145deg,var(--card1),var(--card2));
+  border:1px solid var(--line2);
+  border-radius:20px;
+  padding:17px;
+  box-shadow:var(--shadow);
+  min-width:0
+}
+.snap{
+  position:relative;
+  overflow:hidden;
+  padding:16px 16px 15px
+}
+.snap:before{
+  content:"";
+  position:absolute; inset:0 auto 0 0; width:4px; border-radius:20px 0 0 20px;
+  background:currentColor; opacity:.85
+}
+.snap strong{display:block;font-size:23px;line-height:1.05;margin:6px 0 6px;letter-spacing:-.02em}
+.snap .muted{font-size:12px;line-height:1.45}
+.good{border-left:2px solid var(--good)}
+.warn{border-left:2px solid var(--warn)}
+.bad{border-left:2px solid var(--bad)}
+.info{border-left:2px solid var(--info)}
+.snap.good{color:var(--good);background:linear-gradient(145deg,rgba(129,198,167,.07),#0d192a)}
+.snap.warn{color:var(--warn);background:linear-gradient(145deg,rgba(216,186,119,.07),#0d192a)}
+.snap.bad{color:var(--bad);background:linear-gradient(145deg,rgba(214,144,152,.07),#0d192a)}
+.snap.info{color:var(--info);background:linear-gradient(145deg,rgba(136,180,220,.07),#0d192a)}
+.row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.row h2{font-size:24px;line-height:1.05;margin:0;letter-spacing:-.02em}
+.state{
+  font-size:9px;font-weight:900;border-radius:999px;padding:6px 9px;
+  background:#0a1422;border:1px solid #304861;letter-spacing:.04em
+}
+.good .state{color:#b7e0cd;border-color:#365747;background:#11241d}
+.warn .state{color:#e5cc93;border-color:#5b4c31;background:#261f14}
+.bad .state{color:#e2a9af;border-color:#5a383d;background:#241719}
+.info .state{color:#a7c8e4;border-color:#35526c;background:#101e2c}
+.block{margin-top:13px}
+.block h3{
+  font-size:10px;letter-spacing:.1em;color:#7ebeff;margin:0 0 6px;text-transform:uppercase
+}
+.block p{margin:6px 0;font-size:13px;color:#cbd6e5}
+.block strong{color:#f3f7fc}
+.desk{
+  margin-top:14px;padding:12px 13px;border-radius:14px;
+  background:linear-gradient(135deg,#10243c,#151d37);
+  border:1px solid #2b4867
+}
+.desk p{margin:4px 0;font-size:13px}
+.triggers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.trigger{
+  background:#0a1525;border:1px solid #20344c;border-radius:13px;
+  padding:10px;font-size:11px;color:#b9c8dc;line-height:1.45
+}
+.trigger b{display:block;font-size:9px;color:#eef4fb;margin-bottom:4px;letter-spacing:.05em}
+.map{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+.cell{text-align:center;border-radius:10px;padding:9px 3px;background:#0d1a2b;border:1px solid #213650}
+.cell b{display:block;font-size:11px}.cell span{font-size:8px;color:#9fb0c8}
+.note{font-size:11px;color:#91a5bd;margin-top:10px}
+.footer{
+  text-align:center;color:#71849b;font-size:10px;margin:28px 0 8px;
+  letter-spacing:.08em
+}
+.chartbox{padding:17px 14px 14px}
+.charttitle{font-size:17px;font-weight:850;margin-bottom:2px;letter-spacing:-.015em}
+.chartsub{font-size:11px;color:#9fb0c8;margin-bottom:12px;line-height:1.5}
+.chartrow{
+  display:grid;grid-template-columns:46px 1fr 80px;gap:10px;align-items:center;
+  margin:10px 0;padding:4px 0
+}
+.chartrow>strong{font-size:11px;color:#dce8f7}
+.track{
+  height:12px;background:#07111d;border:1px solid #25354b;border-radius:999px;
+  overflow:hidden;display:flex;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)
+}
+.pos,.neu,.neg{height:100%}
+.pos{background:#2f7359}.neu{background:#ad8d4c}.neg{background:#a34d56}
+.score{text-align:right;font-size:10px;color:#aebbd0}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:9px;color:#94a6bd}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
+.dpos{background:#2f7359}.dneu{background:#ad8d4c}.dneg{background:#a34d56}
+.why{
+  margin-top:13px;padding:10px 11px;border-radius:12px;
+  background:rgba(89,168,255,.06);border:1px dashed rgba(89,168,255,.25);
+  font-size:11px;color:#b8c7da;line-height:1.5
+}
+.consensus-list{display:grid;gap:8px}
+.consensus-item{
+  display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:10px;
+  padding:10px 11px;border-radius:12px;background:#0a1625;border:1px solid #1d3249
+}
+.consensus-item b{font-size:12px}
+.consensus-item .desc{font-size:10px;color:#aabbd0;line-height:1.45}
+.tone{
+  font-size:9px;font-weight:850;padding:5px 8px;border-radius:999px;
+  border:1px solid #314861;color:#cbd7e6;white-space:nowrap;background:#101a28
+}
+.card.good,.card.warn,.card.bad,.card.info{position:relative;overflow:hidden}
+.card.good:after,.card.warn:after,.card.bad:after,.card.info:after{
+  content:""; position:absolute; right:-30px; top:-30px; width:90px; height:90px; border-radius:50%;
+  opacity:.08; filter:blur(2px)
+}
+.card.good:after{background:var(--good)}
+.card.warn:after{background:var(--warn)}
+.card.bad:after{background:var(--bad)}
+.card.info:after{background:var(--info)}
+@media(max-width:720px){
+  .wrap{padding:10px}
+  .hero{padding:19px;border-radius:22px}
+  .hero h1{font-size:28px}
+  .four,.two{grid-template-columns:1fr}
+  .map{grid-template-columns:repeat(4,1fr)}
+  .triggers{grid-template-columns:1fr}
+  .row{flex-direction:column}
+  .card,.snap{padding:15px;border-radius:18px}
+  .chartrow{grid-template-columns:42px 1fr 70px}
+}
+@media(max-width:430px){
+  .consensus-item{grid-template-columns:38px 1fr}
+  .consensus-item .tone{grid-column:2;justify-self:start}
+  .map{grid-template-columns:repeat(2,1fr)}
+  .hero h1{font-size:25px}
+}
+
+.flagtitle{display:flex;align-items:center;gap:10px}
+.flagbadge{
+  width:32px;height:32px;border-radius:50%;display:inline-block;position:relative;flex:0 0 32px;
+  border:1px solid rgba(255,255,255,.18);box-shadow:0 4px 10px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.16);
+  overflow:hidden
+}
+.flagbadge.us{
+  background:
+    linear-gradient(180deg,#b22234 0 10%,#fff 10% 20%,#b22234 20% 30%,#fff 30% 40%,#b22234 40% 50%,#fff 50% 60%,#b22234 60% 70%,#fff 70% 80%,#b22234 80% 90%,#fff 90% 100%);
+}
+.flagbadge.us:before{content:"";position:absolute;left:0;top:0;width:48%;height:54%;background:#3c3b6e}
+.flagbadge.eu{background:#16479d}
+.flagbadge.eu:before{
+  content:"• • •";position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);
+  color:#ffd84d;font-size:8px;letter-spacing:1px
+}
+.flagbadge.gb{
+  background:
+    linear-gradient(33deg, transparent 0 41%, #fff 41% 47%, transparent 47% 53%, #fff 53% 59%, transparent 59% 100%),
+    linear-gradient(-33deg, transparent 0 41%, #fff 41% 47%, transparent 47% 53%, #fff 53% 59%, transparent 59% 100%),
+    linear-gradient(33deg, transparent 0 44%, #c8102e 44% 46%, transparent 46% 54%, #c8102e 54% 56%, transparent 56% 100%),
+    linear-gradient(-33deg, transparent 0 44%, #c8102e 44% 46%, transparent 46% 54%, #c8102e 54% 56%, transparent 56% 100%),
+    linear-gradient(90deg, transparent 0 36%, #fff 36% 64%, transparent 64%),
+    linear-gradient(transparent 0 36%, #fff 36% 64%, transparent 64%),
+    linear-gradient(90deg, transparent 0 42%, #c8102e 42% 58%, transparent 58%),
+    linear-gradient(transparent 0 42%, #c8102e 42% 58%, transparent 58%),
+    #012169;
+}
+.flagbadge.jp{background:#fff}
+.flagbadge.jp:before{content:"";position:absolute;left:50%;top:50%;width:44%;height:44%;transform:translate(-50%,-50%);border-radius:50%;background:#bc002d}
+.flagbadge.ca{
+  background:linear-gradient(90deg,#d52b1e 0 25%,#fff 25% 75%,#d52b1e 75% 100%);
+}
+.flagbadge.ca:before{
+  content:"✦";position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);
+  color:#d52b1e;font-size:12px;font-weight:900
+}
+.flagbadge.au{
+  background:#012169;
+}
+.flagbadge.au:before{
+  content:"✦";position:absolute;right:6px;top:7px;color:#fff;font-size:10px
+}
+.flagbadge.au:after{
+  content:"";position:absolute;left:0;top:0;width:48%;height:48%;
+  background:
+    linear-gradient(90deg,transparent 0 42%,#fff 42% 58%,transparent 58%),
+    linear-gradient(transparent 0 42%,#fff 42% 58%,transparent 58%),
+    linear-gradient(90deg,transparent 0 46%,#c8102e 46% 54%,transparent 54%),
+    linear-gradient(transparent 0 46%,#c8102e 46% 54%,transparent 54%),
+    #012169;
+}
+.flagbadge.nz{
+  background:#00247d;
+}
+.flagbadge.nz:before{
+  content:"✦";position:absolute;right:7px;top:8px;color:#e4002b;font-size:10px;text-shadow:0 0 0 #fff, 0 0 1px #fff
+}
+.flagbadge.nz:after{
+  content:"";position:absolute;left:0;top:0;width:48%;height:48%;
+  background:
+    linear-gradient(90deg,transparent 0 42%,#fff 42% 58%,transparent 58%),
+    linear-gradient(transparent 0 42%,#fff 42% 58%,transparent 58%),
+    linear-gradient(90deg,transparent 0 46%,#c8102e 46% 54%,transparent 54%),
+    linear-gradient(transparent 0 46%,#c8102e 46% 54%,transparent 54%),
+    #012169;
+}
+.flagbadge.ch{
+  background:#d52b1e;
+}
+.flagbadge.ch:before,.flagbadge.ch:after{
+  content:"";position:absolute;background:#fff;left:50%;top:50%;transform:translate(-50%,-50%)
+}
+.flagbadge.ch:before{width:46%;height:18%}
+.flagbadge.ch:after{width:18%;height:46%}
+
+
+.shiftgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.shiftcard{padding:12px 13px;border-radius:14px;background:#0b1727;border:1px solid #20364e}
+.shiftcard .k{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:#7ebeff;font-weight:900}
+.shiftcard h3{margin:4px 0 5px;font-size:15px}
+.shiftcard p{margin:0;font-size:11.5px;color:#b9c8da;line-height:1.45}
+.priced{display:inline-flex;align-items:center;gap:6px;margin-top:9px;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.04em;border:1px solid #30465f}
+.priced.low{color:#88c7ff;background:#10243a}
+.priced.mid{color:#e4c57e;background:#2a2317}
+.priced.high{color:#f2a0a7;background:#321b20}
+.summary3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.summary3 .sbox{padding:13px;border-radius:14px;border:1px solid #20364e;background:#0b1727}
+.summary3 .sbox .k{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#8fb8e1;font-weight:900}
+.summary3 .sbox strong{display:block;font-size:17px;margin:4px 0}
+.summary3 .sbox p{margin:0;font-size:11.5px;color:#b9c8da}
+@media(max-width:720px){.shiftgrid,.summary3{grid-template-columns:1fr}}
+
+
+:root{--good:#78dcb3;--bad:#ed7f89;--warn:#e2bf79;--accent:#7acbfa}
+body{font-size:14px;line-height:1.6}.wrap{max-width:980px;padding:14px 12px 55px}.hero{border-radius:24px}
+.hero h1{letter-spacing:-.035em;line-height:1.08}.hero .sub{color:#d6e5f4;font-size:15px;max-width:760px;margin-top:12px}
+.sec{margin:26px 3px 9px}.narr{font-size:14px;color:#dce7f5;line-height:1.64}.leadbox{border-left:3px solid #75c9ff;background:#10263b;padding:15px 17px;border-radius:14px;margin:12px 0 18px;font-size:15px;line-height:1.65}
+.key{color:#91d4ff;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;margin:14px 0 4px}
+.verdict{font-weight:800;font-size:17px;line-height:1.4;color:#f1f6ff;margin:7px 0 13px}
+.bankline{margin:9px 0 11px;padding-left:13px;border-left:2px solid #395776}.bankline p{margin:3px 0 7px;font-size:13.5px;color:#cddbec;line-height:1.6}.bankline b{color:#f0f5ff}
+.bankline em{font-style:normal;color:#9bb4ce;font-size:11px;font-weight:750}
+.result{background:#0b1c2d;border:1px solid #26415d;border-radius:12px;padding:11px 13px;color:#dbe8f6;font-size:13px;margin:11px 0}
+.result b{color:#9ad8ff}.good .verdict{color:#91ebc0}.bad .verdict{color:#ffb4bb}.warn .verdict{color:#f4d28b}
+.card{min-width:0}.bank-country{padding:20px 20px 18px}.bank-country .row{align-items:center}.bank-country .flagtitle h2{font-size:23px}.state{white-space:normal;text-align:center}
+.horizon{display:inline-block;font-size:10px;padding:3px 7px;border-radius:6px;background:#10263a;border:1px solid #28465f;color:#bfddf5;margin-right:5px}
+.audits{display:grid;grid-template-columns:1fr;gap:9px}.audit-item{border:1px solid #2b455f;background:#0a1829;padding:13px;border-radius:12px}.audit-item b{font-size:14px}.audit-item p{font-size:12px;color:#bfcfe0;margin:6px 0 0}
+.table-scroller{overflow-x:auto;max-width:100%;border-radius:10px}table{min-width:690px;width:100%;border-collapse:collapse;font-size:12px}th,td{padding:10px 9px;border-bottom:1px solid #284059;vertical-align:top;text-align:left}th{color:#9bd9ff;background:#0c2032;font-size:10px;text-transform:uppercase;letter-spacing:.06em}td{color:#d6e5f3}td:first-child{font-weight:750}
+.src-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.source{padding:12px;background:#0a1a2b;border:1px solid #263e58;border-radius:11px}.source b{display:block;font-size:13px}.source span{color:#96b1cf;font-size:11px}.source p{font-size:12px;color:#bacce0;margin:7px 0}.source a, a{color:#8dcfff;text-decoration:none}.source a:hover{text-decoration:underline}
+.quality-note{border-left:3px solid #e2bf79;padding:12px;background:#2a231b;color:#f0dec0;font-size:12px;border-radius:9px;margin-top:12px}
+.tone-grid{display:grid;gap:9px}.tone-item{display:grid;grid-template-columns:52px minmax(0,1fr);gap:9px;border-bottom:1px solid #223951;padding:9px 0}.tone-item b{font-size:13px}.tone-item span{display:block;font-size:12px;color:#b9cbe0}.tone-item .spark{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.spark i{font-style:normal;background:#0a1b2d;border:1px solid #29445f;padding:3px 6px;border-radius:6px;font-size:10px;color:#c4d5e7}.spark i.pos{background:#17352e;color:#9ae3bd;border-color:#356857}.spark i.neg{background:#321d25;color:#f9adb3;border-color:#723740}.spark i.mid{background:#302715;color:#f0d396;border-color:#68512d}
+.split3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.smallbox{border:1px solid #29405c;background:#0a1a2a;padding:12px;border-radius:12px}.smallbox h3{font-size:15px;color:#eff6ff}.smallbox p{font-size:12px;color:#b9cbe0}.meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}.meta span{padding:5px 9px;background:#122941;border-radius:99px;font-size:10px;color:#b6d6f1}
+@media(max-width:720px){.wrap{padding:9px 9px 40px}.hero{padding:20px 17px}.hero h1{font-size:27px}.bank-country{padding:16px 13px}.src-grid,.split3{grid-template-columns:1fr}.bank-country .row{align-items:flex-start}.leadbox{padding:13px}}
+
+
+:root{--bad:#ee7c86;--good:#70d5ab;--accent:#79caff;--warn:#e6bd78}
+body{font-size:14px;line-height:1.58}
+.hero{padding:27px 26px}.hero h1{line-height:1.12}
+.hero .sub{font-size:15px;color:#d9e7f6;line-height:1.6}
+.hero .meta{margin-top:14px}
+.sec{font-size:11px;letter-spacing:.10em}
+.card h2,.card h3{overflow-wrap:normal}
+.verdict{font-size:18px;margin:11px 0 13px}
+.introdeck{margin-top:14px;font-size:14px;color:#d8e7f6;line-height:1.65;max-width:800px}
+.leadbox{font-size:15px;background:linear-gradient(140deg,#112944,#0e1c2e);padding:18px 20px}
+.muted{color:#aabed3}
+.qualityflag{font-size:10px;font-weight:850;letter-spacing:.03em;padding:5px 8px;border:1px solid #355878;background:#102640;color:#a6d8ff;border-radius:9px;display:inline-block}
+.qualityflag.old{border-color:#765d37;background:#282015;color:#ebca82}
+.qualityflag.changed{border-color:#78444c;background:#2b1c24;color:#ffafba}
+.signal{font-weight:900;font-size:16px;color:#f0f5ff}
+.snapshot-note{font-size:11px;color:#b3c6d9;line-height:1.6;margin-top:11px}
+.bank-country .verdict{font-size:17.1px;line-height:1.43}
+.bank-country .bankline{margin:11px 0;padding-left:10px}
+.bank-country .bankline p{font-size:12.9px}
+.bank-country .result{font-size:12.7px;line-height:1.62}
+.bank-country .narr{font-size:13.3px}
+.bank-country .triggers{margin-top:12px}
+.bank-country .trigger{font-size:11.2px}
+.statpill{display:inline-flex;padding:4px 8px;white-space:nowrap;background:#0a2033;border:1px solid #244661;color:#abcdea;font-size:11px;font-weight:700;border-radius:999px}
+.event{padding:13px 14px;background:#091a2c;border:1px solid #253d57;border-radius:13px;display:grid;grid-template-columns:115px 1fr;gap:12px;margin:8px 0}
+.event .dt{color:#83caff;font-size:12px;font-weight:900}.event .dt span{color:#9bb2ca;font-size:11px;display:block;margin-top:5px}
+.event h3{font-size:15px;margin:0 0 5px}.event p{color:#c7d9ea;font-size:12.5px;line-height:1.56;margin:0}
+.event .check{border-left:2px solid #3f6891;padding-left:9px;margin-top:7px;color:#a9c7e2}
+.pairrow{padding:11px 12px;background:#09192c;border-radius:11px;border:1px solid #263e58;margin:8px 0}
+.pairrow b{color:#dfeefe}.pairrow p{margin:5px 0 0;font-size:12px;color:#bacde2}
+.audit-item p{font-size:12.5px;line-height:1.56}
+.chartrow{grid-template-columns:58px minmax(0,1fr) 110px;gap:10px;align-items:center}
+.chartrow strong{display:flex;flex-direction:column;gap:2px;font-size:12px;line-height:1.1}
+.chartrow strong small{font-size:9px;color:#8fabc6;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.score{font-size:11px;color:#d7e6f5;font-weight:800;text-align:right}
+.chartbars>.chartrow .track{height:16px}
+.chart-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 14px}
+.chart-quick .q{padding:10px 11px;border:1px solid #29445e;border-radius:11px;background:#0b192b;font-size:11px;line-height:1.45;color:#bdd0e4}
+.chart-quick .q b{display:block;color:#eef5ff;font-size:11.5px;margin-bottom:4px}
+@media(max-width:720px){.chartrow{grid-template-columns:50px minmax(0,1fr) 92px;gap:7px}.chartrow strong{font-size:11.5px}.chart-quick{grid-template-columns:1fr}}
+.viewlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.viewlist .t{padding:4px 7px;border:1px solid #30475f;background:#101e31;border-radius:7px;font-size:10.5px;color:#bad0e7}
+.barname{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.barname small{font-weight:500;color:#879fb9;font-size:10px}
+.movetrack{position:relative;background:linear-gradient(90deg,#2a1e2b 0 50%,#162d2c 50% 100%);border:1px solid #28445c;border-radius:7px;height:20px}
+.movetrack:after{content:'';position:absolute;left:50%;height:100%;width:1px;background:#91a7bf}
+.movetrack i{position:absolute;top:4px;height:10px;border-radius:4px;display:block}
+.movetrack i.down{background:#e07f89;right:50%}
+.movetrack i.up{background:#66cdab;left:50%}
+.tagline{font-size:11px;line-height:1.55;color:#b7cee7}
+.source-count{font-size:11px;color:#7fc2f5;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
+.source-note{font-size:11.5px;color:#b2c8dd}
+.footer{letter-spacing:.02em;line-height:1.7}
+@media(max-width:720px){.hero{padding:20px 17px}.event{grid-template-columns:1fr;gap:6px}.bank-country .bankline p{font-size:12.8px}.leadbox{padding:13px 14px}.chartrow{grid-template-columns:38px minmax(0,1fr) 71px;gap:7px}.score{font-size:10px}}
+
+
+/* V6 LETTURA CHIARA — stesso design canonico, gerarchia editoriale più leggibile */
+.storyline{font-size:14.4px;line-height:1.67;color:#e4effc;margin:10px 0}
+.storyline b{color:#fff}.micro{font-size:11.5px;color:#a7bdd6;line-height:1.6}
+.bankline p{line-height:1.63}.bankline em{letter-spacing:.008em}
+.bank-country .verdict{font-size:16.5px;line-height:1.52;letter-spacing:-.01em}
+.bank-country .narr{font-size:13.7px;line-height:1.68}
+.bank-country .result{line-height:1.63}
+.stronglead{padding:14px 16px;border-left:4px solid #62dda7;background:rgba(92,215,161,.075);color:#f0fff8;border-radius:10px;font-size:17px;line-height:1.54;margin:11px 0}
+.briefbox{border:1px solid #294360;background:#0b1c2e;border-radius:12px;padding:12px 14px}
+.briefbox h3{font-size:14.5px;margin:0 0 5px}
+.briefbox p{margin:4px 0;font-size:13.2px;line-height:1.6}
+.threeline{display:grid;grid-template-columns:1fr;gap:10px;margin:12px 0}
+.bank-country .key{margin-top:13px}
+.markettest{background:rgba(89,168,255,.06);border-left:3px solid #62baff;padding:12px 13px;border-radius:9px;font-size:13.4px;line-height:1.62;margin:12px 0}
+.markettest b{color:#b3d8ff}
+.horizon{display:inline-block;border:1px solid #324f6c;background:#0d2338;color:#b4d2ee;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:700;margin-left:5px}
+.chartrow .score{font-size:12px}.chartrow strong small{font-size:10px}
+.audititem{background:#0c1c2e;border:1px solid #29425f;border-radius:11px;padding:13px 14px;margin:9px 0;line-height:1.65;font-size:13px}
+.audititem b{color:#fff}.audititem .line{font-size:10.5px;font-weight:850;letter-spacing:.08em;color:#8fc7ff;text-transform:uppercase}
+.eventgrid{display:grid;grid-template-columns:1fr;gap:9px;margin:12px 0}
+.eventbox{background:#0c1c2e;border:1px solid #263e59;border-radius:11px;padding:11px 12px}
+.eventbox .when{color:#85c7ff;font-size:11px;letter-spacing:.045em;font-weight:850}
+.eventbox b{display:block;font-size:14px;margin:4px 0}.eventbox p{font-size:12.8px;margin:4px 0;line-height:1.57}
+.refitem{padding:11px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:12.7px;line-height:1.58}
+.refitem:last-child{border-bottom:0}.refitem b{color:#e8f5ff}
+.refitem a{color:#99d0ff;text-decoration:none}.refitem a:hover{text-decoration:underline}
+.booknav{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 17px}.booknav a{color:#b0d8ff;background:#0e2136;border:1px solid #2e4d70;padding:6px 9px;border-radius:8px;font-size:11px;text-decoration:none}
+.booknav a:hover{border-color:#77baff}
+.pairbox{background:#0a1a2b;border-left:3px solid #ffcc7a;padding:11px 13px;border-radius:8px;margin:10px 0;font-size:13px;line-height:1.6}
+.pairbox b{color:#fff}.fineprint{font-size:11.4px;line-height:1.6;color:#9cb1c9}
+@media(min-width:700px){.threeline{grid-template-columns:repeat(3,1fr)}.eventgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:440px){.stronglead{font-size:15px}.bank-country .verdict{font-size:15px}.bank-country .narr{font-size:13.1px}.storyline{font-size:13.4px}}
+
+/* V7: improve chart readability without changing Dark Desk design */
+.chartbars>.chartrow{grid-template-columns:165px minmax(0,1fr) 135px;gap:12px;align-items:center;padding:7px 0}
+.chartbars>.chartrow>strong{font-size:12px;line-height:1.3;min-width:0}
+.chartbars>.chartrow>strong small{font-size:9.5px;line-height:1.4;letter-spacing:.02em;text-transform:none}
+.chartbars>.chartrow>.score{font-size:11px;line-height:1.35}
+@media(max-width:650px){
+  .chartbars>.chartrow{grid-template-columns:minmax(0,1fr) 108px;column-gap:9px;row-gap:6px;padding:9px 0;border-bottom:1px solid rgba(138,180,220,.08)}
+  .chartbars>.chartrow>strong{grid-column:1/-1;display:block;font-size:12.5px;line-height:1.2}
+  .chartbars>.chartrow>strong small{display:inline-block;margin-left:9px;font-size:10px;line-height:1.2}
+  .chartbars>.chartrow>.track{grid-column:1;grid-row:2}
+  .chartbars>.chartrow>.score{grid-column:2;grid-row:2;min-width:0;font-size:10.5px;line-height:1.3;text-align:right}
+}
+
+/* V8: concise comparison of verified bank views; non-invasive, no additional section. */
+.history-note{margin-top:13px;padding:12px 13px 11px;border:1px solid #2d4c67;border-left:3px solid #75b7f0;background:rgba(89,168,255,.055);border-radius:10px}
+.history-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.history-title span{font-size:11px;font-weight:900;letter-spacing:.075em;color:#a7d6ff}
+.history-title small{font-size:10px;color:#9ab2ce}
+.history-note p{font-size:12.7px;line-height:1.55;margin:7px 0;color:#d7e5f3}
+.history-note b{color:#edf5ff}
+.history-note a{color:#95cbff;text-underline-offset:2px}
+.history-foot{padding-top:8px;border-top:1px solid rgba(137,182,218,.13);font-size:11.7px;line-height:1.5;color:#b3c8dd}
+@media(max-width:440px){.history-note{padding:11px 11px}.history-note p{font-size:12.3px}.history-foot{font-size:11.3px}}
+</style></head><body><main class="wrap"><section class="hero">
+<div class="eyebrow">GLOBAL MACRO FX QUANT · INSTITUTIONAL BANK RESEARCH</div>
+<h1>Weekly Bank FX<br/>Research Desk</h1>
+<div class="sub">Settimana chiusa <b>venerdì 13 novembre 2026</b> · <b>Cosa dicono le banche, cosa sta prezzando il mercato, cosa ne ricaviamo.</b></div>
+<div class="meta"><span>G8 · 8 valute</span><span>11 banche monitorate · 6 con view FX comparabili recenti</span><span>Fonti e orizzonti espliciti</span><span>DARK DESK · V7 Lettura chiara</span></div>
+<div class="stronglead"><b>Il consenso non è un voto fra undici banche.</b> Sei istituti hanno view FX abbastanza recenti per un confronto selezionato. Gli altri aiutano a capire la storia, ma non possono essere trattati come nuove indicazioni di mercato.</div>
+<p class="introdeck">Le case più grandi aggiungono soprattutto <b>divergenze utili</b>. Il dollaro ha ancora sostegno tattico, ma diversi desk prevedono un recupero delle altre valute nel 2027. Conta <b>quando</b> pensano che cambi il mercato, non soltanto il loro target.</p>
+<div class="note"><b>Regola di trasparenza.</b> Il report è aggiornato alla chiusura del 13 novembre 2026. Le previsioni precedenti al CPI USA non sono state riscritte. Una nota senza giorno di pubblicazione verificabile è mostrata, ma <b>esclusa dal grafico</b>; le view macro non valgono come previsioni FX.</div>
+</section>
+<div class="booknav"><a href="#quadro">Il quadro</a><a href="#consenso">Le view</a><a href="#country">Otto valute</a><a href="#contrasti">Divergenze</a><a href="#audit">Audit</a><a href="#settimana">Prossima settimana</a><a href="#fonti">Fonti</a></div>
+<div class="sec" id="quadro">01 · Il quadro in un minuto</div>
+<section class="card"><div class="charttitle">I grandi desk raccontano due tempi diversi</div>
+<p class="storyline"><b>Adesso</b> il mercato premia i tassi americani più alti. ING e MUFG leggono USD forte nel breve, mentre UBS e HSBC invitano a non inseguirlo a qualsiasi prezzo. È la prima distinzione da tenere a mente.</p>
+<p class="storyline"><b>Guardando al 2027</b>, il quadro cambia: ING, MUFG e UBS vedono recupero in diverse valute contro USD. ABN AMRO è più cauta su EUR e AUD. Per noi la domanda è semplice: <b>quale dato farà cambiare davvero il prezzo dei tassi?</b></p>
+<div class="threeline"><div class="briefbox"><h3>USD · Il fattore dominante</h3><p>USD sostenuto ora, ma la forza ha bisogno di nuove sorprese sui tassi. Se il 2Y non sale più, la storia cambia.</p></div><div class="briefbox"><h3>JPY · Il conflitto più delicato</h3><p>JPY debole oggi, più interessante per diversi desk nel 2027. Non anticipare una svolta senza prezzo e differenziale di tassi.</p></div><div class="briefbox"><h3>AUD / NZD · Due storie diverse</h3><p>ING e UBS vedono un recupero moderato delle valute cicliche; ABN è più prudente sull’AUD. L’orizzonte fa la differenza.</p></div></div>
+
+<div class="history-note" aria-label="Evoluzione settimanale delle view bancarie">
+  <div class="history-title"><span>CHI STA CAMBIANDO IDEA?</span><small>Primo confronto · 6 → 13 novembre</small></div>
+  <p><b>MUFG · cambia il motivo della forza USD.</b> Il 6 novembre prevalevano domanda di protezione e dati sul lavoro; il 13 novembre l'attenzione passa all'inflazione e ai tassi Fed attesi più alti. <b>È un cambiamento di lettura, non una revisione numerica del target.</b> <a href="https://www.mufgresearch.com/fx/fx-weekly-6-november-2026/" target="_blank" rel="noopener">6/11</a> · <a href="https://www.mufgresearch.com/fx/fx-weekly-13-november-2026/" target="_blank" rel="noopener">13/11</a></p>
+  <p><b>MUFG · cambia l'idea sul cross.</b> Chiude le raccomandazioni short EUR/JPY e NOK/CHF e ne apre una short AUD/JPY. Il dato interessante è dove il desk vede ora la debolezza relativa, <b>non un trade da copiare</b>. <a href="https://www.mufgresearch.com/fx/fx-weekly-13-november-2026/" target="_blank" rel="noopener">Fonte</a></p>
+  <div class="history-foot"><b>ING e ABN AMRO:</b> le nuove previsioni 2027 sono state registrate come <i>punti di partenza</i>. Finché manca un vecchio target sullo stesso trimestre, non le chiameremo revisioni. <a href="https://think.ing.com/articles/g10-fx-outlook-2027/" target="_blank" rel="noopener">ING</a> · <a href="https://www.abnamro.com/research/en/our-research/fx-outlook-2027-a-weak-euro-in-2027" target="_blank" rel="noopener">ABN</a></div>
+</div>
+<div class="why" style="margin-top:12px"><b>Come leggiamo il campione · 11 banche</b><p style="margin:6px 0"><b>View FX nel grafico:</b> ING, MUFG, ABN AMRO, Scotiabank, UBS e HSBC. Alcune note di ottobre sono precedenti ai nuovi dati: non sono aggiornamenti della settimana.</p><p style="margin:6px 0"><b>Altre prospettive, fuori dal conteggio:</b> BNP Paribas (outlook di novembre senza giorno attestato), Goldman Sachs (macro e tassi, non target FX), Deutsche Bank (view FX del 2 ottobre). JPMorgan e Citi sono usate soltanto per confrontare previsioni storiche pubbliche.</p></div><p class="fineprint">Le view qui sotto provengono da 11 banche. I segnali numerici del grafico si basano solo su sei case con ricerca FX sufficientemente recente e attribuibile. State Street è citata separatamente come gestore istituzionale, non come banca.</p>
+</section>
+<div class="sec" id="consenso">02 · Grafico originale · dove le view sono allineate</div>
+<section class="card chartbox" id="grafico-consenso-originale"><div class="charttitle">Quanto sono allineate le banche?</div>
+<p class="chartsub">Ogni barra conta <b>banche con una view pubblica, datata, direzionale e confrontabile su quel cross</b>. Non tutte le undici banche entrano in ogni riga: i documenti vecchi, soltanto macro o senza data precisa restano fuori. Leggi prima <b>cross, orizzonte e numerosità</b>.</p>
+<div class="chart-quick"><div class="q"><b>Messaggio principale</b> USD ancora sostenuto nel breve, ma sul 2027 prevalgono aspettative di recupero selettivo contro il dollaro.</div><div class="q"><b>Dove emerge un vero contrasto</b> EUR e AUD: il recupero ipotizzato da più desk non è condiviso da tutti.</div><div class="q"><b>Quanto è solido?</b> Da 2 a 5 view per riga. È un campione più ricco, non un sondaggio rappresentativo di Wall Street.</div></div>
+<div class="chartbars"><div class="chartrow"><strong>USD<small>4 view · USD vs G10 · breve</small></strong><div aria-label="USD: favorevoli 2, neutrali 2, caute 0, n=4" class="track" role="img"><i class="pos" style="width:50.00%"></i><i class="neu" style="width:50.00%"></i><i class="neg" style="width:0.00%"></i></div><div class="score">2 favorevoli · 2 neutrali</div></div><div class="chartrow"><strong>EUR<small>4 view · EUR/USD · 2027</small></strong><div aria-label="EUR: favorevoli 3, neutrali 0, caute 1, n=4" class="track" role="img"><i class="pos" style="width:75.00%"></i><i class="neu" style="width:0.00%"></i><i class="neg" style="width:25.00%"></i></div><div class="score">3 favorevoli · 1 cauta</div></div><div class="chartrow"><strong>GBP<small>3 view · GBP/USD · 2027</small></strong><div aria-label="GBP: favorevoli 3, neutrali 0, caute 0, n=3" class="track" role="img"><i class="pos" style="width:100.00%"></i><i class="neu" style="width:0.00%"></i><i class="neg" style="width:0.00%"></i></div><div class="score">3 favorevoli su 3</div></div><div class="chartrow"><strong>JPY<small>4 view · JPY/USD · 2027</small></strong><div aria-label="JPY: favorevoli 3, neutrali 1, caute 0, n=4" class="track" role="img"><i class="pos" style="width:75.00%"></i><i class="neu" style="width:25.00%"></i><i class="neg" style="width:0.00%"></i></div><div class="score">3 favorevoli · 1 neutrale</div></div><div class="chartrow"><strong>CAD<small>5 view · CAD/USD · 2027</small></strong><div aria-label="CAD: favorevoli 5, neutrali 0, caute 0, n=5" class="track" role="img"><i class="pos" style="width:100.00%"></i><i class="neu" style="width:0.00%"></i><i class="neg" style="width:0.00%"></i></div><div class="score">5 favorevoli su 5</div></div><div class="chartrow"><strong>AUD<small>4 view · AUD/USD · 2027</small></strong><div aria-label="AUD: favorevoli 3, neutrali 0, caute 1, n=4" class="track" role="img"><i class="pos" style="width:75.00%"></i><i class="neu" style="width:0.00%"></i><i class="neg" style="width:25.00%"></i></div><div class="score">3 favorevoli · 1 cauta</div></div><div class="chartrow"><strong>NZD<small>4 view · NZD/USD · 2027</small></strong><div aria-label="NZD: favorevoli 3, neutrali 1, caute 0, n=4" class="track" role="img"><i class="pos" style="width:75.00%"></i><i class="neu" style="width:25.00%"></i><i class="neg" style="width:0.00%"></i></div><div class="score">3 favorevoli · 1 mista</div></div><div class="chartrow"><strong>CHF<small>2 view · CHF/EUR · 2027</small></strong><div aria-label="CHF: favorevoli 2, neutrali 0, caute 0, n=2" class="track" role="img"><i class="pos" style="width:100.00%"></i><i class="neu" style="width:0.00%"></i><i class="neg" style="width:0.00%"></i></div><div class="score">2 favorevoli su 2</div></div></div>
+<div class="legend"><span><i class="dot dpos"></i> costruttivo</span><span><i class="dot dneu"></i> misto / condizionato</span><span><i class="dot dneg"></i> cauto</span></div>
+<div class="why"><b>Regola di lettura.</b> La barra riassume il <b>segno della view</b>, non la probabilità che abbia ragione. USD riguarda il breve; per le altre valute consideriamo il 2027, con target tra Q3, Q4 o 12 mesi, <b>non alla stessa data esatta</b>. Ogni istituto vale una volta per valuta. La view di HSBC su AUD, pubblicata prima del rialzo RBA, resta nell’audit e non viene riproposta come segnale attuale.</div>
+<p class="fineprint"><b>Denominatori e fonti per riga:</b> USD = ING, MUFG, UBS, HSBC (4); EUR = ING, MUFG, UBS, ABN (4); GBP = ING, MUFG, UBS (3); JPY = ING, MUFG, ABN, UBS (4); CAD = ING, MUFG, UBS, ABN, Scotiabank (5); AUD = ING, MUFG, UBS, ABN (4); NZD = ING, MUFG, UBS, ABN (4); CHF = ING, ABN (2). BNP Paribas (mese senza giorno), Goldman (macro), Deutsche (02/10), Citi e JPMorgan (estate) sono esclusi. Il grafico non è il consenso sell-side globale.</p>
+</section>
+<div class="sec" id="country">03 · Country Book bancario · otto giudizi chiari</div>
+<p class="intro">Ogni valuta segue lo stesso percorso: <b>una frase per capire</b> → <b>view bancarie attribuite</b> → <b>test del mercato</b> → <b>nostro giudizio e condizioni</b>. Il punto non è avere sempre un trade, ma sapere quali aspettative stanno reggendo.</p>
+<section class="card bank-country good" id="ccy-usd"><div class="row"><div class="flagtitle"><span class="flagbadge us"></span><h2>USD</h2></div><span class="state">FORTE NEL BREVE · REPRICING FED</span></div><p class="verdict">Il dollaro sale perché il mercato si aspetta una Fed più restrittiva. La domanda è quanto di questo scenario sia già nel prezzo.</p><div class="key">COSA DICONO I DESK · CON DATA E ORIZZONTE</div><div class="bankline"><em>MUFG · FX Weekly · 13 novembre</em><p>Il CPI core più forte del previsto e il rialzo dei rendimenti brevi sostengono USD. MUFG ritiene possibile altro spazio di rialzo, ma giudica poco probabile un maxi-rialzo Fed da 50 punti a dicembre. <a href="https://www.mufgresearch.com/fx/fx-weekly-13-november-2026/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ING · FX Daily · 13 novembre</em><p>Il dollaro resta favorito nel breve: i mercati stanno incorporando ulteriori rialzi. ING vede difficile un cambio di rotta immediato, salvo forte stress sul settore tecnologico. <a href="https://think.ing.com/articles/fx-daily-dont-mess-with-the-dollar/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>Scotiabank · FX Outlook · 5 novembre · BASE PRECEDENTE</em><p>Nel medio periodo resta più prudente sul dollaro, per valutazioni elevate e possibile riduzione delle esposizioni globali agli USA. La nota precede il CPI del 10 novembre. <a href="https://www.scotiabank.com/ca/en/about/economics/economics-publications/post.other-publications.foreign-exchange.foreign-exchange-outlook--november-5--2026-.html" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>UBS CIO · House View · 23 ottobre · BASE PRE-CPI</em><p>USD neutrale: ammette un altro rialzo nel breve, ma ritiene il dollaro già molto comprato. Sul medio termine si attende un indebolimento graduale. <a href="https://advisors.ubs.com/mediahandler/media/845240/UBS%20House%20View%20for%20November%202026.pdf" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>Goldman Sachs · Global Outlook · 13 novembre · MACRO, NON VIEW FX</em><p>Si attende rialzi Fed a dicembre e marzo, poi un possibile allentamento a fine 2027. È utile per il percorso dei tassi, <b>non</b> è un target del dollaro. <a href="https://www.goldmansachs.com/insights/articles/the-global-economy-is-forecast-to-grow-2-point-8-percent-in-2027-as-oil-prices-decline" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="markettest"><b>Il mercato conferma?</b> Il DXY è salito sopra quota 103 e USD/JPY è tornato in area 160. Il PPI USA pubblicato il 13/11 ha però segnato +0,3% mensile contro +0,4% atteso: una sorpresa leggermente più morbida, senza cancellare il repricing della settimana.</div><div class="key">LA NOSTRA LETTURA · NON È UNA VIEW BANCARIA</div><p class="narr"><b>La forza USD è reale nel breve, ma non è un assegno in bianco.</b> Se la Fed deluderà aspettative già molto aggressive, il dollaro potrebbe perdere sostegno anche senza un forte deterioramento dell’economia.</p><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>Il mercato conferma rialzi Fed con tassi brevi in aumento e USD forte su più coppie.</div><div class="trigger"><b>INDEBOLIREBBE</b>I dati rallentano, il 2Y scende e il dollaro non reagisce più positivamente alle notizie favorevoli.</div></div></section>
+<section class="card bank-country bad" id="ccy-eur"><div class="row"><div class="flagtitle"><span class="flagbadge eu"></span><h2>EUR</h2></div><span class="state">EUR SOTTO PRESSIONE · DIVISIONE 2027</span></div><p class="verdict">L’euro non è debole solo per l’Europa: è soprattutto il confronto con una Fed che appare più aggressiva.</p><div class="key">COSA DICONO I DESK · CON DATA E ORIZZONTE</div><div class="bankline"><em>ING · FX Daily · 13 novembre</em><p>Con la Fed più restrittiva della BCE, i differenziali dei tassi brevi favoriscono USD. ING considera EUR/USD sotto 1,10 un rischio concreto, non uno scenario inevitabile. <a href="https://think.ing.com/articles/fx-daily-dont-mess-with-the-dollar/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ING · G10 Outlook · 12 novembre</em><p>Sul 2027 cambia prospettiva: prevede EUR/USD a 1,18 nel quarto trimestre, perché si aspetta un successivo rallentamento dell’inflazione USA e quindi meno sostegno per il dollaro. <a href="https://think.ing.com/articles/g10-fx-outlook-2027/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ABN AMRO · FX Outlook · 11 novembre</em><p>Più pessimista sull’euro nel 2027, citando crescita USA migliore e incertezza politica francese. Qui esiste una vera divergenza tra due banche sullo stesso orizzonte. <a href="https://www.abnamro.com/research/en/our-research/fx-outlook-2027-a-weak-euro-in-2027" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>UBS CIO · House View · 23 ottobre · PROIEZIONE 2027</em><p>Prevede EUR/USD a 1,20 entro settembre 2027, ma la stima è precedente al CPI USA di novembre. <a href="https://advisors.ubs.com/mediahandler/media/845240/UBS%20House%20View%20for%20November%202026.pdf" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>BNP Paribas Wealth · Currencies Focus · novembre · GIORNO NON VERIFICATO</em><p>Vede EUR/USD a 1,12 tra 3 mesi e 1,20 tra 12 mesi: dollaro sostenuto adesso, più fragile in seguito. <b>Esclusa dal grafico</b> finché non è accertato il giorno della pubblicazione. <a href="https://wealthmanagement.bnpparibas.com/en/insights/market-strategy/currencies-focus-november-2026.html" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="markettest"><b>Il mercato conferma?</b> EUR/USD ha trattato vicino ai minimi di circa 19 mesi dopo il CPI USA. Il mercato sta favorendo la gamba USD; non è corretto attribuire l’intera discesa a una nuova crisi economica dell’eurozona.</div><div class="key">LA NOSTRA LETTURA · NON È UNA VIEW BANCARIA</div><p class="narr"><b>Nel breve è soprattutto USD a dominare.</b> Nel 2027 più desk prevedono EUR/USD in recupero, ma ABN AMRO resta cauta. La tesi richiede che il vantaggio dei tassi USA smetta di ampliarsi, non semplicemente che il target sia lontano dai prezzi di oggi.</p><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>La BCE diventa relativamente più restrittiva, o il mercato ridimensiona i rialzi Fed, e EUR/USD recupera con continuità.</div><div class="trigger"><b>INDEBOLIREBBE</b>I tassi brevi USA continuano ad allontanarsi da quelli europei e EUR/USD resta incapace di recuperare.</div></div></section>
+<section class="card bank-country warn" id="ccy-gbp"><div class="row"><div class="flagtitle"><span class="flagbadge gb"></span><h2>GBP</h2></div><span class="state">CRESCITA SOLIDA · TASSI GIÀ PREZZATI</span></div><p class="verdict">La sterlina ha basi macro interessanti, ma le attese sulla BoE sono già elevate: servirà qualcosa in più per premiarla.</p><div class="key">COSA DICONO I DESK · CON DATA E ORIZZONTE</div><div class="bankline"><em>ING · G10 Outlook · 12 novembre</em><p>Prevede GBP/USD in recupero nel 2027, ma sottolinea che buona parte dei rialzi BoE è già nei prezzi. Su EUR/GBP vede un lento recupero dell’euro nel corso del 2027. <a href="https://think.ing.com/articles/g10-fx-outlook-2027/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ABN AMRO · FX Outlook · 11 novembre</em><p>Si aspetta sterlina relativamente forte contro EUR almeno fino a metà 2027, sostenuta da crescita UK e rischio politico in Francia. Sul cross EUR/GBP le banche non coincidono del tutto. <a href="https://www.abnamro.com/research/en/our-research/fx-outlook-2027-a-weak-euro-in-2027" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>MUFG · Monthly FX Outlook · 2 novembre · BASE PRECEDENTE</em><p>Previsione GBP/USD 1,3330 per fine 2026 e 1,3560 per Q3 2027. È una base precedente al PIL UK e alle successive sorprese USA, non una nuova chiamata della settimana. <a href="https://www.mufgresearch.com/fx/monthly-foreign-exchange-outlook-november-2026/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>UBS CIO · House View · 23 ottobre · PRE-CPI</em><p>GBP è una delle sue valute preferite; target GBP/USD 1,41 a settembre 2027. Questa view riguarda il dollaro, non garantisce GBP forte contro EUR. <a href="https://advisors.ubs.com/mediahandler/media/845240/UBS%20House%20View%20for%20November%202026.pdf" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>BNP Paribas Wealth · novembre · GIORNO NON VERIFICATO</em><p>Prevede EUR/GBP a 0,84 tra 3 mesi e 0,87 tra 12: sterlina sostenuta oggi contro euro, meno convincente in seguito. Non entra nel grafico. <a href="https://wealthmanagement.bnpparibas.com/en/insights/market-strategy/currencies-focus-november-2026.html" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="markettest"><b>Il mercato conferma?</b> Il PIL britannico del terzo trimestre è cresciuto dello 0,7%, dopo lo 0,5% del trimestre precedente. Il dato sostiene la narrativa di tenuta della domanda, ma GBP/USD ha continuato a risentire della forza USD.</div><div class="key">LA NOSTRA LETTURA · NON È UNA VIEW BANCARIA</div><p class="narr"><b>Economia relativamente robusta, valuta da selezionare per cross.</b> Per capire la GBP è più utile confrontarla con EUR che leggere soltanto GBP/USD durante un rally generalizzato del dollaro.</p><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>BoE mantiene il tono restrittivo, dati UK reggono e GBP sovraperforma EUR.</div><div class="trigger"><b>INDEBOLIREBBE</b>Inflazione e domanda rallentano; i rendimenti UK non sostengono GBP nonostante la guidance BoE.</div></div></section>
+<section class="card bank-country warn" id="ccy-jpy"><div class="row"><div class="flagtitle"><span class="flagbadge jp"></span><h2>JPY</h2></div><span class="state">DEBOLE NEL BREVE · RISCHIO INTERVENTO</span></div><p class="verdict">Lo yen resta sotto pressione anche con possibili rialzi BoJ: la forza dei tassi USA e i flussi esteri pesano di più oggi.</p><div class="key">COSA DICONO I DESK · CON DATA E ORIZZONTE</div><div class="bankline"><em>MUFG · FX Weekly · 13 novembre</em><p>USD/JPY sopra 160 rende più probabile un intervento fra quell’area e 164. MUFG segnala che gli investimenti giapponesi all’estero senza copertura valutaria possono mantenere lo yen debole. <a href="https://www.mufgresearch.com/fx/fx-weekly-13-november-2026/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ING · FX Daily · 13 novembre</em><p>È più prudente sull’ipotesi di intervento immediato: il rialzo di USD/JPY deriva soprattutto da un dollaro forte per motivi macro. Nota una vulnerabilità delle valute a basso rendimento ai tassi USA. <a href="https://think.ing.com/articles/fx-daily-dont-mess-with-the-dollar/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ABN AMRO · FX Outlook · 11 novembre</em><p>Per il 2027 si attende uno yen gradualmente più forte, grazie a possibili riduzioni dei differenziali dei tassi. È una tesi di medio periodo, non una conferma per i prossimi giorni. <a href="https://www.abnamro.com/research/en/our-research/fx-outlook-2027-a-weak-euro-in-2027" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>UBS CIO · House View · 23 ottobre · PROIEZIONE 2027</em><p>Prevede USD/JPY intorno a 158 nel 2027. È molto più prudente di ING o MUFG sulla forza futura dello yen. <a href="https://advisors.ubs.com/mediahandler/media/845240/UBS%20House%20View%20for%20November%202026.pdf" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>BNP Paribas Wealth · novembre · GIORNO NON VERIFICATO</em><p>Punta a USD/JPY 155 a 12 mesi: miglioramento moderato, non un’inversione violenta già in corso. Non entra nel grafico. <a href="https://wealthmanagement.bnpparibas.com/en/insights/market-strategy/currencies-focus-november-2026.html" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="markettest"><b>Il mercato conferma?</b> USD/JPY è arrivato vicino a 160 mentre i funzionari giapponesi hanno segnalato preoccupazione per movimenti troppo rapidi. Le autorità possono cambiare il timing, ma l’intervento non va dato per certo.</div><div class="key">LA NOSTRA LETTURA · NON È UNA VIEW BANCARIA</div><p class="narr"><b>Non comprerei yen soltanto perché il cambio sembra alto.</b> Servono una vera inversione di USD/JPY e tassi relativi favorevoli. Qui MUFG e ING divergono sul rischio d’intervento nel brevissimo.</p><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>USD/JPY cede con i rendimenti USA e il 2Y giapponese/attese BoJ sostengono lo yen.</div><div class="trigger"><b>INDEBOLIREBBE</b>I flussi restano in uscita dal Giappone e USD/JPY prosegue il trend senza conferme della BoJ.</div></div></section>
+<section class="card bank-country warn" id="ccy-cad"><div class="row"><div class="flagtitle"><span class="flagbadge ca"></span><h2>CAD</h2></div><span class="state">MEDIO TERMINE MIGLIORE · OGGI USD DOMINA</span></div><p class="verdict">Le banche vedono spazio per CAD più forte, ma il prezzo per ora racconta soprattutto una leadership americana.</p><div class="key">COSA DICONO I DESK · CON DATA E ORIZZONTE</div><div class="bankline"><em>ING · G10 Outlook · 12 novembre</em><p>Prevede USD/CAD a 1,41 per fine 2026 e 1,34 a fine 2027, con una Fed meno restrittiva più avanti e una BoC non orientata a tagliare. <a href="https://think.ing.com/articles/g10-fx-outlook-2027/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ABN AMRO · FX Outlook · 11 novembre</em><p>Vede sostegno CAD da tassi canadesi e minore tensione commerciale, ma segnala che petrolio più basso può frenare la valuta. <a href="https://www.abnamro.com/research/en/our-research/fx-outlook-2027-a-weak-euro-in-2027" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>Scotiabank · FX Outlook · 5 novembre · BASE PRECEDENTE</em><p>È più costruttiva nel breve di altre case: target USD/CAD 1,39 per Q4 2026. La previsione è precedente al CPI USA e alla nuova gamba rialzista del dollaro. <a href="https://www.scotiabank.com/ca/en/about/economics/economics-publications/post.other-publications.foreign-exchange.foreign-exchange-outlook--november-5--2026-.html" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>UBS CIO · House View · 23 ottobre · PRE-CPI</em><p>Target USD/CAD 1,36 a settembre 2027. Si aggiunge alle previsioni di ING, MUFG e Scotiabank di un CAD più forte nel medio termine. <a href="https://advisors.ubs.com/mediahandler/media/845240/UBS%20House%20View%20for%20November%202026.pdf" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>BNP Paribas Wealth · novembre · GIORNO NON VERIFICATO</em><p>Target USD/CAD 1,35 a 12 mesi, ma sottolinea che tensioni commerciali e Fed possono frenare il movimento nel breve. Non entra nel grafico. <a href="https://wealthmanagement.bnpparibas.com/en/insights/market-strategy/currencies-focus-november-2026.html" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="markettest"><b>Il mercato conferma?</b> La Bank of Canada rileva USD/CAD a 1,4257 il 13 novembre. Il cambio è sopra i target di fine 2026 di ING e Scotiabank: non significa che siano impossibili, ma richiedono una svolta del differenziale o della domanda USD.</div><div class="key">LA NOSTRA LETTURA · NON È UNA VIEW BANCARIA</div><p class="narr"><b>Il consenso sul CAD futuro si è allargato, non il segnale di acquisto oggi.</b> Diverse banche puntano su USD/CAD più basso nel 2027; la prova sarà un differenziale dei tassi meno favorevole agli USA e un prezzo che reagisce.</p><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>Diminuisce il premio USD, BoC relativamente restrittiva e USD/CAD scende sotto i livelli di rottura recenti.</div><div class="trigger"><b>INDEBOLIREBBE</b>Nuovo rialzo attese Fed, petrolio debole e USD/CAD ancora in accelerazione.</div></div></section>
+<section class="card bank-country bad" id="ccy-aud"><div class="row"><div class="flagtitle"><span class="flagbadge au"></span><h2>AUD</h2></div><span class="state">BANCHE CAUTE · TASSI ALTI NON BASTANO</span></div><p class="verdict">Il rialzo dei tassi RBA non protegge automaticamente l’AUD: il mercato teme una banca centrale vicina alla fine dei rialzi.</p><div class="key">COSA DICONO I DESK · CON DATA E ORIZZONTE</div><div class="bankline"><em>MUFG · FX Weekly · 13 novembre</em><p>Ha aperto una nuova idea short AUD/JPY. La debolezza dell’AUD viene collegata all’eventuale fine della stretta RBA, all’energia e al sentiment sul settore AI. <a href="https://www.mufgresearch.com/fx/fx-weekly-13-november-2026/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ING · G10 Outlook · 12 novembre</em><p>Ritiene plausibili tagli RBA nella seconda metà del 2027. Vede solo un lieve recupero AUD/USD, che potrebbe restare indietro rispetto ad altre valute G10. <a href="https://think.ing.com/articles/g10-fx-outlook-2027/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ABN AMRO · FX Outlook · 11 novembre</em><p>Si aspetta AUD debole nel 2027, quando la forza offerta dai tassi elevati dovrebbe ridursi e i prezzi energetici scendere. <a href="https://www.abnamro.com/research/en/our-research/fx-outlook-2027-a-weak-euro-in-2027" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>UBS CIO · House View · 23 ottobre · PRE-RBA</em><p>Prevede AUD/USD a 0,73 a settembre 2027. Il target è di medio periodo; non spiega il calo di AUD dopo il rialzo RBA. <a href="https://advisors.ubs.com/mediahandler/media/845240/UBS%20House%20View%20for%20November%202026.pdf" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>HSBC · FX Navigator · 26 ottobre · DA RIVALUTARE</em><p>Era rialzista su AUD perché riteneva sottovalutata la possibilità del rialzo RBA di novembre. <b>Il rialzo è già arrivato:</b> la view tattica va riesaminata, non riciclata. <a href="https://www.expat.hsbc.com/wealth/insights/fx-insights/fx-navigator/usd-to-consolidate-near-its-highs/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="markettest"><b>Il mercato conferma?</b> MUFG classifica AUD fra i peggiori G10 della settimana contro USD. La debolezza segue il rialzo RBA: una buona dimostrazione che conta il cambiamento del percorso futuro, non la decisione passata.</div><div class="key">LA NOSTRA LETTURA · NON È UNA VIEW BANCARIA</div><p class="narr"><b>Per AUD ci sono due storie da non confondere.</b> Le previsioni 2027 di ING, MUFG e UBS sono moderatamente positive; la reazione al rialzo RBA e la prudenza di ABN ci dicono che il timing resta fragile.</p><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>Rientra la volatilità, AUD recupera contro NZD/JPY e i differenziali AUD non peggiorano.</div><div class="trigger"><b>INDEBOLIREBBE</b>Nuovi segnali di fine ciclo RBA e indebolimento dei cross sensibili al rischio.</div></div></section>
+<section class="card bank-country good" id="ccy-nzd"><div class="row"><div class="flagtitle"><span class="flagbadge nz"></span><h2>NZD</h2></div><span class="state">RESILIENZA RELATIVA · TESI 2027</span></div><p class="verdict">Il NZD non è diventato improvvisamente forte, ma ha resistito meglio di molte valute durante la settimana del dollaro.</p><div class="key">COSA DICONO I DESK · CON DATA E ORIZZONTE</div><div class="bankline"><em>ING · G10 Outlook · 12 novembre</em><p>È costruttiva su NZD/USD per il 2027 e prevede 0,60 a fine anno. Attende due rialzi RBNZ, ma il recupero dipende molto da un futuro alleggerimento della Fed. <a href="https://think.ing.com/articles/g10-fx-outlook-2027/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ABN AMRO · FX Outlook · 11 novembre</em><p>Vede benefici da energia meno cara, ma è prudente perché i rialzi RBNZ potrebbero risultare inferiori alle attese e gli investitori restare selettivi. <a href="https://www.abnamro.com/research/en/our-research/fx-outlook-2027-a-weak-euro-in-2027" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>MUFG · FX Weekly · 13 novembre</em><p>Osserva NZD relativamente resiliente rispetto agli altri G10 nella settimana di rafforzamento USD. Non equivale a un segnale di inversione strutturale. <a href="https://www.mufgresearch.com/fx/fx-weekly-13-november-2026/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>UBS CIO · House View · 23 ottobre · PRE-CPI</em><p>Prevede NZD/USD a 0,60 entro settembre 2027, ma oggi si dichiara tatticamente neutrale: target futuro e trade immediato non coincidono. <a href="https://advisors.ubs.com/mediahandler/media/845240/UBS%20House%20View%20for%20November%202026.pdf" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>HSBC · FX Navigator · 26 ottobre · BASE PRECEDENTE</em><p>View favorevole a NZD per la banca centrale restrittiva. Rispetto a novembre va verificato se il vantaggio dei tassi resta nei prezzi. <a href="https://www.expat.hsbc.com/wealth/insights/fx-insights/fx-navigator/usd-to-consolidate-near-its-highs/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="markettest"><b>Il mercato conferma?</b> Nel confronto G10 pubblicato da MUFG il NZD fa meglio di molte valute contro USD, pur non sottraendosi interamente alla pressione del dollaro. È forza relativa, non forza assoluta.</div><div class="key">LA NOSTRA LETTURA · NON È UNA VIEW BANCARIA</div><p class="narr"><b>Un candidato interessante da seguire, non un trade già pronto.</b> Verificherei NZD contro AUD e il percorso atteso RBNZ: il fattore decisivo è se i tassi relativi inizieranno a favorire davvero il Kiwi.</p><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>NZD continua a sovraperformare AUD e RBNZ/OIS sostengono un percorso più restrittivo del previsto.</div><div class="trigger"><b>INDEBOLIREBBE</b>La crescita NZ delude, la RBNZ viene riprezzata al ribasso e la forza relativa scompare.</div></div></section>
+<section class="card bank-country warn" id="ccy-chf"><div class="row"><div class="flagtitle"><span class="flagbadge ch"></span><h2>CHF</h2></div><span class="state">USD FORTE ORA · CHF PIÙ INTERESSANTE CONTRO EUR</span></div><p class="verdict">Il franco ha perso forza contro USD, ma questo non cancella il possibile sostegno contro EUR se torna il rischio europeo.</p><div class="key">COSA DICONO I DESK · CON DATA E ORIZZONTE</div><div class="bankline"><em>ING · FX Daily · 13 novembre</em><p>Osserva pressione su CHF durante il rialzo dei tassi USA; segnala USD/CHF in area tecnica delicata a 0,84. È una valutazione tattica. <a href="https://think.ing.com/articles/fx-daily-dont-mess-with-the-dollar/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ING · G10 Outlook · 12 novembre</em><p>Sul 2027 vede EUR/CHF vicino a 0,90, perché la SNB potrebbe tollerare un franco più forte e il rischio sui bond europei restare presente. <a href="https://think.ing.com/articles/g10-fx-outlook-2027/" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>ABN AMRO · FX Outlook · 11 novembre</em><p>Ritiene il CHF sostenuto contro EUR dall’incertezza francese nella prima parte del 2027; vede però possibili limiti da differenziali e interventi SNB. <a href="https://www.abnamro.com/research/en/our-research/fx-outlook-2027-a-weak-euro-in-2027" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>BNP Paribas Wealth · novembre · GIORNO NON VERIFICATO</em><p>Prevede EUR/CHF a 0,92 sia a 3 che a 12 mesi: più stabilità che forte rivalutazione del franco. Diverge dalla lettura più positiva di ING sul 2027. <a href="https://wealthmanagement.bnpparibas.com/en/insights/market-strategy/currencies-focus-november-2026.html" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="bankline"><em>UBS CIO · House View · 23 ottobre · ALTRA COPPIA</em><p>Prevede USD/CHF a 0,77 a settembre 2027, ma vede CHF come valuta di finanziamento contro GBP. <b>Non equivale</b> a un bullish CHF contro EUR. <a href="https://advisors.ubs.com/mediahandler/media/845240/UBS%20House%20View%20for%20November%202026.pdf" rel="noopener noreferrer" target="_blank">Fonte ↗</a></p></div><div class="markettest"><b>Il mercato conferma?</b> MUFG rileva CHF fra le valute peggiori contro USD nella settimana. Non c’è contraddizione con una possibile forza contro EUR: il cambio dipende sempre dalla valuta di confronto.</div><div class="key">LA NOSTRA LETTURA · NON È UNA VIEW BANCARIA</div><p class="narr"><b>CHF forte come difesa strutturale contro EUR, meno convincente contro USD oggi.</b> Separerei EUR/CHF da USD/CHF invece di parlare genericamente di “franco forte o debole”.</p><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>Ritornano tensioni sui titoli di Stato francesi e EUR/CHF riprende a scendere.</div><div class="trigger"><b>INDEBOLIREBBE</b>Il rischio europeo si attenua, spread OAT–Bund rientrano ed EUR/CHF recupera.</div></div></section>
+<div class="sec" id="contrasti">04 · Tre divergenze che vale la pena capire</div>
+<section class="card"><div class="charttitle">Tre divergenze che le grandi banche rendono più chiare</div>
+<div class="audititem"><div class="line">01 · USD · quando cambia l’orizzonte, cambia il giudizio</div><p class="storyline"><b>Breve:</b> ING e MUFG seguono la forza USD. <b>2027:</b> UBS, ING e MUFG prevedono invece un EUR/USD più alto; ABN resta prudente. Non sono voti incompatibili: cambiano data, orizzonte e percorso della Fed.</p></div>
+<div class="audititem"><div class="line">02 · JPY · stessa valuta, rischio operativo opposto</div><p class="storyline"><b>JPY:</b> il cambio vicino a 160 mette in luce un rischio immediato d’intervento, ma le previsioni sul 2027 sono molto diverse. ING e MUFG si aspettano USD/JPY in discesa; UBS resta più vicina alla stabilità. Prima di comprare yen servono spread e prezzo.</p></div>
+<div class="audititem"><div class="line">03 · CAD · target simili nella direzione, non nei tempi</div><p class="storyline"><b>CAD:</b> ING, MUFG, UBS e Scotiabank vedono USD/CAD più basso più avanti. È una convergenza di <b>scenario</b>, non una conferma che il ribasso sia partito. La soglia decisiva è la risposta del cambio alle prossime sorprese USA e Canada.</p></div>
+</section>
+<div class="sec" id="audit">05 · Audit · valutiamo le idee dopo gli eventi</div>
+<section class="card"><div class="charttitle">Una previsione ha senso solo rispetto alla sua data</div>
+<div class="audititem"><div class="line">USD · prima e dopo il PPI del 13 novembre</div>ING e MUFG hanno pubblicato le loro view quando il PPI USA era ancora atteso o non ancora incorporato. Il dato ufficiale è stato <b>+0,3% mensile contro +0,4% atteso</b>: sorpresa moderatamente inferiore alle attese. <b>Non riscriviamo</b> le note come se avessero previsto il numero. L’impostazione USD rimane sostenuta dal precedente CPI e dal repricing Fed, ma ora c’è un dato contrario da monitorare. <a href="https://www.bls.gov/news.release/archives/ppi_11132026.htm" rel="noopener noreferrer" target="_blank">BLS</a> · <a href="https://www.reuters.com/business/us-producer-prices-rise-further-october-2026-11-13/" rel="noopener noreferrer" target="_blank">Reuters / consenso</a></div>
+<div class="audititem"><div class="line">GBP · la crescita non è la stessa cosa della valuta</div>Il PIL UK è salito dello <b>0,7% nel Q3</b>, dopo lo 0,5%. È coerente con l’idea di maggiore tenuta economica; non dimostra però che comprare GBP/USD fosse il trade migliore durante un forte rally USD. Per validare le view GBP occorre osservare <b>EUR/GBP e tassi UK relativi</b>. <a href="https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/latest" rel="noopener noreferrer" target="_blank">ONS</a></div>
+<div class="audititem"><div class="line">CAD · la previsione Scotiabank era precedente alla nuova forza USD</div>La view Scotiabank del 5 novembre resta una tesi medio-termine verificabile, non un segnale operativo valido per ogni seduta. Il 13 novembre USD/CAD è ancora a <b>1,4257</b>. Giudizio: <b>scenario non ancora realizzato, non automaticamente invalidato.</b> <a href="https://www.bankofcanada.ca/rates/daily-digest/" rel="noopener noreferrer" target="_blank">BoC</a></div>
+<div class="audititem"><div class="line">HSBC · cosa succede a una previsione dopo il catalizzatore?</div><p class="storyline">A ottobre HSBC era positiva su AUD perché il mercato poteva sottovalutare un rialzo RBA a novembre. <b>Il rialzo si è verificato, ma AUD non è decollato.</b> L’idea che “la banca centrale alza” non basti a far salire una valuta è proprio ciò che vogliamo verificare in ogni report. La view precedente resta utile come audit, non come segnale fresco.</p></div><div class="audititem"><div class="line">AUD / NZD · stessa etichetta “cicliche”, evidenza diversa</div>MUFG rileva AUD fra le valute G10 più deboli e NZD più resiliente. La differenza è osservata sui prezzi relativi, non prova di flussi speculativi specifici. <b>La lettura più utile è cercare se questa divergenza resiste al prossimo dato sul lavoro australiano e alle indicazioni RBNZ.</b> <a href="https://www.mufgresearch.com/fx/fx-weekly-13-november-2026/" rel="noopener noreferrer" target="_blank">MUFG</a></div>
+</section>
+<div class="sec" id="settimana">06 · La bussola operativa · 16–20 novembre</div>
+<section class="card"><div class="charttitle">La prossima settimana: prima i catalizzatori, poi il trade</div>
+<p class="storyline">Per capire se il dollaro continuerà a salire, non ci serve un altro elenco di notizie: ci serve vedere <b>se i rendimenti USA reagiscono ancora al rialzo</b>. Per gli altri G8 conterà la capacità dei dati locali di cambiare le attese sulle rispettive banche centrali.</p>
+<div class="eventgrid">
+<div class="eventbox"><div class="when">LUN 16/11 · 00:50 ITA</div><b>Giappone · PIL Q3</b><p>Test crescita giapponese. Conta soprattutto se modifica le attese BoJ e la risposta di USD/JPY.</p></div>
+<div class="eventbox"><div class="when">LUN 16/11 · 09:00 ITA</div><b>Svizzera · PIL flash Q3</b><p>Più utile per valutare la tenuta interna che per spiegare da solo EUR/CHF.</p></div>
+<div class="eventbox"><div class="when">LUN 16/11 · 14:30 ITA</div><b>Canada · CPI ottobre</b><p>Se sorprende in alto, può aiutare CAD solo se il differenziale Canada–USA reagisce.</p></div>
+<div class="eventbox"><div class="when">MAR 17/11 · 14:30 ITA</div><b>USA · vendite al dettaglio</b><p>Le aspettative Fed sono già elevate. Una domanda sorprendentemente debole avrebbe più valore informativo.</p></div>
+<div class="eventbox"><div class="when">MER 18/11 · 08:00 ITA</div><b>Regno Unito · CPI ottobre</b><p>Verifica della persistenza dell’inflazione e del percorso BoE; osservare soprattutto EUR/GBP.</p></div>
+<div class="eventbox"><div class="when">MER 18/11 · 20:00 ITA</div><b>USA · verbali FOMC</b><p>Potrebbero risultare superati dal CPI appena uscito: confrontare tono e pricing attuale, non leggerli isolatamente.</p></div>
+<div class="eventbox"><div class="when">GIO 19/11 · 01:30 ITA</div><b>Australia · lavoro ottobre</b><p>Un punto chiave per capire se RBA ha davvero concluso i rialzi e se AUD merita di recuperare.</p></div>
+<div class="eventbox"><div class="when">VEN 20/11 · 00:30 ITA</div><b>Giappone · CPI ottobre</b><p>Insieme al PIL aiuta a misurare se il sentiero BoJ giustifica una valuta più forte.</p></div>
+</div>
+<div class="pairbox"><b>Idee da monitorare, non segnali automatici.</b> <b>EUR/GBP</b> per misurare la forza relativa GBP senza la distorsione USD; <b>AUD/NZD</b> per verificare il diverso momentum delle due economie; <b>USD/JPY</b> per il contrasto fra tassi e rischio-intervento; <b>USD/CAD</b> per testare se il mercato sta ancora smentendo i target bancari.</div>
+<div class="why"><b>Cosa cambierebbe davvero il quadro?</b> Rendimenti USA in discesa <em>insieme</em> a USD che perde forza su più G8: sarebbe il primo segnale che la Fed attesa oggi è troppo aggressiva. Se invece i tassi brevi restano in rialzo e le valute cicliche si indeboliscono, il mercato continua a premiare il dollaro.</div>
+<p class="fineprint">Orari Europe/Rome (CET) convertiti dal calendario MUFG del 13/11, espresso in GMT; eventi futuri e consenso provvisorio, verificare eventuali cambi di orario con gli enti emittenti. <a href="https://www.mufgresearch.com/fx/fx-weekly-13-november-2026/" rel="noopener noreferrer" target="_blank">Calendario MUFG</a></p>
+</section>
+<div class="sec" id="fonti">07 · Registro delle fonti · chi ha detto cosa</div>
+<section class="card"><div class="charttitle">Trasparenza della ricerca</div><p class="storyline">Il registro distingue <b>view FX utilizzate nel grafico</b>, <b>contesto non conteggiato</b> e <b>previsioni storiche</b>. Pubblicare una view nuova non significa che gli altri istituti abbiano cambiato idea; non interpoliamo aggiornamenti mancanti.</p>
+<div class="refitem"><b>MUFG · 13 novembre · FX Weekly.</b> USD, flussi JPY, intervento, AUD e trade short AUD/JPY. <a href="https://www.mufgresearch.com/fx/fx-weekly-13-november-2026/" rel="noopener noreferrer" target="_blank">Leggi MUFG</a></div>
+<div class="refitem"><b>ING · 13 novembre · FX Daily.</b> Dollaro tattico, tassi USA, EUR/USD, JPY e CHF. <a href="https://think.ing.com/articles/fx-daily-dont-mess-with-the-dollar/" rel="noopener noreferrer" target="_blank">Leggi ING</a></div>
+<div class="refitem"><b>ING · 12 novembre · G10 Outlook 2027.</b> Previsioni e ragionamento su EUR, GBP, CAD, AUD, NZD e CHF. <a href="https://think.ing.com/articles/g10-fx-outlook-2027/" rel="noopener noreferrer" target="_blank">Leggi ING 2027</a></div>
+<div class="refitem"><b>ABN AMRO · 11 novembre · FX Outlook 2027.</b> Debolezza EUR, GBP/EUR, CHF/EUR, NZD, CAD, AUD e JPY. <a href="https://www.abnamro.com/research/en/our-research/fx-outlook-2027-a-weak-euro-in-2027" rel="noopener noreferrer" target="_blank">Leggi ABN</a></div>
+<div class="refitem"><b>Scotiabank · 5 novembre · FX Outlook (precedente agli shock di questa settimana).</b> USD e CAD, target USD/CAD 2026. <a href="https://www.scotiabank.com/ca/en/about/economics/economics-publications/post.other-publications.foreign-exchange.foreign-exchange-outlook--november-5--2026-.html" rel="noopener noreferrer" target="_blank">Leggi Scotiabank</a></div>
+<div class="refitem"><b>MUFG · 2 novembre · Monthly Outlook (archivio di previsione, non nuovo consenso).</b> Target specifici a Q4 2026 e trimestri 2027. <a href="https://www.mufgresearch.com/fx/monthly-foreign-exchange-outlook-november-2026/" rel="noopener noreferrer" target="_blank">Leggi MUFG Monthly</a></div>
+<div class="refitem"><b>Dati di verifica · 12–13 novembre.</b> BLS PPI USA, ONS PIL UK, Bank of Canada fixing USD/CAD. <a href="https://www.bls.gov/news.release/archives/ppi_11132026.htm" rel="noopener noreferrer" target="_blank">BLS</a> · <a href="https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/latest" rel="noopener noreferrer" target="_blank">ONS</a> · <a href="https://www.bankofcanada.ca/rates/daily-digest/" rel="noopener noreferrer" target="_blank">BoC</a></div>
+<div class="refitem"><b>UBS · 23 ottobre · House View, pubblicato come edizione novembre.</b> Target 2027 per EUR, GBP, JPY, CAD, AUD, NZD; pref. GBP. <b>Pre-CPI e pre-RBA.</b> <a href="https://advisors.ubs.com/mediahandler/media/845240/UBS%20House%20View%20for%20November%202026.pdf" rel="noopener noreferrer" target="_blank">Leggi UBS</a></div><div class="refitem"><b>HSBC · 26 ottobre · FX Navigator novembre.</b> USD consolidamento; view AUD/NZD prima degli eventi successivi. <b>In grafico solo USD tattico, AUD/NZD come audit.</b> <a href="https://www.expat.hsbc.com/wealth/insights/fx-insights/fx-navigator/usd-to-consolidate-near-its-highs/" rel="noopener noreferrer" target="_blank">Leggi HSBC</a></div><div class="refitem"><b>BNP Paribas Wealth · novembre 2026 · giorno non attestato.</b> Target 3/12 mesi su EUR/USD, EUR/GBP, EUR/CHF, USD/JPY, USD/CAD, AUD e NZD. <b>Non contata nel grafico senza data esatta.</b> <a href="https://wealthmanagement.bnpparibas.com/en/insights/market-strategy/currencies-focus-november-2026.html" rel="noopener noreferrer" target="_blank">Leggi BNP</a></div><div class="refitem"><b>Goldman Sachs · 13 novembre · outlook macro 2027.</b> Fed e altre banche centrali, crescita e rischi. <b>Contesto tassi, non target FX attribuiti.</b> <a href="https://www.goldmansachs.com/insights/articles/the-global-economy-is-forecast-to-grow-2-point-8-percent-in-2027-as-oil-prices-decline" rel="noopener noreferrer" target="_blank">Leggi Goldman</a></div><div class="refitem"><b>Deutsche Bank Wealth · 2 ottobre · FX view 12 mesi.</b> USD sostenuto oggi ma più debole a medio termine; yen condizionato a BoJ. <b>Fuori dalla finestra delle view FX comparabili.</b> <a href="https://wealth.db.com/en/insights/investing-insights/asset-class-insights/central-banks-back-in-the-spotlight.html" rel="noopener noreferrer" target="_blank">Leggi Deutsche Bank</a></div><div class="refitem"><b>JPMorgan Research · outlook di metà 2026 · archivio.</b> Scenario storico di USD e JPY, precedente ai nuovi shock. <b>Non fresco né contato.</b> <a href="https://www.jpmorgan.com/insights/global-research/outlook/mid-year-outlook" rel="noopener noreferrer" target="_blank">Leggi JPMorgan</a></div><div class="refitem"><b>Citi Research · 15 luglio · midyear 2026 · archivio.</b> Previsioni DXY, EUR/USD, USD/JPY per 2027. <b>Non aggiornamento di novembre.</b> <a href="https://www.citigroup.com/global/insights/print/midyear-2026-outlook-resilience-ai-and-evolving-market-dynamics" rel="noopener noreferrer" target="_blank">Leggi Citi</a></div><div class="refitem"><b>State Street Investment Management · 6 novembre · NON banca.</b> Lettura tattica G10; conferma importanza di carry e qualità della crescita. Complemento indipendente, mai contato fra le 11 banche. <a href="https://www.ssga.com/us/en/individual/insights/currency-market-commentary-november-2026" rel="noopener noreferrer" target="_blank">Leggi State Street</a></div><div class="why"><b>Qualità del campione.</b> Monitoriamo 11 istituti bancari, ma il grafico usa solo sei case con opinioni FX selezionate, attribuibili e relativamente recenti. <b>N per valuta: USD 4, EUR 4, GBP 3, JPY 4, CAD 5, AUD 4, NZD 4, CHF 2.</b> Le note di ottobre sono precedenti alle sorprese di novembre e le previsioni 2027 non sono segnali di entrata. BNP non entra nel conteggio senza giorno certificato; Goldman non viene trasformata in view FX; Citi/JPM sono soltanto archivio. Non è un consenso sell-side statistico, né una valutazione delle performance previsionali.</div><p class="fineprint"><b>Non inseriti nel conteggio:</b> Barclays e altri grandi desk senza una nota pubblica FX datata e sufficientemente specifica verificata per questa edizione. L’assenza di una view pubblica non significa assenza di ricerca privata.</p>
+</section>
+<p class="fineprint" style="text-align:center;padding:14px 0 30px">GLOBAL MACRO FX QUANT · WEEKLY BANK FX RESEARCH · 13 NOV 2026<br/>Analisi indipendente per studio e ricerca. Le idee delle banche non sono raccomandazioni personali né prova di rendimento futuro.</p></main></body></html>
