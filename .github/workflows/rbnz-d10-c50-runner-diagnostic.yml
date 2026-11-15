@@ -48,8 +48,11 @@ jobs:
                       rows.append([" ".join(unescape(re.sub(r"<[^>]+>", " ", cell)).split())
                                    for cell in cells])
                   for label, pair in expected_rows.items():
-                      if not any(cells and cells[0] == label and tuple(cells[-2:]) == pair
-                                 for cells in rows):
+                      matches = [cells for cells in rows if cells and
+                                 re.sub(r"^\d+\.\s*", "", cells[0]).casefold() ==
+                                 re.sub(r"^\d+\.\s*", "", label).casefold()]
+                      if not any(tuple(cells[-2:]) == pair for cells in matches):
+                          print(f"{code} candidate rows: {matches[:3]}", flush=True)
                           raise ValueError(f"verified August/September rows absent for {label}")
                       print(f"{code} | {label} | August {pair[0]} | September {pair[1]}", flush=True)
               except (HTTPError, URLError, TimeoutError, ValueError) as exc:
