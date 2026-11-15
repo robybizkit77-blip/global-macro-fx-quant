@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-13",
-  "generated_at_utc": "2026-11-15T02:44:47.429057Z",
+  "generated_at_utc": "2026-11-15T11:03:58.578136Z",
   "items": [
     {
       "as_of": "2026-11-13",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-15T02:44:47.429057Z",
+  "last_checked_at_utc": "2026-11-15T11:03:58.578136Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1126,54 +1126,6 @@
         "source_id": "BOC_PRESS",
         "title": "Joint Statement of the Government of Canada and the Bank of Canada on the Renewal of the Monetary Policy Framework",
         "url": "https://www.bankofcanada.ca/2026/11/joint-statement-of-the-government-of-canada-and-the-bank-of-canada-on-the-renewal-of-the-monetary-policy-framework-2026/"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "NZD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "RBNZ_NEWS:https://www.rbnz.govt.nz/news-and-events/news/2026/11/reserve-bank-files-dcs-disclosure-charge-against-westpac-new-zealand-limited",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-05T11:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-16",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Reserve Bank of New Zealand · B2 government bond closing yields · 2026-10-16 · reviewed public table",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.89
-          }
-        },
-        "source": "Reserve Bank of New Zealand",
-        "source_id": "RBNZ_NEWS",
-        "title": "Reserve Bank files DCS disclosure charge against Westpac New Zealand Limited",
-        "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/reserve-bank-files-dcs-disclosure-charge-against-westpac-new-zealand-limited"
       }
     ],
     "last_attempt_day_rome": "2026-11-15",
@@ -1201,9 +1153,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 7,
+        "accepted_items": 5,
         "ccy": "EUR",
-        "entries_rejected": 8,
+        "entries_rejected": 10,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -1221,10 +1173,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 17,
+        "accepted_items": 16,
         "ccy": "JPY",
-        "entries_rejected": 28,
-        "feed_entries_seen": 45,
+        "entries_rejected": 27,
+        "feed_entries_seen": 43,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
@@ -1241,9 +1193,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 4,
+        "accepted_items": 2,
         "ccy": "CAD",
-        "entries_rejected": 6,
+        "entries_rejected": 8,
         "feed_entries_seen": 10,
         "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
         "source": "Bank of Canada",
@@ -1261,9 +1213,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 2,
+        "accepted_items": 1,
         "ccy": "NZD",
-        "entries_rejected": 48,
+        "entries_rejected": 49,
         "feed_entries_seen": 50,
         "feed_url": "https://www.rbnz.govt.nz/feeds/news",
         "source": "Reserve Bank of New Zealand",
