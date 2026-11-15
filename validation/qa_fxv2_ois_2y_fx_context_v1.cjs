@@ -66,9 +66,24 @@ for(const c of ['USD','EUR','CHF']){
 }
 assert.equal(observed.USD.rate.state,'HISTORY_VERIFIED');
 assert.equal(observed.EUR.rate.state,'HISTORY_VERIFIED');
-assert.equal(observed.CHF.rate.state,'DATED_HISTORICAL');
-assert.equal(observed.CHF.model.aligned.length,0);
-assert.match(observed.CHF.model.rateText,/troppo datata/);
+if(observed.CHF.rate.state==='DATED_HISTORICAL'){
+ assert.equal(observed.CHF.model.aligned.length,0);
+ if(observed.CHF.model.status==='READ_ONLY_TRIANGULATION'){
+  assert.match(observed.CHF.model.rateText,/troppo datata/);
+ }
+}
+// A contextual reading with clean futures still cannot confirm an old 2Y.
+const datedCHF=clone(rates.CHF);
+const historicalCHFDay=new Date(Date.parse(datedCHF.date+'T12:00:00Z')+
+  8*86400000).toISOString().slice(0,10);
+const historicalCHF=adapter.evaluate('CHF',{
+ status:'LETTURA_DESCRITTIVA_FUTURES',latestDate:historicalCHFDay,
+ matchedTenors:['6m'],sourceDates:{'6m':historicalCHFDay},oneDayBp:{'6m':1}
+},{CHF:datedCHF},fx,historicalCHFDay);
+assert.equal(historicalCHF.rate.state,'DATED_HISTORICAL');
+assert.equal(historicalCHF.rate.day,datedCHF.date);
+assert.deepEqual(historicalCHF.aligned,[]);
+assert.match(historicalCHF.rateText,/troppo datata/);
 for(const tenor of ['6m','12m']){
  const active=observed.USD.model.status==='READ_ONLY_TRIANGULATION';
   const isAligned=active&&observed.USD.rate.day===observed.USD.reading.sourceDates[tenor]&&
@@ -76,15 +91,20 @@ for(const tenor of ['6m','12m']){
  assert.equal(observed.USD.model.aligned.includes(tenor),isAligned,
   'USD 2Y and '+tenor+' futures are aligned only with the same observed date');
 }
-const eurRateDate=observed.EUR.model.rate.day;
-const eurFuturesDate=observed.EUR.reading.sourceDates['12m'];
-assert.equal(observed.EUR.model.aligned.includes('12m'),eurRateDate===eurFuturesDate,
-  'EUR 2Y and 12M futures must share their real observation date');
-const eurMixedDates={...observed.EUR.reading,
- sourceDates:{...observed.EUR.reading.sourceDates,
-  '12m':new Date(Date.parse(eurRateDate+'T12:00:00Z')-86400000).toISOString().slice(0,10)}};
+const eur=observed.EUR;
+const eurRateDate=eur.rate.day;
+const eurFuturesDate=eur.reading.sourceDates?.['12m'];
+assert.equal(eur.model.aligned.includes('12m'),
+ eur.model.status==='READ_ONLY_TRIANGULATION'&&eurRateDate===eurFuturesDate&&
+ Number.isFinite(eur.reading.oneDayBp?.['12m']),
+ 'EUR 2Y and 12M futures require a measured 1D move on the same observation date');
+const eurMixedDates={
+ status:'LETTURA_DESCRITTIVA_FUTURES',latestDate:eurRateDate,matchedTenors:['12m'],
+ oneDayBp:{'12m':1},sourceDates:{
+  '12m':new Date(Date.parse(eurRateDate+'T12:00:00Z')-86400000).toISOString().slice(0,10)
+ }};
 assert.equal(adapter.evaluate('EUR',eurMixedDates,rates,fx,today).aligned.includes('12m'),false,
-  'Different 2Y and futures observation dates must never be silently joined');
+ 'Different 2Y and futures observation dates must never be silently joined');
 assert.equal(observed.USD.fx.pair,'EUR/USD');
 assert.equal(observed.EUR.fx.pair,'EUR/USD');
 assert.equal(observed.CHF.fx.pair,'EUR/CHF');
@@ -121,8 +141,6 @@ const staleReading={...observed.USD.reading,
  latestDate:'2026-11-05',sourceDates:{...observed.USD.reading.sourceDates,'12m':'2026-11-04'}};
 const mixed=adapter.evaluate('USD',staleReading,rates,fx,today);
 assert.equal(mixed.aligned.includes('12m'),false);
-// Do not silently turn CHF's September Treasury observation into 5 Nov.
-assert.equal(adapter.rateTwoYear('CHF',rates,today).day,'2026-09-30');
 assert.equal(adapter.evaluate('USD',null,rates,fx,today).status,'NOT_VERIFIED');
 console.log('FXV2_OIS_2Y_FX_CONTEXT_PASS',JSON.stringify({
   currencies:3,usd2y:observed.USD.rate.changeBp,
