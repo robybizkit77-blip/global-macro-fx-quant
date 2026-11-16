@@ -298,17 +298,23 @@
   return summary+' '+finalCheck;
  }
 
- function renderWatchlist(saved,pairs,esc){
+ function renderWatchlist(saved,pairs,agenda,esc){
   if(!saved.length)return '<p class="fx-rank-unavailable">La watchlist è vuota. Apri una coppia e seleziona «Salva nella watchlist».</p>';
   return '<ul class="fx-watch-list">'+saved.map(key=>{
    const name=esc(key.slice(0,3)+'/'+key.slice(3));
    if(!Object.hasOwn(pairs,key))return '<li class="fx-watch-pair"><strong>'+name+'</strong><small>Dossier non disponibile</small></li>';
-   return '<li><button type="button" class="fx-watch-pair" data-pair="'+esc(key)+'" aria-label="Apri tesi '+name+'">'+
-    '<strong>'+name+'</strong><span>Apri tesi ›</span></button></li>';
+   const event=agenda?.find(e=>e.ccy===key.slice(0,3)||e.ccy===key.slice(3));
+   const timing=event?(event.romeTime?event.romeTime+' IT':'ora da confermare'):'';
+   const catalyst=event?'<a href="#news?event='+encodeURIComponent(event.key)+'" class="fx-watch-event" aria-label="Apri nel calendario: '+esc(event.label)+'">'+
+    '<strong>'+esc(event.ccy+' · '+event.label)+'</strong><span>'+esc(event.dateLabel+' · '+timing+
+     (event.quality==='OFFICIAL_PROVISIONAL'?' · data provvisoria':''))+' ↗</span></a>':
+    '<p class="fx-watch-event">'+(agenda?'Nessun evento importante in agenda per queste valute.':'Agenda macro non disponibile o da ricontrollare.')+'</p>';
+   return '<li class="fx-watch-item"><button type="button" class="fx-watch-pair" data-pair="'+esc(key)+'" aria-label="Apri tesi '+name+'">'+
+    '<strong>'+name+'</strong><span>Apri tesi ›</span></button>'+catalyst+'</li>';
   }).join('')+'</ul>';
  }
  function render(api){
-  const {get,FLAGS,state,esc,sign,date}=api;
+  const {get,FLAGS,state,esc,sign,date,dayNow}=api;
   const saved=[...state.watch];
   const watchView=state.pairListView==='watch';
   const viewButton=(mode,label,selected)=>'<button type="button" id="fx-pair-list-'+mode+'" class="pill '+(selected?'active':'')+
@@ -316,10 +322,13 @@
   const desk='<div class="fx-ranking-desk" id="fx-ranking-desk" tabindex="-1">'+
    '<div class="fx-pair-list-switch" role="group" aria-label="Vista coppie FX">'+
    viewButton('all','Classifica',!watchView)+viewButton('watch','★ Watchlist ('+saved.length+')',watchView)+'</div>';
-  if(watchView)return desk+'<section class="fx-rank-box" aria-label="Watchlist FX">'+
+  if(watchView){
+   const agenda=root.FXQuantMacroCalendar?.watchlistAgenda(get('calendar'),dayNow(),Date.now(),get('news'));
+   return desk+'<section class="fx-rank-box" aria-label="Watchlist FX">'+
    '<div class="fx-rank-head"><div><h3>Coppie salvate</h3></div></div>'+
-   '<p class="fx-rank-sub">La watchlist è salvata su questo browser.</p>'+
-   renderWatchlist(saved,get('pairs')?.pairs||{},esc)+'</section></div>';
+   '<p class="fx-rank-sub">Per ogni coppia, il prossimo evento importante per una delle due valute. La lista è salvata su questo browser.</p>'+
+   renderWatchlist(saved,get('pairs')?.pairs||{},agenda,esc)+'</section></div>';
+  }
   const est=get('estimatedMacro');
   const active=est?.status==='STIMA_OPERATIVA_NON_VALIDATA'&&
     est.currencies?.length===8&&est.pairs?.length===28;

@@ -9,9 +9,9 @@ const app=read('site/fx-quant-v2/next/app.js');
 const css=read('site/fx-quant-v2/next/calendar-operational-reading.css');
 new vm.Script(lib,{filename:'calendar-operational-reading.js'});
 new vm.Script(app,{filename:'app.js'});
-const {parse,render,toRome,verifiedValue}=require('../site/fx-quant-v2/next/calendar-operational-reading.js');
-assert.match(html,/calendar-operational-reading\.js\?v=6/);
-assert.match(html,/calendar-operational-reading\.css\?v=3/);
+const {parse,render,toRome,verifiedValue,watchlistAgenda}=require('../site/fx-quant-v2/next/calendar-operational-reading.js');
+assert.match(html,/calendar-operational-reading\.js\?v=7/);
+assert.match(html,/calendar-operational-reading\.css\?v=4/);
 assert.match(app,/calendar:'\.\.\/\.\.\/\.\.\/live_data\/sections\/CALENDAR_OPERATIONAL_VIEW\.json'/);
 assert.match(app,/FXQuantMacroCalendar\?\.render\?\.\(calendarFeed,dayNow\(\),Date\.now\(\),n\)/);
 assert.match(app,/operationalCalendar/);
@@ -157,6 +157,30 @@ assert(noClock.needsReview.some(e=>e.title==='FOMC press briefing'&&
  'Same-day item without trusted hour must not be asserted future');
 const nextDay=parse(historicalData,'2026-11-13',Date.parse('2026-11-13T12:00:00Z'));
 assert(!nextDay.needsReview.some(e=>e.ccy==='GBP'),'Do not keep stale prior-day event indefinitely');
+
+const agendaSeed={...cadFixture,schema:'GMFQ_CALENDAR_OPERATIONAL_VIEW_V3',last_checked_at_utc:'2026-11-16T10:00:00Z'};
+const overnight={ccy:'USD',date:'2026-11-15',time_local:'19:30',timezone:'America/New_York',
+ title:'Overnight release',event_type:'INFLATION',importance:'HIGH',quality:'OFFICIAL_CONFIRMED',status:'UPCOMING'};
+const sameDayUnknown={...overnight,ccy:'EUR',date:'2026-11-16',time_local:null,title:'Ora sconosciuta'};
+const nextDayUnknown={...sameDayUnknown,date:'2026-11-17',title:'Riunione in attesa di orario'};
+const cadOctober=agendaSeed.events[0];
+const agendaFixture={...agendaSeed,last_checked_at_utc:'2026-11-15T22:00:00Z',events:[
+ nextDayUnknown,cadOctober,overnight,sameDayUnknown,
+ {...nextDayUnknown,importance:'MEDIUM',title:'Evento secondario'},
+ {...nextDayUnknown,quality:'UNVERIFIED',title:'Evento non ufficiale'}
+]};
+const agendaAt=time=>watchlistAgenda(agendaFixture,'2026-11-16',Date.parse(time));
+const earlyAgenda=agendaAt('2026-11-15T23:15Z');
+assert.deepEqual(earlyAgenda.map(e=>[e.ccy,e.day,e.romeTime]),[
+ ['USD','2026-11-16','01:30'],['CAD','2026-11-16','14:30'],['EUR','2026-11-17',null]
+]);
+assert.match(earlyAgenda[1].label,/Canada · indice dei prezzi al consumo/);
+assert.equal(agendaAt('2026-11-16T13:30Z')[0].title,nextDayUnknown.title);
+assert.equal(watchlistAgenda(agendaFixture,'2026-11-25',Date.parse('2026-11-25T10:00Z')),null);
+assert.equal(watchlistAgenda({...agendaFixture,last_checked_at_utc:'2026-11-17T00:00Z'},
+ '2026-11-16',Date.parse('2026-11-16T13:30Z')),null);
+assert(render(agendaFixture,'2026-11-16',Date.parse('2026-11-16T13:29Z'))
+ .includes('data-cal-event="'+earlyAgenda[1].key+'"'));
 
 const empty=parse(null,now);assert.equal(empty.total,0);
 assert(render(null,now).includes('Calendario non disponibile'));

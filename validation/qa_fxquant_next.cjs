@@ -713,6 +713,15 @@ async function calendarResearchJourney(page,label){
  assert.match(new URL(page.url()).hash,/^#pairs\?pair=[A-Z]{6}$/);
 }
 async function pairWatchlistJourney(page,label){
+ const calendarRoute='**/CALENDAR_OPERATIONAL_VIEW.json';
+ await page.route(calendarRoute,async route=>{
+  const now=Date.now();
+  const futureDay=offset=>new Date(now+offset*864e5).toISOString().slice(0,10);
+  const event={event_type:'CENTRAL_BANK_DECISION',importance:'HIGH',quality:'OFFICIAL_CALENDAR',status:'UPCOMING'};
+  const events=['AUD','NZD','CAD','USD'].map((ccy,i)=>({...event,ccy,date:futureDay(i+1),title:'Riunione '+ccy}));
+  events.push({...event,ccy:'CHF',date:futureDay(5),title:'Riunione SNB',time_local:'09:30',timezone:'Europe/Zurich'});
+  await route.fulfill({json:{schema:'GMFQ_CALENDAR_OPERATIONAL_VIEW_V3',last_checked_at_utc:new Date(now).toISOString(),events}});
+ });
  await page.reload({waitUntil:'domcontentloaded'});
  const showWatchlist=locator(page,'#fx-pair-list-watch');
  const savedPair=locator(page,'.fx-watch-list [data-pair="EURCHF"]');
@@ -721,6 +730,15 @@ async function pairWatchlistJourney(page,label){
  assert.equal(await showWatchlist.getAttribute('aria-pressed'),'true');
  assert.equal(await locator(page,'.fx-rank-all-list').count(),0);
  assert.equal(await savedPair.count(),1);
+ const catalyst=locator(page,'a.fx-watch-event');
+ assert.match(await catalyst.innerText(),/CHF · Riunione SNB.*09:30 IT/s);
+ await catalyst.click();
+ await page.waitForFunction(()=>document.activeElement?.dataset.calEvent?.endsWith('Riunione SNB'));
+ assert(await locator(page,'.cal-more').evaluate(el=>el.open));
+ await page.reload({waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>document.activeElement?.dataset.calEvent?.endsWith('Riunione SNB'));
+ await page.goBack();
+ await showWatchlist.click();
  await savedPair.click();
  assert.equal(new URL(page.url()).hash,'#pairs?pair=EURCHF');
  assert.match(await locator(page,'[data-pair-close]').innerText(),/Torna alla watchlist/);
@@ -740,6 +758,9 @@ async function pairWatchlistJourney(page,label){
  assert.equal(await locator(page,'.fx-rank-all-list button.fx-rank-pair').count(),28);
  await page.reload({waitUntil:'domcontentloaded'});
  assert.match(await showWatchlist.innerText(),/Watchlist \(0\)/,label+' removal lost after reload');
+ await page.unroute(calendarRoute);
+ await page.reload({waitUntil:'domcontentloaded'});
+ await showWatchlist.waitFor();
 }
 async function pairLinkJourney(page,label){
  const frank=new URL('#pairs?pair=EURCHF',BASE).href;
