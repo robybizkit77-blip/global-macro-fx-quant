@@ -91,3 +91,13 @@
  .fx-rank-pair-badges{gap:7px}
  .fx-rank-pair-id strong::after{content:' ›';color:#86d9c6;font-weight:750}
 }
+
+.fx-pair-list-switch{display:flex;flex-wrap:wrap;gap:8px}
+.fx-pair-list-switch .pill{min-height:44px;padding-inline:14px;font-size:12px}
+.fx-watch-list{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.fx-watch-pair{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;
+ padding:10px 12px;border:1px solid var(--line2);border-radius:9px;background:var(--layer2);color:var(--text);font:inherit}
+button.fx-watch-pair{cursor:pointer}
+button.fx-watch-pair:hover,button.fx-watch-pair:focus-visible{border-color:var(--green)}
+.fx-watch-pair span,.fx-watch-pair small{font-size:12px;color:var(--muted)}
+.fx-watch-pair span{color:var(--blue)}

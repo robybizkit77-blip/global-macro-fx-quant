@@ -298,8 +298,28 @@
   return summary+' '+finalCheck;
  }
 
+ function renderWatchlist(saved,pairs,esc){
+  if(!saved.length)return '<p class="fx-rank-unavailable">La watchlist è vuota. Apri una coppia e seleziona «Salva nella watchlist».</p>';
+  return '<ul class="fx-watch-list">'+saved.map(key=>{
+   const name=esc(key.slice(0,3)+'/'+key.slice(3));
+   if(!Object.hasOwn(pairs,key))return '<li class="fx-watch-pair"><strong>'+name+'</strong><small>Dossier non disponibile</small></li>';
+   return '<li><button type="button" class="fx-watch-pair" data-pair="'+esc(key)+'" aria-label="Apri tesi '+name+'">'+
+    '<strong>'+name+'</strong><span>Apri tesi ›</span></button></li>';
+  }).join('')+'</ul>';
+ }
  function render(api){
   const {get,FLAGS,state,esc,sign,date}=api;
+  const saved=[...state.watch];
+  const watchView=state.pairListView==='watch';
+  const viewButton=(mode,label,selected)=>'<button type="button" id="fx-pair-list-'+mode+'" class="pill '+(selected?'active':'')+
+   '" data-pair-list="'+mode+'" aria-pressed="'+selected+'">'+label+'</button>';
+  const desk='<div class="fx-ranking-desk" id="fx-ranking-desk" tabindex="-1">'+
+   '<div class="fx-pair-list-switch" role="group" aria-label="Vista coppie FX">'+
+   viewButton('all','Classifica',!watchView)+viewButton('watch','★ Watchlist ('+saved.length+')',watchView)+'</div>';
+  if(watchView)return desk+'<section class="fx-rank-box" aria-label="Watchlist FX">'+
+   '<div class="fx-rank-head"><div><h3>Coppie salvate</h3></div></div>'+
+   '<p class="fx-rank-sub">La watchlist è salvata su questo browser.</p>'+
+   renderWatchlist(saved,get('pairs')?.pairs||{},esc)+'</section></div>';
   const est=get('estimatedMacro');
   const active=est?.status==='STIMA_OPERATIVA_NON_VALIDATA'&&
     est.currencies?.length===8&&est.pairs?.length===28;
@@ -366,8 +386,7 @@
   const noTrade=top.some(x=>x.tier===1)?
     'La categoria più alta identifica solo un allineamento da studiare, non un ingresso.':
     'Nessuna coppia ha tutte le conferme: questa è una selezione di ricerca, non una lista di trade.';
-  return '<div class="fx-ranking-desk" id="fx-ranking-desk" tabindex="-1">'+
-   '<div class="fx-rank-intro"><div><span class="mini-overline">FX / STIMA OPERATIVA V1</span>'+
+  return desk+'<div class="fx-rank-intro"><div><span class="mini-overline">FX / STIMA OPERATIVA V1</span>'+
    '<h2>Chi mostra più forza relativa? <em>Quali coppie meritano verifica?</em></h2>'+
    '<p>Prima confronta le valute; poi scegli una coppia. La direzione della tesi dipende da macro e variazioni monetarie, mentre il prezzo serve per valutare il momento, non per inventare una spiegazione.</p></div></div>'+
    '<div class="fx-rank-two">'+
