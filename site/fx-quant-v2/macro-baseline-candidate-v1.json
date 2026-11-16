@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_FXV2_MACRO_CANDIDATE_8X3_DESCRIPTIVE_V1",
-  "as_of_research": "2026-11-14",
+  "as_of_research": "2026-11-16",
   "published_source_lineage": "MACRO_V3_OBSERVED_REVISED_NOT_PIT",
   "formula_version": "V1_FIXED_NO_CALIBRATED_WEIGHTS",
   "legacy_macro_as_of": "2026-09-25",
@@ -1013,5 +1013,5 @@
   "eligible_for_backtests": false,
   "eligible_for_automatic_core_rebase": false,
   "canonical_fx_core_untouched": true,
-  "source_content_sha256": "593089b9bec43d1349309ca792da2a3a0ccf0353d47db3e77d4de849fdee60ca"
+  "source_content_sha256": "2dd68af8155779c9b253e403ea4b6e5b6119fa5d5a849e242dcc9443bfaa8834"
 }
