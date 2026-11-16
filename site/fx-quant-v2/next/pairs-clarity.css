@@ -131,6 +131,9 @@
 .pairs-price-periods li[data-pair-price-tone="support"] span:last-child{color:#9cdebf}
 .pairs-price-periods li[data-pair-price-tone="against"] span:last-child{color:#edb0b4}
 .pairs-price-assessment small{display:block;margin-top:5px;color:var(--muted);font-size:10px;line-height:1.45}
+.pairs-chart-jump{margin-top:9px;cursor:pointer}
+#fx-pair-price-chart{scroll-margin-top:96px}
+@media(max-width:840px){#fx-pair-price-chart{scroll-margin-top:79px}}
 .pairs-timing-reading{font-size:13px;line-height:1.65;color:var(--soft);margin:14px 0 0;max-width:900px}
 .pairs-why-no-entry{font-size:11.5px;line-height:1.65;color:#b6d0d9;margin:12px 0 0;max-width:900px}
 .pairs-conditions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0 12px}
