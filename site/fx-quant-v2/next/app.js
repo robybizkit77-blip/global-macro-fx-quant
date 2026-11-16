@@ -20,6 +20,7 @@ const SOURCES={
  currencyPrices:'../../../live_data/sections/ECB_G8_PRICE_HISTORY.json',
  pairs:'../../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
  thesisHistory:'./pair-thesis-history.json',
+ estimatedThesisHistory:'./pair-estimate-history-v1.json',
  macro:'../../../live_data/sections/MACRO_THERMOMETER_DATA.json',
  macroObserved:'../../control-room-preview/macro-v3-current-evidence.json',
  macroSeries:'../../../live_data/sections/MACRO_SERIES.json',

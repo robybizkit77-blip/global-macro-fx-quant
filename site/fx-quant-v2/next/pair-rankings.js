@@ -316,7 +316,25 @@
   return '<span class="fx-watch-price"><strong>'+esc(sign(flat?0:move,2,'%'))+'</strong> '+esc(direction)+
    '<small>Fixing BCE del '+esc(date(prior.label))+' e del '+esc(date(last.label))+'</small></span>';
  }
- function renderWatchlist(saved,pairs,agenda,market,esc,sign,date){
+ function watchThesisReading(key,history,today,esc,date){
+  const snapshots=history?.schema==='GMFQ_NEXT_ESTIMATED_FX_THESIS_HISTORY_V1'&&Array.isArray(history.snapshots)?history.snapshots:[];
+  const latest=snapshots?.at(-1),previous=snapshots?.at(-2);
+  const unavailable='<p class="fx-watch-thesis">Storico della tesi in raccolta</p>';
+  if(!latest||!previous||!validDay(latest.fixing)||!validDay(previous.fixing)||
+     latest.fixing>today||previous.fixing>=latest.fixing||!latest.method||latest.method!==previous.method)return unavailable;
+  const from=previous.pairs?.[key],to=latest.pairs?.[key];
+  if(!from||!to||!from.thesis||!to.thesis||!from.timing||!to.timing)return unavailable;
+  const favoredLabel=x=>x.favored||'Equilibrio';
+  const changes=[];
+  if(from.favored!==to.favored)changes.push('Valuta favorita '+favoredLabel(from)+' → '+favoredLabel(to));
+  if(from.thesis!==to.thesis)changes.push('Forza della tesi '+from.thesis.toLowerCase()+' → '+to.thesis.toLowerCase());
+  if(from.timing!==to.timing)changes.push('Timing '+from.timing.toLowerCase()+' → '+to.timing.toLowerCase());
+  const reading=changes.length?changes[0]:'Giudizi su tesi e timing invariati';
+  return '<p class="fx-watch-thesis"><strong>'+esc(reading)+'</strong>'+
+   (changes.length>1?'<span> · '+esc(changes.slice(1).join(' · '))+'</span>':'')+
+   '<small>Stime archiviate con fixing del '+esc(date(previous.fixing))+' e del '+esc(date(latest.fixing))+'</small></p>';
+ }
+ function renderWatchlist(saved,pairs,agenda,market,history,esc,sign,date){
   if(!saved.length)return '<p class="fx-rank-unavailable">La watchlist è vuota. Apri una coppia e seleziona «Salva nella watchlist».</p>';
   return '<ul class="fx-watch-list">'+saved.map(key=>{
    const name=esc(key.slice(0,3)+'/'+key.slice(3));
@@ -328,7 +346,7 @@
      (event.quality==='OFFICIAL_PROVISIONAL'?' · data provvisoria':''))+' ↗</span></a>':
     '<p class="fx-watch-event">'+(agenda?'Nessun evento importante in agenda per queste valute.':'Agenda macro non disponibile o da ricontrollare.')+'</p>';
    return '<li class="fx-watch-item"><div class="fx-watch-pair-cell"><button type="button" class="fx-watch-pair" data-pair="'+esc(key)+'" aria-label="Apri tesi '+name+'">'+
-    '<strong>'+name+'</strong><span>Apri tesi ›</span></button>'+watchPriceReading(key,market,esc,sign,date)+'</div>'+catalyst+'</li>';
+    '<strong>'+name+'</strong><span>Apri tesi ›</span></button>'+watchPriceReading(key,market,esc,sign,date)+watchThesisReading(key,history,market.today,esc,date)+'</div>'+catalyst+'</li>';
   }).join('')+'</ul>';
  }
  function render(api){
@@ -349,7 +367,7 @@
    return desk+'<section class="fx-rank-box" aria-label="Watchlist FX">'+
    '<div class="fx-rank-head"><div><h3>Coppie salvate</h3></div></div>'+
    '<p class="fx-rank-sub">Ultimo movimento del cambio e prossimo evento importante per le valute della coppia. La lista è salvata su questo browser.</p>'+
-   renderWatchlist(saved,get('pairs')?.pairs||{},agenda,market,esc,sign,date)+'</section></div>';
+   renderWatchlist(saved,get('pairs')?.pairs||{},agenda,market,get('estimatedThesisHistory'),esc,sign,date)+'</section></div>';
   }
   const est=get('estimatedMacro');
   const active=est?.status==='STIMA_OPERATIVA_NON_VALIDATA'&&
