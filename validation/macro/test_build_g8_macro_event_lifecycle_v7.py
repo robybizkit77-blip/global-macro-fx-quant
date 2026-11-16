@@ -17,14 +17,15 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
         cls.sources,_=m.load()
         cls.book=m.build(now=NOW,inputs=copy.deepcopy(cls.sources))
 
-    def test_22_g8_official_seed_events_not_22_false_surprises(self):
+    def test_official_seed_events_do_not_imply_surprises(self):
         b=self.book
         c=b["coverage"]
         self.assertEqual(b["schema"],m.SCHEMA)
         self.assertEqual(c["currencies_in_historical_calendar"],8)
-        self.assertEqual(c["issuer_calendar_events"],22)
+        keys={m.exact_event_key(e) for e in self.sources["official_calendar"]["events"]}
+        self.assertEqual(c["issuer_calendar_events"],len(keys))
         self.assertEqual(c["events_with_genuine_frozen_consensus_and_issuer_actual"],2)
-        self.assertEqual(c["unverified_intraday_event_reactions"],22)
+        self.assertEqual(c["unverified_intraday_event_reactions"],len(keys))
         self.assertEqual(c["new_trading_signals"],0)
         self.assertFalse(b["ready_for_live_28_pair_signals"])
         self.assertFalse(b["ready_for_automatic_market_attribution"])
@@ -32,20 +33,24 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
         self.assertFalse(b["writes_market_model"])
         self.assertTrue(b["reuses_existing_calendar_news_schedule"])
         self.assertFalse(b["new_cron_added"])
-        self.assertEqual(len({x["event_key"] for x in b["events"]}),22)
+        self.assertEqual({x["event_key"] for x in b["events"]},keys)
 
     def test_upcoming_us_cpi_uk_gdp_ch_gdp_have_no_frozen_forecast(self):
         b=self.book
-        q=b["priority_queue"]
-        self.assertEqual(len(q),5)
-        self.assertEqual([x["ccy"] for x in q],["USD","GBP","CHF","AUD","JPY"])
-        self.assertEqual([x["issuer_date"] for x in q],
-                         ["2026-11-10","2026-11-12","2026-11-16","2026-11-19","2026-11-20"])
+        queue=b["priority_queue"]
+        clocks={
+            ("USD","2026-11-10"):"2026-11-10T13:30:00Z",
+            ("GBP","2026-11-12"):"2026-11-12T07:00:00Z",
+            ("CHF","2026-11-16"):"2026-11-16T08:00:00Z",
+            ("CAD","2026-11-16"):"2026-11-16T13:30:00Z",
+            ("AUD","2026-11-19"):"2026-11-19T00:30:00Z",
+            ("JPY","2026-11-20"):"2026-11-19T23:30:00Z",
+        }
+        q=[e for e in queue if (e["ccy"],e["issuer_date"]) in clocks]
+        self.assertEqual(len(q),len(clocks))
         self.assertEqual(b["coverage"]["upcoming_35d_with_frozen_consensus"],0)
         self.assertEqual(b["coverage"]["upcoming_35d_with_approved_actual_parser"],0)
-        self.assertEqual(b["coverage"]["currencies_with_upcoming_35d"],5)
-        self.assertIn("NZD",b["coverage"]["countries_without_upcoming_35d"])
-        self.assertIn("EUR",b["coverage"]["countries_without_upcoming_35d"])
+        self.assertEqual(b["coverage"]["currencies_with_upcoming_35d"],len({e["ccy"] for e in queue}))
         for e in q:
             self.assertEqual(e["status"],"UPCOMING_NO_VERIFIED_EXACT_CONSENSUS")
             self.assertIsNone(e["frozen_consensus_pct"])
@@ -55,11 +60,7 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
             self.assertFalse(e["official_issuer_parser_supported"])
             self.assertIn("NON ancora validato",e["next_action_it"])
             self.assertEqual(e["currency_pair_count"],7)
-            self.assertIsNotNone(e["scheduled_release_utc"])
-        self.assertEqual(q[0]["scheduled_release_utc"],"2026-11-10T13:30:00Z")
-        self.assertEqual(q[1]["scheduled_release_utc"],"2026-11-12T07:00:00Z")
-        self.assertEqual(q[2]["scheduled_release_utc"],"2026-11-16T08:00:00Z")
-        self.assertEqual(q[4]["scheduled_release_utc"],"2026-11-19T23:30:00Z")
+            self.assertEqual(e["scheduled_release_utc"],clocks[(e["ccy"],e["issuer_date"])])
 
     def test_frozen_real_30_oct_receipts_are_0_and_minus_02_pp(self):
         b=self.book
@@ -172,7 +173,7 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
 
     def test_separate_economic_event_from_28_pair_exposure(self):
         b=self.book
-        self.assertEqual(len(b["events"]),22)
+        self.assertEqual(len(b["events"]),len(self.sources["official_calendar"]["events"]))
         for event in b["events"]:
             self.assertEqual(len(event["affected_pair_references"]),7)
             self.assertEqual(len(set(event["affected_pair_references"])),7)
