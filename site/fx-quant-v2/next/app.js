@@ -1013,7 +1013,7 @@ function risk(){
 function news(){
  const n=get('news');
  const calendarFeed=get('calendar');
- const operationalCalendar=window.FXQuantMacroCalendar?.render?.(calendarFeed,dayNow())||
+ const operationalCalendar=window.FXQuantMacroCalendar?.render?.(calendarFeed,dayNow(),Date.now(),n)||
   '<section class="panel"><div class="empty">Calendario macro operativo non disponibile: verifica il caricamento del modulo e delle fonti.</div></section>';
  const evidence=window.FXQuantNewsEvidence?.parse?.(n,dayNow())||{
   pulse:[],official:[],latest:null,gap:'I dati sulle notizie non sono validati.',quality:'NON VALIDATO'};
