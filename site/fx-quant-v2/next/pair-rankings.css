@@ -109,3 +109,10 @@ a.fx-watch-event{text-decoration:none}
 a.fx-watch-event:hover,a.fx-watch-event:focus-visible{border-color:var(--blue)}
 .fx-watch-event span{color:var(--blue)}
 @media(max-width:590px){.fx-watch-item{grid-template-columns:1fr;gap:3px}.fx-watch-list{gap:12px}}
+
+.fx-watch-pair-cell{border:1px solid var(--line2);border-radius:9px;background:var(--layer2);min-width:0}
+.fx-watch-pair-cell .fx-watch-pair{border-color:transparent}
+.fx-watch-pair-cell .fx-watch-pair:hover,.fx-watch-pair-cell .fx-watch-pair:focus-visible{border-color:var(--green)}
+.fx-watch-price{display:block;padding:0 12px 10px;color:var(--soft);font-size:12px;line-height:1.45}
+.fx-watch-price strong{color:var(--text);margin-right:3px;white-space:nowrap}
+.fx-watch-price small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
