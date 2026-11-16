@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-16T01:05:44.505128Z",
-  "edition_time_rome": "2026-11-16 02:05",
-  "material_digest": "b2c1630a578e52a77dd13330c40305d2b6b46ee3fc7fc50eeceabd4bd07d7ae9",
+  "generated_at_utc": "2026-11-16T08:02:14.877976Z",
+  "edition_time_rome": "2026-11-16 09:02",
+  "material_digest": "731ea26b691752b8a88d68eaa5144b9033857a963306839685a5efbd2004914c",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
@@ -55,25 +55,25 @@
       ]
     },
     {
-      "headline": "Agencies extend comment period for proposed third-party risk management guidance",
+      "headline": "BOJ Current Account Balances by Sector (Oct.)",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-13",
-      "event_date": "2026-11-13",
+      "kind": "NEWS",
+      "published_date": "2026-11-16",
+      "event_date": "2026-11-16",
       "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20261113a.htm"
+        "https://www.boj.or.jp/en/statistics/boj/other/cabs/cabs.xlsx"
       ]
     },
     {
-      "headline": "Hydropower generation in the Southwest fell to record lows this summer",
-      "analysis": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio. Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-13",
-      "event_date": "2026-11-13",
-      "market_area": "ENERGIA",
+      "headline": "Highlights of the Outlook for Economic Activity and Prices (October 2026)",
+      "analysis": "Outlook ufficiale BoJ: la sola pubblicazione non dimostra una revisione hawkish o dovish delle proiezioni. Leggere stime e revisioni ufficiali; distinguere previsioni e decisione sui tassi, poi verificare TONA, 2Y e JPY.",
+      "kind": "NEWS",
+      "published_date": "2026-11-16",
+      "event_date": "2026-11-16",
+      "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.eia.gov/todayinenergy/detail.php?id=68445"
+        "https://www.boj.or.jp/en/mopo/outlook/highlight/ten202610.htm"
       ]
     }
   ],
@@ -88,14 +88,14 @@
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bls.gov/news.release/cpi.htm",
-      "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "https://www.eia.gov/todayinenergy/detail.php?id=68445",
-      "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20261113a.htm"
+      "https://www.boj.or.jp/en/mopo/outlook/highlight/ten202610.htm",
+      "https://www.boj.or.jp/en/statistics/boj/other/cabs/cabs.xlsx",
+      "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-13",
-      "rss_checked_at_utc": "2026-11-16T01:05:44.505128Z",
+      "rss_checked_at_utc": "2026-11-16T08:02:14.877976Z",
       "commodities": "2026-11-13"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-16T01:05:44.505128Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "b2c1630a578e52a77dd13330c40305d2b6b46ee3fc7fc50eeceabd4bd07d7ae9"
+    },
     {
       "generated_at_utc": "2026-11-14T20:45:48.350565Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
