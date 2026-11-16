@@ -82,8 +82,8 @@ assert(!rosterAfter||rosterAfter.estimated===true,
 assert(!rosterAfter||rosterAfter.scenario_method==='CHF_3M_LINEAR_EXTRAPOLATION_FROM_DATED_6M_12M_V1',
  'Only the independently labelled 6M/12M-derived scenario may appear');
 const rows=api.marketResearchGraded(partialFeed,bb);
-const partialPrimary=addon.view(addon.matrix(partialFeed,bb,now));
 const partialMatrix=addon.matrix(partialFeed,bb,now);
+const partialPrimary=addon.view(partialMatrix);
 const partialComplete=FX.filter(k=>{const x=partialMatrix.find(r=>r.ccy===k);return x&&['3m','6m','12m'].every(t=>Number.isFinite(x.points[t]?.value))}).length;
 assert(partialPrimary.includes('data-complete-tenors="'+partialComplete+'/8"'));
 const primaryChf=partialPrimary.match(/<article class="gmfq-mini-curve" data-chart-ccy="CHF"[\s\S]*?<\/article>/);
@@ -99,7 +99,19 @@ assert.equal(rows.length,visibleCoverage);
 assert.deepEqual(new Set(rows.map(x=>x.k)),new Set(liveRows.map(x=>x.k)));
 const chf=rows.find(x=>x.k==='CHF');
 assert(chf,'CHF source-graded futures must not be fully hidden');
-assert(['PROXY','MIXED'].includes(chf.tier));
+const isolated=partialMatrix.find(x=>x.ccy==='CHF').points['12m'];
+assert(isolated,'Expected the dated 12M point to survive without 3M/6M');
+assert.equal(isolated.direct_ois_quote,false);
+assert.equal(isolated.policy_repricing_allowed,false);
+if(isolated.source_quote_disputed){
+ assert.equal(chf.tier,'CONFLICTED');
+ assert.equal(isolated.source_quote_verified,false);
+ assert(srcFeed.currencies.CHF.source_conflict_keys.some(k=>k.horizon==='12m'&&
+  k.contract===isolated.contract&&k.observation_date===isolated.date&&k.event_id===isolated.dispute_event_id));
+}else{
+ assert.equal(chf.tier,'PROXY');
+ assert.equal(isolated.source_quote_verified,true);
+}
 assert.equal(chf.joined,false);
 assert.equal(chf.verifiedTenors,1);
 assert.deepEqual(chf.pts,[null,null,liveRows.find(x=>x.k==='CHF').pts[2]]);
@@ -123,8 +135,9 @@ assert(!group[0].includes('<polyline'),'never connect unavailable contract tenor
 assert.equal((group[0].match(/<circle /g)||[]).length,1);
 const bad=structuredClone(partialFeed);
 bad.currencies.CHF.horizons['12m'].quote_timestamp_verified=false;
+bad.currencies.CHF.source_conflict_keys=[];
 const missing=api.marketResearchGraded(bad,bb);
-assert(!missing.find(x=>x.k==='CHF'),'unverified CHF must disappear rather than infer an OIS curve');
+assert(!missing.find(x=>x.k==='CHF'),'A point without verification or matching dispute evidence must disappear');
 const wrongExpiry=structuredClone(partialFeed);
 wrongExpiry.currencies.CHF.horizons['12m'].expiration='2029-12-14';
 assert(!api.marketResearchGraded(wrongExpiry,bb).find(x=>x.k==='CHF'),
