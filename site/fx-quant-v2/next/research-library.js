@@ -1,7 +1,7 @@
 (function(root){
 'use strict';
 /* Research Library: one approved, published edition per report type.
-   The daily briefing is indexed on the site itself; the GitHub index discovers weekly HTML.
+   Published editions are indexed on the site itself, with GitHub discovery as a fallback.
    Historical files are retained, never presented as current editions. */
 const BASE='../../website-v1/reports/';
 const ROOT='./reports/';
@@ -19,7 +19,7 @@ const REPORTS=Object.freeze([
 const CATEGORIES=Object.freeze([['all','Tutti'],['daily','Daily Forex'],['macro','Global Macro'],['bank','Banche FX'],['cb','Banche centrali'],['ois','Curve OIS'],['cot','COT'],['cross','Cross-Asset'],['pairs','Coppie FX']]);
 const MONTHS=Object.freeze({GEN:1,FEB:2,MAR:3,APR:4,MAG:5,GIU:6,LUG:7,AGO:8,SET:9,OTT:10,NOV:11,DIC:12});
 const BLOCKED=/(_PROVA|_TEST|_BOZZA|_DRAFT|_BACKUP|_ANTEPRIMA|_PREVIEW|_LEGACY|_OLD|_DATI_PARZIALI)(_|\.|$)/i;
-let category='all',query='',remoteReports=[],dailyReport=null,lastLookupAt=0,refreshInFlight=false;
+let category='all',query='',remoteReports=[],localReports=[],lastLookupAt=0,refreshInFlight=false;
 const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('it-IT').trim();
 const label=x=>(CATEGORIES.find(c=>c[0]===x)||['','Report'])[1];
@@ -63,7 +63,7 @@ function latestPerType(items){
  return [...selected.values()].sort((a,b)=>b.date.localeCompare(a.date)||a.title.localeCompare(b.title));
 }
 function currentReports(){
- return latestPerType([...REPORTS,...(dailyReport?[dailyReport]:[]),...remoteReports]);
+ return latestPerType([...REPORTS,...localReports,...remoteReports]);
 }
 function filterReports(type=category,search=query){
  const q=norm(search);
@@ -127,7 +127,7 @@ function render(){
   '<section aria-label="Ultimi report pubblicati"><div class="rl-result-head"><h2>Ultime edizioni</h2><span id="library-match-count">'+filterReports().length+' di '+latest.length+' report · uno per categoria</span></div>'+
   '<div id="library-grid" class="rl-grid">'+rows()+'</div></section>'+
   '<section class="rl-disclaimer"><h2>Come avviene l’aggiornamento</h2>'+
-  '<p>La Library seleziona automaticamente l’ultima edizione approvata presente sul sito. Quando è accessibile il repository pubblico, controlla anche nuove pubblicazioni HTML e mostra solo quelle già raggiungibili su GitHub Pages. La creazione e il trasferimento automatico dei report da ChatGPT restano processi distinti: una nuova edizione compare solo se è stata realmente pubblicata.</p>'+
+  '<p>La Library consulta gli indici pubblicati sul sito e verifica che ogni file sia raggiungibile. Una nuova edizione compare solo se è stata realmente pubblicata.</p>'+
   '<div class="rl-next"><span>APPROFONDIMENTI</span><a href="#overview">Panoramica FX ↗</a><a href="#news">Calendario macro ↗</a><a href="#pairs">Monitor tesi FX ↗</a></div></section>';
 }
 function setCategory(value){category=CATEGORIES.some(x=>x[0]===value)?value:'all';}
@@ -147,19 +147,18 @@ async function verifyPublished(report){
   return response.ok?report:null;
  }catch(_){return null;}
 }
-async function refreshDaily(){
+async function refreshCatalog(filename,isDaily){
  try{
-  const response=await root.fetch(ROOT+'daily-latest.json',{cache:'no-store'});
+  const response=await root.fetch(ROOT+filename,{cache:'no-store'});
   if(!response.ok)return;
   const entry=await response.json();
-  const report=remoteReport(entry?.file);
-  if(report?.type!=='daily')return;
-  const published=await verifyPublished(report);
-  if(published){
-   dailyReport=latestPerType(dailyReport?[dailyReport,published]:[published])[0];
-   sync();
-  }
- }catch(_){/* Keep the last verified daily edition. */}
+  const files=isDaily?[entry?.file]:entry?.files;
+  if(!Array.isArray(files))return;
+  const reports=latestPerType(files.map(remoteReport).filter(r=>r&&(r.type==='daily')===isDaily));
+  const published=await Promise.all(reports.map(verifyPublished));
+  localReports=latestPerType([...localReports,...published.filter(Boolean)]);
+  sync();
+ }catch(_){/* Keep the last verified editions. */}
 }
 async function refreshRemote(){
  try{
@@ -176,7 +175,11 @@ async function refreshRemote(){
 async function refresh(){
  if(typeof root.fetch!=='function'||refreshInFlight)return;
  refreshInFlight=true;lastLookupAt=Date.now();
- try{await Promise.all([refreshDaily(),refreshRemote()]);}
+ try{await Promise.all([
+  refreshCatalog('daily-latest.json',true),
+  refreshCatalog('weekly-latest.json',false),
+  refreshRemote()
+ ]);}
  finally{refreshInFlight=false;}
 }
 const api={REPORTS,CATEGORIES,filterReports,reportType,reportDate,remoteReport,latestPerType,editionStatus,render,rows,setCategory,setQuery,sync,url,refresh};

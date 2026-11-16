@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/><meta content="dark" name="color-scheme"/><title>Weekly Central Bank Sentiment · 13 novembre 2026 · WANT/CAN V6 Layout Editoriale</title><style>
+*{box-sizing:border-box}
+:root{
+  --bg1:#05101b; --bg2:#091523; --bg3:#07111f;
+  --card1:#0f1c2f; --card2:#0b1727; --line:#223a56; --line2:#1b2e44;
+  --text:#eef4fb; --muted:#9db0c7; --muted2:#7e94ad;
+  --accent:#6fd2ff; --good:#81c6a7; --warn:#d8ba77; --bad:#d69098; --info:#88b4dc;
+  --gooddeep:#214336; --warndeep:#4b3c20; --baddeep:#48272c; --infodeep:#20374c;
+  --shadow:0 18px 40px rgba(0,0,0,.22);
+}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at top right, rgba(35,92,145,.18), transparent 28%),
+    linear-gradient(180deg,var(--bg1),var(--bg2) 35%,var(--bg3));
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  line-height:1.55
+}
+.wrap{max-width:980px;margin:auto;padding:18px}
+.hero{
+  padding:28px 26px;
+  border:1px solid #2a4c70;
+  border-radius:28px;
+  background:
+    radial-gradient(circle at 88% 0, rgba(69,138,212,.22), transparent 30%),
+    radial-gradient(circle at 0 100%, rgba(26,70,112,.14), transparent 35%),
+    linear-gradient(135deg,#0d1c31,#10263f 52%, #0b1e34);
+  box-shadow:0 24px 55px rgba(0,0,0,.26)
+}
+.eyebrow,.sec,.label{
+  font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)
+}
+.hero h1{
+  font-size:36px;line-height:1.02;margin:8px 0 10px;
+  letter-spacing:-.03em
+}
+.muted{color:var(--muted)}
+.note{
+  font-size:11px;color:#b4c2d5;margin-top:12px;
+  padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.035);
+  border:1px solid rgba(148,182,214,.15)
+}
+.sec{
+  margin:30px 4px 12px;
+  font-size:11px;
+  color:#7fd9ff
+}
+.grid{display:grid;gap:12px}
+.four{grid-template-columns:repeat(4,1fr)}
+.two{grid-template-columns:repeat(2,1fr)}
+.card,.snap{
+  background:linear-gradient(145deg,var(--card1),var(--card2));
+  border:1px solid var(--line2);
+  border-radius:20px;
+  padding:17px;
+  box-shadow:var(--shadow);
+  min-width:0
+}
+.snap{
+  position:relative;
+  overflow:hidden;
+  padding:16px 16px 15px
+}
+.snap:before{
+  content:"";
+  position:absolute; inset:0 auto 0 0; width:4px; border-radius:20px 0 0 20px;
+  background:currentColor; opacity:.85
+}
+.snap strong{display:block;font-size:23px;line-height:1.05;margin:6px 0 6px;letter-spacing:-.02em}
+.snap .muted{font-size:12px;line-height:1.45}
+.good{border-left:2px solid var(--good)}
+.warn{border-left:2px solid var(--warn)}
+.bad{border-left:2px solid var(--bad)}
+.info{border-left:2px solid var(--info)}
+.snap.good{color:var(--good);background:linear-gradient(145deg,rgba(129,198,167,.07),#0d192a)}
+.snap.warn{color:var(--warn);background:linear-gradient(145deg,rgba(216,186,119,.07),#0d192a)}
+.snap.bad{color:var(--bad);background:linear-gradient(145deg,rgba(214,144,152,.07),#0d192a)}
+.snap.info{color:var(--info);background:linear-gradient(145deg,rgba(136,180,220,.07),#0d192a)}
+.row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.row h2{font-size:24px;line-height:1.05;margin:0;letter-spacing:-.02em}
+.state{
+  font-size:9px;font-weight:900;border-radius:999px;padding:6px 9px;
+  background:#0a1422;border:1px solid #304861;letter-spacing:.04em
+}
+.good .state{color:#b7e0cd;border-color:#365747;background:#11241d}
+.warn .state{color:#e5cc93;border-color:#5b4c31;background:#261f14}
+.bad .state{color:#e2a9af;border-color:#5a383d;background:#241719}
+.info .state{color:#a7c8e4;border-color:#35526c;background:#101e2c}
+.block{margin-top:13px}
+.block h3{
+  font-size:10px;letter-spacing:.1em;color:#7ebeff;margin:0 0 6px;text-transform:uppercase
+}
+.block p{margin:6px 0;font-size:13px;color:#cbd6e5}
+.block strong{color:#f3f7fc}
+.desk{
+  margin-top:14px;padding:12px 13px;border-radius:14px;
+  background:linear-gradient(135deg,#10243c,#112337);
+  border:1px solid #2b4867
+}
+.desk p{margin:4px 0;font-size:13px}
+.triggers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.trigger{
+  background:#0a1525;border:1px solid #20344c;border-radius:13px;
+  padding:10px;font-size:11px;color:#b9c8dc;line-height:1.45
+}
+.trigger b{display:block;font-size:9px;color:#eef4fb;margin-bottom:4px;letter-spacing:.05em}
+.map{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+.cell{text-align:center;border-radius:10px;padding:9px 3px;background:#0d1a2b;border:1px solid #213650}
+.cell b{display:block;font-size:11px}.cell span{font-size:8px;color:#9fb0c8}
+.note{font-size:11px;color:#91a5bd;margin-top:10px}
+.footer{
+  text-align:center;color:#71849b;font-size:10px;margin:28px 0 8px;
+  letter-spacing:.08em
+}
+.chartbox{padding:17px 14px 14px}
+.charttitle{font-size:17px;font-weight:850;margin-bottom:2px;letter-spacing:-.015em}
+.chartsub{font-size:11px;color:#9fb0c8;margin-bottom:12px;line-height:1.5}
+.chartrow{
+  display:grid;grid-template-columns:46px 1fr 80px;gap:10px;align-items:center;
+  margin:10px 0;padding:4px 0
+}
+.chartrow>strong{font-size:11px;color:#dce8f7}
+.track{
+  height:12px;background:#07111d;border:1px solid #25354b;border-radius:999px;
+  overflow:hidden;display:flex;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)
+}
+.pos,.neu,.neg{height:100%}
+.pos{background:#2f7359}.neu{background:#b08b45}.neg{background:#b95462}
+.score{text-align:right;font-size:10px;color:#aebbd0}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:9px;color:#94a6bd}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
+.dpos{background:#2f7359}.dneu{background:#b08b45}.dneg{background:#b95462}
+.why{
+  margin-top:13px;padding:10px 11px;border-radius:12px;
+  background:rgba(89,168,255,.06);border:1px dashed rgba(89,168,255,.25);
+  font-size:11px;color:#b8c7da;line-height:1.5
+}
+.consensus-list{display:grid;gap:8px}
+.consensus-item{
+  display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:10px;
+  padding:10px 11px;border-radius:12px;background:#0a1625;border:1px solid #1d3249
+}
+.consensus-item b{font-size:12px}
+.consensus-item .desc{font-size:10px;color:#aabbd0;line-height:1.45}
+.tone{
+  font-size:9px;font-weight:850;padding:5px 8px;border-radius:999px;
+  border:1px solid #314861;color:#cbd7e6;white-space:nowrap;background:#101a28
+}
+.card.good,.card.warn,.card.bad,.card.info{position:relative;overflow:hidden}
+.card.good:after,.card.warn:after,.card.bad:after,.card.info:after{
+  content:""; position:absolute; right:-30px; top:-30px; width:90px; height:90px; border-radius:50%;
+  opacity:.08; filter:blur(2px)
+}
+.card.good:after{background:var(--good)}
+.card.warn:after{background:var(--warn)}
+.card.bad:after{background:var(--bad)}
+.card.info:after{background:var(--info)}
+@media(max-width:720px){
+  .wrap{padding:10px}
+  .hero{padding:19px;border-radius:22px}
+  .hero h1{font-size:28px}
+  .four,.two{grid-template-columns:1fr}
+  .map{grid-template-columns:repeat(4,1fr)}
+  .triggers{grid-template-columns:1fr}
+  .row{flex-direction:column}
+  .card,.snap{padding:15px;border-radius:18px}
+  .chartrow{grid-template-columns:42px 1fr 70px}
+}
+@media(max-width:430px){
+  .consensus-item{grid-template-columns:38px 1fr}
+  .consensus-item .tone{grid-column:2;justify-self:start}
+  .map{grid-template-columns:repeat(2,1fr)}
+  .hero h1{font-size:25px}
+}
+
+.flagtitle{display:flex;align-items:center;gap:10px}
+.flagbadge{
+  width:32px;height:32px;border-radius:50%;display:inline-block;position:relative;flex:0 0 32px;
+  border:1px solid rgba(255,255,255,.18);box-shadow:0 4px 10px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.16);
+  overflow:hidden
+}
+.flagbadge.us{
+  background:
+    linear-gradient(180deg,#b22234 0 10%,#fff 10% 20%,#b22234 20% 30%,#fff 30% 40%,#b22234 40% 50%,#fff 50% 60%,#b22234 60% 70%,#fff 70% 80%,#b22234 80% 90%,#fff 90% 100%);
+}
+.flagbadge.us:before{content:"";position:absolute;left:0;top:0;width:48%;height:54%;background:#3c3b6e}
+.flagbadge.eu{background:#16479d}
+.flagbadge.eu:before{
+  content:"• • •";position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);
+  color:#ffd84d;font-size:8px;letter-spacing:1px
+}
+.flagbadge.gb{
+  background:
+    linear-gradient(33deg, transparent 0 41%, #fff 41% 47%, transparent 47% 53%, #fff 53% 59%, transparent 59% 100%),
+    linear-gradient(-33deg, transparent 0 41%, #fff 41% 47%, transparent 47% 53%, #fff 53% 59%, transparent 59% 100%),
+    linear-gradient(33deg, transparent 0 44%, #c8102e 44% 46%, transparent 46% 54%, #c8102e 54% 56%, transparent 56% 100%),
+    linear-gradient(-33deg, transparent 0 44%, #c8102e 44% 46%, transparent 46% 54%, #c8102e 54% 56%, transparent 56% 100%),
+    linear-gradient(90deg, transparent 0 36%, #fff 36% 64%, transparent 64%),
+    linear-gradient(transparent 0 36%, #fff 36% 64%, transparent 64%),
+    linear-gradient(90deg, transparent 0 42%, #c8102e 42% 58%, transparent 58%),
+    linear-gradient(transparent 0 42%, #c8102e 42% 58%, transparent 58%),
+    #012169;
+}
+.flagbadge.jp{background:#fff}
+.flagbadge.jp:before{content:"";position:absolute;left:50%;top:50%;width:44%;height:44%;transform:translate(-50%,-50%);border-radius:50%;background:#bc002d}
+.flagbadge.ca{
+  background:linear-gradient(90deg,#d52b1e 0 25%,#fff 25% 75%,#d52b1e 75% 100%);
+}
+.flagbadge.ca:before{
+  content:"✦";position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);
+  color:#d52b1e;font-size:12px;font-weight:900
+}
+.flagbadge.au{
+  background:#012169;
+}
+.flagbadge.au:before{
+  content:"✦";position:absolute;right:6px;top:7px;color:#fff;font-size:10px
+}
+.flagbadge.au:after{
+  content:"";position:absolute;left:0;top:0;width:48%;height:48%;
+  background:
+    linear-gradient(90deg,transparent 0 42%,#fff 42% 58%,transparent 58%),
+    linear-gradient(transparent 0 42%,#fff 42% 58%,transparent 58%),
+    linear-gradient(90deg,transparent 0 46%,#c8102e 46% 54%,transparent 54%),
+    linear-gradient(transparent 0 46%,#c8102e 46% 54%,transparent 54%),
+    #012169;
+}
+.flagbadge.nz{
+  background:#00247d;
+}
+.flagbadge.nz:before{
+  content:"✦";position:absolute;right:7px;top:8px;color:#e4002b;font-size:10px;text-shadow:0 0 0 #fff, 0 0 1px #fff
+}
+.flagbadge.nz:after{
+  content:"";position:absolute;left:0;top:0;width:48%;height:48%;
+  background:
+    linear-gradient(90deg,transparent 0 42%,#fff 42% 58%,transparent 58%),
+    linear-gradient(transparent 0 42%,#fff 42% 58%,transparent 58%),
+    linear-gradient(90deg,transparent 0 46%,#c8102e 46% 54%,transparent 54%),
+    linear-gradient(transparent 0 46%,#c8102e 46% 54%,transparent 54%),
+    #012169;
+}
+.flagbadge.ch{
+  background:#d52b1e;
+}
+.flagbadge.ch:before,.flagbadge.ch:after{
+  content:"";position:absolute;background:#fff;left:50%;top:50%;transform:translate(-50%,-50%)
+}
+.flagbadge.ch:before{width:46%;height:18%}
+.flagbadge.ch:after{width:18%;height:46%}
+
+
+.shiftgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.shiftcard{padding:12px 13px;border-radius:14px;background:#0b1727;border:1px solid #20364e}
+.shiftcard .k{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:#7ebeff;font-weight:900}
+.shiftcard h3{margin:4px 0 5px;font-size:15px}
+.shiftcard p{margin:0;font-size:11.5px;color:#b9c8da;line-height:1.45}
+.priced{display:inline-flex;align-items:center;gap:6px;margin-top:9px;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.04em;border:1px solid #30465f}
+.priced.low{color:#88c7ff;background:#10243a}
+.priced.mid{color:#e4c57e;background:#2a2317}
+.priced.high{color:#e2a1aa;background:#2b181c}
+.summary3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.summary3 .sbox{padding:13px;border-radius:14px;border:1px solid #20364e;background:#0b1727}
+.summary3 .sbox .k{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#8fb8e1;font-weight:900}
+.summary3 .sbox strong{display:block;font-size:17px;margin:4px 0}
+.summary3 .sbox p{margin:0;font-size:11.5px;color:#b9c8da}
+@media(max-width:720px){.shiftgrid,.summary3{grid-template-columns:1fr}}
+
+
+.cbtop{margin:14px 0 10px;display:grid;gap:10px}
+.cbmetrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cbmetric{
+  background:linear-gradient(145deg,#0b1726,#0e1b2b);
+  border:1px solid #22364e;
+  border-radius:14px;
+  padding:11px 12px;
+  min-width:0
+}
+.cbmetric span{
+  display:block;
+  font-size:9px;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+  color:#8fa7bf;
+  font-weight:900;
+  margin-bottom:5px
+}
+.cbmetric strong{
+  display:block;
+  font-size:18px;
+  line-height:1.1;
+  letter-spacing:-.02em;
+  color:#f2f7fc;
+  font-weight:800
+}
+.impactbox{
+  border-radius:14px;
+  padding:11px 13px;
+  border:1px solid #29435e;
+  background:linear-gradient(135deg,#0d1d31,#101b2f)
+}
+.impactbox span{
+  display:block;
+  font-size:9px;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+  color:#8fa7bf;
+  font-weight:900;
+  margin-bottom:5px
+}
+.impactbox strong{
+  display:block;
+  font-size:18px;
+  line-height:1.15;
+  letter-spacing:-.01em;
+  font-weight:800
+}
+.impactbox.hawk{background:linear-gradient(135deg,rgba(47,115,89,.18),#101b2f);border-color:#355a4a}
+.impactbox.hawk strong{color:#b8e1cd}
+.impactbox.neutral{background:linear-gradient(135deg,rgba(176,139,69,.17),#101b2f);border-color:#5b4a28}
+.impactbox.neutral strong{color:#e5cc93}
+.impactbox.dove{background:linear-gradient(135deg,rgba(123,66,109,.18),#101b2f);border-color:#80424e}
+.impactbox.dove strong{color:#f7bdc4}
+h2.flagtitle{display:flex;align-items:center;gap:10px}
+h2.flagtitle span:last-child{display:inline-block}
+@media(max-width:520px){
+  .cbmetrics{grid-template-columns:1fr}
+  .cbmetric strong,.impactbox strong{font-size:17px}
+}
+
+
+.cbplain{margin-top:13px}
+.cbplain-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px}
+.cbplain-item h3{
+  font-size:10px;letter-spacing:.10em;color:#7ebeff;margin:0 0 6px;text-transform:uppercase
+}
+.cbplain-item p{
+  margin:0;font-size:13px;color:#cbd6e5;line-height:1.5
+}
+.cbplain-item p strong{
+  color:#f3f7fc;font-size:15px;font-weight:800
+}
+.cbplain-impact{
+  margin-top:12px;padding-top:12px;border-top:1px solid #1f3349
+}
+.cbplain-impact h3{
+  font-size:10px;letter-spacing:.10em;color:#7ebeff;margin:0 0 6px;text-transform:uppercase
+}
+.cbplain-impact p{
+  margin:0;font-size:13px;line-height:1.5;font-weight:700
+}
+.cbplain-impact.hawk p{color:#b8e1cd}
+.cbplain-impact.neutral p{color:#e5cc93}
+.cbplain-impact.dove p{color:#f7bdc4}
+@media(max-width:520px){.cbplain-grid{grid-template-columns:1fr}}
+
+
+
+.cb-focus-mini{
+  margin-top:11px;
+  padding:10px 12px;
+  border:1px solid #243b52;
+  border-radius:11px;
+  background:#0e1c2b;
+}
+.cb-focus-mini-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px 12px;
+}
+.cb-focus-mini-item{
+  min-width:0;
+}
+.cb-focus-mini-label{
+  font-size:8px;
+  line-height:1.25;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+  color:#7f9bb6;
+  font-weight:900;
+  margin-bottom:3px;
+}
+.cb-focus-mini-value{
+  font-size:11px;
+  line-height:1.42;
+  color:#d8e4ee;
+  font-weight:700;
+}
+.cb-focus-mini-item.primary .cb-focus-mini-value{
+  font-size:13px;
+  color:#f3f7fb;
+  font-weight:900;
+}
+.cb-focus-mini-item.turning .cb-focus-mini-value{
+  color:#e6cc8a;
+}
+@media(max-width:520px){
+  .cb-focus-mini-grid{grid-template-columns:1fr}
+}
+
+
+.cb-focus-mini-grid.v19{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px 12px;
+}
+.cb-focus-mini-item.focus-main{
+  grid-column:1 / -1;
+}
+.cb-focus-mini-item.focus-main .cb-focus-mini-value{
+  font-size:14px;
+  color:#f4f8fc;
+  font-weight:900;
+}
+.cb-focus-mini-item.driver .cb-focus-mini-value{
+  color:#bcd5ea;
+}
+.cb-focus-mini-item.turning .cb-focus-mini-value{
+  color:#e5c778;
+}
+@media(max-width:520px){
+  .cb-focus-mini-grid.v19{grid-template-columns:1fr}
+  .cb-focus-mini-item.focus-main{grid-column:auto}
+}
+
+
+/* Migliorie additive — stessa palette/gerarchia del modello canonico */
+.hero .subtitle{font-size:13px;max-width:750px;color:#c3d7ea;margin:7px 0 0}
+.reading{font-size:14px;color:#edf5ff;line-height:1.58;margin:8px 0 12px}
+.card.cb-card .row h2{margin:0}
+.card.cb-card .block h3{margin-top:13px}
+.inline-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 15px;margin:13px 0 0;padding:12px 0;border-top:1px solid #263b53;border-bottom:1px solid #263b53}
+.inline-metrics div{min-width:0}.inline-metrics small{font-size:9px;color:#85adcf;letter-spacing:.09em;text-transform:uppercase;display:block;font-weight:850}
+.inline-metrics strong{font-size:13px;line-height:1.4;color:#f0f5fc;display:block;margin-top:4px}
+.cb-focus-simple{margin-top:13px;border-top:1px solid #263b53;padding-top:10px}
+.cb-focus-simple p{margin:3px 0 6px;font-size:12.5px;color:#ccd9e9}
+.cb-focus-simple b{color:#a5d4fa}
+.wantcan{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;padding:12px 0;margin-top:12px;border-top:1px solid #263b53;border-bottom:1px solid #263b53}
+.wantcan h3{font-size:10px;text-transform:uppercase;letter-spacing:.11em;margin:0 0 5px;color:#88c9f6}
+.wantcan h3 span{font-size:9px;color:#879eb9;font-weight:650;letter-spacing:0;text-transform:none}
+.wantcan p{font-size:12.8px;margin:0;color:#d8e4f2;line-height:1.56}
+.wantcan div:last-child{padding-left:13px;border-left:1px solid #2c4662}
+.driver-list{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.driver-list span{font-size:10px;color:#b1c9e1;background:#0b1a2a;padding:3px 7px;border-radius:8px;border:1px solid #263a50}
+.readout{margin:13px 0 2px;padding:10px 12px;background:#0c1a2c;border-left:3px solid #619fce;border-radius:8px;font-size:12.5px;color:#d9e6f5}
+.readout b{color:#f4f8ff}
+.cb-card.hawkish{border-left:3px solid #508e76}
+.cb-card.mixed{border-left:3px solid #b39459}
+.cb-card.dovish{border-left:3px solid #b65d6e}
+.cb-card .state{font-size:9px;max-width:210px;text-align:right;line-height:1.4}
+.cb-card.hawkish .state{color:#a7e0c7}.cb-card.dovish .state{color:#ffc0c9}
+.mini-sources{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.mini-sources a{font-size:10px;text-decoration:none;color:#91cfff;border:1px solid #25415c;padding:4px 7px;border-radius:7px}
+.rate-chart{display:grid;gap:7px;margin-top:12px}.rate-row{display:grid;grid-template-columns:52px minmax(0,1fr) 80px;gap:10px;align-items:center;font-size:12px}
+.rate-track{height:17px;border-radius:6px;position:relative;background:linear-gradient(90deg,#301e29 0% 50%,#102c28 50%)}
+.rate-track:before{position:absolute;content:"";left:50%;height:100%;width:1px;background:#7690a8}
+.rate-track .dn,.rate-track .up{height:9px;top:4px;position:absolute;border-radius:3px}
+.rate-track .dn{right:50%;background:linear-gradient(90deg,#d97886,#b34d5f)}
+.rate-track .up{left:50%;background:linear-gradient(90deg,#438c79,#6bc3a4)}
+.rate-row b{font-size:11px}.rate-row .number{text-align:right;color:#e0eafb;font-variant-numeric:tabular-nums}
+.muted-compact{color:#91a7c0;font-size:11.5px;line-height:1.5}
+.qa-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.qa-strip .sbox{padding:12px;border:1px solid #263b52;background:#0b1929;border-radius:12px}
+.qa-strip .sbox small{display:block;color:#8cbfe6;letter-spacing:.08em;text-transform:uppercase;font-size:9px;font-weight:850}
+.qa-strip .sbox strong{display:block;margin:6px 0;font-size:15px;color:#f1f6fc}
+.qa-strip .sbox p{font-size:12px;margin:4px 0;color:#c7d5e8}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.review-table{border-collapse:collapse;width:100%;min-width:610px;font-size:12px}
+.review-table th,.review-table td{text-align:left;vertical-align:top;padding:9px 7px;border-bottom:1px solid #24384e;color:#dae4f1}
+.review-table th{font-size:10px;text-transform:uppercase;color:#90c3ed;background:#0b1929}
+.linklist{display:grid;grid-template-columns:repeat(2,1fr);gap:5px 15px;margin-top:10px}
+.linklist a{color:#a1d4fc;text-decoration:none;font-size:11px;line-height:1.5}
+@media(max-width:720px){.inline-metrics{grid-template-columns:1fr 1fr}.qa-strip{grid-template-columns:1fr}.linklist{grid-template-columns:1fr}}
+@media(max-width:480px){.wantcan{grid-template-columns:1fr;gap:11px}.wantcan div:last-child{border-left:0;border-top:1px solid #263c50;padding:10px 0 0}.cb-card .state{max-width:none;text-align:left}.inline-metrics{column-gap:14px}.inline-metrics strong{font-size:12px}.rate-row{grid-template-columns:36px minmax(0,1fr) 70px;gap:6px}}
+
+
+:root{--bad:#ed8490;--baddeep:#472731;--good:#70d6a7;--warn:#edc47f;--accent:#85c9f7}
+body{font-size:14px;line-height:1.61}
+.wrap{max-width:1010px;padding:15px 13px 45px}.hero{padding:27px 25px}.hero h1{font-size:34px;line-height:1.1}.hero .subtitle{font-size:15px;line-height:1.6}
+.hero .tagline{color:#bad0e6;font-size:13px;margin:10px 0 0}.hero .meta{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 2px}.hero .meta span{padding:5px 9px;font-size:10px;color:#b3d4f1;border:1px solid #2d4b6d;border-radius:999px;background:#0b2033}
+.sec{margin:26px 3px 10px;font-size:11px;letter-spacing:.11em}.card{padding:18px}.leadbox{margin-top:12px;padding:17px 18px;border-left:4px solid #61b7f8;background:linear-gradient(135deg,#112b46,#111c30);font-size:14.7px;line-height:1.68;border-radius:13px;color:#e2effe}.leadbox b{color:#fff}
+.snap{min-height:125px}.snap .label{margin-bottom:5px}.snap strong{font-size:20px}.snap .muted{font-size:12px}.country-intro{font-size:12.8px;color:#b9cce0;margin:4px 2px 14px}
+.stancemap{display:grid;gap:8px;margin:10px 0}.stance-row{display:grid;grid-template-columns:70px minmax(0,1fr) 158px;align-items:center;gap:11px;padding:8px 10px;background:#0a1929;border:1px solid #263d55;border-radius:10px}.stance-id{font-size:13px;color:#eff6ff;font-weight:900}.stance-bins{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.stance-bins span{height:15px;background:#162b3d;border:1px solid #274057;border-radius:5px}.stance-bins span.active-h{background:#2a8769;border-color:#72d2a5}.stance-bins span.active-m{background:#b68b42;border-color:#f2c67c}.stance-bins span.active-d{background:#a84758;border-color:#ec8d9b}.stance-label{font-size:11px;color:#d6e5f3;text-align:right}.axis-labels{display:grid;grid-template-columns:70px minmax(0,1fr) 158px;gap:11px;padding:0 10px;color:#8da7bf;font-size:10px}.axis-labels div:nth-child(2){display:flex;justify-content:space-between}.chart-foot{font-size:12px;color:#a7bed4;line-height:1.65;margin:11px 0 0}.qual-tag{font-weight:800;color:#bce7ff}.shocks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.shock{background:#0a192a;border:1px solid #294359;padding:12px 13px;border-radius:12px}.shock .upper{font-size:10px;letter-spacing:.09em;color:#94c5e6;font-weight:850}.shock strong{display:block;font-size:15px;margin:4px 0}.shock p{font-size:12px;color:#bfd0e2;margin:5px 0 0}.shock .lesson{border-top:1px solid #2b445d;padding-top:7px;margin-top:8px;color:#eef4fc;font-weight:700}
+.country{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}.cb-card{padding:18px 17px 16px;min-width:0}.cb-card .row{align-items:flex-start}.cb-card .row h2{font-size:22px;margin:0}.cb-card .state{max-width:165px;line-height:1.4;text-align:right;font-size:9px;letter-spacing:.035em}.cb-card .reading{font-size:14.7px;line-height:1.6;font-weight:700;margin:12px 0;color:#eef6ff}.cb-card .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0}.cb-card .facts div{background:#0a1b2c;border:1px solid #263d54;padding:9px 8px;border-radius:9px;min-width:0}.cb-card .facts small{display:block;color:#91b4d3;font-size:9.5px;text-transform:uppercase;font-weight:900;letter-spacing:.04em}.cb-card .facts strong{display:block;font-size:12px;margin-top:3px;color:#f2f7fd;line-height:1.35}.cb-card .wantcan{margin:11px 0;padding:11px 0}.cb-card .wantcan h3{font-size:10px}.cb-card .wantcan p{font-size:12.5px}.cb-card .cbread{border-left:3px solid #609dc8;background:#0d1f33;border-radius:9px;padding:10px 12px;color:#d5e7f8;font-size:12.9px;line-height:1.6}.cb-card .cbread b{color:#f6fbff}.cb-card .pairline{margin-top:11px;display:grid;gap:6px}.cb-card .pairline div{font-size:12.4px;color:#c4d8ed;line-height:1.55}.cb-card .pairline b{color:#8bd0ff}.cb-card .triggers{margin-top:10px}.cb-card .trigger{font-size:11.8px;line-height:1.52}.cb-card .trigger b{font-size:9.5px;color:#fff}.cb-card .sources{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.cb-card .sources a{border:1px solid #31506e;border-radius:7px;padding:4px 7px;color:#9dd5fc;font-size:10px;text-decoration:none}.cb-card.hawk{border-left:3px solid #65caa1}.cb-card.neutral{border-left:3px solid #eac078}.cb-card.risk{border-left:3px solid #e4818c}.cb-card.hawk .state{color:#92e4be}.cb-card.neutral .state{color:#f3d496}.cb-card.risk .state{color:#ffa7b1}
+.audit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.audit{background:#0b1a2c;border:1px solid #284158;border-radius:12px;padding:12px}.audit h3{font-size:14px;color:#eef6ff;margin:0 0 5px}.audit p{font-size:12.5px;color:#c6d8ec;margin:5px 0;line-height:1.57}.audit b{color:#fff}.audit .lead{font-size:10px;color:#87bcdf;text-transform:uppercase;letter-spacing:.085em;font-weight:850}
+.box3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.step{border:1px solid #25405b;background:#0b1b2c;border-radius:12px;padding:12px}.step .n{font-size:10px;color:#85caff;font-weight:900;letter-spacing:.08em}.step h3{font-size:15px;color:#fff;margin:4px 0 7px}.step p{font-size:12px;color:#bcd1e6;margin:5px 0}.event{display:grid;grid-template-columns:115px minmax(0,1fr);gap:11px;padding:12px 13px;border:1px solid #29425b;background:#0a1a2c;border-radius:12px;margin:7px 0}.event .when{font-size:12px;font-weight:900;color:#8dccfb}.event h3{font-size:14.5px;margin:0 0 4px;color:#e9f4ff}.event p{font-size:12.5px;color:#c3d7ec;margin:4px 0;line-height:1.5}.event .test{padding-left:9px;border-left:2px solid #47769e;margin-top:7px;color:#e3f0fb}.source-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.source-grid a{font-size:11px;text-decoration:none;padding:9px;background:#0b2034;border:1px solid #294865;color:#9acbff;border-radius:8px}.quality-note{font-size:12px;line-height:1.65;padding:13px;background:#241f19;border:1px solid #605032;border-radius:10px;color:#f1dcb5;margin-top:12px}
+.footer{margin-top:25px}.pos{background:#328e6d}.neu{background:#ba8d47}.neg{background:#b94d60}.dpos{background:#328e6d}.dneu{background:#ba8d47}.dneg{background:#b94d60}
+@media(max-width:850px){.country{grid-template-columns:1fr}.box3{grid-template-columns:1fr}.source-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.wrap{padding:9px 9px 38px}.hero{padding:20px 17px}.hero h1{font-size:27px}.four{grid-template-columns:1fr 1fr}.country{gap:8px}.cb-card{padding:15px 13px}.audit-grid,.shocks{grid-template-columns:1fr}.stance-row{grid-template-columns:42px 1fr 104px;gap:6px;padding:8px 7px}.stance-label{font-size:10px}.axis-labels{grid-template-columns:42px 1fr 104px;gap:6px}.event{grid-template-columns:1fr;gap:5px}.source-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:460px){.four{grid-template-columns:1fr}.hero h1{font-size:26px}.cb-card .facts{grid-template-columns:repeat(2,minmax(0,1fr))}.cb-card .wantcan{grid-template-columns:1fr}.cb-card .wantcan div:last-child{border-left:0;border-top:1px solid #263c50;padding:10px 0 0}.cb-card .triggers{grid-template-columns:1fr}.axis-labels{font-size:9px}.source-grid{grid-template-columns:1fr}}
+
+/* V4 — COLOR SYSTEM REFINEMENT: visual only; source analysis unchanged. */
+:root{
+ --tone-hawk:#69cda4;
+ --tone-mixed:#e2b974;
+ --tone-risk:#e77683;
+ --tone-neutral:#83bdf0;
+}
+.country{gap:14px}
+.country .cb-card{
+ --tone:var(--tone-neutral);
+ position:relative;
+ overflow:hidden;
+ border:1px solid #294158;
+ border-left:3px solid var(--tone);
+ border-radius:16px;
+ background:linear-gradient(170deg,#122136 0%,#0c192a 49%,#0b1727 100%);
+ box-shadow:0 12px 28px rgba(0,0,0,.17);
+}
+.country .cb-card:before{
+ content:"";position:absolute;top:0;right:0;width:145px;height:85px;
+ background:radial-gradient(ellipse at top right, color-mix(in srgb,var(--tone) 12%,transparent),transparent 72%);
+ pointer-events:none;
+}
+.country .cb-card.hawk{--tone:var(--tone-hawk)}
+.country .cb-card.risk{--tone:var(--tone-risk)}
+.country #cb-usd,.country #cb-eur,.country #cb-jpy,.country #cb-cad{--tone:var(--tone-mixed)}
+.country #cb-chf{--tone:var(--tone-neutral)}
+.country .cb-card .row{padding-bottom:10px;border-bottom:1px solid rgba(139,168,201,.14)}
+.country .cb-card .state{
+ max-width:190px;border:1px solid color-mix(in srgb,var(--tone) 36%,#25374b);
+ border-radius:8px;padding:5px 8px;
+ background:color-mix(in srgb,var(--tone) 9%,#0c1b2b);
+ color:var(--tone)!important;font-size:9px;letter-spacing:.025em;
+ line-height:1.45;
+}
+.country .cb-card .facts div{background:#0a1929;border-color:#273c53}
+.country .cb-card .facts small{color:#8eb2d0}
+.country .cb-card .reading{
+ font-size:14.9px;line-height:1.57;letter-spacing:-.008em;
+ color:#edf5ff;font-weight:750;
+}
+.country .cb-card .wantcan{
+ display:grid;grid-template-columns:1fr 1fr;gap:14px;
+ border-top:1px solid #2a4057;border-bottom:1px solid #2a4057;
+}
+.country .cb-card .wantcan>div:first-child{border:0;padding:0}
+.country .cb-card .wantcan>div:last-child{border-left:1px solid #30465c;padding-left:14px}
+.country .cb-card .wantcan h3{color:#84c8f7!important;font-size:10.5px;letter-spacing:.075em}
+.country .cb-card .wantcan>div:last-child h3{color:#e9c68a!important}
+.country .cb-card .wantcan p{color:#d8e4f0}
+.country .cb-card .cbread{
+ border-left:2px solid #6caee0;background:#0c2031;
+ box-shadow:inset 0 0 0 1px rgba(114,172,211,.10);
+ padding:11px 12px;color:#dceaf8;
+}
+.country .cb-card .pairline{gap:0;margin:10px 0 0}
+.country .cb-card .pairline>div{padding:8px 0;border-bottom:1px solid rgba(128,161,197,.11)}
+.country .cb-card .pairline>div:last-child{border-bottom:0}
+.country .cb-card .pairline>div b{color:#9bcbef}
+.country .cb-card .pairline>div:nth-child(2) b{color:#e7c483}
+.country .cb-card .pairline>div:nth-child(3) b{color:#dceefc}
+.country .cb-card .triggers .trigger{
+ background:#0a1a2b;border:1px solid #2b4055;
+ border-left:3px solid #6cc69e;
+ border-radius:10px;color:#d0e0ee;
+}
+.country .cb-card .triggers .trigger:nth-child(2){border-left-color:#e47784}
+.country .cb-card .triggers .trigger b{color:#99e7bb}
+.country .cb-card .triggers .trigger:nth-child(2) b{color:#ffadb7}
+.country .cb-card .sources a{color:#a5cdec;background:#0b1c2c;border-color:#2c4962}
+.country .cb-card .sources a:hover{border-color:#6eb6ee}
+.cb-color-legend{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 2px 16px}
+.cb-color-legend span{display:inline-flex;align-items:center;gap:5px;border:1px solid #294058;background:#0b1a2b;padding:5px 8px;border-radius:8px;font-size:10.5px;color:#b9cbdd}
+.cb-color-legend i{display:inline-block;width:8px;height:8px;border-radius:50%}
+.cb-color-legend .h i{background:var(--tone-hawk)}
+.cb-color-legend .m i{background:var(--tone-mixed)}
+.cb-color-legend .r i{background:var(--tone-risk)}
+.cb-color-legend .n i{background:var(--tone-neutral)}
+@media(max-width:460px){
+ .country .cb-card .wantcan{grid-template-columns:1fr;gap:11px}
+ .country .cb-card .wantcan>div:last-child{border-left:0;border-top:1px solid #30465c;padding:10px 0 0}
+ .country .cb-card .state{max-width:175px}
+ .cb-color-legend{gap:6px}
+ .cb-color-legend span{font-size:9.5px;padding:4px 7px}
+}
+
+
+/* V6 — EDITORIAL REFLOW: strictly visual/layout, content remains V5 */
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{line-height:1.61}
+.wrap{max-width:1160px;padding:22px 20px 54px}
+.hero{border-radius:22px;padding:32px 34px}
+.hero h1{font-size:clamp(30px,3.5vw,44px);line-height:1.04;max-width:800px;margin:11px 0 14px}
+.hero .subtitle{font-size:15px;max-width:840px}
+.hero .meta{margin-top:19px;gap:8px}
+.hero .meta span{font-size:10.5px;padding:6px 10px}
+.sec{font-size:12px;letter-spacing:.105em;margin:33px 2px 11px;padding:0 0 7px;border-bottom:1px solid #1e3249}
+.leadbox{margin-top:0;font-size:15.5px;line-height:1.7;padding:21px 24px;background:linear-gradient(115deg,#13314d,#101e32);border-radius:13px}
+.grid.four{gap:11px;margin-top:11px}
+.grid.four .snap{min-height:0;padding:17px 16px;box-shadow:none}
+.snap .label{font-size:9.5px}
+.snap strong{font-size:18px;line-height:1.24}
+.snap .muted{font-size:12px}
+.card.chartbox{padding:20px 23px}
+.charttitle{font-size:19px}
+.chartsub{font-size:12.3px;max-width:760px}
+.shocks{gap:11px}
+.shock{padding:16px}
+.shock p{font-size:12.7px;line-height:1.6}
+.stance-row{grid-template-columns:58px minmax(0,1fr) 230px;gap:13px;padding:9px 12px}
+.axis-labels{grid-template-columns:58px minmax(0,1fr) 230px;gap:13px;padding:0 12px}
+.country-intro{font-size:13.2px;margin-top:3px;max-width:760px}
+.cb-color-legend{margin:7px 0 10px}
+.country-jump{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 16px}
+.country-jump a{display:inline-flex;align-items:center;justify-content:center;min-width:58px;text-decoration:none;color:#d4eaff;font-weight:800;font-size:11px;letter-spacing:.07em;padding:8px 13px;border:1px solid #33516e;border-radius:9px;background:#10243a;transition:background .15s,border-color .15s}
+.country-jump a:hover,.country-jump a:focus-visible{background:#1b3b58;border-color:#80bdf1;outline:none}
+/* All eight full-width countries with an internal editorial hierarchy */
+.country{display:grid;grid-template-columns:minmax(0,1fr)!important;gap:20px}
+.country .cb-card{padding:0!important;border-radius:19px;overflow:hidden}
+.country .cb-card::before{width:250px;height:120px}
+.cb-header{padding:24px 27px 17px;border-bottom:1px solid #294057;position:relative}
+.cb-header .row{border:0!important;padding:0!important;align-items:center;gap:18px}
+.cb-header .row h2{font-size:24px}
+.cb-header .flagbadge{width:36px;height:36px;flex-basis:36px}
+.country .cb-card .state{font-size:10.5px;line-height:1.36;padding:7px 10px;max-width:360px;text-align:right}
+.country .cb-card .reading{font-size:18px;line-height:1.42;letter-spacing:-.015em;margin:16px 0 0;max-width:930px;font-weight:760}
+.cb-statstrip{padding:13px 27px 15px;background:#0b192a;border-bottom:1px solid #25394f}
+.country .cb-card .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:none;margin:0}
+.country .cb-card .facts div{padding:11px 13px;background:transparent;border:0;border-right:1px solid #2b445e;border-radius:0}
+.country .cb-card .facts div:last-child{border-right:0}
+.country .cb-card .facts small{font-size:10px;letter-spacing:.075em}
+.country .cb-card .facts strong{font-size:13.3px;margin-top:4px}
+.cb-content{display:grid;grid-template-columns:minmax(0, 0.91fr) minmax(0,1.35fr);gap:0;align-items:stretch}
+.cb-policy{padding:22px 25px 20px 27px;background:linear-gradient(180deg,#101e31,#0c1a2b);border-right:1px solid #2b4056;min-width:0}
+.cb-market{padding:20px 27px 22px;min-width:0}
+.country .cb-card .wantcan{display:grid;grid-template-columns:minmax(0,1fr)!important;gap:13px;margin:0;padding:0;border:0}
+.country .cb-card .wantcan>div{padding:15px 17px!important;border:1px solid #2d4861!important;border-left:3px solid #79bce7!important;border-radius:12px;background:#0b1d31}
+.country .cb-card .wantcan>div:last-child{border-left:3px solid #e9c68a!important;border-top:1px solid #2d4861!important;background:#1d201f}
+.country .cb-card .wantcan h3{font-size:12px!important;letter-spacing:.065em;margin-bottom:9px}
+.country .cb-card .wantcan p{font-size:13px;line-height:1.64;color:#e0eaf5}
+.country .cb-card .cbread{font-size:13.4px;line-height:1.65;border-radius:11px;padding:15px 17px;background:#102941}
+.country .cb-card .pairline{margin:12px 0 0;gap:0}
+.country .cb-card .pairline>div{font-size:13.1px;line-height:1.65;padding:11px 3px;border-bottom:1px solid #2a4057}
+.country .cb-card .pairline>div:first-child{padding-top:6px}
+.country .cb-card .pairline>div:last-child{background:linear-gradient(100deg,rgba(70,121,159,.16),transparent);border:1px solid #34526e;border-left:3px solid #8acaf6;border-radius:11px;padding:13px 15px;margin-top:9px;color:#edf5fd}
+.country .cb-card .pairline>div b{display:inline;color:#9dd5fa}
+.country .cb-card .pairline>div:last-child b{color:#cbe8ff}
+.cb-footer{background:#091727;border-top:1px solid #293e55;padding:16px 27px 18px}
+.country .cb-card .triggers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:0}
+.country .cb-card .triggers .trigger{padding:13px 15px;font-size:12.5px;line-height:1.59}
+.country .cb-card .triggers .trigger b{font-size:10.3px;margin-bottom:6px}
+.country .cb-card .sources{border-top:1px solid #243950;padding-top:12px;margin-top:14px;gap:8px}
+.country .cb-card .sources a{padding:5px 9px;font-size:10.5px}
+.audit-grid{gap:12px}.audit{padding:16px}.audit p{font-size:13px}
+.box3{gap:12px}.step{padding:17px}.step p{font-size:12.8px}
+.event{padding:16px 17px;grid-template-columns:145px minmax(0,1fr)}.event p{font-size:13px}
+.source-grid a{font-size:11.5px;padding:11px}
+@media(max-width:850px){
+ .wrap{padding:13px 12px 40px}
+ .country .cb-card{border-radius:16px}
+ .cb-content{grid-template-columns:1fr}
+ .cb-policy{border-right:0;border-bottom:1px solid #2b4056;padding:17px 20px}
+ .cb-market{padding:19px 20px}
+ .country .cb-card .wantcan{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .country .cb-card .wantcan>div:last-child{border-top:1px solid #2d4861!important}
+ .cb-header{padding:22px 20px 18px}
+ .cb-statstrip,.cb-footer{padding-left:20px;padding-right:20px}
+ .stance-row,.axis-labels{grid-template-columns:52px minmax(0,1fr) 160px}
+}
+@media(max-width:600px){
+ .wrap{padding:9px 9px 34px}
+ .hero{padding:23px 19px;border-radius:18px}
+ .hero .subtitle{font-size:14px}
+ .hero .tagline{font-size:12px}
+ .hero .meta span{font-size:9.8px}
+ .sec{margin-top:26px;font-size:10.5px;letter-spacing:.09em}
+ .leadbox{font-size:14px;line-height:1.65;padding:17px 18px}
+ .grid.four{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .grid.four .snap{padding:13px 12px}
+ .snap strong{font-size:15px}
+ .snap .muted{font-size:11.5px}
+ .card.chartbox{padding:16px 13px}
+ .shocks{grid-template-columns:1fr}
+ .shock{padding:12px 14px}
+ .stance-row{grid-template-columns:41px minmax(0,1fr) 104px;gap:6px;padding:9px 7px}
+ .axis-labels{grid-template-columns:41px minmax(0,1fr) 104px;gap:6px;padding:0 7px;font-size:9px}
+ .stance-label{font-size:9.5px;line-height:1.3}
+ .country-jump{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+ .country-jump a{min-width:0;padding:9px 5px}
+ .country{gap:12px}
+ .cb-header{padding:18px 15px 16px}
+ .cb-header .row{flex-direction:row;align-items:center;flex-wrap:wrap;gap:10px}
+ .cb-header .row h2{font-size:21px}
+ .country .cb-card .state{max-width:none;text-align:left;font-size:9.4px;padding:5px 8px}
+ .country .cb-card .reading{font-size:16.4px;line-height:1.48;margin-top:13px}
+ .cb-statstrip{padding:9px 14px 10px}
+ .country .cb-card .facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+ .country .cb-card .facts div{padding:9px 11px;border:0;border-bottom:1px solid #243e53}
+ .country .cb-card .facts div:nth-child(odd){border-right:1px solid #243e53}
+ .country .cb-card .facts div:last-child{border-bottom:0}
+ .cb-policy{padding:15px 14px}
+ .country .cb-card .wantcan{grid-template-columns:1fr!important;gap:10px}
+ .country .cb-card .wantcan>div{padding:13px 14px!important}
+ .country .cb-card .wantcan h3{font-size:11px!important;margin-bottom:6px}
+ .country .cb-card .wantcan p{font-size:12.8px}
+ .cb-market{padding:15px 14px}
+ .country .cb-card .cbread{font-size:12.8px;padding:13px 14px}
+ .country .cb-card .pairline>div{font-size:12.6px;padding:11px 2px}
+ .country .cb-card .pairline>div:last-child{padding:12px 13px}
+ .cb-footer{padding:13px 14px 15px}
+ .country .cb-card .triggers{grid-template-columns:1fr;gap:8px}
+ .country .cb-card .triggers .trigger{padding:11px 12px;font-size:12px}
+ .country .cb-card .sources a{font-size:10px}
+ .event{grid-template-columns:1fr;gap:6px}
+ .audit-grid{grid-template-columns:1fr}
+ .box3{grid-template-columns:1fr}
+ .source-grid{grid-template-columns:1fr}
+}
+@media(max-width:360px){.grid.four{grid-template-columns:1fr}.country-jump{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media print{body{background:#fff;color:#111}.country .cb-card{break-inside:avoid}.cb-header,.cb-statstrip,.cb-policy,.cb-market,.cb-footer{background:transparent!important}}
+</style></head><body><main class="wrap">
+<header class="hero"><div class="eyebrow">GLOBAL MACRO FX QUANT · WEEKLY CENTRAL BANK RESEARCH</div><h1>Central Bank Sentiment<br/>WANT / CAN · G8</h1><p class="subtitle">Le banche centrali non si muovono tutte nella stessa direzione. Il punto è capire <b>cosa vogliono, cosa possono fare e se il Forex lo sta già prezzando.</b></p><div class="meta"><span>Settimana 9–13 novembre 2026</span><span>8 banche · 8 valute</span><span>WANT → CAN → PRICING → FX</span><span>DARK RESEARCH DESK · edizione V6 · layout editoriale</span></div><p class="tagline">Aggiornato alla chiusura di venerdì 13 novembre. <b>WANT/CAN è una lettura del desk</b>, non un’etichetta ufficiale delle banche centrali.</p></header>
+<div class="sec">01 · La settimana in 45 secondi</div>
+<section class="leadbox"><b>La conclusione:</b> questa settimana non sono state le nuove decisioni sui tassi a cambiare il quadro, ma <b>le aspettative sul prossimo passo</b>. Il CPI americano sopra le attese e le parole di Waller hanno riportato la Fed al centro: il Treasury USA a 2 anni è salito di 37 punti base e il dollaro si è rafforzato. In Canada, la BoC ha spiegato perché teme che l’energia contagi altri prezzi, pur con un lavoro fragile. In Giappone emergono voci favorevoli a nuovi rialzi, ma lo yen resta debole. <b>La lezione: una banca può voler stringere, senza riuscire a rendere forte la propria valuta.</b></section>
+<div class="grid four">
+<div class="snap good"><div class="k">CAMBIO DI REGIME · FED</div><div class="v">2Y USA +37 pb</div><div class="s">Dopo il CPI, il mercato torna a considerare una stretta Fed più vicina.</div></div>
+<div class="snap warn"><div class="k">NUOVA EVIDENZA · BOC</div><div class="v">Inflazione vs lavoro</div><div class="s">La banca teme la diffusione dei rincari, ma ammette prudenza sul sentiero.</div></div>
+<div class="snap info"><div class="k">VOCI PIÙ ATTIVE · BOJ</div><div class="v">Hike possibile</div><div class="s">Le opinioni pubblicate il 10/11 sono più aperte alla normalizzazione; yen debole.</div></div>
+<div class="snap bad"><div class="k">PREZZO NON CONFERMA · CHF</div><div class="v">CHF −2,33% vs USD</div><div class="s">Da rifugio della settimana prima a valuta G8 più debole al fixing BCE.</div></div>
+</div>
+<div class="sec">02 · Mappa stance e test del mercato</div>
+<section class="card chartbox"><h2 class="charttitle">Che postura hanno oggi le otto banche?</h2><p class="chartsub">Mappa <b>qualitativa del desk</b>, senza percentuali inventate. La posizione della banca non misura la probabilità di un rialzo, e non è un segnale FX.</p>
+<div class="axis-labels"><div></div><div><span>Dovish</span><span>Mista</span><span>Hawkish</span></div><div></div></div><div class="stancemap"><div class="stance-row"><div class="stance-id">Fed</div><div class="stance-bins"><span class=""></span><span class=""></span><span class="active-h"></span></div><div class="stance-label">Più restrittiva sul margine · CPI e Waller</div></div><div class="stance-row"><div class="stance-id">BCE</div><div class="stance-bins"><span class=""></span><span class="active-m"></span><span class=""></span></div><div class="stance-label">Prudente · energia contro crescita</div></div><div class="stance-row"><div class="stance-id">BoE</div><div class="stance-bins"><span class=""></span><span class=""></span><span class="active-h"></span></div><div class="stance-label">Restrittiva · PIL più forte, test salari</div></div><div class="stance-row"><div class="stance-id">BoJ</div><div class="stance-bins"><span class=""></span><span class="active-m"></span><span class=""></span></div><div class="stance-label">Normalizzazione · divisa sul ritmo</div></div><div class="stance-row"><div class="stance-id">BoC</div><div class="stance-bins"><span class=""></span><span class=""></span><span class="active-h"></span></div><div class="stance-label">Inflazione più persistente · lavoro fragile</div></div><div class="stance-row"><div class="stance-id">RBA</div><div class="stance-bins"><span class=""></span><span class=""></span><span class="active-h"></span></div><div class="stance-label">Hawkish · inflazione diffusa, domanda a rischio</div></div><div class="stance-row"><div class="stance-id">RBNZ</div><div class="stance-bins"><span class=""></span><span class="active-m"></span><span class=""></span></div><div class="stance-label">Tassi fermi · disoccupazione pesa</div></div><div class="stance-row"><div class="stance-id">SNB</div><div class="stance-bins"><span class=""></span><span class="active-m"></span><span class=""></span></div><div class="stance-label">Tasso a zero · cambio ora più debole</div></div></div>
+<p class="chart-foot"><b>Come leggerla.</b> Fed e BoE appaiono più restrittive nella prospettiva, non perché abbiano alzato i tassi questa settimana. BoC e RBA devono frenare un’inflazione che può durare; BoJ vorrebbe normalizzare, ma lo yen non segue. Questa mappa è una sintesi qualitativa, non una stima di probabilità.</p></section>
+<section class="card chartbox"><h2 class="charttitle">Quattro prove che separano policy e cambio</h2><p class="chartsub">Non è una classifica di banche centrali: sono i casi nei quali decisione, vincoli e FX non coincidono.</p>
+<div class="shocks">
+<div class="shock"><div class="upper">FED · CPI 10 NOV</div><strong>2Y +37 pb</strong><p>CPI core +0,3% mensile; la componente generale +0,4%. La sorpresa cambia le attese sui tassi.</p><p class="lesson">Dollaro forte: qui macro, rendimenti e cambio sono più coerenti.</p></div>
+<div class="shock"><div class="upper">BOC · 10 NOV · DELIBERAZIONI</div><strong>Il rischio si è spostato</strong><p>I membri temono un’inflazione da energia sempre più diffusa ai prezzi finali.</p><p class="lesson">Un altro rialzo non è automatico: il lavoro debole è il limite del CAN.</p></div>
+<div class="shock"><div class="upper">BOJ · 10 NOV · OPINIONI</div><strong>Normalizzazione aperta</strong><p>Alcuni membri vogliono ulteriori rialzi; altri chiedono tempo per vedere gli effetti.</p><p class="lesson">JPY ancora fragile perché il vantaggio dei rendimenti USA resta elevato.</p></div>
+<div class="shock"><div class="upper">SNB · PREZZO FX</div><strong>CHF −2,33% vs USD</strong><p>Nessuna nuova decisione SNB: è cambiato soprattutto il contesto esterno.</p><p class="lesson">Il vecchio racconto “franco rifugio” non spiega da solo questa settimana.</p></div>
+</div>
+<p class="chart-foot"><b>Prezzi:</b> confronto 6→13 novembre sui fixing BCE (circa 14:10 CET). <b>Tassi USA:</b> Treasury CMT, non curva OIS. Fonti: Fed, BoC, BoJ, BCE e Treasury; non trattiamo una reazione coerente come prova di causalità esclusiva.</p></section>
+<div class="sec">03 · Country book · WANT / CAN · 8 banche centrali</div><p class="country-intro">Leggi prima il verdetto, poi obiettivo e vincoli. Il punto finale è sempre operativo: <b>che cosa dovrebbe succedere per cambiare giudizio?</b></p><div aria-label="Legenda dei colori, indica il tono della policy e non un segnale operativo FX" class="cb-color-legend"><span class="h"><i></i>Restrittiva</span><span class="m"><i></i>Segnali misti</span><span class="r"><i></i>Vincoli in aumento</span><span class="n"><i></i>Neutrale</span></div>
+<nav aria-label="Vai alle banche centrali" class="country-jump"><a href="#cb-usd">USD</a><a href="#cb-eur">EUR</a><a href="#cb-gbp">GBP</a><a href="#cb-jpy">JPY</a><a href="#cb-cad">CAD</a><a href="#cb-aud">AUD</a><a href="#cb-nzd">NZD</a><a href="#cb-chf">CHF</a></nav><div class="country"><section class="card cb-card hawk" id="cb-usd">
+
+
+
+
+
+
+
+
+<div class="cb-header"><div class="row"><h2 class="flagtitle"><span class="flagbadge us"></span><span>USD</span></h2><span class="state">REPRICING HAWKISH · USD CONFERMA</span></div><p class="reading">La Fed non ha alzato questa settimana, ma il mercato ora teme una stretta più forte.</p></div><div class="cb-statstrip"><div class="facts"><div><small>Tasso ufficiale</small><strong>3,75–4,00%</strong></div><div><small>Ultima decisione</small><strong>28 ott · invariato</strong></div><div><small>Prossimo meeting</small><strong>8–9 dic</strong></div></div></div><div class="cb-content"><div class="cb-policy"><div class="wantcan"><div><h3>WANT · obiettivo</h3><p>Rallentare l’inflazione, soprattutto quando passa dai costi energetici a beni e servizi, senza aspettare che si consolidi.</p></div><div><h3>CAN · margine d’azione</h3><p>Con lavoro e crescita ancora resistenti, può tenere i tassi alti o stringere. Waller ha sostenuto un rialzo a dicembre e, in certe condizioni, la discussione di 50 pb: è la sua posizione, non una decisione FOMC.</p></div></div></div><div class="cb-market"><div class="cbread"><b>Cosa è cambiato davvero.</b> Il CPI di ottobre pubblicato martedì mostra +0,4% mensile e un core a +0,3%. È il passaggio che ha risvegliato le attese di nuovi rialzi: il Treasury 2Y è salito da 4,51% a 4,88% in una settimana.</div><div class="pairline"><div><b>Che cosa sta prezzando il mercato.</b> Il forte rialzo del 2Y segnala repricing del percorso a breve; senza una curva OIS uniforme non trasformiamo questo movimento in probabilità esatte per dicembre.</div><div><b>Il prezzo FX conferma?</b> Il fixing BCE mostra USD più forte di tutte le altre valute G8. Anche il CHF cede molto: non è un semplice movimento “risk-off”.</div><div><b>Giudizio del desk.</b> WANT più restrittivo e CAN ancora credibile. <b>Tesi USD più solida</b>, ma dopo un rialzo veloce dei rendimenti il punto d’ingresso può essere meno interessante.</div></div></div></div><div class="cb-footer"><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>Vendite USA e verbali Fed mantengono i tassi a breve sostenuti; USD regge anche fuori dai cross ciclici.</div><div class="trigger"><b>INDEBOLIREBBE</b>Consumi deludenti, 2Y che ridiscende e USD che non mantiene il recupero.</div></div><div class="sources"><a href="https://www.federalreserve.gov/newsevents/speech/waller20261110a.htm" rel="noopener noreferrer" target="_blank">Fed · Waller 10/11</a><a href="https://www.bls.gov/news.release/cpi.htm" rel="noopener noreferrer" target="_blank">BLS · CPI 10/11</a><a href="https://www.federalreserve.gov/releases/H15/" rel="noopener noreferrer" target="_blank">Fed H.15</a></div></div></section><section class="card cb-card neutral" id="cb-eur">
+
+
+
+
+
+
+
+
+<div class="cb-header"><div class="row"><h2 class="flagtitle"><span class="flagbadge eu"></span><span>EUR</span></h2><span class="state">BCE CAUTA · EURO NON GUIDA</span></div><p class="reading">La BCE deve scegliere tra inflazione da energia e una domanda che rischia di perdere forza.</p></div><div class="cb-statstrip"><div class="facts"><div><small>Tasso ufficiale</small><strong>2,50% deposito</strong></div><div><small>Ultima decisione</small><strong>29 ott · invariato</strong></div><div><small>Prossimo meeting</small><strong>17 dic</strong></div></div></div><div class="cb-content"><div class="cb-policy"><div class="wantcan"><div><h3>WANT · obiettivo</h3><p>Evitare che energia e importazioni più care si trasmettano stabilmente a salari e servizi.</p></div><div><h3>CAN · margine d’azione</h3><p>Può aspettare per capire se lo shock resta temporaneo. Il credito più caro e l’attività debole rendono costoso alzare troppo in fretta.</p></div></div></div><div class="cb-market"><div class="cbread"><b>Cosa è cambiato davvero.</b> Non c’è una nuova decisione BCE questa settimana. Il quadro resta quello annunciato il 29 ottobre: rischi di inflazione in aumento, ma anche crescita esposta all’energia e al costo del denaro.</div><div class="pairline"><div><b>Che cosa sta prezzando il mercato.</b> Il dollaro ha recuperato con il 2Y USA; per attribuire debolezza strutturale all’euro serve anche un movimento confermato nei differenziali 2Y USA–Germania.</div><div><b>Il prezzo FX conferma?</b> EUR perde circa l’1% contro USD al fixing BCE. La direzione è coerente con una Fed più restrittiva, non prova da sola che la BCE sia diventata dovish.</div><div><b>Giudizio del desk.</b> WANT attento ai prezzi, CAN vincolato dalla crescita. <b>EUR senza guida autonoma chiara</b>; più utile misurarlo contro GBP e CHF.</div></div></div></div><div class="cb-footer"><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>Inflazione core e salari restano persistenti e il front-end euro tiene rispetto agli USA.</div><div class="trigger"><b>INDEBOLIREBBE</b>Dati della domanda peggiorano e EUR perde anche nei cross non USD.</div></div><div class="sources"><a href="https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html" rel="noopener noreferrer" target="_blank">BCE · 29/10</a><a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html" rel="noopener noreferrer" target="_blank">BCE · fixing</a></div></div></section><section class="card cb-card hawk" id="cb-gbp">
+
+
+
+
+
+
+
+
+<div class="cb-header"><div class="row"><h2 class="flagtitle"><span class="flagbadge gb"></span><span>GBP</span></h2><span class="state">BOE RESTRITTIVA · PIL AIUTA IL CAN</span></div><p class="reading">Dopo il rialzo BoE, la crescita sorprende per tenuta: ora il test è se il lavoro regge.</p></div><div class="cb-statstrip"><div class="facts"><div><small>Tasso ufficiale</small><strong>4,00%</strong></div><div><small>Ultima decisione</small><strong>5 nov · +25 pb</strong></div><div><small>Prossimo meeting</small><strong>17 dic</strong></div></div></div><div class="cb-content"><div class="cb-policy"><div class="wantcan"><div><h3>WANT · obiettivo</h3><p>Frenare gli effetti duraturi dell’energia sull’inflazione e prevenire nuovi aumenti dei salari incompatibili con il 2%.</p></div><div><h3>CAN · margine d’azione</h3><p>Il PIL UK del terzo trimestre è salito dello 0,7% dopo +0,5%: la domanda dà alla BoE più spazio di quanto si temesse. Ma salari, lavoro e gilt lunghi rimangono il vincolo.</p></div></div></div><div class="cb-market"><div class="cbread"><b>Cosa è cambiato davvero.</b> La BoE non ha cambiato i tassi questa settimana. Il dato ONS del 12 novembre descrive però un’economia più resistente, soprattutto grazie ai servizi. La vera prova arriverà da occupazione e inflazione.</div><div class="pairline"><div><b>Che cosa sta prezzando il mercato.</b> La BoE resta restrittiva dopo il rialzo a 4% con voto 8–1. Non sappiamo quanto del PIL fosse già prezzato nei contratti SONIA senza uno snapshot comparabile.</div><div><b>Il prezzo FX conferma?</b> GBP perde terreno contro USD, ma questo non smentisce da solo la BoE: il dollaro ha avuto un impulso più forte. EUR/GBP è un confronto più informativo.</div><div><b>Giudizio del desk.</b> WANT restrittivo; il CAN migliora grazie alla crescita, ma è <b>subordinato a lavoro e salari</b>. Non compro GBP solo perché Bank Rate è alto.</div></div></div></div><div class="cb-footer"><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>Lavoro e CPI UK tengono il front-end e GBP mostra forza anche contro EUR.</div><div class="trigger"><b>INDEBOLIREBBE</b>Lavoro peggiora o rialzo gilt lungo diventa stress, con GBP che non risponde.</div></div><div class="sources"><a href="https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/november-2026/" rel="noopener noreferrer" target="_blank">BoE · decisione 5/11</a><a href="https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/latest" rel="noopener noreferrer" target="_blank">ONS · PIL Q3</a></div></div></section><section class="card cb-card neutral" id="cb-jpy">
+
+
+
+
+
+
+
+
+<div class="cb-header"><div class="row"><h2 class="flagtitle"><span class="flagbadge jp"></span><span>JPY</span></h2><span class="state">BOJ PIÙ APERTA · YEN ANCORA DEBOLE</span></div><p class="reading">Le opinioni interne sono più favorevoli ai rialzi, ma i tassi USA impediscono allo yen di recuperare.</p></div><div class="cb-statstrip"><div class="facts"><div><small>Tasso ufficiale</small><strong>1,25%</strong></div><div><small>Ultima decisione</small><strong>30 ott · invariato</strong></div><div><small>Prossimo meeting</small><strong>17–18 dic</strong></div></div></div><div class="cb-content"><div class="cb-policy"><div class="wantcan"><div><h3>WANT · obiettivo</h3><p>Stabilizzare l’inflazione vicino al 2% con salari e prezzi che crescano insieme, riducendo gradualmente lo stimolo.</p></div><div><h3>CAN · margine d’azione</h3><p>Il comitato discute tempi diversi: alcuni membri vorrebbero accelerare, altri temono che i rialzi già fatti frenino domanda e investimenti. Non c’è una decisione di rialzo a novembre.</p></div></div></div><div class="cb-market"><div class="cbread"><b>Cosa è cambiato davvero.</b> Il 10 novembre è uscita la sintesi delle opinioni della riunione 29–30 ottobre. La disponibilità a nuovi rialzi è più visibile, ma non equivale a un impegno della maggioranza.</div><div class="pairline"><div><b>Che cosa sta prezzando il mercato.</b> Il vero nodo è il differenziale: con i Treasury USA a 2 anni in netto rialzo, la normalizzazione giapponese è relativa e non basta da sola per invertire USD/JPY.</div><div><b>Il prezzo FX conferma?</b> Al fixing BCE del 13 novembre USD/JPY è vicino a 160. Non è una conferma di forza JPY; cresce anche il rischio di avvertimenti o interventi valutari, non attribuibili alla BoJ.</div><div><b>Giudizio del desk.</b> WANT più favorevole a normalizzare, CAN da verificare su consumi e prezzi. <b>JPY interessante come rischio di inversione, non ancora come trend confermato.</b></div></div></div></div><div class="cb-footer"><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>Inflazione/lavoro giapponesi tengono, spread USA–Giappone si riduce e USD/JPY cede.</div><div class="trigger"><b>INDEBOLIREBBE</b>Treasury USA ancora in salita e JPY sotto pressione anche nei cross.</div></div><div class="sources"><a href="https://www.boj.or.jp/en/mopo/mpmsche_minu/opinion_2026/opi261030.pdf" rel="noopener noreferrer" target="_blank">BoJ · opinioni 10/11</a><a href="https://www.boj.or.jp/en/" rel="noopener noreferrer" target="_blank">BoJ · homepage</a></div></div></section><section class="card cb-card hawk" id="cb-cad">
+
+
+
+
+
+
+
+
+<div class="cb-header"><div class="row"><h2 class="flagtitle"><span class="flagbadge ca"></span><span>CAD</span></h2><span class="state">BOC TEME IL CONTAGIO DEI COSTI</span></div><p class="reading">La BoC è più preoccupata per l’inflazione diffusa, ma sa che il lavoro non è forte.</p></div><div class="cb-statstrip"><div class="facts"><div><small>Tasso ufficiale</small><strong>2,50%</strong></div><div><small>Ultima decisione</small><strong>28 ott · +25 pb</strong></div><div><small>Prossimo meeting</small><strong>9 dic</strong></div></div></div><div class="cb-content"><div class="cb-policy"><div class="wantcan"><div><h3>WANT · obiettivo</h3><p>Impedire che il caro-energia diventi una crescita persistente dei prezzi di molti beni e servizi.</p></div><div><h3>CAN · margine d’azione</h3><p>Le deliberazioni mostrano due opzioni reali: fermarsi al 2,25% o salire al 2,50%. Si è scelto il rialzo perché i rischi sui prezzi sono aumentati, ma si procederà riunione per riunione.</p></div></div></div><div class="cb-market"><div class="cbread"><b>Cosa è cambiato davvero.</b> Il 10 novembre la sintesi della BoC ha spiegato meglio il dilemma: costi delle imprese in rialzo, inflazione core ancora circa al 2%, disoccupazione elevata e domanda domestica fragile.</div><div class="pairline"><div><b>Che cosa sta prezzando il mercato.</b> Non basta un tono hawkish per ipotizzare altri rialzi consecutivi. Occorre vedere se l’inflazione canadese cambia davvero le attese BoC rispetto alla Fed.</div><div><b>Il prezzo FX conferma?</b> CAD perde circa l’1,35% contro USD al fixing. Il dollaro si rafforza più di quanto il nuovo tono BoC riesca a sostenere CAD.</div><div><b>Giudizio del desk.</b> WANT più sensibile all’inflazione, CAN limitato dal ciclo. <b>CAD non è automaticamente debole</b>, ma la tesi long richiede nuove conferme.</div></div></div></div><div class="cb-footer"><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>CPI canadese più persistente, differenziale Canada–USA migliora e CAD reagisce.</div><div class="trigger"><b>INDEBOLIREBBE</b>Inflazione si raffredda, lavoro deteriora e USD/CAD resta sostenuto.</div></div><div class="sources"><a href="https://www.bankofcanada.ca/2026/11/summary-of-governing-council-deliberations-fixed-announcement-date-of-october-28-2026/" rel="noopener noreferrer" target="_blank">BoC · deliberazioni 10/11</a><a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html" rel="noopener noreferrer" target="_blank">BCE · fixing</a></div></div></section><section class="card cb-card hawk" id="cb-aud">
+
+
+
+
+
+
+
+
+<div class="cb-header"><div class="row"><h2 class="flagtitle"><span class="flagbadge au"></span><span>AUD</span></h2><span class="state">RBA HAWKISH · IL PREZZO FRENA</span></div><p class="reading">La RBA vuole restare dura sull’inflazione, ma l’economia domestica può pagarne il prezzo.</p></div><div class="cb-statstrip"><div class="facts"><div><small>Tasso ufficiale</small><strong>4,85%</strong></div><div><small>Ultima decisione</small><strong>3 nov · +25 pb</strong></div><div><small>Prossimo meeting</small><strong>8 dic</strong></div></div></div><div class="cb-content"><div class="cb-policy"><div class="wantcan"><div><h3>WANT · obiettivo</h3><p>Riportare l’inflazione verso il 2–3%, impedendo che rincari diffusi diventino aspettative durature.</p></div><div><h3>CAN · margine d’azione</h3><p>Può mantenere o irrigidire la politica, ma il suo stesso outlook prevede consumi e investimenti più deboli e un mercato del lavoro destinato a raffreddarsi.</p></div></div></div><div class="cb-market"><div class="cbread"><b>Cosa è cambiato davvero.</b> Non c’è un nuovo rialzo questa settimana. Resta valida la decisione del 3 novembre, presa 6–3, e il quadro RBA di inflazione persistente fino al 2027. I verbali in arrivo possono chiarire quanto fosse davvero aperta l’alternativa di non alzare.</div><div class="pairline"><div><b>Che cosa sta prezzando il mercato.</b> Il livello del cash rate è alto, ma la domanda decisiva è se le attese sui prossimi mesi continuano a salire rispetto a NZD, CAD e USD.</div><div><b>Il prezzo FX conferma?</b> AUD cede circa l’1,24% contro USD nel fixing settimanale. Meglio della settimana precedente, ma non dimostra ancora leadership valutaria.</div><div><b>Giudizio del desk.</b> WANT chiaramente restrittivo; CAN più fragile sulla crescita. <b>RBA hawkish ≠ AUD da comprare subito.</b></div></div></div></div><div class="cb-footer"><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>Verbali e salari confermano pressioni inflazionistiche e AUD recupera nei cross.</div><div class="trigger"><b>INDEBOLIREBBE</b>Disoccupazione peggiora o AUD non reagisce anche a tassi attesi più alti.</div></div><div class="sources"><a href="https://www.rba.gov.au/media-releases/2026/mr-26-30.html" rel="noopener noreferrer" target="_blank">RBA · decisione 3/11</a><a href="https://www.rba.gov.au/publications/smp/2026/nov/outlook.html" rel="noopener noreferrer" target="_blank">RBA · outlook 2026</a></div></div></section><section class="card cb-card risk" id="cb-nzd">
+
+
+
+
+
+
+
+
+<div class="cb-header"><div class="row"><h2 class="flagtitle"><span class="flagbadge nz"></span><span>NZD</span></h2><span class="state">RBNZ IN ATTESA · NZD REGGE RELATIVAMENTE</span></div><p class="reading">Il lavoro continua a limitare la RBNZ, ma il kiwi ha resistito più delle altre valute contro USD.</p></div><div class="cb-statstrip"><div class="facts"><div><small>Tasso ufficiale</small><strong>2,75%</strong></div><div><small>Ultima decisione</small><strong>28 ott · invariato</strong></div><div><small>Prossimo meeting</small><strong>9 dic</strong></div></div></div><div class="cb-content"><div class="cb-policy"><div class="wantcan"><div><h3>WANT · obiettivo</h3><p>Impedire che il caro-carburante e le sue ricadute spingano a lungo l’inflazione oltre l’obiettivo.</p></div><div><h3>CAN · margine d’azione</h3><p>Può restare ferma per valutare i dati: la disoccupazione al 5,7% e una ripresa irregolare rendono rischioso aumentare i tassi troppo rapidamente.</p></div></div></div><div class="cb-market"><div class="cbread"><b>Cosa è cambiato davvero.</b> Nessuna nuova decisione RBNZ. Restano il tasso al 2,75% e il dato sul lavoro del 4 novembre. La vera novità della settimana è il comportamento relativo del cambio, non una nuova dichiarazione della banca.</div><div class="pairline"><div><b>Che cosa sta prezzando il mercato.</b> Mancano OIS RBNZ omogenei e verificati al 13 novembre: non scambiamo la forza FX relativa per un nuovo ciclo di rialzi già scontato.</div><div><b>Il prezzo FX conferma?</b> Nel ranking settimanale dei fixing BCE NZD è la seconda valuta dopo USD, pur perdendo circa 0,2% contro il dollaro. La sua resilienza merita un test sui cross NZD/AUD.</div><div><b>Giudizio del desk.</b> WANT prudente sull’inflazione, CAN limitato dalla debolezza occupazionale. <b>NZD più interessante sul prezzo che sulla macro</b>, per ora.</div></div></div></div><div class="cb-footer"><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>Le attese RBNZ salgono davvero e NZD mantiene forza relativa anche quando USD rallenta.</div><div class="trigger"><b>INDEBOLIREBBE</b>Nuovi dati deboli e NZD che perde anche contro AUD/CAD.</div></div><div class="sources"><a href="https://www.rbnz.govt.nz/monetary-policy/about-monetary-policy/the-official-cash-rate" rel="noopener noreferrer" target="_blank">RBNZ · OCR 28/10</a><a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html" rel="noopener noreferrer" target="_blank">BCE · fixing</a></div></div></section><section class="card cb-card neutral" id="cb-chf">
+
+
+
+
+
+
+
+
+<div class="cb-header"><div class="row"><h2 class="flagtitle"><span class="flagbadge ch"></span><span>CHF</span></h2><span class="state">SNB FERMA · CAMBIO CAMBIA DIREZIONE</span></div><p class="reading">La SNB non si è mossa; è cambiata la domanda di franco rispetto alla settimana precedente.</p></div><div class="cb-statstrip"><div class="facts"><div><small>Tasso ufficiale</small><strong>0,00%</strong></div><div><small>Ultima decisione</small><strong>24 set · invariato</strong></div><div><small>Prossimo meeting</small><strong>10 dic</strong></div></div></div><div class="cb-content"><div class="cb-policy"><div class="wantcan"><div><h3>WANT · obiettivo</h3><p>Preservare la stabilità dei prezzi senza irrigidire inutilmente le condizioni monetarie. La SNB resta pronta a intervenire sui cambi, se necessario.</p></div><div><h3>CAN · margine d’azione</h3><p>Con inflazione contenuta e un’economia esposta all’estero, può mantenere tassi bassi. Non c’è bisogno di attribuirle un rialzo imminente senza nuovi segnali.</p></div></div></div><div class="cb-market"><div class="cbread"><b>Cosa è cambiato davvero.</b> Non è uscita una nuova decisione SNB. Il confronto cambia per il mercato: il CHF passa dalla migliore valuta G8 della settimana precedente alla peggiore contro USD tra 6 e 13 novembre.</div><div class="pairline"><div><b>Che cosa sta prezzando il mercato.</b> Non è una revisione del tasso SNB a spiegare l’intero movimento: la risalita dei rendimenti USA e un minore bisogno di difesa sono ipotesi da confrontare con prezzi e volatilità.</div><div><b>Il prezzo FX conferma?</b> CHF cede circa il 2,33% contro USD. Un franco debole non significa automaticamente SNB più dovish.</div><div><b>Giudizio del desk.</b> WANT stabile, CAN stabile; è il <b>regime esterno a essere cambiato</b>. Preferire EUR/CHF e USD/CHF per distinguere rischio e differenziale tassi.</div></div></div></div><div class="cb-footer"><div class="triggers"><div class="trigger"><b>CONFERMEREBBE</b>Rischio globale torna a salire e CHF recupera nei cross, senza una svolta SNB.</div><div class="trigger"><b>INDEBOLIREBBE</b>EUR/CHF e USD/CHF continuano a favorire il franco debole senza tensioni finanziarie.</div></div><div class="sources"><a href="https://www.snb.ch/en/publications/communication/press-releases-restricted/pre_20260924" rel="noopener noreferrer" target="_blank">SNB · decisione 24/9</a><a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html" rel="noopener noreferrer" target="_blank">BCE · fixing</a></div></div></section></div>
+<div class="sec">04 · Audit · cosa si è verificato e cosa no</div>
+<section class="card"><h2>Le ipotesi della settimana precedente sotto esame</h2><div class="audit-grid">
+<div class="audit"><div class="lead">Fed · 6/11 → 13/11</div><h3>Il 2Y ha invertito la rotta</h3><p>Settimana scorsa il Treasury 2Y era sceso di 5 pb nonostante payroll solidi. Questa settimana <b>CPI + discorso Waller</b> hanno coinciso con +37 pb e USD forte. Il cambio di pricing è osservato; non attribuiamo tutto il movimento a una singola causa.</p></div>
+<div class="audit"><div class="lead">CHF · da rifugio a debole</div><h3>Il regime cambia, non la SNB</h3><p>Il CHF era la valuta più forte contro USD la settimana precedente. Ora è la più debole. <b>La tesi difensiva non è universale</b>: per riprenderla serve un ritorno di stress e conferma su EUR/CHF.</p></div>
+<div class="audit"><div class="lead">BoE · rialzo 5/11</div><h3>La crescita sostiene il CAN</h3><p>Il rialzo al 4% è un fatto già noto. Il PIL Q3 a +0,7% aggiunge un sostegno, ma <b>non è una prova che GBP debba salire</b>: il dollaro ha avuto un driver monetario più potente.</p></div>
+<div class="audit"><div class="lead">RBNZ / BoC · vincoli</div><h3>Non ridurre tutto ai posti di lavoro</h3><p>Il lavoro continua a frenare la stretta, ma per la BoC il rischio di contagio inflazionistico è aumentato. NZD intanto tiene sul prezzo. <b>WANT, CAN e FX possono raccontare cose diverse.</b></p></div>
+</div></section>
+<div class="sec">05 · Il nostro filtro: WANT ≠ CAN ≠ PRICING</div>
+<section class="card"><h2>Come interpretare correttamente un messaggio hawkish</h2><div class="box3">
+<div class="step"><div class="n">01 · WANT</div><h3>Qual è il problema?</h3><p>Inflazione core, salari, energia, aspettative, mercato del lavoro. Identificare il <b>focus dominante</b> della banca.</p></div>
+<div class="step"><div class="n">02 · CAN</div><h3>Quanto può fare?</h3><p>Crescita, disoccupazione, credito e stabilità finanziaria dicono se può alzare subito, attendere o fermarsi.</p></div>
+<div class="step"><div class="n">03 · PRICING &amp; FX</div><h3>Che cosa era già atteso?</h3><p>Guardare OIS/futures e differenziali, quindi la risposta del cambio. <b>La decisione attesa non è la sorpresa.</b></p></div>
+</div><p class="chart-foot"><b>Esempio Fed:</b> WANT più restrittivo dopo il CPI; CAN sostenuto dall’economia; il 2Y sale e USD segue. <b>Esempio BoJ:</b> WANT di normalizzazione più visibile, ma i rendimenti USA salgono di più e JPY non segue. Questa differenza è il motivo per cui non trasformiamo un tono hawkish in un trade automatico.</p></section>
+<div class="sec">06 · Settimana 16–20 novembre: i test importanti</div>
+<section class="card"><h2>Quattro verifiche che possono cambiare il nostro giudizio</h2>
+<div class="event"><div class="when">LUN 16 NOV<br/>14:30 CET</div><div><h3>Canada · CPI ottobre</h3><p>È il dato che può mettere alla prova la prudenza BoC dopo le nuove deliberazioni.</p><p class="test"><b>Test:</b> inflazione persistente → front-end CAD relativo a USD → USD/CAD. Il solo headline non è sufficiente.</p></div></div>
+<div class="event"><div class="when">MAR 17 NOV<br/>01:30 CET</div><div><h3>Australia · verbali RBA</h3><p>Capire se il voto 6–3 segnala una banca divisa o una stretta ancora credibile. Nello stesso giorno escono lavoro UK e vendite USA.</p><p class="test"><b>Test:</b> sorprese su aspettative RBA/BoE/Fed, poi AUD, GBP e USD. Non equiparare i tre eventi.</p></div></div>
+<div class="event"><div class="when">MER 18 NOV<br/>08:00 CET</div><div><h3>Regno Unito · CPI ottobre</h3><p>Dopo PIL +0,7% e Bank Rate al 4%, il dato ci dirà quanto l’inflazione resta diffusa. In serata arrivano i verbali Fed (20:00 CET).</p><p class="test"><b>Test:</b> core/servizi e salari → SONIA/2Y UK → EUR/GBP; per la Fed attenzione a nuove informazioni, non a decisioni già prese.</p></div></div>
+<div class="event"><div class="when">GIO 19 NOV<br/>01:30 CET</div><div><h3>Australia · lavoro ottobre</h3><p>Il CAN della RBA dipende dal fatto che prezzi alti non distruggano troppo presto l’attività. Venerdì segue il CPI giapponese.</p><p class="test"><b>Test:</b> occupazione e disoccupazione → attese RBA → AUD/NZD; per JPY contano anche differenziali USA–Giappone.</p></div></div>
+<p class="chart-foot">Altri dati rilevanti: lavoro UK 17/11, salari AUD 18/11, verbali FOMC 18/11, CPI Giappone 20/11. Gli orari sono Europe/Rome (CET) e vanno ricontrollati sui calendari ufficiali prima dell’evento.</p></section>
+<div class="sec">07 · Fonti, qualità e limiti</div><section class="card"><h2>Che cosa è osservato, cosa è giudizio e cosa manca</h2>
+<div class="quality-note"><b>1. Osservato:</b> decisioni e tassi ufficiali di Fed, BCE, BoE, BoJ, BoC, RBA, RBNZ e SNB; CPI USA BLS 10/11, PIL UK ONS 12/11, deliberazioni BoC 10/11 e opinioni BoJ 10/11; Treasury USA e fixing BCE 06→13 novembre. <b>2. Lettura del desk:</b> WANT, CAN, mappa stance e tesi FX sono interpretazioni, non dichiarazioni delle banche né probabilità calibrate. <b>3. Limiti:</b> nessuna curva OIS G8 3/6/12M sincronizzata e certificata, nessuna misura diretta dei flussi e nessun confronto quantitativo del peso causale di ogni notizia. I fixing BCE delle 14:10 circa non sono chiusure di New York. Il COT non è il dato principale di questo report e non viene spacciato per corrente.</div>
+<p class="chart-foot">Il confronto Treasury di fine settimana segue 2Y 4,51% → 4,88% e 10Y 4,86% → 5,15% (06→13/11). La tabella H.15 ufficiale consultata il 13/11 copriva fino al 12/11; i valori finali di venerdì sono quelli Treasury già verificati nel Weekly Global Macro V7. Nessuna probabilità OIS è ricavata dai rendimenti governativi.</p>
+<div class="source-grid"><a href="https://www.federalreserve.gov/newsevents/speech/waller20261110a.htm" rel="noopener noreferrer" target="_blank">Fed · Waller 10/11</a><a href="https://www.bls.gov/news.release/cpi.htm" rel="noopener noreferrer" target="_blank">BLS · CPI 10/11</a><a href="https://www.federalreserve.gov/releases/H15/" rel="noopener noreferrer" target="_blank">Fed H.15 · rendimenti</a><a href="https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html" rel="noopener noreferrer" target="_blank">BCE · 29/10</a><a href="https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/november-2026/" rel="noopener noreferrer" target="_blank">BoE · 5/11</a><a href="https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/latest" rel="noopener noreferrer" target="_blank">ONS · PIL UK 12/11</a><a href="https://www.boj.or.jp/en/mopo/mpmsche_minu/opinion_2026/opi261030.pdf" rel="noopener noreferrer" target="_blank">BoJ · opinioni 10/11</a><a href="https://www.bankofcanada.ca/2026/11/summary-of-governing-council-deliberations-fixed-announcement-date-of-october-28-2026/" rel="noopener noreferrer" target="_blank">BoC · deliberazioni 10/11</a><a href="https://www.rba.gov.au/media-releases/2026/mr-26-30.html" rel="noopener noreferrer" target="_blank">RBA · 3/11</a><a href="https://www.rba.gov.au/publications/smp/2026/nov/outlook.html" rel="noopener noreferrer" target="_blank">RBA · outlook</a><a href="https://www.rbnz.govt.nz/monetary-policy/about-monetary-policy/the-official-cash-rate" rel="noopener noreferrer" target="_blank">RBNZ · OCR</a><a href="https://www.snb.ch/en/publications/communication/press-releases-restricted/pre_20260924" rel="noopener noreferrer" target="_blank">SNB · settembre</a><a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html" rel="noopener noreferrer" target="_blank">BCE · fixing FX</a><a href="https://www.mufgresearch.com/fx/fx-weekly-13-november-2026/" rel="noopener noreferrer" target="_blank">MUFG · calendario</a><a href="https://www.scotiabank.com/ca/en/about/economics/economics-publications/post.other-publications.calendar-of-economic-release-dates.calendar-of-economic-release-dates--november-2026-.html" rel="noopener noreferrer" target="_blank">Scotiabank · calendario</a></div></section>
+<footer class="footer">GLOBAL MACRO FX QUANT · CENTRAL BANK SENTIMENT REPORT · 14 NOVEMBRE 2026 · DATI AL 13/11/2026 · WANT → CAN → PRICING → FX</footer>
+</main></body></html>
