@@ -703,11 +703,38 @@ async function calendarResearchJourney(page,label){
  await locator(page,'#macro-calendar [data-cal-research="currencies"]').first().click();
  await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='currencies');
  await route(page,'news');
- await locator(page,'#macro-calendar [data-cal-research="pairs"]').first().click();
+ const pairLink=locator(page,'#macro-calendar [data-cal-research="pairs"]').first();
+ assert.match(await pairLink.getAttribute('href'),/^#pairs\?pair=[A-Z]{6}$/);
+ await pairLink.click();
  await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='pairs'&&
   document.querySelector('.pairs-reading-compact'));
  assert.equal(await locator(page,'.pairs-reading-compact').count(),1,
   label+' macro-event pair link did not open a real FX dossier');
+ assert.match(new URL(page.url()).hash,/^#pairs\?pair=[A-Z]{6}$/);
+}
+async function pairLinkJourney(page,label){
+ const frank=new URL('#pairs?pair=EURCHF',BASE).href;
+ const heading=locator(page,'#fx-selected-thesis h2');
+ await page.goto(frank,{waitUntil:'domcontentloaded'});
+ assert.match(await heading.innerText(),/EUR\/CHF/,label+' direct link opened the wrong pair');
+ await page.reload({waitUntil:'domcontentloaded'});
+ assert.match(await heading.innerText(),/EUR\/CHF/,label+' reloading lost the selected pair');
+ await locator(page,'#pair-primary-select').selectOption('AUDCAD');
+ assert.match(await heading.innerText(),/AUD\/CAD/);
+ assert.equal(new URL(page.url()).hash,'#pairs?pair=AUDCAD');
+ await page.goBack();
+ await page.waitForFunction(()=>document.querySelector('#fx-selected-thesis h2')?.textContent.includes('EUR/CHF'));
+ assert.match(await heading.innerText(),/EUR\/CHF/,label+' browser Back lost the previous pair');
+ await page.goForward();
+ await page.waitForFunction(()=>document.querySelector('#fx-selected-thesis h2')?.textContent.includes('AUD/CAD'));
+ assert.match(await heading.innerText(),/AUD\/CAD/,label+' browser Forward lost the selected pair');
+ await locator(page,'[data-pair-close]').click();
+ assert.equal(new URL(page.url()).hash,'#pairs');
+ assert.equal(await heading.count(),0,label+' ranking link must close the detail');
+ await page.goto(new URL('#pairs?pair=ABCDEF',BASE).href);
+ await heading.waitFor({state:'hidden'});
+ await page.goto(new URL('#pairs?pair=CHFEUR',BASE).href);
+ assert.match(await heading.innerText(),/EUR\/CHF/,label+' reversed link must use the supported ordering');
 }
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
@@ -787,6 +814,7 @@ async function calendarResearchJourney(page,label){
     await pairJourney(page,label);
     await pairMonetaryJourney(page,label);
     await calendarResearchJourney(page,label);
+    await pairLinkJourney(page,label);
     await pricingWindowJourney(page,label);
     await g8HistoryJourney(page,label);
     await relative6mJourney(page,label);
