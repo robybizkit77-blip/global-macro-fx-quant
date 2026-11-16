@@ -33,6 +33,9 @@ from validation.macro.capture_jpy_national_cpi_firstseen_v14 import (
     OUT as JPY_CPI_V14, QUALITY as QUALITY_JPY_V14,
     validate as validate_jpy_cpi,
 )
+from validation.macro.capture_statcan_cpi_firstseen_v1 import (
+    OUT as CAD_CPI, QUALITY as QUALITY_CAD_CPI, validate as validate_cad_cpi,
+)
 
 ROME = ZoneInfo("Europe/Rome")
 QUALITY_V1 = "OFFICIAL_PAGE_FIRST_OBSERVATION_NOT_FIRST_RELEASE_PIT"
@@ -75,7 +78,7 @@ def event_info(key):
 
 def build(now, *, v1_forecasts=None, v1_actuals=None,
           v9_forecasts=None, v11_actuals=None, official_seed=None,
-          v12_aud_actuals=None, v14_jpy_actuals=None):
+          v12_aud_actuals=None, v14_jpy_actuals=None, cad_cpi_actuals=None):
     if not isinstance(now, datetime) or now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("Offset-aware publication clock required")
     now=now.astimezone(timezone.utc)
@@ -86,6 +89,7 @@ def build(now, *, v1_forecasts=None, v1_actuals=None,
     gdp = read_existing(GDP_V11) if v11_actuals is None else v11_actuals
     aud = read_existing(AUD_LABOUR_V12) if v12_aud_actuals is None else v12_aud_actuals
     jp = read_existing(JPY_CPI_V14) if v14_jpy_actuals is None else v14_jpy_actuals
+    cad = read_existing(CAD_CPI) if cad_cpi_actuals is None else cad_cpi_actuals
     seed = json.loads(OFFICIAL_SEED.read_text(encoding="utf-8")) if official_seed is None else official_seed
     # Fail closed on a broken SHA chain, wrong event, wrong metric, forged
     # timestamp or wrong issuer URL, before considering any output.
@@ -93,6 +97,7 @@ def build(now, *, v1_forecasts=None, v1_actuals=None,
     validate_actuals(gdp, seed, metric)
     validate_aud_labour(aud)
     validate_jpy_cpi(jp)
+    validate_cad_cpi(cad, seed)
     items=[]
     def append(row, observed_raw, label, comparison, quality, metric_id=None,
                is_level=False):
@@ -148,6 +153,9 @@ def build(now, *, v1_forecasts=None, v1_actuals=None,
         append(row, row["observed_at_utc"],
                LABELS[row["metric_id"]], None, QUALITY_AUD_V12,
                metric_id=row["metric_id"], is_level=True)
+    for row in cad:
+        append(row, row["observed_at_utc"], "Canada · CPI complessivo, anno su anno",
+               None, QUALITY_CAD_CPI, metric_id=row["metric_id"])
     for row in jp:
         # One research item, three distinct publisher measures. Japan's
         # 'core' excludes FRESH FOOD, NOT all food and energy as in US CPI.

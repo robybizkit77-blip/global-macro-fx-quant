@@ -45,6 +45,8 @@ on:
       - 'validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl'
       - 'validation/build_news_pulse_operational_v1.py'
       - 'validation/macro/build_g8_official_news_items_v1.py'
+      - 'validation/macro/capture_statcan_cpi_firstseen_v1.py'
+      - 'validation/macro/test_capture_statcan_cpi_firstseen_v1.py'
       - 'validation/macro/test_build_g8_official_news_items_v1.py'
       - 'validation/orchestration/test_calendar_news_hourly_clock_gate_v1.py'
       - 'validation/test_market_pulse_cross_asset_v25.py'
@@ -106,6 +108,8 @@ on:
       - 'validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl'
       - 'validation/build_news_pulse_operational_v1.py'
       - 'validation/macro/build_g8_official_news_items_v1.py'
+      - 'validation/macro/capture_statcan_cpi_firstseen_v1.py'
+      - 'validation/macro/test_capture_statcan_cpi_firstseen_v1.py'
       - 'validation/macro/test_build_g8_official_news_items_v1.py'
       - 'validation/orchestration/test_calendar_news_hourly_clock_gate_v1.py'
       - 'validation/test_market_pulse_cross_asset_v25.py'
@@ -560,7 +564,9 @@ jobs:
       - name: Test scheduled hourly clock independence and PR isolation
         run: python -m unittest validation.orchestration.test_calendar_news_hourly_clock_gate_v1 -v
       - name: Test G8 first-observed official macro actuals and publication clocks
-        run: python -m unittest validation.macro.test_build_g8_official_news_items_v1 -v
+        run: python -m unittest validation.macro.test_build_g8_official_news_items_v1 validation.macro.test_capture_statcan_cpi_firstseen_v1 -v
+      - name: Observe Statistics Canada headline CPI after its scheduled release
+        run: python -m validation.macro.capture_statcan_cpi_firstseen_v1
       - name: Validate FX, rates and cross-asset source-date contracts for Market Pulse
         run: python validation/test_market_pulse_cross_asset_v25.py
       - name: Build operational Calendar and News Pulse

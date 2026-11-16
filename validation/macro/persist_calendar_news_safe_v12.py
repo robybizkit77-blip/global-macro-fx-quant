@@ -23,6 +23,7 @@ MANAGED = (
     "validation/macro/MACRO_UK_CH_GDP_OFFICIAL_FIRST_SEEN_V11.jsonl",
     "validation/macro/MACRO_AUD_LABOUR_OFFICIAL_FIRST_SEEN_V12.jsonl",
     "validation/macro/MACRO_JPY_NATIONAL_CPI_FIRST_SEEN_V14.jsonl",
+    "validation/macro/MACRO_STATCAN_CPI_FIRST_SEEN_V1.jsonl",
     "validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl",
     "validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl",
     "live_data/sections/NATIVE_CB_DATA.json",
