@@ -8,6 +8,7 @@
  const validTime=x=>typeof x==='string'&&/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(x);
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
  const fmtDay=x=>validDate(x)?x.slice(8,10)+'/'+x.slice(5,7)+'/'+x.slice(0,4):'n.d.';
+ const officialUrl=x=>typeof x==='string'&&/^https:\/\/[a-z0-9.-]+\//i.test(x)?x:null;
  const romeNow=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  const italianTitles={'Producer Price Index':'USA · prezzi alla produzione (PPI)',
   'Swiss GDP flash':'Svizzera · PIL flash',
@@ -15,7 +16,9 @@
   'Labour Force, Australia':'Australia · mercato del lavoro',
   'Japan Consumer Price Index':'Giappone · indice dei prezzi al consumo',
   'Gross domestic product':'Prodotto interno lordo (PIL)'};
- const displayTitle=t=>italianTitles[t]||t;
+ const displayTitle=e=>e.ccy==='CAD'&&e.title==='Consumer Price Index'
+  ?'Canada · indice dei prezzi al consumo (CPI)'
+  :italianTitles[e.title]||e.title;
  const pairMap={USD:'EUR/USD · USD/JPY',EUR:'EUR/USD · EUR/GBP',GBP:'EUR/GBP · GBP/USD',
  JPY:'USD/JPY · EUR/JPY',CHF:'EUR/CHF · USD/CHF',CAD:'USD/CAD · CAD/JPY',
  AUD:'AUD/USD · AUD/NZD',NZD:'NZD/USD · AUD/NZD'};
@@ -108,6 +111,7 @@
      timezone:e.timezone||null,importance:e.importance||'NON CLASSIFICATA',
      kind:e.event_type==='CENTRAL_BANK_DECISION'?'Riunione banca centrale':'Pubblicazione macro',
      source:e.source_family||e.bank||e.source_layer||'Fonte non specificata',
+     sourceUrl:officialUrl(e.source_url),
      quality:e.quality||'non classificata',consensus,actual,reference:e.reference_period||null,
      why:why(e),verify:verify(e),pairs:pairMap[e.ccy]||'',timestamp:it?.timestamp||null};
    // An upstream UPCOMING flag may lag the announced publication time.
@@ -141,7 +145,7 @@
   const pairCode=pair.replace('/','');
   return '<article class="cal-event'+(review?' cal-event-review':'')+'"><div class="cal-event-head"><span>'+
    esc(e.ccy)+' · '+esc(e.kind)+'</span><time datetime="'+esc(e.day)+'">'+fmtDay(e.day)+timeText+'</time></div>'+
-   '<h3>'+esc(displayTitle(e.title))+'</h3>'+
+   '<h3>'+esc(displayTitle(e))+'</h3>'+
    (review?'<p class="cal-review-state"><strong>Da verificare.</strong> '+esc(waiting)+'</p>':'')+
    '<p class="cal-driver-reading"><strong>Perché conta.</strong> '+esc(e.why)+'</p>'+
    '<div class="cal-event-path" aria-label="Percorso di ricerca: aspettative, valuta e coppia">'+
@@ -153,8 +157,9 @@
    '</div></div>'+
    '<details class="cal-event-evidence"><summary>Fonte, consenso e verifiche dopo l’evento</summary><div class="cal-event-evidence-body">'+
    '<p class="cal-source">Fonte: '+esc(e.source)+' · '+esc(e.quality)+
-   (e.reference?' · Periodo '+esc(e.reference):'')+'</p>'+
-   (displayTitle(e.title)!==e.title?'<p class="cal-source">Titolo originale: '+esc(e.title)+'</p>':'')+
+   (e.reference?' · Periodo '+esc(e.reference):'')+
+   (e.sourceUrl?' · <a href="'+esc(e.sourceUrl)+'" target="_blank" rel="noopener noreferrer">Fonte ufficiale ↗</a>':'')+'</p>'+
+   (displayTitle(e)!==e.title?'<p class="cal-source">Titolo originale: '+esc(e.title)+'</p>':'')+
    '<p class="cal-verify"><strong>Cosa controllare.</strong> '+esc(e.verify)+'</p>'+
    '<div class="cal-missing">Consenso: '+(e.consensus===null?'non certificato':esc(e.consensus))+
    ' · Effettivo: '+(e.actual===null?(review?'non verificato dal feed':'non ancora pubblicato/verificato'):esc(e.actual))+'</div>'+
