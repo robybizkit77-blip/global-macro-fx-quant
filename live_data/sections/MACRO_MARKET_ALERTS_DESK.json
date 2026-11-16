@@ -1,8 +1,50 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-16T02:47:54Z",
+  "generated_at_utc": "2026-11-16T11:32:42Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-78decb435373616d6492",
+      "observed_at_utc": "2026-11-16T08:49:43Z",
+      "headline": "Gulf stocks dip as Bahrain attacks, Hormuz security concerns weigh",
+      "summary": "Reuters riporta: Gulf stocks dip as Bahrain attacks, Hormuz security concerns weigh. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNZXF3RVZscExSM0xvU2F3MjF0YUNaRHRLZ0xGTXRWSWt6VFZZVENMZGwyOENsTFNkNHEzeE1scDhCaGtTOFJBNXRjT0FVUGhHcWo5SDFYU0Zoc0prTFY5TnllakZmLTlUS0I5RXF6VkM3Q0c2SDB0Q3dJb1UxMldxZ1h6bU96eHR6dm5WalhYaHNJa3NqR3JXMHY2UlR0VER0bUxvT09sczJuaURZQjZXbWtILXJwckU?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-f60b32d6fa789579b3f5",
+      "observed_at_utc": "2026-11-16T06:37:00Z",
+      "headline": "India's wholesale inflation accelerates to 12.29% in October on fuel price surge",
+      "summary": "Reuters riporta: India's wholesale inflation accelerates to 12.29% in October on fuel price surge. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPOTZCYmwwajlmSXIyWWx2WXhZaE81VjdHTS1vc0wtdUpBNG01WnFDdVF1bXlmNXNwalQ2N2lKT1hXODMydGtUY25fcDgxQW5jVnFTVUNXQ09NN2twb1hiNE9kVHowRUZhenVIY2dDUzhPTkFaTzBqaUF5emNlaHdLc3JEcWhrTlBuemFxR01HNUNJV1FjVnlxYTJ0bWpIcks0YUFv?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-c409fc265944c6870c39",
+      "observed_at_utc": "2026-11-16T01:09:00Z",
+      "headline": "Dollar extends rally, yen looks past soft Japan GDP data",
+      "summary": "Reuters riporta: Dollar extends rally, yen looks past soft Japan GDP data. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "USD",
+        "JPY"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPZkdhelNXT1laWnBWei1ZTGMybnc1U1FxOUtGdjdoaGxDX29kd0pvc3FoLVhYdVh4SkdQdGN1cFU1UjVmb0lGWlJsdTlJOHppUjh0eGVrTFJBajZxUV9CVWFrN0F5S0RqVVpMWlR4ZW05R0duTFdvZjJNbGNhcEl2V002d0xWejFMRmR2ZjRDanBqZndnZndWOF96b3NxdVdaWnp4LWdzQ1RhdEdXdkhfcUJaSQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-94ec3c5a1ed486cf2cf3",
       "observed_at_utc": "2026-11-16T01:09:00Z",
@@ -1364,47 +1406,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQYm13UzNKRG9XaWdpdHV5SGo2UHJKSFlrRW5NUXVNR21LcnpYM01JaHZvY2dTVnN4aTZIbnYxMjI1RUdDWmN6UjBaZTNOdFVNWnpPOTNtWlQ0c2RCMlFDY0VKX0lUZ0JUZHRtSVlHb2k1VENabjhMWkdncTBBUTQyaHMtWGVpaUlZcEFqVzZaVnJId2pJXzdpcm9QaU93QkRhYlZ5eFZQUFZlYmpnREhMUXU1cnE0Zw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-74761999d355dc186a34",
-      "observed_at_utc": "2026-11-06T07:23:00Z",
-      "headline": "India's October consumer inflation likely nears top of RBI target on food costs",
-      "summary": "Reuters riporta: India's October consumer inflation likely nears top of RBI target on food costs. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxQcWpEdVVaTkZEWmh5VXJkWXFTQ0FQSW5iVlBFLTVodFJTUlp1VjZ1LVNDZXg2bVJRaHdLM3dJWnFZU1NZeWkxeHpiaHpnSVF2YVk5QXA2WGR3TVduTjYtUHA4WUNtWml1TTI2ZnhxTGNNSzlXdmJuRGRXb3ZVa0dYNy1qcXVtXy1uRzQyak1tMXN5UUNXZVpPX1kxX1FZZ05WbG5hNFJmRDFSOXIyd0hTdTlwTE5Qb1I5UXRSdw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-5e23da0017050b5360aa",
-      "observed_at_utc": "2026-11-06T04:34:00Z",
-      "headline": "China's Q3 emissions post biggest drop since pandemic as Hormuz crisis curbs fossil fuel use",
-      "summary": "Reuters riporta: China's Q3 emissions post biggest drop since pandemic as Hormuz crisis curbs fossil fuel use. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxOek9mbzZtNDlzcFBXWjJQMnYtQUJvNHdkUkZTUzFHUDhvSVlaRy1xemJ0a3BhRlVlZDhKTkVrdzFqYTRBYUYxTFRGN1VRZ21uUS01VGlMOWRJUXVfWVZwamllNExNLW00U0dKWVhnQWNCY1lQWHp0cDRSQ1ZRSVFOR0hjR3gwYUpQX2owYVJYVDFqRmlBV05tWkpPRDE5OUphVjNzTDdSOHRoaXRwNDEzVXZjc3VCRWhlRGlxTWJtZnRZcjhMRE1nLXoxaw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-e182a12c809fe4fad969",
-      "observed_at_utc": "2026-11-05T19:07:00Z",
-      "headline": "Tankers carrying Russian diesel change course, raising doubts about shipments to US",
-      "summary": "AP News riporta: Tankers carrying Russian diesel change course, raising doubts about shipments to US. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPOFJnS1VZX1hVdks1cTJoYThkYVQweVhSNTl6T0Q2LWhtY3ZNYUtWNDFIRHZvOU9SQnQ1QnJucVdEV3RzbU5nR1pwanVKZEJHOFlnZ1F2eV9XdHJoQmNEeDY4Y0xVT0VsT0ljbXhCNUxFaWIxV1A2MnFjVnVWclpBZTV1QW1zZ29Gc0hGWEtubnRlUmV1TTRmTUotN0U?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
