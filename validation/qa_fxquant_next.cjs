@@ -526,6 +526,20 @@ async function pairJourney(page,label){
   label+' detailed source audit lost');
  assert.equal(await details.locator('.decision-price-grid .chart svg').count(),1,
   label+' real ECB fixing chart missing in opened dossier');
+ await details.locator(':scope > summary').click();
+ await locator(page,'[data-pair-chart-jump]').press('Enter');
+ const chart=locator(page,'#fx-pair-price-chart');
+ assert(await details.evaluate(el=>el.open),label+' price shortcut did not open the analysis');
+ assert.match(await chart.locator('h3').innerText(),/^GBP\/USD/);
+ await page.waitForFunction(()=>{
+  const chart=document.getElementById('fx-pair-price-chart');
+  const top=chart?.getBoundingClientRect().top;
+  const header=document.querySelector('.topbar').getBoundingClientRect().bottom;
+  return document.activeElement===chart&&top>=header&&top<window.innerHeight*.70;
+ });
+ await chart.locator('[data-v9-price-window="20"]').click();
+ assert.equal(await chart.locator('[data-v9-price-window="20"]').getAttribute('aria-pressed'),'true');
+ assert(await details.evaluate(el=>el.open),label+' price window collapsed the opened analysis');
  // A new selection should change the underlying reasoning, not just the title.
  await chosenPair(page,'EURCHF',label);
  const swiss=await locator(page,'.pairs-event-watch').innerText();

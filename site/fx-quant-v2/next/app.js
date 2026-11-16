@@ -906,7 +906,10 @@ function pairs(){
   '<div class="pairs-three-answers">'+
    '<div><span>TESI FONDAMENTALE</span><strong>'+esc(activePair?.thesisStrength||'NON VALUTABILE')+'</strong></div>'+
    '<div class="pairs-trade-assessment" data-pairs-trade-tone="'+tradeTone+'"><span>TRADE ATTRACTIVENESS</span><strong>'+esc(tradeStatus)+'</strong></div>'+
-   '<div class="pairs-price-assessment"><span>IL PREZZO SEGUE LA TESI?</span>'+priceRead+'</div></div>'+
+   '<div class="pairs-price-assessment"><span>IL PREZZO SEGUE LA TESI?</span>'+priceRead+
+   (pairProfile?.closes?.length>=22?
+    '<button type="button" class="ghost-btn small pairs-chart-jump" data-pair-chart-jump aria-controls="fx-pair-price-chart">Vedi il grafico del cambio</button>':'')+
+   '</div></div>'+
   '<p class="pairs-timing-reading"><strong>Prima di valutare un ingresso.</strong> '+esc(tradeText)+'</p>'+
   '<p class="pairs-why-no-entry"><strong>Rischio operativo.</strong> '+esc(riskReading)+
    ' Una buona tesi fondamentale non equivale a un buon ingresso.</p>'+
@@ -1256,6 +1259,15 @@ document.addEventListener('click',e=>{
  if(libraryFilter && state.route==='library' && window.FXQuantResearchLibrary){
   window.FXQuantResearchLibrary.setCategory(libraryFilter.dataset.libraryType);
   window.FXQuantResearchLibrary.sync();return;
+ }
+ const chartJump=e.target.closest('[data-pair-chart-jump]');
+ if(chartJump){
+  const details=document.querySelector('details.pairs-optional-chart');
+  if(details){
+   details.open=true;
+   focusPairSection('fx-pair-price-chart');
+  }
+  return;
  }
  const pv12=e.target.closest('[data-v12-reference-toggle]');if(pv12){state.pairShowReferences=!state.pairShowReferences;refreshPairPriceChart('[data-v12-reference-toggle]');return;}
  const pv9=e.target.closest('[data-v9-price-window]');if(pv9){const windowSize=Number(pv9.dataset.v9PriceWindow);if(![20,60,120].includes(windowSize))return;state.pairPriceWindow=windowSize;refreshPairPriceChart('[data-v9-price-window="'+windowSize+'"]');return;}
