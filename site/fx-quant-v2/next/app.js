@@ -1103,13 +1103,15 @@ function render(){
   if(panel)panel.open=true;
  }
  syncRouteChrome(route);
- const ok=Object.keys(state.data).length,missing=Object.keys(SOURCES).length-ok;
+ const requiredSources=Object.keys(SOURCES);
+ const ok=requiredSources.filter(key=>Object.hasOwn(state.data,key)).length;
+ const missing=requiredSources.length-ok;
  const caseNow=researchCase(),caseOld=!caseNow.latest||!fresh(caseNow.latest,8);
  const dates=[get('rates')?.USD?.date,get('dxy')?.as_of,get('pairs')?.price_asof].filter(validDay);
  $('top-asof').textContent='Riferimenti '+(dates.length?dates.map(date).join(' · '):'da verificare');
  $('top-quality').classList.toggle('warn',missing>0||caseOld);
- $('top-quality').innerHTML='<span class="live-dot"></span>'+(missing>0?ok+'/'+Object.keys(SOURCES).length+' FEED':caseOld?'DATI STORICI':'FONTI CARICATE');
- $('sidebar-feed').textContent=ok+'/'+Object.keys(SOURCES).length+' fonti caricate · dati non intraday';
+ $('top-quality').innerHTML='<span class="live-dot"></span>'+(missing>0?ok+'/'+requiredSources.length+' FEED':caseOld?'DATI STORICI':'FONTI CARICATE');
+ $('sidebar-feed').textContent=ok+'/'+requiredSources.length+' fonti caricate · dati non intraday';
  const sf=$('sidebar-focus');if(sf)sf.textContent=FLAGS[state.ccy]+' '+state.ccy+' · '+getPairName(state.pair);
  document.title='FX Quant Next — '+ROUTES[route];
 }
@@ -1435,9 +1437,7 @@ async function loadAll(){
    // The independent editorial feed is not a required operational source.
   }finally{clearTimeout(timer)}
  })());
- try{
-  await Promise.allSettled(jobs);
-  // The separate check receipt confirms successful automation execution, NOT
+ // The separate check receipt confirms successful automation execution, NOT
  // newly released market information. Mismatched receipts fail closed in UI.
  jobs.push((async()=>{
   const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),10000);
@@ -1452,8 +1452,9 @@ async function loadAll(){
    // No check receipt = no verified check timestamp. The editorial feed remains.
   }finally{clearTimeout(timer)}
  })());
- // Rebuild the entire research from the same fetch cycle. A failed source is
-  // not silently reused from the previous edition as a current observation.
+ try{
+  await Promise.allSettled(jobs);
+  // Rebuild from the same fetch cycle. A failed source is never reused as current.
   state.data=nextData;
   state.errors=nextErrors;
   lastResearchRefresh=Date.now();
