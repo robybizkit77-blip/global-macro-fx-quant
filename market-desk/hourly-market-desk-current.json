@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-14T20:45:48.350565Z",
-  "edition_time_rome": "2026-11-14 21:45",
-  "material_digest": "d99e2438a9051e4bbc1cbfa93b9c8747411e30b07272dac24a9ab91d4a3af967",
+  "generated_at_utc": "2026-11-16T01:05:44.505128Z",
+  "edition_time_rome": "2026-11-16 02:05",
+  "material_digest": "b2c1630a578e52a77dd13330c40305d2b6b46ee3fc7fc50eeceabd4bd07d7ae9",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
@@ -81,7 +81,7 @@
   "fx_implications": "Negli ultimi fixing BCE il dollaro si è rafforzato sia contro euro sia contro yen. La forza cross va letta assieme ai tassi e al rischio globale. Per USD/JPY conta anche la traiettoria attesa della BoJ; per EUR/USD la differenza fra Fed e BCE.",
   "what_changed": "Sono entrate nuove osservazioni o pubblicazioni rispetto alla precedente edizione. La direzione relativa di tassi, Forex, credito e materie prime viene ricomposta in un solo quadro economico, senza attribuire automaticamente causalità.",
   "contrary_evidence": "Una ripresa delle azioni senza conferma del credito o con volatilità in aumento renderebbe più fragile l'interpretazione risk-on. Le ultime chiusure rappresentano osservazioni datate, non flussi attribuibili a specifici operatori.",
-  "watch": "Il prossimo catalizzatore sul calendario è Swiss GDP flash (CHF, 2026-11-16): conteranno sorpresa rispetto alle attese, composizione e risposta dei tassi relativi. Il confronto con credito, volatilità e fixing successivi aiuterà a distinguere un movimento persistente da uno temporaneo.",
+  "watch": "Il prossimo catalizzatore sul calendario è Labour Force, Australia (AUD, 2026-11-19): conteranno sorpresa rispetto alle attese, composizione e risposta dei tassi relativi. Il confronto con credito, volatilità e fixing successivi aiuterà a distinguere un movimento persistente da uno temporaneo.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
@@ -95,7 +95,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-13",
-      "rss_checked_at_utc": "2026-11-14T20:45:48.350565Z",
+      "rss_checked_at_utc": "2026-11-16T01:05:44.505128Z",
       "commodities": "2026-11-13"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-14T20:45:48.350565Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "d99e2438a9051e4bbc1cbfa93b9c8747411e30b07272dac24a9ab91d4a3af967"
+    },
     {
       "generated_at_utc": "2026-11-14T16:48:41.450377Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
