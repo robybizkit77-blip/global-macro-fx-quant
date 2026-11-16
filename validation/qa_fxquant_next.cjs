@@ -449,7 +449,7 @@ async function chosenPair(page,key,label){
  const p=locator(page,'.pairs-reading-compact');
  assert.equal(await p.count(),1,label+' '+key+' first-read missing');
  assert.equal(await p.locator('.pairs-three-answers > div').count(),3,
-  label+' thesis, trade attractiveness and entry caveat incomplete');
+  label+' thesis, trade attractiveness and price comparison incomplete');
  const trade=await p.locator('.pairs-trade-assessment').getAttribute('data-pairs-trade-tone');
  assert(['neutral','awaiting','caution'].includes(trade),
   label+' trade status category lost its evidence-based visual treatment');
@@ -469,9 +469,24 @@ async function chosenPair(page,key,label){
  assert(!/livelli H4 (confermati|verificati)|segnale di ingresso confermato/i.test(riskText),
   label+' '+key+' cannot claim verified H4 entries from ECB daily fixings');
  const story=await p.innerText();
- for(const word of ['TESI FONDAMENTALE','TRADE ATTRACTIVENESS',
+ for(const word of ['TESI FONDAMENTALE','TRADE ATTRACTIVENESS','IL PREZZO SEGUE LA TESI?',
+  'Prima di valutare un ingresso',
   'Rafforzerebbe il quadro','Lo indebolirebbe','Evento da monitorare'])
   assert(story.includes(word),label+' '+key+' missing '+word);
+ for(const days of [5,20]){
+  const period=p.locator('[data-pair-price-days="'+days+'"]');
+  assert.equal(await period.count(),1,label+' '+key+' price horizon missing');
+  const [sourceTone,expectedMove]=await page.evaluate(({key,days})=>{
+   const pair=get('estimatedMacro').pairs.find(row=>row.key===key);
+   const alignment=days===5?pair.fiveState:pair.aligned?'COERENTE':pair.opposite?'CONTRARIO':'INDECISO';
+   return [!pair.favored?'neutral':alignment==='COERENTE'?'support':alignment==='CONTRARIO'?'against':'neutral',
+    sign(days===5?pair.move5Percent:pair.pricePercent,2,'%')];
+  },{key,days});
+  assert.equal(await period.getAttribute('data-pair-price-tone'),sourceTone,label+' '+key+' price direction reversed');
+  assert.equal(await period.locator('strong').innerText(),expectedMove,label+' '+key+' price move misquoted');
+ }
+ assert.match(await p.locator('.pairs-price-assessment').innerText(),/Fixing BCE al \d{2}\/\d{2}\/\d{4}/,
+  label+' '+key+' price comparison lost its source date');
  assert(/calendario|evento|prossimo|previsto|ufficiale/i.test(story),
   label+' '+key+' no explanation of calendar source');
  return p;

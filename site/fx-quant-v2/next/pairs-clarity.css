@@ -35,7 +35,7 @@
 .pairs-browse-inside .pair-coverage-intro{font-size:11px;color:var(--muted)}
 .pairs-compact-footer{font-size:10px;line-height:1.6;color:var(--muted);margin:16px 0}
 @media(max-width:900px){.pairs-three-answers{grid-template-columns:repeat(2,minmax(0,1fr))}.pairs-three-answers>div:last-child{grid-column:1/-1}}
-@media(max-width:560px){.pairs-reading-compact{padding:16px}.pairs-reading-head{flex-direction:column;gap:7px}.pairs-three-answers{grid-template-columns:1fr}.pairs-three-answers>div:last-child{grid-column:auto}.pairs-chooser{padding:14px}.pair-sel-control{width:100%}.pairs-optional-panel>summary{padding:13px}.pairs-details-body{padding:5px}.pairs-optional-panel .thesis-monitor{margin:5px}.pairs-browse-inside{padding:10px}}
+@media(max-width:560px){.pairs-reading-compact{padding:16px}.pairs-reading-head{flex-direction:column;gap:7px}.pairs-chooser{padding:14px}.pair-sel-control{width:100%}.pairs-optional-panel>summary{padding:13px}.pairs-details-body{padding:5px}.pairs-optional-panel .thesis-monitor{margin:5px}.pairs-browse-inside{padding:10px}}
 
 /* Editorial first-read: economic judgement before the audit trail. */
 .decision-desk-story{min-width:0}
@@ -124,6 +124,14 @@
 .pairs-three-answers .pairs-trade-assessment[data-pairs-trade-tone="caution"] strong{color:#f0adb1}
 .pairs-three-answers span{font-size:10.5px;line-height:1.5}
 .pairs-three-answers strong{font-size:13px;line-height:1.55}
+.pairs-price-periods{list-style:none;padding:0;margin:0;display:grid;gap:5px}
+.pairs-price-periods li{display:grid;grid-template-columns:minmax(0,4em) minmax(0,4.5em) minmax(0,1fr);align-items:baseline;gap:7px}
+.pairs-price-periods li span{font-size:11px;letter-spacing:normal;margin:0;font-weight:650}
+.pairs-price-periods li strong{white-space:nowrap;font-variant-numeric:tabular-nums}
+.pairs-price-periods li[data-pair-price-tone="support"] span:last-child{color:#9cdebf}
+.pairs-price-periods li[data-pair-price-tone="against"] span:last-child{color:#edb0b4}
+.pairs-price-assessment small{display:block;margin-top:5px;color:var(--muted);font-size:10px;line-height:1.45}
+.pairs-timing-reading{font-size:13px;line-height:1.65;color:var(--soft);margin:14px 0 0;max-width:900px}
 .pairs-why-no-entry{font-size:11.5px;line-height:1.65;color:#b6d0d9;margin:12px 0 0;max-width:900px}
 .pairs-conditions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0 12px}
 .pairs-condition{padding:15px 16px;min-width:0;border:1px solid rgba(128,169,188,.25);border-radius:10px;background:rgba(9,32,46,.47)}
