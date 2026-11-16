@@ -7,7 +7,7 @@ const BASE='../../website-v1/reports/';
 const ROOT='./reports/';
 const PUBLIC_API='https://api.github.com/repos/robybizkit77-blip/global-macro-fx-quant/contents/site/fx-quant-v2/next/reports?ref=main';
 const REPORTS=Object.freeze([
- {type:'daily',date:'2026-11-13',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-13_V3_MORNING_RESEARCH_DESK.html',desc:'Morning Research Desk V3: repricing Fed, catalizzatore PPI USA, USD/JPY e driver delle commodities.',publicUrl:'./reports/Briefing_Forex_Commodities_2026-11-13_V3_MORNING_RESEARCH_DESK.html'},
+ {type:'daily',date:'2026-11-16',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-16_V3_METODO_INTEGRATO_DEFINITIVO.html',desc:'Morning Research Desk V3: attese Fed, risposta dello yen al PIL giapponese, CPI canadese e petrolio.'},
  {type:'macro',date:'2026-11-06',title:'Weekly Global Macro Report',file:'Weekly_Global_Macro_Report_2026-11-06_COUNTRY_BOOK_NARRATIVO_V4_CORRETTA.html',desc:'Country Book: crescita, inflazione, lavoro, tassi, rischio e forza relativa delle valute.'},
  {type:'bank',date:'2026-11-06',title:'Weekly Bank FX Report',file:'Weekly_Bank_FX_Report_2026-11-06_DARK_DESK_NARRATIVO_V5.html',desc:'View bancarie G8 e giudizio indipendente, con fonti e consenso datati.'},
  {type:'cb',date:'2026-11-06',title:'Weekly Central Bank Sentiment',file:'Weekly_CB_Sentiment_Report_2026-11-06_DARK_RESEARCH_DESK_WANT_CAN_V4_PALETTE.html',desc:'WANT/CAN: intenzioni e vincoli delle banche centrali, separati dal bias Forex.'},
