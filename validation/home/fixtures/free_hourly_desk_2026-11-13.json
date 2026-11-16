@@ -1,0 +1,181 @@
+{
+  "NEWS_PULSE_OPERATIONAL": {
+    "content_as_of": "2026-11-13",
+    "items": [
+      {
+        "category": "MARKET_FX_ECB_FIXING",
+        "ccy": "USD",
+        "pair": "USDJPY",
+        "title": "USD/JPY: +0.19% fra due fixing BCE",
+        "as_of": "2026-11-13",
+        "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
+      },
+      {
+        "category": "MARKET_GOVERNMENT_RATES",
+        "ccy": "USD",
+        "title": "USD: governativo 2Y +2.0 pb, 10Y +5.0 pb",
+        "as_of": "2026-11-13"
+      },
+      {
+        "category": "MARKET_EQUITY_CLOSE",
+        "ccy": "",
+        "title": "S&P 500: -0.40% nella chiusura del 2026-11-13",
+        "as_of": "2026-11-13",
+        "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500"
+      },
+      {
+        "category": "MARKET_VOLATILITY_CLOSE",
+        "ccy": "",
+        "title": "VIX: +0.60 punti nella chiusura del 2026-11-13",
+        "as_of": "2026-11-13",
+        "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
+      },
+      {
+        "category": "MARKET_FX_ECB_FIXING",
+        "ccy": "EUR",
+        "pair": "EURUSD",
+        "title": "EUR/USD: -0.26% fra due fixing BCE",
+        "as_of": "2026-11-13",
+        "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
+      },
+      {
+        "category": "FUTURES_IMPLIED_REPRICING",
+        "ccy": "JPY",
+        "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)",
+        "as_of": "2026-11-13"
+      },
+      {
+        "category": "MARKET_GOVERNMENT_RATES",
+        "ccy": "JPY",
+        "title": "JPY: governativo 2Y +2.5 pb, 10Y +5.8 pb",
+        "as_of": "2026-11-13"
+      },
+      {
+        "category": "MARKET_FX_ECB_FIXING",
+        "ccy": "AUD",
+        "pair": "AUDCAD",
+        "title": "AUD/CAD: -0.45% fra due fixing BCE",
+        "as_of": "2026-11-13",
+        "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
+      },
+      {
+        "category": "OIS_REPRICING",
+        "ccy": "GBP",
+        "title": "GBP: repricing OIS più hawkish (+5.7 bp 12M in 1D)",
+        "as_of": "2026-11-12"
+      },
+      {
+        "category": "FUTURES_IMPLIED_REPRICING",
+        "ccy": "CAD",
+        "title": "CAD: repricing implicito da futures più hawkish (+9.0 bp 12M in 1D)",
+        "as_of": "2026-11-12"
+      },
+      {
+        "category": "MARKET_EQUITY_CLOSE",
+        "ccy": "",
+        "title": "Nasdaq Composite: -0.39% nella chiusura del 2026-11-12",
+        "as_of": "2026-11-12",
+        "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM"
+      },
+      {
+        "category": "MARKET_CREDIT_OAS",
+        "ccy": "",
+        "title": "Credito HY OAS: -10.0 pb nella chiusura del 2026-11-12",
+        "as_of": "2026-11-12",
+        "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
+      },
+      {
+        "category": "MARKET_CREDIT_OAS",
+        "ccy": "",
+        "title": "Credito IG OAS: -1.0 pb nella chiusura del 2026-11-12",
+        "as_of": "2026-11-12",
+        "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM"
+      },
+      {
+        "category": "MARKET_GOVERNMENT_RATES",
+        "ccy": "EUR",
+        "title": "EUR: governativo 2Y +3.0 pb, 10Y +2.7 pb",
+        "as_of": "2026-11-12"
+      },
+      {
+        "category": "FUTURES_IMPLIED_REPRICING",
+        "ccy": "AUD",
+        "title": "AUD: repricing implicito da futures invariato (+0.0 bp 6M in 1D)",
+        "as_of": "2026-11-12"
+      },
+      {
+        "category": "MACRO_OFFICIAL_ACTUAL",
+        "ccy": "USD",
+        "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili",
+        "as_of": "2026-11-10",
+        "source_url": "https://www.bls.gov/news.release/cpi.htm"
+      }
+    ]
+  },
+  "ESTIMATED_RESIDUAL_GAPS": {
+    "lanes": {
+      "GOLD.market_proxy": {
+        "status": "MARKET_PROXY_ACTIVE_SECONDARY",
+        "proxy_as_of": "2026-11-13",
+        "change_1d_pct": 0.0257,
+        "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/GC=F"
+      },
+      "WTI.market_proxy": {
+        "status": "MARKET_PROXY_ACTIVE_SECONDARY",
+        "proxy_as_of": "2026-11-13",
+        "change_1d_pct": 0.2028,
+        "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
+      },
+      "BRENT.market_proxy": {
+        "status": "MARKET_PROXY_ACTIVE_SECONDARY",
+        "proxy_as_of": "2026-11-13",
+        "change_1d_pct": 0.2713,
+        "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/BZ=F"
+      }
+    }
+  },
+  "CALENDAR_OPERATIONAL_VIEW": {
+    "events": [
+      {
+        "ccy": "CHF",
+        "date": "2026-11-16",
+        "status": "UPCOMING",
+        "importance": "HIGH",
+        "quality": "OFFICIAL_PROVISIONAL",
+        "title": "Swiss GDP flash"
+      },
+      {
+        "ccy": "CAD",
+        "date": "2026-11-16",
+        "status": "UPCOMING",
+        "importance": "HIGH",
+        "quality": "OFFICIAL_CALENDAR",
+        "title": "Consumer Price Index"
+      },
+      {
+        "ccy": "USD",
+        "date": "2026-11-17",
+        "status": "UPCOMING",
+        "importance": "MEDIUM",
+        "quality": "OFFICIAL_CONFIRMED",
+        "title": "U.S. Import and Export Price Indexes"
+      },
+      {
+        "ccy": "AUD",
+        "date": "2026-11-19",
+        "status": "UPCOMING",
+        "importance": "HIGH",
+        "quality": "OFFICIAL_CONFIRMED",
+        "title": "Labour Force, Australia"
+      },
+      {
+        "ccy": "JPY",
+        "date": "2026-11-20",
+        "status": "UPCOMING",
+        "importance": "HIGH",
+        "quality": "OFFICIAL_CONFIRMED",
+        "title": "Japan Consumer Price Index"
+      }
+    ]
+  }
+}
