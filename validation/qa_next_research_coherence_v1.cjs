@@ -181,8 +181,13 @@ malicious.pairs.pairs.EURUSD.decision_frame.relation='<img src=x onerror=alert(1
 const html=evaluate(malicious).article;
 assert(html.includes('&lt;img'));
 assert(!html.includes('<img'));
-const stale=evaluate(initial,'2026-12-01');
-assert.match(stale.article,/fotografia storica/,'FX source age must be explicit');
+const staleDay=new Date(Date.parse(initial.currencyPrices.last_as_of+'T12:00:00Z')+18*864e5).toISOString().slice(0,10);
+const stale=evaluate({...initial,pairs:{...initial.pairs,price_asof:initial.currencyPrices.last_as_of}},staleDay);
+assert.match(stale.article,/fotografia storica/,'Aligned old FX sources must show their age');
+if(initial.pairs.price_asof!==initial.currencyPrices.last_as_of){
+ assert.match(evaluate(initial,staleDay).article,/non sono allineati/,
+  'A newer fixing must not be passed off as a matching Pair snapshot');
+}
 assert.match(app,/state\.data=nextData/);
 assert.match(app,/cache:'no-store'/);
 assert.match(app,/visibilitychange/);

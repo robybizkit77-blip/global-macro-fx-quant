@@ -9,12 +9,14 @@ globalThis.FXQuantPricingMoves=require('../../site/fx-quant-v2/next/rates-pricin
 globalThis.FXQuantRelativePricing=require('../../site/fx-quant-v2/next/rates-relative-pricing-v1.js');
 globalThis.FXQuantPairMonetary=require('../../site/fx-quant-v2/next/pair-monetary-bridge-v1.js');
 const {inspectPair,inspectSessionWindow,horizonReading,weekdayLag,freshness,choose,pairReturn,render}=require('../../site/fx-quant-v2/next/home-pricing-proof-v1.js');
-const prices=json('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
+const livePrices=json('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
  pairs=json('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),
  history=json(site+'rates-pricing-history-v1.json'),
  today=history.as_of;
+// This source-backed scenario asserts the same 12 Nov 6M windows even after later fixings arrive.
+const prices={...livePrices,rows:livePrices.rows.filter(r=>r.Date<='2026-11-13'),last_as_of:'2026-11-13'};
+assert.equal(prices.rows.at(-1)?.Date,prices.last_as_of);
 const args={prices,pairs,history,today};
-assert.equal(prices.last_as_of,'2026-11-13');
 assert.equal(pairs.pair_count,28);
 const selected=choose(args);
 assert.equal(selected.length,2,'Expected one real USD pair and one real non-USD pair with same-date price check');
