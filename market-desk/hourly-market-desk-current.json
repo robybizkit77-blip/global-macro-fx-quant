@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-16T08:38:06.515171Z",
-  "edition_time_rome": "2026-11-16 09:38",
-  "material_digest": "0f65ff90bd7502de2adac2366ca4849d12b5845646ea63aa50d79f88a8d6664b",
+  "generated_at_utc": "2026-11-16T11:32:29.704994Z",
+  "edition_time_rome": "2026-11-16 12:32",
+  "material_digest": "61608731f7e153deb6d6c7dbbf9ddc513a3bb2bbf3e2f77b86f2391ba484841e",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
@@ -44,20 +44,20 @@
       ]
     },
     {
-      "headline": "CPI USA ottobre · headline +0,4% e core +0,3% mensili",
+      "headline": "Svizzera · PIL flash, trimestre su trimestre: +0,2%",
       "analysis": "La composizione di headline e core aiuta a giudicare persistenza dei prezzi e possibili conseguenze per le aspettative Fed. Il dato pubblicato resta distinto dalla sorpresa rispetto al consenso e dalla successiva reazione FX.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-10",
-      "event_date": "2026-11-10",
+      "published_date": "2026-11-16",
+      "event_date": "2026-11-16",
       "market_area": "MACRO",
       "sources": [
-        "https://www.bls.gov/news.release/cpi.htm"
+        "https://www.seco.admin.ch/en/gdp-flash"
       ]
     },
     {
       "headline": "Boris Vujčić: Risks and resilience in the euro area financial system",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-16",
       "event_date": "2026-11-16",
       "market_area": "BANCHE CENTRALI",
@@ -87,15 +87,15 @@
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
-      "https://www.bls.gov/news.release/cpi.htm",
       "https://www.boj.or.jp/en/statistics/boj/other/cabs/cabs.xlsx",
       "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261116~db374b56ab.en.html",
-      "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
+      "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "https://www.seco.admin.ch/en/gdp-flash"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
-      "news": "2026-11-13",
-      "rss_checked_at_utc": "2026-11-16T08:38:06.515171Z",
+      "news": "2026-11-16",
+      "rss_checked_at_utc": "2026-11-16T11:32:29.704994Z",
       "commodities": "2026-11-13"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-16T08:38:06.515171Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "0f65ff90bd7502de2adac2366ca4849d12b5845646ea63aa50d79f88a8d6664b"
+    },
     {
       "generated_at_utc": "2026-11-16T08:02:14.877976Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
