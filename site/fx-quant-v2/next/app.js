@@ -1457,8 +1457,8 @@ async function loadAll(){
   state.errors=nextErrors;
   lastResearchRefresh=Date.now();
   const initial=!firstResearchLoaded;
-  firstResearchLoaded=true;
   if(state.route==='pairs')syncPairLocation(location.hash.split('?')[1]);
+  firstResearchLoaded=true;
   render();
   if(initial&&state.route==='pairs'&&state.pairDetailOpen)focusPairSection('fx-selected-thesis');
  }finally{refreshInProgress=false;}
