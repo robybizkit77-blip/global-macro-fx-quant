@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-13",
-  "generated_at_utc": "2026-11-15T17:46:51.440928Z",
+  "generated_at_utc": "2026-11-16T02:48:18.063985Z",
   "items": [
     {
       "as_of": "2026-11-13",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-15T17:46:51.440928Z",
+  "last_checked_at_utc": "2026-11-16T02:48:18.063985Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1016,64 +1016,9 @@
         "source_id": "BOE_NEWS",
         "title": "Exchange of letters between the Governor and the Chancellor on the Asset Purchase Facility - November 2026",
         "url": "https://www.bankofengland.co.uk/letter/2026/asset-purchase-facility-november-2026"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "AUD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "RBA_PRESS:https://www.rba.gov.au/media-releases/2026/mr-26-31.html",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-05T23:45:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 4.91,
-            "date": "2026-11-12",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-11",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily · 2026-11-11",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.808
-          }
-        },
-        "source": "Reserve Bank of Australia",
-        "source_id": "RBA_PRESS",
-        "title": "Designation of Prosegur Australia Pty Ltd under the Cash Distribution Framework Act 2026",
-        "url": "https://www.rba.gov.au/media-releases/2026/mr-26-31.html"
       }
     ],
-    "last_attempt_day_rome": "2026-11-15",
+    "last_attempt_day_rome": "2026-11-16",
     "latest_published_at_utc": "2026-11-13T21:15:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
@@ -1118,10 +1063,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 16,
+        "accepted_items": 15,
         "ccy": "JPY",
         "entries_rejected": 27,
-        "feed_entries_seen": 43,
+        "feed_entries_seen": 42,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
@@ -1148,14 +1093,14 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 1,
+        "accepted_items": 0,
         "ccy": "AUD",
-        "entries_rejected": 0,
+        "entries_rejected": 1,
         "feed_entries_seen": 1,
         "feed_url": "https://www.rba.gov.au/rss/rss-cb-media-releases.xml",
         "source": "Reserve Bank of Australia",
         "source_id": "RBA_PRESS",
-        "status": "OK_RECENT_ITEMS"
+        "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
         "accepted_items": 1,
