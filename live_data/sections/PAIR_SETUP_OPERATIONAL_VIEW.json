@@ -411,7 +411,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 295.09999999999997,
+              "bp": 292.6,
               "material": true,
               "side": "AUD"
             }
@@ -441,7 +441,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 295.09999999999997,
+            "bp": 292.6,
             "material": true,
             "side": "AUD"
           }
@@ -950,7 +950,7 @@
               "side": "B"
             },
             "ratesGap": {
-              "bp": 147.3,
+              "bp": 144.8,
               "material": true,
               "side": "CAD"
             }
@@ -980,7 +980,7 @@
             "side": "B"
           },
           "ratesGap": {
-            "bp": 147.3,
+            "bp": 144.8,
             "material": true,
             "side": "CAD"
           }
@@ -1103,7 +1103,7 @@
               "side": "B"
             },
             "ratesGap": {
-              "bp": -157,
+              "bp": -159.5,
               "material": true,
               "side": "JPY"
             }
@@ -1133,7 +1133,7 @@
             "side": "B"
           },
           "ratesGap": {
-            "bp": -157,
+            "bp": -159.5,
             "material": true,
             "side": "JPY"
           }
@@ -1746,7 +1746,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è +122 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è +119 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "EUR: TURNING RECENTE · JPY: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1764,7 +1764,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 121.81415728999998,
+              "bp": 119.31415728999998,
               "material": true,
               "side": "EUR"
             }
@@ -1776,7 +1776,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è +122 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è +119 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "EUR: TURNING RECENTE · JPY: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1794,7 +1794,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 121.81415728999998,
+            "bp": 119.31415728999998,
             "material": true,
             "side": "EUR"
           }
@@ -2554,7 +2554,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è +276 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è +273 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "GBP: TURNING RECENTE · JPY: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -2572,7 +2572,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 275.5482282704806,
+              "bp": 273.04822827048065,
               "material": true,
               "side": "GBP"
             }
@@ -2584,7 +2584,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è +276 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è +273 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "GBP: TURNING RECENTE · JPY: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -2602,7 +2602,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 275.5482282704806,
+            "bp": 273.04822827048065,
             "material": true,
             "side": "GBP"
           }
@@ -3206,7 +3206,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è +203 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è +201 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "NZD: TURNING RECENTE · JPY: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -3224,7 +3224,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 203.30000000000004,
+              "bp": 200.8,
               "material": true,
               "side": "NZD"
             }
@@ -3236,7 +3236,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è +203 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è +201 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "NZD: TURNING RECENTE · JPY: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -3254,7 +3254,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 203.30000000000004,
+            "bp": 200.8,
             "material": true,
             "side": "NZD"
           }
@@ -3828,7 +3828,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 302.29999999999995,
+              "bp": 299.8,
               "material": true,
               "side": "USD"
             }
@@ -3858,7 +3858,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 302.29999999999995,
+            "bp": 299.8,
             "material": true,
             "side": "USD"
           }
