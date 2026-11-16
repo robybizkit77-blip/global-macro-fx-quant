@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-16T08:02:14.877976Z",
-  "edition_time_rome": "2026-11-16 09:02",
-  "material_digest": "731ea26b691752b8a88d68eaa5144b9033857a963306839685a5efbd2004914c",
+  "generated_at_utc": "2026-11-16T08:38:06.515171Z",
+  "edition_time_rome": "2026-11-16 09:38",
+  "material_digest": "0f65ff90bd7502de2adac2366ca4849d12b5845646ea63aa50d79f88a8d6664b",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
@@ -55,25 +55,25 @@
       ]
     },
     {
-      "headline": "BOJ Current Account Balances by Sector (Oct.)",
+      "headline": "Boris Vujčić: Risks and resilience in the euro area financial system",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
       "kind": "NEWS",
       "published_date": "2026-11-16",
       "event_date": "2026-11-16",
       "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.boj.or.jp/en/statistics/boj/other/cabs/cabs.xlsx"
+        "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261116~db374b56ab.en.html"
       ]
     },
     {
-      "headline": "Highlights of the Outlook for Economic Activity and Prices (October 2026)",
-      "analysis": "Outlook ufficiale BoJ: la sola pubblicazione non dimostra una revisione hawkish o dovish delle proiezioni. Leggere stime e revisioni ufficiali; distinguere previsioni e decisione sui tassi, poi verificare TONA, 2Y e JPY.",
-      "kind": "NEWS",
+      "headline": "BOJ Current Account Balances by Sector (Oct.)",
+      "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-16",
       "event_date": "2026-11-16",
       "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.boj.or.jp/en/mopo/outlook/highlight/ten202610.htm"
+        "https://www.boj.or.jp/en/statistics/boj/other/cabs/cabs.xlsx"
       ]
     }
   ],
@@ -88,14 +88,14 @@
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bls.gov/news.release/cpi.htm",
-      "https://www.boj.or.jp/en/mopo/outlook/highlight/ten202610.htm",
       "https://www.boj.or.jp/en/statistics/boj/other/cabs/cabs.xlsx",
+      "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261116~db374b56ab.en.html",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-13",
-      "rss_checked_at_utc": "2026-11-16T08:02:14.877976Z",
+      "rss_checked_at_utc": "2026-11-16T08:38:06.515171Z",
       "commodities": "2026-11-13"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-16T08:02:14.877976Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "731ea26b691752b8a88d68eaa5144b9033857a963306839685a5efbd2004914c"
+    },
     {
       "generated_at_utc": "2026-11-16T01:05:44.505128Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
