@@ -174,7 +174,7 @@
    '<div class="cal-event-actions">'+
    '<a href="#rates" data-cal-research="rates" data-cal-currency="'+esc(e.ccy)+'" aria-label="Controlla tassi e OIS per '+esc(e.ccy)+'">Tassi &amp; OIS <span aria-hidden="true">↗</span></a>'+
    '<a href="#currencies" data-cal-research="currencies" data-cal-currency="'+esc(e.ccy)+'" aria-label="Analizza la valuta '+esc(e.ccy)+'">Valuta '+esc(e.ccy)+' <span aria-hidden="true">↗</span></a>'+
-   '<a href="#pairs" data-cal-research="pairs" data-cal-currency="'+esc(e.ccy)+'" data-cal-pair="'+esc(pairCode)+'" aria-label="Analizza la coppia '+esc(pair)+' senza segnale di ingresso">'+esc(pair)+' <span aria-hidden="true">↗</span></a>'+
+   '<a href="#pairs'+(pairCode?'?pair='+encodeURIComponent(pairCode):'')+'" data-cal-research="pairs" data-cal-currency="'+esc(e.ccy)+'" data-cal-pair="'+esc(pairCode)+'" aria-label="Analizza la coppia '+esc(pair)+' senza segnale di ingresso">'+esc(pair)+' <span aria-hidden="true">↗</span></a>'+
    '</div></div>'+
    '<details class="cal-event-evidence"><summary>Fonte, consenso e verifiche dopo l’evento</summary><div class="cal-event-evidence-body">'+
    '<p class="cal-source">Fonte: '+esc(e.source)+' · '+esc(e.quality)+
