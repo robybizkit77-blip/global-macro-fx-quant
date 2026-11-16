@@ -302,6 +302,15 @@ navCtx.navigate();
 assert.equal(painted,1,'After sources settle the selected route must render exactly once');
 assert(/await Promise\.allSettled\(jobs\);[\s\S]*?state\.data=nextData;[\s\S]*?firstResearchLoaded=true;\s*render\(\);/.test(app),
  'Only settled sources may unlock the first full render');
+assert(app.indexOf("fetch('../../../market-desk/hourly-market-desk-check.json'")<
+ app.indexOf('await Promise.allSettled(jobs);'),
+ 'The receipt must settle before the first Home render');
+const countBlock=app.slice(app.indexOf(' const requiredSources=Object.keys(SOURCES);'),app.indexOf(' const caseNow=researchCase()'));
+const feedCount=(data)=>vm.runInNewContext(countBlock+'\n[ok,missing]',{
+ SOURCES:{rates:'rates.json',pairs:'pairs.json'},state:{data}
+ });
+assert.equal(JSON.stringify(feedCount({rates:{},pairs:{},hourlyDesk:{},hourlyCheck:{}})),'[2,0]');
+assert.equal(JSON.stringify(feedCount({rates:{},hourlyDesk:{},hourlyCheck:{}})),'[1,1]');
 assert(app.includes("document.addEventListener('visibilitychange'")&&
  app.includes('lastResearchRefresh=Date.now()'),
  'Existing in-place refresh behavior must stay intact');
