@@ -5,7 +5,7 @@
   "first_fx_reference_fixing": "2024-09-09",
   "source_hashes_sha256": {
     "ecb_fx_history": "ad2987b2f5aa5499718f085d5619907682d3d73de18061b7af4a46c5f5c584db",
-    "same_contract_futures_history": "410303a1ad45baf5d19eed6e829f250ddde2e521613abc7b113064eda8624530",
+    "same_contract_futures_history": "cac0b5de37cbd0f48d8a328d619fa03badadea40e22a22441e771d7e291cce22",
     "macro_candidate_pair_universe": "c835c7c889a8f499ec2feedbd750be679d44d5e5216f6fc41d36ca36dff734a5"
   },
   "method": "SAME_LISTED_FUTURES_CONTRACT_TWO_CONSECUTIVE_ECB_SESSIONS",
@@ -29,16 +29,16 @@
   "summary": {
     "fx_reference_rows": 559,
     "fx_pairs": 28,
-    "archived_same_contract_quotes": 190,
+    "archived_same_contract_quotes": 191,
     "contract_currencies": 3,
-    "strict_currency_rate_moves": 164,
-    "strict_relative_pair_moves": 144,
+    "strict_currency_rate_moves": 165,
+    "strict_relative_pair_moves": 145,
     "distinct_relative_market_days": 21,
     "pairs_with_any_relative_history": 3,
     "pairs_without_relative_history": 25,
     "excluded_roll_or_ambiguous_instrument_groups": 3,
     "relative_events_with_future_ecb_t0": 142,
-    "relative_events_without_future_ecb_t0": 2,
+    "relative_events_without_future_ecb_t0": 3,
     "out_of_sample_predictions": 0,
     "generated_fx_signals": 0
   },
@@ -531,7 +531,7 @@
     "USD/CHF": {
       "base": "USD",
       "quote": "CHF",
-      "matched_changes": 51,
+      "matched_changes": 52,
       "market_days": [
         "2026-10-19",
         "2026-10-20",
@@ -557,7 +557,7 @@
       ],
       "horizons": {
         "3m": 16,
-        "6m": 19,
+        "6m": 20,
         "12m": 16
       },
       "fx_signal": null,
@@ -3600,6 +3600,27 @@
       "quote_rate_change_bp": 0.0,
       "relative_rate_change_bp": -0.5,
       "source_usable_at_utc": "2026-11-16T18:10:23.885186Z",
+      "first_strictly_post_capture_ecb_date": null,
+      "following_ecb_date": null,
+      "same_day_fx_return": null,
+      "future_fx_return": null,
+      "outcome_used_in_model": false,
+      "is_out_of_sample_prediction": false,
+      "rate_instrument_quality": "SECONDARY_FUTURES_NOT_OIS",
+      "policy_repricing_bp": null,
+      "fx_signal": null
+    },
+    {
+      "pair": "USD/CHF",
+      "tenor": "6m",
+      "previous_market_date": "2026-11-13",
+      "market_date": "2026-11-16",
+      "base_contract": "ZQJ2027",
+      "quote_contract": "SA3M2027",
+      "base_rate_change_bp": -2.0,
+      "quote_rate_change_bp": 2.0,
+      "relative_rate_change_bp": -4.0,
+      "source_usable_at_utc": "2026-11-16T20:20:09.436941Z",
       "first_strictly_post_capture_ecb_date": null,
       "following_ecb_date": null,
       "same_day_fx_return": null,
