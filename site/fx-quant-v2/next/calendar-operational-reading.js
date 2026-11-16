@@ -114,13 +114,16 @@
   const future=[],needsReview=[],published=[];
   const actuals=officialActuals(news,current);
   for(const [i,e] of feed.events.entries()){
-   if(!e||e.status!=='UPCOMING'||!validDate(e.date)||e.date<today||!G8.has(e.ccy)||
+   if(!e||e.status!=='UPCOMING'||!validDate(e.date)||!G8.has(e.ccy)||
       typeof e.title!=='string'||!e.title.trim())continue;
    const it=toRome(e.date,e.time_local,e.timezone);
+   const day=it?.date||e.date;
+   if(day<today)continue;
    const consensus=verifiedValue(e,'consensus'),actual=verifiedValue(e,'actual');
-   const release=actuals.get([e.ccy,e.date,e.event_type,e.title].join('|'));
-   const result={id:i,ccy:e.ccy,country:country[e.ccy],title:e.title,date:e.date,
-     day:it?.date||e.date,romeTime:it?.time||null,
+   const key=[e.ccy,e.date,e.event_type,e.title].join('|');
+   const release=actuals.get(key);
+   const result={id:i,key,ccy:e.ccy,country:country[e.ccy],title:e.title,date:e.date,
+     day,romeTime:it?.time||null,
      sourceTime:validTime(e.time_local)?e.time_local:null,
      timezone:e.timezone||null,importance:e.importance||'NON CLASSIFICATA',
      kind:e.event_type==='CENTRAL_BANK_DECISION'?'Riunione banca centrale':'Pubblicazione macro',
@@ -139,7 +142,7 @@
    // pretend the result exists without a verified source and vintage.
    if(result.day===today&&result.timestamp===null){
     result.reviewReason='ORARIO_NON_VERIFICATO';needsReview.push(result);
-   }else if(result.day<today||(result.timestamp!==null&&result.timestamp<=current)){
+   }else if(result.timestamp!==null&&result.timestamp<=current){
     result.reviewReason='ORARIO_PROGRAMMATO_TRASCORSO';needsReview.push(result);
    }else future.push(result);
   }
@@ -155,6 +158,13 @@
    consensusReady:all.filter(x=>x.consensus!==null).length,
    status:all.length?'AGENDA UFFICIALE · DATI DA VERIFICARE':'NESSUN EVENTO FUTURO VERIFICATO'};
  }
+ function watchlistAgenda(feed,today=romeNow(),nowMs=Date.now(),news=null){
+  const checked=Date.parse(feed?.last_checked_at_utc);
+  if(feed?.schema!=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3'||!Array.isArray(feed.events)||
+     !number(checked)||checked>nowMs||nowMs-checked>7*864e5)return null;
+  return parse(feed,today,nowMs,news).events.filter(e=>e.importance==='HIGH'&&e.quality.startsWith('OFFICIAL'))
+   .map(e=>({...e,label:displayTitle(e),dateLabel:fmtDay(e.day)}));
+ }
  function card(e,review=false){
   const timeText=e.romeTime?' · '+esc(e.romeTime)+' IT':' · ora non disponibile';
   const waiting=review?(e.reviewReason==='ORARIO_NON_VERIFICATO'?
@@ -163,9 +173,10 @@
   // The first pair is one research example, not a recommended FX trade.
   const pair=String(e.pairs||'').split(' · ')[0];
   const pairCode=pair.replace('/','');
-  return '<article class="cal-event'+(review?' cal-event-review':'')+'"><div class="cal-event-head"><span>'+
+  return '<article class="cal-event'+(review?' cal-event-review':'')+'" id="cal-event-'+e.id+
+   '" data-cal-event="'+esc(e.key)+'" tabindex="-1" aria-labelledby="cal-title-'+e.id+'"><div class="cal-event-head"><span>'+
    esc(e.ccy)+' · '+esc(e.kind)+'</span><time datetime="'+esc(e.day)+'">'+fmtDay(e.day)+timeText+'</time></div>'+
-   '<h3>'+esc(e.release?.title||displayTitle(e))+'</h3>'+
+   '<h3 id="cal-title-'+e.id+'">'+esc(e.release?.title||displayTitle(e))+'</h3>'+
    (e.release?'<p><strong>Dato ufficiale pubblicato.</strong> <a href="'+esc(e.release.source_url)+'" target="_blank" rel="noopener noreferrer">'+esc(e.source)+' ↗</a></p>':'')+
    (review?'<p class="cal-review-state"><strong>Da verificare.</strong> '+esc(waiting)+'</p>':'')+
    '<p class="cal-driver-reading"><strong>Perché conta.</strong> '+esc(e.why)+'</p>'+
@@ -189,7 +200,7 @@
  function render(feed,today=romeNow(),nowMs=Date.now(),news=null){
   const p=parse(feed,today,nowMs,news);
   const last=checkedRome(p.asof);
-  const head='<section class="panel cal-panel" id="macro-calendar"><div class="panel-head"><div>'+
+  const head='<section class="panel cal-panel" id="macro-calendar" tabindex="-1"><div class="panel-head"><div>'+
    '<span class="mini-overline">AGENDA OPERATIVA / EVENTI G8</span><h2>Quali dati potrebbero cambiare le tesi FX?</h2>'+
    '<p>'+p.events.length+' eventi futuri'+
    (p.published.length?' · '+p.published.length+(p.published.length===1?' dato pubblicato oggi':' dati pubblicati oggi'):'')+
@@ -218,7 +229,7 @@
    '<div class="cal-coverage"><strong>Limite dei dati:</strong> consenso numerico certificato per '+p.consensusReady+
    ' eventi su '+p.total+'. Senza confronto pre-release/effettivo non calcoliamo sorprese e non attribuiamo movimenti del Forex. L’orario italiano è mostrato solo dove la fonte indica un’ora convertibile.</div></section>';
  }
- const api={parse,render,toRome,reportType:null,verifiedValue};
+ const api={parse,render,toRome,reportType:null,verifiedValue,watchlistAgenda};
  root.FXQuantMacroCalendar=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -1151,6 +1151,15 @@ function openPair(key,pairFocus='fx-selected-thesis'){
  navigate({pairFocus});
  return true;
 }
+function focusCalendarEvent(query){
+ const key=new URLSearchParams(query).get('event');
+ if(!key)return;
+ const event=Array.from(document.querySelectorAll('#macro-calendar [data-cal-event]'))
+  .find(card=>card.dataset.calEvent===key);
+ const collapsed=event?.closest('details');
+ if(collapsed)collapsed.open=true;
+ focusPairSection(event?.id||'macro-calendar');
+}
 function navigate({pairFocus}={}){
  const [route,query]=location.hash.slice(1).split('?');
  state.route=ROUTES[route]?route:'overview';
@@ -1160,6 +1169,7 @@ function navigate({pairFocus}={}){
  if(pairFocus!=='pair-primary-select')window.scrollTo({top:0,behavior:'instant'});
  if(firstResearchLoaded){
   render();
+  if(state.route==='news')focusCalendarEvent(query);
   if(state.route==='pairs'&&(state.pairDetailOpen||pairFocus)){
    if(pairFocus==='pair-primary-select')$(pairFocus)?.focus({preventScroll:true});
    else focusPairSection(pairFocus||'fx-selected-thesis');
@@ -1482,6 +1492,7 @@ async function loadAll(){
   if(state.route==='pairs')syncPairLocation(location.hash.split('?')[1]);
   firstResearchLoaded=true;
   render();
+  if(initial&&state.route==='news')focusCalendarEvent(location.hash.split('?')[1]);
   if(initial&&state.route==='pairs'&&state.pairDetailOpen)focusPairSection('fx-selected-thesis');
  }finally{refreshInProgress=false;}
 }
