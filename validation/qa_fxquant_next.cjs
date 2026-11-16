@@ -730,6 +730,8 @@ async function pairWatchlistJourney(page,label){
  assert.equal(await showWatchlist.getAttribute('aria-pressed'),'true');
  assert.equal(await locator(page,'.fx-rank-all-list').count(),0);
  assert.equal(await savedPair.count(),1);
+ const price=locator(page,'.fx-watch-price');
+ assert.match(await price.innerText(),/Fixing BCE del \d{2}\/\d{2}\/\d{4} e del \d{2}\/\d{2}\/\d{4}/);
  const catalyst=locator(page,'a.fx-watch-event');
  assert.match(await catalyst.innerText(),/CHF · Riunione SNB.*09:30 IT/s);
  await catalyst.click();
