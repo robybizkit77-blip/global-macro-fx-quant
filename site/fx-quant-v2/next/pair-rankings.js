@@ -298,7 +298,25 @@
   return summary+' '+finalCheck;
  }
 
- function renderWatchlist(saved,pairs,agenda,esc){
+ function watchPriceReading(key,market,esc,sign,date){
+  const {prices,asof,today,estimate}=market;
+  const closes=root.FXQuantDecisionJourney?.series?.(prices,key,asof,today)||[];
+  const assessment=estimate?.status==='STIMA_OPERATIVA_NON_VALIDATA'&&estimate.priceAsOf===asof?
+   estimate.pairs?.find(x=>x.key===key):null;
+  const last=closes.at(-1);
+  const prior=assessment?closes.find(x=>x.label===estimate.pricePriorAsOf):closes.at(-2);
+  const move=last&&prior&&prior.label<last.label?(last.value/prior.value-1)*100:null;
+  if(!finite(move))return '<span class="fx-watch-price">Variazione tra fixing BCE non disponibile</span>';
+  const flat=Math.abs(move)<0.005;
+  const movedFor=flat?null:move>0?key.slice(0,3):key.slice(3);
+  const fav=assessment?.favored;
+  const direction=flat?'Cambio fermo alla precisione mostrata':
+   !fav?'Movimento a favore di '+movedFor:
+   fav===movedFor?'Nella direzione della tesi su '+fav:'In senso opposto alla tesi su '+fav;
+  return '<span class="fx-watch-price"><strong>'+esc(sign(flat?0:move,2,'%'))+'</strong> '+esc(direction)+
+   '<small>Fixing BCE del '+esc(date(prior.label))+' e del '+esc(date(last.label))+'</small></span>';
+ }
+ function renderWatchlist(saved,pairs,agenda,market,esc,sign,date){
   if(!saved.length)return '<p class="fx-rank-unavailable">La watchlist è vuota. Apri una coppia e seleziona «Salva nella watchlist».</p>';
   return '<ul class="fx-watch-list">'+saved.map(key=>{
    const name=esc(key.slice(0,3)+'/'+key.slice(3));
@@ -309,8 +327,8 @@
     '<strong>'+esc(event.ccy+' · '+event.label)+'</strong><span>'+esc(event.dateLabel+' · '+timing+
      (event.quality==='OFFICIAL_PROVISIONAL'?' · data provvisoria':''))+' ↗</span></a>':
     '<p class="fx-watch-event">'+(agenda?'Nessun evento importante in agenda per queste valute.':'Agenda macro non disponibile o da ricontrollare.')+'</p>';
-   return '<li class="fx-watch-item"><button type="button" class="fx-watch-pair" data-pair="'+esc(key)+'" aria-label="Apri tesi '+name+'">'+
-    '<strong>'+name+'</strong><span>Apri tesi ›</span></button>'+catalyst+'</li>';
+   return '<li class="fx-watch-item"><div class="fx-watch-pair-cell"><button type="button" class="fx-watch-pair" data-pair="'+esc(key)+'" aria-label="Apri tesi '+name+'">'+
+    '<strong>'+name+'</strong><span>Apri tesi ›</span></button>'+watchPriceReading(key,market,esc,sign,date)+'</div>'+catalyst+'</li>';
   }).join('')+'</ul>';
  }
  function render(api){
@@ -323,11 +341,15 @@
    '<div class="fx-pair-list-switch" role="group" aria-label="Vista coppie FX">'+
    viewButton('all','Classifica',!watchView)+viewButton('watch','★ Watchlist ('+saved.length+')',watchView)+'</div>';
   if(watchView){
-   const agenda=root.FXQuantMacroCalendar?.watchlistAgenda(get('calendar'),dayNow(),Date.now(),get('news'));
+   const today=dayNow(),prices=get('currencyPrices');
+   const asof=prices?.source==='ECB euro foreign exchange reference rates'&&Array.isArray(prices.rows)?
+    prices.rows.reduce((newest,row)=>validDay(row?.Date)&&row.Date<=today&&row.Date>newest?row.Date:newest,''):null;
+   const market={prices,asof,today,estimate:get('estimatedMacro')};
+   const agenda=root.FXQuantMacroCalendar?.watchlistAgenda(get('calendar'),today,Date.now(),get('news'));
    return desk+'<section class="fx-rank-box" aria-label="Watchlist FX">'+
    '<div class="fx-rank-head"><div><h3>Coppie salvate</h3></div></div>'+
-   '<p class="fx-rank-sub">Per ogni coppia, il prossimo evento importante per una delle due valute. La lista è salvata su questo browser.</p>'+
-   renderWatchlist(saved,get('pairs')?.pairs||{},agenda,esc)+'</section></div>';
+   '<p class="fx-rank-sub">Ultimo movimento del cambio e prossimo evento importante per le valute della coppia. La lista è salvata su questo browser.</p>'+
+   renderWatchlist(saved,get('pairs')?.pairs||{},agenda,market,esc,sign,date)+'</section></div>';
   }
   const est=get('estimatedMacro');
   const active=est?.status==='STIMA_OPERATIVA_NON_VALIDATA'&&

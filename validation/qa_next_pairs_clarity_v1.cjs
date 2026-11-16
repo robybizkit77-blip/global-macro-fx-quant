@@ -62,4 +62,29 @@ assert(app.includes("if(e.target.id==='pair-primary-select')")&&
 const rootData=JSON.parse(read('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'));
 assert.equal(Object.keys(rootData.pairs).length,28);
 assert(rootData.pairs.EURUSD&&rootData.pairs.AUDCAD&&rootData.pairs.CADJPY);
+const rankingModule=require('../site/fx-quant-v2/next/pair-rankings.js');
+globalThis.FXQuantDecisionJourney=require('../site/fx-quant-v2/next/decision-journey.js');
+const marketPrices={source:'ECB euro foreign exchange reference rates',rows:[
+ {Date:'2026-11-12',EUR:1,CHF:.91},{Date:'2026-11-13',EUR:1,CHF:.92},{Date:'2026-11-16',EUR:1,CHF:.93}
+]};
+const estimate={status:'STIMA_OPERATIVA_NON_VALIDATA',priceAsOf:'2026-11-13',pricePriorAsOf:'2026-11-12',pairs:[{key:'EURCHF',favored:'CHF'}]};
+const inputs={pairs:{pairs:{EURCHF:{}}},currencyPrices:marketPrices,estimatedMacro:estimate};
+const renderWatch=()=>rankingModule.render({get:key=>inputs[key],state:{watch:new Set(['EURCHF']),pairListView:'watch'},
+ esc:String,sign:(x,n,s)=>x.toFixed(n)+s,date:String,dayNow:()=> '2026-11-13'});
+const normal=renderWatch();
+assert.match(normal,/1\.10%.*In senso opposto alla tesi su CHF/);
+assert.match(normal,/Fixing BCE del 2026-11-12 e del 2026-11-13/);
+assert(!normal.includes('2026-11-16'),'Do not include a future fixing');
+estimate.pairs[0].favored='EUR';
+assert.match(renderWatch(),/Nella direzione della tesi su EUR/);
+estimate.priceAsOf='2026-11-12';
+assert.match(renderWatch(),/Movimento a favore di EUR/);
+assert.doesNotMatch(renderWatch(),/direzione della tesi/);
+marketPrices.rows[1].CHF=.910001;
+assert.match(renderWatch(),/0\.00%.*Cambio fermo alla precisione mostrata/);
+marketPrices.rows[1].CHF=null;
+assert.match(renderWatch(),/Variazione tra fixing BCE non disponibile/);
+inputs.currencyPrices={...marketPrices,source:'Other source'};
+assert.match(renderWatch(),/Variazione tra fixing BCE non disponibile/);
+
 console.log('NEXT_PAIRS_CURRENT_FIRST_READ_PASS: 8 G8, 28 ranked crosses, opt-in desk/catalyst/source audit, click/back/watchlist; no obsolete Compare/Filter duplicate');
