@@ -10,10 +10,10 @@ const css=read('site/fx-quant-v2/next/calendar-operational-reading.css');
 new vm.Script(lib,{filename:'calendar-operational-reading.js'});
 new vm.Script(app,{filename:'app.js'});
 const {parse,render,toRome,verifiedValue}=require('../site/fx-quant-v2/next/calendar-operational-reading.js');
-assert.match(html,/calendar-operational-reading\.js\?v=4/);
+assert.match(html,/calendar-operational-reading\.js\?v=5/);
 assert.match(html,/calendar-operational-reading\.css\?v=3/);
 assert.match(app,/calendar:'\.\.\/\.\.\/\.\.\/live_data\/sections\/CALENDAR_OPERATIONAL_VIEW\.json'/);
-assert.match(app,/FXQuantMacroCalendar\?\.render/);
+assert.match(app,/FXQuantMacroCalendar\?\.render\?\.\(calendarFeed,dayNow\(\),Date\.now\(\),n\)/);
 assert.match(app,/operationalCalendar/);
 assert.match(css,/max-width:860px/);
 assert.match(css,/cal-event-actions/);
@@ -46,6 +46,28 @@ assert.equal(cadAfter.events[0].reference,'November 2026');
 const cadHtml=render(cadFixture,'2026-11-16',Date.parse('2026-11-16T13:29Z'));
 assert.match(cadHtml,/Canada · indice dei prezzi al consumo \(CPI\)/);
 assert(cadHtml.includes(cadSeed[0].source_url));
+const swissCalendar={events:[{ccy:'CHF',date:'2026-11-16',time_local:'09:00',timezone:'Europe/Zurich',
+ event_type:'GROWTH',title:'Swiss GDP flash',source_family:'SECO',status:'UPCOMING'}]};
+const swissActual={category:'MACRO_OFFICIAL_ACTUAL',confidence:'A',event_key:'CHF|2026-11-16|GROWTH|Swiss GDP flash',
+ ccy:'CHF',event_type:'GROWTH',as_of:'2026-11-16',title:'Svizzera · PIL flash, trimestre su trimestre: +0,2%',
+ source_url:'https://www.seco.admin.ch/en/gdp-flash',first_runner_observed_at_utc:'2026-11-16T10:53:39Z'};
+const newsWith=item=>({schema:'GMFQ_NEWS_PULSE_OPERATIONAL_V1',items:[item]});
+const swissAt=(clock,item=swissActual)=>parse(swissCalendar,'2026-11-16',Date.parse('2026-11-16T'+clock+'Z'),newsWith(item));
+assert.equal(swissAt('07:59').events.length,1);
+assert.equal(swissAt('10:53:38').needsReview.length,1,'A clock alone cannot verify the outcome');
+assert.equal(swissAt('10:53:39').published.length,1);
+assert.equal(swissAt('10:53:39').needsReview.length,0);
+for(const field of [{as_of:'2026-11-15'},{ccy:'CAD'},{event_type:'INFLATION'},
+ {event_key:'CHF|2026-11-16|GROWTH|Swiss GDP final'},{category:'MACRO'},{confidence:'B'},
+ {first_runner_observed_at_utc:'2026-11-16T07:59:59Z'},{source_url:'javascript:alert(1)'}]){
+ assert.equal(swissAt('11:00',{...swissActual,...field}).needsReview.length,1);
+}
+const swissPublished=render(swissCalendar,'2026-11-16',Date.parse('2026-11-16T11:00Z'),newsWith(swissActual));
+assert.match(swissPublished,/Pubblicati oggi/);
+assert.match(swissPublished,/PIL flash, trimestre su trimestre: \+0,2%/);
+assert(swissPublished.includes(swissActual.source_url));
+assert(!swissPublished.includes('Oggi · risultato ancora da verificare'));
+assert.equal(parse(swissCalendar,'2026-11-17',Date.parse('2026-11-17T11:00Z'),newsWith(swissActual)).published.length,0);
 assert.equal(toRome('2026-11-19','11:30','Australia/Sydney').time,'01:30');
 assert.equal(toRome('2026-11-20','08:30','Asia/Tokyo').time,'00:30');
 assert.equal(toRome('2026-07-10','08:00','America/New_York').time,'14:00');

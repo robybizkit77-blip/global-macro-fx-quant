@@ -13,10 +13,20 @@ spec=importlib.util.spec_from_file_location("free_desk",ROOT/"validation/home/bu
 free=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(free)
 NOW=datetime(2026,11,13,13,14,tzinfo=timezone.utc)
+FIXTURE=ROOT/"validation/home/fixtures/free_hourly_desk_2026-11-13.json"
 
 class FreeDeskTest(unittest.TestCase):
- def build(self,now=NOW,previous=None,rss=None,root=ROOT):
-  return free.build(root,now,previous=previous,rss=rss if rss is not None else {"headlines":[]})
+ def setUp(self):
+  tmp=tempfile.TemporaryDirectory()
+  self.addCleanup(tmp.cleanup)
+  self.root=Path(tmp.name)
+  self.sections=self.root/"live_data/sections"
+  self.sections.mkdir(parents=True)
+  fixture=json.loads(FIXTURE.read_text(encoding="utf-8"))
+  for name,data in fixture.items():
+   (self.sections/(name+".json")).write_text(json.dumps(data),encoding="utf-8")
+ def build(self,now=NOW,previous=None,rss=None):
+  return free.build(self.root,now,previous=previous,rss=rss if rss is not None else {"headlines":[]})
  def test_no_paid_runtime_contract(self):
   workflow=(ROOT/".github/workflows/next-independent-ai-hourly-desk-v1.yml").read_text(encoding="utf-8")
   self.assertNotIn("MARKET_DESK_API_KEY",workflow)
@@ -83,19 +93,15 @@ class FreeDeskTest(unittest.TestCase):
 
  def test_new_market_input_changes_edition(self):
   first=self.build()
-  with tempfile.TemporaryDirectory() as tmp:
-   d=Path(tmp)/"live_data/sections"
-   d.mkdir(parents=True)
-   for name in ("NEWS_PULSE_OPERATIONAL.json","ESTIMATED_RESIDUAL_GAPS.json","CALENDAR_OPERATIONAL_VIEW.json"):
-    (d/name).write_bytes((ROOT/"live_data/sections"/name).read_bytes())
-   p=d/"NEWS_PULSE_OPERATIONAL.json"
-   x=json.loads(p.read_text(encoding="utf-8"))
-   x["items"][0]["title"]="JPY: repricing implicito da futures più hawkish (+7.2 bp 6M in 1D)"
-   p.write_text(json.dumps(x))
-   new=self.build(previous=first,root=Path(tmp),now=NOW+timedelta(hours=1))
-   self.assertNotEqual(first["material_digest"],new["material_digest"])
-   self.assertNotEqual(first["generated_at_utc"],new["generated_at_utc"])
-   self.assertEqual(new["history"][0]["headline"],first["headline"])
+  p=self.sections/"NEWS_PULSE_OPERATIONAL.json"
+  x=json.loads(p.read_text(encoding="utf-8"))
+  repricing=next(item for item in x["items"] if item["category"]=="FUTURES_IMPLIED_REPRICING" and item["ccy"]=="JPY")
+  repricing["title"]="JPY: repricing implicito da futures più hawkish (+7.2 bp 6M in 1D)"
+  p.write_text(json.dumps(x),encoding="utf-8")
+  new=self.build(previous=first,now=NOW+timedelta(hours=1))
+  self.assertNotEqual(first["material_digest"],new["material_digest"])
+  self.assertNotEqual(first["generated_at_utc"],new["generated_at_utc"])
+  self.assertEqual(new["history"][0]["headline"],first["headline"])
  def test_rss_source_is_only_headline_not_imagined_policy(self):
   rss={"headlines":[{"title":"Bank of Canada publishes outlook survey",
       "source_id":"BOC_PRESS","ccy":"CAD",
@@ -108,15 +114,12 @@ class FreeDeskTest(unittest.TestCase):
   self.assertFalse(any("BoC ha tagliato" in x["analysis"] for x in out["news"]))
   self.assertTrue(any("bankofcanada.ca" in u for u in out["provenance"]["web_source_urls"]))
  def test_future_dates_do_not_create_market_reaction(self):
-  with tempfile.TemporaryDirectory() as tmp:
-   d=Path(tmp)/"live_data/sections"
-   d.mkdir(parents=True)
-   for name in ("NEWS_PULSE_OPERATIONAL.json","ESTIMATED_RESIDUAL_GAPS.json","CALENDAR_OPERATIONAL_VIEW.json"):
-    (d/name).write_bytes((ROOT/"live_data/sections"/name).read_bytes())
-   p=d/"NEWS_PULSE_OPERATIONAL.json";x=json.loads(p.read_text())
-   x["content_as_of"]="2026-11-14";p.write_text(json.dumps(x))
-   with self.assertRaisesRegex(ValueError,"window"):
-    self.build(root=Path(tmp))
+  p=self.sections/"NEWS_PULSE_OPERATIONAL.json"
+  x=json.loads(p.read_text(encoding="utf-8"))
+  x["content_as_of"]="2026-11-14"
+  p.write_text(json.dumps(x),encoding="utf-8")
+  with self.assertRaisesRegex(ValueError,"window"):
+   self.build()
  def test_malformed_rss_does_not_publish_fake_source(self):
   rss={"headlines":[{"title":"Unexpected rate cut", "source_id":"FED_PRESS",
    "published_at_utc":"2026-11-13T12:30:00Z",
