@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-16T14:47:50.713936Z",
-  "edition_time_rome": "2026-11-16 15:47",
-  "material_digest": "42a355de5ee20864ca6edb32cf5d28747f5d3811c620c539735459c29e04d303",
+  "generated_at_utc": "2026-11-16T15:06:27.926490Z",
+  "edition_time_rome": "2026-11-16 16:06",
+  "material_digest": "3942a44620830fc632d6841a4b0b05b89d57d9d91e0b2b33eeb6ef12f2121294",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
@@ -57,7 +57,7 @@
     {
       "headline": "Frank Elderson: Smart supervision for small banks",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-16",
       "event_date": "2026-11-16",
       "market_area": "BANCHE CENTRALI",
@@ -66,14 +66,14 @@
       ]
     },
     {
-      "headline": "Boris Vujčić: Risks and resilience in the euro area financial system",
+      "headline": "Bank of Canada Governor Tiff Macklem to step down in June 2027",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "FOLLOW_UP",
+      "kind": "NEWS",
       "published_date": "2026-11-16",
       "event_date": "2026-11-16",
       "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261116~db374b56ab.en.html"
+        "https://www.bankofcanada.ca/2026/11/bank-of-canada-governor-tiff-macklem-to-step-down-in-june-2027/"
       ]
     }
   ],
@@ -87,15 +87,15 @@
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
+      "https://www.bankofcanada.ca/2026/11/bank-of-canada-governor-tiff-macklem-to-step-down-in-june-2027/",
       "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261116_1~11dd7f62af.en.html",
-      "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261116~db374b56ab.en.html",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "https://www.seco.admin.ch/en/gdp-flash"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-16",
-      "rss_checked_at_utc": "2026-11-16T14:47:50.713936Z",
+      "rss_checked_at_utc": "2026-11-16T15:06:27.926490Z",
       "commodities": "2026-11-13"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-16T14:47:50.713936Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "42a355de5ee20864ca6edb32cf5d28747f5d3811c620c539735459c29e04d303"
+    },
     {
       "generated_at_utc": "2026-11-16T11:32:29.704994Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
