@@ -885,6 +885,20 @@ function pairs(){
  const tradeTone=tradeStatus==='DA VALIDARE'?'awaiting':
   tradeStatus==='IN ATTESA'?'awaiting':
   tradeStatus==='BASSA ORA'||tradeStatus==='NON SUPPORTATA'?'caution':'neutral';
+ const pricePeriods=[
+  [5,activePair?.move5Percent,activePair?.fiveState],
+  [20,activePair?.pricePercent,activePair?.aligned?'COERENTE':activePair?.opposite?'CONTRARIO':'INDECISO']
+ ];
+ const priceRead=activePair&&validDay(estimate.priceAsOf)&&pricePeriods.every(([,move])=>finite(move))?
+  '<ul class="pairs-price-periods" aria-label="Variazioni del cambio nei fixing BCE">'+
+  pricePeriods.map(([days,move,alignment])=>{
+   const tone=!fav?'neutral':alignment==='COERENTE'?'support':alignment==='CONTRARIO'?'against':'neutral';
+   const label=!fav?'Tesi senza direzione':tone==='support'?'Coerente con la tesi':
+    tone==='against'?'Contrasta la tesi':'Movimento poco marcato';
+   return '<li data-pair-price-days="'+days+'" data-pair-price-tone="'+tone+'"><span>'+days+' sedute</span>'+
+    '<strong>'+esc(sign(move,2,'%'))+'</strong><span>'+esc(label)+'</span></li>';
+  }).join('')+'</ul><small>Fixing BCE al '+date(estimate.priceAsOf)+'</small>':
+  '<small>Serve un confronto omogeneo dei fixing BCE sulle due finestre.</small>';
  const main='<section class="panel pairs-reading-compact" aria-label="Sintesi operativa della coppia selezionata">'+
   '<div class="pairs-reading-head"><div><span class="mini-overline">IL GIUDIZIO FX · '+esc(getPairName(state.pair))+'</span><h2>'+esc(favMeaning)+'</h2></div>'+
   '<span class="badge info">'+esc(quality)+'</span></div>'+
@@ -892,7 +906,8 @@ function pairs(){
   '<div class="pairs-three-answers">'+
    '<div><span>TESI FONDAMENTALE</span><strong>'+esc(activePair?.thesisStrength||'NON VALUTABILE')+'</strong></div>'+
    '<div class="pairs-trade-assessment" data-pairs-trade-tone="'+tradeTone+'"><span>TRADE ATTRACTIVENESS</span><strong>'+esc(tradeStatus)+'</strong></div>'+
-   '<div><span>TIMING · COSA OSSERVARE</span><strong>'+esc(tradeText)+'</strong></div></div>'+
+   '<div class="pairs-price-assessment"><span>IL PREZZO SEGUE LA TESI?</span>'+priceRead+'</div></div>'+
+  '<p class="pairs-timing-reading"><strong>Prima di valutare un ingresso.</strong> '+esc(tradeText)+'</p>'+
   '<p class="pairs-why-no-entry"><strong>Rischio operativo.</strong> '+esc(riskReading)+
    ' Una buona tesi fondamentale non equivale a un buon ingresso.</p>'+
   '<div class="pairs-conditions" aria-label="Cosa confermerebbe e cosa indebolirebbe la tesi">'+
