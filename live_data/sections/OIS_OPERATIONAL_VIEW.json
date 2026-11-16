@@ -1,7 +1,7 @@
 {
   "currencies": {
     "AUD": {
-      "as_of": "2026-11-12",
+      "as_of": "2026-11-13",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -9,22 +9,22 @@
       "direction_vs_policy": "MIXED_FRONT_END_UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 0.0,
-          "change_1w_bp": -1.5,
-          "policy_delta_bp": -10.0,
-          "rate": 4.75
+          "change_1d_bp": 5.0,
+          "change_1w_bp": 9.5,
+          "policy_delta_bp": -5.0,
+          "rate": 4.8
         },
         "3m": {
           "change_1d_bp": 0.0,
-          "change_1w_bp": 0.0,
+          "change_1w_bp": 0.5,
           "policy_delta_bp": 0.5,
           "rate": 4.855
         },
         "6m": {
-          "change_1d_bp": 0.0,
-          "change_1w_bp": -1.0,
-          "policy_delta_bp": 6.0,
-          "rate": 4.91
+          "change_1d_bp": 0.5,
+          "change_1w_bp": 3.5,
+          "policy_delta_bp": 6.5,
+          "rate": 4.915
         }
       },
       "official_status": "ACTIVE",
@@ -34,7 +34,7 @@
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)"
     },
     "CAD": {
-      "as_of": "2026-11-12",
+      "as_of": "2026-11-13",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -42,22 +42,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 9.0,
-          "change_1w_bp": 18.0,
-          "policy_delta_bp": 79.5,
-          "rate": 3.295
+          "change_1d_bp": 3.5,
+          "change_1w_bp": 28.5,
+          "policy_delta_bp": 83.0,
+          "rate": 3.33
         },
         "3m": {
-          "change_1d_bp": 4.0,
-          "change_1w_bp": 6.5,
-          "policy_delta_bp": 27.5,
-          "rate": 2.775
+          "change_1d_bp": 1.0,
+          "change_1w_bp": 10.5,
+          "policy_delta_bp": 28.5,
+          "rate": 2.785
         },
         "6m": {
-          "change_1d_bp": 5.0,
-          "change_1w_bp": 13.0,
-          "policy_delta_bp": 51.5,
-          "rate": 3.015
+          "change_1d_bp": 2.0,
+          "change_1w_bp": 20.5,
+          "policy_delta_bp": 53.5,
+          "rate": 3.035
         }
       },
       "official_status": "ACTIVE",
@@ -455,7 +455,7 @@
       "change_1w_available": false,
       "confidence": "C",
       "conflicted_source_eligible_for_repricing": false,
-      "direction_vs_policy": "WITHHELD",
+      "direction_vs_policy": null,
       "horizons": {
         "12m": {
           "business_day_lag": 1,
@@ -471,26 +471,26 @@
           "quote_as_of": "2026-11-13",
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
-          "rate": 4.755,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQG2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-03-01",
-          "futures_price": 95.68,
+          "futures_price": 95.67,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-13T21:59:55Z",
-          "quote_as_of": "2026-11-13",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
-          "rate": 4.32,
+          "price_valid_until": "2026-11-16T09:10:14Z",
+          "quote_as_of": "2026-11-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQG2027"
@@ -509,7 +509,7 @@
           "quote_as_of": "2026-11-13",
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
-          "rate": 4.49,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQJ2027"
@@ -520,7 +520,7 @@
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
       "note": "Indicative secondary futures quotes have unresolved same-contract/same-day source disagreement; first and later prints are preserved separately. Levels may be displayed as provisional estimates only. No official OIS, policy delta or 1D/1W repricing is certified.",
       "official_status": "WITHHELD",
-      "operational_status": "GREEN_ESTIMATED",
+      "operational_status": "WITHHELD",
       "policy_rate": 3.875,
       "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
@@ -537,12 +537,6 @@
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
       "source_conflict_keys": [
         {
-          "contract": "ZQG2027",
-          "event_id": "7be9728ae8328f60f89a0fb300996cc3045f5572ec7822def38b8fe7df2e51a6",
-          "horizon": "3m",
-          "observation_date": "2026-11-13"
-        },
-        {
           "contract": "ZQJ2027",
           "event_id": "d621887f36de32fe864d28bc29e7aaeabf76cf25a701ed826108608298db1d37",
           "horizon": "6m",
@@ -556,7 +550,8 @@
         }
       ],
       "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
-      "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS"
+      "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS",
+      "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
     }
   },
   "official_runtime_untouched": true,
@@ -564,9 +559,9 @@
   "status": "PARTIAL_WITHHELD",
   "summary": {
     "g8_total": 8,
-    "green_estimated": 3,
+    "green_estimated": 2,
     "green_official": 4,
-    "operational_green": 7,
-    "operational_withheld": 1
+    "operational_green": 6,
+    "operational_withheld": 2
   }
 }
