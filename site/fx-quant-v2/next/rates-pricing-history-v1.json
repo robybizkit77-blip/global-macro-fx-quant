@@ -2246,6 +2246,13 @@
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 4.855,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
           }
         ],
         "6m": [
@@ -2378,6 +2385,13 @@
           {
             "date": "2026-11-12",
             "rate": 4.91,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 4.915,
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
@@ -2516,11 +2530,18 @@
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 4.8,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
           }
         ]
       },
-      "latest_date": "2026-11-12",
-      "observed_dates": 19,
+      "latest_date": "2026-11-13",
+      "observed_dates": 20,
       "derived_reference_points": 0
     },
     "NZD": {
@@ -2740,6 +2761,13 @@
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 2.785,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
           }
         ],
         "6m": [
@@ -2872,6 +2900,13 @@
           {
             "date": "2026-11-12",
             "rate": 3.015,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 3.035,
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
@@ -3010,11 +3045,18 @@
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 3.33,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
           }
         ]
       },
-      "latest_date": "2026-11-12",
-      "observed_dates": 19,
+      "latest_date": "2026-11-13",
+      "observed_dates": 20,
       "derived_reference_points": 0
     }
   }
