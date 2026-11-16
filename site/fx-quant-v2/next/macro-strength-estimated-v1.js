@@ -261,6 +261,7 @@
   pairs.sort((a,b)=>a.tier-b.tier||Math.abs(b.thesisGap)-Math.abs(a.thesisGap)||a.key.localeCompare(b.key));
   return {status:'STIMA_OPERATIVA_NON_VALIDATA',schema:'GMFQ_MACRO_STRENGTH_ESTIMATED_V1',
    asof:observed.generated_europe_rome_day,priceAsOf:rank.asof,priceFrom:rank.from,
+   priceFrom5:fifth.Date,pricePriorAsOf:common.at(-2).Date,pricePriorFrom5:common.at(-7).Date,
    legacyMacroAsOf:observed.canonical_D_macro_baseline_as_of,
    currencies,pairs,by,ranking:rank,coverage:{currencies:8,pairs:28,
     withGDPAcceleration:currencies.filter(x=>x.growthTrend!==null).length,
