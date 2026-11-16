@@ -13,6 +13,8 @@
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
+const priceModel=require('../site/fx-quant-v2/next/macro-strength-estimated-v1.js');
+const rankings=require('../site/fx-quant-v2/next/pair-rankings.js');
 const BASE=process.env.FXQN_BASE||'http://127.0.0.1:8000/site/fx-quant-v2/next/index.html';
 const routes={
  overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',
@@ -22,6 +24,16 @@ const routes={
 const evidence='fxquant-next-browser-evidence';
 fs.mkdirSync(evidence,{recursive:true});
 const locator=(page,css)=>page.locator(css);
+const readSource=path=>JSON.parse(fs.readFileSync(path,'utf8'));
+const priceEvidence=priceModel.evaluate({
+ observed:readSource('site/control-room-preview/macro-v3-current-evidence.json'),
+ prices:readSource('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
+ ois:readSource('site/fx-quant-v2/ois-pricing-snapshot.json'),
+ rates:readSource('live_data/sections/NATIVE_RATES_DATA.json'),
+ model:readSource('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),
+ now:new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(),
+ rankingFn:rankings.currencyRanking
+});
 async function route(page,key){
  await page.evaluate(key=>{location.hash='#'+key},key);
  await page.waitForFunction(({key,title})=>
@@ -449,7 +461,7 @@ async function chosenPair(page,key,label){
  const p=locator(page,'.pairs-reading-compact');
  assert.equal(await p.count(),1,label+' '+key+' first-read missing');
  assert.equal(await p.locator('.pairs-three-answers > div').count(),3,
-  label+' thesis, trade attractiveness and entry caveat incomplete');
+  label+' thesis, trade attractiveness and price comparison incomplete');
  const trade=await p.locator('.pairs-trade-assessment').getAttribute('data-pairs-trade-tone');
  assert(['neutral','awaiting','caution'].includes(trade),
   label+' trade status category lost its evidence-based visual treatment');
@@ -469,9 +481,26 @@ async function chosenPair(page,key,label){
  assert(!/livelli H4 (confermati|verificati)|segnale di ingresso confermato/i.test(riskText),
   label+' '+key+' cannot claim verified H4 entries from ECB daily fixings');
  const story=await p.innerText();
- for(const word of ['TESI FONDAMENTALE','TRADE ATTRACTIVENESS',
+ for(const word of ['TESI FONDAMENTALE','TRADE ATTRACTIVENESS','IL PREZZO SEGUE LA TESI?',
+  'Prima di valutare un ingresso',
   'Rafforzerebbe il quadro','Lo indebolirebbe','Evento da monitorare'])
   assert(story.includes(word),label+' '+key+' missing '+word);
+ for(const days of [5,20]){
+  const period=p.locator('[data-pair-price-days="'+days+'"]');
+  assert.equal(await period.count(),1,label+' '+key+' price horizon missing');
+  const pair=priceEvidence.pairs.find(row=>row.key===key);
+  const alignment=days===5?pair.fiveState:pair.aligned?'COERENTE':pair.opposite?'CONTRARIO':'INDECISO';
+  const sourceTone=!pair.favored?'neutral':alignment==='COERENTE'?'support':alignment==='CONTRARIO'?'against':'neutral';
+  const move=days===5?pair.move5Percent:pair.pricePercent;
+  const expectedMove=(move>0?'+':move<0?'−':'')+Math.abs(move).toLocaleString('it-IT',{
+   minimumFractionDigits:2,maximumFractionDigits:2
+  })+'%';
+  assert.equal(await period.getAttribute('data-pair-price-tone'),sourceTone,label+' '+key+' price direction reversed');
+  assert.equal(await period.locator('strong').innerText(),expectedMove,label+' '+key+' price move misquoted');
+ }
+ assert.equal(await p.locator('.pairs-price-assessment small').innerText(),
+  'Fixing BCE al '+priceEvidence.priceAsOf.split('-').reverse().join('/'),
+  label+' '+key+' price comparison lost its source date');
  assert(/calendario|evento|prossimo|previsto|ufficiale/i.test(story),
   label+' '+key+' no explanation of calendar source');
  return p;
