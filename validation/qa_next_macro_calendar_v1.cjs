@@ -10,7 +10,7 @@ const css=read('site/fx-quant-v2/next/calendar-operational-reading.css');
 new vm.Script(lib,{filename:'calendar-operational-reading.js'});
 new vm.Script(app,{filename:'app.js'});
 const {parse,render,toRome,verifiedValue}=require('../site/fx-quant-v2/next/calendar-operational-reading.js');
-assert.match(html,/calendar-operational-reading\.js\?v=3/);
+assert.match(html,/calendar-operational-reading\.js\?v=4/);
 assert.match(html,/calendar-operational-reading\.css\?v=3/);
 assert.match(app,/calendar:'\.\.\/\.\.\/\.\.\/live_data\/sections\/CALENDAR_OPERATIONAL_VIEW\.json'/);
 assert.match(app,/FXQuantMacroCalendar\?\.render/);
@@ -31,6 +31,21 @@ assert.equal(result.events.filter(x=>x.kind==='Riunione banca centrale').length,
 assert.deepEqual(toRome('2026-11-12','07:00','Europe/London'),{
  date:'2026-11-12',time:'08:00',timestamp:Date.parse('2026-11-12T07:00:00Z')});
 assert.equal(toRome('2026-11-16','09:00','Europe/Zurich').time,'09:00');
+const cadSeed=JSON.parse(read('live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json')).events
+ .filter(e=>e.ccy==='CAD'&&e.title==='Consumer Price Index'&&e.date>='2026-11-16');
+assert.deepEqual(cadSeed.slice(0,2).map(e=>[e.date,e.reference_period]),
+ [['2026-11-16','October 2026'],['2026-12-14','November 2026']]);
+const cadFixture={events:cadSeed.map(e=>({...e,status:'UPCOMING'}))};
+const cadBefore=parse(cadFixture,'2026-11-16',Date.parse('2026-11-16T13:29Z'));
+assert.equal(cadBefore.events[0].romeTime,'14:30');
+assert.equal(cadBefore.events[0].actual,null);
+const cadAfter=parse(cadFixture,'2026-11-16',Date.parse('2026-11-16T13:30Z'));
+assert.equal(cadAfter.needsReview[0].reference,'October 2026');
+assert.equal(cadAfter.needsReview[0].actual,null);
+assert.equal(cadAfter.events[0].reference,'November 2026');
+const cadHtml=render(cadFixture,'2026-11-16',Date.parse('2026-11-16T13:29Z'));
+assert.match(cadHtml,/Canada · indice dei prezzi al consumo \(CPI\)/);
+assert(cadHtml.includes(cadSeed[0].source_url));
 assert.equal(toRome('2026-11-19','11:30','Australia/Sydney').time,'01:30');
 assert.equal(toRome('2026-11-20','08:30','Asia/Tokyo').time,'00:30');
 assert.equal(toRome('2026-07-10','08:00','America/New_York').time,'14:00');

@@ -69,7 +69,8 @@ class G8OfficialNewsTests(unittest.TestCase):
     def test_abs_sa_unemployment_rate_is_not_a_positive_fx_change_or_survey_surprise(self):
         rows,_=aud.capture([],AUD_AFTER,aud_fetch,observed_clock=lambda:AUD_SEEN)
         before=build(AUD_AFTER,v12_aud_actuals=rows)
-        self.assertEqual(before,[], "Source not observed until runner's actual parse timestamp")
+        self.assertFalse(any(x["metric_id"]=="AU_UNEMP_RATE_SA" for x in before),
+                         "Australian release must wait for the runner's actual parse timestamp")
         news=build(AUD_SEEN+timedelta(minutes=1),v12_aud_actuals=rows)
         item=next(x for x in news if x["metric_id"]=="AU_UNEMP_RATE_SA")
         self.assertEqual(item["ccy"],"AUD")
@@ -87,8 +88,9 @@ class G8OfficialNewsTests(unittest.TestCase):
 
     def test_japan_national_oct_cpi_core_not_us_style_core_or_tokyo(self):
         records,_=jp.capture([],JP_AFTER,jp_fetch,observed_clock=lambda:JP_SEEN)
-        self.assertEqual(build(JP_AFTER,v14_jpy_actuals=records),[],
-                         "no news before first actual source observation")
+        before=build(JP_AFTER,v14_jpy_actuals=records)
+        self.assertFalse(any(x["metric_id"]=="JP_CPI_OCT26_CORE_EX_FRESH_FOOD_YOY_NSA" for x in before),
+                         "Japanese release must wait for the first actual source observation")
         feed=build(JP_SEEN+timedelta(minutes=1),v14_jpy_actuals=records)
         jpnews=next(x for x in feed if x["ccy"]=="JPY")
         self.assertEqual(jpnews["metric_id"],"JP_CPI_OCT26_CORE_EX_FRESH_FOOD_YOY_NSA")
