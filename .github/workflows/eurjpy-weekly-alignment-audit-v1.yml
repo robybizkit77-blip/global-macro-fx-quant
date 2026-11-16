@@ -53,8 +53,11 @@ jobs:
           assert x['asynchronous_cross_day_returns_used'] is False
           assert x['missing_values_interpolated'] is False
           assert x['beta_promoted'] is False
-          assert x['historical_oos_rows'] == 0
-          assert x['longest_consecutive_exact_week_span'] < 54
+          ready=x['longest_consecutive_exact_week_span']>=54
+          assert x['full_exact_week_panel_ready'] is ready
+          assert (x['historical_oos_rows']>0) is ready
+          expected='EXACT_WEEKLY_PSEUDO_OOS_CANDIDATE_EXISTS' if ready else 'NO_52W_PRIOR_ONLY_EXACT_DATE_OOS'
+          assert x['status']==expected
           print('EURJPY_EXACT_CALENDAR_BLOCKERS',[(g['week_end'],g['status'],
             g['last_each_date']) for g in x['gaps']])
           print('EURJPY_LONGEST_CONSECUTIVE_WEEKS',x['longest_consecutive_exact_week_span'])
