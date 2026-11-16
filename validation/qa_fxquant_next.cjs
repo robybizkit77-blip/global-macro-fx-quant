@@ -105,8 +105,10 @@ async function inspectRoute(page,label,key){
    label+' all eight central-bank country choices required');
   assert.equal(await locator(page,'.drivers-want-can .drivers-analysis').count(),2,
    label+' official WANT and macro CAN must be separated');
-  assert.equal(await locator(page,'.drivers-policy-facts .drivers-fact').count(),2,
-   label+' policy date and next meeting must be presented separately');
+  const policy=locator(page,'.drivers-selection .drivers-lead');
+  assert.equal(await policy.count(),1,label+' policy information should have a single first reading');
+  assert.match(await policy.innerText(),/Tasso ufficiale .*decisione .*prossima riunione/i,
+   label+' policy rate, decision date and next meeting must remain visible');
   assert.equal(await locator(page,'.drivers-fold .drivers-fact').count(),3,
    label+' dated 3M/6M/12M pricing audit must remain accessible');
   assert.equal(await locator(page,'.drivers-links [data-bank-open]').count(),2,
@@ -267,11 +269,17 @@ async function macroDriversJourney(page,label){
  assert((await locator(page,'.drivers-selection h2').innerText()).includes('Bank of England'),
   label+' bank dossier did not follow selection');
  const bank=await locator(page,'.drivers-selection').innerText();
- assert(bank.includes('WANT')&&bank.includes('CAN')&&bank.includes('TASSO UFFICIALE')&&
-  bank.includes('PRICING MONETARIO')&&bank.includes('PREZZO E TESI FX'),
+ assert(bank.includes('WANT')&&bank.includes('CAN')&&bank.includes('Tasso ufficiale')&&
+  bank.includes('COSA PREZZA IL MERCATO')&&bank.includes('CONFERMA SUL FOREX'),
   label+' policy decision, monetary pricing and FX model must remain distinct');
- assert(bank.includes('OIS')&&bank.includes('non hanno la stessa data'),
-  label+' mixed-date cross-asset risk must not be described as a synchronized market move');
+ assert(bank.includes('OIS'),'BoE pricing must name the instrument');
+ const bankSources=locator(page,'.drivers-bank-sources');
+ assert.equal(await bankSources.getAttribute('open'),null,label+' pricing detail starts collapsed');
+ await bankSources.locator('summary').click();
+ assert.match(await bankSources.innerText(),/3M \/ RIFERIMENTO DI MERCATO/);
+ assert.match(await bankSources.innerText(),/VIX.*HY/);
+ assert.equal(await bankSources.locator('a').filter({hasText:'Comunicazione ufficiale'}).count(),1,
+  label+' verified BoE release link must be available');
  await locator(page,'[data-bank-open="rates"]').click();
  await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='rates');
  assert.equal(await locator(page,'#rs-country').inputValue(),'GBP',
