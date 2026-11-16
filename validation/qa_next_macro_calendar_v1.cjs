@@ -10,7 +10,7 @@ const css=read('site/fx-quant-v2/next/calendar-operational-reading.css');
 new vm.Script(lib,{filename:'calendar-operational-reading.js'});
 new vm.Script(app,{filename:'app.js'});
 const {parse,render,toRome,verifiedValue}=require('../site/fx-quant-v2/next/calendar-operational-reading.js');
-assert.match(html,/calendar-operational-reading\.js\?v=5/);
+assert.match(html,/calendar-operational-reading\.js\?v=6/);
 assert.match(html,/calendar-operational-reading\.css\?v=3/);
 assert.match(app,/calendar:'\.\.\/\.\.\/\.\.\/live_data\/sections\/CALENDAR_OPERATIONAL_VIEW\.json'/);
 assert.match(app,/FXQuantMacroCalendar\?\.render\?\.\(calendarFeed,dayNow\(\),Date\.now\(\),n\)/);
@@ -98,12 +98,13 @@ for(const route of ['rates','currencies','pairs']){
 }
 assert(safe.includes('data-cal-currency="GBP"')&&safe.includes('data-cal-pair="EURGBP"'),
  'UK GDP research path must select GBP and a canonical EUR/GBP example');
+assert(safe.includes('href="#pairs?pair=EURGBP"'),'Calendar links must open the specific pair in a new tab');
 assert(safe.includes('cal-event-evidence')&&safe.includes('Fonte, consenso e verifiche dopo l’evento'),
  'Source, consensus, quality and post-event controls must remain accessible');
 assert(safe.includes('Svizzera · PIL flash')&&safe.includes('Titolo originale: Swiss GDP flash'),
  'Italian first-read titles must preserve exact original event name in evidence');
 assert(app.includes("e.target.closest('[data-cal-research]')")&&
- app.includes("state.pair=resolved;state.spotPair=resolved;state.pairDetailOpen=true;")&&
+ app.includes("if(mode==='pairs'&&openPair(calendarResearch.dataset.calPair))return;")&&
  app.includes("if(location.hash==='#'+mode)render();"),
  'Click handler must open verified FX research with no duplicate route painting');
 assert.match(safe,/Altri \d+ eventi del calendario/);

@@ -1131,14 +1131,39 @@ function syncRouteChrome(route){
   else a.removeAttribute('aria-current');
  });
 }
-function navigate(){
- const route=location.hash.slice(1).split('?')[0]||'overview';
+function resolvePair(key){
+ if(!/^[A-Z]{6}$/.test(key||''))return null;
+ const available=eurPairs();
+ const reverse=key.slice(3)+key.slice(0,3);
+ return Object.hasOwn(available,key)?key:Object.hasOwn(available,reverse)?reverse:null;
+}
+function syncPairLocation(query){
+ const pair=resolvePair(new URLSearchParams(query).get('pair')?.toUpperCase());
+ state.pairDetailOpen=Boolean(pair);
+ if(pair){state.pair=pair;state.spotPair=pair;}
+}
+function openPair(key,pairFocus='fx-selected-thesis'){
+ const pair=resolvePair(key);
+ if(!pair)return false;
+ const hash='#pairs?pair='+pair;
+ if(location.hash!==hash)history.pushState(null,'',hash);
+ navigate({pairFocus});
+ return true;
+}
+function navigate({pairFocus}={}){
+ const [route,query]=location.hash.slice(1).split('?');
  state.route=ROUTES[route]?route:'overview';
+ if(state.route==='pairs')syncPairLocation(query);
  // On cold entry, keep the HTML loading state until all research sources have
  // settled. Never flash an empty-data/legacy Home before the hourly edition.
- if(firstResearchLoaded)render();
- else syncRouteChrome(state.route);
- window.scrollTo({top:0,behavior:'instant'});
+ if(pairFocus!=='pair-primary-select')window.scrollTo({top:0,behavior:'instant'});
+ if(firstResearchLoaded){
+  render();
+  if(state.route==='pairs'&&(state.pairDetailOpen||pairFocus)){
+   if(pairFocus==='pair-primary-select')$(pairFocus)?.focus({preventScroll:true});
+   else focusPairSection(pairFocus||'fx-selected-thesis');
+  }
+ }else syncRouteChrome(state.route);
  $('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false');
 }
 window.addEventListener('hashchange',navigate);
@@ -1235,13 +1260,8 @@ document.addEventListener('click',e=>{
  }
  const ratesOpenPair=e.target.closest('[data-rates-openpair]');
  if(ratesOpenPair&&state.route==='rates'){
-  const pair=ratesOpenPair.dataset.ratesOpenpair;
-  if(!get('pairs')?.pairs?.[pair])return;
+  if(!openPair(ratesOpenPair.dataset.ratesOpenpair))return;
   e.preventDefault();
-  state.pair=pair;state.spotPair=pair;state.pairDetailOpen=true;
-  state.route='pairs';
-  if(location.hash!=='#pairs')location.hash='#pairs';
-  else render();
   return;
  }
  const calendarResearch=e.target.closest('[data-cal-research]');
@@ -1249,21 +1269,11 @@ document.addEventListener('click',e=>{
   const mode=calendarResearch.dataset.calResearch;
   const ccy=calendarResearch.dataset.calCurrency;
   if(!FX.includes(ccy)||!['rates','currencies','pairs'].includes(mode))return;
+  if(mode==='pairs'&&(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey))return;
   e.preventDefault();
   state.ccy=ccy;
   if(state.against===ccy)state.against=FX.find(x=>x!==ccy);
-  if(mode==='pairs'){
-   const requested=calendarResearch.dataset.calPair||'';
-   const reverse=requested.slice(3)+requested.slice(0,3);
-   const available=get('pairs')?.pairs||{};
-   const resolved=available[requested]?requested:available[reverse]?reverse:null;
-   if(resolved){
-    state.pair=resolved;state.spotPair=resolved;state.pairDetailOpen=true;
-   }else{
-    // The pair source is missing. Open the explorer without a fictitious setup.
-    state.pairDetailOpen=false;
-   }
-  }
+  if(mode==='pairs'&&openPair(calendarResearch.dataset.calPair))return;
   state.route=mode;
   // Hashchange owns cross-route rendering, avoiding double-paint.
   if(location.hash==='#'+mode)render();
@@ -1306,11 +1316,7 @@ document.addEventListener('click',e=>{
  const cs_cw=e.target.closest('[data-cs-cotwindow]');if(cs_cw){state.csCotWindow=Number(cs_cw.dataset.csCotwindow);render();return;}
  const cs_so=e.target.closest('[data-cs-sort]');if(cs_so){state.csSort=cs_so.dataset.csSort;render();return;}
  const cs_op=e.target.closest('[data-cs-openpair]');if(cs_op){
-  const key=cs_op.dataset.csOpenpair;
-  state.pair=(get('pairs')?.pairs?.[key]?key:key.slice(3)+key.slice(0,3));
-  state.spotPair=state.pair;
-  state.pairDetailOpen=true;
-  state.route='pairs';location.hash='#pairs';render();return;
+  openPair(cs_op.dataset.csOpenpair);return;
  }
  const mcc=e.target.closest('[data-ms-country]');if(mcc){state.ccy=mcc.dataset.msCountry;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();return;}
  const mcat=e.target.closest('[data-ms-category]');if(mcat){state.msCategory=mcat.dataset.msCategory;state.msSeriesId=null;render();return;}
@@ -1334,10 +1340,11 @@ document.addEventListener('click',e=>{
  const pick=e.target.closest('[data-command]');
  if(pick){
    const [kind,value]=String(pick.dataset.command||'').split(':');
+   setQuick(false);
+   if(kind==='pair'){openPair(value);return;}
    if(kind==='ccy'){state.ccy=value;state.route='currencies';location.hash='#currencies';}
-   else if(kind==='pair'){state.pair=value;state.spotPair=value;state.pairDetailOpen=true;state.route='pairs';location.hash='#pairs';}
    else if(kind==='route'&&ROUTES[value]){state.route=value;location.hash='#'+value;}
-   setQuick(false);render();return;
+   render();return;
  }
  const atlas=e.target.closest('[data-atlas]');if(atlas){state.atlasLens=atlas.dataset.atlas;render();return}
  const hc=e.target.closest('[data-hchart]');if(hc){state.homeChart=hc.dataset.hchart;render();return}
@@ -1345,17 +1352,12 @@ document.addEventListener('click',e=>{
  const hp=e.target.closest('[data-home-pair]');if(hp){state.spotPair=hp.dataset.homePair;state.pair=state.spotPair;render();return}
  const c=e.target.closest('[data-ccy]');if(c){state.ccy=c.dataset.ccy;if(state.against===state.ccy)state.against=FX.find(k=>k!==state.ccy);render();return}
  const closePair=e.target.closest('[data-pair-close]');if(closePair){
-  state.pairDetailOpen=false;render();
-  focusPairSection('fx-ranking-desk');
+  history.pushState(null,'','#pairs');
+  navigate({pairFocus:'fx-ranking-desk'});
   return;
  }
  const p=e.target.closest('[data-pair]');if(p){
-  state.pair=p.dataset.pair;state.pairDetailOpen=true;
-  if(state.route!=='pairs')location.hash='#pairs';
-  else{
-   render();
-   focusPairSection('fx-selected-thesis');
-  }
+  openPair(p.dataset.pair);
   return;
  }
  const f=e.target.closest('[data-pfilter]');if(f){state.pairFilter=f.dataset.pfilter;render();return}
@@ -1380,11 +1382,7 @@ document.addEventListener('toggle',e=>{
 },true);
 document.addEventListener('change',e=>{
  if(e.target.id==='pair-primary-select'){
-  const k=e.target.value;
-  if(eurPairs()[k]){
-   state.pair=k;state.pairDetailOpen=true;render();
-   document.getElementById('pair-primary-select')?.focus({preventScroll:true});
-  }
+  openPair(e.target.value,'pair-primary-select');
   return;
  }
  if(e.target.id==='cs-other'){state.csOther=e.target.value;render();return;}
@@ -1458,8 +1456,11 @@ async function loadAll(){
   state.data=nextData;
   state.errors=nextErrors;
   lastResearchRefresh=Date.now();
+  const initial=!firstResearchLoaded;
   firstResearchLoaded=true;
+  if(state.route==='pairs')syncPairLocation(location.hash.split('?')[1]);
   render();
+  if(initial&&state.route==='pairs'&&state.pairDetailOpen)focusPairSection('fx-selected-thesis');
  }finally{refreshInProgress=false;}
 }
 // Refresh when the reader returns to a long-open tab, and while the site stays

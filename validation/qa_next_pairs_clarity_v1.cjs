@@ -52,9 +52,9 @@ assert(rankings.includes('fx-rank-featured')&&rankings.includes('selectResearchP
 assert(rankings.includes('fx-rank-method')&&rankings.includes('non una misura di aspettative'),
  'Source caveats must stay in the method audit instead of cluttering first read');
 assert(app.includes("const closePair=e.target.closest('[data-pair-close]')")&&
- app.includes("state.pairDetailOpen=false")&&
- app.includes("state.pairDetailOpen=true"),
- 'Open/close pair controls must actually change the same state');
+ app.includes("history.pushState(null,'','#pairs')")&&
+ app.includes("state.pairDetailOpen=Boolean(pair)"),
+ 'Opening and closing a pair must synchronize the URL and dossier state');
 assert(app.includes("if(e.target.id==='pair-primary-select')")&&
  app.includes("const p=e.target.closest('[data-pair]')")&&
  app.includes("const w=e.target.closest('[data-watch]')"),
