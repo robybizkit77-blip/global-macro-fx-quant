@@ -116,3 +116,6 @@ a.fx-watch-event:hover,a.fx-watch-event:focus-visible{border-color:var(--blue)}
 .fx-watch-price{display:block;padding:0 12px 10px;color:var(--soft);font-size:12px;line-height:1.45}
 .fx-watch-price strong{color:var(--text);margin-right:3px;white-space:nowrap}
 .fx-watch-price small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+
+.fx-watch-thesis{margin:0 12px 10px;padding-top:8px;border-top:1px solid var(--line2);color:var(--soft);font-size:12px;line-height:1.45}
+.fx-watch-thesis small{display:block;margin-top:3px;color:var(--muted);font-size:11px}
