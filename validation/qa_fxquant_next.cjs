@@ -540,6 +540,9 @@ async function pairJourney(page,label){
  await chart.locator('[data-v9-price-window="20"]').click();
  assert.equal(await chart.locator('[data-v9-price-window="20"]').getAttribute('aria-pressed'),'true');
  assert(await details.evaluate(el=>el.open),label+' price window collapsed the opened analysis');
+ const starts=await chart.locator('[data-fixing-start]').evaluateAll(nodes=>nodes.map(node=>node.dataset.fixingStart));
+ assert.deepEqual(starts,[priceEvidence.priceFrom,priceEvidence.priceFrom5],
+  label+' 20-session chart must show the exact fixing dates used by the summary');
  // A new selection should change the underlying reasoning, not just the title.
  await chosenPair(page,'EURCHF',label);
  const swiss=await locator(page,'.pairs-event-watch').innerText();

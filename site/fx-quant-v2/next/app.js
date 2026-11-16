@@ -116,6 +116,19 @@ function plot(opts){
   body+='<polyline points="'+coords.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+'" fill="none" stroke="'+line.color+'" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round"/>';
   const last=coords[coords.length-1];body+='<circle cx="'+last[0]+'" cy="'+last[1]+'" r="3.8" fill="'+line.color+'" stroke="#0a1827" stroke-width="2"/>';
  });
+ // Mark observed comparison starts only on the single price series.
+ if(normalized.length===1&&Array.isArray(opts.fixingPoints)){
+  const points=normalized[0].values;
+  opts.fixingPoints.forEach(mark=>{
+   if(!validDay(mark?.label))return;
+   const index=points.findIndex(p=>p.label===mark.label);
+   if(index<0)return;
+   const price=points[index].value;
+   body+='<circle data-fixing-start="'+esc(mark.label)+'" cx="'+X(index).toFixed(2)+'" cy="'+Y(price).toFixed(2)+
+    '" r="5.5" fill="'+esc(mark.color)+'" stroke="#0a1827" stroke-width="2"><title>'+esc(mark.text)+
+    ' · '+date(mark.label)+' · '+fmt(price,opts.precision??2)+'</title></circle>';
+  });
+ }
  // Reference marks are deliberately short and anchored at the RIGHT EDGE.
  // They describe thresholds computed from the last valid fixing ONLY;
  // drawing a full-width line would falsely imply an unchanged historical level.
