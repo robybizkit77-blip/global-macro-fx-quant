@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1",
   "status": "FIVE_STREAMS_VERIFIED",
-  "collected_on": "2026-11-14",
+  "collected_on": "2026-11-16",
   "attempted_sources": [
     "SP500",
     "NASDAQCOM",
@@ -432,21 +432,17 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 3,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "NASDAQCOM": {
-      "date": "2026-11-12",
-      "previous_date": "2026-11-11",
-      "value": 25366.09,
-      "previous": 25466.19,
-      "change_1d_pct": -0.3931,
+      "date": "2026-11-13",
+      "previous_date": "2026-11-12",
+      "value": 25136.27,
+      "previous": 25366.09,
+      "change_1d_pct": -0.906,
       "history": [
-        [
-          "2026-06-24",
-          25476.64
-        ],
         [
           "2026-06-25",
           25358.6
@@ -842,6 +838,10 @@
         [
           "2026-11-12",
           25366.09
+        ],
+        [
+          "2026-11-13",
+          25136.27
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -850,25 +850,17 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 3,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "IG_OAS": {
-      "date": "2026-11-12",
-      "previous_date": "2026-11-11",
+      "date": "2026-11-13",
+      "previous_date": "2026-11-12",
       "value": 0.89,
-      "previous": 0.9,
-      "change_1d_pct": -1.1111,
+      "previous": 0.89,
+      "change_1d_pct": 0.0,
       "history": [
-        [
-          "2026-06-25",
-          0.76
-        ],
-        [
-          "2026-06-26",
-          0.77
-        ],
         [
           "2026-06-29",
           0.76
@@ -1254,11 +1246,19 @@
           0.91
         ],
         [
+          "2026-11-10",
+          0.9
+        ],
+        [
           "2026-11-11",
           0.9
         ],
         [
           "2026-11-12",
+          0.89
+        ],
+        [
+          "2026-11-13",
           0.89
         ]
       ],
@@ -1268,25 +1268,17 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 3,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "HY_OAS": {
-      "date": "2026-11-12",
-      "previous_date": "2026-11-11",
-      "value": 3.2,
-      "previous": 3.3,
-      "change_1d_pct": -3.0303,
+      "date": "2026-11-13",
+      "previous_date": "2026-11-12",
+      "value": 3.23,
+      "previous": 3.2,
+      "change_1d_pct": 0.9375,
       "history": [
-        [
-          "2026-06-25",
-          2.78
-        ],
-        [
-          "2026-06-26",
-          2.83
-        ],
         [
           "2026-06-29",
           2.8
@@ -1672,12 +1664,20 @@
           3.34
         ],
         [
+          "2026-11-10",
+          3.3
+        ],
+        [
           "2026-11-11",
           3.3
         ],
         [
           "2026-11-12",
           3.2
+        ],
+        [
+          "2026-11-13",
+          3.23
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -1686,7 +1686,7 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 3,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -2104,7 +2104,7 @@
       "kind": "VOLATILITY_INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 3,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     }
