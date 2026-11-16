@@ -318,17 +318,16 @@ def audit_with_official_jpy_source(fx, rates, historical_bytes, current_bytes,
     import copy
     from validation.rates.audit_jpy_2y_mof_chronology_v1 import (
         normalize_source, propose_verified_latest_publisher_candidate,
-        parse_mof_csv, HIST_URL, CURR_URL
+        parse_mof_csv, HIST_URL, CURR_URL, RECONCILED_STATUS
     )
     original=normalize_source(rates)
     checked=propose_verified_latest_publisher_candidate(
         original,historical_bytes,current_bytes)
-    if (checked["status"] !=
-            "PUBLISHER_RECONCILED_273_OF_273_LATEST_RELEASE_RESEARCH_ONLY"
-            or checked["source_comparison"]["matched"] != 273):
+    if (checked["status"] != RECONCILED_STATUS
+            or checked["source_comparison"]["matched"] != original["original_row_count"]):
         raise ValueError("JPY 2Y source not fully reconciled")
     # The stored mirror is incomplete (especially Aug/Sep 2026). Only
-    # after 273/273 verification may the shadow audit use the complete
+    # after verification of every original date and value may the shadow audit use the complete
     # *independently downloaded* original publisher chronology. No filling
     # or extrapolating missing official days is permitted.
     historical=parse_mof_csv(historical_bytes,source=HIST_URL)

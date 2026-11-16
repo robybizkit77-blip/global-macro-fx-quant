@@ -90,8 +90,10 @@ def shadow_full_publisher_eurjpy_oos(fx,rates,original_ecb_bytes,
     latest=forensic["original_mirror_as_of"]
     official=parse_ecb_sdmx_original_csv(
         original_ecb_bytes,start=START,end=END)
-    if max(official).isoformat()!=latest:
-        raise ValueError("official current period not aligned with stored as-of")
+    # The audited ECB extract ends on a fixed date. Compare through that date
+    # when the mirror has newer observations, and never extend past either end.
+    if max(official).isoformat()!=min(latest,END):
+        raise ValueError("official extract end is not aligned with the archived mirror window")
     if any(day.weekday()>=5 for day in official):
         raise ValueError("ECB daily government curve has a weekend observation")
     # Require an independently observed historical publication series of at
@@ -102,8 +104,8 @@ def shadow_full_publisher_eurjpy_oos(fx,rates,original_ecb_bytes,
     ordered=sorted(official.items())
     shadow["EUR"]["history2"]["dates"]=[d.isoformat() for d,v in ordered]
     shadow["EUR"]["history2"]["values"]=[v for d,v in ordered]
-    # We did NOT advance the dataset as-of; all observations remain known
-    # official latest publisher values, not certified as first-release PIT.
+    # Stop at the audited ECB extract end. These are latest publisher values,
+    # without verified first-release vintages.
     shadow["EUR"]["date"]=ordered[-1][0].isoformat()
     full=beta.audit_with_official_jpy_source(
         fx,shadow,mof_historical_bytes,mof_current_bytes,as_of=as_of)

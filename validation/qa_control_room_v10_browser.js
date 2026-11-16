@@ -15,6 +15,7 @@ const nzdScenario=scenarioSixMonth(
  JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIEW.json'),'utf8')),
  nzdProxy,romeTodayIso()).NZD;
 const nzdDisplayed=Number(nzdScenario?.value??nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixed(2);
+const ecbFeed=JSON.parse(fs.readFileSync(path.join(DATA,'ECB_G8_PRICE_HISTORY.json'),'utf8'));
 const ratesFeed=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_RATES_DATA.json'),'utf8'));
 const setupFeed=JSON.parse(fs.readFileSync(path.join(DATA,'PAIR_SETUP_OPERATIONAL_VIEW.json'),'utf8'));
 const operational=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIEW.json'),'utf8'));
@@ -2452,12 +2453,22 @@ function expectedReactionFromMetrics(row){
       width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
   });
   const expectedEurState=expectedReactionFromMetrics(eurReaction);
-  const eurDates=eurReaction.dates||[];
-  const eurGap=(Date.parse(eurDates[1]+'T00:00:00Z')-Date.parse(eurDates[0]+'T00:00:00Z'))/86400000;
-  if(eurReaction.state!==expectedEurState||!Number.isFinite(eurGap)||eurGap<=0||eurGap>5||
-     !eurReaction.note?.includes('non prezzi intraday')||
-     !eurReaction.parts?.includes('non spiegazione causale')||
-     eurReaction.width>eurReaction.viewport+16)
+  const dayIndex=day=>Date.parse(day+'T00:00:00Z')/86400000;
+  const reactionToday=dayIndex(romeTodayIso());
+  const eurYieldDates=new Set(ratesFeed.EUR.history2.dates.slice(-5));
+  const usdYieldDates=new Set(ratesFeed.USD.history2.dates.slice(-5));
+  const common=ecbFeed.rows.map(row=>row.Date).filter(day=>{
+    const age=reactionToday-dayIndex(day);
+    return age>=0&&age<=5&&eurYieldDates.has(day)&&usdYieldDates.has(day);
+  }).slice(-2);
+  const hasWindow=common.length===2;
+  const bounded=hasWindow?
+    eurReaction.dates.every((day,i)=>day===common[i])&&
+    eurReaction.note?.includes('non prezzi intraday')&&eurReaction.parts?.includes('non spiegazione causale'):
+    eurReaction.dates.every(day=>day==null)&&eurReaction.values.length===0&&
+    eurReaction.parts?.includes('NON VALUTABILE')&&eurReaction.parts?.includes('servono due date comuni');
+  if(eurReaction.state!==(hasWindow?expectedEurState:'WITHHELD')||!bounded||
+     (hasWindow&&expectedEurState==='WITHHELD')||eurReaction.width>eurReaction.viewport+16)
     throw Error(label+' EURUSD dated 2Y/FX reaction must respect thresholds '+JSON.stringify({eurReaction,expectedEurState}));
   
   const eurDecision=await page.evaluate(()=>{

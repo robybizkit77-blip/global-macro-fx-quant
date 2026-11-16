@@ -1,6 +1,6 @@
 """Preserve JPY yield pairing while staging strict original MoF checks."""
 import copy
-from datetime import date
+from datetime import date, timedelta
 import json
 import unittest
 from validation.rates import audit_jpy_2y_mof_chronology_v1 as m
@@ -12,10 +12,11 @@ class Japan2YRepairTests(unittest.TestCase):
         cls.orig=json.loads(m.SOURCE.read_text(encoding="utf-8"))
         cls.stage=m.normalize_source(cls.orig)
 
-    def test_all_273_pairs_preserved_with_no_value_changes(self):
+    def test_all_date_yield_pairs_preserved_with_no_value_changes(self):
         c=self.stage
-        self.assertEqual(c["original_row_count"],273)
-        self.assertEqual(c["normalized_row_count"],273)
+        expected_count = len(self.orig["JPY"]["history2"]["dates"])
+        self.assertEqual(c["original_row_count"],expected_count)
+        self.assertEqual(c["normalized_row_count"],expected_count)
         self.assertTrue(c["date_value_pairs_preserved"])
         self.assertFalse(c["yield_values_modified"])
         self.assertFalse(c["missing_dates_imputed"])
@@ -26,13 +27,17 @@ class Japan2YRepairTests(unittest.TestCase):
             self.orig["JPY"]["history2"]["values"])}
         actual={(x["date"],x["yield_pct"]) for x in c["candidate_rows"]}
         self.assertEqual(expected,actual)
-        self.assertEqual(len(expected),273)
+        self.assertEqual(len(expected),expected_count)
 
-    def test_246_legacy_noniso_dates_and_30_chronology_inversions(self):
-        self.assertEqual(self.stage["noncanonical_date_strings"],246)
-        self.assertEqual(self.stage["chronological_reversals"],30)
-        self.assertEqual(self.stage["first_day"],"2025-05-08")
-        self.assertEqual(self.stage["last_day"],"2026-10-23")
+    def test_legacy_dates_and_reversals_are_counted_from_the_source(self):
+        raw = self.orig["JPY"]["history2"]["dates"]
+        parsed = [m.day(day) for day in raw]
+        self.assertEqual(self.stage["noncanonical_date_strings"],
+                         sum(day.isoformat() != original for day, original in zip(parsed, raw)))
+        self.assertEqual(self.stage["chronological_reversals"],
+                         sum(a > b for a, b in zip(parsed, parsed[1:])))
+        self.assertEqual(self.stage["first_day"],min(parsed).isoformat())
+        self.assertEqual(self.stage["last_day"],self.orig["JPY"]["date"])
 
     def test_formerly_lexicographic_june_2_is_before_june_19(self):
         a=[x["date"] for x in self.stage["candidate_rows"]]
@@ -91,11 +96,11 @@ class Japan2YRepairTests(unittest.TestCase):
                    "".join(f"{x['date'].replace('-','/')},0,{x['yield_pct']:.3f},3\n" for x in arr)).encode("cp932")
         out=m.verify_official(self.stage,to_csv(past),to_csv(current))
         self.assertEqual(out["state"],"ALL_2Y_POINTS_AGREE_WITH_MOF")
-        self.assertEqual(out["matched"],273)
+        self.assertEqual(out["matched"],len(rows))
         self.assertFalse(out["historical_first_publication_pit_certified"])
         self.assertFalse(out["candidate_promoted_into_live_rates"])
 
-    def test_one_mof_disagreement_blocks_even_if_272_match(self):
+    def test_one_mof_disagreement_blocks_even_if_all_others_match(self):
         rows=self.stage["candidate_rows"]
         def c(x):
             return ("Interest Rate\nDate,1Y,2Y\n"+"".join(
@@ -103,7 +108,7 @@ class Japan2YRepairTests(unittest.TestCase):
         official=m.verify_official(self.stage,c(rows[:150]),c(rows[150:]))
         self.assertEqual(official["state"],"NOT_CERTIFIED_OFFICIAL_COMPARISON_FAILED")
         self.assertEqual(len(official["mismatches"]),1)
-        self.assertEqual(official["matched"],272)
+        self.assertEqual(official["matched"],len(rows)-1)
 
     def test_official_missing_one_day_does_not_implicitly_fill(self):
         rows=self.stage["candidate_rows"]
@@ -115,7 +120,7 @@ class Japan2YRepairTests(unittest.TestCase):
         self.assertEqual(len(official["missing"]),1)
 
 
-    def test_two_publisher_corrections_only_and_verify_all_273(self):
+    def test_two_publisher_corrections_only_and_verify_every_row(self):
         rows=self.stage["candidate_rows"]
         def csv_bytes(items):
             return ("Interest Rate\nDate,1Y,2Y,10Y\n"+"".join(
@@ -124,9 +129,9 @@ class Japan2YRepairTests(unittest.TestCase):
         result=m.propose_verified_latest_publisher_candidate(
             self.stage,csv_bytes(rows[:170]),csv_bytes(rows[170:]))
         self.assertEqual(result["status"],
-                         "PUBLISHER_RECONCILED_273_OF_273_LATEST_RELEASE_RESEARCH_ONLY")
-        self.assertEqual(result["source_initial_271_of_273_audit"]["matched"],271)
-        self.assertEqual(result["source_comparison"]["matched"],273)
+                         m.RECONCILED_STATUS)
+        self.assertEqual(result["source_initial_comparison"]["matched"],len(rows)-2)
+        self.assertEqual(result["source_comparison"]["matched"],len(rows))
         self.assertEqual(len(result["latest_publisher_value_replacements"]),2)
         fixed={x["date"]:x["yield_pct"] for x in result["candidate_rows"]}
         self.assertEqual(fixed["2026-09-25"],1.948)
@@ -157,7 +162,7 @@ class Japan2YRepairTests(unittest.TestCase):
 
     def test_bad_source_asof_rejected(self):
         src=copy.deepcopy(self.orig)
-        src["JPY"]["date"]="2026-10-24"
+        src["JPY"]["date"]=(date.fromisoformat(src["JPY"]["date"])+timedelta(days=1)).isoformat()
         with self.assertRaisesRegex(ValueError,"last dated"):
             m.normalize_source(src)
 

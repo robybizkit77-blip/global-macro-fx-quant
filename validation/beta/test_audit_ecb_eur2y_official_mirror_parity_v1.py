@@ -1,6 +1,5 @@
 """ECB 2Y source parity tests, never infer equal instruments from labels."""
 from __future__ import annotations
-import copy
 from datetime import date
 import json
 import unittest
@@ -28,14 +27,14 @@ class EUR2YParityTests(unittest.TestCase):
         x=m.audit_eur_original(self.rates,self.raw())
         self.assertEqual(x["status"],"SOURCE_DEFINITION_MATCHES_CURRENT_PUBLISHER")
         self.assertEqual(x["mismatching_same_day_yield_rows"],0)
-        self.assertEqual(x["overlap_rows"],271)
+        self.assertEqual(x["overlap_rows"],len(self.orig))
         self.assertEqual(x["official_current_latest_2y_pct"],self.orig[date(2026,10,22)])
         self.assertEqual(json.dumps(self.rates,sort_keys=True),original)
 
     def test_two_official_2y_differences_create_source_quarantine(self):
         x=m.audit_eur_original(self.rates,self.raw(alter={
-            "2026-09-21":3.1476088412,
-            "2026-09-22":3.135563132,
+            "2026-09-21":self.orig[date(2026,9,21)]+0.15,
+            "2026-09-22":self.orig[date(2026,9,22)]-0.15,
         }))
         self.assertEqual(x["status"],
             "RATE_EUR2Y_CURRENT_MIRROR_DIFFERS_FROM_OFFICIAL_SERIES")

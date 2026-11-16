@@ -1,7 +1,6 @@
 """EURJPY ECB 2Y source-day recovery is exact-date, publisher verified, shadow only."""
 from __future__ import annotations
 
-import copy
 from datetime import date
 import json
 import unittest
@@ -24,6 +23,12 @@ class EUR2YOriginalResearchBridge(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.rates=json.loads(b.RATE_PATH.read_text())
+        # Recreate the three missing fixing dates that this recovery fixture exercises.
+        history=cls.rates["EUR"]["history2"]
+        entries=[(d,v) for d,v in zip(history["dates"],history["values"],strict=True)
+                 if d not in m.TARGETS and d <= "2026-10-26"]
+        cls.rates["EUR"]["date"]=entries[-1][0]
+        history["dates"],history["values"]=map(list,zip(*entries))
         cls.eur,reason=b.rate_history("EUR",cls.rates,date(2026,10,26))
         assert not reason
 

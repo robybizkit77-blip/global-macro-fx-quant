@@ -98,8 +98,8 @@ def official_eurjpy_readiness(fx_source, rates_source, historical_bytes,
                              current_bytes, *, as_of="2026-10-26"):
     validated=propose_verified_latest_publisher_candidate(
         normalize_source(rates_source),historical_bytes,current_bytes)
-    if validated["source_comparison"]["matched"] != 273:
-        raise ValueError("MoF source original 273/273 attestation absent")
+    if validated["source_comparison"]["matched"] != validated["original_row_count"]:
+        raise ValueError("MoF source attestation for all original observations absent")
     historical=parse_mof_csv(historical_bytes,source=HIST_URL)
     current=parse_mof_csv(current_bytes,source=CURR_URL)
     for d in set(historical)&set(current):

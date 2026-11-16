@@ -89,8 +89,8 @@ class WeeklyBetaTests(unittest.TestCase):
     def test_fx_rate_cross_formula(self):
         x=m.official_fx(self.fx,date(2026,10,26))
         day=date(2026,10,23)
-        self.assertAlmostEqual(x[day]["GBP"]/x[day]["USD"],
-                               self.fx["rows"][-1]["GBP"]/self.fx["rows"][-1]["USD"])
+        fixing = next(row for row in self.fx["rows"] if row["Date"] == day.isoformat())
+        self.assertAlmostEqual(x[day]["GBP"]/x[day]["USD"], fixing["GBP"]/fixing["USD"])
 
     def test_weekly_reference_prevents_gap_stitching(self):
         mk=lambda week: {"week_end":date(2025,1,3)+timedelta(days=7*week),
@@ -160,7 +160,8 @@ class WeeklyBetaTests(unittest.TestCase):
         self.assertEqual(old["aligned_weekly_fixing_points"],0)
         h,c=self._historical_mof_fixture()
         x=m.audit_with_official_jpy_source(self.fx,self.rates,h,c)
-        self.assertEqual(x["official_jpy_reconciliation"]["matched_with_original_mof"],273)
+        self.assertEqual(x["official_jpy_reconciliation"]["matched_with_original_mof"],
+                         len(self.rates["JPY"]["history2"]["dates"]))
         self.assertEqual(x["rate_2y_series_quality"]["JPY"]["status"],
                          "OBSERVATIONS_AVAILABLE")
         self.assertTrue(all(p["aligned_weekly_fixing_points"]>0

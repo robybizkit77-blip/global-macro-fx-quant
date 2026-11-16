@@ -194,12 +194,13 @@ def verify_official(candidate, historical, current):
 # comparison. A third discrepancy is a new source incident, not an
 # automatically acceptable revision.
 REVIEWED_CONFLICT_DATES = frozenset(("2026-09-25","2026-09-28"))
+RECONCILED_STATUS = "PUBLISHER_RECONCILED_ALL_LATEST_RELEASE_RESEARCH_ONLY"
 
 
 def propose_verified_latest_publisher_candidate(candidate, historical, current):
     """Use independently downloaded MoF values for precisely reviewed dates.
 
-    Never infer missing observations. Re-validate 273/273 after the replacements.
+    Never infer missing observations. Re-validate every original observation after the replacements.
     Returns research candidate only; historical first-release PIT still absent.
     """
     first = verify_official(candidate, historical, current)
@@ -220,11 +221,11 @@ def propose_verified_latest_publisher_candidate(candidate, historical, current):
     # Rerun independent full-row cross-check after the changes. Temporarily
     # retain the first-stage status accepted by verify_official.
     second=verify_official(repaired,historical,current)
-    if second["state"]!="ALL_2Y_POINTS_AGREE_WITH_MOF" or second["matched"]!=273:
-        raise ValueError("publisher reconciliation did not match all 273 original dates")
-    repaired["status"]="PUBLISHER_RECONCILED_273_OF_273_LATEST_RELEASE_RESEARCH_ONLY"
+    if second["state"]!="ALL_2Y_POINTS_AGREE_WITH_MOF" or second["matched"]!=candidate["original_row_count"]:
+        raise ValueError("publisher reconciliation did not match all original dates")
+    repaired["status"]=RECONCILED_STATUS
     repaired["source_comparison"]=second
-    repaired["source_initial_271_of_273_audit"]=first
+    repaired["source_initial_comparison"]=first
     repaired["historical_first_publication_pit_certified"]=False
     repaired["promoted_into_live_rates"]=False
     repaired["promoted_into_beta"]=False

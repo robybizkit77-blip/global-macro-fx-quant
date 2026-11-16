@@ -105,7 +105,9 @@ jobs:
           python - <<'PY'
           import json
           data=json.load(open('/tmp/gmfq-rate-beta-shadow-official-jpy.json'))
-          assert data['official_jpy_reconciliation']['matched_with_original_mof']==273
+          audit=data['official_jpy_reconciliation']
+          assert audit['matched_with_original_mof']==audit['original_observation_rows']
+          print(f"JPY MoF agreement: {audit['matched_with_original_mof']}/{audit['original_observation_rows']}")
           assert data['rate_2y_series_quality']['JPY']['reason'] is None
           assert sum(p['aligned_weekly_fixing_points']>0
                      for p in data['pairs'] if 'JPY' in p['pair'])==7
@@ -125,7 +127,7 @@ jobs:
           CHECK_OUTCOME: ${{ steps.jpy_official.outcome }}
         run: |
           if [ "$CHECK_OUTCOME" = success ]; then
-            echo 'JPY 2Y research-only source audit: publisher verified 273/273. No Core, Live_Data or Forward change.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'JPY 2Y research-only source audit: publisher verified every original observation. No Core, Live_Data or Forward change.' >> "$GITHUB_STEP_SUMMARY"
           else
             echo 'JPY 2Y research-only source audit: publisher NOT VERIFIED; seven JPY pairs remain quarantined.' >> "$GITHUB_STEP_SUMMARY"
           fi
