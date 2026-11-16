@@ -708,6 +708,22 @@ async function calendarResearchJourney(page,label){
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
+  const dailyReport=require('../site/fx-quant-v2/next/research-library.js').REPORTS.find(report=>report.type==='daily');
+  const briefing=await browser.newPage();
+  try{
+   const response=await briefing.goto(new URL('./reports/'+encodeURIComponent(dailyReport.file),BASE).href);
+   assert(response?.ok(),'Pinned daily briefing must be published with the Library');
+   assert.equal(await briefing.locator('main section').count(),7,'Daily briefing sections');
+   assert.equal(await briefing.locator('#s3 .priority').count(),3,'Daily briefing priorities');
+   assert.equal(await briefing.locator('#s4 article').count(),8,'Daily briefing G8');
+   assert.equal(await briefing.locator('#s5 article').count(),5,'Daily briefing commodities');
+   for(const width of [360,390,430,1440]){
+    await briefing.setViewportSize({width,height:900});
+    assert(await briefing.locator('h1').isVisible(),'Daily briefing heading at '+width);
+    assert(await briefing.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),
+     'Daily briefing horizontal overflow at '+width);
+   }
+  }finally{await briefing.close();}
   const reports=[];
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
    const label=viewport.width>700?'desktop':'mobile';
