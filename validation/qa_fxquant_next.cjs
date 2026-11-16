@@ -17,6 +17,7 @@ const priceModel=require('../site/fx-quant-v2/next/macro-strength-estimated-v1.j
 const rankings=require('../site/fx-quant-v2/next/pair-rankings.js');
 const library=require('../site/fx-quant-v2/next/research-library.js');
 const {file:dailyFile}=require('../site/fx-quant-v2/next/reports/daily-latest.json');
+const {files:weeklyFiles}=require('../site/fx-quant-v2/next/reports/weekly-latest.json');
 const reportDir='site/fx-quant-v2/next/reports';
 const BASE=process.env.FXQN_BASE||'http://127.0.0.1:8000/site/fx-quant-v2/next/index.html';
 const routes={
@@ -711,10 +712,12 @@ async function calendarResearchJourney(page,label){
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
-  const candidates=fs.readdirSync(reportDir).map(library.remoteReport)
-   .filter(report=>report?.type==='daily');
-  const dailyReport=library.latestPerType(candidates)[0];
+  const latest=library.latestPerType(fs.readdirSync(reportDir).map(library.remoteReport).filter(Boolean));
+  const dailyReport=latest.find(report=>report.type==='daily');
   assert.equal(dailyFile,dailyReport?.file,'Daily catalog must reference the latest approved briefing');
+  assert.equal(weeklyFiles.length,library.REPORTS.length-1,'Weekly catalog covers every weekly category');
+  assert.deepEqual([...weeklyFiles].sort(),latest.filter(report=>report.type!=='daily')
+   .map(report=>report.file).sort(),'Weekly catalog must reference the latest approved editions');
   const briefing=await browser.newPage();
   try{
    await briefing.route('https://api.github.com/**',request=>request.abort());
@@ -723,6 +726,14 @@ async function calendarResearchJourney(page,label){
     response.request().method()==='HEAD'&&response.ok());
    await Promise.all([catalog,verified,
     briefing.goto(new URL('#library',BASE).href,{waitUntil:'domcontentloaded'})]);
+   for(const report of latest){
+    const card=briefing.locator('.rl-card').filter({has:briefing.locator(`a[href="./reports/${encodeURIComponent(report.file)}"]`)});
+    await card.waitFor({state:'visible'});
+    assert.equal(await card.locator('time').getAttribute('datetime'),report.date,'Library card date for '+report.type);
+    const linked=await briefing.request.get(new URL(report.publicUrl,BASE).href);
+    assert(linked.ok(),'Library link must load: '+report.file);
+   }
+   assert.equal(await briefing.locator('.rl-card').count(),latest.length,'One card per category');
    const link=briefing.locator(`.rl-card a[href="./reports/${dailyFile}"]`);
    await link.waitFor({state:'visible'});
    const response=await briefing.goto(new URL(await link.getAttribute('href'),BASE).href);
