@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-16T11:32:42Z",
+  "generated_at_utc": "2026-11-16T22:12:10Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-b303f793ce0cfb2d7a63",
+      "observed_at_utc": "2026-11-16T17:24:39Z",
+      "headline": "UK stocks steady ahead of jobs, inflation data",
+      "summary": "Reuters riporta: UK stocks steady ahead of jobs, inflation data. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxQX2JtRTdGN3I3RUV5WlNidXJoQS1rZTNSQ09xRERzWUltT1Z3MlM3ZE9rcWpLUUx6UC1uMXI0VXBaZ3pOenJ1X0hSbzUyd2hQQTRJclhwUDVfMzdkaGFFWDVfT3lKRmtRRkdQT1pKdGlBQ19jZmV1d3A1SHRYOWdTOXVpQm5DWHhxSVJXaVc2aFFWS2RxWmlfbG44dnFTSUlQMk9ZRUtpTDNSbXA0clBvQ3YxaHNBblcwYzlEREJXM19VVHZPbWlRZWhTYw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-10473bf84073f9b848b5",
+      "observed_at_utc": "2026-11-16T20:16:40Z",
+      "headline": "Fed's Hammack reiterates case for slow, steady rate hikes -Bloomberg TV",
+      "summary": "Reuters riporta: Fed's Hammack reiterates case for slow, steady rate hikes -Bloomberg TV. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxNYk9kal9uc0hmSGMySFhuVE1BbTd3dkV1SkdjbEx3U2NuZFdoMFI1TThKSHVnLUNGTVNOOVpRM3VVUnBZdkxISEhKdVloQzBxUGlEcm15ZkQyUGZjWW5IbVhhZVNKWnBleE1PZzAyNUtmQUVrWHZ1R2YwU1FSZWVjczdVWXcwX3Z4VWhsVXZwUE1EaWMtZ3I0d1I2WlVOdm5rdGdZMFl4VVJENHRaSUE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-a5d8e7045ce62eb8c766",
+      "observed_at_utc": "2026-11-16T19:14:29Z",
+      "headline": "Italian banks get interest rate boon alongside M&A, fee boost",
+      "summary": "Reuters riporta: Italian banks get interest rate boon alongside M&A, fee boost. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQWmhSU1pYY3ZXSjdZNWRWTmxvNjVDVGU2ajJZb2NFblU4Zkw1MHNxa2lhZ1NjMjh4RWZDZlBxSkVTVTc1MDQwOWdraE9ZWGFSZ3F2YnhIeU5oODlRUlJYNC1XMlZRc0VrblBSd19EaWloTDJoUXhfcVlEN3U2bnlWMzBaR052WTZWcDVzelRVQjBQT3FUNjRCdXc0eHhQMEwtUmxSQXJ2bElpTHl3cUlLUV9B?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-78decb435373616d6492",
       "observed_at_utc": "2026-11-16T08:49:43Z",
@@ -1363,49 +1406,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQNE9OOEdkZXV1VkxiQTllZGVwRFFnazBCZEhxMm8ybDdrZXM2RzVVVXlZLVY3enZtRk1KRlBHSVNLcVZNQ3dxTm1qNVNLU3kwNVZ6dXVIeVpUbHE0aWdTdUdvcUk4eHBXOTM5SmlPNXNhVHZHNGQwbi1EbEFDZnpTTXpHLW5oc1J0bHNyYldYSnpZeGluWExDLVZNdkVZbGlUNjJQbA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-dfda84c8ffadf57aeae1",
-      "observed_at_utc": "2026-11-06T10:32:09Z",
-      "headline": "US inflation too high; essential to get back to 2%: Fed's Williams",
-      "summary": "Reuters riporta: US inflation too high; essential to get back to 2%: Fed's Williams. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNVTNvM3BqdWl4SmprODlFb250cjZNZU1FOVdHWEEtdU9QczJHVmVlUFA3dVRGd3BSUmNvN1hYQ0RQZzZ6N0NWLUFJOGhBTGhoUWNKTUE2Zmpqcmt2cWV4V1dQSmgzYW1Yb3VXN3lidjlBdE0zQ2hIc1ZnVlZJM2N0RlZCYlJPemdvcEhndWNnLWtiSVBQeEYxQ1BGbmVYeUdneWFn?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-49ddd635cc925be95005",
-      "observed_at_utc": "2026-11-06T16:04:55Z",
-      "headline": "Fed seen sticking to December rate hike after jobs data",
-      "summary": "Reuters riporta: Fed seen sticking to December rate hike after jobs data. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxQMF93ekZ4N2wtdW4zX1llS2FoZWpNVlhMLTRNOGVJTUktZmpLQUNBSzY2bW16Mm9mb3lrZERqNFZ6WkRmYkhBTG00Z2k2NFYyNTVLcmVBSkV5eVJRU1RwZFc5blM4MkRmcUxYU2hadXRWbVh0VXpjektqM1BGS3ZlZlNMeW43VWxmeE5TQm13d0E3bTVwUnp5dzFFNA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-ab740526cacaf5ab25c4",
-      "observed_at_utc": "2026-11-06T15:33:52Z",
-      "headline": "Trader angst pivots from inflation to growth as tech rout deepens",
-      "summary": "Reuters riporta: Trader angst pivots from inflation to growth as tech rout deepens. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQYm13UzNKRG9XaWdpdHV5SGo2UHJKSFlrRW5NUXVNR21LcnpYM01JaHZvY2dTVnN4aTZIbnYxMjI1RUdDWmN6UjBaZTNOdFVNWnpPOTNtWlQ0c2RCMlFDY0VKX0lUZ0JUZHRtSVlHb2k1VENabjhMWkdncTBBUTQyaHMtWGVpaUlZcEFqVzZaVnJId2pJXzdpcm9QaU93QkRhYlZ5eFZQUFZlYmpnREhMUXU1cnE0Zw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
