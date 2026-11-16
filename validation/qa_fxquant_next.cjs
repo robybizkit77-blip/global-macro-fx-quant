@@ -439,7 +439,8 @@ async function chosenPair(page,key,label){
   const el=document.getElementById('fx-selected-thesis');
   if(!el)return false;
   const top=el.getBoundingClientRect().top;
-  return top>=48&&top<window.innerHeight*.70;
+  const header=document.querySelector('.topbar').getBoundingClientRect().bottom;
+  return top>=header&&top<window.innerHeight*.70;
  });
  const top=await detailHead.evaluate(el=>el.getBoundingClientRect().top);
  assert(top>=48,label+' '+key+' dossier heading is behind sticky navigation: '+top);
@@ -536,6 +537,22 @@ async function pairMonetaryJourney(page,label){
  assert.equal(await locator(page,'#rates-relative-pricing').count(),1);
  // Changed selection must not leave the previous pair's monetary card attached.
  await route(page,'pairs');
+ // Select consecutive rows without waiting for an animation between clicks.
+ // Both actions must navigate to their target immediately, including on mobile.
+ await locator(page,'.fx-rank-all-list [data-pair="USDJPY"]').click();
+ const landed=await page.evaluate(()=>{
+  const detail=document.getElementById('fx-selected-thesis');
+  return {
+   title:detail?.querySelector('h2')?.textContent||'',
+   top:detail?.getBoundingClientRect().top,
+   header:document.querySelector('.topbar').getBoundingClientRect().bottom,
+   height:window.innerHeight
+  };
+ });
+ assert.match(landed.title,/USD\/JPY/);
+ assert(landed.top>=landed.header&&landed.top<landed.height*.7,
+  label+' pair click must immediately show the title below the sticky header: '+JSON.stringify(landed));
+ await chosenPair(page,'EURUSD',label);
  await chosenPair(page,'USDJPY',label);
  assert.equal(await locator(page,'.pair-monetary-bridge').getAttribute('data-pair-monetary-pair'),
   'USDJPY',label+' pair monetary reading did not follow selection');

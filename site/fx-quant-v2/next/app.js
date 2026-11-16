@@ -1082,6 +1082,14 @@ function render(){
  const sf=$('sidebar-focus');if(sf)sf.textContent=FLAGS[state.ccy]+' '+state.ccy+' · '+getPairName(state.pair);
  document.title='FX Quant Next — '+ROUTES[route];
 }
+function focusPairSection(id){
+ const section=$(id);
+ if(!section)return;
+ section.focus({preventScroll:true});
+ // A moving ranking can send the next click to a different row after re-render.
+ // Keep the existing CSS scroll offset so the heading clears the sticky header.
+ section.scrollIntoView({behavior:'instant',block:'start'});
+}
 function saveWatch(){try{localStorage.setItem('fxquant-next-watch',JSON.stringify([...state.watch]))}catch(e){}}
 function syncRouteChrome(route){
  $('crumb-page').textContent=ROUTES[route];
@@ -1294,14 +1302,9 @@ document.addEventListener('click',e=>{
  const hw=e.target.closest('[data-hwindow]');if(hw){state.homeWindow=Number(hw.dataset.hwindow);render();return}
  const hp=e.target.closest('[data-home-pair]');if(hp){state.spotPair=hp.dataset.homePair;state.pair=state.spotPair;render();return}
  const c=e.target.closest('[data-ccy]');if(c){state.ccy=c.dataset.ccy;if(state.against===state.ccy)state.against=FX.find(k=>k!==state.ccy);render();return}
- const pairScrollBehavior=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
  const closePair=e.target.closest('[data-pair-close]');if(closePair){
   state.pairDetailOpen=false;render();
-  const ranking=document.getElementById('fx-ranking-desk');
-  if(ranking){
-   ranking.focus({preventScroll:true});
-   ranking.scrollIntoView({behavior:pairScrollBehavior(),block:'start'});
-  }
+  focusPairSection('fx-ranking-desk');
   return;
  }
  const p=e.target.closest('[data-pair]');if(p){
@@ -1309,11 +1312,7 @@ document.addEventListener('click',e=>{
   if(state.route!=='pairs')location.hash='#pairs';
   else{
    render();
-   const detail=document.getElementById('fx-selected-thesis');
-   if(detail){
-    detail.focus({preventScroll:true});
-    detail.scrollIntoView({behavior:pairScrollBehavior(),block:'start'});
-   }
+   focusPairSection('fx-selected-thesis');
   }
   return;
  }
