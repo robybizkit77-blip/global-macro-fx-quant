@@ -101,3 +101,11 @@ button.fx-watch-pair{cursor:pointer}
 button.fx-watch-pair:hover,button.fx-watch-pair:focus-visible{border-color:var(--green)}
 .fx-watch-pair span,.fx-watch-pair small{font-size:12px;color:var(--muted)}
 .fx-watch-pair span{color:var(--blue)}
+
+.fx-watch-item{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:8px}
+.fx-watch-event{display:grid;align-content:center;gap:4px;min-height:44px;margin:0;padding:8px 12px;
+ border:1px solid var(--line2);border-radius:9px;color:var(--soft);font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+a.fx-watch-event{text-decoration:none}
+a.fx-watch-event:hover,a.fx-watch-event:focus-visible{border-color:var(--blue)}
+.fx-watch-event span{color:var(--blue)}
+@media(max-width:590px){.fx-watch-item{grid-template-columns:1fr;gap:3px}.fx-watch-list{gap:12px}}

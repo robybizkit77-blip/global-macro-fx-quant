@@ -48,3 +48,6 @@
 .cal-panel .cal-event-evidence-body .cal-verify{margin-top:0}
 @media(max-width:520px){.cal-panel .cal-event-path{padding:11px 9px}.cal-panel .cal-event-actions{gap:5px}.cal-panel .cal-event-actions a{padding:9px 6px;font-size:9px}}
 @media(prefers-reduced-motion:reduce){.cal-panel .cal-event-actions a{transition:none}}
+
+#macro-calendar,.cal-event[id]{scroll-margin-top:96px}
+.cal-event[id]:focus,#macro-calendar:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
