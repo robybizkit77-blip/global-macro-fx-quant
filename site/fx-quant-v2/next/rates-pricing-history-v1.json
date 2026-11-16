@@ -287,6 +287,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-13T00:11:06.953301Z"
+          },
+          {
+            "date": "2026-11-16",
+            "rate": 4.495,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-16T20:20:09.436941Z"
           }
         ],
         "12m": [
