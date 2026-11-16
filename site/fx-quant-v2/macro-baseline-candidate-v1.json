@@ -196,10 +196,10 @@
         "level_does_not_measure_relative_fx_strength": true
       },
       "inflation_change_pp": {
-        "value": 0.29473,
-        "level": 3.092784,
+        "value": 0.053159,
+        "level": 3.085299,
         "unit": "YOY_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
-        "period": "2026-09",
+        "period": "2026-10",
         "period_frequency": "M",
         "intervals": 3,
         "intervals_are_not_fixed_calendar_months": true,
@@ -422,9 +422,9 @@
       "quote": "CHF",
       "contrasts": {
         "inflation_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": -0.20527,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
           "same_period": false,
@@ -447,9 +447,9 @@
       "quote": "JPY",
       "contrasts": {
         "inflation_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": -0.20527,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
           "same_period": false,
@@ -522,9 +522,9 @@
       "quote": "CAD",
       "contrasts": {
         "inflation_change_pp": {
-          "same_period": false,
-          "delta_base_minus_quote_pp": null,
-          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.946841,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "unemployment_change_pp": {
           "same_period": false,
@@ -697,9 +697,9 @@
       "quote": "CAD",
       "contrasts": {
         "inflation_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.60527,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
           "same_period": false,
@@ -922,9 +922,9 @@
       "quote": "CAD",
       "contrasts": {
         "inflation_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": -0.04101,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
           "same_period": true,
@@ -1013,5 +1013,5 @@
   "eligible_for_backtests": false,
   "eligible_for_automatic_core_rebase": false,
   "canonical_fx_core_untouched": true,
-  "source_content_sha256": "2dd68af8155779c9b253e403ea4b6e5b6119fa5d5a849e242dcc9443bfaa8834"
+  "source_content_sha256": "123dcc57595404b618e87f389d944cce0feb465182d3e75b5774cd8e208df748"
 }
