@@ -15,6 +15,9 @@ const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const priceModel=require('../site/fx-quant-v2/next/macro-strength-estimated-v1.js');
 const rankings=require('../site/fx-quant-v2/next/pair-rankings.js');
+const library=require('../site/fx-quant-v2/next/research-library.js');
+const {file:dailyFile}=require('../site/fx-quant-v2/next/reports/daily-latest.json');
+const reportDir='site/fx-quant-v2/next/reports';
 const BASE=process.env.FXQN_BASE||'http://127.0.0.1:8000/site/fx-quant-v2/next/index.html';
 const routes={
  overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',
@@ -708,11 +711,28 @@ async function calendarResearchJourney(page,label){
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
-  const dailyReport=require('../site/fx-quant-v2/next/research-library.js').REPORTS.find(report=>report.type==='daily');
+  const candidates=fs.readdirSync(reportDir).map(library.remoteReport)
+   .filter(report=>report?.type==='daily');
+  const dailyReport=library.latestPerType(candidates)[0];
+  assert.equal(dailyFile,dailyReport?.file,'Daily catalog must reference the latest approved briefing');
   const briefing=await browser.newPage();
   try{
-   const response=await briefing.goto(new URL('./reports/'+encodeURIComponent(dailyReport.file),BASE).href);
-   assert(response?.ok(),'Pinned daily briefing must be published with the Library');
+   await briefing.route('https://api.github.com/**',request=>request.abort());
+   const catalog=briefing.waitForResponse(response=>response.url().endsWith('/reports/daily-latest.json')&&response.ok());
+   const verified=briefing.waitForResponse(response=>response.url().endsWith('/reports/'+dailyFile)&&
+    response.request().method()==='HEAD'&&response.ok());
+   await Promise.all([catalog,verified,
+    briefing.goto(new URL('#library',BASE).href,{waitUntil:'domcontentloaded'})]);
+   const link=briefing.locator(`.rl-card a[href="./reports/${dailyFile}"]`);
+   await link.waitFor({state:'visible'});
+   const response=await briefing.goto(new URL(await link.getAttribute('href'),BASE).href);
+   assert(response?.ok(),'The daily briefing selected by the Library must load');
+   const headingDate=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'long',year:'numeric',
+    timeZone:'Europe/Rome'}).format(new Date(dailyReport.date+'T12:00:00Z'));
+   for(const selector of ['title','h1']){
+    assert((await briefing.locator(selector).textContent())?.includes(headingDate),
+     'Daily briefing '+selector+' must match the date in its filename');
+   }
    assert.equal(await briefing.locator('main section').count(),7,'Daily briefing sections');
    assert.equal(await briefing.locator('#s3 .priority').count(),3,'Daily briefing priorities');
    assert.equal(await briefing.locator('#s4 article').count(),8,'Daily briefing G8');

@@ -13,7 +13,7 @@ new vm.Script(src,{filename:'research-library.js'});
 const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
 assert.match(index,/research-library\.css\?v=1/);
-assert.match(index,/research-library\.js\?v=11/);
+assert.match(index,/research-library\.js\?v=12/);
 assert.match(index,/11 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
@@ -147,9 +147,22 @@ assert.match(L.render(),/data-library-type="ois"/);
   assert.equal(L.filterReports('daily')[0].file,remoteName);
   assert.equal(L.filterReports().length,8);
   assert.equal(L.filterReports('monitor').length,0);
+  const localName='Briefing_Forex_Commodities_2026-11-16_V5_DEFINITIVO.html';
+  globalThis.fetch=async(url,opts)=>{
+   if(url==='./reports/daily-latest.json')return {ok:true,json:async()=>({file:localName})};
+   if(url==='./reports/'+localName&&opts.method==='HEAD')return {ok:true};
+   return {ok:false,status:429};
+  };
+  await L.refresh();
+  assert.equal(L.filterReports('daily')[0].file,localName,'Same-site briefing works without the GitHub API');
+  const missingName='Briefing_Forex_Commodities_2026-11-16_V6_DEFINITIVO.html';
+  globalThis.fetch=async(url)=>url==='./reports/daily-latest.json'
+   ?{ok:true,json:async()=>({file:missingName})}:{ok:false,status:404};
+  await L.refresh();
+  assert.equal(L.filterReports('daily')[0].file,localName,'Skip an unpublished briefing');
   globalThis.fetch=async()=>({ok:false,status:429});
   await L.refresh();
-  assert.equal(L.filterReports('daily')[0].file,remoteName,'Fallback must retain last verified edition');
+  assert.equal(L.filterReports('daily')[0].file,localName,'Fallback must retain last verified edition');
   console.log('NEXT_LIBRARY_LATEST_8_OIS_NO_MONITOR_AUTO_PUBLISHED_DISCOVERY_PASS');
  }finally{globalThis.fetch=initialFetch;}
 })().catch(e=>{console.error(e);process.exitCode=1});

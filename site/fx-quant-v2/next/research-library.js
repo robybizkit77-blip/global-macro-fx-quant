@@ -1,13 +1,13 @@
 (function(root){
 'use strict';
 /* Research Library: one approved, published edition per report type.
-   The public GitHub index discovers newer HTML; source creation is separate.
+   The daily briefing is indexed on the site itself; the GitHub index discovers weekly HTML.
    Historical files are retained, never presented as current editions. */
 const BASE='../../website-v1/reports/';
 const ROOT='./reports/';
 const PUBLIC_API='https://api.github.com/repos/robybizkit77-blip/global-macro-fx-quant/contents/site/fx-quant-v2/next/reports?ref=main';
 const REPORTS=Object.freeze([
- {type:'daily',date:'2026-11-16',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-16_V3_METODO_INTEGRATO_DEFINITIVO.html',desc:'Morning Research Desk V3: attese Fed, risposta dello yen al PIL giapponese, CPI canadese e petrolio.'},
+ {type:'daily',date:'2026-11-16',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-16_V3_METODO_INTEGRATO_DEFINITIVO.html',desc:'Scenario Forex, catalizzatori macro e lettura di oro e petrolio.'},
  {type:'macro',date:'2026-11-06',title:'Weekly Global Macro Report',file:'Weekly_Global_Macro_Report_2026-11-06_COUNTRY_BOOK_NARRATIVO_V4_CORRETTA.html',desc:'Country Book: crescita, inflazione, lavoro, tassi, rischio e forza relativa delle valute.'},
  {type:'bank',date:'2026-11-06',title:'Weekly Bank FX Report',file:'Weekly_Bank_FX_Report_2026-11-06_DARK_DESK_NARRATIVO_V5.html',desc:'View bancarie G8 e giudizio indipendente, con fonti e consenso datati.'},
  {type:'cb',date:'2026-11-06',title:'Weekly Central Bank Sentiment',file:'Weekly_CB_Sentiment_Report_2026-11-06_DARK_RESEARCH_DESK_WANT_CAN_V4_PALETTE.html',desc:'WANT/CAN: intenzioni e vincoli delle banche centrali, separati dal bias Forex.'},
@@ -19,7 +19,7 @@ const REPORTS=Object.freeze([
 const CATEGORIES=Object.freeze([['all','Tutti'],['daily','Daily Forex'],['macro','Global Macro'],['bank','Banche FX'],['cb','Banche centrali'],['ois','Curve OIS'],['cot','COT'],['cross','Cross-Asset'],['pairs','Coppie FX']]);
 const MONTHS=Object.freeze({GEN:1,FEB:2,MAR:3,APR:4,MAG:5,GIU:6,LUG:7,AGO:8,SET:9,OTT:10,NOV:11,DIC:12});
 const BLOCKED=/(_PROVA|_TEST|_BOZZA|_DRAFT|_BACKUP|_ANTEPRIMA|_PREVIEW|_LEGACY|_OLD|_DATI_PARZIALI)(_|\.|$)/i;
-let category='all',query='',remoteReports=[],lastLookupAt=0,refreshInFlight=false;
+let category='all',query='',remoteReports=[],dailyReport=null,lastLookupAt=0,refreshInFlight=false;
 const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('it-IT').trim();
 const label=x=>(CATEGORIES.find(c=>c[0]===x)||['','Report'])[1];
@@ -47,7 +47,7 @@ function revisionScore(file){
  return Math.max(0,...versions)*100+(/(DEFINITIV|CORRETT|FINAL|APPROVAT)/i.test(file)?1:0);
 }
 function remoteReport(file){
- if(typeof file!=='string'||!file.endsWith('.html')||BLOCKED.test(file))return null;
+ if(typeof file!=='string'||!file.endsWith('.html')||/[\\/]/.test(file)||BLOCKED.test(file))return null;
  const type=reportType(file),date=reportDate(file),canonical=REPORTS.find(r=>r.type===type);
  if(!type||!date||!canonical)return null;
  const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
@@ -62,9 +62,12 @@ function latestPerType(items){
  }
  return [...selected.values()].sort((a,b)=>b.date.localeCompare(a.date)||a.title.localeCompare(b.title));
 }
+function currentReports(){
+ return latestPerType([...REPORTS,...(dailyReport?[dailyReport]:[]),...remoteReports]);
+}
 function filterReports(type=category,search=query){
  const q=norm(search);
- return latestPerType([...REPORTS,...remoteReports]).filter(r=>(type==='all'||type===r.type)
+ return currentReports().filter(r=>(type==='all'||type===r.type)
   &&(!q||norm([r.title,label(r.type),r.desc,r.date,r.file].join(' ')).includes(q)));
 }
 // "Latest published" is a publication fact, not a freshness guarantee.
@@ -111,7 +114,7 @@ function rows(today=romeDay()){
 function filters(){return CATEGORIES.map(([id,name])=>'<button type="button" data-library-type="'+id+'" aria-pressed="'+String(id===category)+'">'+esc(name)+'</button>').join('');}
 function render(){
  if(root.document&&!refreshInFlight&&Date.now()-lastLookupAt>30*60*1000){lastLookupAt=Date.now();Promise.resolve().then(refresh);}
- const latest=latestPerType([...REPORTS,...remoteReports]);
+ const latest=currentReports();
  return '<section class="rl-head"><div><span class="rl-eyebrow">FX QUANT / RESEARCH LIBRARY</span>'+
   '<h1>Solo l’ultima edizione.</h1>'+
   '<p>Una lettura per ciascun report: Briefing Forex, Macro, banche centrali, curve OIS, posizionamento e selezione delle coppie.</p>'+
@@ -133,28 +136,48 @@ function sync(){
  if(!root.document)return;
  const grid=root.document.getElementById('library-grid'),count=root.document.getElementById('library-match-count'),bar=root.document.getElementById('library-filterbar');
  if(grid)grid.innerHTML=rows();
- if(count)count.textContent=filterReports().length+' di '+latestPerType([...REPORTS,...remoteReports]).length+' report · uno per categoria';
+ if(count)count.textContent=filterReports().length+' di '+currentReports().length+' report · uno per categoria';
  if(bar)bar.innerHTML=filters();
  const dateEl=root.document.getElementById('library-latest-date');
- if(dateEl){const top=latestPerType([...REPORTS,...remoteReports])[0];dateEl.textContent=top?datestr(top.date):'—';}
+ if(dateEl){const top=currentReports()[0];dateEl.textContent=top?datestr(top.date):'—';}
 }
-async function refresh(){
- if(typeof root.fetch!=='function'||refreshInFlight)return;
- refreshInFlight=true;lastLookupAt=Date.now();
+async function verifyPublished(report){
+ try{
+  const response=await root.fetch(report.publicUrl,{method:'HEAD',cache:'no-store'});
+  return response.ok?report:null;
+ }catch(_){return null;}
+}
+async function refreshDaily(){
+ try{
+  const response=await root.fetch(ROOT+'daily-latest.json',{cache:'no-store'});
+  if(!response.ok)return;
+  const entry=await response.json();
+  const report=remoteReport(entry?.file);
+  if(report?.type!=='daily')return;
+  const published=await verifyPublished(report);
+  if(published){
+   dailyReport=latestPerType(dailyReport?[dailyReport,published]:[published])[0];
+   sync();
+  }
+ }catch(_){/* Keep the last verified daily edition. */}
+}
+async function refreshRemote(){
  try{
   const response=await root.fetch(PUBLIC_API,{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
   if(!response.ok)throw Error('Repo API '+response.status);
   const entries=await response.json();
   if(!Array.isArray(entries))throw Error('Invalid catalog');
   const found=latestPerType(entries.filter(e=>e&&e.type==='file'&&typeof e.name==='string').map(e=>remoteReport(e.name)).filter(Boolean));
-  const published=await Promise.all(found.map(async r=>{
-   try{const h=await root.fetch(r.publicUrl,{method:'HEAD',cache:'no-store'});return h.ok?r:null;}
-   catch(_){return null;}
-  }));
+  const published=await Promise.all(found.map(verifyPublished));
   remoteReports=published.filter(Boolean);
  }catch(_){/* Keep last verified edition or pinned catalog. */}
+ sync();
+}
+async function refresh(){
+ if(typeof root.fetch!=='function'||refreshInFlight)return;
+ refreshInFlight=true;lastLookupAt=Date.now();
+ try{await Promise.all([refreshDaily(),refreshRemote()]);}
  finally{refreshInFlight=false;}
- if(root.document?.getElementById('library-grid'))sync();
 }
 const api={REPORTS,CATEGORIES,filterReports,reportType,reportDate,remoteReport,latestPerType,editionStatus,render,rows,setCategory,setQuery,sync,url,refresh};
 root.FXQuantResearchLibrary=api;
