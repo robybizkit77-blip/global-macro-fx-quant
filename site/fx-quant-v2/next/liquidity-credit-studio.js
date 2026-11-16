@@ -66,7 +66,7 @@
   return {coverage:true,state:overdue?'STORICO':valid?'DATATO':'DATA DA VERIFICARE',tone:overdue?'warn':'neutral',
    message:staleText+' · '+short(row.last_date)+' · '+observation+
     '. La direzione di scenario può riferirsi a più osservazioni, non a questa singola variazione.',
-   delta};
+   delta,observation};
  }
  function interpret(row){
   if(!row)return {headline:'Dati G8 non disponibili',meaning:'Nessuna lettura è ricostruita artificialmente.',fx:'Non emerge un collegamento verificabile con il Forex.',watch:'Recuperare la fonte originale e le date.',liquidity:direction('',false),credit:direction('',false)};
@@ -109,10 +109,10 @@
   watch:'Nuove serie su credito famiglie e imprese, survey condizioni e pricing SONIA rispetto a €STR; monitorare EUR/GBP e GBP/USD.'},
  JPY:{fx:'Riserve BoJ in riduzione e credito bancario in crescita non provano da sole una stretta dell’economia. Per JPY il meccanismo decisivo resta il differenziale con gli altri paesi, insieme al rischio di riduzione del carry.',
   watch:'Decisioni BoJ, prestiti e riserve, 2Y relativo USA/JPY e futures; osservare USD/JPY e AUD/JPY in fasi risk-off.'},
- CHF:{fx:'I depositi a vista presso SNB possono variare per molte ragioni, incluse le operazioni monetarie: il calo da solo non prova un cambio di policy. La dinamica CHF può essere dominata dalla domanda di beni rifugio.',
+ CHF:{fx:'Per EUR/CHF conta se il credito cambia le prospettive di crescita e le attese sulla SNB rispetto alla BCE. La domanda di franco rifugio può muovere il cambio anche con attese sui tassi ferme.',
   watch:'Nuovi sight deposits, credito e tono SNB, differenziale EUR/CHF e condizioni di rischio europee.'},
- CAD:{fx:'Manca una serie numerica del credito nel layer disponibile. La liquidità di regolamento da sola non dimostra se il credito canadese sta espandendosi. Per CAD servono BoC, domanda interna, petrolio e rischio globale.',
-  watch:'Ripristinare la fonte del credito bancario, nuova SLOS e pricing BoC relativo alla Fed; osservare USD/CAD e AUD/CAD.'},
+ CAD:{fx:'Se i prestiti alle imprese prendono slancio e la domanda interna tiene, osserva se cambiano le attese sulla BoC rispetto alla Fed. Petrolio e rischio globale possono spiegare movimenti di USD/CAD anche con tassi attesi fermi.',
+  watch:'Metti a confronto prestiti alle imprese e condizioni di concessione (SLOS), poi verifica le attese BoC–Fed e USD/CAD.'},
  AUD:{fx:'Saldi di regolamento RBA e credito alle imprese rappresentano canali diversi. Un impulso del credito non è sufficiente a sostenere AUD se aspettative RBA, crescita cinese o propensione al rischio divergono.',
   watch:'Credito imprese, domanda cinese, futures RBA contro Fed e BoC; verificare AUD/USD e AUD/CAD.'},
  NZD:{fx:'Per il NZD conta se la crescita del credito si riflette nella domanda interna e cambia le attese sui tassi RBNZ. I saldi di regolamento risentono anche delle operazioni della banca centrale e del governo. Su AUD/NZD serve poi conferma dal differenziale atteso RBA–RBNZ e dal prezzo.',
@@ -151,11 +151,12 @@
   if(!finite(move)||!finite(prior)||Math.abs(move)>12||Math.abs(prior)>12)return '';
   const age=Math.round((dateMs(today)-dateMs(period))/864e5);
   const freshness=age>110?'STORICO · NUOVA PUBBLICAZIONE DA CONTROLLARE':'SERIE BOJ UFFICIALE DATATA';
-  const pace=move>prior+0.025?'più rapido':move<prior-0.025?'meno rapido':'simile';
+  const pace=move>prior+0.025?'più alto':move<prior-0.025?'più basso':'simile';
+  const creditHeading=move>0?'Lo stock dei prestiti cresce':move<0?'Lo stock dei prestiti scende':'Lo stock dei prestiti è stabile';
   const moveSigned=q=>(q>0?'+':q<0?'−':'')+fmt(Math.abs(q),2);
   return '<section class="drivers-cad-official drivers-jpy-official" aria-label="BoJ credito bancario mensile fonte ufficiale separata">'+
    '<span class="mini-overline">BANK OF JAPAN · CREDITO BANCARIO DI FINE MESE</span>'+
-   '<h3>Giappone: lo stock dei prestiti sale, ma va verificata la trasmissione all’economia.</h3>'+
+   '<h3>'+esc(creditHeading)+'</h3>'+
    '<p>A '+esc(x.last_observation)+' i prestiti in essere delle banche domestiche sono '+esc(fmt(last/10,2))+
    ' miliardi JPY, contro '+esc(fmt(prev/10,2))+' miliardi il mese precedente: variazione dello stock '+
    esc(moveSigned(move))+'%. Il ritmo mensile è '+esc(pace)+' rispetto a quello precedente ('+esc(moveSigned(prior))+'%).</p>'+
@@ -235,7 +236,7 @@
   const quality=age>25?'STORICO · NUOVO RAPPORTO DA CONTROLLARE':'RAPPORTO SETTIMANALE UFFICIALE';
   return '<section class="drivers-cad-official drivers-gbp-official" aria-label="BoE riserve bancarie fonte ufficiale separata">'+
    '<span class="mini-overline">BANK OF ENGLAND · RISERVE BANCARIE UFFICIALI</span>'+
-   '<h3>GBP: le riserve cambiano, ma non è una prova di credito più facile.</h3>'+
+   '<h3>Riserve bancarie '+(delta>0?'in aumento':delta<0?'in calo':'stabili')+' nella settimana</h3>'+
    '<p>Al '+esc(x.source_period)+' le riserve delle banche presso la BoE '+esc(direction)+
    ' di <b>'+sign+esc(groupedMove)+' milioni GBP</b> in una settimana: saldo '+esc(fmt(latest,0))+
    ' milioni, contro '+esc(fmt(earlier,0))+' milioni al '+esc(x.previous_period)+'.</p>'+
@@ -342,7 +343,7 @@
     'La dinamica recente non è sufficiente a certificare un impulso positivo al credito; servono domanda, tassi sui nuovi prestiti e condizioni BLS.';
   return '<section class="drivers-cad-official drivers-eur-official" aria-label="Fonte ufficiale BCE separata">'+
    '<span class="mini-overline">BCE / ESCB · SERIE UFFICIALE SEPARATA</span>'+
-   '<h3>Prestiti alle imprese dell’Eurozona: conta la persistenza, non il solo ultimo mese.</h3>'+
+   '<h3>Prestiti alle imprese dell’Eurozona '+(pct===0?'invariati':state)+'</h3>'+
    '<p>Lo stock dei prestiti alle società non finanziarie è '+esc(state)+' nel '+esc(lastDate)+
    ': '+esc(fmt(last,0))+' milioni EUR, '+sign(pct)+esc(fmt(Math.abs(pct),2))+
    '% sul mese precedente. Il cumulato di due mesi è '+sign(twoMonths)+esc(fmt(Math.abs(twoMonths),2))+'%.</p>'+
@@ -374,7 +375,7 @@
   const stale=age>28?'PERIODO STORICO':'ULTIMA OSSERVAZIONE SETTIMANALE';
   return '<section class="drivers-cad-official drivers-us-official" aria-label="Ricerca Fed H.8 separata">'+
    '<span class="mini-overline">FONTE FED H.8 / FRED · SERIE SEPARATA</span>'+
-   '<h3>Credito bancario USA: cosa cambia nello stock, non necessariamente nei nuovi prestiti.</h3>'+
+   '<h3>Lo stock del credito bancario '+direction+'</h3>'+
    '<p>Nel dato del '+esc(lastDate)+' il credito bancario totale '+direction+': '+esc(fmt(last,2))+
    ' miliardi USD, '+(diff>0?'+':diff<0?'−':'')+esc(fmt(Math.abs(diff),2))+
    ' miliardi ('+(diff>0?'+':diff<0?'−':'')+esc(fmt(Math.abs(move),2))+'%) rispetto alla settimana precedente. '+
@@ -401,8 +402,8 @@
   const move=delta>0?'in aumento':delta<0?'in diminuzione':'invariati';
   const quality=age>75?'PERIODO STORICO':'ULTIMA OSSERVAZIONE DATATA';
   return '<section class="drivers-cad-official" aria-label="Fonte ufficiale canadese separata">'+
-   '<span class="mini-overline">FONTI · APPROFONDIMENTO UFFICIALE SEPARATO</span>'+
-   '<h3>Canada: il credito alle imprese è osservabile, ma non è ancora integrato nel feed G8.</h3>'+
+   '<span class="mini-overline">BANK OF CANADA · PRESTITI ALLE IMPRESE</span>'+
+   '<h3>Prestiti alle imprese '+move+'</h3>'+
    '<p>La Bank of Canada pubblica il totale dei <b>prestiti alle imprese in essere</b>: '+esc(fmt(last,0))+
    ' milioni CAD nel '+esc(latest)+', '+move+' ('+(delta>0?'+':delta<0?'−':'')+esc(fmt(Math.abs(delta),2))+
    '%) rispetto al mese precedente. È la variazione di uno stock bancario, non il flusso di nuovi prestiti.</p>'+
@@ -553,34 +554,44 @@
   }).join('');
   const facts='<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+
    cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>';
-  return pageHero('FINANCIAL CONDITIONS / G8','Liquidità & Credito. <em>Il denaro arriva all’economia?</em>',
-   'Il denaro può aumentare senza generare nuovi prestiti. Osserviamo i due canali per capire se cambiano crescita, pricing e valute.')+
-   '<section class="drivers-panel" id="liquidity-studio"><div class="drivers-head"><div><span class="mini-overline">01 / MAPPA G8</span><h2>Otto economie, due canali distinti</h2><p>Seleziona un paese. Le frecce sono classificazioni delle singole serie storiche, non un indice di liquidità globale né un ranking FX.</p></div><span class="drivers-source-mark">FONTI CON DATE INDIPENDENTI</span></div>'+
+  const officialRead=chf||
+   (selected==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):'')||
+   (selected==='JPY'?jpyBOJCreditResearch(esc,fmt,today):'')||
+   (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):'')||
+   (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):'')||
+   (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):'')||
+   (selected==='USD'?usFedCreditResearch(esc,fmt,today):'')||
+   (selected==='CAD'?cadIssuerResearch(esc,fmt,today):'');
+  const liquidityAudit=audits[0];
+  const liquidityRead=officialRead&&['USD','EUR','JPY','CAD'].includes(selected)&&
+   liquidityAudit.coverage&&liquidityAudit.state!=='DATA DA VERIFICARE'&&!policyGate('liquidity')?.withheld?
+   '<p class="drivers-lead"><strong>'+esc(row.liquidity.label)+'</strong> · '+
+   esc(snap(row.liquidity).replace(/T.*$/,''))+
+   (liquidityAudit.state==='STORICO'?' · storico':'')+'. '+esc(liquidityAudit.observation)+'.</p>':'';
+  const historicalCount=audits.filter(x=>x.state==='STORICO').length;
+  const sourceStatus='<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(historicalCount)+
+   ' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica.</p>';
+  return pageHero('LIQUIDITÀ E CREDITO G8','Liquidità & Credito. <em>Il denaro arriva all’economia?</em>',
+   'Segui prima la liquidità di banche e mercati, poi verifica se il credito arriva a famiglie e imprese.')+
+   '<section class="drivers-panel" id="liquidity-studio"><div class="drivers-head"><div><h2>Seleziona un’economia</h2>'+
+   '<p>La mappa mostra la direzione nelle serie di riferimento. Apri una scheda per leggere il periodo del dato e le osservazioni ufficiali disponibili.</p></div></div>'+
    '<div class="drivers-country-grid">'+cards+'</div></section>'+
-   '<section class="drivers-panel drivers-selection" aria-label="Dossier liquidità e credito '+selected+'">'+
-   '<div class="drivers-head"><div><span class="mini-overline">02 / LETTURA ECONOMICA · '+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
-   '<h2>'+esc(selected==='CHF'?'Liquidità e credito in Svizzera':read.headline)+'</h2></div>'+
-   (selected==='CHF'?'':'<span class="drivers-status" data-tone="'+(covered===3?'neutral':'unknown')+'">COPERTURA '+covered+'/3 SERIE</span>')+'</div>'+
-   (selected==='CHF'?chf:'<p class="drivers-lead">'+esc(read.meaning)+'</p>'+
-   '<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(audits.filter(x=>x.state==='STORICO').length)+' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica. Nessuna conclusione sulla liquidità di oggi dalle sole osservazioni pregresse.</p>'+
-   facts)+
-   (selected==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):'')+
-   (selected==='JPY'?jpyBOJCreditResearch(esc,fmt,today):'')+
-   (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):'')+
-   (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):'')+
-   (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):'')+
-   (selected==='USD'?usFedCreditResearch(esc,fmt,today):'')+
-   (selected==='CAD'?cadIssuerResearch(esc,fmt,today):'')+
-   '<div class="drivers-story"><div><span>IPOTESI DI TRASMISSIONE AL FOREX</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div><div><span>COSA MONITORARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
+   '<section class="drivers-panel drivers-selection" aria-label="Scheda liquidità e credito '+selected+'">'+
+   '<div class="drivers-head"><div><span class="mini-overline">'+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
+   '<h2>'+esc('Liquidità e credito · '+(NAMES[selected]||selected))+'</h2></div></div>'+
+   liquidityRead+(officialRead||'<h3>'+esc(read.headline)+'</h3><p class="drivers-lead">'+esc(read.meaning)+'</p>')+
+   '<div class="drivers-story"><div><span>PERCHÉ CONTA PER IL CAMBIO</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div>'+
+   '<div><span>COSA CONTROLLARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
    (root.FXQuantDriverMarketAudit?.render?.({get,esc,dayNow},selected)||'')+
    '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
-   '<details class="drivers-source-provenance-fold"><summary>'+(selected==='CHF'?'Fonti e storico':'Provenienza e limiti dell’aggiornamento automatico')+'</summary>'+
-   (selected==='CHF'?'<p>Le serie mensili SNB hanno un perimetro diverso dallo storico precedente, che resta in verifica.</p>'+facts:'')+
-    '<p>Il registro delle fonti è una fotografia al '+esc(provenance?.as_of||'data non verificata')+', non la prova che la pipeline abbia aggiornato oggi tutte le serie. Contratti mappati: '+esc(provenance?.verifiedContracts??'n.d.')+'/3. Un contratto pronto non equivale a un dato recente.</p>'+
-    '<ul>'+roles.map(role=>{const g=policyGate(role);return '<li><strong>'+esc(({liquidity:'Liquidità',credit:'Credito',conditions:'Standard e condizioni'})[role])+'</strong>: '+esc(g?.label||'provenienza non verificata')+'. '+esc(g?.narrative||'Verificare il registro fonti.')+'</li>'}).join('')+'</ul></details>'+
-   (selected==='CHF'?'':'<div class="drivers-source-note">Ultimo riferimento della scheda: '+esc(row?.as_of||'non dichiarato')+
-   '. Copertura storica non significa aggiornamento corrente. Le serie possono avere frequenze, definizioni, unità e date non omogenee.'+
-   (row?.current_note?' Contesto della fonte: '+esc(row.current_note):'')+'</div>')+'</section>'+
+   '<details class="drivers-source-provenance-fold"><summary>Fonti e storico</summary>'+
+   (selected==='CHF'?'<p>Le serie mensili SNB hanno un perimetro diverso dallo storico precedente, che resta in verifica.</p>':
+    '<p>'+esc(read.headline)+' '+esc(read.meaning)+'</p>')+
+   facts+sourceStatus+
+   '<p>Registro delle fonti al '+esc(provenance?.as_of||'dato non verificato')+' · Copertura '+esc(covered)+'/3 serie · Contratti mappati '+esc(provenance?.verifiedContracts??'n.d.')+'/3.</p>'+
+   '<ul>'+roles.map(role=>{const g=policyGate(role);return '<li><strong>'+esc(({liquidity:'Liquidità',credit:'Credito',conditions:'Standard e condizioni'})[role])+'</strong>: '+esc(g?.label||'provenienza non verificata')+'. '+esc(g?.narrative||'Verificare il registro fonti.')+'</li>'}).join('')+'</ul>'+
+   '<p>Copertura storica e date riferite alle rispettive serie. Frequenze, definizioni e unità possono differire.'+
+   (row?.current_note?' '+esc(row.current_note):'')+'</p></details></section>'+
    (selected==='CHF'?'':'<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
    '<div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità','#69d5ad')+chart(row?.credit,'Credito','#95c6e9')+'</div>'+
    '<p class="drivers-source-note">I grafici conservano i livelli originali nelle rispettive unità; non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>');
