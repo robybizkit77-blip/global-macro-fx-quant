@@ -712,6 +712,35 @@ async function calendarResearchJourney(page,label){
   label+' macro-event pair link did not open a real FX dossier');
  assert.match(new URL(page.url()).hash,/^#pairs\?pair=[A-Z]{6}$/);
 }
+async function pairWatchlistJourney(page,label){
+ await page.reload({waitUntil:'domcontentloaded'});
+ const showWatchlist=locator(page,'#fx-pair-list-watch');
+ const savedPair=locator(page,'.fx-watch-list [data-pair="EURCHF"]');
+ assert.match(await showWatchlist.innerText(),/Watchlist \(1\)/,label+' existing save lost after reload');
+ await showWatchlist.click();
+ assert.equal(await showWatchlist.getAttribute('aria-pressed'),'true');
+ assert.equal(await locator(page,'.fx-rank-all-list').count(),0);
+ assert.equal(await savedPair.count(),1);
+ await savedPair.click();
+ assert.equal(new URL(page.url()).hash,'#pairs?pair=EURCHF');
+ assert.match(await locator(page,'[data-pair-close]').innerText(),/Torna alla watchlist/);
+ await locator(page,'[data-pair-close]').click();
+ assert.equal(await savedPair.count(),1);
+ await savedPair.click();
+ const watch=locator(page,'[data-watch="EURCHF"]');
+ await watch.press('Enter');
+ assert.equal(await watch.getAttribute('aria-pressed'),'false');
+ assert(await watch.evaluate(el=>document.activeElement===el));
+ assert.equal(await savedPair.count(),0);
+ assert.match(await showWatchlist.innerText(),/Watchlist \(0\)/);
+ await locator(page,'[data-pair-close]').click();
+ assert.match(await locator(page,'[aria-label="Watchlist FX"]').innerText(),/La watchlist è vuota/);
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
+ await locator(page,'#fx-pair-list-all').click();
+ assert.equal(await locator(page,'.fx-rank-all-list button.fx-rank-pair').count(),28);
+ await page.reload({waitUntil:'domcontentloaded'});
+ assert.match(await showWatchlist.innerText(),/Watchlist \(0\)/,label+' removal lost after reload');
+}
 async function pairLinkJourney(page,label){
  const frank=new URL('#pairs?pair=EURCHF',BASE).href;
  const heading=locator(page,'#fx-selected-thesis h2');
@@ -812,6 +841,7 @@ async function pairLinkJourney(page,label){
     await g8Choice(page,label);
     await macroDriversJourney(page,label);
     await pairJourney(page,label);
+    await pairWatchlistJourney(page,label);
     await pairMonetaryJourney(page,label);
     await calendarResearchJourney(page,label);
     await pairLinkJourney(page,label);
