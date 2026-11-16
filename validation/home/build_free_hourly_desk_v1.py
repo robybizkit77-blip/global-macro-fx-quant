@@ -302,10 +302,20 @@ def build(root: Path, now: datetime, previous=None, rss=None):
             [gold["source_endpoint"], oil["source_endpoint"]])
     macro = lookup("MACRO_OFFICIAL_ACTUAL")
     if macro and valid_url(macro.get("source_url")):
+        if macro.get("metric_id") == "CA_CPI_HEADLINE_YOY_NSA":
+            macro_analysis = (
+                "Il CPI complessivo canadese misura la variazione dei prezzi su un anno. "
+                "Per valutarne l'effetto sulle attese BoC, confronta il dato con le attese "
+                "pre-rilascio, le componenti e il movimento dei tassi canadesi."
+            )
+        else:
+            macro_analysis = (
+                "Verifica composizione e revisioni nel comunicato prima di aggiornare le "
+                "aspettative sulla banca centrale. Per misurare una sorpresa serve un "
+                "consenso documentato prima della pubblicazione."
+            )
         add(str(macro["title"]),
-            "La composizione di headline e core aiuta a giudicare persistenza dei prezzi "
-            "e possibili conseguenze per le aspettative Fed. Il dato pubblicato "
-            "resta distinto dalla sorpresa rispetto al consenso e dalla successiva reazione FX.",
+            macro_analysis,
             "FOLLOW_UP", macro["as_of"], macro["as_of"], "MACRO", [macro["source_url"]])
     for h in recent:
         if len(news) >= 6:
