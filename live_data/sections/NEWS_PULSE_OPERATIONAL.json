@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-13",
-  "generated_at_utc": "2026-11-16T07:00:38.559120Z",
+  "generated_at_utc": "2026-11-16T07:48:09.842623Z",
   "items": [
     {
       "as_of": "2026-11-13",
@@ -78,6 +78,18 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
       "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-11-13",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Fra 2026-11-12 e 2026-11-13; 2Y 1.882%, 10Y 2.899%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-12",
+      "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-13",
+      "title": "JPY: governativo 2Y +2.5 pb, 10Y +5.8 pb"
     },
     {
       "as_of": "2026-11-13",
@@ -168,18 +180,6 @@
     },
     {
       "as_of": "2026-11-12",
-      "category": "MARKET_GOVERNMENT_RATES",
-      "ccy": "JPY",
-      "confidence": "A",
-      "detail": "Fra 2026-11-11 e 2026-11-12; 2Y 1.857%, 10Y 2.841%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
-      "importance": "MEDIUM",
-      "quality": "FULL_CURRENT_OFFICIAL",
-      "reference_previous_date": "2026-11-11",
-      "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-12",
-      "title": "JPY: governativo 2Y -0.4 pb, 10Y +0.1 pb"
-    },
-    {
-      "as_of": "2026-11-12",
       "category": "FUTURES_IMPLIED_REPRICING",
       "ccy": "AUD",
       "confidence": "A",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-16T07:00:38.559120Z",
+  "last_checked_at_utc": "2026-11-16T07:48:09.842623Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -435,13 +435,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-12",
+            "date": "2026-11-13",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-12",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-13",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.857
+            "yield_2y_pct": 1.882
           }
         },
         "source": "Bank of Japan",
@@ -790,13 +790,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-12",
+            "date": "2026-11-13",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-12",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-13",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.857
+            "yield_2y_pct": 1.882
           }
         },
         "source": "Bank of Japan",
