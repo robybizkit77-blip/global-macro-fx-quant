@@ -122,8 +122,11 @@ async function inspectRoute(page,label,key){
    label+' liquidity, credit and lending conditions must be separate');
   assert.equal(await locator(page,'.drivers-chart-grid .drivers-chart').count(),2,
    label+' both source-dated trend charts required');
-  assert((await locator(page,'.drivers-source-note').first().innerText()).includes('Copertura storica'),
-   label+' no stale series may be presented as current market readings');
+  const liquidSources=locator(page,'.drivers-source-provenance-fold');
+  assert.equal(await liquidSources.getAttribute('open'),null,label+' liquidity sources start collapsed');
+  assert.match(await liquidSources.textContent(),/Copertura storica/);
+  assert.equal(await locator(page,'.drivers-us-official').isVisible(),true,
+   label+' dated Fed evidence belongs in the first reading');
   assert.equal(await locator(page,'.drivers-market-audit .drivers-market-item').count(),2,
    label+' liquidity hypothesis must be checked against dated 6M and FX price evidence');
  }else if(key==='rates'){
@@ -299,7 +302,7 @@ async function macroDriversJourney(page,label){
  const usSloos=locator(page,'[data-liq-role="conditions"]');
  assert.equal(await usSloos.getAttribute('data-source-safety'),'withheld',
   label+' uncertified USD SLOOS variant must remain withheld');
- const usSloosText=await usSloos.innerText();
+ const usSloosText=await usSloos.textContent();
  assert(usSloosText.includes('Dato sospeso')&&usSloosText.includes('SLOOS IN VERIFICA'),
   label+' SLOOS discrepancy quarantine must explain the reason');
  assert(!usSloosText.includes('Ultimo 2026-07-01 · 0,00'),
@@ -307,6 +310,7 @@ async function macroDriversJourney(page,label){
  const sourceContract=locator(page,'.drivers-source-provenance-fold');
  await sourceContract.locator('summary').click();
  assert(await sourceContract.evaluate(el=>el.open),label+' registry/source provenance cannot open');
+ assert(await usSloos.isVisible(),label+' the provenance disclosure must reveal withheld SLOOS');
  await locator(page,'[data-liq-country="EUR"]').click();
  const officialECB=locator(page,'.drivers-eur-official');
  assert.equal(await officialECB.count(),1,
@@ -315,7 +319,7 @@ async function macroDriversJourney(page,label){
  assert(ecbText.includes('BCE')&&ecbText.includes('Il cumulato di due mesi')&&
         ecbText.includes('revisioni possibili')&&ecbText.includes('Fonte: BCE'),
   label+' EUR credit stock requires dated source and persistence narrative');
- const eurNative=await locator(page,'[data-liq-role="credit"]').innerText();
+ const eurNative=await locator(page,'[data-liq-role="credit"]').textContent();
  assert(eurNative.includes('2026-07')&&!eurNative.includes('Ultimo 2026-09'),
   label+' ECB research must not overwrite the EUR canonical credit value');
  await locator(page,'[data-liq-country="AUD"]').click();
@@ -333,7 +337,7 @@ async function macroDriversJourney(page,label){
  const audES=locator(page,'.drivers-aud-es-bridge');
  assert.equal(await audES.count(),1,
   label+' RBA ES reserves must appear within the existing AUD editorial dossier');
- const audCanonical=await locator(page,'[data-liq-role="credit"]').innerText();
+ const audCanonical=await locator(page,'[data-liq-role="credit"]').textContent();
  assert(audCanonical.includes('31/07/2026')&&!audCanonical.includes('Ultimo 2026-09'),
   label+' AUD native credit stock must not be replaced by research source');
  await locator(page,'[data-liq-country="JPY"]').click();
@@ -350,7 +354,7 @@ async function macroDriversJourney(page,label){
         bojText.includes('USD/JPY')&&bojText.includes('JGB/UST')&&
         bojText.includes('non sono nuovi prestiti'),
   label+' JPY credit stock, economic limitations and Forex confirmation missing');
- const jpyNative=await locator(page,'[data-liq-role="credit"]').innerText();
+ const jpyNative=await locator(page,'[data-liq-role="credit"]').textContent();
  assert(jpyNative.includes('2026-07')&&!jpyNative.includes('Ultimo '+bojSrc.last_observation),
   label+' official JPY research must not overwrite the historical canonical credit record');
  await locator(page,'[data-liq-country="GBP"]').click();
@@ -372,7 +376,7 @@ async function macroDriversJourney(page,label){
         boeText.includes(boeSources.reserves.published_on)&&
         boeText.includes('RPWB56A')&&boeText.includes('EUR/GBP'),
   label+' GBP reserve stock must reflect the latest issuer publication and relative FX check');
- const gbpNative=await locator(page,'[data-liq-role="liquidity"]').innerText();
+ const gbpNative=await locator(page,'[data-liq-role="liquidity"]').textContent();
  assert(gbpNative.includes('2026-09-16')&&
         !gbpNative.includes('Ultimo '+boeSources.reserves.source_period),
   label+' GBP research must not silently overwrite historical native reserves');
@@ -389,12 +393,12 @@ async function macroDriversJourney(page,label){
  if(boeSources.secured.last_observation==='2026-09')
   assert(secured.includes('Money and Credit'),
    label+' September credit interpretation must link the issuer economic release');
- const gbpOldCredit=await locator(page,'[data-liq-role="credit"]').innerText();
+ const gbpOldCredit=await locator(page,'[data-liq-role="credit"]').textContent();
  assert(gbpOldCredit.includes('31 Jul 2026')&&!gbpOldCredit.includes('Ultimo 2026-09'),
   label+' GBP latest research must not overwrite original old native credit source');
  await locator(page,'[data-liq-country="CAD"]').click();
  assert.equal(await locator(page,'[data-liq-country="CAD"]').getAttribute('aria-pressed'),'true');
- const cadDossier=(await locator(page,'.drivers-selection').innerText());
+ const cadDossier=await locator(page,'.drivers-source-provenance-fold').textContent();
  const officialCad=locator(page,'.drivers-cad-official');
  assert.equal(await officialCad.count(),1,
   label+' CAD official issuer evidence must be present separately from the native feed');
@@ -403,7 +407,7 @@ async function macroDriversJourney(page,label){
   label+' CAD evidence must preserve bank source, exact series and stock interpretation');
  assert(cadDossier.includes('Serie non disponibile'),
   label+' missing CAD direct credit must not be invented');
- assert(cadDossier.includes('COPERTURA')&&cadDossier.includes('QUALITÀ TEMPORALE'),
+ assert(cadDossier.includes('Copertura')&&cadDossier.includes('QUALITÀ TEMPORALE'),
   label+' liquidity status must reflect actual coverage and dated sources');
  assert(cadDossier.includes('punti della survey')&&!cadDossier.includes('−208,33%'),
   label+' signed lending surveys must not be misreported as percentage changes');
@@ -411,7 +415,8 @@ async function macroDriversJourney(page,label){
  const meaning=await locator(page,'.drivers-selection').innerText();
  assert(meaning.toLowerCase().includes('liquidità')&&meaning.toLowerCase().includes('credito'),
   label+' liquidity-to-credit divergence narrative missing');
- assert(meaning.includes('STORICO')&&meaning.includes('osservazione precedente'),
+ const jpySources=await locator(page,'.drivers-source-provenance-fold').textContent();
+ assert(jpySources.includes('STORICO')&&jpySources.includes('osservazione precedente'),
   label+' historical source age and observed changes must be explicit');
  assert(meaning.includes('USD/JPY')&&meaning.includes('non hanno la stessa data'),
   label+' JPY liquidity FX hypotheses require sourced price and honest asynchronous risk');
