@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_FXV2_PRICING_SNAPSHOT_V1",
-  "snapshot_built_from_repo_date": "2026-11-15",
+  "snapshot_built_from_repo_date": "2026-11-16",
   "ui_only": true,
   "eligible_for_fx_engine": false,
   "notes": "Automatically refreshed from dated G8 operational futures/OIS, secondary estimated futures and NZD ASX bank-bill proxy. Each tenor retains its own observation date; no fake OIS, no FX signal.",
@@ -9,11 +9,11 @@
       "kind": "FUTURES SECONDARI",
       "quality": "STIMA INDICATIVA",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "as_of": "2026-11-13",
+      "as_of": "2026-11-16",
       "horizons": {
         "3m": {
-          "rate": 4.32,
-          "as_of": "2026-11-13",
+          "rate": 4.33,
+          "as_of": "2026-11-16",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQG2027"
