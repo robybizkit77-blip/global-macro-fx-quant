@@ -1,8 +1,53 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-15T22:53:48Z",
+  "generated_at_utc": "2026-11-16T02:47:54Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-94ec3c5a1ed486cf2cf3",
+      "observed_at_utc": "2026-11-16T01:09:00Z",
+      "headline": "Yen steady against euro and dollar after soft Japanese GDP data",
+      "summary": "Reuters riporta: Yen steady against euro and dollar after soft Japanese GDP data. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "USD",
+        "EUR",
+        "JPY"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPZkdhelNXT1laWnBWei1ZTGMybnc1U1FxOUtGdjdoaGxDX29kd0pvc3FoLVhYdVh4SkdQdGN1cFU1UjVmb0lGWlJsdTlJOHppUjh0eGVrTFJBajZxUV9CVWFrN0F5S0RqVVpMWlR4ZW05R0duTFdvZjJNbGNhcEl2V002d0xWejFMRmR2ZjRDanBqZndnZndWOF96b3NxdVdaWnp4LWdzQ1RhdEdXdkhfcUJaSQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-f07058fad323decab590",
+      "observed_at_utc": "2026-11-16T00:13:00Z",
+      "headline": "Japan's economy unexpectedly shrinks as inflation squeezes households",
+      "summary": "Reuters riporta: Japan's economy unexpectedly shrinks as inflation squeezes households. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "JPY"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQeXFYOEg3cHpDTUFrTU9IRlQyWDlvRGVMVVN3VmxOelY3WnhCREJNdElKcEY5ZWpBSmhoalMzWDdaM0Y5Z0VXbkxVemg3YmdhSUg5UmYybnhFOHhWbVhXdjdoT1BUUGNQUFVtX2o1SkJRSnBJNEdLX081amJyUll6WHFpUk5SaWlkd2JGN0VnRFZKYi1WT1B0NzFUOUVKdkFfcTQ5RmdFeHdvcWI5c2pRaXF6MFBydw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-1987ba3dc0e052ba88a1",
+      "observed_at_utc": "2026-11-16T02:00:00Z",
+      "headline": "Oil prices fall on expectations of coming supply surplus",
+      "summary": "Reuters riporta: Oil prices fall on expectations of coming supply surplus. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "COMMODITIES",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNSXlabl9ocWtiOEZLcnc2SGNVSEh2bjltWURkWU1RSDVTejZWMEtNYTR4QW9sT19DQy05SVhHVmphTEtIQXdtVzlUS25Vdk1oS0hjdWZ0MHpUb01NQUp4dzlBcE55anIwR0hKVmhCUDRsT3V3ek9jTURVYkcySDNBM1B0RmJ3emdUaHpPVWpENENfZ2JGRHB3MlJuekVfUWlFa2lfUQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-cc98ea70cfce7fafc411",
       "observed_at_utc": "2026-11-15T18:43:43Z",
@@ -1360,51 +1405,6 @@
       "related_pairs": [],
       "source_label": "AP News · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPOFJnS1VZX1hVdks1cTJoYThkYVQweVhSNTl6T0Q2LWhtY3ZNYUtWNDFIRHZvOU9SQnQ1QnJucVdEV3RzbU5nR1pwanVKZEJHOFlnZ1F2eV9XdHJoQmNEeDY4Y0xVT0VsT0ljbXhCNUxFaWIxV1A2MnFjVnVWclpBZTV1QW1zZ29Gc0hGWEtubnRlUmV1TTRmTUotN0U?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-8916b943fc450994b9c5",
-      "observed_at_utc": "2026-11-06T11:07:45Z",
-      "headline": "Wall St Week Ahead As tech swoon roils market, US inflation data on tap",
-      "summary": "Reuters riporta: Wall St Week Ahead As tech swoon roils market, US inflation data on tap. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPYWlPMS1sdHZxcTUxa3RDeUkwRFNDMFhEeGVNRktDVW9xeTNnMTFXbWMxQjlOTkttTkx5b19EVlVZOThRRGNCX0FrR2dIVTZpUHQzblctejRubG4yTWNyajJVaU8yV3JoYjZ1T19HY1U2dHBlMVE2a2oyUHpBZFZtb2g0T3FtSWRaT0hscHhkdGMwNktlb092R2g4cUFWWE9QS2RCOHh6d1QteW5pcWc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c73bb486994d8d5e2569",
-      "observed_at_utc": "2026-11-06T03:46:00Z",
-      "headline": "Gold eases on inflation worries from higher oil; US payrolls data in focus",
-      "summary": "Reuters riporta: Gold eases on inflation worries from higher oil; US payrolls data in focus. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxQQVNBUlY0RkQ3Vm5qcDFmbS12Nlo0Wjd4RWNEWkROOFRSX0hha1VobWJkTW82YTM1QzNMUXlzX1V5bktiSHJDYklFR2ZDUnN4aEhGM3U0UmlRT3pDcjVFRkR5ak9IZ1NVbG4wempaX1Y0R2JXb0U2THRLcE80d0l1NFppQ3l5b2M4c3RQZU1sS1RNRHdiYmFsYmw0czRoUnVJRVJLNTl0VmVNODg3NWVR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-7d78922623acd28d4c22",
-      "observed_at_utc": "2026-11-05T23:32:48Z",
-      "headline": "Japan's real wages rise for ninth month in September, backing BOJ rate hike",
-      "summary": "Reuters riporta: Japan's real wages rise for ninth month in September, backing BOJ rate hike. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNWlg3cE0wZk9VZ19wNWlhZ3h0SjN3MWloT1BKU0tiN2Nld0dXOWNmMVBxdE40d3VUMUMtZkI3Vnl2em9IdG5FSnNuZHJiZEgwemE5S2ZkVFNEUHZLMnMtS3J4ZWVWX0I1c1VFc21hM2dMbXVBZ3lmeldiNWVHS0w5TUN6MHY3YjFMVGlrYlZTSlJFRzVzTTlSXzJZei05YmV4ZkpoV09aNVAtOU5DbWdmQ2F1Y1hncUZFY0FMQTh3?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
