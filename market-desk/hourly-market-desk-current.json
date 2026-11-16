@@ -1,20 +1,20 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-16T15:06:27.926490Z",
-  "edition_time_rome": "2026-11-16 16:06",
-  "material_digest": "3942a44620830fc632d6841a4b0b05b89d57d9d91e0b2b33eeb6ef12f2121294",
+  "generated_at_utc": "2026-11-16T18:38:09.041445Z",
+  "edition_time_rome": "2026-11-16 19:38",
+  "material_digest": "28eb9f16d1258de84688e7fb2211f8a37acdb41bccf15af20f516d603877e61d",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
   "lead": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate.",
   "news": [
     {
-      "headline": "Forza del dollaro sui cross EUR/USD e USD/JPY",
-      "analysis": "Due fixing BCE consecutivi indicano un USD più forte contro euro e yen. Il canale dei tassi USA–Eurozona può contribuire, mentre la BoJ e il rischio globale restano determinanti per il confronto con lo yen.",
+      "headline": "EUR/USD: -0.34% fra due fixing BCE",
+      "analysis": "Il movimento relativo di EUR/USD va letto fra aspettative Fed e BCE e confrontato con gli altri cambi per distinguere forza del dollaro da debolezza dell'euro. Il dato è un fixing BCE, non una reazione intraday.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-13",
-      "event_date": "2026-11-13",
+      "published_date": "2026-11-16",
+      "event_date": "2026-11-16",
       "market_area": "FOREX",
       "sources": [
         "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
@@ -68,7 +68,7 @@
     {
       "headline": "Bank of Canada Governor Tiff Macklem to step down in June 2027",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-16",
       "event_date": "2026-11-16",
       "market_area": "BANCHE CENTRALI",
@@ -78,7 +78,7 @@
     }
   ],
   "desk_judgment": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
-  "fx_implications": "Negli ultimi fixing BCE il dollaro si è rafforzato sia contro euro sia contro yen. La forza cross va letta assieme ai tassi e al rischio globale. Per USD/JPY conta anche la traiettoria attesa della BoJ; per EUR/USD la differenza fra Fed e BCE.",
+  "fx_implications": "Il Forex va interpretato per coppie: per EUR/USD conta il confronto Fed–BCE, per USD/JPY quello Fed–BoJ e la componente di rischio globale. Negli ultimi fixing EUR/USD è sceso, ma distinguere forza USD da debolezza EUR richiede il confronto con altri cross.",
   "what_changed": "Sono entrate nuove osservazioni o pubblicazioni rispetto alla precedente edizione. La direzione relativa di tassi, Forex, credito e materie prime viene ricomposta in un solo quadro economico, senza attribuire automaticamente causalità.",
   "contrary_evidence": "Una ripresa delle azioni senza conferma del credito o con volatilità in aumento renderebbe più fragile l'interpretazione risk-on. Le ultime chiusure rappresentano osservazioni datate, non flussi attribuibili a specifici operatori.",
   "watch": "Il prossimo catalizzatore sul calendario è Labour Force, Australia (AUD, 2026-11-19): conteranno sorpresa rispetto alle attese, composizione e risposta dei tassi relativi. Il confronto con credito, volatilità e fixing successivi aiuterà a distinguere un movimento persistente da uno temporaneo.",
@@ -95,7 +95,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-16",
-      "rss_checked_at_utc": "2026-11-16T15:06:27.926490Z",
+      "rss_checked_at_utc": "2026-11-16T18:38:09.041445Z",
       "commodities": "2026-11-13"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-16T15:06:27.926490Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "3942a44620830fc632d6841a4b0b05b89d57d9d91e0b2b33eeb6ef12f2121294"
+    },
     {
       "generated_at_utc": "2026-11-16T14:47:50.713936Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
