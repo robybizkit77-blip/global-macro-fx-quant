@@ -151,15 +151,19 @@ assert.equal(weekdayLag('2026-11-13','2026-11-14'),0,'Weekend is not a stale wee
 assert.equal(weekdayLag('2026-11-13','2026-11-16'),1,'Friday to Monday is one weekday');
 assert.equal(weekdayLag('2026-11-13','2026-11-18'),3,'Third weekday triggers editorial warning');
 assert.equal(weekdayLag('2026-11-18','2026-11-13'),null,'Do not accept future source dates');
-assert.equal(freshness({...args,today:'2026-11-14'},selected).stale,false,
+const weekendHistory={...history,as_of:'2026-11-13'};
+const weekendArgs={...args,history:weekendHistory,today:'2026-11-14'};
+const weekendPicks=choose(weekendArgs);
+assert.equal(weekendPicks.length,2,'The historical weekend fixture needs dated pair comparisons');
+assert.equal(freshness(weekendArgs,weekendPicks).stale,false,
  'Friday official archive remains current through Saturday');
-assert.equal(freshness({...args,today:'2026-11-19'},selected).stale,true,
+assert.equal(freshness({...weekendArgs,today:'2026-11-19'},weekendPicks).stale,true,
  'Without future refresh, weekday lag must produce a visible warning');
-const staleHtml=render({...args,today:'2026-11-19'});
+const staleHtml=render({...weekendArgs,today:'2026-11-19'});
 assert(staleHtml.includes('data-home-pricing-freshness="ARCHIVIO_NON_RECENTE"'));
 assert(staleHtml.includes('Questa verifica non è recente'));
 assert(staleHtml.includes('Lettura soltanto storica'));
-const weekendHtml=render({...args,today:'2026-11-14'});
+const weekendHtml=render(weekendArgs);
 assert(weekendHtml.includes('data-home-pricing-freshness="CONFRONTO_STORICO_DATATO"'));
 assert(weekendHtml.includes('fixing BCE 13/11/2026'));
 assert(weekendHtml.includes('archivio 6M 13/11/2026'));
