@@ -40,8 +40,8 @@ const SOURCES={
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
 let firstResearchLoaded=false;
-const state={data:{},errors:{},route:'overview',ccy:'USD',cbCcy:'USD',liqCcy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairDetailOpen:false,pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',rsPricingWindow:'1d',rsHistoryWindow:30,msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
-try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
+const state={data:{},errors:{},route:'overview',ccy:'USD',cbCcy:'USD',liqCcy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairListView:'all',pairDetailOpen:false,pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',rsPricingWindow:'1d',rsHistoryWindow:30,msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
+try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'&&/^[A-Z]{6}$/.test(s)))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
@@ -892,7 +892,7 @@ function pairs(){
   activePair,get('calendar'),dayNow())||null;
  const context='Stima operativa Macro Strength '+date(estimate?.asof)+' · fixing BCE '+date(estimate?.priceAsOf)+
    ' · vecchio motore del '+date(get('pairs')?.macro_baseline_asof)+' archiviato, non utilizzato per il giudizio corrente';
- const watchLabel=state.watch.has(state.pair)?'★ Nella watchlist':'☆ Salva nella watchlist';
+ const saved=state.watch.has(state.pair);
  // A categorical trading assessment is not a new score or a validated entry.
  const tradeStatus=activePair?.tradeAttractiveness||'NON VALUTABILE';
  const tradeTone=tradeStatus==='DA VALIDARE'?'awaiting':
@@ -954,14 +954,14 @@ function pairs(){
  const detail='<details class="pairs-optional-panel pairs-optional-chart"><summary><span><strong>Apri grafico, pricing e analisi completa</strong><small>Fixing BCE, 5/20 sedute, tassi differenziali, rischi e livelli di riferimento</small></span><span class="pairs-open-icon">+</span></summary>'+
   '<div class="pairs-details-body">'+originalDecision+'</div></details>';
  const chooser='<section class="pairs-chooser"><div class="pairs-chooser-top">'+choice+
-  '<button class="watch-btn '+(state.watch.has(state.pair)?'saved':'')+'" type="button" data-watch="'+state.pair+'">'+watchLabel+'</button></div>'+
+  '<button class="watch-btn '+(saved?'saved':'')+'" type="button" data-watch="'+state.pair+'" aria-pressed="'+saved+'" aria-label="Watchlist '+esc(getPairName(state.pair))+'">'+pairWatchLabel(saved)+'</button></div>'+
   '<p>28 coppie G8, una sola tesi alla volta. Parti dal giudizio; approfondisci soltanto ciò che conta.</p></section>';
  const ranking=window.FXQuantPairRankings?.render?
   window.FXQuantPairRankings.render({get,FX,FLAGS,state,esc,sign,date,dayNow}):
   '<section class="panel"><p>Ranking non caricato. I feed e le tesi restano consultabili dal selettore.</p></section>';
  const drill=state.pairDetailOpen?
   '<div class="fx-rank-detail-head" id="fx-selected-thesis" tabindex="-1"><h2>Tesi completa · '+esc(getPairName(state.pair))+
-  '</h2><button type="button" class="fx-rank-back" data-pair-close="1">↑ Torna alla classifica</button></div>'+
+  '</h2><button type="button" class="fx-rank-back" data-pair-close="1">↑ Torna '+(state.pairListView==='watch'?'alla watchlist':'alla classifica')+'</button></div>'+
   chooser+main+monetary+historyDetail+detail:'';
  return pageHero('FX / PAIR EXPLORER','Dal G8 alle <em>coppie da approfondire.</em>',
   'Prima la classifica visiva delle valute e delle 28 coppie; poi, scegliendo una coppia, trovi il ragionamento completo su macro, pricing, COT e prezzo.')
@@ -1123,6 +1123,7 @@ function focusPairSection(id){
  // Keep the existing CSS scroll offset so the heading clears the sticky header.
  section.scrollIntoView({behavior:'instant',block:'start'});
 }
+function pairWatchLabel(saved){return saved?'★ Nella watchlist':'☆ Salva nella watchlist';}
 function saveWatch(){try{localStorage.setItem('fxquant-next-watch',JSON.stringify([...state.watch]))}catch(e){}}
 function syncRouteChrome(route){
  $('crumb-page').textContent=ROUTES[route];
@@ -1361,7 +1362,28 @@ document.addEventListener('click',e=>{
   return;
  }
  const f=e.target.closest('[data-pfilter]');if(f){state.pairFilter=f.dataset.pfilter;render();return}
- const w=e.target.closest('[data-watch]');if(w){state.watch.has(w.dataset.watch)?state.watch.delete(w.dataset.watch):state.watch.add(w.dataset.watch);saveWatch();render();return}
+ const listView=e.target.closest('[data-pair-list]');
+ if(listView){
+  state.pairListView=listView.dataset.pairList;
+  render();
+  $(listView.id)?.focus({preventScroll:true});
+  return;
+ }
+ const w=e.target.closest('[data-watch]');
+ if(w){
+  const key=w.dataset.watch;
+  const saved=!state.watch.delete(key);
+  if(saved)state.watch.add(key);
+  saveWatch();
+  w.classList.toggle('saved',saved);
+  w.setAttribute('aria-pressed',String(saved));
+  w.textContent=pairWatchLabel(saved);
+  const ranking=$('fx-ranking-desk');
+  if(ranking&&window.FXQuantPairRankings?.render){
+   ranking.outerHTML=window.FXQuantPairRankings.render({get,FX,FLAGS,state,esc,sign,date,dayNow});
+  }
+  return;
+ }
  const a=e.target.closest('[data-window]');if(a){state.window=Number(a.dataset.window);render();return}
  const b=e.target.closest('[data-rate-mode]');if(b){state.rateMode=b.dataset.rateMode;render();return}
  const k=e.target.closest('[data-metric]');if(k){state.macroMetric=k.dataset.metric;render();return}
