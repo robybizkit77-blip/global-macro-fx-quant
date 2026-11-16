@@ -1,102 +1,81 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-11-13",
+      "as_of": "2026-11-16",
       "confidence_grade": "B",
-      "freshness_status": "SOURCE_CONFLICT_NOT_CERTIFIED",
+      "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3Z2027",
           "contract_description": "Dec 2027",
           "expiration": "2028-03-14",
-          "futures_price": 99.45,
+          "futures_price": 99.405,
           "mapping": "nearest ICE SARON accrual start to today+365d; no interpolation",
-          "price_valid_until": "2026-11-13T17:55:54Z",
-          "quote_as_of": "2026-11-13",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
-          "rate": 0.55,
+          "price_valid_until": "2026-11-16T10:49:12Z",
+          "quote_as_of": "2026-11-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": 0.595,
           "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3H2027",
           "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
           "expiration": "2027-06-15",
-          "futures_price": 99.845,
+          "futures_price": 99.84,
           "mapping": "nearest ICE SARON accrual start to today+90d; no interpolation",
-          "price_valid_until": "2026-11-13T17:45:01Z",
-          "quote_as_of": "2026-11-13",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
-          "rate": 0.155,
+          "price_valid_until": "2026-11-16T17:06:32Z",
+          "quote_as_of": "2026-11-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": 0.16,
           "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
           "symbol": "ICEEUR:SA3H2027"
         },
         "6m": {
           "accrual_start": "2027-06-16",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-14",
-          "futures_price": 99.675,
+          "futures_price": 99.65,
           "mapping": "nearest ICE SARON accrual start to today+180d; no interpolation",
-          "price_valid_until": "2026-11-13T17:11:17Z",
-          "quote_as_of": "2026-11-13",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
-          "rate": 0.325,
+          "price_valid_until": "2026-11-16T14:44:49Z",
+          "quote_as_of": "2026-11-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": 0.35,
           "symbol": "ICEEUR:SA3M2027"
         }
       },
       "instrument": "Three Month SARON",
-      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS. Same listed contract and quote day had conflicting source values; first observed version retained, later version quarantined. No policy-level, OIS or daily repricing inference.",
+      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "source_conflict_keys": [
-        {
-          "contract": "SA3H2027",
-          "event_id": "c02baa40e660a65f955faada3b3ecdd8997c87c185b488bed0f94d79b639a524",
-          "horizon": "3m",
-          "observation_date": "2026-11-13"
-        },
-        {
-          "contract": "SA3M2027",
-          "event_id": "a159c2f219f3f77bd068ce1baf5e19c334689f592003728ad2ba13851b4a30a8",
-          "horizon": "6m",
-          "observation_date": "2026-11-13"
-        },
-        {
-          "contract": "SA3Z2027",
-          "event_id": "c23935a7a09ba579777f5d030105656db7fb0bbf2bf480d829386d6c5158cbb2",
-          "horizon": "12m",
-          "observation_date": "2026-11-13"
-        }
-      ],
-      "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
       "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
       "source_url": "https://www.tradingview.com/symbols/ICEEUR-SA31%21/contracts/",
-      "status": "LIVE_SECONDARY_CONFLICT_QUARANTINED"
+      "status": "LIVE_SECONDARY_READY"
     },
     "EUR": {
       "as_of": "2026-11-13",
       "confidence_grade": "B",
-      "freshness_status": "SOURCE_CONFLICT_NOT_CERTIFIED",
+      "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "FST3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-15",
-          "futures_price": 96.855,
+          "futures_price": 96.81,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-11-13T22:41:57Z",
-          "quote_as_of": "2026-11-13",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
-          "rate": 3.145,
+          "price_valid_until": "2026-11-16T10:44:05Z",
+          "quote_as_of": "2026-11-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": 3.19,
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
@@ -129,20 +108,11 @@
         }
       },
       "instrument": "Three-Month Euro STR Futures",
-      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS. Same listed contract and quote day had conflicting source values; first observed version retained, later version quarantined. No policy-level, OIS or daily repricing inference.",
+      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "source_conflict_keys": [
-        {
-          "contract": "FST3U2027",
-          "event_id": "0bc7ff0a547450e4088122b1a35ec5bdab3262df85f831ed40a3e35ce0248c07",
-          "horizon": "12m",
-          "observation_date": "2026-11-13"
-        }
-      ],
-      "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
       "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
       "source_url": "https://www.tradingview.com/symbols/EUREX-FST31%21/contracts/",
-      "status": "LIVE_SECONDARY_CONFLICT_QUARANTINED"
+      "status": "LIVE_SECONDARY_READY"
     },
     "USD": {
       "as_of": "2026-11-13",
@@ -215,7 +185,7 @@
       "status": "LIVE_SECONDARY_CONFLICT_QUARANTINED"
     }
   },
-  "generated_at_utc": "2026-11-16T10:51:16.003401Z",
+  "generated_at_utc": "2026-11-16T18:10:23.885186Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
