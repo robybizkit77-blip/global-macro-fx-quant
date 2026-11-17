@@ -16,6 +16,7 @@ const {chromium}=require('playwright');
 const priceModel=require('../site/fx-quant-v2/next/macro-strength-estimated-v1.js');
 const rankings=require('../site/fx-quant-v2/next/pair-rankings.js');
 const library=require('../site/fx-quant-v2/next/research-library.js');
+const {riskCheck}=require('../site/fx-quant-v2/next/fx-driver-market-audit.js');
 const {file:dailyFile}=require('../site/fx-quant-v2/next/reports/daily-latest.json');
 const {files:weeklyFiles}=require('../site/fx-quant-v2/next/reports/weekly-latest.json');
 const reportDir='site/fx-quant-v2/next/reports';
@@ -434,8 +435,10 @@ async function macroDriversJourney(page,label){
  const jpySources=await locator(page,'.drivers-source-provenance-fold').textContent();
  assert(jpySources.includes('STORICO')&&jpySources.includes('osservazione precedente'),
   label+' historical source age and observed changes must be explicit');
- assert(meaning.includes('USD/JPY')&&meaning.includes('non hanno la stessa data'),
-  label+' JPY liquidity FX hypotheses require sourced price and honest asynchronous risk');
+ const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format();
+ const risk=readSource('site/fx-quant-v2/cross-asset-live-data.json');
+ assert(meaning.includes('USD/JPY')&&meaning.includes(riskCheck(risk,today)),
+  label+' JPY liquidity hypotheses require sourced USD/JPY and correctly dated VIX/HY');
  const detail=locator(page,'.drivers-fold');
  await detail.locator('summary').click();
  assert(await detail.evaluate(el=>el.open),label+' financial conditions source details cannot open');
