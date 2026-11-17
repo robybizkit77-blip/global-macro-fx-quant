@@ -4,8 +4,9 @@
 An event's exact UTC cron expresses the scheduled 07:20 / 08:00 / 09:00
 Rome slot. GitHub can start a run late; use the cron identity and the
 Europe/Rome offset rather than the runner's current minute. Do not conflate
-the CET/CEST duplicate cron expressions. A bounded 4-hour delay window
-prevents a queued job from running against the wrong local session.
+the CET/CEST duplicate cron expressions. The normal four-hour window
+protects morning receipts. An admitted cron that starts after the local
+afternoon refresh can still read official sources as evening recovery.
 
 Morning recovery accepts successful MAIN-branch Macro scheduled runs as
 well as the existing serialized Source-Watch -> News -> Macro workflow_run.
@@ -28,6 +29,7 @@ from zoneinfo import ZoneInfo
 ROME = ZoneInfo("Europe/Rome")
 UTC = dt.timezone.utc
 MAX_QUEUE_DELAY_MINUTES = 240
+EVENING_REFRESH_TIME = dt.time(18, 17)
 SLOTS = {
     "20 5 * * 1-5": {2: "07:20"},
     "20 6 * * 1-5": {1: "07:20"},
@@ -122,6 +124,9 @@ def resolve(event: str, cron: str, now: dt.datetime, *,
         out["reason"] = "BEFORE_SCHEDULED_SLOT"
         return out
     if elapsed > MAX_QUEUE_DELAY_MINUTES:
+        if local.time() >= EVENING_REFRESH_TIME:
+            out.update(should_run=True, reason="LATE_CRON_EVENING_RATES_RECOVERY")
+            return out
         out["reason"] = "STALE_DELAYED_RUN"
         return out
     out.update(should_run=True, reason="VALID_RATES_SLOT_DELAY_TOLERANT")
