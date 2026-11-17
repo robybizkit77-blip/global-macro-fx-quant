@@ -106,6 +106,8 @@ jobs:
         run: node validation/qa_next_research_decision_v9.cjs
       - name: Verify source-aligned FX and government 2Y evidence, without OIS fiction
         run: node validation/qa_next_fx_rates_bridge_v13.cjs
+      - name: Verify dated CHF and NZD rates and their rendering alongside paired histories
+        run: node validation/publishing/test_next_rates_economic_reading_v20.cjs
       - name: Verify source-dated 1D/1W OIS/futures research, missing dates and rollover
         run: node validation/publishing/test_next_rates_pricing_moves_v1.cjs
       - name: Verify all G8 historical 3M/6M/12M pricing and no synthetic OIS curve
