@@ -1,0 +1,90 @@
+{
+  "schema": "GMFQ_G8_CORE_OFFICIAL_WEB_RELEASE_ATTESTATIONS_V1",
+  "review_as_of": "2026-11-17",
+  "evidence_class": "OFFICIAL_PUBLISHER_RELEASE_WEB_VALUE_DATE_NOT_IMMUTABLE_BYTES",
+  "historical_full_PIT_vintage_certified": false,
+  "metadata": {
+    "scope": "SIX_LATEST_MACRO_G8_RELEASES_REVIEWED_2026-11-17",
+    "guardrail": "Read-only source evidence without Macro scoring or historical vintage promotion"
+  },
+  "attestations": [
+    {
+      "key": "AUD.inflation",
+      "observation_period": "2026-09",
+      "release_date": "2026-10-28",
+      "release_timestamp_local": "2026-10-28T11:30:00+11:00",
+      "published_value": 3.9,
+      "raw_series_value": 3.9,
+      "transform": "reported_yoy_rate",
+      "publisher": "Australian Bureau of Statistics",
+      "url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/sep-2026",
+      "source_data_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/sep-2026/6401017.xlsx",
+      "source_locator": "September 2026 quarterly Australia All Groups CPI YoY, Table 17. Verified original workbook: 103.64 in September quarter 2026 and 99.73 in September quarter 2025. The existing quarterly adapter rounds the resulting 3.9205856% to one decimal. The release page gives 11:30 a.m. AEDT."
+    },
+    {
+      "key": "EUR.inflation",
+      "observation_period": "2026-10",
+      "release_date": "2026-11-04",
+      "release_timestamp_local": null,
+      "published_value": 4.0,
+      "raw_series_value": 4.0,
+      "transform": "reported_yoy_rate",
+      "publisher": "Eurostat",
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-04112026-ap",
+      "release_stage": "FIRST_FLASH_ESTIMATE",
+      "source_locator": "Eurostat Euro indicators 4 November 2026, October 2026 flash estimate. All-items euro area HICP year-on-year: 4.0% (estimate), EA21 for months after December 2025. This is the first flash on the registered headline basis, prior to the final release."
+    },
+    {
+      "key": "EUR.labour",
+      "observation_period": "2026-09",
+      "release_date": "2026-10-30",
+      "release_timestamp_local": null,
+      "published_value": 6.5,
+      "raw_series_value": 6.5,
+      "transform": "level",
+      "publisher": "Eurostat",
+      "url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/3-30102026-bp",
+      "source_locator": "Eurostat Euro indicators 30 October 2026. EA21 headline seasonally adjusted unemployment rate 6.5% in September, total sex and total age as published in the monthly unemployment release, dataset une_rt_m."
+    },
+    {
+      "key": "JPY.inflation",
+      "observation_period": "2026-09",
+      "release_date": "2026-10-23",
+      "release_timestamp_local": null,
+      "published_value": 2.1,
+      "raw_series_value": 2.1,
+      "transform": "reported_yoy_rate",
+      "publisher": "Statistics Bureau of Japan",
+      "url": "https://www.stat.go.jp/info/mail/pdf/20261023_no1910.pdf",
+      "series_source_url": "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html",
+      "source_locator": "Statistics Bureau dated release digest No. 1910, 23 October 2026, highlights of the September 2026 Japan national all-items CPI. Index 102.2 on 2025=100 and official year-on-year all-items rate 2.1%."
+    },
+    {
+      "key": "NZD.labour",
+      "observation_period": "2026-09",
+      "release_date": "2026-11-04",
+      "release_timestamp_local": "2026-11-04T10:45:00+13:00",
+      "published_value": 5.7,
+      "raw_series_value": 5.7,
+      "transform": "level",
+      "publisher": "Stats NZ",
+      "url": "https://www.stats.govt.nz/information-releases/labour-market-statistics-september-2026-quarter/",
+      "release_timestamp_source_url": "https://www.stats.govt.nz/news/unemployment-rate-at-5-7-percent-in-the-september-2026-quarter/",
+      "source_locator": "Household Labour Force Survey September 2026 quarter. New Zealand headline seasonally adjusted national unemployment rate 5.7%. Stats NZ's same-day release notice states 4 November at 10:45 a.m. New Zealand daylight time."
+    },
+    {
+      "key": "USD.labour",
+      "observation_period": "2026-10",
+      "release_date": "2026-11-06",
+      "release_timestamp_local": "2026-11-06T08:30:00-05:00",
+      "published_value": 4.1,
+      "raw_series_value": 4.1,
+      "transform": "level",
+      "publisher": "U.S. Bureau of Labor Statistics",
+      "url": "https://www.bls.gov/news.release/archives/empsit_11062026.htm",
+      "series_source_url": "https://fred.stlouisfed.org/series/UNRATE",
+      "source_locator": "Employment Situation October 2026, release USDL-26-1632. National CPS U-3 seasonally adjusted unemployment rate for ages 16+, table A-1, 4.1%, published 6 November at 8:30 a.m. Eastern. FRED documents UNRATE as BLS code LNS14000000."
+    }
+  ],
+  "contradictions": []
+}

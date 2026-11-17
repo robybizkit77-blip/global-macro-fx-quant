@@ -30,6 +30,7 @@ WEB_EVIDENCE_SUPPLEMENT = "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-11-16.
 WEB_EVIDENCE_SUPPLEMENT_GLOB = "CORE_G8_OFFICIAL_RELEASE_WEB_SUPPLEMENT_*.json"
 WEB_SCHEMA = "GMFQ_G8_CORE_OFFICIAL_WEB_RELEASE_ATTESTATIONS_V1"
 OFFICIAL_HOSTS = {"USD": "bls.gov", "CAD": "statcan.gc.ca", "AUD": "abs.gov.au",
+                  "EUR": "ec.europa.eu",
                   "JPY": "stat.go.jp", "GBP": "ons.gov.uk", "NZD": "stats.govt.nz"}
 
 
