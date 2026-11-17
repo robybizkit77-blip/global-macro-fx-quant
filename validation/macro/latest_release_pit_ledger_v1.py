@@ -27,6 +27,7 @@ RECEIPT_GLOB = "*_strict_pit_receipt_*.json"
 WEB_EVIDENCE_FILE = "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-30.json"
 WEB_EVIDENCE_ARCHIVE = "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json"
 WEB_EVIDENCE_SUPPLEMENT = "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-11-16.json"
+WEB_EVIDENCE_SUPPLEMENT_GLOB = "CORE_G8_OFFICIAL_RELEASE_WEB_SUPPLEMENT_*.json"
 WEB_SCHEMA = "GMFQ_G8_CORE_OFFICIAL_WEB_RELEASE_ATTESTATIONS_V1"
 OFFICIAL_HOSTS = {"USD": "bls.gov", "CAD": "statcan.gc.ca", "AUD": "abs.gov.au",
                   "JPY": "stat.go.jp", "GBP": "ons.gov.uk", "NZD": "stats.govt.nz"}
@@ -192,13 +193,19 @@ def collect_candidates(core_dir):
     selected = [(r, WEB_EVIDENCE_FILE) for r in web["attestations"]]
     selected += [(r, WEB_EVIDENCE_ARCHIVE) for r in archive["attestations"]
                  if (r["key"], r["observation_period"]) not in latest_pairs]
-    supplement = source_web_attestations(core_dir, WEB_EVIDENCE_SUPPLEMENT)
-    require(not supplement["contradictions"], "supplement must contain attestations only")
+    # Supplements add dated evidence without replacing published archive rows.
+    supplement_files = [core_dir / WEB_EVIDENCE_SUPPLEMENT]
+    supplement_files.extend(sorted(core_dir.glob(WEB_EVIDENCE_SUPPLEMENT_GLOB)))
     selected_pairs = {(row["key"], row["observation_period"]) for row, _ in selected}
-    for row in supplement["attestations"]:
-        require((row["key"], row["observation_period"]) not in selected_pairs,
-                "supplement would replace an existing official release period")
-        selected.append((row, WEB_EVIDENCE_SUPPLEMENT))
+    for path in supplement_files:
+        supplement = source_web_attestations(core_dir, path.name)
+        require(not supplement["contradictions"], "supplement must contain attestations only")
+        for row in supplement["attestations"]:
+            pair = (row["key"], row["observation_period"])
+            require(pair not in selected_pairs,
+                    "supplement would replace an existing official release period")
+            selected.append((row, path.name))
+            selected_pairs.add(pair)
     for row, filename in selected:
         stamp = row.get("release_timestamp_local")
         instant = (datetime.fromisoformat(stamp).astimezone(timezone.utc).isoformat()

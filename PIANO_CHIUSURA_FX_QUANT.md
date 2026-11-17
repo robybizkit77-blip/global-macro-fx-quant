@@ -19,6 +19,8 @@ Il lavoro procede su FX Quant Next e sui dati condivisi che alimentano il sito. 
 
 - Il registro Macro G8 documenta il CPI canadese di ottobre con gli indici originali di Statistics Canada e l’orario indicato dal [comunicato ufficiale](https://www150.statcan.gc.ca/n1/daily-quotidien/261116/dq261116a-eng.pdf). La prova di settembre rimane nell’archivio.
 
+- Il registro documenta anche data e ora della disoccupazione del trimestre mobile luglio–settembre nel [Regno Unito](https://www.ons.gov.uk/releases/uklabourmarketnovember2026) e di ottobre in [Canada](https://www150.statcan.gc.ca/n1/daily-quotidien/261106/dq261106a-eng.pdf). Gli allegati con nuove prove passano per gli stessi controlli del registro.
+
 ## Stato iniziale del 17 novembre 2026
 
 - **Tappa 1 in corso.** Il controllo che usava una data fissa è stato corretto con la [PR #1331](https://github.com/robybizkit77-blip/global-macro-fx-quant/pull/1331). Il recupero del mattino ha tentato due volte di avviare il coordinatore. GitHub ha respinto entrambe le richieste perché `phase` era al livello sbagliato nel corpo della richiesta. [Primo tentativo](https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/44019661571) · [Secondo tentativo](https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/44025985294)

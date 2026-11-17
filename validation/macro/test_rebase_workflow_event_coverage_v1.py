@@ -33,6 +33,7 @@ REQUIRED = (
     "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json",
     "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-30.json",
     "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-11-16.json",
+    "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_SUPPLEMENT_*.json",
     "validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json",
     ".github/workflows/macro-g8-rebase-readiness-v1.yml",
     "live_data/sections/D.json",
@@ -67,7 +68,10 @@ class RebaseWorkflowCoverage(unittest.TestCase):
                                  "duplicate paths mask missing latest evidence")
                 self.assertEqual(set(actual), set(REQUIRED))
                 for path in REQUIRED:
-                    self.assertTrue((ROOT / path).is_file(), path)
+                    if "*" in path:
+                        self.assertTrue(any(p.is_file() for p in ROOT.glob(path)), path)
+                    else:
+                        self.assertTrue((ROOT / path).is_file(), path)
 
     def test_ongoing_morning_and_manual_checks_remain(self):
         work = self.workflow.split("  workflow_run:\n", 1)[1].split(

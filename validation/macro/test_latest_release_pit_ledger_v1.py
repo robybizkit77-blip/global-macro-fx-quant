@@ -2,12 +2,15 @@
 """PIT-date evidence negative tests from pinned official G8 source records."""
 import copy
 import json
+import tempfile
 import unittest
 from datetime import date, datetime, timedelta
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from validation.macro.latest_release_pit_ledger_v1 import (
-    ROOT, WEB_EVIDENCE_FILE, build_ledger, collect_candidates, resolved_time, iso_day,
+    ROOT, WEB_EVIDENCE_FILE, WEB_EVIDENCE_SUPPLEMENT_GLOB,
+    build_ledger, collect_candidates, resolved_time, iso_day,
 )
 
 TODAY = datetime.now(ZoneInfo('Europe/Rome')).date()
@@ -114,6 +117,8 @@ class LatestReleaseLedgerTests(unittest.TestCase):
             ("USD.inflation", "2026-09", "2026-10-14", "2026-10-14T12:30:00+00:00", None),
             ("AUD.labour", "2026-09", "2026-10-15", "2026-10-15T00:30:00+00:00", None),
             ("CAD.labour", "2026-09", "2026-10-09", None, 6.5),
+            ("CAD.labour", "2026-10", "2026-11-06", "2026-11-06T13:30:00+00:00", 6.7),
+            ("GBP.labour", "2026-09", "2026-11-17", "2026-11-17T07:00:00+00:00", 4.6),
             ("CAD.inflation", "2026-09", "2026-10-19", None, None),
             ("CAD.inflation", "2026-10", "2026-11-16", "2026-11-16T13:30:00+00:00",
              (170.4 / 165.3 - 1) * 100),
@@ -122,6 +127,17 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         for key, period, day, timestamp, value in examples:
             with self.subTest(key=key):
                 self.assert_pinned_release(key, period, day, timestamp, value=value, web=True)
+
+    def test_later_supplement_cannot_replace_an_official_release_period(self):
+        pattern = WEB_EVIDENCE_SUPPLEMENT_GLOB
+        original = pattern.replace("*", "2026-11-17")
+        content = (ROOT / "validation/macro" / original).read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            (directory / original).write_text(content, encoding="utf-8")
+            (directory / pattern.replace("*", "2026-11-18")).write_text(content, encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "supplement would replace"):
+                collect_candidates(directory)
 
     def test_jpy_august_archive_is_not_reissued_as_latest_first_release(self):
         self.assert_pinned_release("JPY.labour", "2026-08", "2026-10-02", value=2.5, web=True)
