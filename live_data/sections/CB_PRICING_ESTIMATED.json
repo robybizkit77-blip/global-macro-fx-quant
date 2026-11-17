@@ -269,7 +269,7 @@
       "status": "ESTIMATED_PARTIAL"
     },
     "USD": {
-      "as_of": "2026-11-16",
+      "as_of": "2026-11-17",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -287,20 +287,20 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQX2027",
           "contract_description": "Nov 2027",
           "expiration": "2027-12-01",
-          "futures_price": 95.295,
+          "futures_price": 95.35,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-16T20:03:06Z",
-          "quote_as_of": "2026-11-16",
+          "price_valid_until": "2026-11-17T19:34:27Z",
+          "quote_as_of": "2026-11-17",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.705,
+          "rate": 4.65,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 83.0,
+          "raw_level_minus_spot_policy_bp": 77.5,
           "symbol": "CBOT:ZQX2027"
         },
         "3m": {
@@ -321,20 +321,20 @@
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQJ2027",
           "contract_description": "Apr 2027",
           "expiration": "2027-05-03",
-          "futures_price": 95.505,
+          "futures_price": 95.53,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-16T19:53:56Z",
-          "quote_as_of": "2026-11-16",
+          "price_valid_until": "2026-11-17T19:54:39Z",
+          "quote_as_of": "2026-11-17",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.495,
+          "rate": 4.47,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 62.0,
+          "raw_level_minus_spot_policy_bp": 59.5,
           "symbol": "CBOT:ZQJ2027"
         }
       },

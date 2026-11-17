@@ -303,6 +303,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-16T20:20:09.436941Z"
+          },
+          {
+            "date": "2026-11-17",
+            "rate": 4.47,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-17T20:56:57.359668Z"
           }
         ],
         "12m": [
@@ -457,6 +465,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-17T03:43:27.823416Z"
+          },
+          {
+            "date": "2026-11-17",
+            "rate": 4.65,
+            "contract": "ZQX2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-17T20:56:57.359668Z"
           }
         ]
       },
