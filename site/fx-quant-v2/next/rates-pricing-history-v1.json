@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_NEXT_G8_PRICING_HISTORY_V1",
-  "as_of": "2026-11-16",
+  "as_of": "2026-11-17",
   "eligible_for_fx_engine": false,
   "eligible_for_backtests_as_official_ois": false,
   "official_ois_created": false,
@@ -157,6 +157,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-16T09:29:25.018388Z"
+          },
+          {
+            "date": "2026-11-17",
+            "rate": 4.31,
+            "contract": "ZQG2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-17T12:32:27.472351Z"
           }
         ],
         "6m": [
@@ -452,8 +460,8 @@
           }
         ]
       },
-      "latest_date": "2026-11-16",
-      "observed_dates": 19,
+      "latest_date": "2026-11-17",
+      "observed_dates": 20,
       "derived_reference_points": 0
     },
     "EUR": {
@@ -921,11 +929,19 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-16T18:10:23.885186Z"
+          },
+          {
+            "date": "2026-11-17",
+            "rate": 3.125,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-17T12:32:27.472351Z"
           }
         ]
       },
-      "latest_date": "2026-11-16",
-      "observed_dates": 22,
+      "latest_date": "2026-11-17",
+      "observed_dates": 23,
       "derived_reference_points": 0
     },
     "GBP": {
@@ -2199,11 +2215,19 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-16T18:10:23.885186Z"
+          },
+          {
+            "date": "2026-11-17",
+            "rate": 0.57,
+            "contract": "SA3Z2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-17T12:32:27.472351Z"
           }
         ]
       },
-      "latest_date": "2026-11-16",
-      "observed_dates": 20,
+      "latest_date": "2026-11-17",
+      "observed_dates": 21,
       "derived_reference_points": 0
     },
     "AUD": {
