@@ -12,8 +12,8 @@
     "source": "Swiss National Bank · CHF Confederation daily spot 2J/10J",
     "source_url": "https://data.snb.ch/api/cube/rendeiduebd/data/json/en",
     "separate_10y": {
-      "as_of": "2026-11-16",
-      "10Y": 0.595,
+      "as_of": "2026-11-17",
+      "10Y": 0.567,
       "source_url": "https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates",
       "not_joinable_with_paired_2y": true
     },
@@ -30,7 +30,7 @@
     "source": "Reserve Bank of New Zealand B2 · archived manual public-page research",
     "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
     "roll_date": "2026-10-30",
-    "latest_date": "2026-11-10",
+    "latest_date": "2026-11-16",
     "old_benchmark": {
       "2Y": "May 2028",
       "10Y": "May 2036"
@@ -86,16 +86,36 @@
         "date": "2026-11-10",
         "2Y": 3.77,
         "10Y": 4.71
+      },
+      {
+        "date": "2026-11-11",
+        "2Y": 3.85,
+        "10Y": 4.77
+      },
+      {
+        "date": "2026-11-12",
+        "2Y": 3.82,
+        "10Y": 4.73
+      },
+      {
+        "date": "2026-11-13",
+        "2Y": 3.91,
+        "10Y": 4.82
+      },
+      {
+        "date": "2026-11-16",
+        "2Y": 3.94,
+        "10Y": 4.85
       }
     ],
-    "latest_2Y": 3.77,
-    "latest_10Y": 4.71,
-    "latest_curve_bp": 94.0,
+    "latest_2Y": 3.94,
+    "latest_10Y": 4.85,
+    "latest_curve_bp": 91.0,
     "same_benchmark_change_bp": {
-      "2Y": -19.0,
-      "10Y": -19.0,
+      "2Y": -2.0,
+      "10Y": -5.0,
       "start": "2026-10-30",
-      "end": "2026-11-10"
+      "end": "2026-11-16"
     },
     "cross_roll_change_allowed": false,
     "research_only_note": "RBNZ B2 daily NZFMA government benchmarks, previously captured by human page review; now reconciled with the independent dated V2 research file. NOT an automated fresh RBNZ read; no XLSX reconciliation, official OIS, Core, FX pair signals or backtests; do not join yields across the 30 Oct benchmark roll.",
@@ -104,7 +124,7 @@
     "eligible_for_backtests": false,
     "eligible_for_automatic_promotion": false,
     "independent_xlsx_reconciled": false,
-    "source_release_date": "2026-11-11",
+    "source_release_date": "2026-11-17",
     "source_capture_method": "ALREADY_STORED_MANUAL_WEB_RESEARCH_NOT_RUNNER_FETCH",
     "source_release_date_quality": "PUBLISHER_RELEASE_DATE_RECORDED_IN_MANUAL_ARCHIVE"
   },
