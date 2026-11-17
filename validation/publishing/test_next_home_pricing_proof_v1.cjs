@@ -21,7 +21,10 @@ const prices={...livePrices,rows:livePrices.rows.filter(r=>r.Date<='2026-11-13')
 assert.equal(prices.rows.at(-1)?.Date,prices.last_as_of);
 const args={prices,pairs,history,today};
 const liveArgs={prices:livePrices,pairs,history:liveHistory,today:liveHistory.as_of};
-for(const item of choose(liveArgs)){
+const liveChoices=choose(liveArgs);
+assert.equal(new Set(liveChoices.flatMap(x=>[x.base,x.quote])).size,2*liveChoices.length,
+ 'Fresh evidence must still use different currencies across the two Home examples');
+for(const item of liveChoices){
  const fx=pairReturn(livePrices,item.pair,item.from,item.to,liveArgs.today);
  assert.equal(fx?.percent,item.fxPct,'The live comparison must use actual FX fixings on both 6M dates');
  assert(item.verifiedWindows.every(n=>inspectSessionWindow(item.pair,liveArgs,n,item.to)));
@@ -195,8 +198,8 @@ assert(!early.includes('data-home-pricing-to="2026-11-12"'),
  'Historical evidence must respect requested as-of, not look ahead');
 const source=read(site+'app.js'),index=read(site+'index.html');
 assert(index.indexOf('pair-monetary-bridge-v1.js?v=2')<
- index.indexOf('home-pricing-proof-v1.js?v=5')&&
- index.indexOf('home-pricing-proof-v1.js?v=5')<
+ index.indexOf('home-pricing-proof-v1.js?v=6')&&
+ index.indexOf('home-pricing-proof-v1.js?v=6')<
  index.search(/src="\.\/app\.js\?v=[\w.-]+" defer/),
  'Home module must load after monetary archive validators and before App');
 assert(index.includes('home-pricing-proof-v1.css?v=4'));

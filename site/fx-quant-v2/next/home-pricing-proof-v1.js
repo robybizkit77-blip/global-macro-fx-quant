@@ -129,19 +129,15 @@
    .map(x=>({...x,verifiedWindows:[5,20].filter(n=>
     Boolean(inspectSessionWindow(x.pair,args,n,x.to)))}))
    .filter(x=>x.verifiedWindows.length>0);
-  const ranks=(items,first)=>{
-   const shared=x=>first&&[x.base,x.quote].some(ccy=>
-    ccy===first.base||ccy===first.quote)?1:0;
-   return items.sort((a,b)=>
-    b.verifiedWindows.length-a.verifiedWindows.length||
-    b.to.localeCompare(a.to)||
-    Number(a.proxy)-Number(b.proxy)||
-    shared(a)-shared(b)||
-    (a.pair==='EURUSD'?-1:b.pair==='EURUSD'?1:0)||
-    a.pair.localeCompare(b.pair));
-  };
+  const ranks=items=>items.sort((a,b)=>
+   b.verifiedWindows.length-a.verifiedWindows.length||
+   b.to.localeCompare(a.to)||
+   Number(a.proxy)-Number(b.proxy)||
+   (a.pair==='EURUSD'?-1:b.pair==='EURUSD'?1:0)||
+   a.pair.localeCompare(b.pair));
   const usd=ranks(examples.filter(x=>x.base==='USD'||x.quote==='USD'))[0];
-  const other=ranks(examples.filter(x=>x.base!=='USD'&&x.quote!=='USD'),usd)[0];
+  const used=new Set(['USD',usd?.base,usd?.quote]);
+  const other=ranks(examples.filter(x=>!used.has(x.base)&&!used.has(x.quote)))[0];
   return [usd,other].filter(Boolean);
  }
 
