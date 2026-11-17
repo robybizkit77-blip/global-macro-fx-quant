@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-17",
-  "generated_at_utc": "2026-11-17T22:56:38.954384Z",
+  "generated_at_utc": "2026-11-17T23:56:16.025966Z",
   "items": [
     {
       "as_of": "2026-11-17",
@@ -220,24 +220,9 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
       "title": "AUD: repricing implicito da futures più hawkish (+1.5 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-10",
-      "category": "MACRO_OFFICIAL_ACTUAL",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "Comunicato BLS 10/11/2026: headline mensile +0,4%, core mensile +0,3%. Il BLS non ha pubblicato headline/core annuali per ottobre 2026: manca la base di confronto ottobre 2025. Rispetto a forecast secondari osservati prima del rilascio, headline +0,1 e core +0,1 punti percentuali; NON sono sorprese contro un consenso survey certificato, Potenziale pressione sulle attese Fed, ma nessuna variazione OIS o risposta del dollaro è attribuita causalmente al CPI: mancano quotazioni sincronizzate prima/dopo l'evento. Prima osservazione del nostro runner: 2026-11-11T08:48:15Z.",
-      "event_key": "USD|2026-11-10|INFLATION|Consumer Price Index",
-      "event_type": "INFLATION",
-      "first_runner_observed_at_utc": "2026-11-11T08:48:15Z",
-      "importance": "HIGH",
-      "quality": "ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT",
-      "source": "Bureau of Labor Statistics · CPI ottobre 2026",
-      "source_url": "https://www.bls.gov/news.release/cpi.htm",
-      "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-17T22:56:38.954384Z",
+  "last_checked_at_utc": "2026-11-17T23:56:16.025966Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1133,7 +1118,7 @@
         "url": "https://www.bankofengland.co.uk/letter/2026/asset-purchase-facility-november-2026"
       }
     ],
-    "last_attempt_day_rome": "2026-11-17",
+    "last_attempt_day_rome": "2026-11-18",
     "latest_published_at_utc": "2026-11-17T18:30:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
