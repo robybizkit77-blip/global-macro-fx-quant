@@ -96,14 +96,16 @@ def main() -> None:
             except (KeyError, ValueError, TypeError):
                 pass
     result = choose(now, runs, jobs)
-    print("MORNING_EARLY_RECOVERY", json.dumps(result, sort_keys=True))
+    print("MORNING_EARLY_RECOVERY", json.dumps(result, sort_keys=True), flush=True)
     if result["action"] == "DISPATCH":
         # Deliberately one POST, no automatic retry on ambiguous API errors.
         # A subsequent independent trigger can re-evaluate actual run state.
-        args = ["gh", "api", "--method", "POST",
-                f"repos/{repo}/actions/workflows/{SCRIPT}/dispatches",
-                "-f", "ref=main", "-f", "phase=" + result["phase"]]
-        subprocess.run(args, check=True, timeout=35)
+        request = {"ref": "main", "inputs": {"phase": result["phase"]}}
+        subprocess.run(
+            ["gh", "api", "--method", "POST",
+             f"repos/{repo}/actions/workflows/{SCRIPT}/dispatches", "--input", "-"],
+            input=json.dumps(request), text=True, check=True, timeout=35,
+        )
         print("MORNING_RECOVERY_DISPATCHED", result["phase"])
     with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
         f.write("## Independent early morning recovery\n")
