@@ -7,27 +7,72 @@ import tempfile
 import unittest
 from pathlib import Path
 from validation.orchestration.audit_g8_source_coverage_v1 import (
-    FX, ROOT, age_days, age_months, compare, coverage, latest_periods,
+    FILES, FX, ROOT, age_days, age_months, compare, coverage, latest_periods,
 )
 
 class G8CoverageReceiptTests(unittest.TestCase):
     def test_real_canonical_sources_are_readable(self):
-        report = coverage(asof="2026-11-12")
+        report = coverage()
         self.assertEqual(report["schema"], "GMFQ_G8_SOURCE_COVERAGE_RECEIPT_V1")
         self.assertEqual(set(report["rows"]), set(FX))
         self.assertEqual(set(report["fingerprints"]["rates"]), set(FX))
         self.assertTrue(report["policy"].startswith("Read-only"))
-        self.assertEqual(report["rows"]["CHF"]["rates_2y"]["status"], "STALE_OR_UNALIGNED")
-        self.assertEqual(report["rows"]["NZD"]["rates_2y"]["status"], "STALE_OR_UNALIGNED")
-        self.assertIn(report["rows"]["USD"]["pricing_6m"]["status"], {"INDICATIVE_PROXY", "WITHHELD"})
-        self.assertEqual(report["rows"]["EUR"]["pricing_6m"]["status"], "INDICATIVE_PROXY")
-        self.assertIn(report["rows"]["CHF"]["pricing_6m"]["status"], {"INDICATIVE_PROXY", "WITHHELD"})
-        self.assertEqual(report["rows"]["NZD"]["pricing_6m"]["status"], "WITHHELD")
-        self.assertIsNone(report["rows"]["USD"]["pricing_6m"]["weekly_change_bp"])
-        self.assertGreater(report["rows"]["USD"]["macro_series"]["observed_with_value"], 10)
-        self.assertGreater(report["rows"]["USD"]["macro_series"]["within_5_months"], 10)
-        self.assertGreater(report["rows"]["EUR"]["macro_series"]["within_5_months"], 5)
-        self.assertGreater(report["rows"]["CAD"]["macro_series"]["within_5_months"], 5)
+        for currency, row in report["rows"].items():
+            with self.subTest(currency=currency):
+                rates, pricing, macro = (row[k] for k in ("rates_2y", "pricing_6m", "macro_series"))
+                self.assertIn(rates["status"], {"RECENT_OFFICIAL", "STALE_OR_UNALIGNED"})
+                self.assertIn(pricing["status"], {"OFFICIAL_1W", "INDICATIVE_PROXY", "WITHHELD"})
+                if rates["status"] == "STALE_OR_UNALIGNED":
+                    self.assertIsNone(rates["weekly_change_bp"])
+                if pricing["status"] != "OFFICIAL_1W":
+                    self.assertIsNone(pricing["weekly_change_bp"])
+                if pricing["status"] == "WITHHELD":
+                    self.assertIsNone(pricing["observation_date"])
+                else:
+                    self.assertIn(age_days(pricing["observation_date"], report["as_of"]), range(8))
+                self.assertLessEqual(macro["within_5_months"], macro["observed_with_value"])
+                self.assertLessEqual(macro["observed_with_value"], macro["catalogue"])
+
+    def test_proxy_classification_tracks_observation_date_and_provenance(self):
+        def indicative(asof, *, timestamp_verified=True):
+            return {
+                "as_of": asof, "status": "ESTIMATED_ACTIVE",
+                "input_mode": "LIVE_SECONDARY_OVERLAY", "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
+                "policy_repricing_inference_allowed": False, "governance": {"informational_only": True},
+                "horizons": {"6m": {"quote_as_of": asof, "quote_timestamp_verified": timestamp_verified,
+                                    "raw_level_gap_not_policy_repricing": True, "contract": "EURH2027",
+                                    "rate": 2.4, "change_1w_bp": 15}},
+            }
+
+        inputs = {key: {} for key in FILES}
+        inputs["cb_estimated"] = {"currencies": {
+            "EUR": indicative("2026-11-13"), "CHF": indicative("2026-11-08"),
+            "USD": indicative("2026-11-18"), "NZD": indicative("2026-11-17", timestamp_verified=False),
+        }}
+        inputs["ois"] = {"currencies": {"GBP": {
+            "as_of": "2026-11-16", "quality": "FONTE UFFICIALE", "kind": "OIS",
+            "horizons": {"6m": {"as_of": "2026-11-16", "rate": 3.2, "change_1w_bp": 5}},
+        }}}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for key, file in FILES.items():
+                path = root / file
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(inputs[key]), encoding="utf-8")
+            historical = coverage(root=root, asof="2026-11-12")
+            current = coverage(root=root, asof="2026-11-17")
+
+        self.assertEqual(historical["rows"]["EUR"]["pricing_6m"]["status"], "WITHHELD")
+        pricing = {ccy: row["pricing_6m"] for ccy, row in current["rows"].items()}
+        self.assertEqual(pricing["EUR"], {"status": "INDICATIVE_PROXY", "observation_date": "2026-11-13",
+                                         "weekly_change_bp": None, "secondary_contract": "EURH2027"})
+        self.assertEqual(pricing["GBP"]["status"], "OFFICIAL_1W")
+        self.assertEqual(pricing["GBP"]["weekly_change_bp"], 5)
+        for currency in ("CHF", "USD", "NZD"):
+            with self.subTest(currency=currency):
+                self.assertEqual(pricing[currency]["status"], "WITHHELD")
+                self.assertIsNone(pricing[currency]["weekly_change_bp"])
+        self.assertEqual(current["state"], "OBSERVED_WITH_GAPS")
 
     def test_cli_readonly_exact_main_root_matches_default_receipt(self):
         with tempfile.TemporaryDirectory() as tmp:
