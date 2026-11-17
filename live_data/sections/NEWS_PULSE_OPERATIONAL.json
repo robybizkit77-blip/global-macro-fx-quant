@@ -1,7 +1,18 @@
 {
-  "content_as_of": "2026-11-16",
-  "generated_at_utc": "2026-11-17T12:33:11.524897Z",
+  "content_as_of": "2026-11-17",
+  "generated_at_utc": "2026-11-17T14:32:09.919594Z",
   "items": [
+    {
+      "as_of": "2026-11-17",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Movimento 1D -0.8 bp sul bucket 12M; variazione 1W +0.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+      "title": "JPY: repricing implicito da futures più dovish (-0.8 bp 12M in 1D)"
+    },
     {
       "as_of": "2026-11-16",
       "category": "MARKET_EQUITY_CLOSE",
@@ -27,6 +38,17 @@
       "source": "Cboe Global Markets, VIX daily close",
       "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "title": "VIX: +3.61 punti nella chiusura del 2026-11-16"
+    },
+    {
+      "as_of": "2026-11-16",
+      "category": "OIS_REPRICING",
+      "ccy": "GBP",
+      "confidence": "A",
+      "detail": "Movimento 1D +3.4 bp sul bucket 6M; variazione 1W +19.1 bp.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+      "title": "GBP: repricing OIS più hawkish (+3.4 bp 6M in 1D)"
     },
     {
       "as_of": "2026-11-16",
@@ -125,17 +147,6 @@
     },
     {
       "as_of": "2026-11-16",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "JPY",
-      "confidence": "A",
-      "detail": "Movimento 1D +1.3 bp sul bucket 12M; variazione 1W +3.2 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "title": "JPY: repricing implicito da futures più hawkish (+1.3 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-16",
       "category": "MARKET_GOVERNMENT_RATES",
       "ccy": "JPY",
       "confidence": "A",
@@ -211,17 +222,6 @@
       "title": "Credito IG OAS: +0.0 pb nella chiusura del 2026-11-13"
     },
     {
-      "as_of": "2026-11-13",
-      "category": "OIS_REPRICING",
-      "ccy": "GBP",
-      "confidence": "A",
-      "detail": "Movimento 1D -1.9 bp sul bucket 12M; variazione 1W +22.5 bp.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "title": "GBP: repricing OIS più dovish (-1.9 bp 12M in 1D)"
-    },
-    {
       "as_of": "2026-11-10",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "USD",
@@ -237,7 +237,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-17T12:33:11.524897Z",
+  "last_checked_at_utc": "2026-11-17T14:32:09.919594Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -422,6 +422,46 @@
     "headlines": [
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "ENERGY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "ENERGY_STRUCTURE",
+          "verify_next": "Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
+          "why_watch": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio."
+        },
+        "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68464",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-17T14:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "energy_supply_context": {
+            "reason": "La pubblicazione EIA non fornisce in questa pipeline uno snapshot certificato di scorte/produzione prima e dopo.",
+            "status": "ARTICLE_TITLE_ONLY"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "reason": "Titolo EIA validato, ma nessuno snapshot WTI pre/post; nessuna reazione o attribuzione causale dimostrata.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "wti": {
+            "reason": "Assenti prezzi WTI intraday pre/post collegati al rilascio.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          }
+        },
+        "source": "U.S. Energy Information Administration",
+        "source_id": "EIA_ENERGY",
+        "title": "How does EIA account for small differences between energy supply and demand data?",
+        "url": "https://www.eia.gov/todayinenergy/detail.php?id=68464"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "JPY",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -446,11 +486,11 @@
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
             "6m_rate_pct": 1.65,
-            "date": "2026-11-16",
+            "date": "2026-11-17",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
             "source": "Tokyo Financial Exchange · Three-month TONA Futures",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -700,11 +740,11 @@
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
             "6m_rate_pct": 1.65,
-            "date": "2026-11-16",
+            "date": "2026-11-17",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
             "source": "Tokyo Financial Exchange · Three-month TONA Futures",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -842,12 +882,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.6208,
-            "date": "2026-11-13",
+            "6m_rate_pct": 4.6549,
+            "date": "2026-11-16",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
             "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -919,46 +959,6 @@
         "source_id": "FED_PRESS",
         "title": "Federal Reserve Board announces pricing, effective January 1, 2027, for payment services the Federal Reserve Banks provide to banks and credit unions, and changes to streamline and adjust th",
         "url": "https://www.federalreserve.gov/newsevents/pressreleases/other20261112a.htm"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "ENERGY",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "MONITOR",
-          "topic": "ENERGY_FUNDAMENTALS",
-          "verify_next": "Verificare dati EIA, scorte di greggio e prodotti, margini di raffinazione e prezzo WTI con date compatibili.",
-          "why_watch": "Titolo relativo a disponibilità, lavorazione o scorte energetiche: possibile contesto per il mercato petrolifero, non prova di un movimento WTI."
-        },
-        "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68444",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-12T14:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "energy_supply_context": {
-            "reason": "La pubblicazione EIA non fornisce in questa pipeline uno snapshot certificato di scorte/produzione prima e dopo.",
-            "status": "ARTICLE_TITLE_ONLY"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "reason": "Titolo EIA validato, ma nessuno snapshot WTI pre/post; nessuna reazione o attribuzione causale dimostrata.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "wti": {
-            "reason": "Assenti prezzi WTI intraday pre/post collegati al rilascio.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          }
-        },
-        "source": "U.S. Energy Information Administration",
-        "source_id": "EIA_ENERGY",
-        "title": "EIA forecasts Alaskan crude oil production to grow 13% in 2027",
-        "url": "https://www.eia.gov/todayinenergy/detail.php?id=68444"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -1088,8 +1088,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.6208,
-            "date": "2026-11-13",
+            "6m_rate_pct": 4.6549,
+            "date": "2026-11-16",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -1120,7 +1120,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-17",
-    "latest_published_at_utc": "2026-11-16T23:50:00Z",
+    "latest_published_at_utc": "2026-11-17T14:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1144,9 +1144,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 6,
+        "accepted_items": 5,
         "ccy": "EUR",
-        "entries_rejected": 9,
+        "entries_rejected": 10,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -1214,10 +1214,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 2,
+        "accepted_items": 3,
         "ccy": "ENERGY",
         "entries_rejected": 25,
-        "feed_entries_seen": 27,
+        "feed_entries_seen": 28,
         "feed_url": "https://www.eia.gov/rss/todayinenergy.xml",
         "source": "U.S. Energy Information Administration",
         "source_id": "EIA_ENERGY",
