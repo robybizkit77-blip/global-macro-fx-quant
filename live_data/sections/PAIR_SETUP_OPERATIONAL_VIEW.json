@@ -411,7 +411,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 292.6,
+              "bp": 293,
               "material": true,
               "side": "AUD"
             }
@@ -441,7 +441,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 292.6,
+            "bp": 293,
             "material": true,
             "side": "AUD"
           }
@@ -680,7 +680,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -7.200000000000006,
+              "bp": -2.200000000000024,
               "material": false,
               "side": "—"
             }
@@ -710,7 +710,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -7.200000000000006,
+            "bp": -2.200000000000024,
             "material": false,
             "side": "—"
           }
@@ -950,7 +950,7 @@
               "side": "B"
             },
             "ratesGap": {
-              "bp": 148.8,
+              "bp": 149.20000000000002,
               "material": true,
               "side": "CAD"
             }
@@ -980,7 +980,7 @@
             "side": "B"
           },
           "ratesGap": {
-            "bp": 148.8,
+            "bp": 149.20000000000002,
             "material": true,
             "side": "CAD"
           }
@@ -1103,7 +1103,7 @@
               "side": "B"
             },
             "ratesGap": {
-              "bp": -159.5,
+              "bp": -159.1,
               "material": true,
               "side": "JPY"
             }
@@ -1133,7 +1133,7 @@
             "side": "B"
           },
           "ratesGap": {
-            "bp": -159.5,
+            "bp": -159.1,
             "material": true,
             "side": "JPY"
           }
@@ -1764,7 +1764,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 118.98048757999999,
+              "bp": 119.38048758,
               "material": true,
               "side": "EUR"
             }
@@ -1794,7 +1794,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 118.98048757999999,
+            "bp": 119.38048758,
             "material": true,
             "side": "EUR"
           }
@@ -2035,7 +2035,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -180.81951242,
+              "bp": -175.81951242000002,
               "material": true,
               "side": "USD"
             }
@@ -2065,7 +2065,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -180.81951242,
+            "bp": -175.81951242000002,
             "material": true,
             "side": "USD"
           }
@@ -2572,7 +2572,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 273.04822827048065,
+              "bp": 273.4482282704806,
               "material": true,
               "side": "GBP"
             }
@@ -2602,7 +2602,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 273.04822827048065,
+            "bp": 273.4482282704806,
             "material": true,
             "side": "GBP"
           }
@@ -2839,7 +2839,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -26.75177172951937,
+              "bp": -21.751771729519387,
               "material": false,
               "side": "—"
             }
@@ -2869,7 +2869,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -26.75177172951937,
+            "bp": -21.751771729519387,
             "material": false,
             "side": "—"
           }
@@ -3224,7 +3224,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 200.8,
+              "bp": 201.20000000000005,
               "material": true,
               "side": "NZD"
             }
@@ -3254,7 +3254,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 200.8,
+            "bp": 201.20000000000005,
             "material": true,
             "side": "NZD"
           }
@@ -3375,7 +3375,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -98.99999999999997,
+              "bp": -94,
               "material": true,
               "side": "USD"
             }
@@ -3405,7 +3405,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -98.99999999999997,
+            "bp": -94,
             "material": true,
             "side": "USD"
           }
@@ -3525,7 +3525,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 150.99999999999997,
+              "bp": 146,
               "material": true,
               "side": "USD"
             }
@@ -3555,7 +3555,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 150.99999999999997,
+            "bp": 146,
             "material": true,
             "side": "USD"
           }
@@ -3677,7 +3677,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 459.3,
+              "bp": 454.3,
               "material": true,
               "side": "USD"
             }
@@ -3707,7 +3707,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 459.3,
+            "bp": 454.3,
             "material": true,
             "side": "USD"
           }
@@ -3828,7 +3828,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 299.8,
+              "bp": 295.2,
               "material": true,
               "side": "USD"
             }
@@ -3858,7 +3858,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 299.8,
+            "bp": 295.2,
             "material": true,
             "side": "USD"
           }
