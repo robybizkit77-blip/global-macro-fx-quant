@@ -17,6 +17,9 @@ on:
       - '.github/workflows/fx-quant-v2-cross-asset-sources.yml'
   schedule:
     - cron: '50 7 * * 1-5'
+    # FRED publishes ICE IG/HY after the prior US close, typically around 09:45 Chicago.
+    - cron: '17 10 * * 1-5'
+      timezone: 'America/Chicago'
     - cron: '25 22 * * 1-5'
   workflow_dispatch:
 

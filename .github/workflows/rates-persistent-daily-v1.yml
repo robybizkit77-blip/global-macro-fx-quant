@@ -74,6 +74,9 @@ on:
     - cron: '0 6 * * 1-5'
     - cron: '0 7 * * 1-5'
     - cron: '0 8 * * 1-5'
+    # The prior Canadian close can appear after the Rome morning checks.
+    - cron: '17 18 * * 1-5'
+      timezone: 'Europe/Rome'
 
 permissions:
   contents: write
@@ -115,7 +118,7 @@ jobs:
       - name: Test safe Rates publish under concurrent non-Rates/overlapping source writers
         run: python3 -m unittest validation.rates.test_push_rates_safe_v1 -v
 
-      - name: Resolve Rates schedule from UTC cron and Rome offset
+      - name: Resolve Rates schedule and Rome publication window
         id: gate
         shell: bash
         env:

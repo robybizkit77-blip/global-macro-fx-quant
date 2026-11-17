@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rates cron regression: 3 Rome slots across CET/CEST, delay and quarantine."""
+"""Rates cron regression: Rome slots across CET/CEST, delay and quarantine."""
 from __future__ import annotations
 
 import datetime as dt
@@ -20,7 +20,7 @@ def check(event, cron, stamp, expected, why, slot=None):
 
 
 def run():
-    assert len(SLOTS) == 5
+    assert len(SLOTS) == 6
     assert MAX_QUEUE_DELAY_MINUTES == 240
     ok = "VALID_RATES_SLOT_DELAY_TOLERANT"
     # CEST: Mon 19 Oct UTC 05:20 / 06:00 / 07:00 = 07:20 / 08:00 / 09:00 Rome.
@@ -30,6 +30,10 @@ def run():
         ("0 7 * * 1-5", "2026-10-19T07:00:00Z", "09:00"),
     ):
         check("schedule", cron, time, True, ok, slot)
+    # Native Rome afternoon trigger is valid in both seasons.
+    check("schedule", "17 18 * * 1-5", "2026-10-19T16:17:00Z", True, ok, "18:17")
+    check("schedule", "17 18 * * 1-5", "2026-10-26T17:35:00Z", True, ok, "18:17")
+    check("schedule", "17 18 * * 1-5", "2026-10-26T17:16:00Z", False, "BEFORE_SCHEDULED_SLOT")
     # Queue starts more than 20min after scheduled: still runs.
     check("schedule", "20 5 * * 1-5", "2026-10-19T06:25:00Z", True, ok, "07:20")
     check("schedule", "0 6 * * 1-5", "2026-10-19T07:05:00Z", True, ok, "08:00")
