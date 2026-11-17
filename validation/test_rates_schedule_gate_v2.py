@@ -20,7 +20,7 @@ def check(event, cron, stamp, expected, why, slot=None):
 
 
 def run():
-    assert len(SLOTS) == 6
+    assert len(SLOTS) == 7
     assert MAX_QUEUE_DELAY_MINUTES == 240
     ok = "VALID_RATES_SLOT_DELAY_TOLERANT"
     # CEST: Mon 19 Oct UTC 05:20 / 06:00 / 07:00 = 07:20 / 08:00 / 09:00 Rome.
@@ -34,6 +34,12 @@ def run():
     check("schedule", "17 18 * * 1-5", "2026-10-19T16:17:00Z", True, ok, "18:17")
     check("schedule", "17 18 * * 1-5", "2026-10-26T17:35:00Z", True, ok, "18:17")
     check("schedule", "17 18 * * 1-5", "2026-10-26T17:16:00Z", False, "BEFORE_SCHEDULED_SLOT")
+    # The US-close slot follows the Treasury fixing both in the ordinary
+    # winter offset and during an EU/US daylight-saving difference.
+    check("schedule", "17 22 * * 1-5", "2026-11-17T21:17:00Z", True, ok, "22:17")
+    check("schedule", "17 22 * * 1-5", "2026-10-26T21:17:00Z", True, ok, "22:17")
+    check("schedule", "17 22 * * 1-5", "2026-10-19T20:17:00Z", True, ok, "22:17")
+    check("schedule", "17 22 * * 1-5", "2026-11-17T21:16:59Z", False, "BEFORE_SCHEDULED_SLOT")
     # Queue starts more than 20min after scheduled: still runs.
     check("schedule", "20 5 * * 1-5", "2026-10-19T06:25:00Z", True, ok, "07:20")
     check("schedule", "0 6 * * 1-5", "2026-10-19T07:05:00Z", True, ok, "08:00")
