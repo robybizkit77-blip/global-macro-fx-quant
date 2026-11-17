@@ -60,24 +60,19 @@ on:
           - night
           - full
   schedule:
-    # Europe/Rome 04:43 preparation for the 08:00 study briefing.
-    # Off-hour minute avoids GitHub's documented top-of-hour scheduler load;
-    # earlier start adds 17 minutes of buffer without advancing source vintages.
-    # Previous trading-day FX fixes/rates are already source-published by this slot.
-    - cron: '43 2 * * 1-5'
-    - cron: '43 3 * * 1-5'
-    # Europe/Rome 07:45 pre-morning. Duplicate UTC entries cover CEST/CET; offset gate selects one.
-    - cron: '45 5 * * 1-5'
-    - cron: '45 6 * * 1-5'
-    # Europe/Rome 09:10: second-source catch-up after the 08:00 briefing.
-    - cron: '10 7 * * 1-5'
-    - cron: '10 8 * * 1-5'
-    # Europe/Rome 18:30 close.
-    - cron: '30 16 * * 1-5'
-    - cron: '30 17 * * 1-5'
-    # Europe/Rome 00:50 after each Mon-Fri trading day.
-    - cron: '50 22 * * 1-5'
-    - cron: '50 23 * * 1-5'
+    # Off-hour 04:43 preparation, followed by the pre-briefing recheck,
+    # the 09:10 catch-up and the close refresh.
+    - cron: '43 4 * * 1-5'
+      timezone: 'Europe/Rome'
+    - cron: '45 7 * * 1-5'
+      timezone: 'Europe/Rome'
+    - cron: '10 9 * * 1-5'
+      timezone: 'Europe/Rome'
+    - cron: '30 18 * * 1-5'
+      timezone: 'Europe/Rome'
+    # Local Tuesday–Saturday 00:50 follows each Monday–Friday session.
+    - cron: '50 0 * * 2-6'
+      timezone: 'Europe/Rome'
 
 permissions:
   contents: read
@@ -115,7 +110,7 @@ jobs:
         run: python -m unittest validation.orchestration.test_audit_g8_source_coverage_v1 -v
       - name: Test live-vintage and source-backed calendar guards for 08:00
         run: python -m unittest validation.orchestration.test_morning_source_drift_contract_v1 -v
-      - name: Test 04:43 Rome off-hour DST prebrief schedule
+      - name: Test Rome schedules and phase resolution
         run: python validation/orchestration/test_prebrief_offhour_dst_schedule_v1.py
       - name: Test 08:00 Rome delivery SLA and failure receipts
         run: python validation/orchestration/test_check_morning_delivery_sla_v1.py
@@ -152,28 +147,28 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     steps:
-      - name: Resolve phase with Europe/Rome DST gate
+      - name: Resolve phase from the Rome schedule or manual input
         id: phase
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+          REQUESTED_PHASE: ${{ inputs.phase }}
         run: |
           set -euo pipefail
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            phase="${{ inputs.phase }}"
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            case "$REQUESTED_PHASE" in
+              prebrief|premorning|morning|close|night|full) phase="$REQUESTED_PHASE" ;;
+              *) echo "Unsupported manual phase: $REQUESTED_PHASE" >&2; exit 1 ;;
+            esac
           else
-            offset=$(python - <<'PY'
-          from datetime import datetime
-          from zoneinfo import ZoneInfo
-          print(int(datetime.now(ZoneInfo('Europe/Rome')).utcoffset().total_seconds() // 3600))
-          PY
-          )
-            sched='${{ github.event.schedule }}'
-            phase=skip
-            case "$sched|$offset" in
-              '43 2 * * 1-5|2'|'43 3 * * 1-5|1') phase=prebrief ;;
-              '45 5 * * 1-5|2'|'45 6 * * 1-5|1') phase=premorning ;;
-              '10 7 * * 1-5|2'|'10 8 * * 1-5|1') phase=morning ;;
-              '30 16 * * 1-5|2'|'30 17 * * 1-5|1') phase=close ;;
-              '50 22 * * 1-5|2'|'50 23 * * 1-5|1') phase=night ;;
+            case "$SCHEDULE" in
+              '43 4 * * 1-5') phase=prebrief ;;
+              '45 7 * * 1-5') phase=premorning ;;
+              '10 9 * * 1-5') phase=morning ;;
+              '30 18 * * 1-5') phase=close ;;
+              '50 0 * * 2-6') phase=night ;;
+              *) echo "Unrecognized Rome schedule: $SCHEDULE" >&2; exit 1 ;;
             esac
           fi
           echo "phase=$phase" >> "$GITHUB_OUTPUT"
@@ -185,19 +180,16 @@ jobs:
       # A missing checkout in the manual/09:10 "morning" phase previously
       # stopped after its first successful child with ENOENT on the proof script.
       - name: Checkout main for pre-publication source audit
-        if: ${{ steps.phase.outputs.phase != 'skip' }}
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 1
 
       - name: Snapshot G8 source dates and hashes before child collectors
-        if: ${{ steps.phase.outputs.phase != 'skip' }}
         run: python3 validation/orchestration/audit_g8_source_coverage_v1.py --output /tmp/g8-source-before.json
 
       - name: Run serialized refresh sequence
         id: refresh
-        if: ${{ steps.phase.outputs.phase != 'skip' }}
         shell: bash
         env:
           PHASE: ${{ steps.phase.outputs.phase }}
@@ -524,7 +516,7 @@ jobs:
           esac
 
       - name: Retain exact child-step proof for all orchestration phases
-        if: ${{ always() && steps.phase.outputs.phase != 'skip' }}
+        if: ${{ always() && steps.phase.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: orchestrator-child-step-proof-${{ github.run_id }}
@@ -537,14 +529,14 @@ jobs:
       # Re-check the LATEST main commit after the dispatched child workflows
       # have updated it; the orchestration runner itself did not mutate data.
       - name: Checkout refreshed production sources for G8 audit and 08:00 readiness
-        if: ${{ always() && steps.phase.outputs.phase != 'skip' }}
+        if: ${{ always() && steps.phase.outcome == 'success' }}
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 1
 
       - name: Compare G8 source hashes after child collectors
-        if: ${{ always() && steps.phase.outputs.phase != 'skip' }}
+        if: ${{ always() && steps.phase.outcome == 'success' }}
         run: |
           python3 validation/orchestration/audit_g8_source_coverage_v1.py \
             --before /tmp/g8-source-before.json \
@@ -552,7 +544,7 @@ jobs:
             --summary
 
       - name: Retain G8 before/after source-change receipts
-        if: ${{ always() && steps.phase.outputs.phase != 'skip' }}
+        if: ${{ always() && steps.phase.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: g8-source-changes-${{ github.run_id }}
@@ -659,7 +651,3 @@ jobs:
             /tmp/morning-delivery-sla-v1.json
           if-no-files-found: warn
           retention-days: 21
-
-      - name: Record skipped duplicate DST schedule
-        if: ${{ steps.phase.outputs.phase == 'skip' }}
-        run: echo 'Duplicate DST cron intentionally skipped.' >> "$GITHUB_STEP_SUMMARY"

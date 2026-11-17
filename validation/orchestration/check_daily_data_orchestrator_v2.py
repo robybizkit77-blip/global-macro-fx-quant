@@ -25,9 +25,8 @@ def main() -> None:
         "night": "00:50",
     }
     assert c["rules"]["prebrief_avoids_top_of_hour_load"] is True
-    assert c["rules"]["prebrief_dst_gate_tested"] is True
-    assert "'43 2 * * 1-5|2'|'43 3 * * 1-5|1') phase=prebrief" in WORKFLOW.read_text()
-    assert "Test 04:43 Rome off-hour DST prebrief schedule" in WORKFLOW.read_text()
+    assert c["rules"]["native_rome_schedules_tested"] is True
+    assert "Test Rome schedules and phase resolution" in WORKFLOW.read_text()
     assert c["rules"]["strict_sequence"] is True
     # Regression: cancel-in-progress=false alone is NOT sufficient. GitHub
     # replaces an existing pending workflow when a second pending arrives,
@@ -161,8 +160,6 @@ def main() -> None:
         "child_url=$(jq -r '.html_url // empty'",
         'Child run identity failed:',
         'actions/runs/${run_id}',
-        "43 2 * * 1-5",
-        "43 3 * * 1-5",
         "phase=prebrief",
         "check_morning_readiness_v1.py",
         "test_check_morning_readiness_v1.py",
@@ -173,8 +170,6 @@ def main() -> None:
         '--pipeline-outcome "$REFRESH_OUTCOME"',
         "always() && (steps.phase.outputs.phase == 'prebrief'",
         "refresh_pipeline_outcome",
-        "45 5 * * 1-5",
-        "45 6 * * 1-5",
         "phase=premorning",
         "rates-persistent-daily-v1.yml",
         "macro-persistent-daily-v1.yml",
@@ -206,7 +201,6 @@ def main() -> None:
     checkout_segment = text.split(
         '      - name: Checkout main for pre-publication source audit\n', 1
     )[1].split('      - name: Run serialized refresh sequence\n', 1)[0]
-    assert "if: ${{ steps.phase.outputs.phase != 'skip' }}" in checkout_segment
     assert 'uses: actions/checkout@v4' in checkout_segment
     assert 'ref: main' in checkout_segment
     checkout_at = text.index('      - name: Checkout main for pre-publication source audit')

@@ -75,7 +75,10 @@ class PreMorningVixTests(unittest.TestCase):
         self.assertIn("git show origin/main:live_data/sections/D.json", workflow)
         self.assertIn("07:45 VIX: **SKIPPED**", workflow)
         self.assertIn("07:45 VIX: **RETRY**", workflow)
-        self.assertEqual(workflow.count("    - cron:"), 10)
+        self.assertEqual(
+            workflow.count("    - cron: '45 7 * * 1-5'\n      timezone: 'Europe/Rome'"),
+            1,
+        )
 
 
 if __name__ == "__main__":
