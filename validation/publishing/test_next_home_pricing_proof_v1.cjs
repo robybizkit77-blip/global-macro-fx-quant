@@ -11,12 +11,21 @@ globalThis.FXQuantPairMonetary=require('../../site/fx-quant-v2/next/pair-monetar
 const {inspectPair,inspectSessionWindow,horizonReading,weekdayLag,freshness,choose,pairReturn,render}=require('../../site/fx-quant-v2/next/home-pricing-proof-v1.js');
 const livePrices=json('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
  pairs=json('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),
- history=json(site+'rates-pricing-history-v1.json'),
- today=history.as_of;
-// This source-backed scenario asserts the same 12 Nov 6M windows even after later fixings arrive.
+ liveHistory=json(site+'rates-pricing-history-v1.json');
+// Replay the 12 Nov source window, including when the archive later backfills a common 13 Nov observation.
+const history=structuredClone(liveHistory),today='2026-11-13';
+history.as_of=today;
+for(const row of Object.values(history.currencies))for(const [tenor,points] of Object.entries(row.tenors))
+ row.tenors[tenor]=points.filter(point=>point.date<='2026-11-12');
 const prices={...livePrices,rows:livePrices.rows.filter(r=>r.Date<='2026-11-13'),last_as_of:'2026-11-13'};
 assert.equal(prices.rows.at(-1)?.Date,prices.last_as_of);
 const args={prices,pairs,history,today};
+const liveArgs={prices:livePrices,pairs,history:liveHistory,today:liveHistory.as_of};
+for(const item of choose(liveArgs)){
+ const fx=pairReturn(livePrices,item.pair,item.from,item.to,liveArgs.today);
+ assert.equal(fx?.percent,item.fxPct,'The live comparison must use actual FX fixings on both 6M dates');
+ assert(item.verifiedWindows.every(n=>inspectSessionWindow(item.pair,liveArgs,n,item.to)));
+}
 assert.equal(pairs.pair_count,28);
 const selected=choose(args);
 assert.equal(selected.length,2,'Expected one real USD pair and one real non-USD pair with same-date price check');
@@ -153,7 +162,7 @@ assert.equal(weekdayLag('2026-11-13','2026-11-14'),0,'Weekend is not a stale wee
 assert.equal(weekdayLag('2026-11-13','2026-11-16'),1,'Friday to Monday is one weekday');
 assert.equal(weekdayLag('2026-11-13','2026-11-18'),3,'Third weekday triggers editorial warning');
 assert.equal(weekdayLag('2026-11-18','2026-11-13'),null,'Do not accept future source dates');
-const weekendHistory={...history,as_of:'2026-11-13'};
+const weekendHistory=history;
 const weekendArgs={...args,history:weekendHistory,today:'2026-11-14'};
 const weekendPicks=choose(weekendArgs);
 assert.equal(weekendPicks.length,2,'The historical weekend fixture needs dated pair comparisons');

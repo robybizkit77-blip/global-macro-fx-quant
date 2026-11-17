@@ -613,9 +613,41 @@ async function pairMonetaryJourney(page,label){
  assert.equal(await euroPanel.count(),1,label+' EUR/USD source-first monetary card missing');
  assert.equal(await euroPanel.locator('.pair-monetary-kpi').count(),2,
   label+' EUR/USD must have two informative research references');
+ const reference=await page.evaluate(async()=>{
+  const files={
+   ois:'../ois-pricing-snapshot.json',research:'../ois-same-contract-repricing-research.json',
+   history:'./rates-pricing-history-v1.json',operational:'../../../live_data/sections/OIS_OPERATIONAL_VIEW.json',
+   nzd:'../../../live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json',
+   pairs:'../../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+  };
+  const sources=Object.fromEntries(await Promise.all(Object.entries(files).map(async([key,url])=>{
+   const response=await fetch(url,{cache:'no-store'});
+   if(!response.ok)throw Error('Cannot compare rendered 6M value without '+key);
+   return [key,await response.json()];
+  })));
+  const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format();
+  return window.FXQuantPairMonetary.evaluate({...sources,pair:'EURUSD',today});
+ });
+ assert(reference.ready,label+' EUR/USD dated source model missing');
+ const dmy=date=>date.split('-').reverse().join('/');
+ for(const [window,move] of [['1d',reference.oneEvidence],['1w',reference.weekEvidence]]){
+  const card=euroPanel.locator('[data-pair-monetary-window="'+window+'"]');
+  assert.equal(await card.getAttribute('data-pair-monetary-evidence'),move?.grade||'LEVEL_CONTEXT',
+   label+' EUR/USD '+window+' evidence grade differs from served sources');
+  const shown=await card.innerText();
+  if(move){
+   const signed=(move.relativeBp>0?'+':move.relativeBp<0?'−':'')+
+    Math.abs(move.relativeBp).toFixed(2).replace('.',',')+' pb';
+   assert.equal(await card.locator('strong').innerText(),signed,label+' EUR/USD '+window+' source value');
+   assert(shown.includes(dmy(move.to))&&(!move.from||shown.includes(dmy(move.from))),
+    label+' EUR/USD '+window+' observation dates must match sources');
+  }else{
+   for(const [ccy,leg] of [['EUR',reference.levels.base],['USD',reference.levels.quote]])
+    assert(Number.isFinite(leg.rate)&&shown.includes(ccy+' '+leg.rate.toFixed(3).replace('.',',')+'%')&&
+     shown.includes(dmy(leg.asof)),label+' EUR/USD '+window+' fallback must show dated levels');
+  }
+ }
  const copy=await euroPanel.innerText();
- assert(copy.includes('−2,75 pb')&&copy.includes('11/11/2026')&&copy.includes('12/11/2026'),
-  label+' EUR/USD must surface the actual historical common interval instead of two empty 6M cards');
  assert(!copy.includes('non allineato'),
   label+' EUR/USD has data for an archived common period, empty flags cannot dominate');
  await euroPanel.locator('.pair-monetary-source > summary').click();
