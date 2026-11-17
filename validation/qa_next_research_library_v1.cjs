@@ -13,7 +13,7 @@ new vm.Script(src,{filename:'research-library.js'});
 const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
 assert.match(index,/research-library\.css\?v=1/);
-assert.match(index,/research-library\.js\?v=13/);
+assert.match(index,/research-library\.js\?v=14/);
 assert.match(index,/11 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
@@ -103,16 +103,20 @@ assert.equal(L.editionStatus(ois,today).state,'weekly',
  'Six-day-old OIS weekly is last published, not automatically stale');
 assert.equal(L.editionStatus(cross,today).state,'previous');
 assert.equal(L.editionStatus(pairs,today).state,'previous');
-assert.equal(L.editionStatus(cot,today).state,'weekly',
- 'Tuesday 03 Nov observation is still last published on Thu 12 Nov');
-assert.match(L.editionStatus(cot,today).text,/posizioni al 03\/11\/2026 \(martedì\)/);
-assert.equal(L.editionStatus(cot,'2026-11-16').state,'previous');
+assert.equal(L.editionStatus(cot,'2026-11-17').state,'weekly');
+assert.ok(cot.desc.includes('pubblicate il 16 novembre'));
+assert.equal(L.editionStatus({...cot,date:'2026-11-03'},'2026-11-17').state,'previous');
+const otherCot=L.remoteReport('COT_FX_G8_03_NOV_2026_V10_DEFINITIVO.html');
+assert.ok(otherCot&&!otherCot.desc.includes('pubblicate il 16 novembre'),
+ 'Only the pinned COT edition may describe its known release date');
+assert.equal(L.editionStatus(cot,'2026-11-23').state,'previous');
+assert.match(L.editionStatus(cot,today).text,/posizioni al 10\/11\/2026 \(martedì\)/);
 assert.equal(L.editionStatus({...daily,date:'2026-11-20'},today).state,'unverified',
  'A future edition cannot be labelled as published today');
 const fixedRows=L.rows(today);
 assert.match(L.rows('2026-11-16'),/Briefing pubblicato per la seduta odierna/);
 assert.match(fixedRows,/Edizione storica · non aggiornata questa settimana/);
-assert.match(fixedRows,/Ultimo COT pubblicato · posizioni al 03\/11\/2026 \(martedì\)/);
+assert.match(fixedRows,/Ultimo COT pubblicato · posizioni al 10\/11\/2026 \(martedì\)/);
 assert.doesNotMatch(L.render(),/REPORT CORRENTI VISIBILI/,
  'The number of available categories is NOT the count of current editions');
 assert.match(L.render(),/ULTIME EDIZIONI PUBBLICATE/);

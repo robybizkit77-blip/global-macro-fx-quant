@@ -12,7 +12,7 @@ const REPORTS=Object.freeze([
  {type:'bank',date:'2026-11-06',title:'Weekly Bank FX Report',file:'Weekly_Bank_FX_Report_2026-11-06_DARK_DESK_NARRATIVO_V5.html',desc:'View bancarie G8 e giudizio indipendente, con fonti e consenso datati.'},
  {type:'cb',date:'2026-11-06',title:'Weekly Central Bank Sentiment',file:'Weekly_CB_Sentiment_Report_2026-11-06_DARK_RESEARCH_DESK_WANT_CAN_V4_PALETTE.html',desc:'WANT/CAN: intenzioni e vincoli delle banche centrali, separati dal bias Forex.'},
  {type:'ois',date:'2026-11-06',title:'Weekly Central Bank Pricing G8 · Curve OIS',file:'Weekly_CB_Pricing_G8_2026-11-06_V7_CONFRONTO_31OTT_06NOV.html',desc:'Curve monetarie, repricing G8 e confronto delle attese al 31 ottobre e 6 novembre, con lettura FX.'},
- {type:'cot',date:'2026-11-03',title:'COT FX G8',file:'COT_FX_G8_03_NOV_2026_DARK_QUANT_DESK_v10_DEFINITIVO_LETTURA_INTEGRATA.html',desc:'Posizioni CFTC riferite al 3 novembre, pubblicate il 6: variazioni, concentrazione e prezzo.'},
+ {type:'cot',date:'2026-11-10',title:'COT FX G8',file:'COT_FX_G8_10_NOV_2026_DARK_QUANT_DESK_v10_LETTURA_INTEGRATA.html',desc:'Posizioni al 10 novembre, pubblicate il 16 novembre. Flussi dei fondi, concentrazione e confronto con il cambio.'},
  {type:'cross',date:'2026-10-17',title:'Weekly Macro & Cross-Asset',file:'Weekly_Global_Macro_Strength_Cross_Asset_2026-10-17_DARK_EDITORIAL_PRO_CLEAN.html',desc:'Relazioni tra azioni, credito, bond, commodities e valute.',publicUrl:'./reports/Weekly_Global_Macro_Strength_Cross_Asset_2026-10-17_DARK_EDITORIAL_PRO_CLEAN.html'},
  {type:'pairs',date:'2026-10-17',title:'Weekly FX Pair Selection',file:'Weekly_FX_Pair_Selection_Conviction_2026-10-17.html',desc:'Selezione delle coppie Forex e confronto relativo delle valute G8.',publicUrl:'./reports/Weekly_FX_Pair_Selection_Conviction_2026-10-17.html'}
 ]);
@@ -52,7 +52,10 @@ function remoteReport(file){
  if(!type||!date||!canonical)return null;
  const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  if(date>today)return null;
- return {...canonical,date,file,publicUrl:ROOT+encodeURIComponent(file)};
+ const desc=type==='cot'&&file!==canonical.file
+  ?'Posizioni CFTC, flussi dei fondi e confronto con il cambio.'
+  :canonical.desc;
+ return {...canonical,desc,date,file,publicUrl:ROOT+encodeURIComponent(file)};
 }
 function latestPerType(items){
  const selected=new Map();
