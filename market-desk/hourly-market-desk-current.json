@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-16T18:38:09.041445Z",
-  "edition_time_rome": "2026-11-16 19:38",
-  "material_digest": "28eb9f16d1258de84688e7fb2211f8a37acdb41bccf15af20f516d603877e61d",
+  "generated_at_utc": "2026-11-17T02:30:25.978793Z",
+  "edition_time_rome": "2026-11-17 03:30",
+  "material_digest": "913497d13caf54a3d34964cf4e0c3b7a452c586501555b9875a87dec1ff3def8",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-  "lead": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate.",
+  "lead": "I rendimenti governativi a breve scadenza salgono più rapidamente negli Stati Uniti che nell'area euro: il differenziale si è mosso a favore del dollaro. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate.",
   "news": [
     {
       "headline": "EUR/USD: -0.34% fra due fixing BCE",
@@ -32,7 +32,7 @@
       ]
     },
     {
-      "headline": "Oro e petrolio: segnali da distinguere nella lettura macro",
+      "headline": "Oro e petrolio divergono nelle rilevazioni dei futures",
       "analysis": "I prezzi futures osservati offrono un confronto fra oro e WTI. Le differenze possono riflettere tassi reali, domanda energetica e rischio globale, ma non dimostrano quali operatori abbiano comprato o venduto. Serie di fonte secondaria, trattate come proxy direzionali.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-13",
@@ -55,6 +55,17 @@
       ]
     },
     {
+      "headline": "Release of Latest \"Loans and Bills Discounted by Sector\" and \"Loans to Households\" Data",
+      "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+      "kind": "NEWS",
+      "published_date": "2026-11-17",
+      "event_date": "2026-11-17",
+      "market_area": "BANCHE CENTRALI",
+      "sources": [
+        "https://www.boj.or.jp/en/statistics/outline/notice_2026/not261117a.htm"
+      ]
+    },
+    {
       "headline": "Frank Elderson: Smart supervision for small banks",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
       "kind": "FOLLOW_UP",
@@ -64,30 +75,19 @@
       "sources": [
         "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261116_1~11dd7f62af.en.html"
       ]
-    },
-    {
-      "headline": "Bank of Canada Governor Tiff Macklem to step down in June 2027",
-      "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-16",
-      "event_date": "2026-11-16",
-      "market_area": "BANCHE CENTRALI",
-      "sources": [
-        "https://www.bankofcanada.ca/2026/11/bank-of-canada-governor-tiff-macklem-to-step-down-in-june-2027/"
-      ]
     }
   ],
-  "desk_judgment": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
+  "desk_judgment": "I rendimenti governativi a breve scadenza salgono più rapidamente negli Stati Uniti che nell'area euro: il differenziale si è mosso a favore del dollaro. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
   "fx_implications": "Il Forex va interpretato per coppie: per EUR/USD conta il confronto Fed–BCE, per USD/JPY quello Fed–BoJ e la componente di rischio globale. Negli ultimi fixing EUR/USD è sceso, ma distinguere forza USD da debolezza EUR richiede il confronto con altri cross.",
   "what_changed": "Sono entrate nuove osservazioni o pubblicazioni rispetto alla precedente edizione. La direzione relativa di tassi, Forex, credito e materie prime viene ricomposta in un solo quadro economico, senza attribuire automaticamente causalità.",
-  "contrary_evidence": "Una ripresa delle azioni senza conferma del credito o con volatilità in aumento renderebbe più fragile l'interpretazione risk-on. Le ultime chiusure rappresentano osservazioni datate, non flussi attribuibili a specifici operatori.",
+  "contrary_evidence": "La prova contraria a un dollaro sostenuto dai tassi sarebbe un indebolimento dei cross USD mentre il differenziale governativo resta favorevole. I diversi orari di rilevazione fra azioni, credito e VIX impediscono di trattarli come una sola reazione intraday.",
   "watch": "Il prossimo catalizzatore sul calendario è Labour Force, Australia (AUD, 2026-11-19): conteranno sorpresa rispetto alle attese, composizione e risposta dei tassi relativi. Il confronto con credito, volatilità e fixing successivi aiuterà a distinguere un movimento persistente da uno temporaneo.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
-      "https://www.bankofcanada.ca/2026/11/bank-of-canada-governor-tiff-macklem-to-step-down-in-june-2027/",
+      "https://www.boj.or.jp/en/statistics/outline/notice_2026/not261117a.htm",
       "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261116_1~11dd7f62af.en.html",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "https://www.seco.admin.ch/en/gdp-flash"
@@ -95,14 +95,19 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-16",
-      "rss_checked_at_utc": "2026-11-16T18:38:09.041445Z",
-      "commodities": "2026-11-13"
+      "rss_checked_at_utc": "2026-11-17T02:30:25.978793Z",
+      "commodities": "2026-11-16"
     },
     "no_paid_api": true,
     "no_ai_model": true,
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-16T18:38:09.041445Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "28eb9f16d1258de84688e7fb2211f8a37acdb41bccf15af20f516d603877e61d"
+    },
     {
       "generated_at_utc": "2026-11-16T15:06:27.926490Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
