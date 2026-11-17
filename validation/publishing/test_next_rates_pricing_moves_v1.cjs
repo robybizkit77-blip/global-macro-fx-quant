@@ -82,8 +82,12 @@ const gbp=render(renderArgs);
 assert(gbp.includes('data-pricing-kind="OIS"')&&
  gbp.includes('data-curve="comparison"'),
  'Official OIS current/previous curve comparison required');
-assert(gbp.includes(String(result.GBP.rows[1].one.bp).replace('.',',')+' pb'),
- 'GBP official 6M change must reflect the latest source without a frozen value');
+for(const [window,html] of [['1d',gbp],['1w',render({...renderArgs,window:'1w'})]]){
+ const move=official('GBP','6m',window);
+ const signed=(move>0?'+':'')+move.toFixed(1).replace('-', '−').replace('.', ',')+' pb';
+ const displayed=html.match(/data-pricing-tenor="6m">(?:(?!data-pricing-tenor=)[\s\S])*?<div class="ois-bp-num [^"]*">([^<]+)<\/div>/)?.[1];
+ assert.equal(displayed,signed,'GBP official 6M '+window+' row must show the source move with its sign');
+}
 assert(gbp.includes('data-pricing-ccy="CHF"')&&gbp.includes('data-pricing-ccy="NZD"'),
  'Eight-currency 6M benchmark must keep every G8 classification');
 assert(gbp.includes('data-rs-pricing-window="1d"')&&

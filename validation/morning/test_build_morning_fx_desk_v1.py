@@ -92,6 +92,26 @@ class MorningFXDeskTests(unittest.TestCase):
         self.assertIn("non forziamo",x["paragraphs"][2].lower())
         self.assertLess(x["sources"]["rates"],x["edition_date"])
 
+    def test_upcoming_event_with_stale_rates_keeps_current_edition(self):
+        day=date(2026,11,17)
+        now=datetime(2026,11,17,7,0,tzinfo=timezone.utc)
+        event={"ccy":"AUD","date":"2026-11-19","time_local":"11:30",
+               "timezone":"Australia/Sydney","event_type":"LABOUR",
+               "title":"Labour Force, Australia","importance":"HIGH",
+               "quality":"OFFICIAL_CONFIRMED"}
+        rows,rates=desk.source_snapshots(ROOT,day)
+        rates["AUD"]["history2"]={"dates":["2026-11-04"],"values":[4.1]}
+        with patch.object(desk,"source_snapshots",return_value=(rows,rates)):
+            report=build(ROOT,day,now,event_seed={"events":[event]})
+            with self.assertRaisesRegex(ValueError,"Insufficient same-date 2Y"):
+                build(ROOT,day,now,event_seed={"events":[{**event,"date":day.isoformat()}]})
+        self.assertEqual(report["event_status"],"RELATIVE_PRICING")
+        self.assertEqual(report["pair"],"EURUSD")
+        self.assertEqual(report["charts"][0]["label"],"Differenziale 2Y USD–EUR")
+        self.assertIn("Labour Force, Australia",report["catalyst"]["text"])
+        self.assertIn("19/11/2026",report["catalyst"]["text"])
+        self.assertLess(report["sources"]["rates"],day.isoformat())
+
     def test_event_scenarios_are_distinct_and_specific(self):
         days=[((2026,11,10),None),((2026,11,11),None),
               ((2026,11,12),None),((2026,11,11),{"events":[]})]
