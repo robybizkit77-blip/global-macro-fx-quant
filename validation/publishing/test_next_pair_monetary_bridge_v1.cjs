@@ -67,15 +67,34 @@ for(const pair of keys){
 const eur=evaluate({...inputs,pair:'EURUSD',favored:'USD'});
 assert(eur.ready,'EURUSD must be available');
 const eu1=historicalWindow(inputs.history,'EUR','USD',inputs.today,'1d');
-assert(eu1&&eu1.from==='2026-11-11'&&eu1.to==='2026-11-12',
- 'EURUSD must use the last common dated Nov 11 to Nov 12 source bars');
-assert.equal(eu1.relativeBp,-2.75,'EURUSD historical difference must reconcile to -2.75 pb');
+assert(eu1&&eu1.from<eu1.to&&eu1.to<=inputs.today,'EURUSD requires an ordered pair of observed dates');
+const currencies=['EUR','USD'];
+const legs=currencies.map(ccy=>new Map(inputs.history.currencies[ccy].tenors['6m'].map(p=>[p.date,p])));
+const cutoff=[inputs.today,inputs.history.as_of].sort()[0];
+const common=[...legs[0].keys()].filter(d=>d<=cutoff&&legs[1].has(d)).sort().reverse();
+const end=common.find((to,i)=>common.slice(i+1).some(from=>
+ Date.parse(to)-Date.parse(from)<=4*864e5&&legs.every((rows,j)=>validLeg(rows.get(from),rows.get(to),currencies[j]))));
+assert.equal(eu1.to,end,'An older EURUSD interval must not hide a newer eligible interval');
+const [eurDelta,usdDelta]=legs.map((points,i)=>{
+ const before=points.get(eu1.from),after=points.get(eu1.to);
+ assert(before&&after&&before.contract===after.contract&&!before.derived&&!after.derived,
+  currencies[i]+' must use two observed levels from the same contract');
+ return Math.round((after.rate-before.rate)*10000)/100;
+});
+assert.equal(eu1.relativeBp,Math.round((eurDelta-usdDelta)*100)/100,
+ 'EURUSD historical difference must reconcile to the dated source levels');
 if(!eur.one.live)assert.deepEqual(eur.oneEvidence,eu1,
  'EURUSD should promote useful historical evidence, not two blank 1D/1W boxes');
 const euroText=render({...inputs,pair:'EURUSD',favored:'USD'});
-assert(euroText.includes('−2,75 pb'),'EURUSD must display its real historical relative 6M variation');
-assert(euroText.includes('11/11/2026 → 12/11/2026'));
-assert(euroText.includes('non un repricing della seduta corrente'),
+const dmy=date=>date.split('-').reverse().join('/');
+const move=eur.oneEvidence;
+const display=(move.relativeBp>0?'+':move.relativeBp<0?'−':'')+
+ Math.abs(move.relativeBp).toFixed(2).replace('.',',')+' pb';
+const oneCard=euroText.match(/data-pair-monetary-window="1d"[^>]*>[\s\S]*?<\/div>/)?.[0];
+assert(oneCard?.includes(display)&&oneCard.includes(dmy(move.to))&&
+ (!move.from||oneCard.includes(dmy(move.from))),
+ 'EURUSD 1D card must display its actual relative 6M move and observation dates');
+if(!eur.one.live)assert(euroText.includes('non un repricing della seduta corrente'),
  'Retrospective archive must never become a contemporaneous price claim');
 assert(!euroText.includes('non allineato'),'EURUSD first read should not repeat empty flags');
 const neg=evaluate({...inputs,pair:'EURGBP',favored:'EUR'});
@@ -117,4 +136,4 @@ assert(app.includes("e.target.closest('[data-pair-open-rates]')"));
 assert(app.includes('state.ccy=k.slice(0,3);state.against=k.slice(3);'));
 const css=load(rel+'pairs-clarity.css');
 assert(css.includes('.pair-monetary-links')&&css.includes(':focus-visible'));
-console.log('NEXT_PAIR_MONETARY_SOURCE_COVERAGE_PASS: 28/28 pairs, dated EURUSD -2.75pb, weekly, proxy, rollover, quality, linked sources',JSON.stringify({normal}));
+console.log('NEXT_PAIR_MONETARY_SOURCE_COVERAGE_PASS: 28/28 pairs, dated EURUSD, weekly, proxy, rollover, quality, linked sources',JSON.stringify({eurusd:eu1,normal}));

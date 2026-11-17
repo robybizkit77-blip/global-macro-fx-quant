@@ -101,7 +101,8 @@ assert(safe.includes('data-cal-currency="GBP"')&&safe.includes('data-cal-pair="E
 assert(safe.includes('href="#pairs?pair=EURGBP"'),'Calendar links must open the specific pair in a new tab');
 assert(safe.includes('cal-event-evidence')&&safe.includes('Fonte, consenso e verifiche dopo l’evento'),
  'Source, consensus, quality and post-event controls must remain accessible');
-assert(safe.includes('Svizzera · PIL flash')&&safe.includes('Titolo originale: Swiss GDP flash'),
+const swissUpcoming=render(swissCalendar,'2026-11-16',Date.parse('2026-11-16T07:59Z'));
+assert(swissUpcoming.includes('Svizzera · PIL flash')&&swissUpcoming.includes('Titolo originale: Swiss GDP flash'),
  'Italian first-read titles must preserve exact original event name in evidence');
 assert(app.includes("e.target.closest('[data-cal-research]')")&&
  app.includes("if(mode==='pairs'&&openPair(calendarResearch.dataset.calPair))return;")&&
