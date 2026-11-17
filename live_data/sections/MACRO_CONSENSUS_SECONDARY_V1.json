@@ -1,6 +1,6 @@
 {
   "events": [],
-  "generated_at_utc": "2026-11-16T22:12:39.387143Z",
+  "generated_at_utc": "2026-11-17T04:33:54.519942Z",
   "metric_candidates_research_v8": [],
   "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
   "provider_endpoint": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",

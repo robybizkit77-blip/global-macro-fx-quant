@@ -3,43 +3,12 @@
     "cb_schedule_available": 8,
     "consensus_available_events": 0,
     "g8_total": 8,
-    "macro_ccy_coverage": 6,
+    "macro_ccy_coverage": 5,
     "previous_only_events": 0,
-    "upcoming_macro_events": 7,
-    "upcoming_total_events": 15
+    "upcoming_macro_events": 5,
+    "upcoming_total_events": 13
   },
   "events": [
-    {
-      "ccy": "CHF",
-      "consensus_status": "NOT_PRESENT",
-      "date": "2026-11-16",
-      "event_type": "GROWTH",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_PROVISIONAL",
-      "reference_period": "Q3 2026",
-      "source_family": "SECO",
-      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
-      "status": "UPCOMING",
-      "time_local": "09:00",
-      "timezone": "Europe/Zurich",
-      "title": "Swiss GDP flash"
-    },
-    {
-      "ccy": "CAD",
-      "consensus_status": "NOT_PRESENT",
-      "date": "2026-11-16",
-      "event_type": "INFLATION",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CALENDAR",
-      "reference_period": "October 2026",
-      "source_family": "Statistics Canada",
-      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
-      "source_url": "https://www150.statcan.gc.ca/n1/release-diffusion/2026-eng.pdf",
-      "status": "UPCOMING",
-      "time_local": "08:30",
-      "timezone": "America/Toronto",
-      "title": "Consumer Price Index"
-    },
     {
       "ccy": "USD",
       "consensus_status": "NOT_PRESENT",
@@ -230,8 +199,8 @@
       "title": "BoJ · decisione di politica monetaria"
     }
   ],
-  "generated_at_utc": "2026-11-16T10:49:04.154162Z",
-  "last_checked_at_utc": "2026-11-16T10:49:04.154162Z",
+  "generated_at_utc": "2026-11-17T04:33:59.263263Z",
+  "last_checked_at_utc": "2026-11-17T04:33:59.263263Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
@@ -243,7 +212,6 @@
     "macro_release_currencies": [
       "AUD",
       "CAD",
-      "CHF",
       "JPY",
       "NZD",
       "USD"
