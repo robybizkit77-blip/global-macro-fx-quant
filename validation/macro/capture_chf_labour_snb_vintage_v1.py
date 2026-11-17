@@ -21,6 +21,7 @@ URL = "https://data.snb.ch/api/cube/amarbma/data/json/en"
 LABEL = "Jobless rate - Seasonally adjusted"
 SCHEMA = "GMFQ_CHF_LABOUR_SNB_READONLY_CAPTURE_V1"
 MAX_BYTES = 10 * 1024 * 1024
+MONTH = re.compile(r"(?!0000)[0-9]{4}-(?:0[1-9]|1[0-2])")
 
 
 def require(condition: bool, reason: str) -> None:
@@ -48,7 +49,7 @@ def parse_source(raw: bytes) -> dict:
     for item in values:
         require(isinstance(item, dict), "invalid observation payload")
         period, v = item.get("date"), item.get("value")
-        require(isinstance(period, str) and re.fullmatch(r"20\d{2}-(?:0[1-9]|1[0-2])", period),
+        require(isinstance(period, str) and MONTH.fullmatch(period),
                 "invalid monthly period")
         require(type(v) in (float, int) and math.isfinite(v), "invalid numeric rate")
         require(period not in normalized, "duplicate month in source cube")
@@ -117,7 +118,7 @@ def main() -> int:
                     help="Optional YYYY-MM strict freshness guard; not a past-vintage query")
     args = ap.parse_args()
     if args.expected_period is not None:
-        require(re.fullmatch(r"20\d{2}-(?:0[1-9]|1[0-2])", args.expected_period),
+        require(MONTH.fullmatch(args.expected_period),
                 "invalid expected period")
     require(not args.output_dir.is_symlink(), "symlink output directory rejected")
     raw, headers, started, ended, response_url = fetch_source()

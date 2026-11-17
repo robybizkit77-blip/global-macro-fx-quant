@@ -23,6 +23,8 @@ Il lavoro procede su FX Quant Next e sui dati condivisi che alimentano il sito. 
 
 - Il registro Macro G8 documenta la prima pubblicazione di altre sei serie. Per le ultime 16 osservazioni, 9 hanno data e ora, 6 la sola data e 1 resta senza prova del valore esatto. Il [comunicato SECO](https://www.isceco.admin.ch/it/newnsb/Cdju9-o8WGML) arrotonda il tasso svizzero destagionalizzato al 3,1%, mentre la serie Macro usa il valore SNB con più decimali.
 
+- Il sistema di acquisizione SNB legge ora l’intero storico mensile, incluse le osservazioni anteriori al 2000. L’acquisizione diretta del 17 novembre conferma 681 osservazioni. Il primo riscontro esatto di settembre rintracciato nel runtime è il [21 ottobre](https://github.com/robybizkit77-blip/global-macro-fx-quant/commit/d3419fa8ea9bedbe1a63fd85c964ee60f526d92f). La prova della prima pubblicazione esatta del 6 ottobre rimane aperta.
+
 ## Stato iniziale del 17 novembre 2026
 
 - **Tappa 1 in corso.** Il controllo che usava una data fissa è stato corretto con la [PR #1331](https://github.com/robybizkit77-blip/global-macro-fx-quant/pull/1331). Il recupero del mattino ha tentato due volte di avviare il coordinatore. GitHub ha respinto entrambe le richieste perché `phase` era al livello sbagliato nel corpo della richiesta. [Primo tentativo](https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/44019661571) · [Secondo tentativo](https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/44025985294)
