@@ -8,6 +8,7 @@ on:
       - 'site/control-room-preview/macro-v3-current-evidence.json'
       - 'live_data/sections/**'
       - 'validation/qa_next_*.cjs'
+      - 'validation/publishing/test_next_rates_pricing_moves_v1.cjs'
       - 'validation/pair_thesis/**'
       - '.github/workflows/fx-quant-next-research-coherence.yml'
   push:

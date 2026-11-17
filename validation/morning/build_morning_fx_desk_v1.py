@@ -121,6 +121,15 @@ def source_snapshots(d,day):
     rates=load(d,"rates")
     return rows,rates
 
+def matched_yields(rates,u,v,day):
+    series={}
+    for currency in {u,v}:
+        hist=(rates.get(currency) or {}).get("history2") or {}
+        series[currency]={dt:value for dt,value in zip(hist.get("dates",[]),hist.get("values",[]))
+                          if to_date(dt) and to_date(dt)<day and isnum(value)}
+    common=sorted(set(series[u]) & set(series[v]))
+    return series,common
+
 def forecast_reference(rows,event,day):
     if not event:return ""
     found=[x for x in rows if x.get("currency")==event["ccy"]
@@ -169,12 +178,17 @@ def build(root,day,now,*,event_seed=None):
     ccy=event["ccy"] if event else "USD"
     pair=FX_PAIRS[ccy]
     u,v=YIELD_PAIRS[ccy]
-    series={}
-    for currency in {u,v}:
-        hist=(rates.get(currency) or {}).get("history2") or {}
-        series[currency]={dt:value for dt,value in zip(hist.get("dates",[]),hist.get("values",[]))
-                          if to_date(dt) and to_date(dt)<day and isnum(value)}
-    common=sorted(set(series[u]) & set(series[v]))
+    series,common=matched_yields(rates,u,v,day)
+    upcoming_watch=None
+    if stage=="UPCOMING" and (
+        len(common)<8 or to_date(common[-1])<day-timedelta(days=7)
+        or skipped_market_sessions(common[-1],day)>2
+    ):
+        upcoming_watch=event
+        event,stage,ccy=None,"RELATIVE_PRICING","USD"
+        pair=FX_PAIRS[ccy]
+        u,v=YIELD_PAIRS[ccy]
+        series,common=matched_yields(rates,u,v,day)
     if len(common)<8 or to_date(common[-1])<day-timedelta(days=7):
         raise ValueError("Insufficient same-date 2Y observations")
     if skipped_market_sessions(common[-1],day)>2:
@@ -434,6 +448,13 @@ def build(root,day,now,*,event_seed=None):
                   "smentiscano la relazione recente. Senza variazioni comparabili "
                   "OIS/futures non attribuiamo automaticamente uno shock di banca "
                   "centrale al movimento governativo.")
+        if upcoming_watch:
+            event_ccy=upcoming_watch["ccy"]
+            catalyst=(f"Il prossimo appuntamento è {upcoming_watch['title']} "
+                      f"il {pretty(upcoming_watch['date'])} alle {event_clock(upcoming_watch)} italiane. "
+                      f"Il confronto sui 2Y per {event_ccy} non è abbastanza aggiornato. "
+                      f"Per la seduta di oggi, osserviamo il differenziale {u}–{v} "
+                      f"e la risposta di {pair_label} sulle date comuni disponibili.")
         title="Oggi · tassi relativi e conferma valutaria"
         status="RELATIVE_PRICING"
         scenario_main={"title":"La relazione prezzi–tassi si consolida",
