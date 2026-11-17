@@ -1,6 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
+const vm=require('node:vm');
 const path=require('node:path');
 const root=path.resolve(__dirname,'../..');
 const load=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
@@ -53,23 +54,47 @@ const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'u
 const rates=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/rates-studio.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
 assert(page.includes('rates-economic-reading.js?v=20'));
-assert(page.includes('rates-studio.js?v=6'));
+assert(page.includes('rates-studio.js?v=7'));
 assert(page.includes('rates-relative-pricing-v1.js?v=1'));
 assert(page.includes('rates-pricing-history-v1.js?v=1'));
 assert(page.includes('rates-pricing-moves-v1.js?v=1'));
 assert(page.includes('rates-studio.css?v=5'));
-assert(page.includes('app.js?v=18.58-home-money-pricing'));
+assert(/app\.js\?v=[\w.-]+/.test(page));
 assert(rates.includes('fxRelativeEvidence(c,other)'), 'Rates first read needs a FX handoff');
 assert(rates.includes('root.FXQuantRatesBridge.snapshot('),
  'FX movement must come from certified common-date 2Y/ECB bridge, not a new correlation');
 assert(rates.includes('data-fx-proof=')&&rates.includes('data-rates-openpair='),
  'Verified/unavailable evidence tiers and real pair deep links are mandatory');
 assert(app.includes("e.target.closest('[data-rates-openpair]')")&&
- app.includes("if(!get('pairs')?.pairs?.[pair])return;"),
+ app.includes("if(!openPair(ratesOpenPair.dataset.ratesOpenpair))return;")&&
+ app.includes("const pair=resolvePair(key);")&&
+ app.includes("Object.hasOwn(available,reverse)?reverse:null"),
  'Pair handoff must fail closed if pair source is absent');
 const ratesCss=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/rates-studio.css'),'utf8');
 assert(ratesCss.includes('.rates-fx-handoff')&&ratesCss.includes('max-width:600px')&&
  ratesCss.includes(':focus-visible'),'Rates evidence design must be responsive and keyboard accessible');
 assert(page.indexOf('rates-economic-reading.js')<page.indexOf('rates-studio.js'));
 assert(rates.includes('m.headline')&&rates.includes('m.pricingEvidence')&&rates.includes('m.watch'));
+const scriptWindow={window:{}};
+vm.runInNewContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/next/currency-data-fallback.js'),'utf8'),scriptWindow);
+vm.runInNewContext(rates,scriptWindow);
+const spot=load('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json');
+const nzd=load('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
+const data={rates:gov,chfSpot:spot,nzdPostroll:nzd,ois:{currencies:money}};
+const liveDay=[spot.as_of,nzd.source_capture_date].sort().at(-1);
+function render(ccy,overrides={}){
+ const fxData={...data,...overrides};
+ return scriptWindow.window.FXQuantRates.render({
+  get:key=>fxData[key],FX:names,FLAGS:{},NAMES:{},state:{ccy,against:'USD'},
+  plot:()=>'',pageHero:()=>'',esc:x=>String(x??''),fmt:(x,n)=>Number.isFinite(x)?x.toFixed(n):'—',
+  sign:()=>'',date:x=>x||'—',finite:Number.isFinite,
+  validDay:x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x),
+  dayNow:()=>liveDay
+ });
+}
+assert.match(render('CHF'),new RegExp('data-gov-reference="CHF".*'+spot.as_of));
+assert.match(render('NZD'),new RegExp('data-gov-reference="NZD".*'+nzd.daily_observations.at(-1).date));
+assert.doesNotMatch(render('CHF',{chfSpot:{...spot,source_url:'https://invalid.example'}}),/data-gov-reference=/);
+assert.doesNotMatch(render('NZD',{nzdPostroll:{...nzd,daily_observations:{}}}),/data-gov-reference=/);
+assert.doesNotMatch(render('JPY'),/data-gov-reference=/);
 console.log('NEXT_RATES_V20_PASS: G8 8/8, four curve regimes, source-date and stale guards, 6M unavailable/non-simultaneous/same-date.');

@@ -84,7 +84,7 @@ const page=get(base+'index.html'),studio=get(base+'rates-studio.js');
 assert(page.indexOf('rates-pricing-history-v1.js?v=1')<
  page.indexOf('rates-relative-pricing-v1.js?v=1')&&
  page.indexOf('rates-relative-pricing-v1.js?v=1')<
- page.indexOf('rates-studio.js?v=6'),
+ page.indexOf('rates-studio.js?v='),
  'Relative bridge must load after both pricing source modules and before rates studio');
 assert(page.includes('rates-studio.css?v=5'));
 assert.match(page,/src="\.\/app\.js\?v=[\w.-]+" defer/);

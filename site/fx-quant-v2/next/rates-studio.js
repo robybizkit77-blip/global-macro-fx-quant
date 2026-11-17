@@ -122,6 +122,36 @@ function make(api){
    '<a href="#currencies">Confronta '+esc(c)+' nel G8 <span aria-hidden="true">↗</span></a>'+
    '<span>Coppia di ricerca, non segnale operativo</span></div></section>';
  }
+ function latestGovernmentReading(c){
+   const canonicalDate=usable(c)?.date||'';
+   const today=dayNow();
+   if(c==='CHF'){
+    const spot=get('chfSpot');
+    const source='https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates';
+    if(spot?.schema!=='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'||
+       spot.status!=='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'||
+       spot.source_url!==source||spot.tenor!=='10Y'||
+       spot.eligible_for_curve_spreads!==false||spot.has_current_2y!==false||
+       !validDay(spot.as_of)||spot.as_of<=canonicalDate||spot.as_of>today||
+       !finite(spot.value_percent))return '';
+    return '<p class="source-caption" data-gov-reference="CHF"><strong>CHF · Spot governativo 10Y</strong> · '
+     +esc(fmt(spot.value_percent,3))+'% al '+esc(date(spot.as_of))
+     +' · <a href="'+source+'">Banca nazionale svizzera</a>. La curva 2Y/10Y sopra si riferisce al '+esc(date(canonicalDate))+'.</p>';
+   }
+   if(c==='NZD'){
+    const nzd=get('nzdPostroll');
+    if(!Array.isArray(nzd?.daily_observations))return '';
+    const latest=nzd.daily_observations.at(-1);
+    const research=root.FXQuantCurrencyFallback?.researchRatesAxis(
+      c,null,nzd,get('rates'),today);
+    if(research?.status!=='RICERCA_MANUALE_NON_CERTIFICATA'||
+       research.asof!==latest?.date||latest.date<=canonicalDate)return '';
+    return '<p class="source-caption" data-gov-reference="NZD"><strong>NZD · Chiusura indicativa governativa</strong> · 2Y '
+     +esc(fmt(latest['2Y'],2))+'% · 10Y '+esc(fmt(latest['10Y'],2))+'% al '+esc(date(latest.date))
+     +' · <a href="'+esc(nzd.source_url)+'">Reserve Bank of New Zealand</a>. Rilevazione dalla tabella B2 del '+esc(date(nzd.source_release_date))+'.</p>';
+   }
+   return '';
+ }
  function govCard(c){
    const r=usable(c),row=sovereignRows(c),first=row[0],last=row.at(-1),prev=row.at(-2),f=selectedReading(c);
    const spread=last?(last.y10-last.y2)*100:null;
@@ -267,6 +297,7 @@ function make(api){
     +'<div class="rates-chipline"><span class="badge '+(freshness(r?.date)==='STORICO'?'warning':'info')+'">'+esc(freshness(r?.date))+'</span><span>'+esc(r?.quality||'QUALITÀ DA VERIFICARE')+'</span></div></div>'
     +'<div class="rates-hero-side"><div class="rates-hero-orbit"><span>CURVE SLOPE</span><strong>'+sign(r?(r['10Y']-r['2Y'])*100:null,1)+'</strong><small>punti base · '+date(r?.date)+'</small></div></div></section>'
     +govCard(c)
+    +latestGovernmentReading(c)
     +fxRelativeEvidence(c,other)
     +(root.FXQuantPricingMoves?.render?.({
        currency:c,window:state.rsPricingWindow||'1d',plot,esc,fmt,sign,date,

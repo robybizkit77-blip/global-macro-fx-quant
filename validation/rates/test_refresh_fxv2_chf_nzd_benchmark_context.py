@@ -49,6 +49,13 @@ NEW={"schema":"GMFQ_NZD_B2_GOVT_WEB_REVIEW_CONTEXT_V1",
    "two_year_from":"April 2029","ten_year_before":"May 2036",
    "ten_year_from":"April 2037"}
  }}
+def november_11_manual_archive():
+ archive=json.loads((ROOT/"site/fx-quant-v2/nzd-b2-postroll-web-research.json").read_text())
+ archive["source_release_date"]=archive["source_capture_date"]="2026-11-11"
+ archive["daily_observations"]=[r for r in archive["daily_observations"] if r["date"]<"2026-11-11"]
+ return archive
+
+
 class TestChfNzdResearch(unittest.TestCase):
  def test_chf_same_date_official_candidate_remains_research(self):
   x=m.chf_context(SNB,WEB10,BASE,TODAY)
@@ -237,7 +244,7 @@ class TestChfNzdResearch(unittest.TestCase):
  def test_existing_nzd_manual_postroll_history_reaches_10_nov_research_only(self):
   now=dt.date(2026,11,11)
   base=m.nzd_context(RBNZ_OLD,ROLL,NEW,now)
-  archive=json.loads((ROOT/"site/fx-quant-v2/nzd-b2-postroll-web-research.json").read_text())
+  archive=november_11_manual_archive()
   copy_before=copy.deepcopy(base)
   out=m.extend_nzd_with_archived_manual_postroll(base,archive,now)
   self.assertEqual(out["latest_date"],"2026-11-10")
@@ -263,7 +270,7 @@ class TestChfNzdResearch(unittest.TestCase):
  def test_nzd_manual_archive_rejects_unsafe_claims_and_benchmark_drift(self):
   now=dt.date(2026,11,11)
   base=m.nzd_context(RBNZ_OLD,ROLL,NEW,now)
-  archive=json.loads((ROOT/"site/fx-quant-v2/nzd-b2-postroll-web-research.json").read_text())
+  archive=november_11_manual_archive()
   for key,val in (("automated_access_authorized",True),
                   ("independent_xlsx_reconciled",True),
                   ("eligible_for_fx_pair_engine",True),
@@ -289,7 +296,7 @@ class TestChfNzdResearch(unittest.TestCase):
   base["latest_2Y"]=3.83
   base["latest_10Y"]=4.81
   base["after_roll"].append({"date":"2026-11-04","2Y":3.83,"10Y":4.81})
-  archive=json.loads((ROOT/"site/fx-quant-v2/nzd-b2-postroll-web-research.json").read_text())
+  archive=november_11_manual_archive()
   for mutate in (
     lambda a:a["daily_observations"][0].update({"2Y":4.30}),
     lambda a:a["daily_observations"][3].update({"10Y":4.99}),

@@ -121,12 +121,14 @@ class NZDPublicResearch(unittest.TestCase):
         for day,y2,y10 in (
             ("2026-11-06",3.79,4.76),
             ("2026-11-09",3.80,4.76),
-            ("2026-11-10",3.77,4.71)):
+            ("2026-11-10",3.77,4.71),
+            ("2026-11-16",3.94,4.85)):
             self.assertEqual((by_day[day]["2Y"],by_day[day]["10Y"]),(y2,y10))
         self.assertEqual(round(100*(by_day["2026-11-10"]["10Y"]-
                                     by_day["2026-11-10"]["2Y"])),94)
         self.assertNotEqual(94,62) # 62bp refers to swap, not govt curve
-        self.assertEqual(archive["source_release_date"],"2026-11-11")
+        self.assertGreaterEqual(archive["source_release_date"],archive["daily_observations"][-1]["date"])
+        self.assertLessEqual(archive["source_release_date"],archive["source_capture_date"])
         self.assertTrue(archive["research_only"])
         self.assertFalse(archive["eligible_for_core"])
         self.assertFalse(archive["automated_access_authorized"])
