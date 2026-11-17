@@ -115,6 +115,8 @@ class LatestReleaseLedgerTests(unittest.TestCase):
             ("AUD.labour", "2026-09", "2026-10-15", "2026-10-15T00:30:00+00:00", None),
             ("CAD.labour", "2026-09", "2026-10-09", None, 6.5),
             ("CAD.inflation", "2026-09", "2026-10-19", None, None),
+            ("CAD.inflation", "2026-10", "2026-11-16", "2026-11-16T13:30:00+00:00",
+             (170.4 / 165.3 - 1) * 100),
             ("JPY.labour", "2026-09", "2026-10-30", None, 2.4),
         )
         for key, period, day, timestamp, value in examples:

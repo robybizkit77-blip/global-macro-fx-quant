@@ -32,6 +32,7 @@ REQUIRED = (
     "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json",
     "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json",
     "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-30.json",
+    "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-11-16.json",
     "validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json",
     ".github/workflows/macro-g8-rebase-readiness-v1.yml",
     "live_data/sections/D.json",
