@@ -1,7 +1,12 @@
 """Recovery can act only on an actual missing producer, with hard limits."""
 import datetime as dt
+import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import patch
 from zoneinfo import ZoneInfo
+from validation.orchestration import trigger_early_morning_recovery_v1 as recovery
 from validation.orchestration.trigger_early_morning_recovery_v1 import choose, ESSENTIAL
 
 TZ = ZoneInfo("Europe/Rome")
@@ -31,13 +36,40 @@ class RecoveryTest(unittest.TestCase):
         self.assertEqual(choose(at(6, 0), rr, {})["action"], "SKIP_RECOVERY_LIMIT_REACHED")
 
     def test_workflow_run_chain_source_can_trigger_safe_recovery(self):
-        from pathlib import Path
         workflow = (Path(__file__).resolve().parents[2] /
                     ".github/workflows/early-morning-recovery-v1.yml").read_text(encoding="utf-8")
         self.assertIn("github.event.workflow_run.event == 'workflow_run'", workflow)
         self.assertIn("github.event.workflow_run.event == 'workflow_dispatch'", workflow)
         self.assertIn("github.event.workflow_run.head_branch == 'main'", workflow)
         self.assertIn("github.event.workflow_run.conclusion == 'success'", workflow)
+
+    def test_dispatch_sends_phase_inside_github_workflow_inputs(self):
+        repo = "test-owner/test-repo"
+        with TemporaryDirectory() as directory:
+            summary = Path(directory) / "summary.md"
+            env = {"GITHUB_REPOSITORY": repo, "GITHUB_STEP_SUMMARY": str(summary)}
+            with (
+                patch.dict(recovery.os.environ, env),
+                patch.object(recovery, "gh_get", return_value={"workflow_runs": []}),
+                patch.object(recovery, "choose",
+                             return_value={"action": "DISPATCH", "phase": "premorning"}),
+                patch.object(recovery.subprocess, "run") as dispatch,
+            ):
+                recovery.main()
+            self.assertIn("Phase dispatched: **premorning**", summary.read_text(encoding="utf-8"))
+
+        dispatch.assert_called_once()
+        (args,), options = dispatch.call_args
+        self.assertEqual(args, [
+            "gh", "api", "--method", "POST",
+            f"repos/{repo}/actions/workflows/{recovery.SCRIPT}/dispatches", "--input", "-",
+        ])
+        self.assertEqual(json.loads(options["input"]), {
+            "ref": "main",
+            "inputs": {"phase": "premorning"},
+        })
+        self.assertTrue(options["check"])
+
     def test_missing_source_late_triggers_premorning(self):
         self.assertEqual(choose(at(7,0), [], {})["phase"], "premorning")
     def test_out_of_window_never_dispatches(self):
