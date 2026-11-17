@@ -38,7 +38,7 @@ def run():
     check("schedule", "20 5 * * 1-5", "2026-10-19T06:25:00Z", True, ok, "07:20")
     check("schedule", "0 6 * * 1-5", "2026-10-19T07:05:00Z", True, ok, "08:00")
     check("schedule", "0 7 * * 1-5", "2026-10-19T08:05:00Z", True, ok, "09:00")
-    # 4-hour upper bound: prevents yesterday's refresh running on a new day.
+    # Morning jobs have four hours of tolerance before the evening recovery window.
     check("schedule", "0 7 * * 1-5", "2026-10-19T11:00:00Z", True, ok)
     check("schedule", "0 7 * * 1-5", "2026-10-19T11:01:00Z", False, "STALE_DELAYED_RUN")
     check("schedule", "0 7 * * 1-5", "2026-10-19T06:59:00Z", False, "BEFORE_SCHEDULED_SLOT")
@@ -55,6 +55,16 @@ def run():
     check("schedule", "0 6 * * 1-5", "2026-10-26T06:00:00Z", False, "DUPLICATE_CET_CEST_UTC_SLOT")
     check("schedule", "0 7 * * 1-5", "2026-10-26T08:14:00Z", True, ok, "08:00")
     check("schedule", "0 8 * * 1-5", "2026-10-26T09:01:00Z", True, ok, "09:00")
+    # Reproduce the recorded 17 November 09:00 job at 18:29 Rome.
+    recovery = "LATE_CRON_EVENING_RATES_RECOVERY"
+    actual = check("schedule", "0 8 * * 1-5", "2026-11-17T17:29:18Z", True, recovery, "09:00")
+    assert actual["queue_delay_minutes"] == 569
+    check("schedule", "0 8 * * 1-5", "2026-11-17T17:16:59Z", False, "STALE_DELAYED_RUN")
+    check("schedule", "0 7 * * 1-5", "2026-10-19T16:17:00Z", True, recovery, "09:00")
+    check("schedule", "0 8 * * 1-5", "2026-10-19T16:29:00Z", False, "DUPLICATE_CET_CEST_UTC_SLOT")
+    check("schedule", "17 18 * * 1-5", "2026-11-17T22:00:00Z", True, recovery, "18:17")
+    check("schedule", "17 18 * * 1-5", "2026-11-17T23:00:00Z", False, "BEFORE_SCHEDULED_SLOT")
+    check("schedule", "0 8 * * 1-5", "2026-11-21T17:29:00Z", False, "NOT_BUSINESS_DAY")
     check("schedule", "0 7 * * 1-5", "2026-10-24T07:00:00Z", False, "NOT_BUSINESS_DAY")
     check("schedule", "20 9 * * 1-5", "2026-10-19T09:20:00Z", False, "UNKNOWN_CRON_FAIL_CLOSED")
     for event in ("workflow_dispatch", "push"):
