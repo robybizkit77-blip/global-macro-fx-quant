@@ -20,7 +20,7 @@
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3Z2027",
           "contract_description": "Dec 2027",
           "expiration": "2028-03-14",
@@ -38,7 +38,7 @@
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3H2027",
           "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
           "expiration": "2027-06-15",
@@ -57,7 +57,7 @@
         },
         "6m": {
           "accrual_start": "2027-06-16",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-14",
@@ -106,7 +106,7 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "FST3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-15",
@@ -123,7 +123,7 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 2,
           "contract": "FST3X2026",
           "contract_description": "Nov 2026",
           "expiration": "2027-02-17",
@@ -144,16 +144,16 @@
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
-          "futures_price": 97.1475,
+          "futures_price": 97.1325,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-13T22:42:09Z",
-          "quote_as_of": "2026-11-13",
+          "price_valid_until": "2026-11-16T22:08:58Z",
+          "quote_as_of": "2026-11-16",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.8525,
+          "rate": 2.8675,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 35.2,
+          "raw_level_minus_spot_policy_bp": 36.8,
           "symbol": "EUREX:FST3G2027"
         }
       },
@@ -269,14 +269,14 @@
       "status": "ESTIMATED_PARTIAL"
     },
     "USD": {
-      "as_of": "2026-11-13",
+      "as_of": "2026-11-16",
       "change_1d_bp": null,
       "change_1w_bp": null,
-      "change_status": "CONFLICTED_SECONDARY_NO_REPRICING",
-      "confidence_grade": "C",
+      "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
+      "confidence_grade": "B",
       "currency": "USD",
       "direction_vs_policy": "WITHHELD",
-      "freshness_status": "SAME_DAY_SOURCE_CONFLICT_UNRESOLVED",
+      "freshness_status": "LIVE_OR_RECENT_SESSION",
       "governance": {
         "backtest_eligible_as_official_ois": false,
         "bias_effect": "NONE",
@@ -288,23 +288,23 @@
       "horizons": {
         "12m": {
           "business_day_lag": 1,
-          "contract": "ZQV2027",
-          "contract_description": "Oct 2027",
-          "expiration": "2027-11-01",
-          "futures_price": 95.245,
+          "contract": "ZQX2027",
+          "contract_description": "Nov 2027",
+          "expiration": "2027-12-01",
+          "futures_price": 95.295,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-13T21:56:59Z",
-          "quote_as_of": "2026-11-13",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
-          "rate": 4.755,
+          "price_valid_until": "2026-11-16T20:03:06Z",
+          "quote_as_of": "2026-11-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": 4.705,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": null,
-          "symbol": "CBOT:ZQV2027"
+          "raw_level_minus_spot_policy_bp": 83.0,
+          "symbol": "CBOT:ZQX2027"
         },
         "3m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQG2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-03-01",
@@ -317,11 +317,11 @@
           "quote_timestamp_verified": true,
           "rate": 4.33,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_minus_spot_policy_bp": 45.5,
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQJ2027",
           "contract_description": "Apr 2027",
           "expiration": "2027-05-03",
@@ -334,29 +334,20 @@
           "quote_timestamp_verified": true,
           "rate": 4.495,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_minus_spot_policy_bp": 62.0,
           "symbol": "CBOT:ZQJ2027"
         }
       },
-      "input_mode": "LIVE_SECONDARY_CONFLICT_INDICATIVE",
+      "input_mode": "LIVE_SECONDARY_OVERLAY",
       "instrument": "30 Day Federal Funds Futures",
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
-      "note": "Indicative secondary futures quotes have unresolved same-contract/same-day source disagreement; first and later prints are preserved separately. Levels may be displayed as provisional estimates only. No official OIS, policy delta or 1D/1W repricing is certified.",
+      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
       "official_ois_status": "WITHHELD",
       "policy_rate": 3.875,
       "policy_repricing_inference_allowed": false,
       "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "source_conflict_keys": [
-        {
-          "contract": "ZQV2027",
-          "event_id": "9355009c6ad93b84c93b8086f8c96c3c8191cc3f421c218c40dda97ef5e3c5b0",
-          "horizon": "12m",
-          "observation_date": "2026-11-13"
-        }
-      ],
-      "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
-      "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS",
+      "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
       "source_url": "https://www.tradingview.com/symbols/CBOT-ZQ1%21/contracts/",
       "status": "ESTIMATED_ACTIVE"
     }
