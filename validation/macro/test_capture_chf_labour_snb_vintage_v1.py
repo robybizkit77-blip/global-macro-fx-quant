@@ -41,6 +41,17 @@ class CaptureTests(unittest.TestCase):
         self.assertFalse(row["safe_to_publish_new_D"])
         self.assertFalse(row["live_data_written"])
 
+    def test_full_official_monthly_cube_accepts_pre_2000_history(self):
+        raw = raw_series([
+            {"date": "2026-09", "value": 3.1249882357461},
+            {"date": "1970-01", "value": 0.0},
+            {"date": "1999-12", "value": 2.7},
+        ])
+        row = self.record(raw, expected_period="2026-09")
+        self.assertEqual(row["observation_count"], 3)
+        self.assertEqual(row["latest_value"], 3.1249882357461)
+        self.assertIsNone(row["first_release_instant_utc"])
+
     def test_wrong_exact_source_identity_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "ambiguous seasonally adjusted"):
             self.record(raw_series(label="Jobless rate - Not seasonally adjusted"))
@@ -60,8 +71,9 @@ class CaptureTests(unittest.TestCase):
         for x in (float("nan"), "3.1", True, None):
             with self.subTest(value=repr(x)), self.assertRaisesRegex(ValueError, "invalid numeric"):
                 self.record(raw_series([{"date": "2026-09", "value": x}]))
-        with self.assertRaisesRegex(ValueError, "invalid monthly period"):
-            self.record(raw_series([{"date": "2026-13", "value": 3.1}]))
+        for period in ("0000-01", "2026-13", "2026-9", "2026-09-01"):
+            with self.subTest(period=period), self.assertRaisesRegex(ValueError, "invalid monthly period"):
+                self.record(raw_series([{"date": period, "value": 3.1}]))
 
     def test_wrong_latest_period_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "differs from explicit"):

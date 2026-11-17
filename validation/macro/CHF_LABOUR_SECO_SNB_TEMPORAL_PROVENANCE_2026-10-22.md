@@ -57,6 +57,12 @@ A **candidate** first-release exact-value record would need ALL of:
 
 **Next-source priority:** request/read an official SECO AMSTAT first-publication export or SNB archive for `amarbma` as of 6 October 2026, ideally including data timestamp, numeric precision, and immutable version ID. Failing this, preserve the withheld exact-vintage status and start storing time-stamped SNB API snapshots prospectively without retroactively backfilling unsupported release instants.
 
+## Verifica del 17 novembre 2026
+
+- Il [report SECO di settembre](https://www.seco.admin.ch/dam/de/sd-web/nTAcn9LsVnCO/2026-09_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf) conferma il **3,1%** del 6 ottobre. Il rapporto tra il conteggio destagionalizzato pubblicato (**147.411**) e la base ufficiale (**4.717.177**) restituisce circa **3,124983438%**. Il valore esatto oggi osservato nel cube SNB è **3,1249882357461%**.
+- Il primo riscontro di settembre nella cronologia runtime esaminata è il [commit del 21 ottobre, 07:19:53 UTC](https://github.com/robybizkit77-blip/global-macro-fx-quant/commit/d3419fa8ea9bedbe1a63fd85c964ee60f526d92f). Il [commit del 20 ottobre](https://github.com/robybizkit77-blip/global-macro-fx-quant/commit/eb7f13dfe1520aa1599830b0347d3487a6f9a47d) mostrava ancora agosto. L’endpoint SNB `lastUpdate` consultato il 17 novembre espone `editionDate` e `publicSinceDate` pari a `20261021_0900` per l’edizione corrente. Queste evidenze datano il riscontro disponibile e lasciano aperta l’attestazione esatta del 6 ottobre.
+- Acquisizione in sola lettura riuscita il **17 novembre alle 15:40 UTC** dopo la correzione del parser. Il payload contiene **681 osservazioni mensili** da gennaio 1970 a settembre 2026. SHA-256 del payload acquisito `ba7e5d215edb255b52169e3822a6e89a7fed16813d181de0431d277602d3bd3c`. Data osservata dal client. Nel registro l’ora di prima pubblicazione esatta resta vuota.
+
 ## Non-impact contract
 
 - **Shared data / evidence:** this document only; no changes to `live_data`, PIT status codes, or canonical numeric data.
