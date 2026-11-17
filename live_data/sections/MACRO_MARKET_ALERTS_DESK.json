@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-17T04:33:34Z",
+  "generated_at_utc": "2026-11-17T14:31:31Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-779529a157d5f357ddf6",
+      "observed_at_utc": "2026-11-17T12:33:45Z",
+      "headline": "Fed's Musalem: US likely needs several rate hikes by spring to control inflation",
+      "summary": "Reuters riporta: Fed's Musalem: US likely needs several rate hikes by spring to control inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSmh3bk9iaG5YQ2V2dzZUMkQ1aGQ2LWNfdHFCWkVaOUtyWFdHS3lFTzZJTDhsQnItcnN4N2NibjRLNXZIbHVvSllBY0Jyc201azJtbUNnWkRndWlPN05sZUVaWkJBZFlTTGJzYWFFLWRqN2R6X25jRllRT1hHekZ2aFRweE5rbHM3Z3p1SHoxR2UwR1VnMWVnbWZ3ZmRHSTkyR2lhU3p1NzNFZFBjMEtRQ25iZnpwVEhBZTd3bw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-ebadc9a58ca410e7e333",
+      "observed_at_utc": "2026-11-17T10:03:50Z",
+      "headline": "Canadian home sales edge higher as BoC raises interest rates",
+      "summary": "Reuters riporta: Canadian home sales edge higher as BoC raises interest rates. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "CAD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOLWRBYVZub0pOX2NuNGVQcVUwQ2dHbnM4ZG9nZFBhYXdNc012a1BUc3hwdXhMT0FwdVVLSG1TbFF5bGZ3VWNka3VLOHZjOGZ2cXZqcmJnMjZPWDAyQ0VSbHgxMDlXUDJjMHZwc245NWN2WmxGT1dqSTAtQUIyN3dvMWFOVFNjVWtnZlZrVjc1Zm1aQlNkbEpSRTVPUUlDZEswUnQ2Zk93em5hdFUw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-a6a00e5c6635ff827f2e",
+      "observed_at_utc": "2026-11-17T05:40:00Z",
+      "headline": "NEWSLETTER: Wanted: A proactive RBI to tame inflation",
+      "summary": "Reuters riporta: NEWSLETTER: Wanted: A proactive RBI to tame inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNTDJXY0V3b2RBSU9WNTA2MS0yTEtZRUppY01DU1FwUmczNkZHNWt3YXNoVVluak5JUTF6Unh5QjF5VGx0NDhqYU1JM28wcnJQRnp6c1VFRXJReHkyQkE2aGhfWm5qM29yVXRQbkwyRXZST1E4eVpQUFBteUNsbV9veDdTOTNaU25QUTVN?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-b2423ffd40fe09729b44",
       "observed_at_utc": "2026-11-16T18:15:43Z",
@@ -1359,49 +1402,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxONUtJQ05FYi1TTzhaWlRpN0lmSFIxdG42TnQ1dzhnRExMamJRMXVoVnR2VXIyczdoc0FLMy1hMlJyZU0xOGxLZlFvNndZcEhMLUFobXdxV25iUkJlTG93bDhBOFdFYUVROGlMMDB6QjM0d0tndU54YTRydFh2SlM5TXVPWXVVU0RndTRacVBZQ0txUkpFbExld19Ya0Vfd0gwbkNVeVFScw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-3b1c078167539d60e952",
-      "observed_at_utc": "2026-11-06T09:41:00Z",
-      "headline": "Nasdaq rebounds but posts fourth straight weekly decline",
-      "summary": "Reuters riporta: Nasdaq rebounds but posts fourth straight weekly decline. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQang5czlMS1c0LVRiTWdNdXItcDlKcTgyOXplSVVGRHljMGVrVG1KVGJTclR0TmtjWjFob0t1QWh6OTdkNzltaDJhTi1fdUdkM2tOb01JaVVlaVRWcWVTdkZFbmdBYlgxY2ktWVh6eFdZRVczekVTdFRCSWtOSzBGVnNCWHpFNFFXWFE2WDVQUjFCa19tbUhzNzdlNksyNFBqek4tcXdrcjVIVTQxMkE?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-7a73eab5e6bb76b82dd0",
-      "observed_at_utc": "2026-11-06T18:33:44Z",
-      "headline": "Daly says Fed rate hike likely, despite 'painful' tech-stock dive",
-      "summary": "Reuters riporta: Daly says Fed rate hike likely, despite 'painful' tech-stock dive. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxOYm1MU1hqV0tGaTZraWhpaVdqOGZCdzZjLUt3ZVZFU3BCaGFwdE9ham9MYktoSlF1SWF0eXRRR0V1QVhPUUZlRjdqZHdwMVlRS3pNaGUtWktTUmJhSUR3bW56MzdObWlZd0E0XzZSaUNnelUxR2FReTNkNTkwSVNEX3l6cmVveVRlNm1LWGNJdGs2WUt5c1BtS3o5TU9XbzRVNC1tT0ZydXREcmM?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f39f9b1fcfd8aee6e826",
-      "observed_at_utc": "2026-11-06T05:09:00Z",
-      "headline": "Markets fret over growth and inflation, just as tech rout gains speed",
-      "summary": "Reuters riporta: Markets fret over growth and inflation, just as tech rout gains speed. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxONUh4V2hzQnA1Rk9zNTN6d3ZxcVZycGZQVmNUNjR3NmpXSmphZHh4LWZvaGJmTTVEWDdBc0lNWmZyUUp3MTFndk5uZl80Qnk0QXotRmo5S1g0MVhDejlwMjJlczNLVWY1eHRLZ1c4dExyOUNqdjJPaUFhVnE2WC16QUc4aTVfUlAwQUtKMktZYi1STk94cXBnSXF5OEQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
