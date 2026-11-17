@@ -85,7 +85,7 @@
     "workflow_concurrency_pending_queue": "max",
     "workflow_concurrency_cancel_in_progress": false,
     "prebrief_avoids_top_of_hour_load": true,
-    "prebrief_dst_gate_tested": true,
+    "native_rome_schedules_tested": true,
     "premorning_vix_selective_retry": true
   }
 }

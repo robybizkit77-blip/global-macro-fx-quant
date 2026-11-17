@@ -1,37 +1,70 @@
 #!/usr/bin/env python3
-"""Fail-closed off-hour 04:43 Rome DST prebrief schedule regression.
+"""Guard the Rome schedule, phase routing and production queue."""
 
-The same 04:43 local time must select exactly one scheduled UTC entry on
-each side of Europe/Rome DST. The complementary entry must be skipped.
-This does not assert that GitHub guarantees cron start-time punctuality.
-"""
 from __future__ import annotations
 
-import datetime as dt
+import os
+import re
+import subprocess
+import tempfile
 from pathlib import Path
-from zoneinfo import ZoneInfo
+from textwrap import dedent
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github/workflows/daily-data-orchestrator-v2.yml"
-ROME = ZoneInfo("Europe/Rome")
-UTC = dt.timezone.utc
 
-CRON_SUMMER = "43 2 * * 1-5"
-CRON_WINTER = "43 3 * * 1-5"
+# The overnight phase follows a weekday session, so its local trigger falls
+# Tuesday through Saturday after midnight.
+SCHEDULES = {
+    "43 4 * * 1-5": "prebrief",
+    "45 7 * * 1-5": "premorning",
+    "10 9 * * 1-5": "morning",
+    "30 18 * * 1-5": "close",
+    "50 0 * * 2-6": "night",
+}
 
 
 def check():
     text = WORKFLOW.read_text(encoding="utf-8")
-    before_guard = text.split("  schedule:", 1)[1].split("\npermissions:", 1)[0]
-    for expression in (CRON_SUMMER, CRON_WINTER):
-        assert before_guard.count("- cron: '" + expression + "'") == 1, expression
-    assert "0 3 * * 1-5" not in before_guard
-    assert "0 4 * * 1-5" not in before_guard
-    assert ("'43 2 * * 1-5|2'|'43 3 * * 1-5|1') phase=prebrief ;;"
-            in text)
-    assert "phase=skip" in text
+    schedule = text.split("  schedule:\n", 1)[1].split("\npermissions:", 1)[0]
+    entries = re.findall(r"^    - cron: '([^']+)'\n      timezone: '([^']+)'$", schedule, re.M)
+    assert entries == [(cron, "Europe/Rome") for cron in SCHEDULES], entries
+    assert schedule.count("- cron:") == len(SCHEDULES)
+
+    resolver = text.split(
+        "      - name: Resolve phase from the Rome schedule or manual input\n", 1
+    )[1].split("      # EVERY active phase", 1)[0]
+    script = dedent(resolver.split("        run: |\n", 1)[1])
+    fixtures = [
+        ("schedule", cron, "", phase) for cron, phase in SCHEDULES.items()
+    ] + [
+        ("workflow_dispatch", "", phase, phase)
+        for phase in (*SCHEDULES.values(), "full")
+    ] + [
+        ("schedule", "43 2 * * 1-5", "", None),
+        ("workflow_dispatch", "", "unknown", None),
+    ]
+    with tempfile.TemporaryDirectory() as tmp:
+        output = Path(tmp) / "github_output"
+        for event, cron, requested, expected in fixtures:
+            output.write_text("")
+            run = subprocess.run(
+                ["bash", "-c", script],
+                env={
+                    **os.environ,
+                    "EVENT_NAME": event,
+                    "SCHEDULE": cron,
+                    "REQUESTED_PHASE": requested,
+                    "GITHUB_OUTPUT": str(output),
+                },
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            assert (run.returncode == 0) == (expected is not None), (event, cron, run.stderr)
+            assert output.read_text() == (f"phase={expected}\n" if expected else "")
+
     # Only schedule/manual dispatch belong to the serialized production queue.
-    # PR and push run contract checks alone and must not delay the 07:45 phase.
     queue = text.split("\nconcurrency:\n", 1)[1].split("\nenv:\n", 1)[0]
     assert "github.event_name == 'pull_request'" in queue
     assert "github.event.pull_request.number" in queue
@@ -43,26 +76,7 @@ def check():
     assert "cancel-in-progress: false" in queue
     assert ("if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
             in text)
-    assert text.count("    - cron:") == 10
-    # Two Tuesday/Friday weekdays on either side of CET/CEST 2026 cutover.
-    fixtures = (
-        (dt.date(2026, 10, 23), 2, CRON_SUMMER),
-        (dt.date(2026, 10, 27), 1, CRON_WINTER),
-        (dt.date(2026, 3, 27), 1, CRON_WINTER),
-        (dt.date(2026, 3, 30), 2, CRON_SUMMER),
-    )
-    for day, expected_offset, expected_cron in fixtures:
-        local = dt.datetime.combine(day, dt.time(4, 43), ROME)
-        assert local.weekday() < 5
-        utc = local.astimezone(UTC)
-        actual_offset = int(local.utcoffset().total_seconds() / 3600)
-        assert actual_offset == expected_offset, (day, actual_offset)
-        actual_cron = f"{utc.minute} {utc.hour} * * 1-5"
-        assert actual_cron == expected_cron, (day, actual_cron, expected_cron)
-        # The UTC companion entry is explicitly ignored by the offset gate.
-        companion = CRON_WINTER if expected_cron == CRON_SUMMER else CRON_SUMMER
-        assert companion != actual_cron
-    print("PREBRIEF_OFFHOUR_ROME_DST_AND_UTC_GATE_PASS")
+    print("ROME_SCHEDULES_AND_PHASE_RESOLUTION_PASS")
 
 
 if __name__ == "__main__":
