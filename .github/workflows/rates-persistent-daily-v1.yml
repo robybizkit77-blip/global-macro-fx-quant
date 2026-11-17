@@ -77,6 +77,9 @@ on:
     # The prior Canadian close can appear after the Rome morning checks.
     - cron: '17 18 * * 1-5'
       timezone: 'Europe/Rome'
+    # Recheck after the Treasury's 15:30 New York fixing window.
+    - cron: '17 22 * * 1-5'
+      timezone: 'Europe/Rome'
 
 permissions:
   contents: write

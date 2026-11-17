@@ -13,7 +13,8 @@ well as the existing serialized Source-Watch -> News -> Macro workflow_run.
 This covers a dropped independent Rates cron without trusting Macro push/PR
 or manual dispatch. Evening recovery reuses completed, successful MAIN-branch
 *scheduled* runs of the pre-existing Hourly Certified Alert Readiness workflow.
-An independent 18:17 Rome slot also checks the official afternoon feeds.
+An 18:17 Rome slot checks the afternoon feeds; a 22:17 slot checks
+again after the US Treasury fixing.
 Reject mismatched upstream identities, PR/push/manual events and weekends.
 This gives late official North American rates a second real read before the
 next day's morning pipeline; it NEVER advances unavailable source observations.
@@ -37,8 +38,9 @@ SLOTS = {
     # UTC 07:00 means 09:00 CEST or 08:00 CET.
     "0 7 * * 1-5": {2: "09:00", 1: "08:00"},
     "0 8 * * 1-5": {1: "09:00"},
-    # This entry is a single native Europe/Rome cron.
+    # Each of these entries is a single native Europe/Rome cron.
     "17 18 * * 1-5": {1: "18:17", 2: "18:17"},
+    "17 22 * * 1-5": {1: "22:17", 2: "22:17"},
 }
 
 
