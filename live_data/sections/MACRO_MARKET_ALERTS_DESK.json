@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-17T14:31:31Z",
+  "generated_at_utc": "2026-11-17T22:56:13Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-ae9e33f63a34afced326",
+      "observed_at_utc": "2026-11-17T13:19:22Z",
+      "headline": "Angola central bank eases policy further as inflation keeps falling",
+      "summary": "Reuters riporta: Angola central bank eases policy further as inflation keeps falling. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNWk1XY1AwRUlxb2NWUi1xOWpVVnBfMTFPS21odGlxNUtELThnSWJlUkFiZ3MzU1pWZzVPLUk1UVVtR0owZUZ0cnRhWUw1NlQxZ0tHb2hqNVA4STh3Zms0X2NOcW9XMXVZZlpVOGRaRDVZcDdRbjJpcXNVc2VHM1Ayb2xkdzdSMzFkNVVHbXo3bzRUbEhZSUFZVm1Ld2ttYUNHXy1BQWFrZXltMkVKMmxia0ZTNA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-c29ef1368effcc0db0bf",
+      "observed_at_utc": "2026-11-17T00:39:00Z",
+      "headline": "RBA board judges fifth rate hike needed to provide policy assurance",
+      "summary": "Reuters riporta: RBA board judges fifth rate hike needed to provide policy assurance. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "AUD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNMEFzWE9ubXlYUU1HT2xzakxGdmpXZE1CcWlERTJUTVMzQlMzRHg5c3FVMm5wdUJFVVZ0SlgtZmNYeG9xUU9scU1wNUN2Zm9hVmc1WEhGOVdIb1hTSTVQRU1MY1hEaGNkSS1hZzB1SFFzOXhsNXlURkZrMUlGT0dwcnA2MHdldTBkUVBlVFc5aVliV1JMejdQd2Job2xwOXBGaWZLWG91cDI5V0VaOHlZM3lMbmpxVzR2VDNz?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-55e3d6eb1612d148b765",
+      "observed_at_utc": "2026-11-16T18:10:00Z",
+      "headline": "Fed Chairman Warsh grapples with AI’s potential economic impact, steers clear of its inflation risk",
+      "summary": "AP News riporta: Fed Chairman Warsh grapples with AI’s potential economic impact, steers clear of its inflation risk. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOX0ZxOUt4UkRfekRtc0Y4dlFwZzNGZnVoaUdsRlZ3NHBzZFY1QzBfMUJULWMtVUoyZUFsT3B6QlBQQkZJZ0R1ODlaQW1nQ05hS29BaE51eDdxd2MtYU11TnlGeVVtZU11SER1OHF0V0RnTXJkNmk3blpfMHlIR1RlZWFtZFE2RWRsb21tTW0xMFp4UVloN0Y5YzN3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-779529a157d5f357ddf6",
       "observed_at_utc": "2026-11-17T12:33:45Z",
@@ -1361,47 +1404,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQOUUxZDUzd0xuR1o2YW11a0Nqcy0yZUtiMzlNU1VsRWIxMDVubDNLZHh6MWUwT1NDYnVwajFLdVMxdEs4RGlRdmlGR29DbjQ1MGJ3LURkN3BIUFZvNV9UVVI0OThfYWUyMFVqdkRNUTBXQkVpeWNqNGdza0hIWFZrTWVYZTNUS2o4VmJhMkVwXzlkWEUxNE03OWZIdEdpTzl2d0hReXpXbGM4Mk9qSHZJNnBXejU4Y0Q2d3IwbUVmMTJ5bGs2YURn?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-265ce900fac1f6fbec8b",
-      "observed_at_utc": "2026-11-06T13:35:41Z",
-      "headline": "The Week in Numbers: Musk's midterm spend, global stocks routed",
-      "summary": "Reuters riporta: The Week in Numbers: Musk's midterm spend, global stocks routed. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE5MQmhXWFRGaFhBUWhvOWtIZ0ZTWThSc042RkJ5SG01QlEySFdPSnZ1ZGplOERjYklBX3lpaUU4Sm9tVkNEdjh6dll5by1XTHFlYy1rZmYySGcyWEd2aG1hS0VfWGl3VXBjejBVS0g0NWlKbThiMjRqSTdR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-663994d72c68ceec0ed1",
-      "observed_at_utc": "2026-11-06T15:41:00Z",
-      "headline": "US continues to generate jobs, yet inflation is eroding the spending power of millions of Americans",
-      "summary": "AP News riporta: US continues to generate jobs, yet inflation is eroding the spending power of millions of Americans. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNdC02VzNDWTRMSy1CbmNhLWl2akxnTjZDNldNZW9IUC00ZTJGWWxyZEljUW5ZZHRVZEdHS2lsR3p1VkRod19USGJhR1N0b0lvaDBaZXNhazNaZVFOMXZRT21kQXBHX2QxWW43TkJrVlhOTzV5V21vZVRwQl9oZlR1U1BXSEh4S1ZjQVczMHNuc1F3UFIyaUliRnJqTFRMaEpTSEpZ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-a9980f5d28faaadbfac5",
-      "observed_at_utc": "2026-11-06T10:51:00Z",
-      "headline": "PODCAST: Susie Wiles replaced, tech stocks rebound, Cybertruck wind down (Updated)",
-      "summary": "Reuters riporta: PODCAST: Susie Wiles replaced, tech stocks rebound, Cybertruck wind down (Updated). È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxONUtJQ05FYi1TTzhaWlRpN0lmSFIxdG42TnQ1dzhnRExMamJRMXVoVnR2VXIyczdoc0FLMy1hMlJyZU0xOGxLZlFvNndZcEhMLUFobXdxV25iUkJlTG93bDhBOFdFYUVROGlMMDB6QjM0d0tndU54YTRydFh2SlM5TXVPWXVVU0RndTRacVBZQ0txUkpFbExld19Ya0Vfd0gwbkNVeVFScw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
