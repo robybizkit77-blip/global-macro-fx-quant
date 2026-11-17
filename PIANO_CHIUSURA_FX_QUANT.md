@@ -15,6 +15,8 @@ Il lavoro procede su FX Quant Next e sui dati condivisi che alimentano il sito. 
 - Il [Briefing originale del 17](https://robybizkit77-blip.github.io/global-macro-fx-quant/site/fx-quant-v2/next/reports/Briefing_Forex_Commodities_2026-11-17_V3_MORNING_RESEARCH_DESK.html) è stato recuperato con la [PR #1333](https://github.com/robybizkit77-blip/global-macro-fx-quant/pull/1333). Verificati l'indice della Research Library e l'identità dell'HTML pubblico con l'originale. Il trasferimento automatico entro le 08:00 resta da dimostrare.
 - Il coordinatore passa da coppie di cron UTC a cinque orari nativi Europe/Rome. La prima corsa programmata con i nuovi cron va verificata nei log, fino al controllo della pubblicazione.
 
+- Nei [controlli Macro G8](https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/44097347290), due asserzioni usavano periodi di agosto e settembre su serie già aggiornate. I test ora verificano le pubblicazioni archiviate per il loro periodo e il rifiuto di associarle a mesi diversi. Il controllo resta in sola lettura e conserva i requisiti per la prima pubblicazione di ciascuna serie.
+
 ## Stato iniziale del 17 novembre 2026
 
 - **Tappa 1 in corso.** Il controllo che usava una data fissa è stato corretto con la [PR #1331](https://github.com/robybizkit77-blip/global-macro-fx-quant/pull/1331). Il recupero del mattino ha tentato due volte di avviare il coordinatore. GitHub ha respinto entrambe le richieste perché `phase` era al livello sbagliato nel corpo della richiesta. [Primo tentativo](https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/44019661571) · [Secondo tentativo](https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/44025985294)

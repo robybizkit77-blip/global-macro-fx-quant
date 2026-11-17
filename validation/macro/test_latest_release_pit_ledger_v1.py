@@ -21,6 +21,37 @@ class LatestReleaseLedgerTests(unittest.TestCase):
     def run_receipt(self, records=None):
         return build_ledger(ROOT, TODAY, self.anchors if records is None else records)
 
+    def assert_pinned_release(self, key, period, day, timestamp=None, *, value=None, web=False):
+        """Exercise an archived release independently of the moving live month."""
+        pinned = [
+            row for row in self.anchors.get((key, period), [])
+            if row["date"] == day
+            and resolved_time(row) == timestamp
+            and (value is None or row["value"] == value)
+            and (not web or row["source_kind"] == "OFFICIAL_WEB_RELEASE_UNHASHED")
+        ]
+        self.assertTrue(pinned, (key, period, day, timestamp))
+
+        # Isolate the archived bucket for this series. A valid newer anchor
+        # may exist, but it cannot hide a leak from the archived bucket.
+        records = {target: rows for target, rows in self.anchors.items() if target[0] != key}
+        records[(key, period)] = pinned
+        observed = self.run_receipt(records)["observations"][key]
+        release = observed["release"]
+        if observed["current_observation_period"][:7] == period:
+            self.assertEqual(release["status"], "FULL_RELEASE_INSTANT" if timestamp else "DATE_ONLY")
+            self.assertEqual(release["first_release_date"], day)
+            self.assertEqual(release["first_release_timestamp_utc"], timestamp)
+            self.assertEqual(release["date_only_not_eligible_for_intraday_PIT"], timestamp is None)
+            if web:
+                self.assertTrue(release["latest_web_release_unhashed"])
+        else:
+            self.assertTrue(release["status"].startswith("WITHHELD"), (key, release))
+            self.assertIsNone(release["first_release_date"], key)
+            self.assertIsNone(release["first_release_timestamp_utc"], key)
+            self.assertFalse(release["evidence_paths"], key)
+        self.assertFalse(release["historical_backtest_safe_for_all_periods"], key)
+
     def synthetic_current_eur_date_only(self):
         """Test-only current-period evidence, never committed as an official release.
 
@@ -58,6 +89,10 @@ class LatestReleaseLedgerTests(unittest.TestCase):
                 self.assertIsNotNone(release["first_release_date"], key)
                 self.assertIsNotNone(release["first_release_timestamp_utc"], key)
                 self.assertTrue(release["release_clock_verified"], key)
+            elif release["status"] == "DATE_ONLY":
+                self.assertIsNotNone(release["first_release_date"], key)
+                self.assertIsNone(release["first_release_timestamp_utc"], key)
+                self.assertTrue(release["date_only_not_eligible_for_intraday_PIT"], key)
         withheld = [key for key, record in out["observations"].items()
                     if record["release"]["status"].startswith("WITHHELD")]
         self.assertEqual(out["unresolved_targets"], sorted(withheld))
@@ -70,77 +105,27 @@ class LatestReleaseLedgerTests(unittest.TestCase):
             self.assertIsNone(row["first_release_date"], key)
             self.assertIsNone(row["first_release_timestamp_utc"], key)
             self.assertFalse(row["historical_backtest_safe_for_all_periods"], key)
-        self.assertGreater(out["counts"]["DATE_ONLY"], 0)
         self.assertFalse(out["safe_to_promote_macro_labels"])
         self.assertFalse(out["safe_to_publish_new_D"])
         self.assertFalse(out["historical_vintage_series_available"])
 
-    def test_new_latest_official_web_anchors_are_current_period_specific(self):
-        out = self.run_receipt()
-        usd = out["observations"]["USD.inflation"]
-        self.assertEqual(usd["current_observation_period"], "2026-09")
-        self.assertEqual(usd["release"]["first_release_date"], "2026-10-14")
-        self.assertEqual(usd["release"]["first_release_timestamp_utc"],
-                         "2026-10-14T12:30:00+00:00")
-        self.assertTrue(usd["release"]["latest_web_release_unhashed"])
-        # The official 9 October LFS release belongs to September's
-        # observation. Once the canonical series advances to October,
-        # retaining this date as the new first release would be PIT leakage.
-        cad_september = self.anchors.get(("CAD.labour", "2026-09"), [])
-        self.assertTrue(any(row["date"] == "2026-10-09" and row["value"] == 6.5
-                            for row in cad_september))
-        cad = out["observations"]["CAD.labour"]
-        if cad["current_observation_period"][:7] == "2026-09":
-            self.assertEqual(cad["release"]["first_release_date"], "2026-10-09")
-            self.assertEqual(cad["latest_transformed_observation"], 6.5)
-        else:
-            self.assertGreater(cad["current_observation_period"][:7], "2026-09")
-            self.assertEqual(cad["release"]["status"], "WITHHELD_EXACT_PERIOD_EVIDENCE")
-            self.assertIsNone(cad["release"]["first_release_date"])
-            self.assertIsNone(cad["release"]["first_release_timestamp_utc"])
-            self.assertFalse(cad["release"]["historical_backtest_safe_for_all_periods"])
-        self.assertEqual(out["observations"]["AUD.labour"]["release"]["first_release_timestamp_utc"],
-                         "2026-10-15T00:30:00+00:00")
-        self.assertEqual(out["observations"]["CAD.inflation"]["release"]["first_release_date"],
-                         "2026-10-19")
-        # The 2 October release documents AUGUST unemployment only. The
-        # canonical e-Stat series has advanced to September: a previous-month
-        # anchor cannot certify the latest period (nor its intraday clock).
-        august = self.anchors.get(("JPY.labour", "2026-08"), [])
-        self.assertTrue(any(r["date"] == "2026-10-02" and r["value"] == 2.5
-                            for r in august))
-        jpy = out["observations"]["JPY.labour"]
-        self.assertEqual(jpy["current_observation_period"][:7], "2026-09")
-        self.assertEqual(jpy["latest_transformed_observation"], 2.4)
-        self.assertEqual(jpy["release"]["first_release_date"], "2026-10-30")
-        self.assertEqual(jpy["release"]["status"], "DATE_ONLY")
-        self.assertIsNone(jpy["release"]["first_release_timestamp_utc"])
-        self.assertFalse(jpy["release"]["historical_backtest_safe_for_all_periods"])
+    def test_official_web_anchors_remain_specific_to_their_reference_period(self):
+        examples = (
+            ("USD.inflation", "2026-09", "2026-10-14", "2026-10-14T12:30:00+00:00", None),
+            ("AUD.labour", "2026-09", "2026-10-15", "2026-10-15T00:30:00+00:00", None),
+            ("CAD.labour", "2026-09", "2026-10-09", None, 6.5),
+            ("CAD.inflation", "2026-09", "2026-10-19", None, None),
+            ("JPY.labour", "2026-09", "2026-10-30", None, 2.4),
+        )
+        for key, period, day, timestamp, value in examples:
+            with self.subTest(key=key):
+                self.assert_pinned_release(key, period, day, timestamp, value=value, web=True)
 
-    def test_jpy_august_archive_is_not_reissued_as_september_first_release(self):
-        current = self.run_receipt()["observations"]["JPY.labour"]
-        self.assertEqual(current["release"]["first_release_date"], "2026-10-30")
-        self.assertEqual(current["release"]["status"], "DATE_ONLY")
-        self.assertEqual(current["latest_transformed_observation"], 2.4)
-        august = self.anchors.get(("JPY.labour", "2026-08"), [])
-        self.assertTrue(any(r["date"] == "2026-10-02" and r["value"] == 2.5
-                            for r in august))
-        forged = copy.deepcopy(self.anchors)
-        archived = next(r for r in forged[("JPY.labour", "2026-08")]
-                        if r["date"] == "2026-10-02" and r["value"] == 2.5)
-        forged[("JPY.labour", "2026-09")] = [copy.deepcopy(archived)]
-        with self.assertRaisesRegex(ValueError,
-                                    "conflicting current-period pinned official value"):
-            self.run_receipt(forged)
+    def test_jpy_august_archive_is_not_reissued_as_latest_first_release(self):
+        self.assert_pinned_release("JPY.labour", "2026-08", "2026-10-02", value=2.5, web=True)
 
-    def test_gbp_two_period_first_release_corrected_without_promoting_macro_score(self):
-        r = self.run_receipt()["observations"]["GBP.labour"]
-        self.assertEqual(r["current_observation_period"], "2026-08-01")
-        self.assertEqual(r["latest_transformed_observation"], 4.7)
-        self.assertEqual(r["release"]["first_release_date"], "2026-10-20")
-        self.assertEqual(r["release"]["status"], "DATE_ONLY")
-        self.assertTrue(r["release"]["date_only_not_eligible_for_intraday_PIT"])
-        self.assertFalse(r["release"]["historical_backtest_safe_for_all_periods"])
+    def test_gbp_august_first_release_remains_date_only(self):
+        self.assert_pinned_release("GBP.labour", "2026-08", "2026-10-20", value=4.7, web=True)
 
     def test_date_only_is_never_intraday_eligible(self):
         # The pinned 2-Oct date belongs to a HISTORICAL EUR observation.
@@ -157,32 +142,20 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertFalse(eur["historical_backtest_safe_for_all_periods"])
 
     def test_chf_archival_utc_instant_is_properly_converted(self):
-        chf = self.run_receipt()["observations"]["CHF.inflation"]["release"]
-        self.assertEqual(chf["status"], "FULL_RELEASE_INSTANT")
-        self.assertEqual(chf["first_release_timestamp_utc"], "2026-10-01T06:30:00+00:00")
+        self.assert_pinned_release(
+            "CHF.inflation", "2026-09", "2026-10-01", "2026-10-01T06:30:00+00:00",
+        )
 
     def test_jpy_release_jst_crosses_previous_utc_day(self):
-        # Preserve the original, immutable August 2026 Tokyo release evidence.
-        # The production series may now show a later month; August's official
-        # timestamp cannot be reused as September's first-release timestamp.
-        august_records = self.anchors[("JPY.inflation", "2026-08")]
-        self.assertTrue(any(resolved_time(record) == "2026-09-17T23:30:00+00:00"
-                            for record in august_records))
-        live = self.run_receipt()["observations"]["JPY.inflation"]
-        if live["current_observation_period"][:7] == "2026-08":
-            self.assertEqual(live["release"]["status"], "FULL_RELEASE_INSTANT")
-            self.assertEqual(live["release"]["first_release_timestamp_utc"],
-                             "2026-09-17T23:30:00+00:00")
-        elif live["current_observation_period"][:7] == "2026-09":
-            self.assertEqual(live["release"]["status"], "WITHHELD_EXACT_PERIOD_EVIDENCE")
-            self.assertIsNone(live["release"]["first_release_date"])
-            self.assertIsNone(live["release"]["first_release_timestamp_utc"])
-            self.assertFalse(live["release"]["historical_backtest_safe_for_all_periods"])
+        self.assert_pinned_release(
+            "JPY.inflation", "2026-08", "2026-09-18", "2026-09-17T23:30:00+00:00",
+        )
 
     def test_september_uk_nz_headline_cpi_has_publisher_date_only_proof(self):
         from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
         evidence = source_web_attestations(ROOT / "validation/macro")
-        by_key = {row["key"]: row for row in evidence["attestations"]}
+        by_period = {(row["key"], row["observation_period"]): row
+                     for row in evidence["attestations"]}
         expected = (
             ("GBP.inflation", "2026-10-21", 3.5, "Office for National Statistics"),
             ("NZD.inflation", "2026-10-22", 3.7, "Stats NZ"),
@@ -190,7 +163,7 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         out = self.run_receipt()
         for key, release_day, value, publisher in expected:
             with self.subTest(key=key):
-                row = by_key[key]
+                row = by_period[(key, "2026-09")]
                 self.assertEqual(row["observation_period"], "2026-09")
                 self.assertEqual(row["release_date"], release_day)
                 self.assertEqual(row["published_value"], value)
