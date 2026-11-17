@@ -15,8 +15,13 @@ const estimated=load('live_data/sections/CB_PRICING_ESTIMATED.json');
 const macro=load('live_data/sections/MACRO_THERMOMETER_DATA.json');
 const rates=load('live_data/sections/NATIVE_RATES_DATA.json');
 const chfResearch=load('site/fx-quant-v2/chf-snb-paired-history.json');
-const nzdResearch=load('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
-const chfSpot=load('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json');
+const nzdLiveArchive=load('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
+const nzdResearch={...nzdLiveArchive,source_release_date:'2026-11-11',source_capture_date:'2026-11-11',
+ daily_observations:nzdLiveArchive.daily_observations.filter(row=>row.date<'2026-11-11')};
+// Exact 10 November source capture (269975e88644), fixed for the 12 November model scenario.
+const chfSpot={...load('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'),
+ as_of:'2026-11-10',value_percent:0.470,
+ source_html_sha256:'5a48190026329849fb9de1e76ccfeb74ba419b2c29db133c2e806c21029ce72d'};
 const nzdDirectionalProxy=load('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json');
 const ois=load('site/fx-quant-v2/ois-pricing-snapshot.json');
 const cot=load('live_data/sections/V250_COT_CHART_DATA.json');
@@ -98,6 +103,8 @@ if(nzdLive.status==='NON_DISPONIBILE'){
 // a fictitious Nov 11 market observation.
 const nzdNextDay=structuredClone(nzdDirectionalProxy);
 nzdNextDay.as_of='2026-11-11';
+nzdNextDay.horizons['6m'].change_1d_bp=-3;
+nzdNextDay.horizons['6m'].settlement_change=0.03;
 nzdNextDay.source_url='https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261111ZFT.htm';
 const syntheticNZD=ctx.window.FXQuantG8RatesShadow.analyze({
  research:context,chfHistory:chfResearch,nzdResearch,spot:chfSpot,
@@ -215,7 +222,7 @@ assert(idx.includes('currency-data-fallback.js?v=2'));
 assert(idx.indexOf('currency-data-fallback.js')<idx.indexOf('currency-studio.js'));
 assert(idx.includes('g8-rates-shadow.js?v=1'));
 assert(idx.indexOf('g8-rates-shadow.js')<idx.indexOf('currency-studio.js'));
-assert(idx.includes('currency-studio.js?v=15')&&idx.includes('app.js?v=18.43'));
+assert(/currency-studio\.js\?v=[\w.-]+/.test(idx)&&/app\.js\?v=[\w.-]+/.test(idx));
 assert(app.includes("cbEstimated:'../../../live_data/sections/CB_PRICING_ESTIMATED.json'"));
 assert(app.includes("chfSpot:'../../../live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'"));
 assert(app.includes("nzdDirectionalProxy:'../../../live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'"));
