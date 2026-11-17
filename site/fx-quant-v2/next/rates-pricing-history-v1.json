@@ -621,6 +621,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-15T01:47:08.692174Z"
+          },
+          {
+            "date": "2026-11-16",
+            "rate": 2.6025,
+            "contract": "FST3X2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-17T19:48:03.064301Z"
           }
         ],
         "6m": [
@@ -1965,6 +1973,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-16T18:10:23.885186Z"
+          },
+          {
+            "date": "2026-11-17",
+            "rate": 0.16,
+            "contract": "SA3H2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-17T19:48:03.064301Z"
           }
         ],
         "6m": [
@@ -2744,15 +2760,8 @@
       "tenors": {
         "3m": [
           {
-            "date": "2026-11-09",
-            "rate": 3.47,
-            "contract": "Mar 2027",
-            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
-            "derived": true
-          },
-          {
-            "date": "2026-11-13",
-            "rate": 3.58,
+            "date": "2026-11-10",
+            "rate": 3.48,
             "contract": "Mar 2027",
             "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
             "derived": true
@@ -2761,21 +2770,21 @@
             "date": "2026-11-16",
             "rate": 3.59,
             "contract": "Mar 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-17",
+            "rate": 3.57,
+            "contract": "Mar 2027",
             "source_class": "BANK_BILL_PROXY",
             "derived": false
           }
         ],
         "6m": [
           {
-            "date": "2026-11-09",
-            "rate": 3.68,
-            "contract": "Jun 2027",
-            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
-            "derived": true
-          },
-          {
-            "date": "2026-11-13",
-            "rate": 3.79,
+            "date": "2026-11-10",
+            "rate": 3.67,
             "contract": "Jun 2027",
             "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
             "derived": true
@@ -2784,21 +2793,21 @@
             "date": "2026-11-16",
             "rate": 3.82,
             "contract": "Jun 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-17",
+            "rate": 3.79,
+            "contract": "Jun 2027",
             "source_class": "BANK_BILL_PROXY",
             "derived": false
           }
         ],
         "12m": [
           {
-            "date": "2026-11-09",
-            "rate": 3.89,
-            "contract": "Dec 2027",
-            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
-            "derived": true
-          },
-          {
-            "date": "2026-11-13",
-            "rate": 3.98,
+            "date": "2026-11-10",
+            "rate": 3.85,
             "contract": "Dec 2027",
             "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
             "derived": true
@@ -2807,12 +2816,19 @@
             "date": "2026-11-16",
             "rate": 4.02,
             "contract": "Dec 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-17",
+            "rate": 3.97,
+            "contract": "Dec 2027",
             "source_class": "BANK_BILL_PROXY",
             "derived": false
           }
         ]
       },
-      "latest_date": "2026-11-16",
+      "latest_date": "2026-11-17",
       "observed_dates": 1,
       "derived_reference_points": 6
     },
