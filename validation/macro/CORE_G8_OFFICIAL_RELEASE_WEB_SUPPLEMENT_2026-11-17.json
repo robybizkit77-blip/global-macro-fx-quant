@@ -1,0 +1,40 @@
+{
+  "schema": "GMFQ_G8_CORE_OFFICIAL_WEB_RELEASE_ATTESTATIONS_V1",
+  "review_as_of": "2026-11-17",
+  "evidence_class": "OFFICIAL_PUBLISHER_RELEASE_WEB_VALUE_DATE_NOT_IMMUTABLE_BYTES",
+  "historical_full_PIT_vintage_certified": false,
+  "metadata": {
+    "scope": "CAD_OCTOBER_AND_GBP_JULY_TO_SEPTEMBER_2026_UNEMPLOYMENT_FIRST_RELEASES",
+    "guardrail": "Read-only source evidence without Macro scoring or historical vintage promotion"
+  },
+  "attestations": [
+    {
+      "key": "CAD.labour",
+      "observation_period": "2026-10",
+      "release_date": "2026-11-06",
+      "release_timestamp_local": "2026-11-06T08:30:00-05:00",
+      "published_value": 6.7,
+      "raw_series_value": 6.7,
+      "transform": "level",
+      "publisher": "Statistics Canada",
+      "url": "https://www150.statcan.gc.ca/n1/daily-quotidien/261106/dq261106a-eng.htm",
+      "release_timestamp_source_url": "https://www150.statcan.gc.ca/n1/daily-quotidien/261106/dq261106a-eng.pdf",
+      "source_locator": "Labour Force Survey October 2026, Canada national headline seasonally adjusted unemployment rate for ages 15+, table 14-10-0287-01. The Daily PDF p. 1 records release on 6 November at 8:30 a.m. Eastern and 6.7% for October."
+    },
+    {
+      "key": "GBP.labour",
+      "observation_period": "2026-09",
+      "release_date": "2026-11-17",
+      "release_timestamp_local": "2026-11-17T07:00:00+00:00",
+      "published_value": 4.6,
+      "raw_series_value": 4.6,
+      "transform": "level",
+      "publisher": "Office for National Statistics",
+      "url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/uklabourmarket/november2026",
+      "series_source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms",
+      "release_timestamp_source_url": "https://www.ons.gov.uk/releases/uklabourmarketnovember2026",
+      "source_locator": "November 2026 labour market overview, section 5. Seasonally adjusted UK LFS unemployment rate MGSX, ages 16+, July to September 2026, encoded by the end month. The matching ONS release page marks the release on 17 November at 7:00 a.m. UK time."
+    }
+  ],
+  "contradictions": []
+}
