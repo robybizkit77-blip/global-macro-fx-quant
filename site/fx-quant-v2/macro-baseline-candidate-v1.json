@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_FXV2_MACRO_CANDIDATE_8X3_DESCRIPTIVE_V1",
-  "as_of_research": "2026-11-17",
+  "as_of_research": "2026-11-18",
   "published_source_lineage": "MACRO_V3_OBSERVED_REVISED_NOT_PIT",
   "formula_version": "V1_FIXED_NO_CALIBRATED_WEIGHTS",
   "legacy_macro_as_of": "2026-09-25",
@@ -91,10 +91,10 @@
         "level_does_not_measure_relative_fx_strength": true
       },
       "inflation_change_pp": {
-        "value": 0.9,
-        "level": 3.5,
+        "value": 0.7,
+        "level": 3.6,
         "unit": "YOY_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
-        "period": "2026-09",
+        "period": "2026-10",
         "period_frequency": "M",
         "intervals": 3,
         "intervals_are_not_fixed_calendar_months": true,
@@ -572,9 +572,9 @@
       "quote": "GBP",
       "contrasts": {
         "inflation_change_pp": {
-          "same_period": false,
-          "delta_base_minus_quote_pp": null,
-          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.3,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "unemployment_change_pp": {
           "same_period": true,
@@ -697,9 +697,9 @@
       "quote": "CAD",
       "contrasts": {
         "inflation_change_pp": {
-          "same_period": false,
-          "delta_base_minus_quote_pp": null,
-          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.646841,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "unemployment_change_pp": {
           "same_period": false,
@@ -722,9 +722,9 @@
       "quote": "CHF",
       "contrasts": {
         "inflation_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.4,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
           "same_period": true,
@@ -747,9 +747,9 @@
       "quote": "JPY",
       "contrasts": {
         "inflation_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.4,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
           "same_period": true,
@@ -797,9 +797,9 @@
       "quote": "USD",
       "contrasts": {
         "inflation_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.64628,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
           "same_period": false,
@@ -1013,5 +1013,5 @@
   "eligible_for_backtests": false,
   "eligible_for_automatic_core_rebase": false,
   "canonical_fx_core_untouched": true,
-  "source_content_sha256": "f46e90cb054a33b1080735ea46d394a3e34528093d6fabe7cf361a90f260832d"
+  "source_content_sha256": "5ea71c2f81fe7337b33fc0385ef5860c560ab9ba14dbae39dfea81911917c532"
 }
