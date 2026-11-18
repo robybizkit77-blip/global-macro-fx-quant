@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1",
   "status": "FIVE_STREAMS_VERIFIED",
-  "collected_on": "2026-11-17",
+  "collected_on": "2026-11-18",
   "attempted_sources": [
     "SP500",
     "NASDAQCOM",
@@ -432,7 +432,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -850,7 +850,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -1268,7 +1268,7 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -1686,21 +1686,17 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "VIX": {
-      "date": "2026-11-16",
-      "previous_date": "2026-11-13",
-      "value": 22.91,
-      "previous": 19.3,
-      "change_1d_pct": 18.7047,
+      "date": "2026-11-17",
+      "previous_date": "2026-11-16",
+      "value": 25.46,
+      "previous": 22.91,
+      "change_1d_pct": 11.1305,
       "history": [
-        [
-          "2026-06-30",
-          16.45
-        ],
         [
           "2026-07-01",
           16.59
@@ -2096,6 +2092,10 @@
         [
           "2026-11-16",
           22.91
+        ],
+        [
+          "2026-11-17",
+          25.46
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
