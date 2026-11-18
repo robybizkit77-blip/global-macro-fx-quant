@@ -977,11 +977,19 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-17T12:32:27.472351Z"
+          },
+          {
+            "date": "2026-11-18",
+            "rate": 3.155,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-18T12:59:04.642261Z"
           }
         ]
       },
-      "latest_date": "2026-11-17",
-      "observed_dates": 23,
+      "latest_date": "2026-11-18",
+      "observed_dates": 24,
       "derived_reference_points": 0
     },
     "GBP": {
