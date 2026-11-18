@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-18T11:50:05.725670Z",
-  "edition_time_rome": "2026-11-18 12:50",
-  "material_digest": "a5d6416e71628786487479333226ed385524e0093ee572927429f1e8efea9a8c",
+  "generated_at_utc": "2026-11-18T20:37:37.322214Z",
+  "edition_time_rome": "2026-11-18 21:37",
+  "material_digest": "3a2a9da0a16e898d814787a51e51604f9dfb8af7066906c71c032f1d962f443b",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-  "lead": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate.",
+  "lead": "Il front-end USA ed europeo mostra una variazione relativa contenuta nella stessa finestra osservata. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate.",
   "news": [
     {
       "headline": "EUR/USD: -0.23% fra due fixing BCE",
@@ -55,29 +55,29 @@
       ]
     },
     {
-      "headline": "Risks from AI valuations, fiscal imbalances and geoeconomic tensions weigh on financial stability outlook",
+      "headline": "Minutes of the Federal Open Market Committee, October 27-28, 2026",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
       "kind": "NEWS",
       "published_date": "2026-11-18",
       "event_date": "2026-11-18",
       "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261118~83c5c60158.en.html"
+        "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261118a.htm"
       ]
     },
     {
-      "headline": "Boris Vujčić: Financial Stability Review - November 2026",
-      "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+      "headline": "U.S. natural gas inventories end injection season above normal levels",
+      "analysis": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio. Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
       "kind": "NEWS",
       "published_date": "2026-11-18",
       "event_date": "2026-11-18",
-      "market_area": "BANCHE CENTRALI",
+      "market_area": "ENERGIA",
       "sources": [
-        "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261118~86f1e8147e.en.pdf"
+        "https://www.eia.gov/todayinenergy/detail.php?id=68484"
       ]
     }
   ],
-  "desk_judgment": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
+  "desk_judgment": "Il front-end USA ed europeo mostra una variazione relativa contenuta nella stessa finestra osservata. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
   "fx_implications": "Il Forex va interpretato per coppie: per EUR/USD conta il confronto Fed–BCE, per USD/JPY quello Fed–BoJ e la componente di rischio globale. Negli ultimi fixing EUR/USD è sceso, ma distinguere forza USD da debolezza EUR richiede il confronto con altri cross.",
   "what_changed": "Sono entrate nuove osservazioni o pubblicazioni rispetto alla precedente edizione. La direzione relativa di tassi, Forex, credito e materie prime viene ricomposta in un solo quadro economico, senza attribuire automaticamente causalità.",
   "contrary_evidence": "Una ripresa delle azioni senza conferma del credito o con volatilità in aumento renderebbe più fragile l'interpretazione risk-on. Le ultime chiusure rappresentano osservazioni datate, non flussi attribuibili a specifici operatori.",
@@ -87,15 +87,15 @@
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
-      "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261118~86f1e8147e.en.pdf",
-      "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261118~83c5c60158.en.html",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "https://www.eia.gov/todayinenergy/detail.php?id=68484",
+      "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261118a.htm",
       "https://www.seco.admin.ch/en/gdp-flash"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
-      "news": "2026-11-17",
-      "rss_checked_at_utc": "2026-11-18T11:50:05.725670Z",
+      "news": "2026-11-18",
+      "rss_checked_at_utc": "2026-11-18T20:37:37.322214Z",
       "commodities": "2026-11-18"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-18T11:50:05.725670Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "a5d6416e71628786487479333226ed385524e0093ee572927429f1e8efea9a8c"
+    },
     {
       "generated_at_utc": "2026-11-18T02:56:04.270672Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
