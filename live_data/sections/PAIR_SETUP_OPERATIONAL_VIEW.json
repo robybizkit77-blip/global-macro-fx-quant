@@ -169,13 +169,12 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -869,9 +868,9 @@
         "policySide": null
       },
       "transition": {
-        "state": "DINAMICA RELATIVA ALLINEATA",
-        "cls": "transConfirm",
-        "note": "la dinamica relativa è allineata al driver strutturale (CAD); il backtest la mantiene diagnostica, non autonoma"
+        "state": "NESSUNA DIVERGENZA RELATIVA CHIARA",
+        "cls": "transNeutral",
+        "note": "la dinamica relativa non contraddice né rafforza chiaramente il vantaggio strutturale di CAD"
       },
       "relative_dynamics": {
         "a": "CAD",
@@ -879,13 +878,12 @@
         "A": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -903,8 +901,8 @@
         },
         "aNet": 1,
         "bNet": 1,
-        "state": "TURNING POINT ASIMMETRICO",
-        "fav": "CAD"
+        "state": "MISTO",
+        "fav": "—"
       },
       "price_state": null
     },
@@ -998,13 +996,12 @@
         "A": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -1022,8 +1019,8 @@
         },
         "aNet": 1,
         "bNet": 1,
-        "state": "TURNING POINT ASIMMETRICO",
-        "fav": "CAD"
+        "state": "MISTO",
+        "fav": "—"
       },
       "price_state": null
     },
@@ -1431,13 +1428,12 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -2353,13 +2349,12 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -3004,13 +2999,12 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -3551,9 +3545,9 @@
         "policySide": "USD"
       },
       "transition": {
-        "state": "DIVERGENZA RELATIVA DA MONITORARE",
-        "cls": "transWatch",
-        "note": "il driver strutturale favorisce USD, ma la dinamica relativa favorisce CAD: divergenza da monitorare, non segnale automatico"
+        "state": "NESSUNA DIVERGENZA RELATIVA CHIARA",
+        "cls": "transNeutral",
+        "note": "la dinamica relativa non contraddice né rafforza chiaramente il vantaggio strutturale di USD"
       },
       "relative_dynamics": {
         "a": "USD",
@@ -3573,20 +3567,19 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
         "aNet": 1,
         "bNet": 1,
-        "state": "TURNING POINT ASIMMETRICO",
-        "fav": "CAD"
+        "state": "MISTO",
+        "fav": "—"
       },
       "price_state": null
     },
