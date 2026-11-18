@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-18T02:56:04.270672Z",
-  "edition_time_rome": "2026-11-18 03:56",
-  "material_digest": "6cefb397c663b835454a788e0234b24529a11d2f3a5898f13424e9501b762f7c",
+  "generated_at_utc": "2026-11-18T11:50:05.725670Z",
+  "edition_time_rome": "2026-11-18 12:50",
+  "material_digest": "a5d6416e71628786487479333226ed385524e0093ee572927429f1e8efea9a8c",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
@@ -21,11 +21,11 @@
       ]
     },
     {
-      "headline": "VIX: +3.61 punti nella chiusura del 2026-11-16",
+      "headline": "VIX: +2.55 punti nella chiusura del 2026-11-17",
       "analysis": "La volatilità azionaria aumenta, mentre una lettura completa dello stress richiede il confronto con credito e valute cicliche. Nessun flusso o acquisto di protezione specifico è deducibile da questo solo livello.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-16",
-      "event_date": "2026-11-16",
+      "published_date": "2026-11-17",
+      "event_date": "2026-11-17",
       "market_area": "RISCHIO",
       "sources": [
         "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
@@ -35,8 +35,8 @@
       "headline": "Oro e petrolio: segnali da distinguere nella lettura macro",
       "analysis": "I prezzi futures osservati offrono un confronto fra oro e WTI. Le differenze possono riflettere tassi reali, domanda energetica e rischio globale, ma non dimostrano quali operatori abbiano comprato o venduto. Serie di fonte secondaria, trattate come proxy direzionali.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-17",
-      "event_date": "2026-11-17",
+      "published_date": "2026-11-18",
+      "event_date": "2026-11-18",
       "market_area": "COMMODITIES",
       "sources": [
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
@@ -55,25 +55,25 @@
       ]
     },
     {
-      "headline": "Philip R. Lane: The practice and science of monetary policy communication: the ECB experience",
+      "headline": "Risks from AI valuations, fiscal imbalances and geoeconomic tensions weigh on financial stability outlook",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-17",
-      "event_date": "2026-11-17",
+      "kind": "NEWS",
+      "published_date": "2026-11-18",
+      "event_date": "2026-11-18",
       "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261117~7f5d3b1a0e.en.pdf"
+        "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261118~83c5c60158.en.html"
       ]
     },
     {
-      "headline": "How does EIA account for small differences between energy supply and demand data?",
-      "analysis": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio. Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-17",
-      "event_date": "2026-11-17",
-      "market_area": "ENERGIA",
+      "headline": "Boris Vujčić: Financial Stability Review - November 2026",
+      "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+      "kind": "NEWS",
+      "published_date": "2026-11-18",
+      "event_date": "2026-11-18",
+      "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.eia.gov/todayinenergy/detail.php?id=68464"
+        "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261118~86f1e8147e.en.pdf"
       ]
     }
   ],
@@ -87,22 +87,27 @@
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
-      "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261117~7f5d3b1a0e.en.pdf",
+      "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261118~86f1e8147e.en.pdf",
+      "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261118~83c5c60158.en.html",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "https://www.eia.gov/todayinenergy/detail.php?id=68464",
       "https://www.seco.admin.ch/en/gdp-flash"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-17",
-      "rss_checked_at_utc": "2026-11-18T02:56:04.270672Z",
-      "commodities": "2026-11-17"
+      "rss_checked_at_utc": "2026-11-18T11:50:05.725670Z",
+      "commodities": "2026-11-18"
     },
     "no_paid_api": true,
     "no_ai_model": true,
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-18T02:56:04.270672Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "6cefb397c663b835454a788e0234b24529a11d2f3a5898f13424e9501b762f7c"
+    },
     {
       "generated_at_utc": "2026-11-17T20:59:55.153894Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
