@@ -11,6 +11,8 @@ on:
       - '.github/workflows/publish-fx-quant-v2.yml'
       - 'validation/publishing/check_fxv2_publication_tree_v1.py'
       - 'validation/publishing/test_check_fxv2_publication_tree_v1.py'
+      - 'validation/publishing/finalize_daily_briefing_v1.py'
+      - 'validation/publishing/test_finalize_daily_briefing_v1.py'
   pull_request:
     branches: [main]
     paths:
@@ -67,6 +69,8 @@ on:
       - 'validation/publishing/test_check_fxv2_publication_tree_v1.py'
       - 'validation/publishing/wait_gh_pages_idle_before_fxv2_push_v1.py'
       - 'validation/publishing/test_wait_gh_pages_idle_before_fxv2_push_v1.py'
+      - 'validation/publishing/finalize_daily_briefing_v1.py'
+      - 'validation/publishing/test_finalize_daily_briefing_v1.py'
   workflow_run:
     # GITHUB_TOKEN commits do NOT emit a new push workflow. Use the producer's
     # completed run as an independent publication signal after its main write.
@@ -83,6 +87,7 @@ on:
       - 'FX Quant Next Estimated Thesis History'
       - 'FX Quant V2 Rates FX Temporal Research Audit'
       - 'FX Quant V2 Preregistered 6M Prospective Research'
+      - 'FX Quant NEXT isolated design and interaction QA'
     types: [completed]
   workflow_dispatch:
 
@@ -91,7 +96,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('fxv2-publish-validation-pr-{0}', github.event.pull_request.number) || 'publish-fx-quant-v2-isolated' }}
+  group: ${{ (github.event_name == 'pull_request' && format('fxv2-publish-validation-pr-{0}', github.event.pull_request.number)) || (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'pull_request' && format('fxv2-briefing-qa-{0}', github.event.workflow_run.head_sha)) || 'publish-fx-quant-v2-isolated' }}
   queue: max
   cancel-in-progress: false
 
@@ -119,17 +124,58 @@ jobs:
           python3 -m unittest validation.publishing.test_check_fxv2_publication_tree_v1 -v
           python3 -m unittest validation.publishing.test_wait_gh_pages_idle_before_fxv2_push_v1 -v
           python3 -m unittest validation.publishing.test_fxv2_mirror_source_contract_v1 -v
+          python3 -m unittest validation.publishing.test_finalize_daily_briefing_v1 -v
           python3 validation/publishing/check_fxv2_mirror_source_contract_v1.py
           node --check site/fx-quant-v2/next/app.js
           node --check site/fx-quant-v2/next/pair-rankings.js
           node --check site/fx-quant-v2/next/currency-studio.js
 
-  sync-v2:
+  finalize-briefing:
     if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.name == 'FX Quant NEXT isolated design and interaction QA' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      (startsWith(github.event.workflow_run.head_branch, 'briefing/') ||
+       startsWith(github.event.workflow_run.head_branch, 'publish/briefing-'))
+    permissions:
+      contents: write
+      checks: read
+      pull-requests: write
+    outputs:
+      briefing: ${{ steps.finalize.outputs.briefing }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Merge today's exact Briefing PR after all existing checks
+        id: finalize
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m validation.publishing.finalize_daily_briefing_v1
+
+  sync-v2:
+    needs: [finalize-briefing]
+    if: >-
+      always() &&
       github.event_name != 'pull_request' &&
       (github.event_name != 'workflow_run' ||
        (github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_branch == 'main'))
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.name != 'FX Quant NEXT isolated design and interaction QA') ||
+       (needs.finalize-briefing.result == 'success' && needs.finalize-briefing.outputs.briefing != ''))
+    permissions:
+      contents: write
+      actions: read
+      pages: write
+    concurrency:
+      group: publish-fx-quant-v2-isolated-writer
+      queue: max
+      cancel-in-progress: false
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -245,3 +291,16 @@ jobs:
           done
           echo 'V2_PAGES_SYNC_FAILED: no false success claimed' >&2
           exit 1
+
+      - name: Verify the Briefing index and original HTML on public Pages
+        if: needs.finalize-briefing.outputs.briefing != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRIEFING_FILE: ${{ needs.finalize-briefing.outputs.briefing }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            '+refs/heads/main:refs/remotes/origin/main' \
+            '+refs/heads/gh-pages:refs/remotes/origin/gh-pages'
+          git checkout --detach origin/main
+          python3 -m validation.publishing.finalize_daily_briefing_v1 --verify-public "$BRIEFING_FILE"
