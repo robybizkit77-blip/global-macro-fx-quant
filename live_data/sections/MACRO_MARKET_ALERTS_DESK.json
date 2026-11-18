@@ -1,8 +1,53 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-18T14:07:43Z",
+  "generated_at_utc": "2026-11-18T22:01:25Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-cef7f5beb4184d46b3eb",
+      "observed_at_utc": "2026-11-18T17:20:47Z",
+      "headline": "FTSE 100 slips as commodity-linked stocks weigh; UK inflation at one-year high",
+      "summary": "Reuters riporta: FTSE 100 slips as commodity-linked stocks weigh; UK inflation at one-year high. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOeEVjc0dlYzVLb2hOZkVUWGlMRnAybzlIM1ZjRXlwNG8zYW05bXZ4VXNNTlZjaVZWeThsdzVqR2x3aXpQaGpwX1k4SDJhcHNZYVZQUWdlRnpjQ3lYWm9YSXd0QXhJNUJ5SWpQVjd0NWZSV3lLbENOTFpWOXJoT1Vvc2dyclMtUUtnOFo4MFpoUTk?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-2a502c23dfa63691c90f",
+      "observed_at_utc": "2026-11-18T19:09:43Z",
+      "headline": "Fed policymakers focused on inflation risks in October, with some seeing need for bigger rate hike",
+      "summary": "Reuters riporta: Fed policymakers focused on inflation risks in October, with some seeing need for bigger rate hike. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOQWp0U1B6TG9KQU5oY25mQTRtbk5hTUZxNnI3azdIZDNNcU9iN1hzSndVckt3eU5ReUZockwxa1JOMVYyNTQ5d281c3NnU1pEU3pKaEZMSUZEdFQ3bG9DaXk4Umx1NG5WQ3ZvMko2VzBYdlgwYUI0Rm9ud1kzU1VMeWdZNXlkd3FJWTBvc25qV1ROWDZubGV4SF9QUk1EcG9BWGprZzRxcU9xa2g5TmRiUDRqR0FoYmNreUNicmFiWQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-074778364e7af1bb8a8e",
+      "observed_at_utc": "2026-11-18T13:52:20Z",
+      "headline": "Waller says on CNBC the Fed needs to get more aggressive in inflation response",
+      "summary": "Reuters riporta: Waller says on CNBC the Fed needs to get more aggressive in inflation response. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxOQXlxVDN3aWk0RnZkVEVhSG1pSlRRWFhHenRKbkwxY2NueDRkZWFjdFNFaEhCSms1TlhHRkJqcy1WYUg0ZXNpajZBb0U5RExDZ0VqRV9MQUkwQ2FyTGgzTTdnUUN4RWJ4YzhHRHNEWTVyNjVfMW5UREhiQTlIclQxNFZkbDNJY1l1azBWRTdvQ19LTGpGb1VFUlh2WDRJZzZWcmltcXcxWEhFUGFSQjJYSGhR?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-2fa37cd5182b7835f733",
       "observed_at_utc": "2026-11-18T07:41:00Z",
@@ -1355,51 +1400,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9CMmNTN1JQVmY5dTgxeGR2NzkwS0RhS2NESFVibUlXZDA4blFFV2FtRTZpanR1cWloSUREaXFiSnpaV3NNR0diNkttMy15aUNYcU1UZVZjNGdEbmtWMEJCRS00MjZkbldVMVAw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c2cc045e42b4cfd61f2b",
-      "observed_at_utc": "2026-11-08T19:26:09Z",
-      "headline": "Iraq has reached understandings with US to allow oil exports through Hormuz, minister says",
-      "summary": "Reuters riporta: Iraq has reached understandings with US to allow oil exports through Hormuz, minister says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQcVp2dDBwekFJVEtlai1lemtaZVNTb2FaallsZHhyT2FHTlZHdmpwY3B0SU9HRUpQV2JQQ3E0NWo0VEJpS3B4N1JCTGhkTUhJTHFYUUY3ZkttWmc2RUl1V2dicHdLODBaUEFQSmdySXdHcTJ2VGpIeUlOTlZZd05LZ29wYVdWajhrMzVYa1ZJQl9FTnNjZjFQRmNGc1FoV1dmOFZyOWYzTE1pRndvaGxzSTg1S1B1Z1lxSDZNM3hZWEZmZw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-663c606fd721533aad22",
-      "observed_at_utc": "2026-11-08T14:01:48Z",
-      "headline": "Pacer Cash COWZ 100-Nasdaq 100 Rotator ETF (QQWZ.O) | Stock Price & Latest News",
-      "summary": "Reuters riporta: Pacer Cash COWZ 100-Nasdaq 100 Rotator ETF (QQWZ.O) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE4yX3VWbUN4T1E4eVNxejliYXVKa0o1MU9UYmZhREMwWGJPZ2U5TEFYZ1hhZ05XOTVOTDlPSWl0MkQ4SnJheUJkekJ3dXVBaGF5Nk5tVUVKbTA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f4a68f3b5bae5b141cf1",
-      "observed_at_utc": "2026-11-08T13:19:42Z",
-      "headline": "Defiance Nasdaq 100 LightningSpread Income ETF (QLDY.O) | Stock Price & Latest News",
-      "summary": "Reuters riporta: Defiance Nasdaq 100 LightningSpread Income ETF (QLDY.O) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFBMalNMelhXQ3pmV2ZFTUhpUVlYSkh4UUJxYnJpa2JTeDVzcFdrbGFxTmlfdVVRY1R1QmR3OHBDQXd5QTdpQ3BBU2NBR002T2tLXzJlUXJhTF8?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
