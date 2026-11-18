@@ -1,7 +1,29 @@
 {
-  "content_as_of": "2026-11-17",
-  "generated_at_utc": "2026-11-18T12:16:02.107008Z",
+  "content_as_of": "2026-11-18",
+  "generated_at_utc": "2026-11-18T13:09:58.832300Z",
   "items": [
+    {
+      "as_of": "2026-11-18",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Movimento 1D +0.0 bp sul bucket 6M; variazione 1W +0.8 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+      "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-11-17",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "CAD",
+      "confidence": "A",
+      "detail": "Movimento 1D +2.5 bp sul bucket 3M; variazione 1W +2.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+      "title": "CAD: repricing implicito da futures più hawkish (+2.5 bp 3M in 1D)"
+    },
     {
       "as_of": "2026-11-17",
       "category": "MARKET_FX_ECB_FIXING",
@@ -69,14 +91,14 @@
     },
     {
       "as_of": "2026-11-17",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "JPY",
+      "category": "OIS_REPRICING",
+      "ccy": "GBP",
       "confidence": "A",
-      "detail": "Movimento 1D -0.8 bp sul bucket 12M; variazione 1W +0.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "detail": "Movimento 1D +0.7 bp sul bucket 12M; variazione 1W +11.8 bp.",
       "importance": "MEDIUM",
       "quality": "OFFICIAL_CERTIFIED",
-      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "title": "JPY: repricing implicito da futures più dovish (-0.8 bp 12M in 1D)"
+      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+      "title": "GBP: repricing OIS più hawkish (+0.7 bp 12M in 1D)"
     },
     {
       "as_of": "2026-11-17",
@@ -89,6 +111,17 @@
       "reference_previous_date": "2026-11-16",
       "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-17",
       "title": "JPY: governativo 2Y +0.0 pb, 10Y -0.2 pb"
+    },
+    {
+      "as_of": "2026-11-17",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "Movimento 1D -0.5 bp sul bucket 6M; variazione 1W +3.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+      "title": "AUD: repricing implicito da futures più dovish (-0.5 bp 6M in 1D)"
     },
     {
       "as_of": "2026-11-17",
@@ -145,17 +178,6 @@
     },
     {
       "as_of": "2026-11-16",
-      "category": "OIS_REPRICING",
-      "ccy": "GBP",
-      "confidence": "A",
-      "detail": "Movimento 1D +3.4 bp sul bucket 6M; variazione 1W +19.1 bp.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "title": "GBP: repricing OIS più hawkish (+3.4 bp 6M in 1D)"
-    },
-    {
-      "as_of": "2026-11-16",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "CHF",
       "confidence": "A",
@@ -169,17 +191,6 @@
       "source": "Swiss State Secretariat for Economic Affairs",
       "source_url": "https://www.seco.admin.ch/en/gdp-flash",
       "title": "Svizzera · PIL flash, trimestre su trimestre: +0,2%"
-    },
-    {
-      "as_of": "2026-11-16",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "CAD",
-      "confidence": "A",
-      "detail": "Movimento 1D -7.5 bp sul bucket 6M; variazione 1W +11.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "title": "CAD: repricing implicito da futures più dovish (-7.5 bp 6M in 1D)"
     },
     {
       "as_of": "2026-11-16",
@@ -209,20 +220,9 @@
       "source": "ICE Data Indices via FRED",
       "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
       "title": "Credito IG OAS: +1.0 pb nella chiusura del 2026-11-16"
-    },
-    {
-      "as_of": "2026-11-16",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "Movimento 1D +1.5 bp sul bucket 12M; variazione 1W +10.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing implicito da futures più hawkish (+1.5 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-18T12:16:02.107008Z",
+  "last_checked_at_utc": "2026-11-18T13:09:58.832300Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -407,6 +407,116 @@
     "headlines": [
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "CAD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "REVIEW",
+          "topic": "CB_COMMUNICATION",
+          "verify_next": "Esaminare il testo integrale; identificare eventuali novità rispetto alla posizione precedente e verificare la reazione del mercato.",
+          "why_watch": "Intervento di una banca centrale: il solo titolo non permette di classificare il tono hawkish o dovish."
+        },
+        "id": "BOC_PRESS:https://www.bankofcanada.ca/multimedia/speech-edmonton-chamber-of-commerce-2026-11-18/",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-18T12:45:14Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 2.97,
+            "date": "2026-11-17",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-16",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-16",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.3
+          }
+        },
+        "source": "Bank of Canada",
+        "source_id": "BOC_PRESS",
+        "title": "Speech: Edmonton Chamber of Commerce",
+        "url": "https://www.bankofcanada.ca/multimedia/speech-edmonton-chamber-of-commerce-2026-11-18/"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "CAD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "REVIEW",
+          "topic": "CB_COMMUNICATION",
+          "verify_next": "Esaminare il testo integrale; identificare eventuali novità rispetto alla posizione precedente e verificare la reazione del mercato.",
+          "why_watch": "Intervento di una banca centrale: il solo titolo non permette di classificare il tono hawkish o dovish."
+        },
+        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/11/speech-toni-gravelle-2026-11-18/",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-18T12:30:13Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 2.97,
+            "date": "2026-11-17",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-16",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-16",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.3
+          }
+        },
+        "source": "Bank of Canada",
+        "source_id": "BOC_PRESS",
+        "title": "Speech by Toni Gravelle, Deputy Governor of the Bank of Canada",
+        "url": "https://www.bankofcanada.ca/2026/11/speech-toni-gravelle-2026-11-18/"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "EUR",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -567,7 +677,7 @@
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
             "6m_rate_pct": 1.65,
-            "date": "2026-11-17",
+            "date": "2026-11-18",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -646,61 +756,6 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "CAD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/11/bank-of-canada-governor-tiff-macklem-to-step-down-in-june-2027/",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-16T10:00:04Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 2.96,
-            "date": "2026-11-16",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-16",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-16",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.3
-          }
-        },
-        "source": "Bank of Canada",
-        "source_id": "BOC_PRESS",
-        "title": "Bank of Canada Governor Tiff Macklem to step down in June 2027",
-        "url": "https://www.bankofcanada.ca/2026/11/bank-of-canada-governor-tiff-macklem-to-step-down-in-june-2027/"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "JPY",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -725,7 +780,7 @@
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
             "6m_rate_pct": 1.65,
-            "date": "2026-11-17",
+            "date": "2026-11-18",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -867,8 +922,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.6549,
-            "date": "2026-11-16",
+            "6m_rate_pct": 4.6523,
+            "date": "2026-11-17",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -995,61 +1050,6 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "CAD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/11/release-bank-canadas-summary-deliberations-2026-10-28/",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-10T13:30:35Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 2.96,
-            "date": "2026-11-16",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-16",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-16",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.3
-          }
-        },
-        "source": "Bank of Canada",
-        "source_id": "BOC_PRESS",
-        "title": "Release of the Bank of Canada’s summary of deliberations",
-        "url": "https://www.bankofcanada.ca/2026/11/release-bank-canadas-summary-deliberations-2026-10-28/"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "GBP",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -1073,8 +1073,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.6549,
-            "date": "2026-11-16",
+            "6m_rate_pct": 4.6523,
+            "date": "2026-11-17",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -1105,7 +1105,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-18",
-    "latest_published_at_utc": "2026-11-18T09:00:00Z",
+    "latest_published_at_utc": "2026-11-18T12:45:14Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1169,9 +1169,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 2,
+        "accepted_items": 4,
         "ccy": "CAD",
-        "entries_rejected": 8,
+        "entries_rejected": 6,
         "feed_entries_seen": 10,
         "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
         "source": "Bank of Canada",
