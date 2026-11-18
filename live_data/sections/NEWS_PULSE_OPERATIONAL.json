@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-18",
-  "generated_at_utc": "2026-11-18T14:08:12.217238Z",
+  "generated_at_utc": "2026-11-18T17:16:40.630699Z",
   "items": [
     {
       "as_of": "2026-11-18",
@@ -52,6 +52,19 @@
     },
     {
       "as_of": "2026-11-17",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 24328.38; confronto con chiusura 2026-11-16. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-16",
+      "source": "Nasdaq, Inc. via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
+      "title": "Nasdaq Composite: -0.74% nella chiusura del 2026-11-17"
+    },
+    {
+      "as_of": "2026-11-17",
       "category": "MARKET_VOLATILITY_CLOSE",
       "ccy": "",
       "confidence": "B",
@@ -62,6 +75,32 @@
       "source": "Cboe Global Markets, VIX daily close",
       "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "title": "VIX: +2.55 punti nella chiusura del 2026-11-17"
+    },
+    {
+      "as_of": "2026-11-17",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 3.43%; confronto con chiusura 2026-11-16. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-16",
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
+      "title": "Credito HY OAS: +9.0 pb nella chiusura del 2026-11-17"
+    },
+    {
+      "as_of": "2026-11-17",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 0.92%; confronto con chiusura 2026-11-16. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-16",
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
+      "title": "Credito IG OAS: +2.0 pb nella chiusura del 2026-11-17"
     },
     {
       "as_of": "2026-11-17",
@@ -152,32 +191,6 @@
     },
     {
       "as_of": "2026-11-16",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 24509.76; confronto con chiusura 2026-11-13. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "HIGH",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-13",
-      "source": "Nasdaq, Inc. via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
-      "title": "Nasdaq Composite: -2.49% nella chiusura del 2026-11-16"
-    },
-    {
-      "as_of": "2026-11-16",
-      "category": "MARKET_CREDIT_OAS",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 3.34%; confronto con chiusura 2026-11-13. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "HIGH",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-13",
-      "source": "ICE Data Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
-      "title": "Credito HY OAS: +11.0 pb nella chiusura del 2026-11-16"
-    },
-    {
-      "as_of": "2026-11-16",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "CHF",
       "confidence": "A",
@@ -207,22 +220,9 @@
       "source": "Statistics Canada",
       "source_url": "https://www150.statcan.gc.ca/n1/daily-quotidien/261116/dq261116a-eng.htm",
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
-    },
-    {
-      "as_of": "2026-11-16",
-      "category": "MARKET_CREDIT_OAS",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 0.90%; confronto con chiusura 2026-11-13. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-13",
-      "source": "ICE Data Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
-      "title": "Credito IG OAS: +1.0 pb nella chiusura del 2026-11-16"
     }
   ],
-  "last_checked_at_utc": "2026-11-18T14:08:12.217238Z",
+  "last_checked_at_utc": "2026-11-18T17:16:40.630699Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
