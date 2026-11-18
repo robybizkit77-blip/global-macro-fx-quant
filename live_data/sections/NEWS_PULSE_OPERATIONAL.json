@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-18",
-  "generated_at_utc": "2026-11-18T22:02:00.666267Z",
+  "generated_at_utc": "2026-11-18T23:29:49.802448Z",
   "items": [
     {
       "as_of": "2026-11-18",
@@ -77,6 +77,19 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
       "title": "CAD: repricing implicito da futures più hawkish (+2.5 bp 3M in 1D)"
+    },
+    {
+      "as_of": "2026-11-17",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 7340.53; confronto con chiusura 2026-11-16. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-16",
+      "source": "S&P Dow Jones Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+      "title": "S&P 500: -1.03% nella chiusura del 2026-11-17"
     },
     {
       "as_of": "2026-11-17",
@@ -178,19 +191,6 @@
     },
     {
       "as_of": "2026-11-16",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 7416.59; confronto con chiusura 2026-11-13. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "HIGH",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-13",
-      "source": "S&P Dow Jones Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-      "title": "S&P 500: -1.92% nella chiusura del 2026-11-16"
-    },
-    {
-      "as_of": "2026-11-16",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "CHF",
       "confidence": "A",
@@ -222,7 +222,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-18T22:02:00.666267Z",
+  "last_checked_at_utc": "2026-11-18T23:29:49.802448Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -541,11 +541,11 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-16",
+            "date": "2026-11-17",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-16",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-17",
             "status": "DAILY_CONTEXT_ONLY",
             "yield_2y_pct": 3.3
           }
@@ -596,11 +596,11 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-16",
+            "date": "2026-11-17",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-16",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-17",
             "status": "DAILY_CONTEXT_ONLY",
             "yield_2y_pct": 3.3
           }
@@ -1118,7 +1118,7 @@
         "url": "https://www.bankofengland.co.uk/letter/2026/asset-purchase-facility-november-2026"
       }
     ],
-    "last_attempt_day_rome": "2026-11-18",
+    "last_attempt_day_rome": "2026-11-19",
     "latest_published_at_utc": "2026-11-18T19:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
