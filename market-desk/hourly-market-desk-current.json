@@ -1,20 +1,20 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-17T20:59:55.153894Z",
-  "edition_time_rome": "2026-11-17 21:59",
-  "material_digest": "6cf6f6d496fb9728ab147652b8c83ce0c09df8b089dc17e5bf5265f841b6f689",
+  "generated_at_utc": "2026-11-18T02:56:04.270672Z",
+  "edition_time_rome": "2026-11-18 03:56",
+  "material_digest": "6cefb397c663b835454a788e0234b24529a11d2f3a5898f13424e9501b762f7c",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-  "lead": "I rendimenti governativi a breve scadenza si muovono relativamente più a favore dell'area euro, riducendo il sostegno dei tassi al dollaro. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate.",
+  "lead": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate.",
   "news": [
     {
-      "headline": "EUR/USD: -0.34% fra due fixing BCE",
+      "headline": "EUR/USD: -0.23% fra due fixing BCE",
       "analysis": "Il movimento relativo di EUR/USD va letto fra aspettative Fed e BCE e confrontato con gli altri cambi per distinguere forza del dollaro da debolezza dell'euro. Il dato è un fixing BCE, non una reazione intraday.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-16",
-      "event_date": "2026-11-16",
+      "published_date": "2026-11-17",
+      "event_date": "2026-11-17",
       "market_area": "FOREX",
       "sources": [
         "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
@@ -32,7 +32,7 @@
       ]
     },
     {
-      "headline": "Oro e petrolio divergono nelle rilevazioni dei futures",
+      "headline": "Oro e petrolio: segnali da distinguere nella lettura macro",
       "analysis": "I prezzi futures osservati offrono un confronto fra oro e WTI. Le differenze possono riflettere tassi reali, domanda energetica e rischio globale, ma non dimostrano quali operatori abbiano comprato o venduto. Serie di fonte secondaria, trattate come proxy direzionali.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-17",
@@ -57,7 +57,7 @@
     {
       "headline": "Philip R. Lane: The practice and science of monetary policy communication: the ECB experience",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-17",
       "event_date": "2026-11-17",
       "market_area": "BANCHE CENTRALI",
@@ -68,7 +68,7 @@
     {
       "headline": "How does EIA account for small differences between energy supply and demand data?",
       "analysis": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio. Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-17",
       "event_date": "2026-11-17",
       "market_area": "ENERGIA",
@@ -77,7 +77,7 @@
       ]
     }
   ],
-  "desk_judgment": "I rendimenti governativi a breve scadenza si muovono relativamente più a favore dell'area euro, riducendo il sostegno dei tassi al dollaro. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro in rialzo e petrolio in calo negli ultimi futures rilevati offrono due segnali differenti: ricerca di protezione e domanda energetica sono ipotesi da verificare, non flussi già dimostrati.",
+  "desk_judgment": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
   "fx_implications": "Il Forex va interpretato per coppie: per EUR/USD conta il confronto Fed–BCE, per USD/JPY quello Fed–BoJ e la componente di rischio globale. Negli ultimi fixing EUR/USD è sceso, ma distinguere forza USD da debolezza EUR richiede il confronto con altri cross.",
   "what_changed": "Sono entrate nuove osservazioni o pubblicazioni rispetto alla precedente edizione. La direzione relativa di tassi, Forex, credito e materie prime viene ricomposta in un solo quadro economico, senza attribuire automaticamente causalità.",
   "contrary_evidence": "Una ripresa delle azioni senza conferma del credito o con volatilità in aumento renderebbe più fragile l'interpretazione risk-on. Le ultime chiusure rappresentano osservazioni datate, non flussi attribuibili a specifici operatori.",
@@ -95,7 +95,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-17",
-      "rss_checked_at_utc": "2026-11-17T20:59:55.153894Z",
+      "rss_checked_at_utc": "2026-11-18T02:56:04.270672Z",
       "commodities": "2026-11-17"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-17T20:59:55.153894Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "6cf6f6d496fb9728ab147652b8c83ce0c09df8b089dc17e5bf5265f841b6f689"
+    },
     {
       "generated_at_utc": "2026-11-17T11:58:21.198896Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
