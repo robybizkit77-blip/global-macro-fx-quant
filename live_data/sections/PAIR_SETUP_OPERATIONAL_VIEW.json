@@ -472,13 +472,12 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -1011,20 +1010,19 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
         "aNet": 1,
         "bNet": 1,
-        "state": "MISTO",
-        "fav": "—"
+        "state": "TURNING POINT ASIMMETRICO",
+        "fav": "CAD"
       },
       "price_state": null
     },
@@ -1141,9 +1139,9 @@
         "policySide": "JPY"
       },
       "transition": {
-        "state": "DINAMICA RELATIVA ALLINEATA",
-        "cls": "transConfirm",
-        "note": "la dinamica relativa è allineata al driver strutturale (JPY); il backtest la mantiene diagnostica, non autonoma"
+        "state": "NESSUNA DIVERGENZA RELATIVA CHIARA",
+        "cls": "transNeutral",
+        "note": "la dinamica relativa non contraddice né rafforza chiaramente il vantaggio strutturale di JPY"
       },
       "relative_dynamics": {
         "a": "CHF",
@@ -1163,20 +1161,19 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
         "aNet": 1,
         "bNet": 1,
-        "state": "TURNING POINT ASIMMETRICO",
-        "fav": "JPY"
+        "state": "MISTO",
+        "fav": "—"
       },
       "price_state": null
     },
@@ -1820,13 +1817,12 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -2623,13 +2619,12 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -3274,13 +3269,12 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -3875,13 +3869,12 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: migliora"
           ],
           "withheld": false
         },
