@@ -18,10 +18,9 @@
  "eligible_for_fx_core": false,
  "eligible_for_backtest": false,
  "observation_is_not_publication_date": true,
- "last_checked_rome": "2026-11-14",
- "latest_observation": "2026-08",
+ "last_checked_rome": "2026-11-18",
+ "latest_observation": "2026-09",
  "dates": [
-  "2024-09",
   "2024-10",
   "2024-11",
   "2024-12",
@@ -44,10 +43,10 @@
   "2026-05",
   "2026-06",
   "2026-07",
-  "2026-08"
+  "2026-08",
+  "2026-09"
  ],
  "values": [
-  863919.0,
   864138.0,
   868145.0,
   857824.0,
@@ -70,7 +69,8 @@
   927358.0,
   937138.0,
   941686.0,
-  944614.0
+  944614.0,
+  949456.0
  ],
  "inference": "Stock bancario, non nuove erogazioni, domanda di prestiti o standard. Serie separata da NATIVE_LIQ_DATA.CAD.credit."
 };
