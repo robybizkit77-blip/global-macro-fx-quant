@@ -497,8 +497,13 @@ jobs:
           git commit -m 'Refresh daily Rates runtime from official sources'
           # Bounded non-force retry for disjoint concurrent main changes.
           # Overlapping Rates data/manifest changes remain a hard failure.
-          python3 validation/rates/push_rates_safe_v1.py --mode rates --base "$GITHUB_SHA"
-          echo RATES_PERSISTENT_MAIN_UPDATE_PUSHED
+          result="$(python3 validation/rates/push_rates_safe_v1.py --mode rates --base "$GITHUB_SHA")"
+          echo "$result"
+          if [[ "$result" == *'"status": "RATES_ALREADY_PUBLISHED_IDENTICAL"'* ]]; then
+            echo RATES_PERSISTENT_ALREADY_PUBLISHED_IDENTICAL_NO_WRITE
+          else
+            echo RATES_PERSISTENT_MAIN_UPDATE_PUSHED
+          fi
 
       - name: Upload Rates evidence
         if: always() && steps.gate.outputs.should_run == 'true'
