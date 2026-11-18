@@ -5,7 +5,7 @@
   "first_fx_reference_fixing": "2024-09-09",
   "source_hashes_sha256": {
     "ecb_fx_history": "da3f011511e130877b28cc0ad9fe89f271cb56147ce3a8c67ba11dfdeeae3688",
-    "same_contract_futures_history": "c86fc49ff097295f51d3aedb51c092483348e9bbee7224d7a744a46a32bd0e78",
+    "same_contract_futures_history": "ca8a24e228f7289c3702319c64633162c91a9aaa0cc05be12604c0a8768545da",
     "macro_candidate_pair_universe": "75aa8a6d4ec9ee5ba5ec012562444425e79d26158c7a6fa2a5985f0237c7aeaf"
   },
   "method": "SAME_LISTED_FUTURES_CONTRACT_TWO_CONSECUTIVE_ECB_SESSIONS",
@@ -29,7 +29,7 @@
   "summary": {
     "fx_reference_rows": 560,
     "fx_pairs": 28,
-    "archived_same_contract_quotes": 204,
+    "archived_same_contract_quotes": 205,
     "contract_currencies": 3,
     "strict_currency_rate_moves": 175,
     "strict_relative_pair_moves": 156,
