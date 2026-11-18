@@ -807,6 +807,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-17T03:43:27.823416Z"
+          },
+          {
+            "date": "2026-11-17",
+            "rate": 2.855,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-18T04:10:48.858822Z"
           }
         ],
         "12m": [
