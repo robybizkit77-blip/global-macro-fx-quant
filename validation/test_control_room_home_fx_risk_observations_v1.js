@@ -56,7 +56,12 @@ reject((x)=>{x.row_count=10},'row count parity');
 reject((x)=>{const future=shift(now,1);x.rows.at(-1).Date=future;x.last_as_of=future},'future close rejection');
 assert.equal(f(fx,d,shift(now,7)).fx,null,'stale official FX rejected');
 const mismatch=structuredClone(d);
-mismatch.risk.VIX.dates[mismatch.risk.VIX.dates.length-1]=shift(fx.last_as_of,-1);
+// Build a deliberately mismatched VIX date from the selected historical
+// FX snapshot, not the latest live FX date (which advances every session).
+// Otherwise, after FX advances one day the purported mismatch can equal the
+// historical VIX close and falsely fail the live browser QA.
+mismatch.risk.VIX.dates[mismatch.risk.VIX.dates.length-1]=shift(matchedFx.last_as_of,-1);
+assert.notEqual(mismatch.risk.VIX.dates.at(-1),matchedFx.last_as_of,'Regression setup must be genuinely misaligned');
 assert.equal(f(matchedFx,mismatch,shift(matchedFx.last_as_of,1)).vix,null,'VIX cannot join unsynchronized trading sessions');
 const spoof=structuredClone(d);spoof.risk.VIX.last_value=1234;
 assert.equal(f(matchedFx,spoof,shift(matchedFx.last_as_of,1)).vix,null,'VIX last value must match stored history');
