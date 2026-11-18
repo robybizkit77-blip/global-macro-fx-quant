@@ -63,8 +63,10 @@ on:
     # Reuse existing independent producers; no new cron/workflow.
     # Morning: successful scheduled Macro OR independently recovered Macro after News.
     # Both are source-executed on main; reject push/PR/manual Macro events.
-    # Evening: scheduled hourly alert after US/Canada official releases.
-    workflows: ['Hourly Certified Alert Readiness V1', 'Macro Persistent Daily V1']
+    # Evening: scheduled certified alert or independent hourly market desk
+    # triggers Rates source collection even when GitHub delays/drops the 22:17 cron.
+    # Only completed successful main-branch schedules pass the gate.
+    workflows: ['Hourly Certified Alert Readiness V1', 'FX Quant Next Independent FREE Hourly Desk', 'Macro Persistent Daily V1']
     types: [completed]
   schedule:
     # Europe/Rome target windows: 07:20-07:39, 08:00-08:19, 09:00-09:19 on working days.

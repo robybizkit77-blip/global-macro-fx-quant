@@ -11,8 +11,10 @@ afternoon refresh can still read official sources as evening recovery.
 Morning recovery accepts successful MAIN-branch Macro scheduled runs as
 well as the existing serialized Source-Watch -> News -> Macro workflow_run.
 This covers a dropped independent Rates cron without trusting Macro push/PR
-or manual dispatch. Evening recovery reuses completed, successful MAIN-branch
-*scheduled* runs of the pre-existing Hourly Certified Alert Readiness workflow.
+or manual dispatch. Evening recovery reuses completed, successful MAIN-branch *scheduled* runs
+of the existing Hourly Certified Alert Readiness workflow. The independent
+FREE hourly market desk is an additional after-22:00 fallback: it is a
+separate real schedule, so a dropped Rates cron need not suppress source reads.
 An 18:17 Rome slot checks the afternoon feeds; a 22:17 slot checks again
 after the US Treasury fixing. Both evening slots can start after midnight
 before morning recovery opens at 05:00, using their original business day.
@@ -73,8 +75,11 @@ def resolve(event: str, cron: str, now: dt.datetime, *,
         # Never respond to Macro push/PR/manual jobs as market-source evidence.
         morning = (upstream_name == "Macro Persistent Daily V1"
                    and upstream_event in ("workflow_run", "schedule"))
-        evening = (upstream_name == "Hourly Certified Alert Readiness V1"
-                   and upstream_event == "schedule")
+        evening_primary = (upstream_name == "Hourly Certified Alert Readiness V1"
+                           and upstream_event == "schedule")
+        evening_backup = (upstream_name == "FX Quant Next Independent FREE Hourly Desk"
+                          and upstream_event == "schedule")
+        evening = evening_primary or evening_backup
         if (not (morning or evening)
                 or upstream_conclusion != "success"
                 or upstream_head_branch != "main"):
@@ -93,6 +98,11 @@ def resolve(event: str, cron: str, now: dt.datetime, *,
             return out
         if not (19 <= local.hour <= 23):
             out["reason"] = "OUTSIDE_EVENING_SOURCE_PUBLICATION_WINDOW"
+            return out
+        # The independent desk is a backup only after the US Treasury fixing.
+        # Never trust its earlier hourly editions to certify the US close.
+        if evening_backup and local.hour < 22:
+            out["reason"] = "FREE_HOURLY_BACKUP_BEFORE_TREASURY_WINDOW"
             return out
         out.update(should_run=True,
                    reason="TRUSTED_SCHEDULED_HOURLY_EVENING_RATES_RECOVERY")

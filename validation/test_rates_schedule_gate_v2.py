@@ -122,6 +122,31 @@ def run():
     ]:
         got=recover("2026-10-28T18:30:00Z",**changes)
         assert got["should_run"] is False and got["reason"]=="UNTRUSTED_OR_NON_SCHEDULED_UPSTREAM",got
+    # The independent FREE hourly desk is a second, separately scheduled
+    # evening trigger. Do not confuse its successful 21:37 Rome edition with
+    # a Treasury-close Rates read; only 22:00+ Rome is admissible.
+    free_hourly = {**trusted, "upstream_name": "FX Quant Next Independent FREE Hourly Desk"}
+    def free_recovery(stamp, **changes):
+        return resolve("workflow_run", "", iso(stamp), **{**free_hourly, **changes})
+    for stamp in ("2026-11-18T21:00:00Z", "2026-11-18T21:37:45Z",
+                  "2026-10-21T20:30:00Z"):
+        got = free_recovery(stamp)
+        assert got["should_run"] and got["reason"] == "TRUSTED_SCHEDULED_HOURLY_EVENING_RATES_RECOVERY", got
+    for stamp, reason in (
+        ("2026-11-18T20:37:45Z", "FREE_HOURLY_BACKUP_BEFORE_TREASURY_WINDOW"),
+        ("2026-11-18T18:00:00Z", "FREE_HOURLY_BACKUP_BEFORE_TREASURY_WINDOW"),
+        ("2026-11-18T22:01:00Z", "OUTSIDE_EVENING_SOURCE_PUBLICATION_WINDOW"),
+        ("2026-11-21T21:30:00Z", "EVENING_RECOVERY_WEEKEND"),
+    ):
+        got = free_recovery(stamp)
+        assert not got["should_run"] and got["reason"] == reason, got
+    for changes in (
+        {"upstream_event": "workflow_dispatch"}, {"upstream_event": "push"},
+        {"upstream_event": "pull_request"}, {"upstream_conclusion": "failure"},
+        {"upstream_head_branch": "staging"},
+    ):
+        got = free_recovery("2026-11-18T21:37:45Z", **changes)
+        assert not got["should_run"] and got["reason"] == "UNTRUSTED_OR_NON_SCHEDULED_UPSTREAM", got
     # Morning independent path follows Source Watch -> News -> Macro.
     macro={"upstream_name":"Macro Persistent Daily V1",
            "upstream_event":"workflow_run", "upstream_conclusion":"success",
