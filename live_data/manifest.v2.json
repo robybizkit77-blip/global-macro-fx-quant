@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "8cb71b3c28298cf8d0452ecabef7706e018a52267ff062455c3f3f50487c2c84",
-  "runtime_bytes": 2769975,
+  "runtime_sha256": "0de46efb69dd6a6dcf59befe43c132e29a51d035b3d123d1938870381caf82ce",
+  "runtime_bytes": 2770090,
   "part_count": 16,
   "direct_section_count": 12,
   "derived_section_count": 2,
@@ -51,8 +51,8 @@
       "key": "NATIVE_RATES_DATA",
       "file": "NATIVE_RATES_DATA.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 137059,
-      "sha256": "286f142dad0de21d352ef754039949f9b2af68bdfc716a2a6346a1131fedaf4b",
+      "bytes": 137174,
+      "sha256": "8c082e5bd2d86921303cf2174f45fb891d3859ca01de233236db6d595fe3586e",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
@@ -142,7 +142,7 @@
       "file": "RATES_AUDIT_METADATA.json",
       "mode": "DERIVED_BUILDER_REQUIRED",
       "bytes": 2972,
-      "sha256": "2dcf51c37cf1a491fd72204a6fb9ed46416402360013607a01dd933512acbf21",
+      "sha256": "67d5c8e0fab5509182d4069e17de9e28711828483423deba7bf0103095f4ee16",
       "occurrences_in_payload": 0,
       "part": null,
       "direct_update_allowed": false
