@@ -69,7 +69,22 @@ def run():
     check("schedule", "0 7 * * 1-5", "2026-10-19T16:17:00Z", True, recovery, "09:00")
     check("schedule", "0 8 * * 1-5", "2026-10-19T16:29:00Z", False, "DUPLICATE_CET_CEST_UTC_SLOT")
     check("schedule", "17 18 * * 1-5", "2026-11-17T22:00:00Z", True, recovery, "18:17")
-    check("schedule", "17 18 * * 1-5", "2026-11-17T23:00:00Z", False, "BEFORE_SCHEDULED_SLOT")
+    # Replay both real evening cron events that GitHub delivered after midnight.
+    overnight = "OVERNIGHT_EVENING_RATES_RECOVERY"
+    for cron, observed, slot, delay in (
+        ("17 18 * * 1-5", "2026-11-17T23:51:09Z", "18:17", 394),
+        ("17 22 * * 1-5", "2026-11-18T02:55:35Z", "22:17", 338),
+    ):
+        actual = check("schedule", cron, observed, True, overnight, slot)
+        assert actual["scheduled_at_rome"] == f"2026-11-17T{slot}:00+01:00", actual
+        assert actual["queue_delay_minutes"] == delay, actual
+    check("schedule", "17 22 * * 1-5", "2026-10-20T01:55:00Z", True, overnight)
+    check("schedule", "17 22 * * 1-5", "2026-11-21T00:15:00Z", True, overnight)
+    check("schedule", "17 22 * * 1-5", "2026-11-22T01:15:00Z", False, "NOT_BUSINESS_DAY")
+    check("schedule", "17 22 * * 1-5", "2026-11-23T01:15:00Z", False, "NOT_BUSINESS_DAY")
+    check("schedule", "17 22 * * 1-5", "2026-11-18T03:59:59Z", True, overnight)
+    check("schedule", "17 22 * * 1-5", "2026-11-18T04:00:00Z", False, "BEFORE_SCHEDULED_SLOT")
+    check("schedule", "0 8 * * 1-5", "2026-11-18T02:55:35Z", False, "BEFORE_SCHEDULED_SLOT")
     check("schedule", "0 8 * * 1-5", "2026-11-21T17:29:00Z", False, "NOT_BUSINESS_DAY")
     check("schedule", "0 7 * * 1-5", "2026-10-24T07:00:00Z", False, "NOT_BUSINESS_DAY")
     check("schedule", "20 9 * * 1-5", "2026-10-19T09:20:00Z", False, "UNKNOWN_CRON_FAIL_CLOSED")

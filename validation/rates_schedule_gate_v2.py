@@ -13,9 +13,10 @@ well as the existing serialized Source-Watch -> News -> Macro workflow_run.
 This covers a dropped independent Rates cron without trusting Macro push/PR
 or manual dispatch. Evening recovery reuses completed, successful MAIN-branch
 *scheduled* runs of the pre-existing Hourly Certified Alert Readiness workflow.
-An 18:17 Rome slot checks the afternoon feeds; a 22:17 slot checks
-again after the US Treasury fixing.
-Reject mismatched upstream identities, PR/push/manual events and weekends.
+An 18:17 Rome slot checks the afternoon feeds; a 22:17 slot checks again
+after the US Treasury fixing. Both evening slots can start after midnight
+before morning recovery opens at 05:00, using their original business day.
+Reject mismatched upstream identities and non-business-day schedule slots.
 This gives late official North American rates a second real read before the
 next day's morning pipeline; it NEVER advances unavailable source observations.
 """
@@ -31,6 +32,8 @@ ROME = ZoneInfo("Europe/Rome")
 UTC = dt.timezone.utc
 MAX_QUEUE_DELAY_MINUTES = 240
 EVENING_REFRESH_TIME = dt.time(18, 17)
+MORNING_RECOVERY_START = dt.time(5)
+OVERNIGHT_RECOVERY_CRONS = {"17 18 * * 1-5", "17 22 * * 1-5"}
 SLOTS = {
     "20 5 * * 1-5": {2: "07:20"},
     "20 6 * * 1-5": {1: "07:20"},
@@ -82,7 +85,7 @@ def resolve(event: str, cron: str, now: dt.datetime, *,
                              else "EVENING_RECOVERY_WEEKEND")
             return out
         if morning:
-            if not (5 <= local.hour < 10):
+            if not (MORNING_RECOVERY_START <= local.time() < dt.time(10)):
                 out["reason"] = "OUTSIDE_MORNING_MACRO_RECOVERY_WINDOW"
                 return out
             out.update(should_run=True,
@@ -109,21 +112,29 @@ def resolve(event: str, cron: str, now: dt.datetime, *,
     if slot is None:
         out["reason"] = "UNKNOWN_CRON_FAIL_CLOSED"
         return out
-    actual_offset = int(local.utcoffset().total_seconds() // 3600)
-    if local.weekday() >= 5:
+    scheduled_date = local.date()
+    overnight = cron in OVERNIGHT_RECOVERY_CRONS and local.time() < MORNING_RECOVERY_START
+    if overnight:
+        scheduled_date -= dt.timedelta(days=1)
+    if scheduled_date.weekday() >= 5:
         out["reason"] = "NOT_BUSINESS_DAY"
         return out
+    actual_offset = int(local.utcoffset().total_seconds() // 3600)
     clock = slot.get(actual_offset)
     if clock is None:
         out["reason"] = "DUPLICATE_CET_CEST_UTC_SLOT"
         return out
     out["slot_rome"] = clock
     hh, mm = (int(part) for part in clock.split(":"))
-    scheduled = dt.datetime.combine(local.date(), dt.time(hh, mm), tzinfo=ROME)
+    scheduled = dt.datetime.combine(scheduled_date, dt.time(hh, mm), tzinfo=ROME)
     elapsed = int((now.astimezone(UTC) - scheduled.astimezone(UTC)).total_seconds() // 60)
+    out["scheduled_at_rome"] = scheduled.isoformat()
     out["queue_delay_minutes"] = elapsed
     if elapsed < 0:
         out["reason"] = "BEFORE_SCHEDULED_SLOT"
+        return out
+    if overnight:
+        out.update(should_run=True, reason="OVERNIGHT_EVENING_RATES_RECOVERY")
         return out
     if elapsed > MAX_QUEUE_DELAY_MINUTES:
         if local.time() >= EVENING_REFRESH_TIME:
@@ -163,7 +174,7 @@ def main() -> None:
             file.write(f"- Reason: {result['reason']}\n")
             file.write(f"- Runner: {result['runner_started_at_rome']}\n")
             if result["slot_rome"]:
-                file.write(f"- Scheduled Rome slot: {result['slot_rome']}\n")
+                file.write(f"- Scheduled Rome slot: {result['scheduled_at_rome']}\n")
                 file.write(f"- Queue delay (min): {result.get('queue_delay_minutes', 'n/a')}\n")
 
 
