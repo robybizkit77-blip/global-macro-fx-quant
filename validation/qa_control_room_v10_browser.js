@@ -495,9 +495,15 @@ function expectedReactionFromMetrics(row){
       throw Error(label+' Brent futures not source-grade visible '+JSON.stringify(commodity));
   }else if(commodity.brent!=='NOT_VERIFIED')
     throw Error(label+' stale Brent future promoted '+JSON.stringify(commodity));
-  if(commodity.wti!=='OFFICIAL_HISTORICAL'||commodity.wtiDay!==risk.WTI.last_date||
+  // EIA's latest spot observation may be recent (<=3 calendar days)
+  // or historical. Assert the same date-aware grade as production instead
+  // of freezing the old fixture's OFFICIAL_HISTORICAL expectation.
+  const expectedWtiGrade=current(risk.WTI.last_date,3)?
+    'OFFICIAL_RECENT':'OFFICIAL_HISTORICAL';
+  if(commodity.wti!==expectedWtiGrade||commodity.wtiDay!==risk.WTI.last_date||
      !commodity.text.includes('WTI SPOT EIA '+risk.WTI.last_date)||
-     !commodity.text.includes('· STORICO'))
+     !commodity.text.includes('ultimo disponibile')||
+     commodity.text.includes('· STORICO')!==(expectedWtiGrade==='OFFICIAL_HISTORICAL'))
     throw Error(label+' WTI latest EIA spot not honestly dated '+JSON.stringify(commodity));
   console.log('HOME_COMMODITY_RESEARCH_DATED_390_1440_GREEN',label,JSON.stringify(commodity));
   }
