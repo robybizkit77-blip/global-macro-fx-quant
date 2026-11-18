@@ -53,6 +53,18 @@ def inspect_new_main_files(changed: set[str]) -> None:
         )
 
 
+def canonical_rates_already_identical(remote_sha: str, cwd: str | Path) -> bool:
+    """A concurrent writer already committed the *exact same* Rates JSON blob.
+
+    This is only a no-op gate. It never publishes, rebases or overwrites
+    another writer's sources, and does not equate same date with same data.
+    """
+    path = "live_data/sections/NATIVE_RATES_DATA.json"
+    remote_blob = git("rev-parse", f"{remote_sha}:{path}", cwd=cwd)
+    candidate_blob = git("rev-parse", f"HEAD:{path}", cwd=cwd)
+    return bool(remote_blob) and remote_blob == candidate_blob
+
+
 def verify_local_scope(changed: set[str], mode: str) -> None:
     if not changed or not changed <= SCOPES[mode]:
         raise RuntimeError(
@@ -110,6 +122,23 @@ def publish(
         if remote_sha != last_replayed_base:
             changed = set(git("diff", "--name-only", last_replayed_base,
                               remote_sha, cwd=cwd).splitlines())
+            if mode == "rates" and changed & RATES_OWNED:
+                # Two successful scheduled collectors can observe the exact
+                # same official close. Preserve the first writer and report
+                # a verified no-op, never a second push or false failure.
+                own_candidate = set(git("diff", "--name-only", base_sha,
+                                        "HEAD", cwd=cwd).splitlines())
+                verify_local_scope(own_candidate, mode)
+                if canonical_rates_already_identical(remote_sha, cwd):
+                    return {
+                        "status": "RATES_ALREADY_PUBLISHED_IDENTICAL",
+                        "mode": mode, "attempts": attempt,
+                        "disjoint_remote_rebase": rebased,
+                        "changed_files": [],
+                        "published_commit": remote_sha,
+                        "force_push": False,
+                        "canonical_blob_identical": True,
+                    }
             inspect_new_main_files(changed)
             # Replay ONLY our already-validated Rates commit(s) over
             # disjoint remote changes; fail if Git cannot rebase cleanly.

@@ -97,6 +97,28 @@ class RatesSafePublishTests(unittest.TestCase):
             self.assertEqual((writer / "live_data/sections/NATIVE_RATES_DATA.json").read_text(),
                              "source-date=2026-11-05\n")
 
+    def test_two_collectors_with_identical_official_close_are_idempotent(self):
+        with tempfile.TemporaryDirectory() as td:
+            remote, writer, producer = self.setup_repos(Path(td))
+            base = git(producer, "rev-parse", "HEAD")
+            same = "source-date=2026-11-18; 2Y=4.80; 10Y=5.07\n"
+            canonical = "live_data/sections/NATIVE_RATES_DATA.json"
+            for checkout in (writer, producer):
+                (checkout / canonical).write_text(same)
+                git(checkout, "add", canonical)
+                git(checkout, "commit", "-m", "same independently verified close")
+            git(writer, "push", "origin", "HEAD:main")
+            first_writer_sha = git(writer, "rev-parse", "HEAD")
+            result = publish(base_sha=base, mode="rates", cwd=producer,
+                             validate=lambda _: None, sleep=lambda _: None)
+            self.assertEqual(result["status"], "RATES_ALREADY_PUBLISHED_IDENTICAL")
+            self.assertTrue(result["canonical_blob_identical"])
+            self.assertFalse(result["force_push"])
+            self.assertEqual(result["published_commit"], first_writer_sha)
+            git(writer, "fetch", "origin", "main")
+            self.assertEqual(git(writer, "rev-parse", "origin/main"), first_writer_sha)
+            self.assertEqual((writer / canonical).read_text(), same)
+
     def test_overlapping_remote_rates_never_overwritten(self):
         with tempfile.TemporaryDirectory() as td:
             remote, writer, producer = self.setup_repos(Path(td))
