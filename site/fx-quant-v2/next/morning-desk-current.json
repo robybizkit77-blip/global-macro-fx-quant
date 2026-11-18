@@ -1,24 +1,24 @@
 {
   "schema": "GMFQ_MORNING_MACRO_FX_V1",
-  "edition_date": "2026-11-17",
-  "created_at_utc": "2026-11-17T07:43:38.309690Z",
+  "edition_date": "2026-11-18",
+  "created_at_utc": "2026-11-18T04:29:02.566179Z",
   "edition_status": "MORNING_SNAPSHOT",
   "event_status": "RELATIVE_PRICING",
   "editorial_quality": "DATED_RULED_NARRATIVE_NOT_HUMAN_REVIEWED",
-  "observation_cutoff_exclusive": "2026-11-17",
+  "observation_cutoff_exclusive": "2026-11-18",
   "sources": {
-    "fx_fixing": "2026-11-16",
-    "rates": "2026-11-13",
-    "pair_setup": "2026-11-16",
+    "fx_fixing": "2026-11-17",
+    "rates": "2026-11-16",
+    "pair_setup": "2026-11-17",
     "calendar": "OFFICIAL_SEED"
   },
   "headline": "EUR/USD: tassi e prezzo convergono, ma serve capire cosa è già prezzato.",
-  "lead": "Nessun dato domina oggi il calendario ufficiale. Fra 05/11/2026 e 13/11/2026 lo spread USD–EUR si è mosso di +30,7 pb, mentre EUR/USD ha registrato −1,53% nelle stesse date. Il catalizzatore della mattina è dunque verificare se questa relazione prosegua e quale aspettativa monetaria, se presente, l'abbia determinata.",
+  "lead": "Nessun dato domina oggi il calendario ufficiale. Fra 09/11/2026 e 16/11/2026 lo spread USD–EUR si è mosso di +10,0 pb, mentre EUR/USD ha registrato −1,60% nelle stesse date. Il catalizzatore della mattina è dunque verificare se questa relazione prosegua e quale aspettativa monetaria, se presente, l'abbia determinata.",
   "paragraphs": [
     "Il contesto viene dalla Fed del 28 ottobre: tassi invariati al 3,75–4,00%, con due membri favorevoli a un rialzo. La crescita continua a essere descritta come resistente, ma l'inflazione rimane il vincolo per un eventuale allentamento. Per il dollaro la domanda è quanto di questa prudenza sia già incorporato nei tassi e quanto possa ancora sorprendere il mercato.",
-    "Il differenziale governativo a due anni USD–EUR è +181 punti base al 13/11/2026; rispetto al 05/11/2026 è cambiato di +30,7 pb. Il fixing BCE di EUR/USD è 1,1014 al 16/11/2026, −0,34% sul fixing precedente. Confrontando invece rigorosamente le stesse date (05/11/2026–13/11/2026), lo spread si è mosso di +30,7 pb e il cambio di −1,53%. Nell'intervallo sulle stesse date, spread e prezzo si muovono nella direzione economicamente coerente; non dimostrano causalità. Il livello del governativo 2Y non sostituisce un confronto delle variazioni OIS/futures.",
+    "Il differenziale governativo a due anni USD–EUR è +172 punti base al 16/11/2026; rispetto al 09/11/2026 è cambiato di +10,0 pb. Il fixing BCE di EUR/USD è 1,0989 al 17/11/2026, −0,23% sul fixing precedente. Confrontando invece rigorosamente le stesse date (09/11/2026–16/11/2026), lo spread si è mosso di +10,0 pb e il cambio di −1,60%. Nell'intervallo sulle stesse date, spread e prezzo si muovono nella direzione economicamente coerente; non dimostrano causalità. Il livello del governativo 2Y non sostituisce un confronto delle variazioni OIS/futures.",
     "Il prossimo appuntamento è Labour Force, Australia il 19/11/2026 alle 01:30 italiane. Il confronto sui 2Y per AUD non è abbastanza aggiornato. Per la seduta di oggi, osserviamo il differenziale USD–EUR e la risposta di EUR/USD sulle date comuni disponibili.",
-    "Il banco di prova FX è EUR/USD. Nel modello delle coppie del 16/11/2026, USD ha il vantaggio relativo; il quadro resta con rischi. Il prezzo è coerente nell'orizzonte del modello, non necessariamente nell'ultimo fixing. Nel medesimo fixing USD/JPY si muove di −0,25% dal giorno precedente. Una sola controparte non dimostra forza generalizzata della valuta. La tesi economica non è un segnale d'ingresso finché pricing relativo e prezzo non convergono."
+    "Il banco di prova FX è EUR/USD. Nel modello delle coppie del 17/11/2026, USD ha il vantaggio relativo; il quadro resta con rischi. Il prezzo è coerente nell'orizzonte del modello, non necessariamente nell'ultimo fixing. Nel medesimo fixing USD/JPY si muove di −0,19% dal giorno precedente. Una sola controparte non dimostra forza generalizzata della valuta. La tesi economica non è un segnale d'ingresso finché pricing relativo e prezzo non convergono."
   ],
   "catalyst": {
     "title": "Oggi · tassi relativi e conferma valutaria",
@@ -37,14 +37,14 @@
       "text": "Se il prezzo di EUR/USD non conferma la direzione del tasso relativo, cercare altri driver prima di assegnare un bias FX."
     }
   ],
-  "verdict": "Al 13/11/2026 lo spread 2Y USD–EUR è +181 pb; il confronto allineato col cambio è concorde, senza prova causale. Un movimento relativo non è automaticamente un nuovo regime, ma EUR/USD richiede una conferma specifica. Questa lettura non produce un segnale di ingresso.",
+  "verdict": "Al 16/11/2026 lo spread 2Y USD–EUR è +172 pb; il confronto allineato col cambio è concorde, senza prova causale. Un movimento relativo non è automaticamente un nuovo regime, ma EUR/USD richiede una conferma specifica. Questa lettura non produce un segnale di ingresso.",
   "watch": "Seguire EUR/USD e USD/JPY, aggiornamenti dello spread USD–EUR su date omogenee, eventuali OIS/futures comparabili e pubblicazioni ufficiali rispetto ad attese documentate. Il COT è settimanale, non misura flussi intraday.",
   "relative_evidence": {
-    "aligned_from": "2026-11-05",
-    "aligned_to": "2026-11-13",
-    "two_year_spread_bp": 180.82,
-    "spread_change_aligned_bp": 30.66,
-    "pair_change_aligned_pct": -1.5324,
+    "aligned_from": "2026-11-09",
+    "aligned_to": "2026-11-16",
+    "two_year_spread_bp": 172.092,
+    "spread_change_aligned_bp": 10.005,
+    "pair_change_aligned_pct": -1.5992,
     "alignment": "COERENTE",
     "companion_pair": "USDJPY",
     "pair_model_quality": "CON RISCHI"
@@ -55,13 +55,9 @@
       "label": "Differenziale 2Y USD–EUR",
       "unit": "pb",
       "precision": 0,
-      "as_of": "2026-11-13",
-      "last_value": 180.82,
+      "as_of": "2026-11-16",
+      "last_value": 172.092,
       "points": [
-        {
-          "date": "2026-09-18",
-          "value": 154.4788
-        },
         {
           "date": "2026-09-21",
           "value": 161.2391
@@ -169,6 +165,10 @@
         {
           "date": "2026-11-13",
           "value": 180.8195
+        },
+        {
+          "date": "2026-11-16",
+          "value": 172.0925
         }
       ]
     },
@@ -176,13 +176,9 @@
       "label": "EUR/USD · fixing BCE",
       "unit": "",
       "precision": 4,
-      "as_of": "2026-11-16",
-      "last_value": 1.1014,
+      "as_of": "2026-11-17",
+      "last_value": 1.0989,
       "points": [
-        {
-          "date": "2026-10-08",
-          "value": 1.1186
-        },
         {
           "date": "2026-10-09",
           "value": 1.1206
@@ -290,6 +286,10 @@
         {
           "date": "2026-11-16",
           "value": 1.1014
+        },
+        {
+          "date": "2026-11-17",
+          "value": 1.0989
         }
       ]
     }
