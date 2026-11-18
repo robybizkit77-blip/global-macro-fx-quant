@@ -438,7 +438,7 @@
   },
   "economic_data_coverage": "8/8_G8_THREE_PILLARS",
   "eligible_for_trading_or_forward_backtest": false,
-  "fx_price_as_of": "2026-11-17",
+  "fx_price_as_of": "2026-11-18",
   "generated_europe_rome_day": "2026-11-18",
   "historic_PIT_OOS_not_certified": true,
   "pair_context": {
@@ -1426,9 +1426,9 @@
   "safe_to_recompute_structural_pair_theses": false,
   "safe_to_republish_D": false,
   "schema": "GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1",
-  "snapshot_content_sha256": "60d70c88783d7e5a1ddf44f260a1eb75280fa96d4da50c8baa22f188bb2bc270",
+  "snapshot_content_sha256": "1786a35454e7a60613e467d3e20a4751ce4d3c9539fd3e2e21513c342aaf9309",
   "source_observation_periods_not_release_days": true,
-  "source_receipt_sha256": "8aa4ca55bdc0c000a8fa25be7c55d2833a34f0d209cbdb9e250c4570ca489c04",
+  "source_receipt_sha256": "9c14875c23843145b4f86d70a6576f0a96af05f8bd9dccb7a0a21df3a7b302df",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
   "status": "OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL",
   "summary": {
