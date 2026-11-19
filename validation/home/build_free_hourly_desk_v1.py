@@ -270,7 +270,7 @@ def compact_news(row):
         "headline": row["headline"], "analysis": row["analysis"],
         "kind": row["kind"], "published_date": row["published_date"],
         "event_date": row["event_date"], "market_area": row["market_area"],
-        "sources": row["sources"]
+        "sources": row["sources"], "evidence": row["evidence"]
     }
 
 
@@ -322,6 +322,8 @@ def build(root: Path, now: datetime, previous=None, rss=None):
     official = []
     for h in rss_headlines:
         if not isinstance(h, dict) or not valid_url(h.get("url")):
+            continue
+        if (h.get("desk_context") or {}).get("topic") == "INSTITUTIONAL":
             continue
         stamped = clock(h.get("published_at_utc"))
         if stamped and stamped <= now + timedelta(minutes=5) and 0 <= (today-stamped.astimezone(ROME).date()).days <= 7:
@@ -401,60 +403,89 @@ def build(root: Path, now: datetime, previous=None, rss=None):
     # Source-linked evidence / official headlines, without pretending to have
     # read the body of RSS links. Narrative is based only on their titles.
     news = []
-    def add(headline, analysis, kind, published, event, area, sources):
+    def add(headline, analysis, kind, published, event, area, sources, evidence=""):
         urls = list(dict.fromkeys(u for u in sources if valid_url(u)))
         if not urls or len(news) >= 6 or not day(published) or not day(event):
             return
         news.append(compact_news(dict(headline=headline, analysis=analysis, kind=kind,
-            published_date=published, event_date=event, market_area=area, sources=urls)))
+            published_date=published, event_date=event, market_area=area, sources=urls, evidence=evidence)))
 
     if fx:
-        add(fx_headline + " al fixing BCE", sentence_join((fx_fact, monetary_evidence)), "FOLLOW_UP",
-            fx["date"], fx["date"], "FOREX", [ECB_FIXING])
+        rates_sources = [usd.get("source_url"), eur.get("source_url")] if comparative else []
+        rates_details = monetary_evidence if len(rates_sources) == 2 and all(map(valid_url, rates_sources)) else ""
+        fx_watch = (sentence_join((event_sentence, event_relevance))
+                    if catalyst and catalyst[1]["ccy"] in ("JPY", "EUR", "USD") else
+                    "La prossima verifica è capire se il movimento si estende agli altri cambi.")
+        add(fx_headline, sentence_join((fx_reading, fx_watch)), "FOLLOW_UP", fx["date"], fx["date"],
+            "FOREX", [ECB_FIXING] + (rates_sources if rates_details else []),
+            sentence_join((fx_fact, rates_details)))
+    if macro:
+        country = COUNTRIES.get(macro.get("ccy"), "")
+        macro_lead = macro_opening(macro, series) or (f"Aggiornamento macro {country}." if country else "")
+        if macro_lead:
+            macro_headline = macro_lead.rstrip(".")
+            if macro.get("metric_id") == "AU_UNEMP_RATE_SA":
+                macro_watch = "Per il dollaro australiano conta se, dopo il dato, cambiano le attese sui tassi."
+            else:
+                macro_watch = f"Il punto da seguire è se cambiano le attese sui tassi {country}."
+            add(macro_headline, macro_watch, "FOLLOW_UP", macro["as_of"], macro["as_of"], "MACRO",
+                [macro["source_url"]], macro["title"])
     if risk_closes:
         risk_date = risk_closes[0]["date"]
-        add("Azioni, volatilità e credito alla chiusura", sentence_join((risk_fact, contradiction)),
-            "FOLLOW_UP", risk_date, risk_date, "RISCHIO", [row["url"] for row in risk_closes])
+        credit = risk_by_label.get("spread high yield", 0)
+        shares = risk_by_label.get("S&P 500", 0)
+        risk_headline = ("Azioni in calo e credito più cauto" if shares < -.005 and credit > .5 else
+                         "Più cautela sul credito" if credit > .5 else
+                         "Si riduce il premio sul debito più rischioso" if credit < -.5 else
+                         "Wall Street sale" if shares > .005 else
+                         "Wall Street scende" if shares < -.005 else "Il quadro del rischio")
+        risk_watch = ("La volatilità in Borsa è scesa. Da seguire se la cautela nel credito si estende alle prossime sedute."
+                      if risk_by_label.get("VIX", 0) < -.005 and credit > .5 else
+                      "Da seguire se il movimento prosegue anche alla prossima chiusura.")
+        add(risk_headline, sentence_join((risk_story, risk_watch)), "FOLLOW_UP", risk_date, risk_date,
+            "RISCHIO", [row["url"] for row in risk_closes], risk_fact)
     if gold and oil:
         oil_label = "WTI" if wti else "Brent"
-        add("Oro e petrolio divergono nelle rilevazioni dei futures" if gold["change_1d_pct"] * oil["change_1d_pct"] < 0 else
-            "Oro e petrolio: segnali da distinguere nella lettura macro",
-            "I prezzi futures osservati offrono un confronto fra oro e " + oil_label +
-            ". Le differenze possono riflettere tassi reali, domanda energetica e rischio "
-            "globale, ma non dimostrano quali operatori abbiano comprato o venduto. "
-            "Serie di fonte secondaria, trattate come proxy direzionali." +
-            (f" Rilevazione del {short_date(day(gold['proxy_as_of']))}, oro {signed(gold['change_1d_pct'])}% "
-             f"e {oil_label} {signed(oil['change_1d_pct'])}%." if gold["proxy_as_of"] == oil["proxy_as_of"] else ""),
-            "FOLLOW_UP", min(gold["proxy_as_of"], oil["proxy_as_of"]),
-            min(gold["proxy_as_of"], oil["proxy_as_of"]), "COMMODITIES",
-            [gold["source_endpoint"], oil["source_endpoint"]])
-    if macro and valid_url(macro.get("source_url")):
-        if macro.get("metric_id") == "CA_CPI_HEADLINE_YOY_NSA":
-            macro_analysis = (
-                "Il CPI complessivo canadese misura la variazione dei prezzi su un anno. "
-                "Per valutarne l'effetto sulle attese BoC, confronta il dato con le attese "
-                "pre-rilascio, le componenti e il movimento dei tassi canadesi."
-            )
+        gold_date, oil_date = gold["proxy_as_of"], oil["proxy_as_of"]
+        commodity_date = max(gold_date, oil_date)
+        gold_change, oil_change = gold["change_1d_pct"], oil["change_1d_pct"]
+        movement = lambda delta: "sale" if delta > .005 else "scende" if delta < -.005 else "resta stabile"
+        if gold_date == oil_date:
+            commodity_headline = (f"Oro e petrolio in {'calo' if gold_change < 0 else 'rialzo'}"
+                                  if abs(gold_change) > .005 and abs(oil_change) > .005 and gold_change * oil_change > 0 else
+                                  f"L’oro {movement(gold_change)}, il petrolio {movement(oil_change)}")
+        elif gold_date > oil_date:
+            commodity_headline = f"L’oro {movement(gold_change)}"
         else:
-            macro_analysis = (
-                "Verifica composizione e revisioni nel comunicato prima di aggiornare le "
-                "aspettative sulla banca centrale. Per misurare una sorpresa serve un "
-                "consenso documentato prima della pubblicazione."
-            )
-        add(str(macro["title"]),
-            macro_analysis,
-            "FOLLOW_UP", macro["as_of"], macro["as_of"], "MACRO", [macro["source_url"]])
+            commodity_headline = f"Il petrolio {movement(oil_change)}"
+        commodity_watch = ("Se il movimento del petrolio prosegue, guarda come reagisce il dollaro canadese."
+                           if oil_date == commodity_date else
+                           "Per capire se il movimento dell’oro dura, vale la pena seguire anche la direzione del dollaro.")
+        commodity_evidence = (
+            f"Proxy futures da fonte secondaria. Oro {signed(gold_change)}% al {short_date(day(gold_date))}. "
+            f"{oil_label} {signed(oil_change)}% al {short_date(day(oil_date))}."
+        )
+        add(commodity_headline, commodity_watch, "FOLLOW_UP", commodity_date, commodity_date,
+            "COMMODITIES", [gold["source_endpoint"], oil["source_endpoint"]], commodity_evidence)
     for h in recent:
         if len(news) >= 6:
             break
         title = str(h["title"])
         ctx = h.get("desk_context") or {}
-        why = ctx.get("why_watch") or "Pubblicazione istituzionale da approfondire."
-        next_check = ctx.get("verify_next") or "Leggere l'atto originale e i dati relativi."
+        topic = ctx.get("topic")
+        why = {
+            "CB_POLICY": "Da capire se il messaggio cambia le attese sui tassi e come risponde la valuta.",
+            "MACRO_EXPECTATIONS": "Da seguire se le prospettive per crescita e prezzi cambiano le attese sui tassi.",
+            "CB_COMMUNICATION": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
+            "ENERGY_FUNDAMENTALS": "Per il petrolio, il passaggio da seguire è se cambiano le scorte o le forniture.",
+            "ENERGY_STRUCTURE": "Questo approfondimento aiuta a leggere come cambia l’offerta di energia.",
+        }.get(topic, ctx.get("why_watch") or "Il documento originale offre il contesto per approfondire la notizia.")
+        if topic == "ENERGY_STRUCTURE" and "middle east chokepoints" in title.lower():
+            why = "Più petrolio è transitato per queste rotte nel terzo trimestre. Il dato aiuta a capire da quali passaggi dipendono le forniture."
         # The publication headline is factual; any policy direction is NOT implied.
         when = clock(h["published_at_utc"]).astimezone(ROME).date().isoformat()
         kind = "NEWS" if (today-day(when)).days <= 1 else "FOLLOW_UP"
-        add(title, why + " " + next_check, kind, when, when,
+        add(title, why, kind, when, when,
             "ENERGIA" if h.get("ccy") == "ENERGY" else "BANCHE CENTRALI",
             [h["url"]])
     if not news:
@@ -468,6 +499,7 @@ def build(root: Path, now: datetime, previous=None, rss=None):
         "commodities": [(k, v.get("proxy_as_of"), v.get("change_1d_pct"))
                         for k, v in [("gold", gold), ("wti", wti), ("brent", brent)] if v],
         "rss": [(x.get("url"), x.get("published_at_utc")) for x in recent],
+        "news_reading": [(item["headline"], item["analysis"], item["evidence"], item["sources"]) for item in news],
         "session_reading": {"fx": fx, "risk": risk_closes, "headline": headline, "lead": lead,
                             "fx_implications": fx_interpretation,
                             "catalyst": (catalyst[0].isoformat(), catalyst[1]["title"]) if catalyst else None},

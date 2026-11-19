@@ -62,9 +62,15 @@ class FreeDeskTest(unittest.TestCase):
   self.assertIn("Alla chiusura del 12 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito",r["lead"])
   for key in ("headline","lead","desk_judgment","fx_implications","what_changed","watch","contrary_evidence"):
    self.assertNotRegex(r[key],r"\d+(?:,\d+)?\s*(?:%|pb\b|punti\b)|(?i:fixing|\bBCE\b)")
-  self.assertTrue(any("Dollaro misto al fixing BCE" == item["headline"] and
-                      "EUR/USD ha segnato +0,22% e USD/JPY +0,35%" in item["analysis"] for item in r["news"]))
-  self.assertTrue(any("S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb" in item["analysis"] for item in r["news"]))
+  fx=next(item for item in r["news"] if item["market_area"]=="FOREX")
+  self.assertEqual(fx["headline"],"Dollaro misto")
+  self.assertIn("ceduto contro l’euro e guadagnato contro lo yen",fx["analysis"])
+  self.assertIn("Al fixing BCE del 13 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%",fx["evidence"])
+  risk=next(item for item in r["news"] if item["market_area"]=="RISCHIO")
+  self.assertIn("Wall Street ha perso terreno",risk["analysis"])
+  self.assertIn("S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb",risk["evidence"])
+  for item in (fx,risk):
+   self.assertNotRegex(item["headline"]+" "+item["analysis"],r"\d+(?:,\d+)?\s*(?:%|pb\b)|(?i:fixing|\bBCE\b)")
   self.assertIn("VIX è sceso",r["contrary_evidence"])
   self.assertIn(free.ECB_FIXING,r["provenance"]["web_source_urls"])
   self.assertTrue(all(x["sources"] for x in r["news"]))
@@ -92,7 +98,10 @@ class FreeDeskTest(unittest.TestCase):
   r=self.build()
   self.assertTrue(r["lead"].startswith("In Australia la disoccupazione è aumentata a ottobre."))
   self.assertNotIn("4,9",r["lead"])
-  self.assertTrue(any("4,9%" in item["headline"] for item in r["news"]))
+  macro=next(item for item in r["news"] if item["market_area"]=="MACRO")
+  self.assertEqual(macro["headline"],"In Australia la disoccupazione è aumentata a ottobre")
+  self.assertNotIn("4,9%",macro["headline"]+" "+macro["analysis"])
+  self.assertIn("4,9%",macro["evidence"])
   self.assertIn("14 novembre alle 00:30 italiane",r["fx_implications"])
   self.assertIn("BoJ",r["fx_implications"])
   self.assertNotIn("13 novembre alle 00:30",r["fx_implications"])
@@ -181,6 +190,17 @@ class FreeDeskTest(unittest.TestCase):
    "url":"javascript:alert(1)","desk_context":{}}]}
   out=self.build(rss=rss)
   self.assertFalse(any(x["headline"]=="Unexpected rate cut" for x in out["news"]))
+ def test_institutional_notices_do_not_displace_news_with_market_context(self):
+  base={"ccy":"USD","published_at_utc":"2026-11-13T12:30:00Z"}
+  notice={**base,"title":"Federal Reserve issues enforcement notice",
+          "url":"https://www.federalreserve.gov/notice","desk_context":{"topic":"INSTITUTIONAL"}}
+  policy={**base,"title":"Federal Reserve monetary policy statement",
+          "url":"https://www.federalreserve.gov/statement","desk_context":{"topic":"CB_POLICY"}}
+  out=self.build(rss={"headlines":[notice,policy]})
+  self.assertFalse(any(notice["url"] in item["sources"] for item in out["news"]))
+  story=next(item for item in out["news"] if policy["url"] in item["sources"])
+  self.assertIn("attese sui tassi",story["analysis"])
+  self.assertNotIn("taglio",story["analysis"])
  def test_old_pulse_stops_refresh(self):
   with self.assertRaisesRegex(ValueError,"window"):
    self.build(now=NOW+timedelta(days=9))
