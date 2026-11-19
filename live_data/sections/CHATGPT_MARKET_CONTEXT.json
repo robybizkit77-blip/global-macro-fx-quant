@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-18T21:49:51Z",
-  "evaluation_date_europe_rome": "2026-11-18",
+  "generated_at_utc": "2026-11-19T03:12:55Z",
+  "evaluation_date_europe_rome": "2026-11-19",
   "reference_only": true,
   "policy": {
     "fail_closed": true,
@@ -15,7 +15,7 @@
     "ois_official": {
       "USD": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-17",
+        "as_of": "2026-11-18",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "EUR": {
@@ -141,13 +141,13 @@
     "government_rates": {
       "USD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-17",
-        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-17",
+        "as_of": "2026-11-18",
+        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-18",
         "government_2y_pct": 4.8,
-        "government_10y_pct": 5.1,
-        "10y_minus_2y_bp": 30.0,
+        "government_10y_pct": 5.07,
+        "10y_minus_2y_bp": 27.0,
         "change_2y_bp": 7.0,
-        "change_10y_bp": 12.0
+        "change_10y_bp": 9.0
       },
       "EUR": {
         "state": "AVAILABLE_CERTIFIED",
@@ -182,27 +182,27 @@
       "CHF": {
         "state": "STALE",
         "as_of": "2026-09-30",
-        "reason": "Age 49d exceeds the 3d alert limit."
+        "reason": "Age 50d exceeds the 3d alert limit."
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-16",
-        "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-16",
+        "as_of": "2026-11-17",
+        "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-17",
         "government_2y_pct": 3.3,
         "government_10y_pct": 3.81,
         "10y_minus_2y_bp": 51.0,
-        "change_2y_bp": 17.0,
-        "change_10y_bp": 18.0
+        "change_2y_bp": 5.0,
+        "change_10y_bp": 9.0
       },
       "AUD": {
         "state": "STALE",
         "as_of": "2026-11-11",
-        "reason": "Age 7d exceeds the 3d alert limit."
+        "reason": "Age 8d exceeds the 3d alert limit."
       },
       "NZD": {
         "state": "STALE",
         "as_of": "2026-10-16",
-        "reason": "Age 33d exceeds the 3d alert limit."
+        "reason": "Age 34d exceeds the 3d alert limit."
       }
     },
     "cot_weekly": {
