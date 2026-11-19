@@ -1,20 +1,20 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-18T20:37:37.322214Z",
-  "edition_time_rome": "2026-11-18 21:37",
-  "material_digest": "3a2a9da0a16e898d814787a51e51604f9dfb8af7066906c71c032f1d962f443b",
+  "generated_at_utc": "2026-11-19T02:37:38.618191Z",
+  "edition_time_rome": "2026-11-19 03:37",
+  "material_digest": "82cc8040e98ac67abb0121117d4a682c26c7ad2b5837297b638a0156e9294ab6",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-  "lead": "Il front-end USA ed europeo mostra una variazione relativa contenuta nella stessa finestra osservata. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate.",
+  "lead": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate.",
   "news": [
     {
-      "headline": "EUR/USD: -0.23% fra due fixing BCE",
-      "analysis": "Il movimento relativo di EUR/USD va letto fra aspettative Fed e BCE e confrontato con gli altri cambi per distinguere forza del dollaro da debolezza dell'euro. Il dato è un fixing BCE, non una reazione intraday.",
+      "headline": "Forza del dollaro sui cross EUR/USD e USD/JPY",
+      "analysis": "Due fixing BCE consecutivi indicano un USD più forte contro euro e yen. Il canale dei tassi USA–Eurozona può contribuire, mentre la BoJ e il rischio globale restano determinanti per il confronto con lo yen.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-17",
-      "event_date": "2026-11-17",
+      "published_date": "2026-11-18",
+      "event_date": "2026-11-18",
       "market_area": "FOREX",
       "sources": [
         "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
@@ -55,47 +55,47 @@
       ]
     },
     {
-      "headline": "Minutes of the Federal Open Market Committee, October 27-28, 2026",
+      "headline": "Statement by Governor UEDA concerning the Bank's Semiannual Report on Currency and Monetary Control (Committee on Financial Affairs, Senate)",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
       "kind": "NEWS",
+      "published_date": "2026-11-19",
+      "event_date": "2026-11-19",
+      "market_area": "BANCHE CENTRALI",
+      "sources": [
+        "https://www.boj.or.jp/en/mopo/diet/d_state/dst261119a.htm"
+      ]
+    },
+    {
+      "headline": "Minutes of the Federal Open Market Committee, October 27-28, 2026",
+      "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-18",
       "event_date": "2026-11-18",
       "market_area": "BANCHE CENTRALI",
       "sources": [
         "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261118a.htm"
       ]
-    },
-    {
-      "headline": "U.S. natural gas inventories end injection season above normal levels",
-      "analysis": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio. Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
-      "kind": "NEWS",
-      "published_date": "2026-11-18",
-      "event_date": "2026-11-18",
-      "market_area": "ENERGIA",
-      "sources": [
-        "https://www.eia.gov/todayinenergy/detail.php?id=68484"
-      ]
     }
   ],
-  "desk_judgment": "Il front-end USA ed europeo mostra una variazione relativa contenuta nella stessa finestra osservata. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
-  "fx_implications": "Il Forex va interpretato per coppie: per EUR/USD conta il confronto Fed–BCE, per USD/JPY quello Fed–BoJ e la componente di rischio globale. Negli ultimi fixing EUR/USD è sceso, ma distinguere forza USD da debolezza EUR richiede il confronto con altri cross.",
+  "desk_judgment": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
+  "fx_implications": "Negli ultimi fixing BCE il dollaro si è rafforzato sia contro euro sia contro yen. La forza cross va letta assieme ai tassi e al rischio globale. Per USD/JPY conta anche la traiettoria attesa della BoJ; per EUR/USD la differenza fra Fed e BCE.",
   "what_changed": "Sono entrate nuove osservazioni o pubblicazioni rispetto alla precedente edizione. La direzione relativa di tassi, Forex, credito e materie prime viene ricomposta in un solo quadro economico, senza attribuire automaticamente causalità.",
   "contrary_evidence": "Una ripresa delle azioni senza conferma del credito o con volatilità in aumento renderebbe più fragile l'interpretazione risk-on. Le ultime chiusure rappresentano osservazioni datate, non flussi attribuibili a specifici operatori.",
-  "watch": "Il prossimo catalizzatore sul calendario è Labour Force, Australia (AUD, 2026-11-19): conteranno sorpresa rispetto alle attese, composizione e risposta dei tassi relativi. Il confronto con credito, volatilità e fixing successivi aiuterà a distinguere un movimento persistente da uno temporaneo.",
+  "watch": "Il prossimo catalizzatore sul calendario è Japan Consumer Price Index (JPY, 2026-11-20): conteranno sorpresa rispetto alle attese, composizione e risposta dei tassi relativi. Il confronto con credito, volatilità e fixing successivi aiuterà a distinguere un movimento persistente da uno temporaneo.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
+      "https://www.boj.or.jp/en/mopo/diet/d_state/dst261119a.htm",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "https://www.eia.gov/todayinenergy/detail.php?id=68484",
       "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261118a.htm",
       "https://www.seco.admin.ch/en/gdp-flash"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-18",
-      "rss_checked_at_utc": "2026-11-18T20:37:37.322214Z",
+      "rss_checked_at_utc": "2026-11-19T02:37:38.618191Z",
       "commodities": "2026-11-18"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-18T20:37:37.322214Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "3a2a9da0a16e898d814787a51e51604f9dfb8af7066906c71c032f1d962f443b"
+    },
     {
       "generated_at_utc": "2026-11-18T11:50:05.725670Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
