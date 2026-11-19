@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-19T17:36:24.594487Z",
-  "edition_time_rome": "2026-11-19 18:36",
-  "material_digest": "cc060a74d3efb34e0395f5c75284a8d7fc44a59916a0fb32bb95aea93f582838",
+  "generated_at_utc": "2026-11-19T17:43:53.371843Z",
+  "edition_time_rome": "2026-11-19 18:43",
+  "material_digest": "7dc937726630ffc743dfbc153acb7b15b32383728b1131c776d275aef186fadc",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
-  "headline": "Dollaro misto al fixing BCE",
-  "lead": "In Australia la disoccupazione è aumentata a ottobre. Al fixing BCE del 19 novembre, il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
+  "headline": "Dollaro misto",
+  "lead": "In Australia la disoccupazione è aumentata a ottobre. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
   "news": [
     {
       "headline": "Dollaro misto al fixing BCE",
@@ -79,11 +79,11 @@
       ]
     }
   ],
-  "desk_judgment": "In Australia la disoccupazione è aumentata a ottobre. Al fixing BCE del 19 novembre, il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 18 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "desk_judgment": "In Australia la disoccupazione è aumentata a ottobre. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 18 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
   "fx_implications": "Il 20 novembre alle 00:30 italiane escono i prezzi al consumo in Giappone. Per lo yen conta se il dato sposta le attese sui tassi della BoJ.",
   "what_changed": "Nella seduta del 18 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
   "contrary_evidence": "Il VIX è sceso mentre il credito high yield ha chiesto uno spread più ampio. La tensione nel credito merita una verifica a parte.",
-  "watch": "Dopo la pubblicazione, confronta il movimento di JPY con le aspettative sui tassi, usando la stessa finestra.",
+  "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
@@ -99,7 +99,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-19",
-      "rss_checked_at_utc": "2026-11-19T17:36:24.594487Z",
+      "rss_checked_at_utc": "2026-11-19T17:43:53.371843Z",
       "commodities": "2026-11-19"
     },
     "no_paid_api": true,
@@ -107,6 +107,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-19T17:36:24.594487Z",
+      "headline": "Dollaro misto al fixing BCE",
+      "material_digest": "cc060a74d3efb34e0395f5c75284a8d7fc44a59916a0fb32bb95aea93f582838"
+    },
     {
       "generated_at_utc": "2026-11-19T17:29:10.677565Z",
       "headline": "Dollaro misto al fixing BCE",
@@ -221,11 +226,6 @@
       "generated_at_utc": "2026-11-13T21:27:06.441173Z",
       "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
       "material_digest": "976b0b80e7cbf3ad74247eb196790d7ee41f8d4bc2590cc7d80059f6b00c9214"
-    },
-    {
-      "generated_at_utc": "2026-11-13T20:10:40.753724Z",
-      "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
-      "material_digest": "1ae44c531c5a4aee5022166f2ce4bfc71080ed8b1073e7ddce2c8214021433e9"
     }
   ]
 }
