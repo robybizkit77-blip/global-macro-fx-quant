@@ -611,9 +611,8 @@ jobs:
               raise SystemExit('Daily inputs not ready: do not report all-green source freshness')
           PY
 
-      # All child refreshes, the Pages publish step and public HTTP proof
-      # have finished before this receipt is evaluated. A late success must
-      # remain LATE; it must not count as an 08:00 delivery.
+      # Record phase timing alongside any independent, already-observed Pages
+      # delivery. A delay in this phase remains a workflow failure.
       - name: Certify 08:00 morning delivery deadline
         if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
         shell: bash
@@ -628,16 +627,23 @@ jobs:
           python3 - <<'PY'
           import json, os
           d=json.load(open('/tmp/morning-delivery-sla-v1.json',encoding='utf-8'))
+          pages=d['pages_public_delivery']
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
               out.write('\n## 08:00 Europe/Rome delivery deadline\n')
-              out.write('- Result: **'+d['status']+'**\n')
+              out.write('- Orchestrator phase: **'+d['status']+'**\n')
               out.write('- Target: '+d['target_rome']+'\n')
-              out.write('- Evaluated: '+d['evaluated_at_rome']+'\n')
+              out.write('- Phase evaluated: '+d['evaluated_at_rome']+'\n')
               out.write('- Source + publication sequence passed: '+str(d['source_and_publication_sequence_successful'])+'\n')
-              out.write('- On-time: **'+str(d['on_time'])+'**\n')
+              out.write('- Phase on time: **'+str(d['on_time'])+'**\n')
+              out.write('- Public dashboard files: **'+pages['status']+'**\n')
+              if 'publisher_run_id' in pages:
+                  run_url=f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{pages['publisher_run_id']}"
+                  out.write(f"- Verified on Pages at {pages['public_verified_at_rome']} "
+                            f"({pages['verified_file_count']} exact files, [publisher receipt]({run_url}))\n")
               out.write('- Non-blocking data caveats: '+
                         (', '.join(d.get('documented_nonblocking_gaps',[])) or 'none')+'\n')
-          print('MORNING_0800_SLA_RESULT', d['status'], 'ON_TIME', d['on_time'])
+          print('MORNING_0800_SLA_RESULT', d['status'], 'PHASE_ON_TIME', d['on_time'],
+                'PUBLIC_PAGES', pages['status'])
           PY
           exit "$outcome"
 
