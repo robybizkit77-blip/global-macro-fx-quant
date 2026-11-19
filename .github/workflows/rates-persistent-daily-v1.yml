@@ -495,8 +495,8 @@ jobs:
             payload/part-15.txt
           git diff --cached --quiet && { echo 'No Rates changes to persist'; exit 0; }
           git commit -m 'Refresh daily Rates runtime from official sources'
-          # Bounded non-force retry for disjoint concurrent main changes.
-          # Overlapping Rates data/manifest changes remain a hard failure.
+          # Retry on latest main and rebuild overlapping generated files.
+          # Different concurrently committed Rates sources remain a hard failure.
           result="$(python3 validation/rates/push_rates_safe_v1.py --mode rates --base "$GITHUB_SHA")"
           echo "$result"
           if [[ "$result" == *'"status": "RATES_ALREADY_PUBLISHED_IDENTICAL"'* ]]; then
