@@ -1,34 +1,36 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-19T17:13:27.912730Z",
-  "edition_time_rome": "2026-11-19 18:13",
-  "material_digest": "75210ff3aaaf57f422ed0707ada31125f7015aa3b40bd70187062f116eb6ba4c",
-  "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
+  "generated_at_utc": "2026-11-19T17:29:10.677565Z",
+  "edition_time_rome": "2026-11-19 18:29",
+  "material_digest": "43aac5d4245f1292c8415fb1e3c6d4bb529921a2a920cb525116ac895334b52d",
+  "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
-  "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-  "lead": "Il front-end USA ed europeo mostra una variazione relativa contenuta nella stessa finestra osservata. Azioni, credito e volatilità restano le conferme da confrontare per identificare l'effettiva ampiezza della propensione al rischio.",
+  "headline": "Dollaro misto al fixing BCE",
+  "lead": "In Australia la disoccupazione di ottobre 2026 è al 4,9%. Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%. Alla chiusura del 18 novembre, S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb.",
   "news": [
     {
-      "headline": "Forza del dollaro sui cross EUR/USD e USD/JPY",
-      "analysis": "Due fixing BCE consecutivi indicano un USD più forte contro euro e yen. Il canale dei tassi USA–Eurozona può contribuire, mentre la BoJ e il rischio globale restano determinanti per il confronto con lo yen.",
+      "headline": "Dollaro misto al fixing BCE",
+      "analysis": "Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%. Nel confronto BCE del 19 novembre il dollaro ha ceduto contro euro e guadagnato contro yen. Sui dati del 18 novembre il differenziale governativo USA–area euro a due anni si è mosso di 0,7 punti base a favore degli USA.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-18",
-      "event_date": "2026-11-18",
+      "published_date": "2026-11-19",
+      "event_date": "2026-11-19",
       "market_area": "FOREX",
       "sources": [
         "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
       ]
     },
     {
-      "headline": "VIX: -0.90 punti nella chiusura del 2026-11-18",
-      "analysis": "La volatilità azionaria aumenta, mentre una lettura completa dello stress richiede il confronto con credito e valute cicliche. Nessun flusso o acquisto di protezione specifico è deducibile da questo solo livello.",
+      "headline": "Azioni, volatilità e credito alla chiusura",
+      "analysis": "Alla chiusura del 18 novembre, S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb. Il VIX è sceso mentre il credito high yield ha chiesto uno spread più ampio. La tensione nel credito merita una verifica a parte.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-18",
       "event_date": "2026-11-18",
       "market_area": "RISCHIO",
       "sources": [
-        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
       ]
     },
     {
@@ -57,7 +59,7 @@
     {
       "headline": "Federal Reserve Board issues enforcement action with former employee of First Security Bancorp",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
       "market_area": "BANCHE CENTRALI",
@@ -68,7 +70,7 @@
     {
       "headline": "Oil flows through Middle East chokepoints increased in the third quarter",
       "analysis": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio. Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
       "market_area": "ENERGIA",
@@ -77,14 +79,16 @@
       ]
     }
   ],
-  "desk_judgment": "Il front-end USA ed europeo mostra una variazione relativa contenuta nella stessa finestra osservata. Azioni, credito e volatilità restano le conferme da confrontare per identificare l'effettiva ampiezza della propensione al rischio. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
-  "fx_implications": "Negli ultimi fixing BCE il dollaro si è rafforzato sia contro euro sia contro yen. La forza cross va letta assieme ai tassi e al rischio globale. Per USD/JPY conta anche la traiettoria attesa della BoJ; per EUR/USD la differenza fra Fed e BCE.",
-  "what_changed": "Sono entrate nuove osservazioni o pubblicazioni rispetto alla precedente edizione. La direzione relativa di tassi, Forex, credito e materie prime viene ricomposta in un solo quadro economico, senza attribuire automaticamente causalità.",
-  "contrary_evidence": "Una ripresa delle azioni senza conferma del credito o con volatilità in aumento renderebbe più fragile l'interpretazione risk-on. Le ultime chiusure rappresentano osservazioni datate, non flussi attribuibili a specifici operatori.",
-  "watch": "Il prossimo catalizzatore sul calendario è Japan Consumer Price Index (JPY, 2026-11-20): conteranno sorpresa rispetto alle attese, composizione e risposta dei tassi relativi. Il confronto con credito, volatilità e fixing successivi aiuterà a distinguere un movimento persistente da uno temporaneo.",
+  "desk_judgment": "In Australia la disoccupazione di ottobre 2026 è al 4,9%. Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%. Alla chiusura del 18 novembre, S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb. Sui dati del 18 novembre il differenziale governativo USA–area euro a due anni si è mosso di 0,7 punti base a favore degli USA. Nelle rilevazioni del 19 novembre i proxy futures mostrano oro −0,85% e WTI −1,66%.",
+  "fx_implications": "Nel confronto BCE del 19 novembre il dollaro ha ceduto contro euro e guadagnato contro yen. Il 20 novembre alle 00:30 italiane escono i prezzi al consumo in Giappone. Per lo yen conta se il dato sposta le attese sui tassi della BoJ.",
+  "what_changed": "Sui dati del 18 novembre il differenziale governativo USA–area euro a due anni si è mosso di 0,7 punti base a favore degli USA.",
+  "contrary_evidence": "Il VIX è sceso mentre il credito high yield ha chiesto uno spread più ampio. La tensione nel credito merita una verifica a parte.",
+  "watch": "Dopo la pubblicazione, confronta il movimento di JPY con le aspettative sui tassi, usando la stessa finestra.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026",
@@ -95,7 +99,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-19",
-      "rss_checked_at_utc": "2026-11-19T17:13:27.912730Z",
+      "rss_checked_at_utc": "2026-11-19T17:29:10.677565Z",
       "commodities": "2026-11-19"
     },
     "no_paid_api": true,
@@ -103,6 +107,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-19T17:13:27.912730Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "75210ff3aaaf57f422ed0707ada31125f7015aa3b40bd70187062f116eb6ba4c"
+    },
     {
       "generated_at_utc": "2026-11-19T14:12:22.126666Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
@@ -217,11 +226,6 @@
       "generated_at_utc": "2026-11-13T18:53:05.550247Z",
       "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
       "material_digest": "f9b5d9c4ec2f460fd432586dd586b794aedd745fc7d648183766afe05b47f45a"
-    },
-    {
-      "generated_at_utc": "2026-11-13T15:09:02.310310Z",
-      "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
-      "material_digest": "2fd5977e478b2aaa37aaa6bc95e9bd3222a3d3ecce1adbe46aac067ce165107c"
     }
   ]
 }
