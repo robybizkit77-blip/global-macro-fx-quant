@@ -47,7 +47,7 @@ function explainEconomy(s,st){
  return {meaning,check};
 }
 function build(api){
- const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow}=api;
+ const {get,FX,FLAGS,NAMES,state,plot,pageHero,editorial,esc,fmt,sign,finite,dayNow}=api;
  const mdata=get('macro')?.currencies||{},catalog=get('macroSeries')||{},locDate=dayNow();
  const categories=['Crescita','Inflazione','Lavoro','Housing','Credito','Liquidità','Condizioni finanziarie','Rates','Lead / survey'];
  const country=FX.includes(state.ccy)?state.ccy:'USD';
@@ -117,9 +117,8 @@ function build(api){
  }
  function countryStrip(){
    return '<div class="macro-country-strip" role="group" aria-label="Scegli economia G8">'+FX.map(ccy=>{
-     const x=mdata[ccy],c=list(ccy).length;
      return '<button type="button" data-ms-country="'+ccy+'" class="macro-country '+(ccy===country?'active':'')+'" aria-pressed="'+String(ccy===country)+'">'
-       +'<span>'+FLAGS[ccy]+' '+ccy+'</span><strong>'+c+'</strong><small>serie storiche</small></button>';
+       +'<span>'+FLAGS[ccy]+' '+esc(NAMES[ccy])+'</span></button>';
    }).join('')+'</div>';
  }
  function thermoRecord(ccy,k){
@@ -162,83 +161,88 @@ function build(api){
    if(![p0,p1,p2,d0,d1].every(x=>finite(x)&&x>0))return null;
    const pc=(p0/p1-1)*100,prior=(p1/p2-1)*100,dc=(d0/d1-1)*100;
    const pct=x=>{const r=Math.round(x*10)/10;return (r>0?'+':r<0?'−':'')+fmt(Math.abs(r),1)+'%';};
-   const months=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto',
-                 'settembre','ottobre','novembre','dicembre'];
-   const time=months[Number(period.slice(5,7))-1]+' '+period.slice(0,4);
+   const time=periodLabel(period,'M');
    const soft=Math.abs(pc)<.05,falling=dc<-.05;
+   const spending=soft?'è rimasta quasi ferma':pc>0?'è aumentata':'è diminuita';
+   const income=Math.abs(dc)<.05?'è rimasto quasi fermo':dc>0?'è aumentato':'è diminuito';
+   const spendingHeadline=soft?'ristagnano':pc>0?'crescono':'scendono';
+   const incomeHeadline=Math.abs(dc)<.05?'cambia poco':dc>0?'sale':'arretra';
+   const context=soft&&prior>=.05?' dopo essere cresciuta nel mese precedente':'';
    return {
-     title:soft&&falling?'I consumi reali frenano, il reddito arretra.':
-       'Consumi e reddito reali: cosa sta cambiando?',
-     facts:'A '+time+' i consumi reali variano '+pct(pc)+' sul mese (contro '+
-       pct(prior)+' nel mese precedente); il reddito disponibile reale varia '+
-       pct(dc)+'. Sono valori al netto dei prezzi.',
+     title:soft&&falling&&prior>=.05?'I consumi reali frenano, il reddito arretra':
+       'I consumi reali '+spendingHeadline+' e il reddito '+incomeHeadline,
+     opening:'A '+time+' la spesa delle famiglie, al netto dell’inflazione, '+spending+context+
+       '. Nello stesso mese il reddito disponibile reale '+income+'.',
      why:soft&&falling?
-       'La spesa reale perde slancio mentre il reddito disponibile reale cala: è un segnale di cautela sulla domanda, non la prova di una recessione. Un mese non basta per confermare una svolta.':
-       'Il confronto fra spesa e reddito reali aiuta a leggere la domanda; composizione e persistenza vanno ancora verificate. Una sola pubblicazione non dimostra una svolta.',
-     limit:'I dati BEA/FRED sono storici revisionati, non prime pubblicazioni point-in-time. Non dimostrano da soli variazioni nelle attese Fed, nei futures OIS o nell’USD.',
-     verdict:soft&&falling?'DOMANDA REALE / FRENO DA CONFERMARE':
-       'DOMANDA REALE / QUADRO DA CONFERMARE',
-     watch:'Controlla le prossime letture di spesa reale, redditi e servizi, poi inflazione core e lavoro. Una tesi USD richiede anche conferme da aspettative Fed, tassi e prezzo.'
+       'Se la spesa delle famiglie resta debole, il mercato potrebbe aspettarsi tassi più bassi dalla Fed. Per il dollaro conta se scendono anche rispetto a quelli delle altre economie.':
+       'Da spesa e reddito si capisce quanto può reggere la domanda. Per il dollaro conta se le prossime letture cambiano le attese sui tassi più che nelle altre economie.',
+     watch:'Le prossime letture di spesa e reddito diranno se il movimento prosegue.',
+     detail:'A '+time+' i consumi reali variano '+pct(pc)+' sul mese (contro '+pct(prior)+
+       ' nel mese precedente). Il reddito disponibile reale varia '+pct(dc)+
+       '. Serie storiche riviste, pubblicate dal BEA e distribuite da FRED.'
    };
  }
+ function periodLabel(period,frequency){
+   const [year,month]=period.split('-').map(Number);
+   if(frequency==='Q')return ['primo','secondo','terzo','quarto'][Math.ceil(month/3)-1]+' trimestre del '+year;
+   return new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric',timeZone:'UTC'})
+     .format(new Date(Date.UTC(year,month-1,1)));
+ }
+ function recentDirection(record,kind){
+   const period=monthKey(record?.as_of),valid=record?.validation,frequency=record?.frequency;
+   const transformations=kind==='inflation'?['reported_yoy_rate','derived_yoy_from_index','yoy_pct_from_index']:['level'];
+   if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(period)||!['M','Q'].includes(frequency)||
+      !transformations.includes(record.transformation)||
+      !['source','history','latest','transformation'].every(key=>valid?.[key]===true))return null;
+   const [year,month]=period.split('-').map(Number);
+   const recent=12*(Number(locDate.slice(0,4))-year)+Number(locDate.slice(5,7))-month;
+   if(recent<0||recent>(frequency==='Q'?6:3)||record.as_of>locDate)return null;
+   if(!Array.isArray(record.history))return null;
+   const latest=record.history.at(-1),previous=record.history.at(-2);
+   if(![latest,previous].every(finite)||latest!==record.latest_value)return null;
+   const change=latest-previous;
+   return {direction:Math.abs(change)<.025?0:Math.sign(change),
+     period:(frequency==='Q'?'del ':'di ')+periodLabel(period,frequency)};
+ }
  function countryNarrative(){
-   const i=thermoRecord(country,'inflation'),l=thermoRecord(country,'labour');
-   const ih=Array.isArray(i?.history)?i.history:[],lh=Array.isArray(l?.history)?l.history:[];
-   const di=ih.length>1?ih.at(-1)-ih.at(-2):null,dl=lh.length>1?lh.at(-1)-lh.at(-2):null;
-   const id=finite(di)?di>0.025?1:di<-.025?-1:0:null;
-   const ld=finite(dl)?dl>.025?1:dl<-.025?-1:0:null;
-   const title=id===1&&ld===1?'L’inflazione risale, mentre il lavoro perde terreno.'
-     :id===1&&ld===-1?'L’inflazione risale, ma il lavoro per ora tiene.'
-     :id===-1&&ld===1?'La pressione sui prezzi cala; il lavoro si indebolisce.'
-     :id===-1&&ld===-1?'L’inflazione rallenta senza un netto deterioramento del lavoro.'
-     :id===0&&ld===1?'Prezzi quasi fermi, ma la disoccupazione sale.'
-     :id===1&&ld===0?'La pressione dei prezzi aumenta; il lavoro è più stabile.'
-     :id===-1&&ld===0?'I prezzi rallentano, il lavoro non cambia molto.'
-     :'I dati non indicano ancora una direzione unica.';
-   const countryName=({USD:'Negli Stati Uniti',EUR:'Nell’Eurozona',GBP:'Nel Regno Unito',JPY:'In Giappone',CHF:'In Svizzera',AUD:'In Australia',NZD:'In Nuova Zelanda',CAD:'In Canada'})[country]||'Nel Paese selezionato';
-   const a=finite(i?.latest_value)?'l’inflazione è '+fmt(i.latest_value,2)+'% al '+(i.as_of||'n.d.')+(finite(di)?' ('+sign(di,2,' punti percentuali')+' dalla rilevazione precedente)':'')
-     :'non abbiamo un dato d’inflazione validato';
-   const b=finite(l?.latest_value)?'la disoccupazione è '+fmt(l.latest_value,2)+'% al '+(l.as_of||'n.d.')+(finite(dl)?' ('+sign(dl,2,' punti percentuali')+' dalla rilevazione precedente)':'')
-     :'non abbiamo un dato di disoccupazione validato';
-   const facts=countryName+' '+a+', mentre '+b+'. I periodi possono essere diversi: è una fotografia macro, non una reazione a una singola pubblicazione.';
-   const why=id===1&&ld===1?'È un mix delicato: prezzi più persistenti possono limitare lo spazio per tagliare, mentre un lavoro meno solido aumenta il rischio sulla crescita.'
-     :id===1&&ld===-1?'Un lavoro che non peggiora insieme a prezzi in risalita rende meno immediata una lettura monetaria accomodante.'
-     :id===-1&&ld===1?'La combinazione rende più plausibile una pressione verso politiche meno restrittive, ma il mercato potrebbe averla già anticipata.'
-     :id===-1&&ld===-1?'Un’inflazione meno forte con disoccupazione in calo può migliorare il quadro senza implicare automaticamente tagli dei tassi.'
-     :id===1?'La pressione inflazionistica merita attenzione, ma un singolo dato non basta a determinare la prossima decisione della banca centrale.'
-     :ld===1?'Il lavoro manda un segnale di cautela. Servono conferme da occupazione, salari e credito.'
-     :'Non forzo una narrativa unica: aspetterei conferme dagli altri indicatori e da come reagiscono i tassi.';
-   const r=get('rates')?.[country],validR=r&&finite(r.chg2_bp)&&validDay(r.date)&&r.date<=dayNow();
-   const reading=validR?'Intanto il rendimento governativo 2Y '+country+' ha registrato '+sign(r.chg2_bp,1,' pb')+' nel feed, al '+date(r.date)+'. Questo movimento non misura da solo il repricing OIS.':'Per questa economia non abbiamo una variazione 2Y sufficientemente datata per confermare il repricing.';
-   const verdict=id===1&&ld===1?'TENSIONE PREZZI / LAVORO'
-     :id===1&&ld===-1?'PRESSIONE INFLAZIONISTICA'
-     :id===-1&&ld===1?'POSSIBILE ALLENTAMENTO'
-     :id===-1&&ld===-1?'MIX PIÙ COSTRUTTIVO':'QUADRO DA CONFERMARE';
-   const watch='Prossima verifica: inflazione core, occupazione e salari; poi curva OIS e risposta del 2Y. Senza sorpresa rispetto al consenso, questa è una lettura di contesto, non una previsione.';
-   if(country==='USD'){
-     const demand=usdHouseholdEvidence();
-     if(demand)return {
-       title:demand.title,
-       facts:facts+' '+demand.facts,
-       why:demand.why,
-       reading:reading+' '+demand.limit,
-       verdict:demand.verdict,
-       watch:demand.watch
-     };
-   }
-   return {title,facts,why,reading,verdict,watch};
+   const demand=country==='USD'?usdHouseholdEvidence():null;
+   if(demand)return demand;
+   const inflation=recentDirection(thermoRecord(country,'inflation'),'inflation');
+   const labour=recentDirection(thermoRecord(country,'labour'),'labour');
+   const i=inflation?.direction,l=labour?.direction;
+   const priceLine=inflation?['L’inflazione rallenta','L’inflazione cambia poco','L’inflazione sale'][i+1]:'';
+   const labourLine=labour?['la disoccupazione scende','la disoccupazione cambia poco','la disoccupazione aumenta'][l+1]:'';
+   const title=[priceLine,labourLine].filter(Boolean).join(' e ')||'Il quadro economico è da aggiornare';
+   const opening=inflation&&labour?
+     inflation.period===labour.period?'Le ultime letture di prezzi e disoccupazione sono '+inflation.period+'.':
+       'Il dato sui prezzi è '+inflation.period+' e quello sulla disoccupazione è '+labour.period+'.':
+     inflation?'L’ultima lettura dell’inflazione è '+inflation.period+'.':
+     labour?'L’ultima lettura della disoccupazione è '+labour.period+'.':'';
+   const why=i===1&&l===1?
+     'La maggiore pressione sui prezzi complica eventuali tagli dei tassi. La disoccupazione in aumento spinge nella direzione opposta. Per la valuta conta quale dei due segnali peserà di più sulle attese del mercato.':
+     i===1?'Se l’inflazione continua a salire, il mercato potrebbe aspettarsi tassi più alti più a lungo. La valuta può beneficiarne se le attese salgono anche rispetto a quelle delle altre economie.':
+     l===1?'Se la disoccupazione continua a salire, il mercato potrebbe anticipare tassi più bassi. La valuta può risentirne se le attese scendono più che nelle altre economie.':
+     i===-1&&l===-1?'Per la valuta conta se il mercato darà più peso alla minore pressione sui prezzi o alla tenuta del lavoro.':
+     i===-1?'Se il calo dell’inflazione prosegue, la banca centrale potrebbe avere più spazio per tagliare. Per la valuta conta quanto cambiano le attese sui tassi rispetto alle altre economie.':
+     'Per capire cosa cambia per la valuta, guarda se le nuove letture spostano le attese sui tassi rispetto alle altre economie.';
+   const watch=i===1&&l===1?'Servono altre letture di prezzi e occupazione per capire quale tendenza si rafforza.':
+     i===1?'Le prossime letture dei prezzi e dei salari diranno se la pressione persiste.':
+     l===1?'Occupazione e salari aiuteranno a capire se la debolezza del lavoro si sta allargando.':
+     'Le prossime letture di crescita, prezzi e lavoro daranno più contesto al quadro.';
+   return {title:title[0].toUpperCase()+title.slice(1),opening,why,watch};
  }
  function countryHero(){
-   const story=countryNarrative(),i=thermoRecord(country,'inflation'),l=thermoRecord(country,'labour');
+   const story=countryNarrative();
    return '<section class="macro-country-hero macro-narrative-edition"><div class="macro-country-narrative">'
-     +'<span class="chapter-kicker">IL DESK LEGGE / '+FLAGS[country]+' '+esc(NAMES[country])+'</span>'
-     +'<span class="macro-verdict-line"><i></i>'+esc(story.verdict)+'</span>'
+     +'<span class="chapter-kicker">'+FLAGS[country]+' '+esc(NAMES[country])+'</span>'
      +'<h2>'+esc(story.title)+'</h2>'
-     +'<p class="macro-opening">'+esc(story.facts)+'</p>'
+     +(story.opening?'<p class="macro-opening">'+esc(story.opening)+'</p>':'')
      +'<p class="macro-why">'+esc(story.why)+'</p>'
-     +'<p class="macro-market-note">'+esc(story.reading)+'</p>'
-     +'<div class="macro-next-evidence"><strong>CHE COSA CAMBIEREBBE IL GIUDIZIO</strong><p>'+esc(story.watch)+'</p></div>'
-     +'</div><div class="macro-two-thermometers">'+thermo(country,'inflation')+thermo(country,'labour')+'</div></section>';
+     +'<div class="macro-next-evidence"><strong>COSA SEGUIRE</strong><p>'+esc(story.watch)+'</p></div>'
+     +'<details class="macro-evidence"><summary>Apri dati, fonti e lettura dei tassi</summary>'
+     +'<div class="macro-two-thermometers">'+thermo(country,'inflation')+thermo(country,'labour')+'</div>'
+     +(story.detail?'<p class="macro-market-note">'+esc(story.detail)+'</p>':'')
+     +(editorial?.()||'')+'</details></div></section>';
  }
  function sourceChart(s,st){
    const mode=state.msView||'level',window=Number(state.msWindow||24),pts=st.h.slice(-window);
@@ -338,9 +342,7 @@ function build(api){
     +entries.map(([x,y])=>'<details><summary>'+esc(x)+'<span>＋</span></summary><p>'+esc(y)+'</p></details>').join('')+'</div></section>';
  }
  function render(){
-   const count=FX.reduce((acc,k)=>acc+list(k).length,0),cat=category(),s=selectedSeries(),st=stats(s||{});
-   return pageHero('GLOBAL MACRO / ANALISI','Macro Lab. <em>Prima la lettura, poi i dati.</em>','Scegli un’economia: trovi il quadro in parole semplici, il grafico utile e, soltanto se vuoi, tutto l’archivio storico.')
-    +'<div class="macro-studio-status"><span>◉ MACRO DYNAMICS · '+count+' SERIE STORICHE G8</span><span>FONTE REVISIONABILE · PERIODI INDIPENDENTI · NON POINT-IN-TIME</span></div>'
+   return pageHero('GLOBAL MACRO','Scenario macro','Scegli un’economia per vedere cosa sta cambiando e cosa può muovere la sua valuta.')
     +countryStrip()+countryHero()+macroResearch()
     +'<details class="macro-advanced" '+(state.msAdvanced?'open':'')+'><summary><span><strong>Vuoi andare più a fondo?</strong><small>Tabella storica, heatmap G8, confronto tra economie e definizioni: disponibili quando ti servono.</small></span><b>Apri gli approfondimenti ↗</b></summary><div class="macro-advanced-content">'
     +datedAudit()+heatUniverse()+relativePanel()+glossary()+'</div></details>'
