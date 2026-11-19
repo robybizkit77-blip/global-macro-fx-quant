@@ -1,28 +1,41 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-19T17:43:53.371843Z",
-  "edition_time_rome": "2026-11-19 18:43",
-  "material_digest": "7dc937726630ffc743dfbc153acb7b15b32383728b1131c776d275aef186fadc",
+  "generated_at_utc": "2026-11-19T17:58:03.583558Z",
+  "edition_time_rome": "2026-11-19 18:58",
+  "material_digest": "0be7cb2522630fd7f088124200885adb8d19c1b72a7ecdc2e1f850638d0f97ab",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
   "lead": "In Australia la disoccupazione è aumentata a ottobre. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
   "news": [
     {
-      "headline": "Dollaro misto al fixing BCE",
-      "analysis": "Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%. Sui dati del 18 novembre il differenziale governativo USA–area euro a due anni si è mosso di 0,7 punti base a favore degli USA.",
+      "headline": "Dollaro misto",
+      "analysis": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Il 20 novembre alle 00:30 italiane escono i prezzi al consumo in Giappone. Per lo yen conta se il dato sposta le attese sui tassi della BoJ.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
       "market_area": "FOREX",
       "sources": [
         "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
-      ]
+      ],
+      "evidence": "Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%."
     },
     {
-      "headline": "Azioni, volatilità e credito alla chiusura",
-      "analysis": "Alla chiusura del 18 novembre, S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb. Il VIX è sceso mentre il credito high yield ha chiesto uno spread più ampio. La tensione nel credito merita una verifica a parte.",
+      "headline": "In Australia la disoccupazione è aumentata a ottobre",
+      "analysis": "Per il dollaro australiano conta se, dopo il dato, cambiano le attese sui tassi.",
+      "kind": "FOLLOW_UP",
+      "published_date": "2026-11-19",
+      "event_date": "2026-11-19",
+      "market_area": "MACRO",
+      "sources": [
+        "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026"
+      ],
+      "evidence": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
+    },
+    {
+      "headline": "Azioni in calo e credito più cauto",
+      "analysis": "Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. La volatilità in Borsa è scesa. Da seguire se la cautela nel credito si estende alle prossime sedute.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-18",
       "event_date": "2026-11-18",
@@ -31,11 +44,12 @@
         "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
         "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
         "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
-      ]
+      ],
+      "evidence": "Alla chiusura del 18 novembre, S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb."
     },
     {
-      "headline": "Oro e petrolio: segnali da distinguere nella lettura macro",
-      "analysis": "I prezzi futures osservati offrono un confronto fra oro e WTI. Le differenze possono riflettere tassi reali, domanda energetica e rischio globale, ma non dimostrano quali operatori abbiano comprato o venduto. Serie di fonte secondaria, trattate come proxy direzionali. Rilevazione del 19 novembre, oro −0,85% e WTI −1,66%.",
+      "headline": "Oro e petrolio in calo",
+      "analysis": "Se il movimento del petrolio prosegue, guarda come reagisce il dollaro canadese.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
@@ -43,40 +57,32 @@
       "sources": [
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
         "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
-      ]
-    },
-    {
-      "headline": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%",
-      "analysis": "Verifica composizione e revisioni nel comunicato prima di aggiornare le aspettative sulla banca centrale. Per misurare una sorpresa serve un consenso documentato prima della pubblicazione.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-19",
-      "event_date": "2026-11-19",
-      "market_area": "MACRO",
-      "sources": [
-        "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026"
-      ]
-    },
-    {
-      "headline": "Federal Reserve Board issues enforcement action with former employee of First Security Bancorp",
-      "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-19",
-      "event_date": "2026-11-19",
-      "market_area": "BANCHE CENTRALI",
-      "sources": [
-        "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261119a.htm"
-      ]
+      ],
+      "evidence": "Proxy futures da fonte secondaria. Oro −0,85% al 19 novembre. WTI −1,66% al 19 novembre."
     },
     {
       "headline": "Oil flows through Middle East chokepoints increased in the third quarter",
-      "analysis": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio. Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
+      "analysis": "Più petrolio è transitato per queste rotte nel terzo trimestre. Il dato aiuta a capire da quali passaggi dipendono le forniture.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
       "market_area": "ENERGIA",
       "sources": [
         "https://www.eia.gov/todayinenergy/detail.php?id="
-      ]
+      ],
+      "evidence": ""
+    },
+    {
+      "headline": "U.S. natural gas inventories end injection season above normal levels",
+      "analysis": "Questo approfondimento aiuta a leggere come cambia l’offerta di energia.",
+      "kind": "NEWS",
+      "published_date": "2026-11-18",
+      "event_date": "2026-11-18",
+      "market_area": "ENERGIA",
+      "sources": [
+        "https://www.eia.gov/todayinenergy/detail.php?id=68484"
+      ],
+      "evidence": ""
     }
   ],
   "desk_judgment": "In Australia la disoccupazione è aumentata a ottobre. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 18 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
@@ -94,12 +100,12 @@
       "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "https://www.eia.gov/todayinenergy/detail.php?id=",
-      "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261119a.htm"
+      "https://www.eia.gov/todayinenergy/detail.php?id=68484"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-19",
-      "rss_checked_at_utc": "2026-11-19T17:43:53.371843Z",
+      "rss_checked_at_utc": "2026-11-19T17:58:03.583558Z",
       "commodities": "2026-11-19"
     },
     "no_paid_api": true,
@@ -107,6 +113,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-19T17:43:53.371843Z",
+      "headline": "Dollaro misto",
+      "material_digest": "7dc937726630ffc743dfbc153acb7b15b32383728b1131c776d275aef186fadc"
+    },
     {
       "generated_at_utc": "2026-11-19T17:36:24.594487Z",
       "headline": "Dollaro misto al fixing BCE",
@@ -221,11 +232,6 @@
       "generated_at_utc": "2026-11-14T09:14:12.974579Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "5be38cf16f2f2fdc7a1293c4418323aaf218b5cd3318531ac5b9347224f227ba"
-    },
-    {
-      "generated_at_utc": "2026-11-13T21:27:06.441173Z",
-      "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
-      "material_digest": "976b0b80e7cbf3ad74247eb196790d7ee41f8d4bc2590cc7d80059f6b00c9214"
     }
   ]
 }
