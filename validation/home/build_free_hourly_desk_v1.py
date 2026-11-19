@@ -200,7 +200,7 @@ def catalyst_text(event):
     if row.get("event_type") == "LABOUR":
         return (f"Il {when_text} escono i dati sul lavoro {country}.",
                 f"Per {ccy} conta se occupazione e salari cambiano le aspettative monetarie.")
-    return (f"Il {when_text} il calendario ufficiale indica: {title} ({ccy}).",
+    return (f"Il {when_text} è in programma {title} ({ccy}).",
             f"Da verificare la risposta dei tassi e di {ccy}.")
 
 
@@ -339,19 +339,19 @@ def build(root: Path, now: datetime, previous=None, rss=None):
     if fx:
         fx_word = {"strong": "Dollaro in rialzo", "weak": "Dollaro in calo",
                    "flat": "Dollaro stabile", "mixed": "Dollaro misto"}[fx["state"]]
-        fx_headline = f"{fx_word} al fixing BCE"
+        fx_headline = fx_word
         fixing_date = short_date(day(fx["date"]))
         fx_fact = (f"Al fixing BCE del {fixing_date}, EUR/USD ha segnato {signed(fx['eur_usd_pct'])}% "
                    f"e USD/JPY {signed(fx['usd_jpy_pct'])}%.")
         if fx["state"] == "mixed":
             direction = lambda value: "guadagnato" if value > .005 else "ceduto" if value < -.005 else "tenuto"
-            fx_reading = (f"Al fixing BCE del {fixing_date}, il dollaro ha "
+            fx_reading = (f"Il {fixing_date} il dollaro ha "
                           f"{direction(fx['usd_eur_pct'])} contro l’euro e {direction(fx['usd_jpy_pct'])} contro lo yen.")
         elif fx["state"] == "flat":
-            fx_reading = f"Al fixing del {fixing_date} il dollaro è rimasto sostanzialmente fermo contro euro e yen."
+            fx_reading = f"Il {fixing_date} il dollaro è rimasto stabile contro euro e yen."
         else:
             verb = "guadagnato" if fx["state"] == "strong" else "ceduto"
-            fx_reading = f"Al fixing del {fixing_date} il dollaro ha {verb} contro euro e yen."
+            fx_reading = f"Il {fixing_date} il dollaro ha {verb} contro euro e yen."
     if macro_fact and (not fx or fx["date"] < today.isoformat()):
         headline = macro_fact.rstrip(".")
     elif fx:
@@ -368,7 +368,7 @@ def build(root: Path, now: datetime, previous=None, rss=None):
         risk_fact = f"Alla chiusura del {risk_date}, " + ", ".join(moves[:-1]) + (" e " if len(moves)>1 else "") + moves[-1] + "."
     risk_story = risk_opening(risk_closes)
     lead = sentence_join((macro_fact, fx_reading, risk_story)) or (
-        f"Il quadro di mercato usa le ultime osservazioni verificate, con riferimento al {short_date(asof)}."
+        f"Il quadro di mercato resta quello del {short_date(asof)}, in attesa della prossima seduta."
     )
     monetary = monetary_evidence = ""
     if comparative:
@@ -383,11 +383,10 @@ def build(root: Path, now: datetime, previous=None, rss=None):
             favored = "degli Stati Uniti" if relative_bp > 0 else "dell’area euro"
             monetary = f"Nella seduta del {rates_date}, il confronto tra i rendimenti governativi a breve si è mosso a favore {favored}."
     fx_interpretation = sentence_join((event_sentence, event_relevance)) or (
-        "Il prossimo fixing BCE darà un riferimento comune per confrontare EUR/USD e USD/JPY."
+        "Da seguire se euro e yen si muovono nella stessa direzione contro il dollaro."
     )
-    watch = ("Dopo la pubblicazione, confronta il movimento di " + catalyst[1]["ccy"] +
-             " con le aspettative sui tassi, usando la stessa finestra.") if catalyst else (
-        "Al prossimo fixing BCE verifica se EUR/USD e USD/JPY continuano nella stessa direzione."
+    watch = ("Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.") if catalyst else (
+        "Nella prossima seduta, guarda se il movimento del dollaro si estende oltre le coppie che lo hanno guidato."
     )
     risk_by_label = {row["label"]: row["change"] for row in risk_closes}
     if risk_by_label.get("VIX", 0) < 0 < risk_by_label.get("spread high yield", 0):
@@ -395,7 +394,7 @@ def build(root: Path, now: datetime, previous=None, rss=None):
     elif fx and fx["state"] == "mixed":
         contradiction = "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen."
     else:
-        contradiction = "Per confermare il movimento, confronta il prossimo fixing con i differenziali di tasso sulla stessa finestra."
+        contradiction = "La tenuta del movimento dipende anche dal sostegno dei tassi a breve."
     judgment = sentence_join((lead, monetary))
     changes = monetary or fx_reading or macro_fact or risk_story or lead
 
@@ -410,7 +409,7 @@ def build(root: Path, now: datetime, previous=None, rss=None):
             published_date=published, event_date=event, market_area=area, sources=urls)))
 
     if fx:
-        add(fx_headline, sentence_join((fx_fact, monetary_evidence)), "FOLLOW_UP",
+        add(fx_headline + " al fixing BCE", sentence_join((fx_fact, monetary_evidence)), "FOLLOW_UP",
             fx["date"], fx["date"], "FOREX", [ECB_FIXING])
     if risk_closes:
         risk_date = risk_closes[0]["date"]
@@ -469,7 +468,8 @@ def build(root: Path, now: datetime, previous=None, rss=None):
         "commodities": [(k, v.get("proxy_as_of"), v.get("change_1d_pct"))
                         for k, v in [("gold", gold), ("wti", wti), ("brent", brent)] if v],
         "rss": [(x.get("url"), x.get("published_at_utc")) for x in recent],
-        "session_reading": {"fx": fx, "risk": risk_closes, "lead": lead,
+        "session_reading": {"fx": fx, "risk": risk_closes, "headline": headline, "lead": lead,
+                            "fx_implications": fx_interpretation,
                             "catalyst": (catalyst[0].isoformat(), catalyst[1]["title"]) if catalyst else None},
     }
     signature = hashlib.sha256(json.dumps(material, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
