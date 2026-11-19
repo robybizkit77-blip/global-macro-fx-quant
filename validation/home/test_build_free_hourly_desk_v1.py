@@ -25,6 +25,17 @@ class FreeDeskTest(unittest.TestCase):
   fixture=json.loads(FIXTURE.read_text(encoding="utf-8"))
   for name,data in fixture.items():
    (self.sections/(name+".json")).write_text(json.dumps(data),encoding="utf-8")
+  fx={"schema":"GMFQ_ECB_G8_PRICE_HISTORY_V1","status":"CURRENT_OFFICIAL_HISTORY","base":"EUR",
+      "source_url":free.ECB_FIXING,"last_as_of":"2026-11-13",
+      "rows":[{"Date":"2026-11-12","USD":1.0968,"JPY":174.85},
+              {"Date":"2026-11-13","USD":1.0992,"JPY":175.84}]}
+  (self.sections/"ECB_G8_PRICE_HISTORY.json").write_text(json.dumps(fx),encoding="utf-8")
+  market=self.root/"site/fx-quant-v2"
+  market.mkdir(parents=True)
+  closes={k:{"date":"2026-11-12","value":v,"previous":prior,"source_url":f"https://example.com/{k}",
+             "quality":"PUBLISHED_SOURCE_RESEARCH_ONLY","not_intraday":True}
+          for k,v,prior in (("SP500",7323.63,7340.53),("VIX",24.56,25.46),("HY_OAS",3.47,3.43))}
+  (market/"cross-asset-live-data.json").write_text(json.dumps({"streams":closes}),encoding="utf-8")
  def build(self,now=NOW,previous=None,rss=None):
   return free.build(self.root,now,previous=previous,rss=rss if rss is not None else {"headlines":[]})
  def test_no_paid_runtime_contract(self):
@@ -38,7 +49,7 @@ class FreeDeskTest(unittest.TestCase):
   self.assertIn("hourly-market-desk-check.json",workflow)
   self.assertIn("cron: '17 * * * *'",workflow)
   self.assertNotIn("mcp__Automations",workflow)
- def test_free_overview_is_general_and_source_linked(self):
+ def test_overview_describes_the_fixing_and_previous_close_with_sources(self):
   r=self.build()
   self.assertEqual(r["schema"],free.SCHEMA)
   self.assertEqual(r["status"],"ACTIVE")
@@ -46,21 +57,52 @@ class FreeDeskTest(unittest.TestCase):
   self.assertTrue(r["provenance"]["chatgpt_automation_unchanged"])
   self.assertGreaterEqual(len(r["news"]),3)
   self.assertLessEqual(len(r["news"]),6)
-  self.assertTrue(("dollaro" in r["headline"].lower() or
-                   "aspettative monetarie" in r["headline"].lower()),
-                  "Headline must reference observed FX/rates drivers without forcing a USD narrative")
-  self.assertTrue(("euro" in r["desk_judgment"].lower() or
-                   "termini relativi" in r["desk_judgment"].lower()),
-                  "FX judgment must compare monetary expectations, not force an EUR news angle")
-  self.assertIn("volatilità",r["desk_judgment"])
-  self.assertIn("oro",r["desk_judgment"].lower())
-  self.assertIn("petrolio",r["desk_judgment"].lower())
-  self.assertIn("Fed",r["fx_implications"])
-  self.assertIn("BoJ",r["fx_implications"])
-  self.assertNotIn("non possiamo",r["lead"].lower())
+  self.assertEqual(r["headline"],"Dollaro misto al fixing BCE")
+  self.assertIn("del 13 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%",r["lead"])
+  self.assertIn("Alla chiusura del 12 novembre, S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb",r["lead"])
+  self.assertIn("ceduto contro euro e guadagnato contro yen",r["fx_implications"])
+  self.assertIn("VIX è sceso",r["contrary_evidence"])
+  self.assertIn(free.ECB_FIXING,r["provenance"]["web_source_urls"])
   self.assertTrue(all(x["sources"] for x in r["news"]))
   self.assertEqual(sorted(set(u for n in r["news"] for u in n["sources"])),r["provenance"]["web_source_urls"])
   self.assertEqual(r["edition_time_rome"],"2026-11-13 14:14")
+ def test_macro_release_and_next_event_use_published_time_and_rome_date(self):
+  path=self.sections/"NEWS_PULSE_OPERATIONAL.json"
+  pulse=json.loads(path.read_text())
+  release={"category":"MACRO_OFFICIAL_ACTUAL","as_of":"2026-11-13","ccy":"AUD",
+           "metric_id":"AU_UNEMP_RATE_SA","first_runner_observed_at_utc":"2026-11-13T02:00:00Z",
+           "title":"Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%",
+           "source_url":"https://www.abs.gov.au/statistics/labour/labour-force"}
+  pulse["items"].insert(0,release)
+  path.write_text(json.dumps(pulse))
+  calendar=self.sections/"CALENDAR_OPERATIONAL_VIEW.json"
+  cpi={"title":"Japan Consumer Price Index","ccy":"JPY","event_type":"INFLATION",
+       "date":"2026-11-14","time_local":"08:30","timezone":"Asia/Tokyo",
+       "status":"UPCOMING","importance":"HIGH","quality":"OFFICIAL_CONFIRMED"}
+  passed={**cpi,"date":"2026-11-13"}
+  calendar.write_text(json.dumps({"events":[passed,cpi]}))
+  r=self.build()
+  self.assertTrue(r["lead"].startswith("In Australia la disoccupazione di ottobre 2026 è al 4,9%."))
+  self.assertIn("14 novembre alle 00:30 italiane",r["fx_implications"])
+  self.assertIn("BoJ",r["fx_implications"])
+  self.assertNotIn("13 novembre alle 00:30",r["fx_implications"])
+  release["first_runner_observed_at_utc"]="2026-11-13T23:59:00Z"
+  path.write_text(json.dumps(pulse))
+  self.assertNotIn("disoccupazione di ottobre",self.build()["lead"])
+ def test_later_fixing_changes_the_edition_without_news_pulse_update(self):
+  first=self.build()
+  p=self.sections/"ECB_G8_PRICE_HISTORY.json"
+  d=json.loads(p.read_text())
+  d["rows"][-1]["USD"]=1.0868
+  p.write_text(json.dumps(d))
+  second=self.build(now=NOW+timedelta(hours=1),previous=first)
+  self.assertNotEqual(first["material_digest"],second["material_digest"])
+  self.assertEqual(second["headline"],"Dollaro in rialzo al fixing BCE")
+  d["status"]="ESTIMATED"
+  p.write_text(json.dumps(d))
+  invalid=self.build()
+  self.assertNotIn("fixing BCE",invalid["headline"])
+  self.assertNotIn("USD/JPY",invalid["lead"])
  def test_no_recycled_hourly_story(self):
   first=self.build()
   again=self.build(now=NOW+timedelta(hours=1),previous=first)

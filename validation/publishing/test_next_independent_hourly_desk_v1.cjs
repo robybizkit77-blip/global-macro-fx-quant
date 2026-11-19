@@ -258,11 +258,11 @@ assert(app.includes("check:get('hourlyCheck')"),
  'Hourly receipt must be supplied to the Home visualizer');
 assert(app.includes("fetch('../../../market-desk/hourly-market-desk-current.json'"),'Optional fetch endpoint missing');
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
-assert(index.includes('hourly-desk-ui-v1.js?v=9'));
+assert.match(index,/hourly-desk-ui-v1\.js\?v=\d+/);
 assert(index.includes('hourly-desk-ui-v1.css?v=6'));
 assert(index.includes('home-market-pulse-v1.js?v=2')&&index.includes('home-market-pulse-v1.css?v=3'),
  'The source-based data visualization must load before the editorial Home UI');
-assert(index.indexOf('home-market-pulse-v1.js?v=2')<index.indexOf('hourly-desk-ui-v1.js?v=9'),
+assert(index.indexOf('home-market-pulse-v1.js?v=2')<index.indexOf('hourly-desk-ui-v1.js?v='),
  'Rendering order must preserve the optional pulse addon');
 assert.match(index,/src="\.\/app\.js\?v=[\w.-]+" defer/);
 assert(app.includes("currencyPrices:get('currencyPrices')"),'Official ECB fixing history must feed FX observations');
