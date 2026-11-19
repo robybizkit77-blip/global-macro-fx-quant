@@ -1,17 +1,17 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-19T17:29:10.677565Z",
-  "edition_time_rome": "2026-11-19 18:29",
-  "material_digest": "43aac5d4245f1292c8415fb1e3c6d4bb529921a2a920cb525116ac895334b52d",
+  "generated_at_utc": "2026-11-19T17:36:24.594487Z",
+  "edition_time_rome": "2026-11-19 18:36",
+  "material_digest": "cc060a74d3efb34e0395f5c75284a8d7fc44a59916a0fb32bb95aea93f582838",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto al fixing BCE",
-  "lead": "In Australia la disoccupazione di ottobre 2026 è al 4,9%. Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%. Alla chiusura del 18 novembre, S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb.",
+  "lead": "In Australia la disoccupazione è aumentata a ottobre. Al fixing BCE del 19 novembre, il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
   "news": [
     {
       "headline": "Dollaro misto al fixing BCE",
-      "analysis": "Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%. Nel confronto BCE del 19 novembre il dollaro ha ceduto contro euro e guadagnato contro yen. Sui dati del 18 novembre il differenziale governativo USA–area euro a due anni si è mosso di 0,7 punti base a favore degli USA.",
+      "analysis": "Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%. Sui dati del 18 novembre il differenziale governativo USA–area euro a due anni si è mosso di 0,7 punti base a favore degli USA.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
@@ -35,7 +35,7 @@
     },
     {
       "headline": "Oro e petrolio: segnali da distinguere nella lettura macro",
-      "analysis": "I prezzi futures osservati offrono un confronto fra oro e WTI. Le differenze possono riflettere tassi reali, domanda energetica e rischio globale, ma non dimostrano quali operatori abbiano comprato o venduto. Serie di fonte secondaria, trattate come proxy direzionali.",
+      "analysis": "I prezzi futures osservati offrono un confronto fra oro e WTI. Le differenze possono riflettere tassi reali, domanda energetica e rischio globale, ma non dimostrano quali operatori abbiano comprato o venduto. Serie di fonte secondaria, trattate come proxy direzionali. Rilevazione del 19 novembre, oro −0,85% e WTI −1,66%.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
@@ -79,9 +79,9 @@
       ]
     }
   ],
-  "desk_judgment": "In Australia la disoccupazione di ottobre 2026 è al 4,9%. Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%. Alla chiusura del 18 novembre, S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb. Sui dati del 18 novembre il differenziale governativo USA–area euro a due anni si è mosso di 0,7 punti base a favore degli USA. Nelle rilevazioni del 19 novembre i proxy futures mostrano oro −0,85% e WTI −1,66%.",
-  "fx_implications": "Nel confronto BCE del 19 novembre il dollaro ha ceduto contro euro e guadagnato contro yen. Il 20 novembre alle 00:30 italiane escono i prezzi al consumo in Giappone. Per lo yen conta se il dato sposta le attese sui tassi della BoJ.",
-  "what_changed": "Sui dati del 18 novembre il differenziale governativo USA–area euro a due anni si è mosso di 0,7 punti base a favore degli USA.",
+  "desk_judgment": "In Australia la disoccupazione è aumentata a ottobre. Al fixing BCE del 19 novembre, il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 18 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "fx_implications": "Il 20 novembre alle 00:30 italiane escono i prezzi al consumo in Giappone. Per lo yen conta se il dato sposta le attese sui tassi della BoJ.",
+  "what_changed": "Nella seduta del 18 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
   "contrary_evidence": "Il VIX è sceso mentre il credito high yield ha chiesto uno spread più ampio. La tensione nel credito merita una verifica a parte.",
   "watch": "Dopo la pubblicazione, confronta il movimento di JPY con le aspettative sui tassi, usando la stessa finestra.",
   "provenance": {
@@ -99,7 +99,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-19",
-      "rss_checked_at_utc": "2026-11-19T17:29:10.677565Z",
+      "rss_checked_at_utc": "2026-11-19T17:36:24.594487Z",
       "commodities": "2026-11-19"
     },
     "no_paid_api": true,
@@ -107,6 +107,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-19T17:29:10.677565Z",
+      "headline": "Dollaro misto al fixing BCE",
+      "material_digest": "43aac5d4245f1292c8415fb1e3c6d4bb529921a2a920cb525116ac895334b52d"
+    },
     {
       "generated_at_utc": "2026-11-19T17:13:27.912730Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
@@ -221,11 +226,6 @@
       "generated_at_utc": "2026-11-13T20:10:40.753724Z",
       "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
       "material_digest": "1ae44c531c5a4aee5022166f2ce4bfc71080ed8b1073e7ddce2c8214021433e9"
-    },
-    {
-      "generated_at_utc": "2026-11-13T18:53:05.550247Z",
-      "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
-      "material_digest": "f9b5d9c4ec2f460fd432586dd586b794aedd745fc7d648183766afe05b47f45a"
     }
   ]
 }
