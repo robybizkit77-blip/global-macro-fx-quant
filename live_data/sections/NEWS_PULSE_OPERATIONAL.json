@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-19",
-  "generated_at_utc": "2026-11-19T21:40:58.662203Z",
+  "generated_at_utc": "2026-11-19T23:42:25.645660Z",
   "items": [
     {
       "as_of": "2026-11-19",
@@ -238,7 +238,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-19T21:40:58.662203Z",
+  "last_checked_at_utc": "2026-11-19T23:42:25.645660Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1134,7 +1134,7 @@
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/financial-system-remains-resilient-as-global-risks-increase"
       }
     ],
-    "last_attempt_day_rome": "2026-11-19",
+    "last_attempt_day_rome": "2026-11-20",
     "latest_published_at_utc": "2026-11-19T16:00:58Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
