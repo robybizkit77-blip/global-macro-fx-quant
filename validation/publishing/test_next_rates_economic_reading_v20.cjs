@@ -54,7 +54,7 @@ const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'u
 const rates=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/rates-studio.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
 assert(page.includes('rates-economic-reading.js?v=20'));
-assert(page.includes('rates-studio.js?v=8'));
+assert(page.includes('rates-studio.js?v=9'));
 assert(page.includes('rates-relative-pricing-v1.js?v=1'));
 assert(page.includes('rates-pricing-history-v1.js?v=1'));
 assert(page.includes('rates-pricing-moves-v1.js?v=1'));
@@ -78,20 +78,23 @@ assert(rates.includes('m.headline')&&rates.includes('m.pricingEvidence')&&rates.
 const scriptWindow={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/next/currency-data-fallback.js'),'utf8'),scriptWindow);
 vm.runInNewContext(rates,scriptWindow);
+vm.runInNewContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/next/research-editorials.js'),'utf8'),scriptWindow);
 const spot=load('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json');
 const chf=load('site/fx-quant-v2/chf-snb-paired-history.json');
 const nzd=load('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
 const data={rates:gov,chfSpot:spot,chfResearch:chf,nzdPostroll:nzd,ois:{currencies:money}};
 const liveDay=[spot.as_of,nzd.source_capture_date].sort().at(-1);
-function render(ccy,overrides={},plots=[]){
+function render(ccy,overrides={},plots=[],editorial=false){
  const fxData={...data,...overrides};
- return scriptWindow.window.FXQuantRates.render({
+ const api={
   get:key=>fxData[key],FX:names,FLAGS:{},NAMES:{},state:{ccy,against:'USD'},
   plot:spec=>{plots.push(spec);return '';},pageHero:()=>'',esc:x=>String(x??''),fmt:(x,n)=>Number.isFinite(x)?x.toFixed(n):'—',
   sign:()=>'',date:x=>x||'—',finite:Number.isFinite,
   validDay:x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x),
   dayNow:()=>liveDay
- });
+ };
+ return editorial?scriptWindow.window.FXQuantResearchEditorial.create(api).render('rates'):
+  scriptWindow.window.FXQuantRates.render(api);
 }
 const chfPlots=[];
 const chfLatest=chf.observations.at(-1);
@@ -107,6 +110,10 @@ assert(chfFxPlot.lines[0].values.every(x=>x.label<=gov.CHF.date),'Research obser
 const invalidChf=render('CHF',{chfResearch:{...chf,eligible_for_core:true}});
 assert.match(invalidChf,new RegExp('GOV '+gov.CHF.date));
 assert.doesNotMatch(invalidChf,/data-gov-paired=/);
+const essay=render('CHF',{},[],true);
+assert.match(essay,new RegExp('Nella serie storica SNB del '+chfLatest.date));
+assert.match(essay,/bull flattening/);
+assert.doesNotMatch(essay,new RegExp('Al '+gov.CHF.date+' il governativo'));
 assert.match(render('NZD'),new RegExp('data-gov-reference="NZD".*'+nzd.daily_observations.at(-1).date));
 assert.doesNotMatch(render('CHF',{chfSpot:{...spot,source_url:'https://invalid.example'}}),/data-gov-reference=/);
 assert.doesNotMatch(render('NZD',{nzdPostroll:{...nzd,daily_observations:{}}}),/data-gov-reference=/);

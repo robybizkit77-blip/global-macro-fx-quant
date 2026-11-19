@@ -5,15 +5,25 @@
  * No mixed-date curve lines, no fabricated OIS/term premium/market-implied probabilities.
  */
 (function(root){
+function chfGovernmentHistory(get,now){
+ const feed=get('chfResearch');
+ const context=root.FXQuantCurrencyFallback?.researchRatesAxis(
+   'CHF',feed,null,get('rates'),now);
+ return context?.status==='STORICO_UFFICIALE_NON_OPERATIVO'?feed.observations:[];
+}
+function chfGovernmentSnapshot(rows){
+ const last=rows.at(-1),previous=rows.at(-2);
+ return last&&previous?{date:last.date,'2Y':last['2Y'],'10Y':last['10Y'],
+   chg2_bp:((last['2Y']-previous['2Y'])*100),
+   chg10_bp:((last['10Y']-previous['10Y'])*100),
+   quality:'SNB · STORICO UFFICIALE'}:null;
+}
 function make(api){
  const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow}=api;
  const TERMS=['3m','6m','12m'],PAIR_MODES=['2y','10y','slope','spread2y'];
  const dataR=c=>get('rates')?.[c],dataO=c=>get('ois')?.currencies?.[c],dataB=c=>get('cb')?.[c];
- const chfFeed=get('chfResearch');
- const chfContext=root.FXQuantCurrencyFallback?.researchRatesAxis(
-   'CHF',chfFeed,null,get('rates'),dayNow());
- const chfHistory=chfContext?.status==='STORICO_UFFICIALE_NON_OPERATIVO'
-   ?chfFeed.observations:[];
+ const chfHistory=chfGovernmentHistory(get,dayNow());
+ const chfSnapshot=chfGovernmentSnapshot(chfHistory);
  const dateDiff=(a,b)=>validDay(a)&&validDay(b)?Math.abs((Date.parse(a+'T12:00:00Z')-Date.parse(b+'T12:00:00Z'))/864e5):null;
  const freshness=d=>{let days=dateDiff(d,dayNow());return days===null?'DATA ASSENTE':days>12?'STORICO':days>5?'DA VERIFICARE':'RECENTE';};
  function usable(c){
@@ -31,11 +41,7 @@ function make(api){
      .sort((x,y)=>x.date.localeCompare(y.date));
  }
  function displayedSovereign(c){
-   const canonical=usable(c);
-   const observed=c==='CHF'?chfHistory.at(-1):null;
-   if(!canonical||!observed||observed.date<=canonical.date)return canonical;
-   return {date:observed.date,'2Y':observed['2Y'],'10Y':observed['10Y'],
-     quality:'SNB · STORICO UFFICIALE'};
+   return (c==='CHF'&&chfSnapshot)||usable(c);
  }
  function displayedSovereignRows(c){
    const rows=sovereignRows(c);
@@ -149,7 +155,7 @@ function make(api){
     const source='https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates';
     const shown=displayedSovereign(c)?.date||canonicalDate;
     const paired=shown>canonicalDate
-     ?'<p class="source-caption" data-gov-paired="CHF"><a href="'+esc(chfFeed.source_url)
+     ?'<p class="source-caption" data-gov-paired="CHF"><a href="'+esc(get('chfResearch').source_url)
        +'">SNB · Serie storica dei governativi svizzeri</a>. 2Y e 10Y del '+esc(date(shown))
        +' provengono dalla stessa rilevazione.</p>':'';
     if(spot?.schema!=='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'||
@@ -351,5 +357,5 @@ function make(api){
  }
  return render();
 }
-root.FXQuantRates={render:make};
+root.FXQuantRates={render:make,chfSnapshot:(get,now)=>chfGovernmentSnapshot(chfGovernmentHistory(get,now))};
 })(window);
