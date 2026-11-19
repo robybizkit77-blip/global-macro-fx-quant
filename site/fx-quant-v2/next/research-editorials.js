@@ -54,18 +54,20 @@
     ],asof:showPeriod(i?.as_of)+' · lavoro '+showPeriod(l?.as_of),next:'rates',nextLabel:'Confronta con Tassi & OIS'};
   }
   function ratesEssay(){
-   const c=country,r=rates[c],h=ois[c]?.horizons?.['6m'],o=ois[c],rO=rates[state.against]||null;
+   const c=country,canonical=rates[c],h=ois[c]?.horizons?.['6m'],o=ois[c],rO=rates[state.against]||null;
+   const snb=c==='CHF'&&typeof window!=='undefined'&&window.FXQuantRates?.chfSnapshot?.(get,dayNow());
+   const r=snb||canonical;
    const rOK=r&&finite(r['2Y'])&&finite(r['10Y'])&&finite(r.chg2_bp)&&finite(r.chg10_bp)&&isDate(r.date);
    const front=rOK?r.chg2_bp:null,long=rOK?r.chg10_bp:null;
    const both=finite(front)&&finite(long)&&(front>0&&long>0||front<0&&long<0);
    const curve=both?(front<0?(front<long?'bull steepening':'bull flattening'):(front>long?'bear flattening':'bear steepening')):'movimento di curva non univoco';
-   const description=rOK?'Al '+date(r.date)+' il governativo 2Y di '+c+' è '+fmt(r['2Y'],3)+'%, il 10Y '+fmt(r['10Y'],3)+'%; le variazioni sono '+move(front)+' e '+move(long)+'. La lettura di forma è '+curve+'.'
+   const description=rOK?(snb?'Nella serie storica SNB del ':'Al ')+date(r.date)+' il governativo 2Y di '+c+' è '+fmt(r['2Y'],3)+'%, il 10Y '+fmt(r['10Y'],3)+'%; le variazioni sono '+move(front)+' e '+move(long)+'. La lettura di forma è '+curve+'.'
     :'Per '+c+' non abbiamo contemporaneamente livelli e variazioni verificabili di 2Y e 10Y, quindi non assegniamo un nuovo regime alla curva.';
    const repricing=h&&finite(h.rate)&&isDate(h.as_of)
     ?'Il riferimento 6M è '+fmt(h.rate,3)+'% al '+date(h.as_of)+' ('+(o.kind||'strumento non specificato')+', '+(o.quality||'qualità da verificare')+'). '+(finite(h.change_1d_bp)?'La sua variazione a un giorno è '+move(h.change_1d_bp)+'.':'Non è disponibile una variazione 1D validata: il livello non racconta come sono cambiate oggi le attese.')
     :'Il 6M non presenta data e livello validati: non deduciamo il repricing dai soli governativi.';
-   const spread=rOK&&rO&&finite(rO['2Y'])&&rO.date===r.date
-    ?'Il differenziale governativo 2Y '+c+'–'+state.against+' è '+sign((r['2Y']-rO['2Y'])*100,1,' pb')+' sulla medesima data. È uno spread osservato, non il rendimento atteso di un cross FX.'
+   const spread=rOK&&finite(canonical?.['2Y'])&&isDate(canonical.date)&&rO&&finite(rO['2Y'])&&rO.date===canonical.date
+    ?'Il differenziale governativo 2Y '+c+'–'+state.against+' è '+sign((canonical['2Y']-rO['2Y'])*100,1,' pb')+' al '+date(canonical.date)+'. È uno spread osservato, non il rendimento atteso di un cross FX.'
     :'Il differenziale tra governativi non è confrontabile sulla stessa data oppure manca uno dei due benchmark: non mostriamo uno spread come simultaneo.';
    const alternatives=front<0?'Un 2Y in calo può riflettere attese di tassi più bassi oppure una domanda di duration. Il 10Y, i real yields e il credito aiutano a distinguere le spiegazioni.'
     :front>0?'Un 2Y in rialzo può derivare da aspettative monetarie più restrittive, ma il long-end può essere guidato anche da crescita, term premium e offerta.'
