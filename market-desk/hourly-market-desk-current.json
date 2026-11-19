@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-19T11:47:26.789573Z",
-  "edition_time_rome": "2026-11-19 12:47",
-  "material_digest": "dba3787accca51b6da258d347e8b80871617486a7471d4ec6c2e9e521b264709",
+  "generated_at_utc": "2026-11-19T14:12:22.126666Z",
+  "edition_time_rome": "2026-11-19 15:12",
+  "material_digest": "4733ab22cd7ab55b6842be39b815a0848e2b1433028cd0ea9be6574c7b2d69b5",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-  "lead": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. Azioni, credito e volatilità restano le conferme da confrontare per identificare l'effettiva ampiezza della propensione al rischio.",
+  "lead": "Il front-end USA ed europeo mostra una variazione relativa contenuta nella stessa finestra osservata. Azioni, credito e volatilità restano le conferme da confrontare per identificare l'effettiva ampiezza della propensione al rischio.",
   "news": [
     {
       "headline": "Forza del dollaro sui cross EUR/USD e USD/JPY",
@@ -57,7 +57,7 @@
     {
       "headline": "Cyber resilience guidance consultation and AI and quantum effective practices",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
       "market_area": "BANCHE CENTRALI",
@@ -68,7 +68,7 @@
     {
       "headline": "Minutes of the Market Participants Group meeting – 18 November 2026",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
       "market_area": "BANCHE CENTRALI",
@@ -77,7 +77,7 @@
       ]
     }
   ],
-  "desk_judgment": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. Azioni, credito e volatilità restano le conferme da confrontare per identificare l'effettiva ampiezza della propensione al rischio. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
+  "desk_judgment": "Il front-end USA ed europeo mostra una variazione relativa contenuta nella stessa finestra osservata. Azioni, credito e volatilità restano le conferme da confrontare per identificare l'effettiva ampiezza della propensione al rischio. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
   "fx_implications": "Negli ultimi fixing BCE il dollaro si è rafforzato sia contro euro sia contro yen. La forza cross va letta assieme ai tassi e al rischio globale. Per USD/JPY conta anche la traiettoria attesa della BoJ; per EUR/USD la differenza fra Fed e BCE.",
   "what_changed": "Sono entrate nuove osservazioni o pubblicazioni rispetto alla precedente edizione. La direzione relativa di tassi, Forex, credito e materie prime viene ricomposta in un solo quadro economico, senza attribuire automaticamente causalità.",
   "contrary_evidence": "Una ripresa delle azioni senza conferma del credito o con volatilità in aumento renderebbe più fragile l'interpretazione risk-on. Le ultime chiusure rappresentano osservazioni datate, non flussi attribuibili a specifici operatori.",
@@ -95,7 +95,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-19",
-      "rss_checked_at_utc": "2026-11-19T11:47:26.789573Z",
+      "rss_checked_at_utc": "2026-11-19T14:12:22.126666Z",
       "commodities": "2026-11-19"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-19T11:47:26.789573Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "dba3787accca51b6da258d347e8b80871617486a7471d4ec6c2e9e521b264709"
+    },
     {
       "generated_at_utc": "2026-11-19T02:37:38.618191Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
