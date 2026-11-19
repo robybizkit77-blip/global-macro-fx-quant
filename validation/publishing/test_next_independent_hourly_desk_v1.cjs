@@ -224,6 +224,11 @@ assert(out.includes('class="hourly-navigation-grid"'),'Direct research tools nav
 assert(out.includes('class="hourly-evidence-peek"'),'At-a-glance headlines must show evidence');
 assert(out.includes('Le connessioni tra i mercati'),'Long-form economic context must remain accessible');
 assert(out.includes(sample.desk_judgment),'The full canonical market judgment must be visible when no lead repetition exists');
+const sameJudgment=render({...sample,desk_judgment:' '+sample.lead+' '});
+assert(!sameJudgment.includes('hourly-research-lens'),'An identical market judgment adds no second section');
+assert.equal(sameJudgment.split(esc(sample.lead)).length-1,1,'The full lead remains in the opening');
+assert(!render({...sample,desk_judgment:sample.lead.replace(/\s+/g,'  ')}).includes('hourly-research-lens'),
+ 'Differences in spacing alone add no market context');
 const consecutive=structuredClone(sample);
 consecutive.desk_judgment=sample.lead+' La persistenza dipende dai nuovi dati e dalla conferma delle coppie FX.';
 const repeated=render(consecutive);
