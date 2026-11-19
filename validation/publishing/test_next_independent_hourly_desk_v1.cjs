@@ -7,7 +7,9 @@ const ROOT=path.resolve(__dirname,'../..');
 const next='site/fx-quant-v2/next/';
 const src=fs.readFileSync(path.join(ROOT,next,'hourly-desk-ui-v1.js'),'utf8');
 const pulseSrc=fs.readFileSync(path.join(ROOT,next,'home-market-pulse-v1.js'),'utf8');
-const win={};const ctx={window:win};
+const deskListeners=new Map();
+const win={document:{addEventListener(type,handler,capture){deskListeners.set(type,{handler,capture});}}};
+const ctx={window:win};
 vm.runInNewContext(pulseSrc,ctx,{filename:'home-market-pulse-v1.js',timeout:2500});
 vm.runInNewContext(src,ctx,{filename:'hourly-desk-ui-v1.js',timeout:2500});
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -123,6 +125,8 @@ let attrs={};
 const mockDesk={querySelector:sel=>sel==='details#hourly-desk-news'?dossier:null,
  querySelectorAll:sel=>sel==='[data-hourly-open-sources]'?[{setAttribute:(k,v)=>attrs[k]=v}]:[]};
 const mockButton={closest:sel=>sel==='.hourly-market-desk'?mockDesk:null};
+dossier.closest=mockButton.closest;
+dossier.matches=sel=>sel==='details#hourly-desk-news';
 assert(win.FXQuantHourlyDesk.openSources(mockButton),
  'Button click must open the correct source dossier');
 assert(dossier.open&&dossier.scrolled&&dossier.focused&&attrs['aria-expanded']==='true',
@@ -133,6 +137,16 @@ assert(out.includes('aria-label="Apri la notizia:')&&out.includes('bls.gov <span
  'Native buttons and readable source hostnames replace inert previews and opaque source numbers');
 assert(win.FXQuantHourlyDesk.openSources(mockButton,'0')&&selectedArticle.scrolled&&selectedArticle.focused,
  'Direct source preview navigation must open and focus the exact article');
+const sourcesToggle=deskListeners.get('toggle');
+assert.equal(sourcesToggle.capture,true,'The native details toggle must be captured');
+sourcesToggle.handler({target:{matches:()=>false,open:false}});
+assert.equal(attrs['aria-expanded'],'true','Nested details do not change the main dossier buttons');
+dossier.open=false;
+sourcesToggle.handler({target:dossier});
+assert.equal(attrs['aria-expanded'],'false','Closing with the dossier summary updates the Home buttons');
+dossier.open=true;
+sourcesToggle.handler({target:dossier});
+assert.equal(attrs['aria-expanded'],'true','Opening with the dossier summary updates the Home buttons');
 
 
 const pulseFeed=structuredClone(sample);
