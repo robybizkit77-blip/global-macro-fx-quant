@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-19",
-  "generated_at_utc": "2026-11-19T15:43:26.390208Z",
+  "generated_at_utc": "2026-11-19T17:24:20.589445Z",
   "items": [
     {
       "as_of": "2026-11-19",
@@ -20,6 +20,34 @@
     },
     {
       "as_of": "2026-11-19",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "1 USD = 159.97089 JPY al fixing 2026-11-19; variazione vs 2026-11-18. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "USDJPY",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-18",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "USD/JPY: +0.35% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-19",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "EUR",
+      "confidence": "A",
+      "detail": "1 EUR = 1.09920 USD al fixing 2026-11-19; variazione vs 2026-11-18. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "EURUSD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-18",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "EUR/USD: +0.22% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-19",
       "category": "FUTURES_IMPLIED_REPRICING",
       "ccy": "JPY",
       "confidence": "A",
@@ -28,6 +56,20 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
       "title": "JPY: repricing implicito da futures più hawkish (+1.1 bp 3M in 1D)"
+    },
+    {
+      "as_of": "2026-11-19",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "1 AUD = 0.95976 CAD al fixing 2026-11-19; variazione vs 2026-11-18. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "AUDCAD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-18",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "AUD/CAD: -0.33% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-18",
@@ -50,20 +92,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
       "title": "CAD: repricing implicito da futures più hawkish (+3.5 bp 3M in 1D)"
-    },
-    {
-      "as_of": "2026-11-18",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "1 USD = 159.41831 JPY al fixing 2026-11-18; variazione vs 2026-11-17. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "USDJPY",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-17",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "USD/JPY: +0.08% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-18",
@@ -92,6 +120,19 @@
     },
     {
       "as_of": "2026-11-18",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 24429.88; confronto con chiusura 2026-11-17. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-17",
+      "source": "Nasdaq, Inc. via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
+      "title": "Nasdaq Composite: +0.42% nella chiusura del 2026-11-18"
+    },
+    {
+      "as_of": "2026-11-18",
       "category": "MARKET_VOLATILITY_CLOSE",
       "ccy": "",
       "confidence": "B",
@@ -105,17 +146,29 @@
     },
     {
       "as_of": "2026-11-18",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "EUR",
-      "confidence": "A",
-      "detail": "1 EUR = 1.09680 USD al fixing 2026-11-18; variazione vs 2026-11-17. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 3.47%; confronto con chiusura 2026-11-17. Dato di mercato storico, non prova di un evento causale o di flussi.",
       "importance": "MEDIUM",
-      "pair": "EURUSD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
       "reference_previous_date": "2026-11-17",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "EUR/USD: -0.19% fra due fixing BCE"
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
+      "title": "Credito HY OAS: +4.0 pb nella chiusura del 2026-11-18"
+    },
+    {
+      "as_of": "2026-11-18",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 0.93%; confronto con chiusura 2026-11-17. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-17",
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
+      "title": "Credito IG OAS: +1.0 pb nella chiusura del 2026-11-18"
     },
     {
       "as_of": "2026-11-18",
@@ -153,59 +206,6 @@
       "title": "AUD: repricing implicito da futures più dovish (-1.5 bp 12M in 1D)"
     },
     {
-      "as_of": "2026-11-18",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "1 AUD = 0.96293 CAD al fixing 2026-11-18; variazione vs 2026-11-17. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "AUDCAD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-17",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "AUD/CAD: +0.05% fra due fixing BCE"
-    },
-    {
-      "as_of": "2026-11-17",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 24328.38; confronto con chiusura 2026-11-16. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-16",
-      "source": "Nasdaq, Inc. via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
-      "title": "Nasdaq Composite: -0.74% nella chiusura del 2026-11-17"
-    },
-    {
-      "as_of": "2026-11-17",
-      "category": "MARKET_CREDIT_OAS",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 3.43%; confronto con chiusura 2026-11-16. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-16",
-      "source": "ICE Data Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
-      "title": "Credito HY OAS: +9.0 pb nella chiusura del 2026-11-17"
-    },
-    {
-      "as_of": "2026-11-17",
-      "category": "MARKET_CREDIT_OAS",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 0.92%; confronto con chiusura 2026-11-16. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-16",
-      "source": "ICE Data Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
-      "title": "Credito IG OAS: +2.0 pb nella chiusura del 2026-11-17"
-    },
-    {
       "as_of": "2026-11-16",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "CHF",
@@ -238,7 +238,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-19T15:43:26.390208Z",
+  "last_checked_at_utc": "2026-11-19T17:24:20.589445Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -421,6 +421,54 @@
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "USD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261119a.htm",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-19T16:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-18",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-18",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 4.8
+          }
+        },
+        "source": "Federal Reserve Board",
+        "source_id": "FED_PRESS",
+        "title": "Federal Reserve Board issues enforcement action with former employee of First Security Bancorp",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261119a.htm"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "ENERGY",
@@ -1070,58 +1118,10 @@
         "source_id": "RBNZ_NEWS",
         "title": "Financial system remains resilient as global risks increase",
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/financial-system-remains-resilient-as-global-risks-increase"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "USD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/bcreg20261113a.htm",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-13T21:15:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-18",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-18",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.8
-          }
-        },
-        "source": "Federal Reserve Board",
-        "source_id": "FED_PRESS",
-        "title": "Agencies extend comment period for proposed third-party risk management guidance",
-        "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20261113a.htm"
       }
     ],
     "last_attempt_day_rome": "2026-11-19",
-    "latest_published_at_utc": "2026-11-19T14:00:00Z",
+    "latest_published_at_utc": "2026-11-19T16:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1135,9 +1135,9 @@
     "source_failures": 0,
     "sources": [
       {
-        "accepted_items": 6,
+        "accepted_items": 7,
         "ccy": "USD",
-        "entries_rejected": 14,
+        "entries_rejected": 13,
         "feed_entries_seen": 20,
         "feed_url": "https://www.federalreserve.gov/feeds/press_all.xml",
         "source": "Federal Reserve Board",
