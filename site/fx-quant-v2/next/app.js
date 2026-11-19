@@ -1007,24 +1007,23 @@ function cot(){
  return pageHero('CFTC / POSITIONING','Ricerca COT da caricare','Il modulo COT non è disponibile. Controlla la pubblicazione del relativo script.');
 }
 function risk(){
- const streams=get('risk')?.streams||{},a=streams[state.riskStream],x=window.FXQuantRiskEvidence?.read?.(streams,dayNow())||{ready:false,asof:null,headline:'Date cross-asset non verificabili',observation:'Mancano intervalli comuni verificati.',judgement:'Il regime non può essere certificato.',monitor:'Controllare fonti e date.',sourceDates:'date da verificare',quality:'NON VALIDATO'};
+ const streams=get('risk')?.streams||{},a=streams[state.riskStream],x=window.FXQuantRiskEvidence?.read?.(streams,dayNow())||{ready:false,asof:null,headline:'Il quadro del rischio resta aperto',opening:'Il confronto tra azioni, volatilità e credito è in attesa delle serie.',fx:'Per collegare questi movimenti ai cambi serve una finestra comune.',observation:'Intervallo comune da verificare.',judgement:'',monitor:'Ricontrolla alla prossima chiusura confrontabile.',sourceDates:'date da verificare',quality:'NON VALIDATO'};
  const streamOpts=[['SP500','S&P 500'],['NASDAQCOM','Nasdaq'],['VIX','VIX'],['IG_OAS','Credito IG'],['HY_OAS','Credito HY']];
  const pts=priceHistory(state.riskStream).slice(-Number(state.riskWindow));
- return pageHero('CROSS-ASSET / RISK RADAR','Il rischio non ha <em>un solo termometro.</em>','Unisci azionario, volatilità e credito. Tocca un indicatore per esplorare le serie; le conferme valgono soltanto quando gli orologi sono coerenti.')
+ return pageHero('RISCHIO DI MERCATO',esc(x.headline),esc(x.opening))
  +'<div class="grid cols-4">'+stat('S&P 500',fmt(streams.SP500?.value),date(streams.SP500?.date),sign(streams.SP500?.change_1d_pct,2,'%'),streams.SP500?.change_1d_pct>0?'up':'down')
  +stat('Nasdaq Composite',fmt(streams.NASDAQCOM?.value),date(streams.NASDAQCOM?.date),sign(streams.NASDAQCOM?.change_1d_pct,2,'%'),streams.NASDAQCOM?.change_1d_pct>0?'up':'down')
  +stat('VIX',fmt(streams.VIX?.value),date(streams.VIX?.date),sign(streams.VIX?.change_1d_pct,2,'%'),streams.VIX?.change_1d_pct>0?'down':'up')
  +stat('HY OAS',fmt(streams.HY_OAS?.value)+'%',date(streams.HY_OAS?.date),finite(streams.HY_OAS?.previous)?sign((streams.HY_OAS.value-streams.HY_OAS.previous)*100,0,' pb'):'',streams.HY_OAS?.value>streams.HY_OAS?.previous?'down':'up')+'</div>'
- +'<p class="source-caption">Indicatori rapidi: ciascuno mostra la propria ultima rilevazione, NON necessariamente la stessa seduta. '+esc(x.sourceDates)+'</p>'
- +sectionTitle('Risk Radar interattivo','Cinque stream, nessun proxy confuso con un altro')
- +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">CROSS-ASSET / SCELTA LIBERA</span><h2>'+esc(streamOpts.find(v=>v[0]===state.riskStream)?.[1]||state.riskStream)+'</h2><p>'+esc(a?.publisher||'Fonte da verificare')+' · '+date(a?.date)+'</p></div></div><div class="filters"><div class="pill-controls">'+streamOpts.map(v=>'<button class="pill '+(v[0]===state.riskStream?'active':'')+'" data-risk="'+v[0]+'" type="button" aria-pressed="'+String(v[0]===state.riskStream)+'">'+v[1]+'</button>').join('')+'</div><div class="pill-controls">'+choose('',[{label:'5 sedute',value:5},{label:'20 sedute',value:20},{label:'Tutto',value:9999}],state.riskWindow,'data-risk-window')+'</div></div>'
+ +sectionTitle('Grafici del rischio','Ogni serie mostra la propria data di chiusura')
+ +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><h2>'+esc(streamOpts.find(v=>v[0]===state.riskStream)?.[1]||state.riskStream)+'</h2><p>'+esc(a?.publisher||'Fonte da verificare')+' · '+date(a?.date)+'</p></div></div><div class="filters"><div class="pill-controls">'+streamOpts.map(v=>'<button class="pill '+(v[0]===state.riskStream?'active':'')+'" data-risk="'+v[0]+'" type="button" aria-pressed="'+String(v[0]===state.riskStream)+'">'+v[1]+'</button>').join('')+'</div><div class="pill-controls">'+choose('',[{label:'5 sedute',value:5},{label:'20 sedute',value:20},{label:'Tutto',value:9999}],state.riskWindow,'data-risk-window')+'</div></div>'
  +plot({lines:[{name:streamOpts.find(v=>v[0]===state.riskStream)?.[1],color:state.riskStream==='VIX'||state.riskStream.includes('OAS')?'#ed6679':'#83cdec',values:pts}],unit:state.riskStream.includes('OAS')?'%':'',label:'Grafico '+state.riskStream})+'<div class="chart-summary" style="margin-top:11px">Ultima rilevazione: '+fmt(a?.value)+' · '+(state.riskStream.includes('OAS')?'Variazione dello spread '+sign(finite(a?.value)&&finite(a?.previous)?(a.value-a.previous)*100:null,1,' pb'):'Variazione percentuale '+sign(a?.change_1d_pct,2,'%'))+'. '+esc(a?.not_intraday?'Dato di chiusura, non intraday.':'Verificare orario di rilevazione.')+'</div></section>'
- +'<section class="panel glow risk-research-reading" data-risk-asof="'+esc(x.asof||'')+'"><span class="mini-overline">LETTURA DEL DESK · '+date(x.asof)+'</span>'
- +'<h2 class="focus-headline" style="font-size:22px">'+esc(x.headline)+'</h2>'
- +'<p class="focus-subtitle"><strong>Cosa è successo.</strong> '+esc(x.observation)+'</p>'
- +'<div class="divider"></div><div class="flow-track"><div class="flow-item"><label>Perché conta</label><p>'+esc(x.judgement)+'</p></div>'
- +'<div class="flow-item"><label>Cosa potrebbe smentire la tesi</label><p>'+esc(x.monitor)+'</p></div></div>'
- +'<div class="notice '+(x.stale||!x.ready?'warn':'')+'" style="margin-top:14px">'+esc(x.quality+' · Ultimi feed indipendenti: '+x.sourceDates+'. Sono prezzi di chiusura e spread OAS, non ordini o flussi di copertura dimostrati.')+'</div></section></div>';
+ +'<section class="panel glow risk-research-reading" data-risk-asof="'+esc(x.asof||'')+'"><div class="panel-head"><div><h2>Cosa conta per il cambio</h2></div></div>'
+ +'<p class="focus-subtitle">'+esc(x.fx)+'</p>'
+ +'<p class="focus-subtitle"><strong>Cosa seguire.</strong> '+esc(x.monitor)+'</p>'
+ +'<details class="drivers-fold"><summary>Dati del confronto</summary><p class="focus-subtitle">'+esc(x.observation)+'</p>'
+ +(x.judgement?'<p class="focus-subtitle">'+esc(x.judgement)+'</p>':'')
+ +'<p class="notice '+(x.stale||!x.ready?'warn':'')+'">'+esc(x.quality+' · Ultime rilevazioni per serie · '+x.sourceDates)+'</p></details></section></div>';
 }
 function news(){
  const n=get('news');
