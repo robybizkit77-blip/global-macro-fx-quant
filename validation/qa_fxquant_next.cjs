@@ -305,6 +305,29 @@ async function g8Choice(page,label){
    note.includes('NZD/USD') && note.includes('AUD/NZD'),
   label+' NZD macro/rates proxy must lead to two FX monitoring instruments');
 }
+async function scenarioMacroJourney(page,label){
+ await route(page,'macro');
+ const hero=locator(page,'.macro-country-hero');
+ const countries=locator(page,'[data-ms-country]');
+ assert.equal(await countries.count(),8,label+' Scenario macro must offer all G8 economies');
+ assert.equal(await locator(page,'#content > .research-essay').count(),0,
+  label+' technical essay must follow the Scenario macro narrative');
+ await locator(page,'[data-ms-country="USD"]').click();
+ const usd=await hero.innerText();
+ assert.match(usd,/Stati Uniti/);
+ assert.doesNotMatch(usd,/\d+(?:,\d+)?%|FRED|OIS|\b2Y\b/);
+ await locator(page,'[data-ms-country="EUR"]').click();
+ const eur=await hero.innerText();
+ assert.match(eur,/Area euro/);
+ assert.notEqual(usd,eur,label+' the first read must follow the selected economy');
+ assert.equal(await locator(page,'[data-ms-country="EUR"]').getAttribute('aria-pressed'),'true');
+ const proof=hero.locator('.macro-evidence');
+ assert(!await proof.evaluate(el=>el.open),label+' data and sources must be closed initially');
+ await proof.locator('summary').click();
+ assert.equal(await proof.locator('.macro-temperature').count(),2);
+ assert(await proof.locator('.research-essay').isVisible(),label+' detailed analysis is missing');
+ assert(await locator(page,'.macro-main-chart .chart').isVisible(),label+' indicator chart is missing');
+}
 async function macroDriversJourney(page,label){
  await route(page,'banks');
  await locator(page,'[data-bank-country="GBP"]').click();
@@ -953,6 +976,7 @@ async function pairLinkJourney(page,label){
     for(const key of Object.keys(routes))inspected.push(await inspectRoute(page,label,key));
     await homeMoneyJourney(page,label);
     await g8Choice(page,label);
+    await scenarioMacroJourney(page,label);
     await macroDriversJourney(page,label);
     await pairJourney(page,label);
     await pairWatchlistJourney(page,label);

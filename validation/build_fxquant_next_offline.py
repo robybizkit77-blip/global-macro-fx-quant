@@ -67,7 +67,9 @@ def main() -> None:
                        if '<link rel="stylesheet" href="./rates-studio.css?v=' in x]
     assert len(rates_css_links) == 1, "Exactly one versioned Rates stylesheet expected"
     contents = contents.replace(rates_css_links[0], "<style>"+rates_css+"</style>")
-    contents = contents.replace('<link rel="stylesheet" href="./macro-studio.css?v=2">', "<style>"+macro_css+"</style>")
+    macro_css_links = [x for x in contents.splitlines() if 'href="./macro-studio.css?v=' in x]
+    assert len(macro_css_links) == 1, "Exactly one versioned Macro stylesheet expected"
+    contents = contents.replace(macro_css_links[0], "<style>"+macro_css+"</style>")
     ccss = [x for x in contents.splitlines() if '<link rel="stylesheet" href="./currency-studio.css?v=' in x]
     assert len(ccss) == 1, "Expected exactly one G8 stylesheet"
     contents = contents.replace(ccss[0], "<style>"+currency_css+"</style>")
@@ -82,7 +84,9 @@ def main() -> None:
                       if '<script src="./rates-studio.js?v=' in x]
     assert len(rates_js_links) == 1, "Exactly one versioned Rates script expected"
     contents = contents.replace(rates_js_links[0], "<script>"+rates_js+"</script>")
-    contents = contents.replace('<script src="./macro-studio.js?v=2" defer></script>', "<script>"+macro_js+"</script>")
+    macro_js_links = [x for x in contents.splitlines() if 'src="./macro-studio.js?v=' in x]
+    assert len(macro_js_links) == 1, "Exactly one versioned Macro script expected"
+    contents = contents.replace(macro_js_links[0], "<script>"+macro_js+"</script>")
     contents = contents.replace('<script src="./g8-pricing-evidence-v1.js?v=1" defer></script>', "<script>"+g8_pricing_js+"</script>")
     cjs = [x for x in contents.splitlines() if '<script src="./currency-studio.js?v=' in x]
     assert len(cjs) == 1, "Expected exactly one G8 studio script"
