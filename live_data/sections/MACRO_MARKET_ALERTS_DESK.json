@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-19T03:34:46Z",
+  "generated_at_utc": "2026-11-19T13:19:43Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-9ba5a3b98f4ce74df276",
+      "observed_at_utc": "2026-11-19T02:43:00Z",
+      "headline": "Global inflation calls for monetary policy tightening in many economies, IMF head says",
+      "summary": "Reuters riporta: Global inflation calls for monetary policy tightening in many economies, IMF head says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNek12QlczdG01emR1MWtEdU8zWXFZalNKUWE3cDR4Vm9YbFNVaU51Y3RxT0Ywak8yV2FrSUQxelVFRDBRZlFwblRqMWctbmw5TUFja2xjSEh3UW1PQUJtTEVmb0FkMVpoYkg0UWVFYkNOZXhSSU54RUJxOTVOdDNQaEk4N2FqUjdWQjNpSk1yZndSZjhzcURKc2dUT2RLOUVqb3dwUGExZG1KUm4tdk05VzBDN0N4SGhvbFdxZg?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-c9852a36f04e49ea90c7",
+      "observed_at_utc": "2026-11-19T01:34:00Z",
+      "headline": "BOJ Governor Ueda says financial conditions loose despite rate hikes",
+      "summary": "Reuters riporta: BOJ Governor Ueda says financial conditions loose despite rate hikes. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "JPY"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPZDZwZlgxbWlzQVM2T25wT25PVUNnUHVoa3F6YndBaVVkUHZXRVdRM2JoVG1tSk5jVzBjU01NemtjakhTYXF0ek9vVlhtUVEwWU1fYjBGdk9FU2ZhMnJyUU92NWNmcnNlTEhqeFpybGROMmg1WkZyamc1dmN6dXdRWk9UMHN2bjh5eUNwM0lKME1ZZ1RxRjJOVHppQ25EUjVlT3RxRkZVaG1pWTRhX3hTclpfTEtlUQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-24e4be77866429a925bf",
+      "observed_at_utc": "2026-11-18T22:23:52Z",
+      "headline": "Britain's long wait for 2% inflation tests public faith in Bank of England",
+      "summary": "Reuters riporta: Britain's long wait for 2% inflation tests public faith in Bank of England. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxPTkRJb3hBX2dpMzUtNm1SbGRmQ3ZmX1ZEUi12Q2NqSy1ZX29RLVU2bkFDSEJZbElUSDE5eDhCRnNKdElKYzZHQUtrUGhnVVF5aWFKUDM3RnlpZmRReHJ4c0Y0ZzZrMU9UUzBnQm9STEhsQWhIYy1YYkRqdUZuM2F5NEFVelNfWEZ3R1RKS3VoalpCRjNrOHE4cExQQy03d25qRTJMN2R0V1hXMlE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-322a57b7bf2a41f72f2a",
       "observed_at_utc": "2026-11-18T11:46:07Z",
@@ -1356,45 +1399,6 @@
       "observed_at_utc": "2026-11-09T03:01:00Z",
       "headline": "Gold climbs more than 1% as inflation fears ease on lower crude prices",
       "summary": "Reuters riporta: Gold climbs more than 1% as inflation fears ease on lower crude prices. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNbEdIVXlJc2RaUEw2RmFrR2FZcXYzYlBKUG9Cdl9WUVFfalVxT0hGcGFCdW1DS3JMT2daanhDYktBeXVGNGt5TGlsOGZJVWVSMFpnT3ZVa2RBUjZYakRlVlQ3SXd1ZkpTQVNXVkpoNUZoemdycWY0MG02dVk0cWRuWG4taG5VMm9kbEluSHctTVZVMXJwWXNWSWdVcmxQeWtRSW1EWDQ2dTJ6QVV2TzhoeQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c2e6163aeaf7ae8a2cec",
-      "observed_at_utc": "2026-11-09T04:23:00Z",
-      "headline": "Iran says no unauthorised vessels transited Strait of Hormuz overnight after navigation aids destroyed",
-      "summary": "Reuters riporta: Iran says no unauthorised vessels transited Strait of Hormuz overnight after navigation aids destroyed. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPNFkyaVpFU2VKQUVYc0xKQ1NmMFhuUmhEZXpCRFF5Ym5HaVpwSENiYk9QaWJhd1BtcU9sSEVyeGVoZ1RxUS1UamJHbEJOTUJwQjhzWUhrYko5RmZCMXJZQ04wZ2tyeFJZTGNFdUotNURHOXpDQTdGdXlMMEpaU3pWT0lvVzNPVkV1aHRIdjVYTE5yM2dwdVpDM0pQdV9TTDhTLXRQTlgxRkVlVFZtU0haT29fdEpyZw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-7af084ef620ed9ceb586",
-      "observed_at_utc": "2026-11-08T23:50:00Z",
-      "headline": "Oil falls as Trump signals restraint on Iran amid fresh Hormuz shipping attacks",
-      "summary": "Reuters riporta: Oil falls as Trump signals restraint on Iran amid fresh Hormuz shipping attacks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWnV4VENDNkFNVllVVEpoVTJLcC13SlhHREstWFZZQ252QTRiU3dKeW5EYWYxVUJjNnQzVzh1M1FsWjNGTmRKMVFEYjhxT3M2VmF4aVpERWwwczh6dV9OTG5NcFJCMFVZZ0toWEEyMnRRTnBZUm9iQVVzblIzcmJMOTR4V29sUDFVME1jcFQ5VVhoMHVUM0YzWHM2bmE1b3VCV0s0R2JmUUQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f90b8393e451cdfb5a79",
-      "observed_at_utc": "2026-11-09T03:01:00Z",
-      "headline": "Gold rises over 1% as softer oil prices ease inflation worries",
-      "summary": "Reuters riporta: Gold rises over 1% as softer oil prices ease inflation worries. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
       "category": "MACRO",
       "currencies": [],
       "related_pairs": [],
