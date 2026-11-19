@@ -862,7 +862,7 @@ function overview(){
 }
 
 function currencies(){
- if(window.FXQuantCurrencies?.render)return window.FXQuantCurrencies.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow});
+ if(window.FXQuantCurrencies?.render)return window.FXQuantCurrencies.render({get,FX,FLAGS,NAMES,state,plot,pageHero,editorial:()=>researchBridge('currencies'),esc,fmt,sign,date,finite,validDay,dayNow});
  return pageHero('FX G8 / COUNTRY RESEARCH','Country Research Studio non disponibile','Il modulo Valute G8 non è stato caricato. Verifica i feed e lo script.');
 }
 function pairs(){
@@ -1098,7 +1098,7 @@ function render(){
  $('content').dataset.view=route;
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,banks,rates,liquidity,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
- $('content').innerHTML=((route==='macro'||route==='currencies')?researchBridge(route):'')+views[route]();
+ $('content').innerHTML=(route==='macro'?researchBridge(route):'')+views[route]();
  // Restore after replacing the DOM; nested details must not close when the
  // user changes currency, comparison, return window or research sorting.
  for(const selector of openG8){

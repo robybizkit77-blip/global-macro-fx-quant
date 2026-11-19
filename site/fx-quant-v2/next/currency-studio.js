@@ -10,8 +10,12 @@
  * Rate and macro snapshots retain their own dates.
  */
 (function(root){
+const CURRENCY_NAMES={
+ USD:'il dollaro USA',EUR:'l’euro',GBP:'la sterlina',JPY:'lo yen',
+ CHF:'il franco svizzero',AUD:'il dollaro australiano',NZD:'il dollaro neozelandese',CAD:'il dollaro canadese'
+};
 function build(api){
- const {get,FX,FLAGS,NAMES,state,pageHero,esc,fmt,sign,date,finite,validDay,dayNow}=api;
+ const {get,FX,FLAGS,NAMES,state,pageHero,editorial,esc,fmt,sign,date,finite,validDay,dayNow}=api;
  const country=FX.includes(state.ccy)?state.ccy:'USD';
  const against=FX.includes(state.csOther)&&state.csOther!==country?state.csOther:FX.find(k=>k!==country);
  const FXDATA=get('currencyPrices'),GOV=get('rates')||{},CB=get('cb')||{};
@@ -138,8 +142,47 @@ function build(api){
    nzd:get('nzdDirectionalProxy'),history:get('oisHistory')
   })||null;
  }
- function strengthBoard(){
-  const result=strengthView(),estimate=get('estimatedMacro');
+ function countryOpening(result){
+  const name=CURRENCY_NAMES[country],title=name[0].toUpperCase()+name.slice(1);
+  const price=result.rows.find(row=>row.ccy===country)?.price;
+  const end=result.asof;
+  const elapsed=validDay(end)?(Date.parse(dayNow()+'T12:00:00Z')-Date.parse(end+'T12:00:00Z'))/864e5:null;
+  const official=FXDATA?.schema==='GMFQ_ECB_G8_PRICE_HISTORY_V1'&&
+   FXDATA.status==='CURRENT_OFFICIAL_HISTORY'&&FXDATA.base==='EUR'&&
+   FXDATA.source_url==='https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml';
+  const hasRecentPrice=official&&price?.ok&&elapsed!==null&&elapsed>=0&&elapsed<=7;
+  if(!hasRecentPrice)return {headline:'Valute G8 · '+country,lead:'La prossima verifica è capire se i cambi confermano il quadro dei tassi e dell’economia.'};
+  const stronger=price.change>.005,weaker=price.change<-.005;
+  const headline=stronger&&price.position<=2?title+' è tra le valute più forti delle ultime settimane':
+   weaker&&price.position>=7?title+' è tra le valute più deboli delle ultime settimane':
+   title+(stronger?' ha guadagnato terreno nelle ultime settimane':
+    weaker?' ha perso terreno nelle ultime settimane':' ha tenuto nelle ultime settimane');
+  const peers=country==='USD'?['EUR','JPY']:country==='EUR'?['USD','JPY']:['USD','EUR'];
+  const series=peers.map(k=>prices(country,k));
+  const endTimes=series.map(rows=>rows.at(-1)?.asof);
+  const starts=series.map(rows=>rows.at(-2)?.asof);
+  const moves=series.map(rows=>move(rows,1));
+  if(endTimes.some(d=>d!==end)||!starts[0]||starts[0]!==starts[1]||
+     starts[0]>=end||!moves.every(finite))
+   return {headline,lead:'La prossima seduta aiuterà a capire se la direzione delle ultime settimane regge.'};
+  const dayLabel=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'long',timeZone:'UTC'}).format(new Date(end+'T12:00:00Z'));
+  const verbs=moves.map(v=>v>.005?'ha guadagnato':v<-.005?'ha ceduto':'ha tenuto');
+  const descriptions=peers.map((k,i)=>verbs[i]+' contro '+CURRENCY_NAMES[k]);
+  const lead='Il '+dayLabel+' '+name+' '+(verbs[0]===verbs[1]?
+    verbs[0]+' contro '+peers.map(k=>CURRENCY_NAMES[k]).join(' e '):descriptions.join(' e '))+'.';
+  return {headline,lead};
+ }
+ function plainRates(proof){
+  const m=proof?.highlighted;
+  if(!m||!finite(m.bp)||!validDay(m.to))return 'Da chiarire se il mercato sta rivedendo le attese sui tassi.';
+  const trend=m.bp>.05?'è salito':m.bp<-.05?'è sceso':'ha cambiato poco';
+  const close=m.type==='ULTIMA_FONTE'?'Nel confronto più recente':'Nell’ultimo confronto disponibile';
+  const indicative=!['OIS','FUTURES'].includes(proof.kind)||m.type==='PROXY_DELTA_RICOSTRUITO';
+  return close+', il riferimento sui tassi dei prossimi mesi '+trend+
+   (indicative?'. È una lettura indicativa.':'.');
+ }
+ function strengthBoard(result){
+  const estimate=get('estimatedMacro');
   const estimated=estimate?.status==='STIMA_OPERATIVA_NON_VALIDATA';
   const rankDate=estimated?
    'STIMA · Macro '+date(estimate.asof)+' · BCE '+date(estimate.priceAsOf):
@@ -253,8 +296,8 @@ function build(api){
    '<p class="strength-shadow-caveat">I dati storici possono essere revisionati e mancano le date di prima pubblicazione. Il test walk-forward è retrospettivo e non dimostra un vantaggio in tempo reale. Non genera segnali, probabilità di banca centrale o punteggi G8.</p>'+
    '</div></details>';
  }
- function strengthFocus(){
-  const x=strengthView().rows.find(r=>r.ccy===country);
+ function strengthFocus(result,opening){
+  const x=result.rows.find(r=>r.ccy===country);
   const estimated=get('estimatedMacro');
   const cur=estimated?.status==='STIMA_OPERATIVA_NON_VALIDATA'?estimated.by?.[country]:null;
   const sixProof=pricingProof(country);
@@ -333,9 +376,10 @@ function build(api){
      'la crescita trimestrale osservata è moderata'))+
    (cur.labourDirection===-1?', mentre la disoccupazione aumenta.':
     cur.labourDirection===1?', mentre la disoccupazione scende.':
-    ', con disoccupazione quasi invariata.')+
-   ' Sono condizioni economiche osservate, non sorprese rispetto al consenso.':
-   desk?.macro?.why||x.reading.text;
+    ', con disoccupazione quasi invariata.'):
+   x.macro.ok?'Nell’ultimo quadro disponibile l’inflazione '+(x.macro.inflationDirection==='SALE'?'sale':x.macro.inflationDirection==='SCENDE'?'scende':'è stabile')+
+    ' e la disoccupazione '+(x.macro.labourDirection==='SALE'?'sale':x.macro.labourDirection==='SCENDE'?'scende':'è stabile')+'.':
+    'I prossimi dati su attività e lavoro aiuteranno a chiarire la direzione dell’economia.';
   const estimatedPolicy=cur?
    (cur.rate.quality==='UFFICIALE'?
     'Nel riferimento '+cur.rate.kind+' a sei mesi ('+date(cur.rate.asof)+
@@ -404,25 +448,32 @@ function build(api){
    !watchSummary.includes('NZD/USD')?
    watchSummary+' Sul Forex verifica anche NZD/USD e AUD/NZD: tassi e prezzo devono reagire in modo coerente prima di considerare confermata la tesi.':
    watchSummary;
+  const nextCheck=sourceRelease?
+   'Il risultato del nuovo dato sul PIL è da verificare. Conta se sposta le aspettative sui tassi.':
+   country==='NZD'&&cur?.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?
+   'Da seguire se il dollaro neozelandese conferma la direzione sia contro il dollaro USA sia contro quello australiano.':
+   'Guarda se le prossime notizie cambiano le attese sui tassi e se la valuta reagisce nella stessa direzione.';
   return '<section class="strength-focus" id="orient-strength-focus" tabindex="-1">'+
    '<div class="strength-focus-head"><div>'+
    '<span class="chapter-kicker">02 / LA LETTURA DEL DESK · '+FLAGS[country]+' '+country+'</span>'+
    '<h2>Che cosa sta succedendo a '+country+'?</h2>'+
-   '<p class="strength-focus-subtitle">Dalla macro al mercato, senza confondere ipotesi, prezzi e conferme.</p>'+
    '</div></div>'+
    '<div class="strength-first-reading">'+
    '<p><strong>Il quadro economico.</strong> '+esc(estimatedEconomic)+'</p>'+
-   '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(sixProof?.summary||estimatedPolicy)+'</p>'+
-   '<p><strong>Che cosa mostra il Forex.</strong> '+esc(priceSummary)+'</p>'+
+   '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(plainRates(sixProof))+'</p>'+
+   '<p><strong>Che cosa mostra il Forex.</strong> '+esc(opening.lead)+'</p>'+
    '</div>'+
-   (root.FXQuantG8PricingEvidence?.render?.(sixProof)||'')+
-   '<p class="strength-first-watch"><strong>Che cosa monitorare.</strong> '+esc(fxMonitorWatch)+'</p>'+
+   '<p class="strength-first-watch"><strong>Che cosa monitorare.</strong> '+esc(nextCheck)+'</p>'+
    '<details class="strength-evidence-fold"><summary><strong>Apri numeri, date, stime e fonti di '+country+'</strong>'+
    '<span>Quattro pilastri · Macro / 2Y / attese 6M / prezzo · ricerca Quant separata</span></summary>'+
-   '<div class="strength-evidence-body"><div class="strength-cards">'+
+   '<div class="strength-evidence-body">'+(root.FXQuantG8PricingEvidence?.render?.(sixProof)||'')+
+   '<div class="strength-cards">'+
     cards.map(([label,main,note],i)=>'<article class="strength-card"><span>0'+(i+1)+
      ' / '+esc(label)+'</span><p>'+esc(main)+'</p><small>'+esc(note)+'</small></article>').join('')+
    '</div><div class="strength-additional">'+
+    '<p><strong>Tassi attesi:</strong> '+esc(sixProof?.summary||estimatedPolicy)+'</p>'+
+    '<p><strong>Forza dei cambi:</strong> '+esc(priceSummary)+'</p>'+
+    '<p><strong>Verifica specifica:</strong> '+esc(fxMonitorWatch)+'</p>'+
     (desk?'<p><strong>Da monitorare:</strong> '+esc(desk.watch)+'</p>':'')+
     '<p><strong>Copertura della stima:</strong> '+(cur?'fonti macro '+cur.gdpPeriod+' / '+cur.labourPeriod+'; '+cur.rate.quality+' '+date(cur.rate.asof):'non disponibile')+'. I contributi mancanti non sono dati zero osservati. Il punteggio non è testato out-of-sample.</p>'+
     cbText+cotText+'</div>'+
@@ -584,12 +635,13 @@ function build(api){
    +'<div class="orient-route-links"><a href="#macro">Macro Lab ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#cot">COT ↗</a><a href="#pairs">Coppie FX ↗</a></div></section>';
  }
  function render(){
-  return pageHero('FX G8 / VALUTE','La forza delle valute, <em>e le ragioni.</em>','Prima la classifica e il giudizio economico. Numeri, fonti e modelli restano disponibili se vuoi approfondire.')
-   +strengthBoard()+strengthFocus()
+  const result=strengthView(),opening=countryOpening(result);
+  return pageHero('VALUTE G8 · '+country,esc(opening.headline),esc(opening.lead))
+   +strengthBoard(result)+strengthFocus(result,opening)
    +'<details class="strength-pair-fold"><summary><strong>Confronta '+country+' con una seconda valuta</strong><span>La tesi bilaterale, il grafico delle sette controparti e le verifiche specifiche</span></summary>'
    +story()+peers()+'</details>'
    +'<details class="strength-method-fold"><summary><strong>Verifica la classifica di prezzo e tutte le fonti</strong><span>Graduatoria BCE, storico macro, tassi, COT e limiti temporali</span></summary>'
-   +ranking()+evidence()+checkpoint()+'</details>';
+   +(editorial?.()||'')+ranking()+evidence()+checkpoint()+'</details>';
  }
  return render();
 }

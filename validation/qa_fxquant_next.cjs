@@ -259,7 +259,14 @@ async function homeMoneyJourney(page,label){
 async function g8Choice(page,label){
  await route(page,'currencies');
  const audit=locator(page,'details.strength-evidence-fold');
+ const headline=locator(page,'#content > .page-hero h1');
+ const lead=locator(page,'#content > .page-hero .lead');
+ assert.equal(await headline.count(),1,label+' currency judgement belongs in the first screen');
+ assert.equal(await locator(page,'#content > .research-essay').count(),0,
+  label+' the detailed editorial must follow the country judgement');
+ assert.doesNotMatch(await lead.innerText(),/fixing|futures|\d+(?:,\d+)?\s*(?:%|pb\b)/i);
  assert(!(await audit.evaluate(el=>el.open)),label+' source audit opens without request');
+ assert(!await locator(page,'#g8-pricing-proof').isVisible(),label+' numerical pricing belongs to the evidence fold');
  await audit.locator(':scope > summary').click();
  assert(await audit.evaluate(el=>el.open),label+' source audit did not open');
  assert.equal(await audit.locator('.strength-card').count(),4,label+' full country evidence missing');
@@ -269,6 +276,8 @@ async function g8Choice(page,label){
  assert(await audit.evaluate(el=>el.open),label+' country selection closed user-opened audit');
  const note=await locator(page,'#orient-strength-focus').innerText();
  assert(note.includes('NZD'),label+' NZD reading did not update');
+ assert.match(await headline.innerText(),/dollaro neozelandese|NZD/i,
+  label+' opening judgment did not follow the selected currency');
  assert(note.includes('Che cosa mostra il Forex.'),label+' price mislabeled as causal response');
  assert(note.includes('6M NZD')&&note.includes('proxy bank-bill'),
   label+' NZD must explain source-dated bank-bill 6M proxy');
