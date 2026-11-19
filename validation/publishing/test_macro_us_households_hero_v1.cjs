@@ -10,6 +10,7 @@ const vm=require('node:vm');
 const ROOT=path.resolve(__dirname,'../..');
 const js=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/next/macro-studio.js'),'utf8');
 const source=JSON.parse(fs.readFileSync(path.join(ROOT,'live_data/sections/MACRO_SERIES.json'),'utf8'));
+const heat=JSON.parse(fs.readFileSync(path.join(ROOT,'live_data/sections/MACRO_THERMOMETER_DATA.json'),'utf8'));
 const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
 const FLAGS=Object.fromEntries(FX.map(c=>[c,c]));
 const NAMES=Object.fromEntries(FX.map(c=>[c,c]));
@@ -25,7 +26,7 @@ function html(opts={}){
     msCompareMetric:'inflation',msAdvanced:false
   };
   const api={
-    get:k=>({macroSeries:data,macro:{currencies:{}},rates:{}})[k]||null,
+    get:k=>({macroSeries:data,macro:opts.macro||{currencies:{}}})[k]||null,
     FX,FLAGS,NAMES,state,
     plot:()=>'<div class="fake-chart"></div>',
     pageHero:()=>'<header>Macro</header>',
@@ -74,14 +75,16 @@ function check(label,fn){try{fn();process.stdout.write('PASS '+label+'\n');}catc
 
 check('USD hero consumes both September revised real series, not just labour and CPI',()=>{
  const {hero}=html({data:septemberFixture()});
- assert.match(hero,/I consumi reali frenano, il reddito arretra/);
- assert.match(hero,/settembre 2026/);
- assert.match(hero,/consumi reali variano 0,0% sul mese/);
- assert.match(hero,/contro \+0,5% nel mese precedente/);
- assert.match(hero,/reddito disponibile reale varia −0,3%/);
- assert.match(hero,/storici revisionati, non prime pubblicazioni point-in-time/);
- assert.match(hero,/Non dimostrano da soli variazioni nelle attese Fed/);
- assert.match(hero,/servizi/);
+ const [lead,evidence]=hero.split('<details class="macro-evidence">');
+ assert.match(lead,/I consumi reali frenano, il reddito arretra/);
+ assert.match(lead,/settembre 2026/);
+ assert.match(lead,/spesa delle famiglie.*quasi ferma.*reddito disponibile reale è diminuito/);
+ assert.match(lead,/dollaro.*altre economie/);
+ assert.doesNotMatch(lead,/%|FRED|OIS|2Y|punti percentuali/);
+ assert.match(evidence,/consumi reali variano 0,0% sul mese/);
+ assert.match(evidence,/contro \+0,5% nel mese precedente/);
+ assert.match(evidence,/reddito disponibile reale varia −0,3%/);
+ assert.match(evidence,/Serie storiche riviste, pubblicate dal BEA e distribuite da FRED/);
  assert.match(hero,/macro-country-narrative/);
 });
 check('The source values, provenance and last date match main canonical data',()=>{
@@ -105,7 +108,7 @@ check('Non-USD hero does not inherit US demand story or change its macro verdict
  for(const ccy of FX.filter(x=>x!=='USD')){
   const {hero}=html({country:ccy,data:septemberFixture()});
   assert.doesNotMatch(hero,/reddito disponibile reale varia|US_PCEC96|settembre 2026 i consumi/);
-  assert.match(hero,/I dati non indicano ancora una direzione unica/);
+  assert.match(hero,/Il quadro economico è da aggiornare/);
  }
 });
 check('Missing verified vintage leaves legacy inflation-labour hero intact',()=>{
@@ -113,7 +116,7 @@ check('Missing verified vintage leaves legacy inflation-labour hero intact',()=>
  delete byid(d,'US_PCEC96_history_value').current_vintage_provenance;
  const {hero}=html({data:d});
  assert.doesNotMatch(hero,/I consumi reali frenano/);
- assert.match(hero,/I dati non indicano ancora una direzione unica/);
+ assert.match(hero,/Il quadro economico è da aggiornare/);
 });
 check('Unsynchronized dates, issuer periods or PIT mislabel refuse demand story',()=>{
  for(const kind of ['mismatch-date','wrong-issuer-month','pit']){
@@ -146,6 +149,28 @@ check('Future matched observations recalculate dynamically without hardcoded Sep
  const {hero}=html({data:d});
  assert.match(hero,/ottobre 2026/);
  assert.doesNotMatch(hero,/A settembre 2026/);
- assert.match(hero,/Consumi e reddito reali: cosa sta cambiando/);
+ assert.match(hero,/I consumi reali crescono e il reddito sale/);
+});
+check('Available G8 data tell a qualitative story with native periods',()=>{
+ const macro=structuredClone(heat);
+ for(const country of FX){
+  const c=macro.currencies[country];
+  c.inflation.as_of=c.inflation.frequency==='Q'?'2026-09':'2026-10';
+  c.labour.as_of=country==='AUD'?'2026-10':'2026-09';
+  for(const s of [c.inflation,c.labour])s.history=[s.latest_value-.2,s.latest_value-.1,s.latest_value];
+ }
+ for(const country of FX){
+  const {hero}=html({country,macro,today:'2026-11-19',data:septemberFixture()});
+  const lead=hero.split('<details')[0];
+  assert.doesNotMatch(lead,/%|\bOIS\b|2Y|da aggiornare/);
+  assert.match(lead,/valuta|dollaro/);
+ }
+ const eur=html({country:'EUR',macro,today:'2026-11-19'}).hero;
+ assert.match(eur,/prezzi è di ottobre 2026.*disoccupazione è di settembre 2026/);
+ assert.match(eur,/complica eventuali tagli dei tassi/);
+ const aud=html({country:'AUD',macro,today:'2026-11-19'}).hero;
+ assert.match(aud,/prezzi è del terzo trimestre del 2026.*disoccupazione è di ottobre 2026/);
+ const stale=html({country:'EUR',macro,today:'2027-03-01'}).hero;
+ assert.match(stale,/Il quadro economico è da aggiornare/);
 });
 process.stdout.write('MACRO_US_REAL_HOUSEHOLDS_HERO_REGRESSION_PASS\n');

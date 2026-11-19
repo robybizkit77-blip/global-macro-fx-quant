@@ -49,7 +49,7 @@ const absent=explain({category:'Inflazione',label:'CPI'},
  {d1:null,cur:null,pr:null});
 assert.match(absent.meaning,/Mancano osservazioni/);
 const index=fs.readFileSync(path.join(next,'index.html'),'utf8');
-assert(index.includes('macro-studio.js?v=4'),'Page must use the V19 Macro Studio asset');
+assert.match(index,/macro-studio\.js\?v=\d+" defer/,'Page must load the versioned Macro Studio asset');
 assert(code.includes('Perché conta economicamente:')&&code.includes('Cosa controllare adesso:'),
  'Economic interpretation must be shown inside the existing Macro graphic reading');
 console.log('NEXT_MACRO_ECONOMIC_V19_PASS: '+inspected+' dated G8 observations and '+categories.size+

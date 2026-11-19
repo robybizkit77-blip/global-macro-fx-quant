@@ -118,7 +118,7 @@
 
 /* Editorial macro: one real country judgment first, the source chart second.
    Auxiliary research remains available via deliberate disclosure. */
-.macro-narrative-edition{grid-template-columns:minmax(0,1.5fr) minmax(300px,.5fr);background:linear-gradient(135deg,#173b4b,#0b2638);border:1px solid #486c78;box-shadow:0 14px 44px #030f1824}
+.macro-narrative-edition{grid-template-columns:minmax(0,1fr);background:linear-gradient(135deg,#173b4b,#0b2638);border:1px solid #486c78;box-shadow:0 14px 44px #030f1824}
 .macro-narrative-edition .macro-country-narrative{padding:35px 39px 32px;display:block}
 .macro-narrative-edition .macro-country-narrative h2{font:780 clamp(27px,2.85vw,40px)/1.24 Manrope,sans-serif;color:#f0f5f5;letter-spacing:-.056em;margin:14px 0 17px;max-width:850px}
 .macro-verdict-line{display:flex;align-items:center;gap:10px;font-size:10px;color:#e9c28b;font-weight:850;letter-spacing:.105em;margin-top:22px}
@@ -129,8 +129,13 @@
 .macro-next-evidence{padding:18px 0 0;margin-top:22px;border-top:1px solid #476773}
 .macro-next-evidence strong{display:block;font-size:10px;letter-spacing:.12em;color:#96dac5}
 .macro-next-evidence p{font-size:12px;line-height:1.75;color:#b2ccd6;margin:8px 0 0}
-.macro-narrative-edition .macro-two-thermometers{display:flex;flex-direction:column;justify-content:center;gap:0;padding:25px 22px;background:#112b3c}
-.macro-narrative-edition .macro-temperature{flex:0 0 auto;border:0;border-radius:0;border-bottom:1px solid #365b68;background:transparent;padding:20px 12px 18px;gap:10px}
+.macro-evidence{margin-top:18px;border-top:1px solid #476773;padding-top:14px}
+.macro-evidence>summary{cursor:pointer;color:#96dac5;font-size:12px;font-weight:750;padding:4px 0}
+.macro-evidence[open]>summary{margin-bottom:11px}
+.macro-evidence .research-essay{margin-top:14px}
+.macro-narrative-edition .macro-two-thermometers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:8px 16px;border:1px solid #3a6170;border-radius:10px;background:#112b3c}
+.macro-narrative-edition .macro-temperature{border:0;border-radius:0;background:transparent;padding:20px 12px 18px;gap:10px}
+.macro-narrative-edition .macro-temperature:first-child{border-right:1px solid #365b68}
 .macro-narrative-edition .macro-temperature:last-child{border-bottom:0}
 .macro-narrative-edition .macro-temperature strong{font-size:30px}
 .macro-narrative-edition .macro-temperature p{font-size:10px}

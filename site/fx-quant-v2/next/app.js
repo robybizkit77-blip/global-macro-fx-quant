@@ -985,7 +985,7 @@ function pairs(){
   '<p class="pairs-compact-footer">Classifiche descrittive, non segnali di trading: forza relativa BCE e priorità di ricerca non sono un backtest. Ogni fonte conserva la propria data.</p>';
 }
 function macro(){
- if(window.FXQuantMacro?.render)return window.FXQuantMacro.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow});
+ if(window.FXQuantMacro?.render)return window.FXQuantMacro.render({get,FX,FLAGS,NAMES,state,plot,pageHero,editorial:()=>researchBridge('macro'),esc,fmt,sign,finite,dayNow});
  return pageHero('GLOBAL MACRO / DYNAMICS','Macro Studio non disponibile','Il modulo Macro non è stato caricato. Verifica gli script e le serie storiche.');
 }
 function banks(){
@@ -1111,7 +1111,7 @@ function render(){
  $('content').dataset.view=route;
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,banks,rates,liquidity,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
- $('content').innerHTML=(route==='macro'?researchBridge(route):'')+views[route]();
+ $('content').innerHTML=views[route]();
  // Restore after replacing the DOM; nested details must not close when the
  // user changes currency, comparison, return window or research sorting.
  for(const selector of openG8){
