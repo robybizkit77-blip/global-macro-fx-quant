@@ -122,7 +122,7 @@ const page=fs.readFileSync(root+'index.html','utf8');
 const app=fs.readFileSync(root+'app.js','utf8');
 const rates=fs.readFileSync(root+'rates-studio.js','utf8');
 assert(page.indexOf('rates-pricing-moves-v1.js?v=2')<page.indexOf('rates-studio.js?v='));
-assert(page.includes('rates-studio.css?v=5'));
+assert.match(page,/rates-studio\.css\?v=\d+/);
 assert(app.includes("oisSameContract:'../ois-same-contract-repricing-research.json'"));
 assert(app.includes("oisOperational:'../../../live_data/sections/OIS_OPERATIONAL_VIEW.json'"));
 assert(app.includes("data-rs-pricing-window"));

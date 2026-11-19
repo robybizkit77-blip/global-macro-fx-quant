@@ -986,7 +986,7 @@ function liquidity(){
  return pageHero('FINANCIAL CONDITIONS / G8','Liquidità e credito non disponibili','Il modulo G8 non è stato caricato.');
 }
 function rates(){
- if(window.FXQuantRates?.render)return window.FXQuantRates.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow});
+ if(window.FXQuantRates?.render)return window.FXQuantRates.render({get,FX,FLAGS,NAMES,state,plot,editorial:()=>researchBridge('rates'),esc,fmt,sign,date,finite,validDay,dayNow});
  return pageHero('RATES / MONETARY PRICING','Rates Studio non disponibile','Il modulo Rates & OIS non è stato caricato. Verifica il collegamento agli script.');
 }
 function cot(){
@@ -1098,7 +1098,7 @@ function render(){
  $('content').dataset.view=route;
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,banks,rates,liquidity,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
- $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'||route==='library'||route==='banks'||route==='liquidity'?'':researchBridge(route))+views[route]();
+ $('content').innerHTML=((route==='macro'||route==='currencies')?researchBridge(route):'')+views[route]();
  // Restore after replacing the DOM; nested details must not close when the
  // user changes currency, comparison, return window or research sorting.
  for(const selector of openG8){

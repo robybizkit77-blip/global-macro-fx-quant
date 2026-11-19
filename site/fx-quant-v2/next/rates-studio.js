@@ -21,6 +21,20 @@ function chfGovernmentSnapshot(rows){
    chg10_bp:((last['10Y']-previous['10Y'])*100),
    quality:'SNB · STORICO UFFICIALE'}:null;
 }
+function chfRecentGovernment(get,today,pairedDate,validDay){
+ const spot=get('chfSpot');
+ const source='https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates';
+ if(spot?.schema!=='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'||
+    spot.status!=='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'||
+    spot.source_url!==source||spot.tenor!=='10Y'||
+    spot.eligible_for_curve_spreads!==false||spot.has_current_2y!==false||
+    !validDay(spot.as_of)||spot.as_of<=pairedDate||spot.as_of>today||
+    !Number.isFinite(spot.value_percent))return null;
+ const ratesResearch=chfGovernmentResearch(get,today);
+ const estimate=root.FXQuantG8RatesShadow?.chf?.({
+  research:{currencies:{CHF:{ratesResearch}}},chfHistory:get('chfResearch'),spot,now:today});
+ return {spot,estimate:estimate?.status==='STIMA_MODELLO_RICERCA'&&estimate.asof===spot.as_of?estimate:null};
+}
 function nzdGovernmentEstimate(get,now){
  const quote=get('nzdDirectionalProxy');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(quote?.as_of||''))return null;
@@ -33,11 +47,12 @@ function nzdGovernmentEstimate(get,now){
    row.scenario_only===true&&row.no_core_effect===true?row:null;
 }
 function make(api){
- const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow}=api;
+ const {get,FX,FLAGS,NAMES,state,plot,editorial,esc,fmt,sign,date,finite,validDay,dayNow}=api;
  const TERMS=['3m','6m','12m'],PAIR_MODES=['2y','10y','slope','spread2y'];
  const dataR=c=>get('rates')?.[c],dataO=c=>get('ois')?.currencies?.[c],dataB=c=>get('cb')?.[c];
  const chfHistory=chfGovernmentHistory(get,dayNow());
  const chfSnapshot=chfGovernmentSnapshot(chfHistory);
+ const chfRecent=chfRecentGovernment(get,dayNow(),chfSnapshot?.date||usable('CHF')?.date||'',validDay);
  const nzdEstimate=nzdGovernmentEstimate(get,dayNow());
  const dateDiff=(a,b)=>validDay(a)&&validDay(b)?Math.abs((Date.parse(a+'T12:00:00Z')-Date.parse(b+'T12:00:00Z'))/864e5):null;
  const freshness=d=>{let days=dateDiff(d,dayNow());return days===null?'DATA ASSENTE':days>12?'STORICO':days>5?'DA VERIFICARE':'RECENTE';};
@@ -172,31 +187,20 @@ function make(api){
    const canonicalDate=usable(c)?.date||'';
    const today=dayNow();
    if(c==='CHF'){
-    const spot=get('chfSpot');
-    const source='https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates';
     const shown=displayedSovereign(c)?.date||canonicalDate;
     const paired=shown>canonicalDate
      ?'<p class="source-caption" data-gov-paired="CHF"><a href="'+esc(get('chfResearch').source_url)
        +'">SNB · Serie storica dei governativi svizzeri</a>. 2Y e 10Y del '+esc(date(shown))
        +' provengono dalla stessa rilevazione.</p>':'';
-    if(spot?.schema!=='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'||
-       spot.status!=='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'||
-       spot.source_url!==source||spot.tenor!=='10Y'||
-       spot.eligible_for_curve_spreads!==false||spot.has_current_2y!==false||
-       !validDay(spot.as_of)||spot.as_of<=shown||spot.as_of>today||
-       !finite(spot.value_percent))return paired;
-    const ratesResearch=chfGovernmentResearch(get,today);
-    const estimate=root.FXQuantG8RatesShadow?.chf?.({
-     research:{currencies:{CHF:{ratesResearch}}},chfHistory:get('chfResearch'),spot,now:today});
-    const hasEstimate=estimate?.status==='STIMA_MODELLO_RICERCA'&&estimate.asof===spot.as_of;
-    const estimated2Y=hasEstimate
-     ?' · <strong>2Y stimato '+esc(fmt(estimate.estimate2Y,3))+'%</strong> · fascia indicativa '+
-      esc(fmt(estimate.lower2Y,3))+'–'+esc(fmt(estimate.upper2Y,3))+'%. La stima usa il 10Y SNB e parte dal 2Y del '+
-      esc(date(estimate.anchorAsOf))+'.'
-     :'.';
-    return '<p class="source-caption" data-gov-reference="CHF"'+(hasEstimate?' data-gov-estimate="CHF"':'')+
-     '><strong>CHF · 10Y osservato '+esc(fmt(spot.value_percent,3))+'%</strong> al '+esc(date(spot.as_of))+
-     estimated2Y+' <a href="'+source+'">Fonte SNB</a>. Curva storica 2Y/10Y al '+esc(date(shown))+'.</p>'+paired;
+    if(!chfRecent)return paired;
+    const {spot,estimate}=chfRecent;
+    const estimated2Y=estimate
+     ?'Fascia indicativa del 2Y '+esc(fmt(estimate.lower2Y,3))+'–'+esc(fmt(estimate.upper2Y,3))+
+       '%. La stima usa il 10Y SNB e il 2Y del '+esc(date(estimate.anchorAsOf))+'. '
+     :'';
+    return '<p class="source-caption rates-snapshot-source" data-gov-reference="CHF"'+(estimate?' data-gov-estimate="CHF"':'')+
+     '>'+estimated2Y+'<a href="'+esc(spot.source_url)+'">Fonte SNB · 10Y spot</a>. '+
+     (shown?'Curva storica 2Y/10Y al '+esc(date(shown))+'.':'')+'</p>'+paired;
    }
    if(c==='NZD'){
     const estimate=nzdEstimate;
@@ -225,17 +229,34 @@ function make(api){
    const r=displayedSovereign(c),last=displayedSovereignRows(c).at(-1),f=selectedReading(c);
    const spread=r?.scenario_only?r.curve_bp:last?(last.y10-last.y2)*100:null;
    const tag=r?.scenario_only?'Stima al ':'Rif. ';
-   return '<div class="rates-stats">'
-      +[['Gov 2Y',r?fmt(r['2Y'],3)+'%':'—',tag+date(r?.date)],
-        ['Gov 10Y',r?fmt(r['10Y'],3)+'%':'—',tag+date(r?.date)],
-        ['10Y − 2Y',finite(spread)?sign(spread,1,' pb'):'—',r?.scenario_only?'Pendenza della base B2':'Calcolo sulle date comuni'],
+   const recent=c==='CHF'?chfRecent:null;
+   const estimate=recent?.estimate;
+   const spot=recent?.spot;
+   const value=(n,precision=3)=>finite(n)?fmt(n,precision)+'%':'—';
+   return '<div class="rates-stats" role="group" aria-label="Rendimenti e tasso ufficiale · '+esc(c)+'">'
+      +[[estimate?'Gov 2Y · Stima':recent?'Gov 2Y · Storico':'Gov 2Y',value(estimate?.estimate2Y??r?.['2Y']),
+          estimate?'Stima al '+date(estimate.asof):tag+date(r?.date)],
+        [spot?'Gov 10Y · Osservato':'Gov 10Y',value(spot?.value_percent??r?.['10Y']),
+          spot?'SNB spot · '+date(spot.as_of):tag+date(r?.date)],
+        [recent?'10Y − 2Y · Storico':'10Y − 2Y',finite(spread)?sign(spread,1,' pb'):'—',
+          recent?'Coppia SNB · '+date(last?.date):r?.scenario_only?'Pendenza della base B2':'Calcolo sulle date comuni'],
         ['Tasso ufficiale',f.policy,dataB(c)?.bank||'Banca centrale']].map(([a,b,d])=>
          '<div class="rates-stat"><span>'+esc(a)+'</span><strong>'+esc(b)+'</strong><small>'+esc(d)+'</small></div>').join('')+'</div>';
  }
  function countrySelect(){
    return '<div class="rates-country-strip" role="group" aria-label="Seleziona la valuta G8">'
-      +FX.map(k=>{const r=displayedSovereign(k);return '<button class="rates-country '+(k===state.ccy?'selected':'')+'" type="button" data-rate-ccy="'+k+'" aria-pressed="'+String(k===state.ccy)+'">'
-        +'<span>'+FLAGS[k]+' '+k+'</span><strong>'+fmt(r?.['2Y'],2)+'%</strong><small>'+esc(r?.scenario_only?(r.stale_source?'STIMA STORICA':'STIMA'):freshness(r?.date))+' · '+date(r?.date)+'</small></button>'}).join('')+'</div>';
+      +FX.map(k=>{
+       const r=displayedSovereign(k),recent=k==='CHF'?chfRecent:null;
+       const estimate=recent?.estimate,spot=recent?.spot;
+       const y2=estimate?.estimate2Y??r?.['2Y'];
+       const tag=estimate?'2Y stimato':recent?'2Y storico':
+        r?.scenario_only?(r.stale_source?'STIMA STORICA':'STIMA'):freshness(r?.date);
+       return '<button class="rates-country '+(k===state.ccy?'selected':'')+'" type="button" data-rate-ccy="'+k+'" aria-pressed="'+String(k===state.ccy)+'">'
+        +'<span>'+FLAGS[k]+' '+k+'</span><strong>'+(finite(y2)?fmt(y2,estimate?3:2)+'%':'—')+'</strong>'
+        +'<small>'+esc(tag)+' · '+date(estimate?.asof??r?.date)+'</small>'
+        +(spot?'<small class="rates-country-spot">10Y osservato <b>'+esc(fmt(spot.value_percent,3))+'%</b> · '+date(spot.as_of)+'</small>':'')
+        +'</button>';
+      }).join('')+'</div>';
  }
  function govPlot(c){
    const rows=displayedSovereignRows(c).slice(-Number(state.rsWindow||60)),mode=state.rsGovMode||'both';
@@ -356,18 +377,22 @@ function make(api){
  function render(){
    const c=state.ccy,other=FX.includes(state.against)&&state.against!==c?state.against:FX.find(k=>k!==c);
    const r=displayedSovereign(c),o=dataO(c),m=selectedReading(c);
-   return pageHero('GLOBAL RATES / RESEARCH STUDIO','Il mercato dei tassi, <em>spiegato e misurato.</em>','Front-end, long-end, curve, market pricing e differenziali FX. Un laboratorio G8 che separa i rendimenti osservati dalle aspettative ufficiali, futures e stime.')
-    +'<div class="rates-status"><span>◉ RATES & POLICY LAB · '+FLAGS[c]+' '+c+'</span><span>GOV '+date(r?.date)+' · PRICING '+date(o?.as_of)+' · '+esc(o?.kind||'strumento da verificare')+'</span></div>'
+   const spot=c==='CHF'?chfRecent?.spot:null;
+   return '<header class="rates-overview-heading"><h1>Tassi &amp; OIS del G8</h1><p>Rendimenti governativi e aspettative monetarie.</p></header>'
+    +'<div class="rates-status"><span>'+FLAGS[c]+' '+esc(NAMES[c])+'</span><span>'
+    +(spot?'SNB 10Y spot '+date(spot.as_of):'GOV '+date(r?.date))
+    +' · PRICING '+date(o?.as_of)+' · '+esc(o?.kind||'strumento da verificare')+'</span></div>'
     +countrySelect()
+    +govCard(c)
+    +latestGovernmentReading(c)
+    +(editorial?.()||'')
     +'<section class="rates-hero"><div class="rates-hero-title"><span class="chapter-kicker">01 / '+FLAGS[c]+' '+esc(NAMES[c])+' · FRONT-END VS LONG-END</span>'
     +'<h2>'+esc(m.headline)+'</h2>'
     +'<p class="rates-economic-observation"><strong>Cosa vediamo.</strong> '+esc(m.meaning)+'</p>'
     +'<p class="rates-economic-pricing"><strong>Cosa è prezzato.</strong> '+esc(m.pricingEvidence)+'</p>'
     +'<p class="rates-economic-watch"><strong>Cosa monitorare.</strong> '+esc(m.watch)+'</p>'
     +'<div class="rates-chipline"><span class="badge '+(freshness(r?.date)==='STORICO'?'warning':'info')+'">'+esc(freshness(r?.date))+'</span><span>'+esc(r?.quality||'QUALITÀ DA VERIFICARE')+'</span></div></div>'
-    +'<div class="rates-hero-side"><div class="rates-hero-orbit"><span>CURVE SLOPE</span><strong>'+sign(r?(r['10Y']-r['2Y'])*100:null,1)+'</strong><small>punti base · '+date(r?.date)+'</small></div></div></section>'
-    +govCard(c)
-    +latestGovernmentReading(c)
+    +'<div class="rates-hero-side"><div class="rates-hero-orbit"><span>'+(spot?'PENDENZA STORICA':'PENDENZA')+'</span><strong>'+sign(r?(r['10Y']-r['2Y'])*100:null,1)+'</strong><small>punti base · '+date(r?.date)+'</small></div></div></section>'
     +fxRelativeEvidence(c,other)
     +(root.FXQuantPricingMoves?.render?.({
        currency:c,window:state.rsPricingWindow||'1d',plot,esc,fmt,sign,date,
