@@ -8,16 +8,28 @@
  const finite=x=>typeof x==='number'&&Number.isFinite(x);
  const day=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&
   Number.isFinite(Date.parse(x))&&new Date(x).toISOString().slice(0,10)===x;
+ const BANK_NAMES={USD:'La Fed',EUR:'La BCE',GBP:'La Bank of England',JPY:'La Bank of Japan',
+  CHF:'La Banca nazionale svizzera',CAD:'La Bank of Canada',AUD:'La banca centrale australiana',NZD:'La banca centrale neozelandese'};
  const ITALIAN_CONTEXT={
-  GBP:{date:'2026-11-05',text:'La BoE ha alzato il tasso di 25 punti base. Le mosse successive dipendono dai dati.'},
-  AUD:{date:'2026-11-03',text:'La RBA ha alzato il tasso di 25 punti base. Il percorso successivo dipende dai dati.'},
-  CHF:{date:'2026-09-24',text:'La SNB ha mantenuto il tasso allo 0%. Segnala un lieve aumento delle pressioni inflazionistiche e resta disponibile a intervenire sul cambio se necessario.'}
+  USD:{date:'2026-10-28',lead:'L’inflazione resta una preoccupazione e alcuni membri avrebbero preferito alzare già i tassi.'},
+  EUR:{date:'2026-10-29',lead:'La BCE vede nel caro energia un rischio di prezzi più alti e crescita più debole.'},
+  GBP:{date:'2026-11-05',text:'La BoE ha alzato il tasso di 25 punti base. Le mosse successive dipendono dai dati.',
+   lead:'Dopo il rialzo, la banca ha legato la prossima mossa ai dati.'},
+  JPY:{date:'2026-10-30',lead:'Un membro del consiglio avrebbe preferito alzare subito i tassi.'},
+  CHF:{date:'2026-09-24',text:'La SNB ha mantenuto il tasso allo 0%. Segnala un lieve aumento delle pressioni inflazionistiche e resta disponibile a intervenire sul cambio se necessario.',
+   lead:'La banca resta pronta a intervenire sul cambio se le condizioni lo richiedono.'},
+  CAD:{date:'2026-10-28',lead:'La banca vuole evitare che il caro energia si trasmetta agli altri prezzi.'},
+  AUD:{date:'2026-11-03',text:'La RBA ha alzato il tasso di 25 punti base. Il percorso successivo dipende dai dati.',
+   lead:'Il rialzo lascia aperta la prossima decisione, che dipenderà dai dati.'},
+  NZD:{date:'2026-10-28',lead:'Parte del consiglio avrebbe preferito alzare subito. Un’eventuale stretta dipende dai prossimi dati.'}
  };
+ const dayLabel=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'long',timeZone:'UTC'});
+ const when=x=>dayLabel.format(new Date(x+'T12:00:00Z'));
  function classifyAction(bank){
-  const x=String(bank?.action||'').toUpperCase();
+  const x=String(bank?.action||'').trim().toUpperCase();
+  if(/^(INVARIAT[OA]|MANTEN|CONFERM|HOLD)/.test(x))return {label:'ULTIMA DECISIONE · INVARIATA',tone:'neutral'};
   if(x.includes('RIALZO')||x.includes('AUMENT'))return {label:'ULTIMA DECISIONE · RIALZO',tone:'hawk'};
   if(x.includes('TAGLIO')||x.includes('RIDUZ'))return {label:'ULTIMA DECISIONE · TAGLIO',tone:'dove'};
-  if(x.includes('INVARIATO')||x.includes('INVARIATA'))return {label:'ULTIMA DECISIONE · INVARIATA',tone:'neutral'};
   return {label:'DECISIONE DA VERIFICARE',tone:'unknown'};
  }
  function stanceReading(bank){
@@ -34,39 +46,55 @@
   if((!day(date)&&!/^\d{4}-(0[1-9]|1[0-2])$/.test(date))||date>today)return null;
   return series;
  }
+ function direction(series,today){
+  if(!series||!['M','Q'].includes(series.frequency)||!Array.isArray(series.history))return '';
+  const [y,m]=series.as_of.slice(0,7).split('-').map(Number);
+  const age=(Number(today.slice(0,4))-y)*12+Number(today.slice(5,7))-m;
+  const last=series.history.at(-1),prior=series.history.at(-2);
+  if(age>(series.frequency==='Q'?6:3)||!finite(prior)||last!==series.latest_value||
+     !['source','history','latest','transformation'].every(k=>series.validation?.[k]===true))return '';
+  const change=last-prior;
+  return Math.abs(change)<.025?'STABILE':change>0?'SALE':'SCENDE';
+ }
  function constraint(macro,today){
   const inflation=observation(macro?.inflation,today);
   const labour=observation(macro?.labour,today);
-  const inf=String(inflation?.direction||'').toUpperCase();
+  const inf=direction(inflation,today);
   const unemp=/disoccupazione|unemployment/i.test(labour?.label||'')?
-   String(labour.direction||'').toUpperCase():'';
+   direction(labour,today):'';
   let title='I dati lasciano aperta la prossima mossa';
   let text='Conta se i prossimi dati su crescita e salari confermano un cambiamento che possa spostare la decisione.';
   if(inf==='SALE'&&unemp==='SALE'){
    title='Prezzi e lavoro tirano in direzioni opposte';
-   text='I prezzi spingono alla prudenza sui tagli, mentre il lavoro si indebolisce. Conta quale dei due movimenti persiste.';
+   text='L’inflazione in salita invita a tenere i tassi alti, mentre la disoccupazione in aumento spinge nella direzione opposta.';
   }else if(inf==='SALE'&&unemp==='SCENDE'){
    title='Meno urgenza di allentare';
-   text='Prezzi in salita e disoccupazione in calo riducono l’urgenza di tagliare. Una sorpresa su inflazione o lavoro può cambiare il quadro.';
+   text='Con l’inflazione in salita e la disoccupazione in calo, la banca ha meno urgenza di tagliare i tassi.';
   }else if(inf==='SCENDE'&&unemp==='SALE'){
    title='Potrebbe aprirsi spazio per allentare';
-   text='Prezzi in rallentamento e disoccupazione in aumento danno più spazio a un taglio, se entrambi i movimenti persistono.';
+   text='Se l’inflazione continua a rallentare e la disoccupazione a salire, la banca avrà più spazio per allentare.';
   }else if(inf==='SCENDE'&&unemp==='SCENDE'){
    title='Prezzi in rallentamento, lavoro in tenuta';
    text='L’inflazione lascia più spazio di manovra. La tenuta del lavoro riduce l’urgenza di usarlo.';
-  }else if(!inflation&&!labour){
+  }else if(inf==='SALE'){
+   title='L’inflazione invita alla prudenza';
+   text='Se l’inflazione continua a salire, la banca avrà meno spazio per abbassare i tassi.';
+  }else if(unemp==='SALE'){
+   title='Il lavoro richiede attenzione';
+   text='Se la disoccupazione continua a salire, peseranno di più i rischi per la crescita.';
+  }else if(!inf&&!unemp){
    title='Margine di manovra da verificare';
    text='Per giudicarlo servono osservazioni datate su inflazione e lavoro.';
   }
-  return {title,text,inflation,labour};
+  return {title,text,inflation,labour,inf,unemp};
  }
  function macroEvidence(reading,fmt,date){
   const month=value=>day(value)?date(value):value.slice(5,7)+'/'+value.slice(0,4);
   const trend={SALE:'in aumento',SCENDE:'in calo',STABILE:'stabile'};
-  return [reading.inflation,reading.labour].filter(Boolean).map(x=>{
+  return [[reading.inflation,reading.inf],[reading.labour,reading.unemp]].filter(([x])=>x).map(([x,dir])=>{
    const unit=/yoy/i.test(x.transformation||'')?'% annua':/disoccupazione|unemployment/i.test(x.label||'')?'%':'';
    return (x.label||'Dato macro')+' '+fmt(x.latest_value,2)+unit+
-    (trend[x.direction]?' '+trend[x.direction]:'')+' · '+month(x.as_of);
+    (trend[dir]?' '+trend[dir]:'')+' · '+month(x.as_of);
   }).join(' | ');
  }
  function marketReading(ccy,get,today,fmt,date){
@@ -84,8 +112,17 @@
    const sign=v.bp>0?'+':v.bp<0?'−':'';
    return window+' '+sign+Math.abs(v.bp).toLocaleString('it-IT',{maximumFractionDigits:2})+' pb';
   });
+  const latest=row?.week||row?.one;
+  const direction=latest?.bp>0?'in rialzo':latest?.bp<0?'in calo':'stabile';
+  const window=row?.week?'Nel confronto con la settimana precedente':'Nell’ultimo confronto';
+  const indicative=o.kind==='PROXY FUTURES'||o.kind==='FUTURES SECONDARI';
+  const subject=o.kind==='PROXY FUTURES'?'il riferimento dei tassi bancari':indicative?
+   'la stima dei tassi dei prossimi mesi':'il riferimento di mercato per i tassi dei prossimi mesi';
+  const plain=finite(latest?.bp)?window+', '+subject+' è '+direction+'.'+
+   (o.kind==='PROXY FUTURES'?' È un’indicazione di direzione.':''):
+   !historical&&indicative?'Per i tassi dei prossimi mesi c’è una stima indicativa. Una nuova quotazione chiarirà se la direzione cambia.':'';
   return {
-   title:historical?'Ultimo riferimento storico a sei mesi':'Riferimento a sei mesi',
+   plain,title:historical?'Ultimo riferimento storico a sei mesi':'Riferimento a sei mesi',
    text:deltas.length?'Variazione verificata sullo strumento: '+deltas.join(' · ')+'.':
     historical?'Per leggere il movimento corrente serve una quotazione più recente.':
     'La fonte fornisce il livello. La variazione giornaliera o settimanale resta da verificare.',
@@ -101,15 +138,29 @@
   return '<div class="drivers-facts">'+horizons+'</div>';
  }
  const FX_TESTS={
- USD:'Su EUR/USD, verifica se le attese Fed cambiano più di quelle BCE. Se si muovono solo i Treasury o aumenta la domanda di dollari rifugio, il cambio può raccontare una storia diversa.',
- EUR:'Su EUR/GBP conta se i dati spostano le attese BCE più di quelle BoE. Cerca la stessa direzione nei riferimenti monetari confrontabili e nella reazione del cambio.',
- GBP:'Su EUR/GBP conta se il mercato aggiunge o toglie restrizione futura BoE rispetto alla BCE. Il prezzo aiuta a capire se quel cambiamento trova conferma.',
- JPY:'Su USD/JPY verifica se il divario delle attese USA–Giappone si restringe. Uno yen più forte anche con divario fermo è compatibile con una riduzione del carry, da verificare con il rischio globale.',
- CHF:'Per CHF il percorso SNB va confrontato con quello BCE. EUR/CHF può reagire anche alla domanda di rifugio e a eventuali interventi: il differenziale monetario non identifica da solo il flusso.',
- CAD:'Su AUD/CAD confronta le attese BoC e RBA. Se il cambio si muove con il petrolio mentre il divario dei tassi cambia poco, considera il contributo delle commodity.',
- AUD:'Su AUD/CAD verifica se i dati australiani cambiano le attese RBA più di quelle BoC. Crescita cinese e petrolio possono spiegare un movimento anche a differenziale fermo.',
- NZD:'Su AUD/NZD verifica se le attese RBNZ cambiano rispetto alla RBA. Il proxy neozelandese dà contesto e il prezzo aiuta a capire se il movimento trova conferma.'
+  USD:'Su EUR/USD conta se le attese sui tassi americani si muovono più di quelle europee. In una fase di avversione al rischio, la domanda di dollari può pesare anche a tassi fermi.',
+  EUR:'Su EUR/GBP, guarda se le attese sulla BCE si spostano rispetto a quelle sulla banca britannica e se il cambio si muove nella stessa direzione.',
+  GBP:'Su EUR/GBP, guarda se il mercato si aspetta tassi più alti più a lungo nel Regno Unito che nell’area euro e se la sterlina ne beneficia.',
+  JPY:'Su USD/JPY, conta se si restringe il divario tra i tassi attesi negli Stati Uniti e in Giappone. Lo yen può guadagnare terreno anche quando gli operatori riducono il rischio.',
+  CHF:'Su EUR/CHF, guarda se cambiano le attese sui tassi svizzeri rispetto a quelli europei. Anche la domanda di franco come bene rifugio può muovere il cambio.',
+  CAD:'Su AUD/CAD, guarda se cambiano le attese sui tassi canadesi rispetto a quelli australiani. Se si muove il petrolio, verifica anche la risposta del dollaro canadese.',
+  AUD:'Su AUD/CAD, verifica se il mercato cambia idea sui tassi australiani più di quelli canadesi. Anche la domanda cinese e il petrolio possono muovere il cambio.',
+  NZD:'Su AUD/NZD, guarda se cambia il divario tra le attese sui tassi australiani e neozelandesi e se il cambio segue.'
  };
+ function policyOpening(ccy,action,last,b,localized){
+  const name=BANK_NAMES[ccy];
+  const phrase={hawk:'ha alzato i tassi',dove:'ha tagliato i tassi',neutral:'ha tenuto fermi i tassi'}[action.tone];
+  const title=last&&phrase?name+' '+phrase:'La prossima decisione sui tassi';
+  const view=stanceReading(b);
+  const bias={
+   'Lascia aperta la porta a un rialzo':'La banca lascia aperta la possibilità di un rialzo.',
+   'Decide riunione per riunione':'La prossima mossa dipende dai dati.',
+   'Comunicazione orientata alla stretta':'La comunicazione indica cautela sui prezzi.',
+   'Comunicazione accomodante':'La comunicazione lascia spazio a una politica meno restrittiva.'
+  }[view];
+  const lead=last?['La decisione risale al '+when(last)+'.',localized?.lead||bias].filter(Boolean).join(' '):'';
+  return {title,lead};
+ }
  function render(api){
   const {get,FX,FLAGS,NAMES,state,pageHero,esc,fmt,date,dayNow}=api;
   const banks=get('cb')||{},ois=get('ois')?.currencies||{},mac=get('macro')?.currencies||{};
@@ -122,25 +173,29 @@
   const audit=root.FXQuantDriverMarketAudit;
   const fx=audit?.fx(selected,get('pairs'),today);
   const risk=audit?.riskCheck(get('risk'),today);
-  const localized=ITALIAN_CONTEXT[selected];
-  const context=localized?.date===last?localized.text:b?.context;
-  const cards=FX.map(k=>{
-   const x=banks[k],action=classifyAction(x);
-   return '<button class="drivers-country" type="button" data-bank-country="'+k+'" aria-pressed="'+String(k===selected)+'">'+
-    '<span class="drivers-country-head"><b>'+esc(FLAGS[k]||'')+' '+k+'</b><small>'+esc(x?.bank||NAMES[k]||k)+'</small></span>'+
-    '<span class="drivers-mini-state" data-tone="'+action.tone+'">'+esc(action.label.replace('ULTIMA DECISIONE · ',''))+'</span>'+
-    '<span class="drivers-country-date">'+esc(day(x?.last_date)&&x.last_date<=today?date(x.last_date):'Data da verificare')+'</span></button>';
-  }).join('');
+  const note=ITALIAN_CONTEXT[selected],localized=note?.date===last?note:null;
+  const context=localized?.text||b?.context;
+  const story=policyOpening(selected,stance,last,b,localized);
+  const bank=b?.full_name||b?.bank||NAMES[selected]||selected;
+  const cards=FX.map(k=>'<button class="drivers-country" type="button" data-bank-country="'+k+'" aria-pressed="'+String(k===selected)+'">'+
+    '<span class="drivers-country-head"><b>'+esc(FLAGS[k]||'')+' '+k+'</b><small>'+esc(banks[k]?.bank||NAMES[k]||k)+'</small></span></button>').join('');
   const evidence=macroEvidence(can,fmt,date);
   const source=[b?.policy_decision_source,b?.official_source_url].find(x=>typeof x==='string'&&/^https:\/\//i.test(x));
-  return pageHero('BANCHE CENTRALI G8','Banche centrali. <em>Cosa possono fare da qui?</em>',
-   'Confronta l’ultima comunicazione con i dati di crescita, lavoro e inflazione. Poi verifica quanto si vede nei tassi attesi e nel cambio.')+
-   '<section class="drivers-panel" id="central-bank-studio"><div class="drivers-head"><div><h2>Seleziona una banca centrale</h2></div></div>'+
+  return pageHero('POLITICA MONETARIA','Banche centrali',
+   'Scegli una banca per capire la sua ultima mossa, cosa le permettono i dati e cosa conta per la valuta.')+
+   '<section class="drivers-panel" id="central-bank-studio" aria-label="Scegli una banca centrale">'+
    '<div class="drivers-country-grid">'+cards+'</div></section>'+
    '<section class="drivers-panel drivers-selection" aria-label="Scheda banca centrale '+selected+'">'+
-   '<div class="drivers-head"><div><span class="mini-overline">'+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
-   '<h2>'+esc(b?.full_name||b?.bank||NAMES[selected]||selected)+'</h2></div>'+
-   '<span class="drivers-status" data-tone="'+stance.tone+'">'+esc(stance.label)+'</span></div>'+
+   '<div class="drivers-head"><div><span class="mini-overline">'+esc(FLAGS[selected]||'')+' '+esc(bank)+'</span>'+
+   '<h2>'+esc(story.title)+'</h2></div></div>'+
+   '<div class="drivers-bank-story">'+
+   (story.lead?'<p class="drivers-lead">'+esc(story.lead)+'</p>':'')+
+   '<p class="drivers-lead">'+esc(can.text)+'</p>'+
+   (market.plain?'<p class="drivers-lead">'+esc(market.plain)+'</p>':'')+
+   '<p class="drivers-lead"><strong>Cosa seguire.</strong> '+esc(FX_TESTS[selected])+'</p></div>'+
+   '<div class="drivers-links"><button type="button" data-bank-open="rates" data-bank-target="'+selected+'">Vedi i tassi attesi ↗</button>'+
+   '<button type="button" data-bank-open="currencies" data-bank-target="'+selected+'">Valuta '+selected+' ↗</button><a href="#macro">Scenario macro ↗</a><a href="#news">Calendario e Notizie ↗</a></div>'+
+   '<details class="drivers-fold drivers-bank-sources"><summary>Apri decisione, tassi attesi e fonti</summary>'+
    '<p class="drivers-lead">Tasso ufficiale <strong>'+esc(rate)+'</strong> · decisione '+esc(last?date(last):'da verificare')+
    (nextMeeting?' · prossima riunione '+esc(date(nextMeeting)):' · prossima riunione da verificare')+'</p>'+
    '<div class="drivers-want-can">'+
@@ -153,11 +208,8 @@
     '<div class="drivers-market-item"><span>COSA PREZZA IL MERCATO</span><h3>'+esc(market.title)+'</h3>'+
       (market.evidence?'<p class="drivers-observation">'+esc(market.evidence)+'</p>':'')+'<p>'+esc(market.text)+'</p></div>'+
     '<div class="drivers-market-item"><span>CONFERMA SUL FOREX</span><p>'+esc(fx?.text||'Conferma del prezzo da verificare.')+'</p>'+
-      '<p>'+esc(FX_TESTS[selected])+'</p></div>'+
+     '</div>'+
    '</div></div>'+
-   '<div class="drivers-links"><button type="button" data-bank-open="rates" data-bank-target="'+selected+'">Esamina Tassi & OIS ↗</button>'+
-   '<button type="button" data-bank-open="currencies" data-bank-target="'+selected+'">Valuta '+selected+' ↗</button><a href="#macro">Scenario macro ↗</a><a href="#news">Calendario e Notizie ↗</a></div>'+
-   '<details class="drivers-fold drivers-bank-sources"><summary>Scadenze 3M / 6M / 12M e fonti</summary>'+
    pricing(o,esc,fmt,date,today)+
    '<p class="drivers-source-note">'+(source?'<a href="'+esc(source)+'" target="_blank" rel="noopener noreferrer">Comunicazione ufficiale ↗</a> · ':'')+
    esc(o?.source||'Fonte di mercato da verificare')+'. '+esc(risk||'')+'</p></details></section>';

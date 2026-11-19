@@ -122,10 +122,12 @@ async function inspectRoute(page,label,key){
    label+' all eight central-bank country choices required');
   assert.equal(await locator(page,'.drivers-want-can .drivers-analysis').count(),2,
    label+' official WANT and macro CAN must be separated');
-  const policy=locator(page,'.drivers-selection .drivers-lead');
-  assert.equal(await policy.count(),1,label+' policy information should have a single first reading');
-  assert.match(await policy.innerText(),/Tasso ufficiale .*decisione .*prossima riunione/i,
-   label+' policy rate, decision date and next meeting must remain visible');
+  const story=locator(page,'.drivers-bank-story');
+  assert.match(await story.innerText(),/Cosa seguire/i);
+  assert.doesNotMatch(await story.innerText(),/punti base|\d+(?:,\d+)?\s*%|\bOIS\b/,
+   label+' technical figures must follow the plain bank first read');
+  const policy=locator(page,'.drivers-bank-sources .drivers-lead');
+  assert(!await policy.isVisible(),label+' exact rate and decision date must be collapsed initially');
   assert.equal(await locator(page,'.drivers-fold .drivers-fact').count(),3,
    label+' dated 3M/6M/12M pricing audit must remain accessible');
   assert.equal(await locator(page,'.drivers-links [data-bank-open]').count(),2,
@@ -336,14 +338,17 @@ async function macroDriversJourney(page,label){
   label+' selecting BoE did not update bank dossier');
  assert((await locator(page,'.drivers-selection h2').innerText()).includes('Bank of England'),
   label+' bank dossier did not follow selection');
- const bank=await locator(page,'.drivers-selection').innerText();
+ const bankStory=await locator(page,'.drivers-bank-story').innerText();
+ assert.match(bankStory,/EUR\/GBP/);
+ const bankSources=locator(page,'.drivers-bank-sources');
+ assert.equal(await bankSources.getAttribute('open'),null,label+' pricing detail starts collapsed');
+ await bankSources.locator(':scope > summary').click();
+ const bank=await bankSources.innerText();
  assert(bank.includes('WANT')&&bank.includes('CAN')&&bank.includes('Tasso ufficiale')&&
   bank.includes('COSA PREZZA IL MERCATO')&&bank.includes('CONFERMA SUL FOREX'),
   label+' policy decision, monetary pricing and FX model must remain distinct');
  assert(bank.includes('OIS'),'BoE pricing must name the instrument');
- const bankSources=locator(page,'.drivers-bank-sources');
- assert.equal(await bankSources.getAttribute('open'),null,label+' pricing detail starts collapsed');
- await bankSources.locator('summary').click();
+ assert.match(bank,/Tasso ufficiale .*decisione .*prossima riunione/i);
  assert.match(await bankSources.innerText(),/3M \/ RIFERIMENTO DI MERCATO/);
  assert.match(await bankSources.innerText(),/VIX.*HY/);
  assert.equal(await bankSources.locator('a').filter({hasText:'Comunicazione ufficiale'}).count(),1,
