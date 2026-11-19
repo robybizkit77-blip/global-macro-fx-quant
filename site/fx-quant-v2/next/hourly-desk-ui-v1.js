@@ -28,6 +28,8 @@
    return 'Produzione idroelettrica nel Sud-Ovest USA scesa ai minimi storici durante l’estate';
   if(/project meridian fx apac/i.test(original))
    return 'Progetto Meridian FX APAC: collaborazione tra le autorità monetarie di Regno Unito, Singapore e Thailandia';
+  if(/oil flows through middle east chokepoints increased/i.test(original))
+   return 'Più petrolio in transito nei passaggi chiave del Medio Oriente';
   const source=(n.sources||[]).find(uri)||'';
   const institute=/eia\.gov/i.test(source)?'EIA':
    /bankofengland\.co\.uk/i.test(source)?'Banca d’Inghilterra':
@@ -133,14 +135,18 @@
    if(!links.length)return null;
    const label=n.kind==='PREVIEW'?'Anteprima':n.kind==='FOLLOW_UP'?'Approfondimento':'Notizia';
    const headlineIt=titleItaliano(n),area=areaIt(n.market_area);
+   const evidence=typeof n.evidence==='string'?n.evidence.trim():'';
+   const citations=links.map(u=>
+    '<a href="'+safe(u)+'" target="_blank" rel="noopener noreferrer" aria-label="Apri la fonte originale '+safe(sourceHost(u))+'">'+safe(sourceHost(u))+' <span aria-hidden="true">↗</span></a>'
+   ).join(' · ');
    const article='<article class="hourly-desk-story" data-hourly-article="'+i+'" tabindex="-1"><div class="hourly-story-top">'+
     '<span class="hourly-story-category">'+safe(area)+'</span>'+
     '<span class="hourly-story-date">'+safe(date(n.published_date))+'</span></div>'+
     '<span class="hourly-story-kind">'+label+'</span>'+
     '<h3>'+safe(headlineIt)+'</h3><p>'+safe(n.analysis)+'</p>'+
-    '<div class="hourly-desk-citations">Fonti: '+links.map((u,j)=>
-      '<a href="'+safe(u)+'" target="_blank" rel="noopener noreferrer" aria-label="Apri la fonte originale '+safe(sourceHost(u))+'">'+safe(sourceHost(u))+' <span aria-hidden="true">↗</span></a>'
-    ).join(' · ')+'</div></article>';
+    (evidence?'<details class="hourly-desk-citations hourly-story-evidence"><summary>Dati e fonti</summary>'+
+     '<p>'+safe(evidence)+'</p><div>'+citations+'</div></details>':
+     '<div class="hourly-desk-citations">Fonti: '+citations+'</div>')+'</article>';
    const preview='<button type="button" class="hourly-evidence-peek-item" data-hourly-story-link="'+i+'"'+
     ' aria-controls="hourly-desk-news" aria-label="Apri la notizia: '+safe(headlineIt)+'">'+
     '<span>'+safe(area)+' · '+safe(date(n.published_date))+'</span>'+ 
