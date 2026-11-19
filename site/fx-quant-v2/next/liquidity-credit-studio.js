@@ -101,23 +101,31 @@
    liquidity:liq,credit:cr};
  }
  const FX_LENSES={
- USD:{fx:'Se la liquidità cresce ma il credito non prende velocità, la trasmissione alla domanda USA potrebbe restare contenuta. Per USD servono Fed pricing relativo e dollaro osservato: in caso di stress la domanda di liquidità rifugio può compensare rendimenti più bassi.',
-  watch:'Nuovo H.8 credito bancario, SLOOS e crescita; confrontare il 6M USA con EUR e JPY su date coerenti, poi EUR/USD e USD/JPY.'},
- EUR:{fx:'Nella zona euro, credito alle imprese ed eccesso di liquidità BCE descrivono canali diversi. Un recupero dei prestiti potrebbe sostenere la crescita, ma per EUR conta la reazione del pricing BCE rispetto a Fed e BoE.',
-  watch:'Prestiti imprese e survey BLS, attività manifatturiera e variazioni €STR/futures; verificare EUR/USD e EUR/GBP.'},
- GBP:{fx:'Le riserve BoE non sono un indicatore diretto della domanda di mutui. La crescita del credito garantito è un pezzo del quadro, da collegare a consumi e aspettative BoE prima di dedurre forza GBP.',
-  watch:'Nuove serie su credito famiglie e imprese, survey condizioni e pricing SONIA rispetto a €STR; monitorare EUR/GBP e GBP/USD.'},
- JPY:{fx:'Riserve BoJ in riduzione e credito bancario in crescita non provano da sole una stretta dell’economia. Per JPY il meccanismo decisivo resta il differenziale con gli altri paesi, insieme al rischio di riduzione del carry.',
-  watch:'Decisioni BoJ, prestiti e riserve, 2Y relativo USA/JPY e futures; osservare USD/JPY e AUD/JPY in fasi risk-off.'},
- CHF:{fx:'Per EUR/CHF conta se il credito cambia le prospettive di crescita e le attese sulla SNB rispetto alla BCE. La domanda di franco rifugio può muovere il cambio anche con attese sui tassi ferme.',
-  watch:'Nuovi sight deposits, credito e tono SNB, differenziale EUR/CHF e condizioni di rischio europee.'},
- CAD:{fx:'Se i prestiti alle imprese prendono slancio e la domanda interna tiene, osserva se cambiano le attese sulla BoC rispetto alla Fed. Petrolio e rischio globale possono spiegare movimenti di USD/CAD anche con tassi attesi fermi.',
-  watch:'Metti a confronto prestiti alle imprese e condizioni di concessione (SLOS), poi verifica le attese BoC–Fed e USD/CAD.'},
- AUD:{fx:'Saldi di regolamento RBA e credito alle imprese rappresentano canali diversi. Un impulso del credito non è sufficiente a sostenere AUD se aspettative RBA, crescita cinese o propensione al rischio divergono.',
-  watch:'Credito imprese, domanda cinese, futures RBA contro Fed e BoC; verificare AUD/USD e AUD/CAD.'},
- NZD:{fx:'Per il NZD conta se la crescita del credito si riflette nella domanda interna e cambia le attese sui tassi RBNZ. I saldi di regolamento risentono anche delle operazioni della banca centrale e del governo. Su AUD/NZD serve poi conferma dal differenziale atteso RBA–RBNZ e dal prezzo.',
-  watch:'Aggiornamenti RBNZ su settlement cash e credito, confronto monetario con RBA e comportamento AUD/NZD e NZD/USD.'}
+  USD:{fx:'Per il dollaro conta se il credito sostiene la spesa abbastanza da cambiare le attese sulla Fed. Nelle fasi di stress può contare di più la domanda di dollari come rifugio.',
+   watch:'Prestiti a imprese e famiglie, criteri con cui le banche li concedono e tassi USA rispetto a quelli europei.'},
+  EUR:{fx:'Una ripresa dei finanziamenti può aiutare gli investimenti. Per l’euro conta se il recupero cambia le attese sui tassi della BCE rispetto a quelli della Fed.',
+   watch:'Domanda di prestiti delle imprese, tassi sulle nuove erogazioni e risposta di EUR/USD.'},
+  GBP:{fx:'I mutui incidono sulla spesa delle famiglie e sul mercato della casa. La sterlina può risentirne se quei cambiamenti spostano le attese sulla Bank of England.',
+   watch:'Nuove richieste di mutuo, costo dei prestiti e attese sui tassi britannici rispetto a quelli dell’Eurozona.'},
+  JPY:{fx:'Se il credito sostiene domanda e inflazione, le attese sui tassi giapponesi possono salire. Il cambio USD/JPY dipende anche da come si muovono i tassi USA.',
+   watch:'Domanda interna, prestiti bancari e differenziale tra i rendimenti a breve di Giappone e Stati Uniti.'},
+  CHF:{fx:'Il credito può incidere sul franco se cambia la crescita prevista e il percorso dei tassi svizzeri. La domanda di franco come rifugio resta un altro fattore per EUR/CHF.',
+   watch:'Costo dei prestiti, attese sui tassi svizzeri e rischi per l’economia europea.'},
+  CAD:{fx:'Se i finanziamenti sostengono gli investimenti, può cambiare la traiettoria dei tassi canadesi. Su USD/CAD contano anche il confronto con la Fed e il petrolio.',
+   watch:'Domanda delle imprese, criteri di concessione delle banche e tassi attesi in Canada e negli Stati Uniti.'},
+  AUD:{fx:'Il credito alle imprese può sostenere gli investimenti. Per il dollaro australiano conta se questo cambia le attese sui tassi, insieme alla domanda cinese e alla propensione al rischio.',
+   watch:'Investimenti delle imprese, costo dei finanziamenti e attese sui tassi australiani rispetto a quelli USA.'},
+  NZD:{fx:'Se più credito sostiene la spesa interna, il mercato può rivedere le attese sui tassi neozelandesi. Per AUD/NZD conta come cambiano rispetto a quelli australiani.',
+   watch:'Credito privato, spesa interna e differenziale atteso tra i tassi dei due paesi.'}
  };
+ const monthFormat=new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric',timeZone:'UTC'});
+ const dayFormat=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+ const dated=period=>{
+  const time=dateMs(observationDate(period));
+  return finite(time)?(period.length===7?monthFormat:dayFormat).format(time):period;
+ };
+ const inMonth=period=>{const month=dated(period);return (/^[aeiou]/i.test(month)?'Ad ':'A ')+month;};
+ const movement=(value,up,down,flat)=>value>0?up:value<0?down:flat;
  function jpyBOJCreditResearch(esc,fmt,now){
   const x=root.FXQuantJPYBankCreditResearch;
   if(!x||x.schema!=='GMFQ_NEXT_JPY_BOJ_BANK_CREDIT_RESEARCH_V1'||
@@ -135,7 +143,7 @@
      !Array.isArray(x.dates)||!Array.isArray(x.values)||
      x.dates.length<3||x.dates.length!==x.values.length||
      x.dates.at(-1)!==x.last_observation||
-     !/^https:\/\/www\.stat-search\.boj\.or\.jp\/ssi\/mtshtml\//.test(x.source_url))return '';
+     !/^https:\/\/www\.stat-search\.boj\.or\.jp\/ssi\/mtshtml\//.test(x.source_url))return null;
   const dates=x.dates,v=x.values;
   const continuous=dates.every((d,i)=>{
     if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(d)||!finite(v[i])||v[i]<=2000000||v[i]>=12000000)return false;
@@ -145,16 +153,19 @@
     return year*12+month-py*12-pm===1;
   });
   const period=observationDate(x.last_observation),today=observationDate(now);
-  if(!continuous||!period||!today||dateMs(period)>dateMs(today))return '';
+  if(!continuous||!period||!today||dateMs(period)>dateMs(today))return null;
   const last=v.at(-1),prev=v.at(-2),two=v.at(-3);
   const move=(last/prev-1)*100,prior=(prev/two-1)*100;
-  if(!finite(move)||!finite(prior)||Math.abs(move)>12||Math.abs(prior)>12)return '';
+  if(!finite(move)||!finite(prior)||Math.abs(move)>12||Math.abs(prior)>12)return null;
   const age=Math.round((dateMs(today)-dateMs(period))/864e5);
   const freshness=age>110?'STORICO · NUOVA PUBBLICAZIONE DA CONTROLLARE':'SERIE BOJ UFFICIALE DATATA';
   const pace=move>prior+0.025?'più alto':move<prior-0.025?'più basso':'simile';
   const creditHeading=move>0?'Lo stock dei prestiti cresce':move<0?'Lo stock dei prestiti scende':'Lo stock dei prestiti è stabile';
   const moveSigned=q=>(q>0?'+':q<0?'−':'')+fmt(Math.abs(q),2);
-  return '<section class="drivers-cad-official drivers-jpy-official" aria-label="BoJ credito bancario mensile fonte ufficiale separata">'+
+  const headline=movement(move,'I prestiti bancari sono aumentati','I prestiti bancari sono diminuiti','I prestiti bancari sono rimasti stabili');
+  return {headline,opening:inMonth(x.last_observation)+' il totale dei prestiti in essere è '+movement(move,'salito','sceso','rimasto stabile')+
+   ' rispetto al mese precedente. La continuità del movimento e le nuove erogazioni aiutano a capire se cambia la domanda interna.',
+   html:'<section class="drivers-cad-official drivers-jpy-official" aria-label="BoJ credito bancario mensile fonte ufficiale separata">'+
    '<span class="mini-overline">BANK OF JAPAN · CREDITO BANCARIO DI FINE MESE</span>'+
    '<h3>'+esc(creditHeading)+'</h3>'+
    '<p>A '+esc(x.last_observation)+' i prestiti in essere delle banche domestiche sono '+esc(fmt(last/10,2))+
@@ -165,7 +176,7 @@
    '<div class="drivers-cad-source"><span>'+freshness+' · periodo '+esc(x.last_observation)+
    ' · MD11 DLCLAEDBLTTO · '+esc(x.matched_canonical_months)+
    ' mesi storici corrispondenti · livello stock, non nuove erogazioni · vintage del primo rilascio non certificata · ranking FX invariato</span>'+
-   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: BoJ · Time-Series Data Search ↗</a></div></section>';
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: BoJ · Time-Series Data Search ↗</a></div></section>'};
  }
  function gbpBoESecuredCreditReading(esc,fmt,now){
   const x=root.FXQuantGBPBoESecuredCreditResearch;
@@ -179,24 +190,26 @@
      !Array.isArray(x.dates)||!Array.isArray(x.values)||
      x.dates.length<3||x.values.length!==x.dates.length||
      x.last_observation!==x.dates.at(-1)||
-     !/^https:\/\/www\.bankofengland\.co\.uk\/boeapps\/database\//.test(x.source_url))return '';
+     !/^https:\/\/www\.bankofengland\.co\.uk\/boeapps\/database\//.test(x.source_url))return null;
   const months=x.dates,values=x.values;
   const validSeries=months.every((month,i)=>
     /^\d{4}-\d{2}$/.test(month)&&
     (i===0||month>months[i-1])&&finite(values[i])&&values[i]>-15&&values[i]<25);
   const period=observationDate(months.at(-1)),today=observationDate(now);
-  if(!validSeries||!period||!today||dateMs(period)>dateMs(today))return '';
+  if(!validSeries||!period||!today||dateMs(period)>dateMs(today))return null;
   const jul=months.indexOf('2026-07'),sep=months.indexOf('2026-09');
-  if(jul<0||sep<0||Math.abs(values[jul]-3.6)>.16||Math.abs(values[sep]-3.4)>.16)return '';
+  if(jul<0||sep<0||Math.abs(values[jul]-3.6)>.16||Math.abs(values[sep]-3.4)>.16)return null;
   const last=values.at(-1),prior=values.at(-2),delta=last-prior;
-  if(!Number.isFinite(delta)||Math.abs(delta)>8)return '';
+  if(!Number.isFinite(delta)||Math.abs(delta)>8)return null;
   const pace=delta<-.049?'in rallentamento':delta>.049?'in accelerazione':'sostanzialmente stabile';
   const yoyState=last>0?'continua a espandersi su base annua':last<0?'si contrae su base annua':'è invariato su base annua';
   const signed=v=>(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),1);
   const age=Math.round((dateMs(today)-dateMs(period))/864e5);
   const state=age>75?'PERIODO STORICO · NON CORRENTE':'SERIE MENSILE UFFICIALE DATATA';
   const matchedRelease=x.last_observation==='2026-09'&&x.official_september_release_date==='2026-10-29';
-  return '<div class="drivers-gbp-credit-bridge" aria-label="Credito garantito BoE crescita annuale corretta per stagionalità">'+
+  const opening=inMonth(x.last_observation)+' il credito legato ai mutui '+yoyState+', con un ritmo '+pace+' rispetto al mese precedente.';
+  return {opening,
+   html:'<div class="drivers-gbp-credit-bridge" aria-label="Credito garantito BoE crescita annuale corretta per stagionalità">'+
     '<b>SECONDO CANALE · CREDITO ALLE FAMIGLIE, NON RISERVE</b>'+
     '<p>Il credito garantito alle famiglie '+esc(yoyState)+': <strong>'+esc(fmt(last,1))+
     '% annuo nel '+esc(x.last_observation)+'</strong>, rispetto al '+esc(fmt(prior,1))+
@@ -208,7 +221,7 @@
     ' · LPMVTYI destagionalizzato · vintage iniziale non certificato · feed canonico GBP invariato · '+
     '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Serie BoE LPMVTYI ↗</a>'+
     (matchedRelease?' · <a href="'+esc(x.official_september_2026_release)+'" target="_blank" rel="noopener noreferrer">Money and Credit · 29 ottobre ↗</a>':'')+
-    '</small></div>';
+    '</small></div>'};
  }
  function gbpBoEReservesResearch(esc,fmt,now){
   const x=root.FXQuantGBPBoEReservesResearch;
@@ -219,7 +232,7 @@
      x.unit!=='milioni GBP'||x.frequency!=='W'||
      x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
      x.first_release_pit_verified!==false||x.seasonally_adjusted!==false||
-     x.asof_canonical_overlap!=='2026-09-16'||x.value_canonical_overlap!==638012)return '';
+     x.asof_canonical_overlap!=='2026-09-16'||x.value_canonical_overlap!==638012)return null;
   const period=observationDate(x.source_period),previous=observationDate(x.previous_period),
         published=observationDate(x.published_on),today=observationDate(now);
   const [latest,earlier,delta]=[x.latest_balance_million_gbp,x.previous_balance_million_gbp,x.weekly_change_million_gbp];
@@ -228,24 +241,28 @@
      dateMs(period)-dateMs(previous)!==7*864e5||
      ![latest,earlier,delta].every(finite)||latest<300000||earlier<300000||
      latest-earlier!==delta||Math.abs(delta)>150000||
-     !/^https:\/\/www\.bankofengland\.co\.uk\/weekly-report\/\d{4}\/\d{1,2}-[a-z]+-\d{4}$/.test(x.source_url))return '';
+     !/^https:\/\/www\.bankofengland\.co\.uk\/weekly-report\/\d{4}\/\d{1,2}-[a-z]+-\d{4}$/.test(x.source_url))return null;
   const age=Math.round((dateMs(today)-dateMs(period))/864e5);
   const sign=delta>0?'+':delta<0?'−':'';
   const groupedMove=String(Math.abs(delta)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
   const direction=delta>0?'sono aumentate':delta<0?'sono diminuite':'sono rimaste invariate';
   const quality=age>25?'STORICO · NUOVO RAPPORTO DA CONTROLLARE':'RAPPORTO SETTIMANALE UFFICIALE';
-  return '<section class="drivers-cad-official drivers-gbp-official" aria-label="BoE riserve bancarie fonte ufficiale separata">'+
+  const credit=gbpBoESecuredCreditReading(esc,fmt,now);
+  const headline=credit?'Riserve bancarie e mutui, due letture per la sterlina':'Le riserve bancarie '+direction;
+  const opening='Al '+dated(x.source_period)+' le riserve delle banche '+direction+' rispetto alla settimana prima.';
+  return {headline,opening:opening+(credit?' '+credit.opening:''),
+   html:'<section class="drivers-cad-official drivers-gbp-official" aria-label="BoE riserve bancarie fonte ufficiale separata">'+
    '<span class="mini-overline">BANK OF ENGLAND · RISERVE BANCARIE UFFICIALI</span>'+
    '<h3>Riserve bancarie '+(delta>0?'in aumento':delta<0?'in calo':'stabili')+' nella settimana</h3>'+
    '<p>Al '+esc(x.source_period)+' le riserve delle banche presso la BoE '+esc(direction)+
    ' di <b>'+sign+esc(groupedMove)+' milioni GBP</b> in una settimana: saldo '+esc(fmt(latest,0))+
    ' milioni, contro '+esc(fmt(earlier,0))+' milioni al '+esc(x.previous_period)+'.</p>'+
    '<p><b>Cosa sto osservando:</b> uno stock di passività della banca centrale, non un flusso di nuovi prestiti. Anche con riserve in aumento, non possiamo dedurre un allentamento della BoE, nuovi acquisti di asset o domanda di GBP. I prestiti garantiti sono una seconda misura economica con frequenza e periodo propri: non vanno sommati ai saldi di riserva.</p>'+
-   gbpBoESecuredCreditReading(esc,fmt,now)+
+   (credit?.html||'')+
    '<p><b>Quale verifica Forex manca?</b> Il mercato deve mostrare se cambia il percorso SONIA relativo a €STR e Fed; poi cerchiamo la risposta di EUR/GBP e GBP/USD, distinguendo fattori GBP da debolezza dell’altra valuta. Senza questo collegamento non emerge un trade dalle sole riserve.</p>'+
    '<div class="drivers-cad-source"><span>'+quality+' · osservazione '+esc(x.source_period)+
    ' · pubblicazione '+esc(x.published_on)+' · RPWB56A · dati settimanali, revisioni possibili · fonte separata dal feed FX</span>'+
-   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: BoE · Weekly Report ↗</a></div></section>';
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: BoE · Weekly Report ↗</a></div></section>'};
  }
  function audRBAESReading(esc,fmt,now){
   const x=root.FXQuantAUDESBalancesResearch;
@@ -257,7 +274,7 @@
      x.first_release_pit_verified!==false||
      x.source_release_timestamp_verified!==false||
      x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
-     x.value_canonical_overlap!==173965||x.asof_canonical_overlap!=='2026-09-16')return '';
+     x.value_canonical_overlap!==173965||x.asof_canonical_overlap!=='2026-09-16')return null;
   const period=observationDate(x.source_period),today=observationDate(now);
   if(!period||!today||dateMs(period)>dateMs(today)||
      !/^\d{4}-\d{2}-\d{2}$/.test(x.source_period)||
@@ -265,12 +282,14 @@
      x.latest_balance_million_aud<10000||x.latest_balance_million_aud>900000||
      x.previous_implied_million_aud<=0||
      x.latest_balance_million_aud-x.previous_implied_million_aud!==x.weekly_movement_million_aud||
-     !/^https:\/\/www\.rba\.gov\.au\/statistics\/balance-sheet\/$/.test(x.source_url))return '';
+     !/^https:\/\/www\.rba\.gov\.au\/statistics\/balance-sheet\/$/.test(x.source_url))return null;
   const age=Math.round((dateMs(today)-dateMs(period))/864e5);
-  const movement=x.weekly_movement_million_aud;
-  const signed=(movement>0?'+':movement<0?'−':'')+String(Math.abs(movement)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  const movementValue=x.weekly_movement_million_aud;
+  const signed=(movementValue>0?'+':movementValue<0?'−':'')+String(Math.abs(movementValue)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
   const observation=age>25?'STORICO · DA AGGIORNARE':'SETTIMANALE UFFICIALE';
-  return '<div class="drivers-aud-es-bridge" aria-label="Riserve RBA settimanali fonte indipendente">'+
+  const opening='Nella settimana al '+dated(x.source_period)+' le riserve usate dalle banche per regolare i pagamenti '+movement(movementValue,'sono salite','sono scese','sono rimaste stabili')+'.';
+  return {opening,
+   html:'<div class="drivers-aud-es-bridge" aria-label="Riserve RBA settimanali fonte indipendente">'+
    '<b>SECONDO CANALE, NON SECONDA CONFERMA: LE RISERVE</b>'+
    '<p>Al '+esc(x.source_period)+' i saldi <em>Exchange Settlement</em> delle banche presso RBA sono '+esc(fmt(x.latest_balance_million_aud,0))+
    ' milioni AUD, '+esc(signed)+' milioni sulla settimana. Il saldo precedente di '+esc(fmt(x.previous_implied_million_aud,0))+
@@ -278,7 +297,7 @@
    '<p>Queste sono riserve di regolamento tra banche, <b>non</b> nuovi prestiti, liquidità netta trasferita ai mercati o flussi di acquisto AUD. La serie A3 AESAT giornaliera è un riferimento distinto, qui usiamo il bilancio RBA settimanale. Credito mensile e riserve settimanali non vanno sommati per creare un segnale: conta se cambiano costo del funding, attese sui tassi e prezzo Forex.</p>'+
    '<small>'+observation+' · rilevazione '+esc(x.source_period)+
    ' · ora esatta del rilascio non verificata · valore precedente implicito · nessuna modifica al ranking FX · '+
-   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: bilancio settimanale RBA ↗</a></small></div>';
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: bilancio settimanale RBA ↗</a></small></div>'};
  }
  function audRBAAdjustedCredit(esc,fmt,now){
   const x=root.FXQuantAUDBusinessCreditGrowthResearch;
@@ -289,19 +308,24 @@
      x.breaks_adjusted!==true||x.seasonally_adjusted!==true||
      x.is_credit_stock!==false||x.first_release_pit_verified!==false||
      x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
-     x.unit!=='percent'||x.frequency!=='M')return '';
+     x.unit!=='percent'||x.frequency!=='M')return null;
   const period=observationDate(x.observation_period),release=observationDate(x.release_date),today=observationDate(now);
   if(!period||!release||!today||dateMs(period)>dateMs(release)||dateMs(release)>dateMs(today)||
      !/^\d{4}-\d{2}$/.test(x.observation_period)||!/^\d{4}-\d{2}-\d{2}$/.test(x.release_date)||
      ![x.monthly_growth_pct,x.prior_month_growth_pct,x.annual_growth_pct,x.prior_year_growth_pct].every(v=>finite(v)&&v>-20&&v<30)||
-     !/^https:\/\/www\.rba\.gov\.au\/statistics\/frequency\/fin-agg\/\d{4}\/fin-agg-\d{4}\.html$/.test(x.source_url))return '';
+     !/^https:\/\/www\.rba\.gov\.au\/statistics\/frequency\/fin-agg\/\d{4}\/fin-agg-\d{4}\.html$/.test(x.source_url))return null;
   const current=x.monthly_growth_pct,prior=x.prior_month_growth_pct,change=current-prior,
     age=Math.round((dateMs(today)-dateMs(release))/864e5);
   const diff=Math.abs(change)<0.05?'stabile rispetto al mese precedente':
     change>0?'in accelerazione rispetto al mese precedente':'in decelerazione rispetto al mese precedente';
   const move=v=>(v>0?'+':'')+fmt(v,1)+'%';
   const freshness=age>75?'COMUNICATO STORICO · NUOVO RILASCIO DA CONTROLLARE':'COMUNICATO UFFICIALE DATATO';
-  return '<section class="drivers-cad-official drivers-aud-official" aria-label="RBA credito imprese crescita corretta">'+
+  const reserves=audRBAESReading(esc,fmt,now);
+  const headline=movement(current,'Il credito alle imprese è cresciuto','Il credito alle imprese è diminuito','Il credito alle imprese è rimasto stabile');
+  const opening=inMonth(x.observation_period)+' il credito alle imprese è '+movement(current,'cresciuto','diminuito','rimasto stabile')+
+   '. La variazione mensile è '+diff+'.';
+  return {headline,opening:opening+(reserves?' '+reserves.opening:''),
+   html:'<section class="drivers-cad-official drivers-aud-official" aria-label="RBA credito imprese crescita corretta">'+
    '<span class="mini-overline">RBA · CRESCITA UFFICIALE CORRETTA PER DISCONTINUITÀ</span>'+
    '<h3>Australia: il credito alle imprese '+esc(current>0?'cresce':current<0?'si riduce':'è invariato')+'; il ritmo mensile è '+esc(Math.abs(change)<0.05?'stabile':change>0?'in accelerazione':'in decelerazione')+'.</h3>'+
    '<p>Nel mese di '+esc(x.observation_period)+' il credito alle imprese cresce del <b>'+esc(move(current))+
@@ -309,10 +333,10 @@
    '. Su dodici mesi è '+esc(move(x.annual_growth_pct))+
    ' (contro '+esc(move(x.prior_year_growth_pct))+' nello stesso mese dell’anno precedente).</p>'+
    '<p><b>Perché conta:</b> questa è la crescita RBA corretta per le rotture statistiche, <b>non</b> una percentuale ricavata dai livelli D2 e non un flusso di nuovi prestiti. Il credito resistente può aiutare l’attività, ma va confrontato con costi di finanziamento, domanda, occupazione e inflazione. Per AUD controlliamo il repricing RBA relativo a Fed/BoC, Cina e rischio globale: il credito da solo non identifica un trade.</p>'+
-   audRBAESReading(esc,fmt,now)+
+   (reserves?.html||'')+
    '<div class="drivers-cad-source"><span>'+freshness+' · periodo '+esc(x.observation_period)+
    ' · pubblicato '+esc(x.release_date)+' · rettifiche storiche possibili · prima vintage non certificata · feed FX invariato</span>'+
-   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: RBA · Financial Aggregates ↗</a></div></section>';
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: RBA · Financial Aggregates ↗</a></div></section>'};
  }
  function eurECBLoanResearch(esc,fmt,now){
   const x=root.FXQuantEURNFCCreditResearch;
@@ -324,15 +348,15 @@
      x.seasonally_adjusted!==false||x.eligible_for_fx_core!==false||
      x.eligible_for_backtest!==false||x.first_release_pit_verified!==false||
      !Array.isArray(x.dates)||!Array.isArray(x.values)||x.dates.length<3||
-     x.dates.length!==x.values.length)return '';
+     x.dates.length!==x.values.length)return null;
   const lastDate=x.dates.at(-1),last=x.values.at(-1),prev=x.values.at(-2),before2=x.values.at(-3);
   const nowDate=observationDate(now),period=observationDate(lastDate);
   if(!nowDate||!period||dateMs(period)>dateMs(nowDate)||
      lastDate!==x.latest_observation||![last,prev,before2].every(v=>finite(v)&&v>0)||
-     !x.dates.every((d,i)=>/^\d{4}-\d{2}$/.test(d)&&(!i||d>x.dates[i-1])))return '';
+     !x.dates.every((d,i)=>/^\d{4}-\d{2}$/.test(d)&&(!i||d>x.dates[i-1])))return null;
   const pct=100*(last/prev-1),twoMonths=100*(last/before2-1),
         age=Math.round((dateMs(nowDate)-dateMs(period))/864e5);
-  if(!finite(pct)||!finite(twoMonths)||Math.abs(pct)>10||Math.abs(twoMonths)>20)return '';
+  if(!finite(pct)||!finite(twoMonths)||Math.abs(pct)>10||Math.abs(twoMonths)>20)return null;
   const state=pct>0?'in aumento':pct<0?'in diminuzione':'invariato';
   const sign=v=>v>0?'+':v<0?'−':'';
   const historical=age>75?'SERIE STORICA, RILASCIO DA RICONTROLLARE':'ULTIMA OSSERVAZIONE DATATA';
@@ -341,7 +365,15 @@
     pct>0&&twoMonths>0?
     'Due mesi cumulati in aumento sono un dato positivo, ma non provano che le banche stiano allentando gli standard o che la domanda sia forte.':
     'La dinamica recente non è sufficiente a certificare un impulso positivo al credito; servono domanda, tassi sui nuovi prestiti e condizioni BLS.';
-  return '<section class="drivers-cad-official drivers-eur-official" aria-label="Fonte ufficiale BCE separata">'+
+  const recent=x.dates.slice(-3).map(d=>dateMs(observationDate(d)));
+  const partialRecovery=pct>0&&twoMonths<0&&recent[1]-recent[0]<=31*864e5&&recent[2]-recent[1]<=31*864e5;
+  const headline=partialRecovery?'I prestiti alle imprese hanno recuperato parte del calo':
+   movement(pct,'I prestiti alle imprese sono aumentati','I prestiti alle imprese sono diminuiti','I prestiti alle imprese sono rimasti stabili');
+  const opening=inMonth(lastDate)+' i prestiti in essere sono '+movement(pct,'saliti','scesi','rimasti stabili')+
+   ' rispetto alla rilevazione precedente.'+(partialRecovery?
+    ' Nel complesso dei due mesi il saldo resta in calo.':' La domanda di finanziamenti aiuta a capire se il movimento può durare.');
+  return {headline,opening,
+   html:'<section class="drivers-cad-official drivers-eur-official" aria-label="Fonte ufficiale BCE separata">'+
    '<span class="mini-overline">BCE / ESCB · SERIE UFFICIALE SEPARATA</span>'+
    '<h3>Prestiti alle imprese dell’Eurozona '+(pct===0?'invariati':state)+'</h3>'+
    '<p>Lo stock dei prestiti alle società non finanziarie è '+esc(state)+' nel '+esc(lastDate)+
@@ -351,7 +383,7 @@
    ' Per EUR va inoltre verificato se la BCE e il mercato dei tassi cambiano idea rispetto alla Fed, e se EUR/USD o EUR/GBP confermano il differenziale.</p>'+
    '<div class="drivers-cad-source"><span>'+historical+' · '+esc(lastDate)+
    ' · serie BSI NFC non destagionalizzata · revisioni possibili · vintage di prima pubblicazione non verificato · feed FX invariato</span>'+
-   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: BCE · Data Portal ↗</a></div></section>';
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: BCE · Data Portal ↗</a></div></section>'};
  }
  function usFedCreditResearch(esc,fmt,now){
   const x=root.FXQuantUSBanksCreditResearch;
@@ -362,18 +394,22 @@
      x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
      x.first_release_pit_verified!==false||x.frequency!=='W'||
      !Array.isArray(x.dates)||!Array.isArray(x.values)||
-     x.dates.length<2||x.dates.length!==x.values.length)return '';
+     x.dates.length<2||x.dates.length!==x.values.length)return null;
   const lastDate=x.dates.at(-1),last=x.values.at(-1),prev=x.values.at(-2);
   const today=observationDate(now),observed=observationDate(lastDate);
   if(!today||!observed||dateMs(observed)>dateMs(today)||
      lastDate!==x.latest_observation||!finite(last)||!finite(prev)||
-     last<=0||prev<=0||!x.dates.every((d,i)=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&(!i||d>x.dates[i-1])))return '';
+     last<=0||prev<=0||!x.dates.every((d,i)=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&(!i||d>x.dates[i-1])))return null;
   const age=Math.round((dateMs(today)-dateMs(observed))/864e5);
   const move=(last/prev-1)*100,diff=last-prev;
-  if(!finite(move)||Math.abs(move)>10)return '';
+  if(!finite(move)||Math.abs(move)>10)return null;
   const direction=diff>0?'cresce':diff<0?'si riduce':'rimane invariato';
   const stale=age>28?'PERIODO STORICO':'ULTIMA OSSERVAZIONE SETTIMANALE';
-  return '<section class="drivers-cad-official drivers-us-official" aria-label="Ricerca Fed H.8 separata">'+
+  const headline=movement(diff,'Il credito bancario è aumentato','Il credito bancario è diminuito','Il credito bancario è rimasto stabile');
+  const opening='Al '+dated(lastDate)+' il totale era '+movement(diff,'in aumento','in calo','stabile')+
+   ' rispetto alla rilevazione precedente. Il totale comprende prestiti e titoli detenuti dalle banche. Per capire se cambia la spesa, contano soprattutto i finanziamenti a famiglie e imprese.';
+  return {headline,opening,
+   html:'<section class="drivers-cad-official drivers-us-official" aria-label="Ricerca Fed H.8 separata">'+
    '<span class="mini-overline">FONTE FED H.8 / FRED · SERIE SEPARATA</span>'+
    '<h3>Lo stock del credito bancario '+direction+'</h3>'+
    '<p>Nel dato del '+esc(lastDate)+' il credito bancario totale '+direction+': '+esc(fmt(last,2))+
@@ -382,7 +418,7 @@
    'Questo aggregato Fed comprende anche titoli bancari e non misura direttamente la domanda di nuovi finanziamenti.</p>'+
    '<p><b>Lettura economica:</b> per giudicare la trasmissione serve capire se crescono i prestiti, se cambiano gli standard SLOOS (attualmente sospesi per discrepanza tra varianti) e se il pricing Fed relativo produce una reazione coerente di USD. Non deduciamo flussi valutari dal solo stock.</p>'+
    '<div class="drivers-cad-source"><span>'+stale+' · '+esc(lastDate)+' · H.8 TOTBKCR · fonte aggiornata via FRED, vintage iniziale non certificato</span>'+
-   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: Federal Reserve / FRED ↗</a></div></section>';
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: Federal Reserve / FRED ↗</a></div></section>'};
  }
  function cadIssuerResearch(esc,fmt,now){
   const x=root.FXQuantCADCreditResearch;
@@ -391,17 +427,21 @@
      x.category!=='outstanding_business_loans'||x.eligible_for_fx_core!==false||
      x.eligible_for_backtest!==false||x.first_release_pit_verified!==false||
      !Array.isArray(x.dates)||!Array.isArray(x.values)||
-     x.values.length!==x.dates.length||x.values.length<2)return '';
+     x.values.length!==x.dates.length||x.values.length<2)return null;
   const latest=x.dates.at(-1),last=x.values.at(-1),prev=x.values.at(-2);
   const period=observationDate(latest),today=observationDate(now);
   if(!period||!today||dateMs(period)>dateMs(today)||!finite(last)||!finite(prev)||
      last<=0||prev<=0||latest!==x.latest_observation||
-     !x.dates.every((d,i)=>/^\d{4}-\d{2}$/.test(d)&&(!i||d>x.dates[i-1])))return '';
+     !x.dates.every((d,i)=>/^\d{4}-\d{2}$/.test(d)&&(!i||d>x.dates[i-1])))return null;
   const delta=(last/prev-1)*100,age=Math.round((dateMs(today)-dateMs(period))/864e5);
-  if(!Number.isFinite(delta)||Math.abs(delta)>15)return '';
+  if(!Number.isFinite(delta)||Math.abs(delta)>15)return null;
   const move=delta>0?'in aumento':delta<0?'in diminuzione':'invariati';
   const quality=age>75?'PERIODO STORICO':'ULTIMA OSSERVAZIONE DATATA';
-  return '<section class="drivers-cad-official" aria-label="Fonte ufficiale canadese separata">'+
+  const headline=movement(delta,'I prestiti alle imprese sono aumentati','I prestiti alle imprese sono diminuiti','I prestiti alle imprese sono rimasti stabili');
+  const opening=inMonth(latest)+' il totale dei prestiti in essere alle imprese è '+movement(delta,'salito','sceso','rimasto stabile')+
+   ' rispetto alla rilevazione precedente. La domanda di nuovi prestiti aiuta a capire se stanno cambiando i piani di investimento delle aziende.';
+  return {headline,opening,
+   html:'<section class="drivers-cad-official" aria-label="Fonte ufficiale canadese separata">'+
    '<span class="mini-overline">BANK OF CANADA · PRESTITI ALLE IMPRESE</span>'+
    '<h3>Prestiti alle imprese '+move+'</h3>'+
    '<p>La Bank of Canada pubblica il totale dei <b>prestiti alle imprese in essere</b>: '+esc(fmt(last,0))+
@@ -409,7 +449,7 @@
    '%) rispetto al mese precedente. È la variazione di uno stock bancario, non il flusso di nuovi prestiti.</p>'+
    '<p>Questa osservazione aiuta a verificare l’ipotesi sulla trasmissione del credito, ma <b>non certifica</b> il canale CAD.credit operativo: definizioni, revisioni e percorso di aggiornamento restano separati. Per CAD servono anche la risposta BoC, il differenziale con la Fed e USD/CAD.</p>'+
    '<div class="drivers-cad-source"><span>'+quality+' · '+esc(latest)+' · serie V122667770 · rilascio point-in-time non verificato</span>'+
-   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: Bank of Canada ↗</a></div></section>';
+   '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: Bank of Canada ↗</a></div></section>'};
  }
  const NZD_SOURCES={
   d10:'https://www.rbnz.govt.nz/statistics/series/reserve-bank/influences-on-settlement-cash',
@@ -457,9 +497,13 @@
   const cashText=cash>0?'I saldi di regolamento salgono':cash<0?'I saldi di regolamento scendono':'I saldi di regolamento sono stabili';
   let creditText='il credito è stabile';
   if(credit<0)creditText='lo stock di credito cala';
-  if(credit>0)creditText=credit>priorCredit?'il credito accelera':credit<priorCredit?
+  if(credit>0)creditText=!finite(priorCredit)?'il credito cresce':credit>priorCredit?'il credito accelera':credit<priorCredit?
    'il credito cresce più lentamente':'il credito cresce allo stesso ritmo';
-  return '<section class="drivers-cad-official" aria-label="Dati mensili ufficiali RBNZ">'+
+  const headline=movement(credit,'Il credito privato è cresciuto','Il credito privato è diminuito','Il credito privato è rimasto stabile');
+  const opening=inMonth(release.period)+' '+cashText.charAt(0).toLowerCase()+cashText.slice(1)+' e '+creditText+
+   '. I saldi servono alle banche per pagarsi tra loro. Per la spesa interna conta come evolve il credito al settore privato.';
+  return {headline,opening,
+   html:'<section class="drivers-cad-official" aria-label="Dati mensili ufficiali RBNZ">'+
    '<span class="mini-overline">RESERVE BANK OF NEW ZEALAND · D10 E C50</span>'+
    '<h3>'+cashText+' e '+creditText+'.</h3>'+
    '<p>Nel '+esc(release.period)+' i saldi medi di regolamento variano del '+percent(cash)+
@@ -470,7 +514,7 @@
    ' · '+(observationDate(today)<release.next?'prossimo rilascio previsto il '+esc(release.next):
     'nuovo rilascio da verificare')+'</span>'+
    '<a href="'+NZD_SOURCES.d10+'" target="_blank" rel="noopener noreferrer">RBNZ · D10 ↗</a>'+
-   '<a href="'+NZD_SOURCES.c50+'" target="_blank" rel="noopener noreferrer">RBNZ · C50 ↗</a></div></section>';
+   '<a href="'+NZD_SOURCES.c50+'" target="_blank" rel="noopener noreferrer">RBNZ · C50 ↗</a></div></section>'};
  }
  function chfSNBResearch(feed,today,esc,fmt){
   const roles=[
@@ -491,7 +535,7 @@
     ' · '+esc(fmt(row.proxy_value/1000,2))+' miliardi CHF. Sul mese '+pct(row.change_1m_pct)+
     ' · in tre mesi '+pct(row.change_3m_pct)+(age>70?' · dato storico.':'.')+'</p>'}];
   });
-  if(!entries.length)return '<p class="drivers-lead">I dati mensili SNB sono temporaneamente indisponibili.</p>';
+  if(!entries.length)return null;
   const read=entries.map(entry=>entry.html).join('');
   const byKey=Object.fromEntries(entries.map(entry=>[entry.key,entry.row]));
   const deposits=byKey['CHF.sight_deposits'],credit=byKey['CHF.credit'];
@@ -505,12 +549,23 @@
    'Depositi e credito secondo le ultime osservazioni disponibili';
   const creditTrend=credit?.change_3m_pct;
   const reading=finite(creditTrend)?'Sui tre mesi il credito '+(creditTrend>0?'risulta ancora in crescita':creditTrend<0?'risulta in calo':'è stabile')+'. ':'';
-  return '<section class="drivers-cad-official" aria-label="Serie mensili ufficiali SNB">'+
+  const observations=entries.map(({key,row})=>{
+   const depositsLane=key==='CHF.sight_deposits';
+   const subject=depositsLane?'i depositi delle banche presso la banca centrale sono ':'il credito utilizzato è ';
+   const change=row.change_1m_pct;
+   const description=finite(change)?movement(change,'in aumento','in calo',depositsLane?'stabili':'stabile')+
+    ' rispetto al mese precedente':(depositsLane?'disponibili':'disponibile')+' senza un confronto mensile';
+   return subject+description;
+  });
+  const opening=sameMonth?inMonth(month)+' '+observations.join(' e ')+'.':
+   observations.map((item,i)=>inMonth(entries[i].row.proxy_as_of)+' '+item+'.').join(' ');
+  return {headline,opening,
+   html:'<section class="drivers-cad-official" aria-label="Serie mensili ufficiali SNB">'+
    '<span class="mini-overline">SWISS NATIONAL BANK · SERIE MENSILI</span>'+
    '<h3>'+esc((monthLabel?monthLabel.charAt(0).toUpperCase()+monthLabel.slice(1)+' · ':'')+headline)+'</h3>'+
    '<p>'+esc(reading)+'Per capire se le condizioni del credito stanno peggiorando, servono più mesi e informazioni sulla facilità di ottenere prestiti.</p>'+
    read+
-   '<div class="drivers-cad-source"><a href="https://data.snb.ch/en/publishingSet/BSTA" target="_blank" rel="noopener noreferrer">Fonte: SNB · Statistiche bancarie mensili ↗</a></div></section>';
+   '<div class="drivers-cad-source"><a href="https://data.snb.ch/en/publishingSet/BSTA" target="_blank" rel="noopener noreferrer">Fonte: SNB · Statistiche bancarie mensili ↗</a></div></section>'};
  }
  function render(api){
   const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,date,dayNow}=api;
@@ -518,7 +573,7 @@
   const nzd=nzdDossier(all.NZD,today);
   const selected=validCcy(state.liqCcy)?state.liqCcy:'USD';
   const row=selected==='NZD'&&nzd?nzd:all[selected],read=interpret(row);
-  const chf=selected==='CHF'?chfSNBResearch(get('residualResearch'),today,esc,fmt):'';
+  const chf=selected==='CHF'?chfSNBResearch(get('residualResearch'),today,esc,fmt):null;
   const provenance=root.FXQuantLiquiditySourcePolicy?.review(selected)||null;
   const policyGate=(role)=>root.FXQuantLiquiditySourcePolicy?.check(selected,role)||null;
   const roles=['liquidity','credit','conditions'];
@@ -554,16 +609,18 @@
   }).join('');
   const facts='<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+
    cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>';
-  const officialRead=chf||
-   (selected==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):'')||
-   (selected==='JPY'?jpyBOJCreditResearch(esc,fmt,today):'')||
-   (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):'')||
-   (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):'')||
-   (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):'')||
-   (selected==='USD'?usFedCreditResearch(esc,fmt,today):'')||
-   (selected==='CAD'?cadIssuerResearch(esc,fmt,today):'');
+  const official=chf||
+   (selected==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):null)||
+   (selected==='JPY'?jpyBOJCreditResearch(esc,fmt,today):null)||
+   (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):null)||
+   (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):null)||
+   (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):null)||
+   (selected==='USD'?usFedCreditResearch(esc,fmt,today):null)||
+   (selected==='CAD'?cadIssuerResearch(esc,fmt,today):null);
+  const headline=official?.headline||'La lettura del credito resta aperta';
+  const opening=official?.opening||'Le rilevazioni disponibili non permettono di stabilire se il credito stia accelerando o frenando. Per capire come si finanziano famiglie e imprese servono osservazioni confrontabili sui prestiti e sui costi.';
   const liquidityAudit=audits[0];
-  const liquidityRead=officialRead&&['USD','EUR','JPY','CAD'].includes(selected)&&
+  const liquidityRead=official&&['USD','EUR','JPY','CAD'].includes(selected)&&
    liquidityAudit.coverage&&liquidityAudit.state!=='DATA DA VERIFICARE'&&!policyGate('liquidity')?.withheld?
    '<p class="drivers-lead"><strong>'+esc(row.liquidity.label)+'</strong> · '+
    esc(snap(row.liquidity).replace(/T.*$/,''))+
@@ -572,16 +629,17 @@
   const sourceStatus='<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(historicalCount)+
    ' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica.</p>';
   return pageHero('LIQUIDITÀ E CREDITO G8','Liquidità & Credito. <em>Il denaro arriva all’economia?</em>',
-   'Segui prima la liquidità di banche e mercati, poi verifica se il credito arriva a famiglie e imprese.')+
+   'Le banche possono avere più liquidità anche quando famiglie e imprese faticano a finanziarsi. Qui seguiamo entrambi i passaggi.')+
    '<section class="drivers-panel" id="liquidity-studio"><div class="drivers-head"><div><h2>Seleziona un’economia</h2>'+
    '<p>La mappa mostra la direzione nelle serie di riferimento. Apri una scheda per leggere il periodo del dato e le osservazioni ufficiali disponibili.</p></div></div>'+
    '<div class="drivers-country-grid">'+cards+'</div></section>'+
    '<section class="drivers-panel drivers-selection" aria-label="Scheda liquidità e credito '+selected+'">'+
    '<div class="drivers-head"><div><span class="mini-overline">'+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
-   '<h2>'+esc('Liquidità e credito · '+(NAMES[selected]||selected))+'</h2></div></div>'+
-   liquidityRead+(officialRead||'<h3>'+esc(read.headline)+'</h3><p class="drivers-lead">'+esc(read.meaning)+'</p>')+
+   '<h2>'+esc(headline)+'</h2></div></div>'+
+   '<p class="drivers-lead drivers-liquidity-opening">'+esc(opening)+'</p>'+
    '<div class="drivers-story"><div><span>PERCHÉ CONTA PER IL CAMBIO</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div>'+
    '<div><span>COSA CONTROLLARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
+   liquidityRead+(official?.html||'')+
    (root.FXQuantDriverMarketAudit?.render?.({get,esc,dayNow},selected)||'')+
    '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
    '<details class="drivers-source-provenance-fold"><summary>Fonti e storico</summary>'+

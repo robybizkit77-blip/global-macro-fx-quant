@@ -42,6 +42,17 @@ const api=ccy=>({get:k=>k==='liquidity'?native:null,FX,
  pageHero:(a,b,c)=>'<h1>'+b+'</h1>',esc,fmt,date:x=>x,
  dayNow:()=>new Date().toISOString().slice(0,10)});
 const usd=studio.render(api('USD'));
+const firstRead=usd.match(/<p class="drivers-lead drivers-liquidity-opening">([^<]+)<\/p>/);
+assert(firstRead&&firstRead.index<usd.indexOf('drivers-us-official'),'the plain-language opening precedes source details');
+const observed=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'})
+ .format(new Date(source.latest_observation+'T12:00:00Z'));
+const delta=source.values.at(-1)-source.values.at(-2);
+assert(firstRead[1].includes(observed));
+assert(firstRead[1].includes(delta>0?'in aumento':delta<0?'in calo':'stabile'));
+assert(!firstRead[1].includes('%')&&!firstRead[1].includes('TOTBKCR'));
+const unverified=studio.render({...api('USD'),dayNow:()=>source.dates[0]});
+assert.match(unverified,/La lettura del credito resta aperta/);
+assert(!unverified.includes('drivers-us-official'));
 assert.match(usd,/class="drivers-cad-official drivers-us-official"/);
 assert.match(usd,/Fed H\.8/i);
 assert.match(usd,/TOTBKCR/);
