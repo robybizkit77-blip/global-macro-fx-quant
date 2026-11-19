@@ -249,6 +249,17 @@ assert.equal(render(dirty),null,'Unverified/unsafe citation invalidates the enti
 const xss=structuredClone(sample);
 xss.headline='<script>alert(1)</script> mercato'; 
 assert(render(xss).includes('&lt;script&gt;alert(1)&lt;/script&gt;'));
+const storyEdition=structuredClone(sample);
+storyEdition.news[0].headline='Dollaro misto';
+storyEdition.news[0].analysis='Il dollaro ha ceduto contro l’euro e guadagnato contro lo yen.';
+storyEdition.news[0].evidence='Al fixing BCE EUR/USD ha segnato +0,22%. <testo>';
+const storyHtml=render(storyEdition);
+assert.match(storyHtml,/<h3>Dollaro misto<\/h3><p>Il dollaro ha ceduto contro l’euro e guadagnato contro lo yen\.<\/p><details class="hourly-desk-citations hourly-story-evidence"><summary>Dati e fonti<\/summary><p>Al fixing BCE EUR\/USD ha segnato \+0,22%\. &lt;testo&gt;<\/p>/);
+assert.match(storyHtml,/<summary>Dati e fonti<\/summary>[\s\S]*href="https:\/\/www\.bls\.gov\/news\.release\/ppi\.htm"/);
+assert.equal(win.FXQuantHourlyDesk.titleItaliano({
+ headline:'Oil flows through Middle East chokepoints increased in the third quarter',
+ market_area:'ENERGIA',sources:['https://www.eia.gov/todayinenergy/']
+}),'Più petrolio in transito nei passaggi chiave del Medio Oriente');
 const app=fs.readFileSync(path.join(ROOT,next,'app.js'),'utf8');
 const index=fs.readFileSync(path.join(ROOT,next,'index.html'),'utf8');
 assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent free research');
