@@ -169,7 +169,7 @@ check('Available G8 data tell a qualitative story with native periods',()=>{
  assert.match(eur,/prezzi è di ottobre 2026.*disoccupazione è di settembre 2026/);
  assert.match(eur,/complica eventuali tagli dei tassi/);
  const aud=html({country:'AUD',macro,today:'2026-11-19'}).hero;
- assert.match(aud,/prezzi è di terzo trimestre 2026.*disoccupazione è di ottobre 2026/);
+ assert.match(aud,/prezzi è del terzo trimestre del 2026.*disoccupazione è di ottobre 2026/);
  const stale=html({country:'EUR',macro,today:'2027-03-01'}).hero;
  assert.match(stale,/Il quadro economico è da aggiornare/);
 });

@@ -184,7 +184,7 @@ function build(api){
  }
  function periodLabel(period,frequency){
    const [year,month]=period.split('-').map(Number);
-   if(frequency==='Q')return ['primo','secondo','terzo','quarto'][Math.ceil(month/3)-1]+' trimestre '+year;
+   if(frequency==='Q')return ['primo','secondo','terzo','quarto'][Math.ceil(month/3)-1]+' trimestre del '+year;
    return new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric',timeZone:'UTC'})
      .format(new Date(Date.UTC(year,month-1,1)));
  }
@@ -201,7 +201,8 @@ function build(api){
    const latest=record.history.at(-1),previous=record.history.at(-2);
    if(![latest,previous].every(finite)||latest!==record.latest_value)return null;
    const change=latest-previous;
-   return {direction:Math.abs(change)<.025?0:Math.sign(change),period:periodLabel(period,frequency)};
+   return {direction:Math.abs(change)<.025?0:Math.sign(change),
+     period:(frequency==='Q'?'del ':'di ')+periodLabel(period,frequency)};
  }
  function countryNarrative(){
    const demand=country==='USD'?usdHouseholdEvidence():null;
@@ -210,13 +211,13 @@ function build(api){
    const labour=recentDirection(thermoRecord(country,'labour'),'labour');
    const i=inflation?.direction,l=labour?.direction;
    const priceLine=inflation?['L’inflazione rallenta','L’inflazione cambia poco','L’inflazione sale'][i+1]:'';
-   const labourLine=labour?['la disoccupazione scende','la disoccupazione cambia poco','la disoccupazione sale'][l+1]:'';
+   const labourLine=labour?['la disoccupazione scende','la disoccupazione cambia poco','la disoccupazione aumenta'][l+1]:'';
    const title=[priceLine,labourLine].filter(Boolean).join(' e ')||'Il quadro economico è da aggiornare';
    const opening=inflation&&labour?
-     inflation.period===labour.period?'Le ultime letture di prezzi e disoccupazione sono di '+inflation.period+'.':
-       'Il dato sui prezzi è di '+inflation.period+' e quello sulla disoccupazione è di '+labour.period+'.':
-     inflation?'L’ultima lettura dell’inflazione è di '+inflation.period+'.':
-     labour?'L’ultima lettura della disoccupazione è di '+labour.period+'.':'';
+     inflation.period===labour.period?'Le ultime letture di prezzi e disoccupazione sono '+inflation.period+'.':
+       'Il dato sui prezzi è '+inflation.period+' e quello sulla disoccupazione è '+labour.period+'.':
+     inflation?'L’ultima lettura dell’inflazione è '+inflation.period+'.':
+     labour?'L’ultima lettura della disoccupazione è '+labour.period+'.':'';
    const why=i===1&&l===1?
      'La maggiore pressione sui prezzi complica eventuali tagli dei tassi. La disoccupazione in aumento spinge nella direzione opposta. Per la valuta conta quale dei due segnali peserà di più sulle attese del mercato.':
      i===1?'Se l’inflazione continua a salire, il mercato potrebbe aspettarsi tassi più alti più a lungo. La valuta può beneficiarne se le attese salgono anche rispetto a quelle delle altre economie.':
