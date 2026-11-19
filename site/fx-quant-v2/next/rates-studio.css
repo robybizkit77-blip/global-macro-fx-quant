@@ -1,5 +1,8 @@
 
 /* FX Quant Next / Rates & OIS Research Studio — scoped component styles */
+.rates-overview-heading{margin:0 0 16px}
+.rates-overview-heading h1{font:400 clamp(28px,3.2vw,44px)/1.15 Georgia,serif;letter-spacing:-.035em;margin:0 0 6px}
+.rates-overview-heading p{margin:0;color:#b3cdda;font-size:13px;line-height:1.55}
 .rates-status{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap;padding:12px 15px;margin-bottom:13px;border:1px solid #376275;background:linear-gradient(90deg,#173b4c,#122c3c);border-radius:11px;color:#a5cbd6;font-weight:800;letter-spacing:.09em;font-size:10px}
 .rates-status>span:first-child{color:#9ee4d2}
 .rates-country-strip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;margin:0 0 22px}
@@ -8,6 +11,8 @@
 .rates-country.selected{background:#214a56;box-shadow:inset 0 2px 0 #76ddbf;border-color:#73d5c6}
 .rates-country span{font-size:13px;font-weight:750}.rates-country strong{font:760 21px/1.2 Manrope,sans-serif;letter-spacing:-.045em}
 .rates-country small{font-size:9px;line-height:1.5;color:#98b8c7}
+.rates-country .rates-country-spot{color:#b6dbd6}
+.rates-country:focus-visible{outline:2px solid #9ee6cc;outline-offset:2px}
 .rates-hero{display:grid;grid-template-columns:minmax(0,1fr) 240px;background:radial-gradient(circle at 70% 0,rgba(76,152,171,.16),transparent 55%),linear-gradient(120deg,#194050,#102b3c);border:1px solid #3c6976;border-radius:16px;overflow:hidden;min-height:255px}
 .rates-hero-title{padding:29px 34px;display:flex;flex-direction:column;align-items:start}
 .rates-hero-title h2{font:790 clamp(24px,2.8vw,38px)/1.22 Manrope,sans-serif;letter-spacing:-.05em;margin:18px 0 10px}
@@ -19,12 +24,13 @@
 .rates-hero-orbit span{font-size:9px;font-weight:850;letter-spacing:.13em;color:#9bc3ca}
 .rates-hero-orbit strong{font:770 36px/1.1 Manrope,sans-serif;color:#d4f4e7;letter-spacing:-.05em}
 .rates-hero-orbit small{font-size:9px;color:#94b4bf}
-.rates-stats{margin:14px 0 40px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #35596b;border-radius:11px;overflow:hidden;background:#112e40}
+.rates-stats{margin:14px 0 16px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #35596b;border-radius:11px;overflow:hidden;background:#112e40}
 .rates-stat{display:flex;flex-direction:column;gap:6px;padding:17px 20px;min-width:0}
 .rates-stat+.rates-stat{border-left:1px solid #315568}
 .rates-stat span{color:#8eafc3;letter-spacing:.11em;font-size:10px;font-weight:850}
 .rates-stat strong{color:#e8f4f5;font:780 clamp(18px,2.2vw,28px)/1.3 Manrope,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.035em}
 .rates-stat small{font-size:10px;color:#8fb0bf}
+.rates-snapshot-source{margin:0 0 12px}
 .rates-chapter{margin:38px 0 50px}
 .rates-section-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:18px}
 .rates-section-head h2{font:770 clamp(23px,2.65vw,36px)/1.23 Manrope,sans-serif;margin:9px 0 0;letter-spacing:-.053em}
@@ -276,3 +282,8 @@
 @media(max-width:1020px){.rr6-days{grid-template-columns:1fr}}
 @media(max-width:700px){.rates-relative-pricing{padding:15px 12px}.rr6-main{grid-template-columns:1fr}.rr6-firstread{padding:16px}.rr6-summary{border-left:0;border-top:1px solid rgba(141,189,200,.22);padding:13px 16px;gap:5px}.rr6-secondary{padding:15px 12px}.rr6-action{flex-wrap:wrap}.rr6-action button{width:100%;justify-content:space-between}}
 @media(prefers-reduced-motion:reduce){.rr6-action button{transition:none}}
+@media(max-width:600px){
+ .rates-overview-heading{margin-bottom:12px}
+ .rates-country-strip{margin-bottom:14px}
+ .rates-stats{margin-bottom:16px}
+}

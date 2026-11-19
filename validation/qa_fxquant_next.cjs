@@ -147,6 +147,21 @@ async function inspectRoute(page,label,key){
   assert.equal(await locator(page,'.drivers-market-audit .drivers-market-item').count(),2,
    label+' liquidity hypothesis must be checked against dated 6M and FX price evidence');
  }else if(key==='rates'){
+  const ratesFirstRead=await page.evaluate(()=>{
+   const country=document.querySelector('.rates-country-strip');
+   const chf=country?.querySelector('[data-rate-ccy="CHF"]');
+   const snapshot=document.querySelector('.rates-stats');
+   const editorial=document.querySelector('.research-essay');
+   const top=element=>element?element.getBoundingClientRect().top+scrollY:null;
+   return {countries:country?.querySelectorAll('button').length,selectorTop:top(country),
+    chfTop:top(chf),chfHeight:chf?.getBoundingClientRect().height,
+    snapshotTop:top(snapshot),editorialTop:top(editorial)};
+  });
+  assert.equal(ratesFirstRead.countries,8,label+' Rates selector must show all eight currencies');
+  assert(ratesFirstRead.selectorTop<ratesFirstRead.snapshotTop&&
+   ratesFirstRead.snapshotTop<ratesFirstRead.editorialTop,label+' the Rates snapshot must precede the desk reading');
+  assert(ratesFirstRead.chfTop+ratesFirstRead.chfHeight<=page.viewportSize().height,
+   label+' CHF in the Rates selector must fit in the first screen');
   const bridge=locator(page,'.rates-fx-handoff');
   assert.equal(await bridge.count(),1,label+' rates-to-FX evidence missing');
   const proof=await bridge.getAttribute('data-fx-proof');
@@ -705,6 +720,19 @@ async function g8HistoryJourney(page,label){
 }
 async function pricingWindowJourney(page,label){
  await route(page,'rates');
+ const chf=locator(page,'.rates-country-strip [data-rate-ccy="CHF"]');
+ const chfTile=await chf.innerText();
+ await chf.click();
+ assert.equal(await chf.getAttribute('aria-pressed'),'true',label+' CHF selector did not activate');
+ const chfSnapshot=locator(page,'.rates-stats[aria-label$="CHF"]');
+ if(chfTile.includes('10Y osservato')){
+  const chfValues=await chfSnapshot.innerText();
+  assert(chfValues.includes('Gov 10Y · Osservato')&&chfValues.includes('10Y − 2Y · Storico'),
+   label+' CHF spot observation and historical paired curve must remain distinct');
+  assert.equal(chfValues.includes('Gov 2Y · Stima'),chfTile.includes('2Y stimato'),
+   label+' CHF 2Y quality differs between selector and selected snapshot');
+ }
+ await page.screenshot({path:evidence+'/'+label+'-rates-chf.png'});
  const desk=locator(page,'#rates-pricing-moves');
  const one=desk.locator('[data-rs-pricing-window="1d"]');
  const week=desk.locator('[data-rs-pricing-window="1w"]');

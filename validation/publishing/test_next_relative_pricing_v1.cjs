@@ -86,7 +86,7 @@ assert(page.indexOf('rates-pricing-history-v1.js?v=1')<
  page.indexOf('rates-relative-pricing-v1.js?v=1')<
  page.indexOf('rates-studio.js?v='),
  'Relative bridge must load after both pricing source modules and before rates studio');
-assert(page.includes('rates-studio.css?v=5'));
+assert.match(page,/rates-studio\.css\?v=\d+/);
 assert.match(page,/src="\.\/app\.js\?v=[\w.-]+" defer/);
 assert(studio.includes('FXQuantRelativePricing?.render'));
 assert(get(base+'rates-studio.css').includes('.rates-relative-pricing'));
