@@ -101,13 +101,13 @@
   const known=observations.filter(r=>r.move),ref6=m.rows.find(r=>r.tenor==='6m');
   const this6=ref6?.[prop],reason=m.sourceType==='OIS ufficiali'?'OIS':
    m.kind==='FUTURES SECONDARI'?'futures secondari (ricerca)':m.sourceType.toLowerCase();
-  const sixText=this6?this6.bp>0.05?
-   'Il 6M è salito di '+sign(this6.bp)+' rispetto al riferimento precedente.':
-   this6.bp<-.05?'Il 6M è sceso di '+sign(Math.abs(this6.bp))+' rispetto al riferimento precedente.':
-   'Il 6M è rimasto pressoché invariato rispetto al riferimento precedente.':
-   'Per il 6M manca un confronto certificabile su questa finestra.';
-  const note=this6?'Si tratta di '+reason+'; un livello implicito più alto può essere compatibile con aspettative meno accomodanti, ma non identifica da solo la causa.':
-   'Nessun movimento viene ricostruito da livelli di contratti diversi.';
+  const moved=this6&&Math.abs(this6.bp)>.05;
+  const sixText=!this6?'Per il 6M manca un confronto certificabile su questa finestra.':
+   !moved?'Il 6M è rimasto pressoché invariato rispetto al riferimento precedente.':
+   'Il 6M è '+(this6.bp>0?'salito':'sceso')+' di '+
+   Math.abs(this6.bp).toFixed(1).replace('.',',')+' pb rispetto al riferimento precedente.';
+  const note=this6?'Il confronto riguarda '+reason+'. Per attribuire la variazione alla banca centrale servono altre evidenze.':
+   'Il confronto richiede rilevazioni dello stesso strumento.';
   const time=m.rows.filter(r=>r[prop]&&r.asof).map(r=>r.asof);
   const sameDates=known.length===3&&new Set(time).size===1;
   const priorDates=known.map(r=>r.move.from).filter(Boolean);
