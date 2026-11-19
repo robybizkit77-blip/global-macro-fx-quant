@@ -130,13 +130,8 @@
         function countrySelector(){
       return '<div class="cot-country-selector" role="group" aria-label="Valute G8 COT">'
        +FX.map(k=>{
-         const a=report(k),q=a?.deskStats,r=a?.last;
          return '<button type="button" data-ccy="'+k+'" aria-pressed="'+String(k===state.ccy)+'" class="cot-country-button '+(k===state.ccy?'active':'')+'">'
-         +'<span class="cot-country-symbol">'+FLAGS[k]+' '+k+'</span>'
-         +'<strong>'+(q?.rounded!==null&&q?.rounded!==undefined?'P'+fmt(q.rounded,0):'P—')+'</strong>'
-         +'<small>'+esc(r?.net>0?'Net long':r?.net<0?'Net short':'Net non validato')+
-          ' · '+esc(a?sign(a.delta1,0,' 1W'):'—')+'</small>'+
-          (q?.crowd?'<span class="cot-netoi-alert cot-netoi-selector">⚠ Net/OI '+sign(r.netoi,1,'%')+'</span>':'')+'</button>';
+         +'<span class="cot-country-symbol">'+FLAGS[k]+' '+k+'</span></button>';
        }).join('')+'</div>';
     }
         function graphFor(a){
@@ -202,8 +197,8 @@
        }).join('')+'</tbody></table></div>'
        +'<p class="source-caption">Colori dei numeri e Net/OI critico riprendono il report settimanale: ⚠ rosso da ±30,0% dopo arrotondamento. Il colore non rappresenta una previsione. Ultima riga: percentile P104 rispetto alle 104 osservazioni precedenti, verificato contro archivio CFTC. Righe più vecchie: percentili archiviati della serie inclusiva; il simbolo ≈ indica metodo diverso, non precisione inferiore del Net. Long, short, Net e Net/OI provengono dal CFTC.</p></section>';
     }
-        function universe(){
-      const all=FX.map(report).filter(Boolean),filter=state.cotFilter||'all',sort=state.cotSort||'percentile',asc=state.cotSortAsc===true;
+        function universe(all){
+      const filter=state.cotFilter||'all',sort=state.cotSort||'percentile',asc=state.cotSortAsc===true;
       const rows=all.filter(a=>filter==='all'||filter==='extreme'&&a.level!=='intermedio'&&a.level!=='non validato'
         ||filter==='rising'&&a.delta1>0||filter==='falling'&&a.delta1<0);
       const v=(a,k)=>{
@@ -256,7 +251,9 @@
     }
     function deskOverview(all){
       const d=root.FXQuantCOTDeskV26?.desk?.(all);
-      if(!d)return '<section class="cot-desk-overview"><h2>Cosa vedo davvero nel G8</h2><p>La sintesi G8 non è disponibile: servono otto Net CFTC con stessa data e 104 osservazioni precedenti verificate. Le schede di ciascuna valuta rimangono consultabili con qualità esplicita.</p></section>';
+      if(!d)return '<section class="cot-desk-overview"><h2>Posizioni dei fondi per valuta</h2><p>Scegli una valuta per leggere le ultime posizioni disponibili.</p>'+
+        '<details class="cot-desk-breakdown"><summary>Apri classifica G8 e fonti</summary>'+universe(all)+'</details></section>';
+      const story=root.FXQuantCOTDeskV26.overview?.(d)||{headline:'Posizioni dei fondi per valuta',summary:''};
       const card=(title,code,main,detail,cls)=>'<article class="cot-desk-card '+cls+'"><span class="micro-over">'+esc(title)+'</span>'
        +'<h3>'+esc(code)+'</h3><strong>'+esc(main)+'</strong><p>'+esc(detail)+'</p></article>';
       const a=d.up,b=d.down,e=d.divergent[0]||null;
@@ -288,42 +285,36 @@
         '<td class="cot-state-cell '+(x.priceState==='coerente'?'cot-state-agree':x.priceState==='divergente'?'cot-state-diverge':'cot-state-unknown')+'">'+
         esc(finite(x.velocity)&&Math.abs(x.velocity)<.25?'flusso quasi fermo':
          finite(x.price1)?x.priceState:'prezzo non validato')+'</td></tr>').join('');
-       return '<section class="cot-desk-overview" data-cot-desk-asof="'+esc(d.asof)+'"><div class="cot-analysis-head">'
-       +'<div><span class="chapter-kicker">01 / DESK G8 · CFTC '+date(d.asof)+'</span>'
-       +'<h2>Cosa vedo davvero. <em>Il fatto della settimana.</em></h2></div></div>'
-       +'<h3 class="cot-desk-headline">'+esc(d.headline)+'</h3>'
-       +'<p class="cot-desk-narrative">'+esc(d.summary)+'</p>'
+       return '<section class="cot-desk-overview" data-cot-desk-asof="'+esc(d.asof)+'">'
+       +(story.date?'<span class="chapter-kicker">'+esc(story.date)+'</span>':'')
+       +'<h2 class="cot-desk-headline">'+esc(story.headline)+'</h2>'
+       +(story.summary?'<p class="cot-desk-narrative">'+esc(story.summary)+'</p>':'')
+       +'<details class="cot-desk-breakdown"><summary>Apri classifica G8, confronto con il cambio e fonti</summary>'
        +'<div class="cot-desk-cards">'+top+pressure+overcrowd+mismatch+'</div>'
        +'<p class="cot-desk-monitor"><strong>Il giudizio del desk.</strong> '+esc(d.question)+'</p>'
-       +'<details class="cot-desk-breakdown"><summary>COT vs prezzo · tutte le 8 valute · stesso martedì</summary>'
        +'<div class="table-wrap"><table class="data-table cot-table cot-compare-table"><thead><tr><th>Valuta</th><th>Δ Net/OI*</th><th>Δ Net 1W</th><th>Prezzo BCE 1W</th><th>Lettura</th></tr></thead><tbody>'
        +cross+'</tbody></table></div>'
-       +'<p class="source-caption">* Δ Net/OI confronta il movimento settimanale con OI stimato: non è un flusso spot né un Open Interest certificato a parte. Il prezzo usa fixing BCE sugli stessi martedì CFTC; per USD usa USD/EUR come proxy, non il future Dollar Index. Nessuna inferenza causale o post-pubblicazione.</p></details></section>';
+       +'<p class="source-caption">* Δ Net/OI confronta il movimento settimanale con OI stimato: non è un flusso spot né un Open Interest certificato a parte. Il prezzo usa fixing BCE sugli stessi martedì CFTC; per USD usa USD/EUR come proxy, non il future Dollar Index. Nessuna inferenza causale o post-pubblicazione.</p>'+universe(all)+'</details></section>';
     }
     function render(){
       const ccy=state.ccy,a=report(ccy),all=FX.map(report).filter(Boolean);
-      const sourceDate=a?.last.date;
-      const common=all.length===8&&all.every(x=>x.last.date===all[0].last.date)&&
-        all.every(x=>x.deskStats?.rounded!==null&&x.deskStats?.rounded!==undefined);
-      const header=pageHero('CFTC / POSITIONING INTELLIGENCE',
-       'Dove sono i fondi.<br><em>Cosa sta cambiando davvero.</em>',
-       'Prima il giudizio sulle 8 valute; poi percentile, Z-score, long/short, velocità e confronto con il prezzo. Dati settimanali, nessun segnale automatico.');
-      let body=header+
-        '<div class="cot-source-band"><span><span class="live-dot"></span> CFTC NON-COMMERCIAL · AS OF '+date(sourceDate)+'</span>'
-         +'<span>'+((a?.hist.length||0))+' SETTIMANE V250 · '+(common?'P104 G8 VERIFICATI':'RIFERIMENTO P104 DA VERIFICARE')+'</span></div>'
-        +deskOverview(all)+universe()+countrySelector();
-      if(!a)return body+'<div class="empty"><strong>Storico COT non validato per '+esc(ccy)+'</strong><p>Il dataset non supera il controllo su date, long, short e netto. Nessun segnale sostitutivo.</p></div>';
-      const last=a.last,q=a.deskStats,p=q?.p,netDesc=last.net>0?'I long prevalgono':last.net<0?'Gli short prevalgono':'Long e short si equivalgono';
-      const story=root.FXQuantCOTDeskV26?.reading?.(q);
-      const summary=story?.flow||root.FXQuantCOTEvidence?.flowReading?.(a)?.headline||'Flussi non validati.';
-      body+='<section class="cot-hero"><div class="cot-hero-narrative"><span class="chapter-kicker">03 / '+FLAGS[ccy]+' '+ccy+' · DIAGNOSI PER VALUTA</span>'
-       +'<h2>'+esc(summary)+'.<br><em>'+esc(netDesc)+'.</em></h2><p>'+esc(levelText(a))+'</p>'
+      const header=pageHero('COT G8','Le posizioni dei fondi','Come cambiano le posizioni e come si muove il cambio nello stesso periodo.');
+      let body=header+deskOverview(all)+countrySelector();
+      if(!a)return body+'<div class="empty"><strong>Storico COT da verificare per '+esc(ccy)+'</strong><p>Scegli un’altra valuta per leggere le ultime posizioni disponibili.</p></div>';
+      const last=a.last,q=a.deskStats,p=q?.p;
+      const story=root.FXQuantCOTDeskV26?.opening?.(a);
+      if(story)body+='<section class="cot-hero cot-editorial" data-cot-currency="'+esc(ccy)+'"><div class="cot-hero-narrative">'
+       +'<span class="chapter-kicker">'+FLAGS[ccy]+' '+esc(ccy)+' · '+esc(story.date)+'</span>'
+       +'<h2>'+esc(story.title)+'</h2><p>'+esc(story.flow+(story.pace?' '+story.pace:''))+'</p>'
+       +'<p>'+esc(story.price)+'</p><p class="cot-editorial-watch"><strong>Cosa seguire.</strong> '+esc(story.watch)+'</p></div></section>';
+      body+='<details class="cot-desk-breakdown cot-evidence"><summary>Apri posizioni, numeri e fonti per '+esc(ccy)+'</summary>'
+       +'<div class="cot-hero cot-evidence-hero"><div class="cot-hero-narrative"><h2>Posizione dei fondi</h2><p>'+esc(levelText(a))+'</p>'
        +'<div class="cot-status-line">'+classify(a)+'<span>Ultima rilevazione '+date(last.date)+'</span>'
        +(q?.crowd?'<span class="cot-netoi-alert cot-netoi-hero">⚠ Net/OI '+sign(last.netoi,1,'%')+'</span>':'')+'</div></div>'
        +'<div class="cot-hero-visual"><div class="cot-ring" style="--pct:'+(finite(p)?Math.min(100,Math.max(0,p)):0)+'"><div>'
        +'<span>P104 ESCLUSIVO</span><strong>'+ (q?.rounded===null||q?.rounded===undefined?'—':fmt(q.rounded,0))+
        '</strong><small>104 settimane precedenti</small></div></div>'
-       +'<span class="cot-risk-label">P20 / P80: storico, non timing</span></div></section>'
+       +'<span class="cot-risk-label">P20 / P80: storico, non timing</span></div></div>'
        +'<div class="cot-statstrip">'
        +stat('NET POSITION',sign(last.net,0),'contratti · long − short')
        +stat('Δ NET 1W',sign(a.delta1,0),'flusso settimanale',a.delta1>0?'tone-up':a.delta1<0?'tone-down':'')
@@ -335,7 +326,7 @@
        +'<span><b>Velocity 1W/OI</b> '+(finite(q?.velocity)?sign(q.velocity,2,'%')+' (stimata)':'n.d.')+'</span>'
        +'<span><b>Composizione 1W</b> long '+sign(q?.dLong,0)+' / short '+sign(q?.dShort,0)+'</span></div>'
        +'<p class="cot-velocity-note">Velocity stimata da Net e Net/OI arrotondato: utile per confrontare il ritmo dei fondi, non è Open Interest certificato come serie separata.</p>'
-       +interpretation(a)
+       +interpretation(a)+'</details>'
        +'<section class="cot-graph-theatre"><div class="cot-analysis-head"><div><span class="chapter-kicker">05 / CHART STUDIO</span>'
        +'<h2>Le evidenze. <em>Stock, flusso e prezzo.</em></h2></div>'
        +'<p>Seleziona metrica e intervallo. I due grafici hanno scale indipendenti; nessuna correlazione forzata.</p></div>'
