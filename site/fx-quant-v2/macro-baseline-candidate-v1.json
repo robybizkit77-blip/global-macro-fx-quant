@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_FXV2_MACRO_CANDIDATE_8X3_DESCRIPTIVE_V1",
-  "as_of_research": "2026-11-18",
+  "as_of_research": "2026-11-19",
   "published_source_lineage": "MACRO_V3_OBSERVED_REVISED_NOT_PIT",
   "formula_version": "V1_FIXED_NO_CALIBRATED_WEIGHTS",
   "legacy_macro_as_of": "2026-09-25",
@@ -243,10 +243,10 @@
         "series_id": "AU_CPI_HEADLINE_Q_YOY"
       },
       "unemployment_change_pp": {
-        "value": 0.268452,
-        "level": 4.7,
+        "value": 0.4,
+        "level": 4.9,
         "unit": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
-        "period": "2026-09",
+        "period": "2026-10",
         "period_frequency": "M",
         "intervals": 3,
         "intervals_are_not_fixed_calendar_months": true,
@@ -302,9 +302,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
-          "same_period": false,
-          "delta_base_minus_quote_pp": null,
-          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.1,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -327,9 +327,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.25943,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -352,9 +352,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.368452,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -402,9 +402,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
-          "same_period": false,
-          "delta_base_minus_quote_pp": null,
-          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.4,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -502,9 +502,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": -0.168452,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -677,9 +677,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": -0.568452,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -1013,5 +1013,5 @@
   "eligible_for_backtests": false,
   "eligible_for_automatic_core_rebase": false,
   "canonical_fx_core_untouched": true,
-  "source_content_sha256": "5ea71c2f81fe7337b33fc0385ef5860c560ab9ba14dbae39dfea81911917c532"
+  "source_content_sha256": "89bad6a0eb1c47f979e4c409a802f22f1b3b7125c049ecfde35f827ed4d7b49f"
 }
