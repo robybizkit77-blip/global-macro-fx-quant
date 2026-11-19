@@ -58,9 +58,12 @@ class FreeDeskTest(unittest.TestCase):
   self.assertGreaterEqual(len(r["news"]),3)
   self.assertLessEqual(len(r["news"]),6)
   self.assertEqual(r["headline"],"Dollaro misto al fixing BCE")
-  self.assertIn("del 13 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%",r["lead"])
-  self.assertIn("Alla chiusura del 12 novembre, S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb",r["lead"])
-  self.assertIn("ceduto contro euro e guadagnato contro yen",r["fx_implications"])
+  self.assertIn("del 13 novembre, il dollaro ha ceduto contro l’euro e guadagnato contro lo yen",r["lead"])
+  self.assertIn("Alla chiusura del 12 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito",r["lead"])
+  for key in ("headline","lead","desk_judgment","fx_implications","what_changed"):
+   self.assertNotRegex(r[key],r"\d+(?:,\d+)?\s*(?:%|pb\b|punti\b)")
+  self.assertTrue(any("EUR/USD ha segnato +0,22% e USD/JPY +0,35%" in item["analysis"] for item in r["news"]))
+  self.assertTrue(any("S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb" in item["analysis"] for item in r["news"]))
   self.assertIn("VIX è sceso",r["contrary_evidence"])
   self.assertIn(free.ECB_FIXING,r["provenance"]["web_source_urls"])
   self.assertTrue(all(x["sources"] for x in r["news"]))
@@ -81,14 +84,23 @@ class FreeDeskTest(unittest.TestCase):
        "status":"UPCOMING","importance":"HIGH","quality":"OFFICIAL_CONFIRMED"}
   passed={**cpi,"date":"2026-11-13"}
   calendar.write_text(json.dumps({"events":[passed,cpi]}))
+  series={"AUD":[{"id":"AU_UNEMP_RATE_history_value","unit":"%","frequency":"M",
+                  "dates":["2026-09-01","2026-10-01"],"values":[4.7,4.9]}]}
+  macro_path=self.sections/"MACRO_SERIES.json"
+  macro_path.write_text(json.dumps(series))
   r=self.build()
-  self.assertTrue(r["lead"].startswith("In Australia la disoccupazione di ottobre 2026 è al 4,9%."))
+  self.assertTrue(r["lead"].startswith("In Australia la disoccupazione è aumentata a ottobre."))
+  self.assertNotIn("4,9",r["lead"])
+  self.assertTrue(any("4,9%" in item["headline"] for item in r["news"]))
   self.assertIn("14 novembre alle 00:30 italiane",r["fx_implications"])
   self.assertIn("BoJ",r["fx_implications"])
   self.assertNotIn("13 novembre alle 00:30",r["fx_implications"])
+  series["AUD"][0]["dates"][0]="2026-08-01"
+  macro_path.write_text(json.dumps(series))
+  self.assertIn("L’Australia ha pubblicato il dato sulla disoccupazione di ottobre",self.build()["lead"])
   release["first_runner_observed_at_utc"]="2026-11-13T23:59:00Z"
   path.write_text(json.dumps(pulse))
-  self.assertNotIn("disoccupazione di ottobre",self.build()["lead"])
+  self.assertNotIn("disoccupazione",self.build()["lead"])
  def test_later_fixing_changes_the_edition_without_news_pulse_update(self):
   first=self.build()
   p=self.sections/"ECB_G8_PRICE_HISTORY.json"

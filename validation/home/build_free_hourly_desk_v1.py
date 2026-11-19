@@ -204,14 +204,65 @@ def catalyst_text(event):
             f"Da verificare la risposta dei tassi e di {ccy}.")
 
 
-def macro_opening(row):
+def australia_labour_reading(title, series):
+    detail = re.search(r"destagionalizzato, (\w+) (\d{4}): (\d+(?:[.,]\d+)?)%$", title)
+    if not detail or detail[1] not in MONTHS:
+        return "Dall’Australia è arrivato un nuovo dato sul lavoro."
+    period = f"{detail[2]}-{MONTHS.index(detail[1])+1:02}"
+    current = day(period + "-01")
+    if current and isinstance(series, dict) and isinstance(series.get("AUD"), list):
+        previous = (current-timedelta(days=1)).strftime("%Y-%m")
+        row = next((row for row in series["AUD"] if isinstance(row, dict) and
+                    row.get("id") == "AU_UNEMP_RATE_history_value" and
+                    row.get("unit") == "%" and row.get("frequency") == "M"), {})
+        dates, values = row.get("dates"), row.get("values")
+        if (isinstance(dates, list) and isinstance(values, list) and len(dates) == len(values) >= 2
+                and [str(d)[:7] for d in dates[-2:]] == [previous, period]
+                and all(safe_number(v) for v in values[-2:])
+                and values[-1] == float(detail[3].replace(",", "."))):
+            move = ("aumentata" if values[-1] > values[-2] else
+                    "diminuita" if values[-1] < values[-2] else "rimasta stabile")
+            return f"In Australia la disoccupazione è {move} a {detail[1]}."
+    return f"L’Australia ha pubblicato il dato sulla disoccupazione di {detail[1]}."
+
+
+def macro_opening(row, series):
     if not row:
         return ""
     if row.get("metric_id") == "AU_UNEMP_RATE_SA":
-        detail = re.search(r"destagionalizzato, ([^:]+): (\d+(?:[.,]\d+)?%)$", row["title"])
-        if detail:
-            return f"In Australia la disoccupazione di {detail[1]} è al {detail[2]}."
-    return f"Pubblicato il {short_date(day(row['as_of']))}: {row['title'].rstrip('.')}."
+        return australia_labour_reading(row["title"], series)
+    country = COUNTRIES.get(row.get("ccy"))
+    if not country:
+        return ""
+    topic = {"LABOUR": "i dati sul lavoro", "INFLATION": "i dati sui prezzi",
+             "GDP": "i dati sulla crescita"}.get(row.get("event_type"))
+    return f"Sono usciti {topic} {country}." if topic else ""
+
+
+def risk_opening(closes):
+    if not closes:
+        return ""
+    changes = {row["label"]: row["change"] for row in closes}
+    shares = changes.get("S&P 500", 0)
+    credit = changes.get("spread high yield", 0)
+    vol = changes.get("VIX", 0)
+    date_label = short_date(day(closes[0]["date"]))
+    if shares < -.005 and credit > .5:
+        return (f"Alla chiusura del {date_label}, Wall Street ha perso terreno e il premio "
+                "sul debito più rischioso è salito.")
+    if shares > .005 and credit < -.5:
+        return (f"Alla chiusura del {date_label}, Wall Street è salita e il premio sul debito "
+                "più rischioso si è ridotto.")
+    if abs(credit) > .5:
+        move = "aumentato" if credit > 0 else "diminuito"
+        return f"Alla chiusura del {date_label}, il premio richiesto sul debito più rischioso è {move}."
+    if abs(shares) > .005:
+        move = "salita" if shares > 0 else "scesa"
+        return f"Wall Street è {move} alla chiusura del {date_label}."
+    if abs(vol) > .005:
+        move = "salita" if vol > 0 else "scesa"
+        return f"La volatilità azionaria è {move} alla chiusura del {date_label}."
+    return ""
 
 
 def compact_news(row):
@@ -281,7 +332,9 @@ def build(root: Path, now: datetime, previous=None, rss=None):
     catalyst = next_event(calendar.get("events", []), now)
     event_sentence, event_relevance = catalyst_text(catalyst)
 
-    macro_fact = macro_opening(same_day_macro)
+    series = (read_json(sections / "MACRO_SERIES.json")
+              if same_day_macro and same_day_macro.get("metric_id") == "AU_UNEMP_RATE_SA" else None)
+    macro_fact = macro_opening(same_day_macro, series)
     fx_fact, fx_reading = "", ""
     if fx:
         fx_word = {"strong": "Dollaro in rialzo", "weak": "Dollaro in calo",
@@ -292,20 +345,19 @@ def build(root: Path, now: datetime, previous=None, rss=None):
                    f"e USD/JPY {signed(fx['usd_jpy_pct'])}%.")
         if fx["state"] == "mixed":
             direction = lambda value: "guadagnato" if value > .005 else "ceduto" if value < -.005 else "tenuto"
-            fx_reading = (f"Nel confronto BCE del {fixing_date} il dollaro ha "
-                          f"{direction(fx['usd_eur_pct'])} contro euro e {direction(fx['usd_jpy_pct'])} contro yen.")
+            fx_reading = (f"Al fixing BCE del {fixing_date}, il dollaro ha "
+                          f"{direction(fx['usd_eur_pct'])} contro l’euro e {direction(fx['usd_jpy_pct'])} contro lo yen.")
         elif fx["state"] == "flat":
             fx_reading = f"Al fixing del {fixing_date} il dollaro è rimasto sostanzialmente fermo contro euro e yen."
         else:
             verb = "guadagnato" if fx["state"] == "strong" else "ceduto"
             fx_reading = f"Al fixing del {fixing_date} il dollaro ha {verb} contro euro e yen."
     if macro_fact and (not fx or fx["date"] < today.isoformat()):
-        headline = macro_fact.rstrip(".") if same_day_macro.get("metric_id") == "AU_UNEMP_RATE_SA" else same_day_macro["title"]
+        headline = macro_fact.rstrip(".")
     elif fx:
         headline = fx_headline
     elif risk_closes:
-        lead_close = risk_closes[0]
-        headline = f"{lead_close['label']} {lead_close['display']} alla chiusura del {short_date(day(lead_close['date']))}"
+        headline = f"Mercati alla chiusura del {short_date(day(risk_closes[0]['date']))}"
     else:
         headline = f"Mercati, le ultime osservazioni al {short_date(asof)}"
 
@@ -314,22 +366,25 @@ def build(root: Path, now: datetime, previous=None, rss=None):
         risk_date = short_date(day(risk_closes[0]["date"]))
         moves = [f"{row['label']} {row['display']}" for row in risk_closes]
         risk_fact = f"Alla chiusura del {risk_date}, " + ", ".join(moves[:-1]) + (" e " if len(moves)>1 else "") + moves[-1] + "."
-    lead = sentence_join((macro_fact, fx_fact, risk_fact)) or (
+    risk_story = risk_opening(risk_closes)
+    lead = sentence_join((macro_fact, fx_reading, risk_story)) or (
         f"Il quadro di mercato usa le ultime osservazioni verificate, con riferimento al {short_date(asof)}."
     )
-    monetary = ""
+    monetary = monetary_evidence = ""
     if comparative:
         if abs(relative_bp) < .05:
             change = "è rimasto invariato"
         else:
             favored = "degli USA" if relative_bp > 0 else "dell’area euro"
             change = f"si è mosso di {abs(relative_bp):.1f}".replace(".", ",") + f" punti base a favore {favored}"
-        monetary = f"Sui dati del {short_date(day(usd['as_of']))} il differenziale governativo USA–area euro a due anni {change}."
-    fx_interpretation = sentence_join((fx_reading, event_sentence, event_relevance)) or (
+        rates_date = short_date(day(usd["as_of"]))
+        monetary_evidence = f"Sui dati del {rates_date} il differenziale governativo USA–area euro a due anni {change}."
+        if abs(relative_bp) >= .05:
+            favored = "degli Stati Uniti" if relative_bp > 0 else "dell’area euro"
+            monetary = f"Nella seduta del {rates_date}, il confronto tra i rendimenti governativi a breve si è mosso a favore {favored}."
+    fx_interpretation = sentence_join((event_sentence, event_relevance)) or (
         "Il prossimo fixing BCE darà un riferimento comune per confrontare EUR/USD e USD/JPY."
     )
-    if fx_reading and not catalyst:
-        fx_interpretation += " Al prossimo fixing verifica se lo stesso movimento si estende a entrambi i cambi."
     watch = ("Dopo la pubblicazione, confronta il movimento di " + catalyst[1]["ccy"] +
              " con le aspettative sui tassi, usando la stessa finestra.") if catalyst else (
         "Al prossimo fixing BCE verifica se EUR/USD e USD/JPY continuano nella stessa direzione."
@@ -341,13 +396,8 @@ def build(root: Path, now: datetime, previous=None, rss=None):
         contradiction = "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen."
     else:
         contradiction = "Per confermare il movimento, confronta il prossimo fixing con i differenziali di tasso sulla stessa finestra."
-    commodity_reading = ""
-    if gold and oil and gold["proxy_as_of"] == oil["proxy_as_of"]:
-        oil_label = "WTI" if wti else "Brent"
-        commodity_reading = (f"Nelle rilevazioni del {short_date(day(gold['proxy_as_of']))} i proxy futures mostrano "
-                             f"oro {signed(gold['change_1d_pct'])}% e {oil_label} {signed(oil['change_1d_pct'])}%.")
-    judgment = sentence_join((lead, monetary, commodity_reading))
-    changes = monetary or fx_fact or macro_fact or risk_fact or lead
+    judgment = sentence_join((lead, monetary))
+    changes = monetary or fx_reading or macro_fact or risk_story or lead
 
     # Source-linked evidence / official headlines, without pretending to have
     # read the body of RSS links. Narrative is based only on their titles.
@@ -360,7 +410,7 @@ def build(root: Path, now: datetime, previous=None, rss=None):
             published_date=published, event_date=event, market_area=area, sources=urls)))
 
     if fx:
-        add(fx_headline, sentence_join((fx_fact, fx_reading, monetary)), "FOLLOW_UP",
+        add(fx_headline, sentence_join((fx_fact, monetary_evidence)), "FOLLOW_UP",
             fx["date"], fx["date"], "FOREX", [ECB_FIXING])
     if risk_closes:
         risk_date = risk_closes[0]["date"]
@@ -373,7 +423,9 @@ def build(root: Path, now: datetime, previous=None, rss=None):
             "I prezzi futures osservati offrono un confronto fra oro e " + oil_label +
             ". Le differenze possono riflettere tassi reali, domanda energetica e rischio "
             "globale, ma non dimostrano quali operatori abbiano comprato o venduto. "
-            "Serie di fonte secondaria, trattate come proxy direzionali.",
+            "Serie di fonte secondaria, trattate come proxy direzionali." +
+            (f" Rilevazione del {short_date(day(gold['proxy_as_of']))}, oro {signed(gold['change_1d_pct'])}% "
+             f"e {oil_label} {signed(oil['change_1d_pct'])}%." if gold["proxy_as_of"] == oil["proxy_as_of"] else ""),
             "FOLLOW_UP", min(gold["proxy_as_of"], oil["proxy_as_of"]),
             min(gold["proxy_as_of"], oil["proxy_as_of"]), "COMMODITIES",
             [gold["source_endpoint"], oil["source_endpoint"]])
@@ -417,7 +469,7 @@ def build(root: Path, now: datetime, previous=None, rss=None):
         "commodities": [(k, v.get("proxy_as_of"), v.get("change_1d_pct"))
                         for k, v in [("gold", gold), ("wti", wti), ("brent", brent)] if v],
         "rss": [(x.get("url"), x.get("published_at_utc")) for x in recent],
-        "session_reading": {"fx": fx, "risk": risk_closes, "same_day_macro": macro_fact,
+        "session_reading": {"fx": fx, "risk": risk_closes, "lead": lead,
                             "catalyst": (catalyst[0].isoformat(), catalyst[1]["title"]) if catalyst else None},
     }
     signature = hashlib.sha256(json.dumps(material, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
