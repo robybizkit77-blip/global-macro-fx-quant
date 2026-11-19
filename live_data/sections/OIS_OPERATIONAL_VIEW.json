@@ -76,7 +76,7 @@
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3Z2027",
@@ -96,7 +96,7 @@
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3H2027",
@@ -117,7 +117,7 @@
         },
         "6m": {
           "accrual_start": "2027-06-16",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3M2027",
@@ -165,7 +165,7 @@
       "direction_vs_policy": null,
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3U2027",
@@ -184,7 +184,7 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 2,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3X2026",
@@ -203,7 +203,7 @@
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 2,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3G2027",
@@ -453,7 +453,7 @@
       "direction_vs_policy": "WITHHELD",
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQX2027",
@@ -472,7 +472,7 @@
           "symbol": "CBOT:ZQX2027"
         },
         "3m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQG2027",
@@ -491,23 +491,23 @@
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
-          "contract": "ZQJ2027",
-          "contract_description": "Apr 2027",
-          "expiration": "2027-05-03",
-          "futures_price": 95.505,
+          "contract": "ZQK2027",
+          "contract_description": "May 2027",
+          "expiration": "2027-06-01",
+          "futures_price": 95.45,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-18T19:56:09Z",
+          "price_valid_until": "2026-11-18T10:04:25Z",
           "quote_as_of": "2026-11-18",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.495,
+          "rate": 4.55,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 62.0,
-          "symbol": "CBOT:ZQJ2027"
+          "raw_level_minus_spot_policy_bp": 67.5,
+          "symbol": "CBOT:ZQK2027"
         }
       },
       "input_mode": "LIVE_SECONDARY_OVERLAY",
