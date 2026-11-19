@@ -169,7 +169,7 @@ const pulseHTML=win.FXQuantHourlyDesk.render({feed:pulseFeed,risk:research,
 assert(pulseHTML.includes('IL MERCATO IN UN COLPO D’OCCHIO'),'Visual pulse must remain narrative-first and dated');
 assert((pulseHTML.match(/class="hourly-pulse-tile /g)||[]).length===4,
  'Only sourced numeric ECB FX, S&P, VIX and HY tiles may appear');
-assert(pulseHTML.includes('USD ↑')&&pulseHTML.includes('EUR +0,26% · JPY +0,19%'),
+assert(pulseHTML.includes('USD ↑')&&pulseHTML.includes('USD/EUR +0,26% · USD/JPY +0,19%'),
  'USD strength must be computed from aligned, current official EUR/USD and USD/JPY fixings');
 assert(pulseHTML.includes('BCE · 2 confronti, non indice USD'),
  'Two bilateral moves must never be misrepresented as broad dollar strength');
@@ -197,6 +197,15 @@ const mixedHTML=win.FXQuantHomePulse.render({feed:pulseFeed,risk:research,
  currencyPrices:mixedFx,esc,date:displayDate,dayNow:today});
 assert(mixedHTML.includes('USD misto')&&!mixedHTML.includes('USD ↑'),
  'Contradictory cross movements must never be promoted to a uniform USD direction');
+assert.match(mixedHTML,/USD\/EUR \+0,26% · USD\/JPY −[\d,]+%/,
+ 'Both signed values name the USD cross whose return they show');
+const barelyMoved=structuredClone(officialFx);
+barelyMoved.rows[1].USD=barelyMoved.rows[0].USD*1.00002;
+barelyMoved.rows[1].JPY=barelyMoved.rows[0].JPY;
+const flatHTML=win.FXQuantHomePulse.render({feed:pulseFeed,risk:research,
+ currencyPrices:barelyMoved,esc,date:displayDate,dayNow:today});
+assert.match(flatHTML,/USD stabile.*USD\/EUR 0,00% · USD\/JPY 0,00%/,
+ 'Each reading below display precision is zero with no sign');
 const staleFx=structuredClone(officialFx);
 staleFx.last_as_of='2026-11-12';
 const staleHTML=win.FXQuantHomePulse.render({feed:pulseFeed,risk:research,
@@ -276,9 +285,10 @@ assert(app.includes("fetch('../../../market-desk/hourly-market-desk-current.json
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
 assert.match(index,/hourly-desk-ui-v1\.js\?v=\d+/);
 assert(index.includes('hourly-desk-ui-v1.css?v=6'));
-assert(index.includes('home-market-pulse-v1.js?v=2')&&index.includes('home-market-pulse-v1.css?v=3'),
+const pulseScript=index.search(/home-market-pulse-v1\.js\?v=\d+/);
+assert(pulseScript>=0&&index.includes('home-market-pulse-v1.css?v=3'),
  'The source-based data visualization must load before the editorial Home UI');
-assert(index.indexOf('home-market-pulse-v1.js?v=2')<index.indexOf('hourly-desk-ui-v1.js?v='),
+assert(pulseScript<index.indexOf('hourly-desk-ui-v1.js?v='),
  'Rendering order must preserve the optional pulse addon');
 assert.match(index,/src="\.\/app\.js\?v=[\w.-]+" defer/);
 assert(app.includes("currencyPrices:get('currencyPrices')"),'Official ECB fixing history must feed FX observations');
