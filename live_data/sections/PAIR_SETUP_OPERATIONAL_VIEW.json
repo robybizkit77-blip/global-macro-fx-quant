@@ -53,15 +53,15 @@
           "text": "Estensione non elevata · 1M -2.1% · P4 storico"
         },
         "timing": {
-          "state": "ADVERSE",
-          "text": "Timing contrario · AUD sta peggiorando · CAD sta migliorando",
+          "state": "MIXED",
+          "text": "Timing misto · CAD sta peggiorando · AUD sta peggiorando",
           "favChange": {
             "side": "NEG",
             "text": "AUD sta peggiorando"
           },
           "otherChange": {
-            "side": "POS",
-            "text": "CAD sta migliorando"
+            "side": "NEG",
+            "text": "CAD sta peggiorando"
           }
         },
         "cot": {
@@ -167,20 +167,21 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
-          "negative": 1,
-          "turns": 1,
+          "positive": 1,
+          "negative": 2,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
         "aNet": -1,
-        "bNet": 1,
-        "state": "DINAMICA FAVOREVOLE B",
+        "bNet": -1,
+        "state": "TURNING POINT ASIMMETRICO",
         "fav": "CAD"
       },
       "price_state": null
@@ -774,11 +775,11 @@
           "text": "Estensione non elevata · 1M +0.5% · P69 storico"
         },
         "timing": {
-          "state": "PARTIAL",
-          "text": "Timing da monitorare · CAD sta migliorando · CHF è in possibile svolta",
+          "state": "ADVERSE",
+          "text": "Timing contrario · CAD sta peggiorando",
           "favChange": {
-            "side": "POS",
-            "text": "CAD sta migliorando"
+            "side": "NEG",
+            "text": "CAD sta peggiorando"
           },
           "otherChange": {
             "side": "TRANSITION",
@@ -868,22 +869,23 @@
         "policySide": null
       },
       "transition": {
-        "state": "NESSUNA DIVERGENZA RELATIVA CHIARA",
-        "cls": "transNeutral",
-        "note": "la dinamica relativa non contraddice né rafforza chiaramente il vantaggio strutturale di CAD"
+        "state": "DIVERGENZA RELATIVA DA MONITORARE",
+        "cls": "transWatch",
+        "note": "il driver strutturale favorisce CAD, ma la dinamica relativa favorisce CHF: divergenza da monitorare, non segnale automatico"
       },
       "relative_dynamics": {
         "a": "CAD",
         "b": "CHF",
         "A": {
-          "positive": 2,
-          "negative": 1,
-          "turns": 1,
+          "positive": 1,
+          "negative": 2,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -899,10 +901,10 @@
           ],
           "withheld": false
         },
-        "aNet": 1,
+        "aNet": -1,
         "bNet": 1,
-        "state": "MISTO",
-        "fav": "—"
+        "state": "DINAMICA FAVOREVOLE B",
+        "fav": "CHF"
       },
       "price_state": null
     },
@@ -994,14 +996,15 @@
         "a": "CAD",
         "b": "JPY",
         "A": {
-          "positive": 2,
-          "negative": 1,
-          "turns": 1,
+          "positive": 1,
+          "negative": 2,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -1017,10 +1020,10 @@
           ],
           "withheld": false
         },
-        "aNet": 1,
+        "aNet": -1,
         "bNet": 1,
-        "state": "MISTO",
-        "fav": "—"
+        "state": "DINAMICA FAVOREVOLE B",
+        "fav": "JPY"
       },
       "price_state": null
     },
@@ -1424,19 +1427,20 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
-          "negative": 1,
-          "turns": 1,
+          "positive": 1,
+          "negative": 2,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
         "aNet": -2,
-        "bNet": 1,
+        "bNet": -1,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "CAD"
       },
@@ -2340,19 +2344,20 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
-          "negative": 1,
-          "turns": 1,
+          "positive": 1,
+          "negative": 2,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
         "aNet": 2,
-        "bNet": 1,
+        "bNet": -1,
         "state": "DINAMICA FAVOREVOLE A",
         "fav": "GBP"
       },
@@ -2990,21 +2995,22 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
-          "negative": 1,
-          "turns": 1,
+          "positive": 1,
+          "negative": 2,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
         "aNet": 0,
-        "bNet": 1,
-        "state": "DINAMICA FAVOREVOLE B",
-        "fav": "CAD"
+        "bNet": -1,
+        "state": "DINAMICA FAVOREVOLE A",
+        "fav": "NZD"
       },
       "price_state": null
     },
@@ -3444,15 +3450,15 @@
           "text": "Prezzo già avanzato · 1M +1.6% · P81 storico"
         },
         "timing": {
-          "state": "ADVERSE",
-          "text": "Timing contrario · CAD sta migliorando",
+          "state": "PARTIAL",
+          "text": "Timing da monitorare · CAD sta peggiorando · USD è in possibile svolta",
           "favChange": {
             "side": "TRANSITION",
             "text": "USD è in possibile svolta"
           },
           "otherChange": {
-            "side": "POS",
-            "text": "CAD sta migliorando"
+            "side": "NEG",
+            "text": "CAD sta peggiorando"
           }
         },
         "cot": {
@@ -3538,9 +3544,9 @@
         "policySide": "USD"
       },
       "transition": {
-        "state": "NESSUNA DIVERGENZA RELATIVA CHIARA",
-        "cls": "transNeutral",
-        "note": "la dinamica relativa non contraddice né rafforza chiaramente il vantaggio strutturale di USD"
+        "state": "DINAMICA RELATIVA ALLINEATA",
+        "cls": "transConfirm",
+        "note": "la dinamica relativa è allineata al driver strutturale (USD); il backtest la mantiene diagnostica, non autonoma"
       },
       "relative_dynamics": {
         "a": "USD",
@@ -3558,21 +3564,22 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
-          "negative": 1,
-          "turns": 1,
+          "positive": 1,
+          "negative": 2,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: migliora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
         "aNet": 1,
-        "bNet": 1,
-        "state": "MISTO",
-        "fav": "—"
+        "bNet": -1,
+        "state": "DINAMICA FAVOREVOLE A",
+        "fav": "USD"
       },
       "price_state": null
     },
