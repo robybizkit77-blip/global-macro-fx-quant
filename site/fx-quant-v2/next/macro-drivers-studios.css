@@ -125,5 +125,10 @@
 [data-view="banks"] .drivers-market-item h3{font-size:15px;line-height:1.45;margin:8px 0 0;color:var(--text)}
 [data-view="banks"] .drivers-market-item .drivers-observation{color:#a7dccf;font-weight:700}
 .drivers-bank-sources{border-top:1px solid var(--line);margin-top:18px}
+#central-bank-studio .drivers-country{min-height:52px}
+.drivers-bank-story{max-width:810px}
+.drivers-bank-story .drivers-lead{margin:0 0 12px;overflow-wrap:anywhere}
+.drivers-bank-story .drivers-lead strong{color:#a9e5d3}
+.drivers-bank-sources>.drivers-lead{margin:14px 0}
 .drivers-bank-sources>summary{padding-inline:0}
 .drivers-bank-sources>.drivers-facts,.drivers-bank-sources>.drivers-source-note{margin-inline:0}

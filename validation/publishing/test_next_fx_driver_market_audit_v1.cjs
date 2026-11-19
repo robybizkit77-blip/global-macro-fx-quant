@@ -71,6 +71,7 @@ console.log('NEXT_FX_DRIVER_MARKET_AUDIT_PASS',JSON.stringify({fixtureCases:12,c
 // source-matched market moves via the same reader as Tassi & OIS.
 require(path.join(root,'site/fx-quant-v2/next/rates-pricing-moves-v1.js'));
 const banks=require(path.join(root,'site/fx-quant-v2/next/central-bank-studio.js'));
+assert.equal(banks.classifyAction({action:'Invariato, con un voto per un rialzo'}).tone,'neutral');
 const loadFile=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const inputs={
  cb:loadFile('live_data/sections/NATIVE_CB_DATA.json'),
@@ -90,11 +91,14 @@ const page=(c,data=inputs,today=latestQuote)=>banks.render({
 });
 for(const c of ccys){
  const html=page(c);
+ const lead=html.split('<div class="drivers-bank-story">')[1].split('<div class="drivers-links">')[0];
+ assert.match(lead,/Cosa seguire/);
+ assert.doesNotMatch(lead,/%|punti base|\bOIS\b|\b6M\b|\bWANT\b|\bCAN\b/);
  assert.match(html,/WANT · COSA COMUNICA/);
  assert.match(html,/CAN · MARGINE DI MANOVRA/);
  assert.match(html,/COSA PREZZA IL MERCATO/);
  assert.match(html,/CONFERMA SUL FOREX/);
- assert.match(html,/Scadenze 3M \/ 6M \/ 12M e fonti/);
+ assert.match(html,/<details class="drivers-fold drivers-bank-sources"><summary>Apri decisione, tassi attesi e fonti/);
  assert.equal((html.match(/aria-pressed="true"/g)||[]).length,1);
  assert(html.includes('data-bank-target="'+c+'"'),c);
  assert.equal((html.match(/Tasso ufficiale <strong>/g)||[]).length,1);
@@ -116,9 +120,13 @@ const verified={
 };
 suspicious.currencies.USD.horizons['6m'].contract='ZQJ2027';
 assert.match(page('USD',{...inputs,ois:suspicious,oisSameContract:verified},now),/1D \+1 pb/);
+assert.match(page('USD',{...inputs,ois:suspicious,oisSameContract:verified},now),
+ /la stima dei tassi dei prossimi mesi è in rialzo/);
 assert.match(page('USD',{...inputs,ois:suspicious,oisSameContract:verified},'2026-11-23'),
  /Ultimo riferimento storico a sei mesi/);
 assert.doesNotMatch(page('USD',{...inputs,ois:suspicious,oisSameContract:verified},'2026-11-23'),/1D \+1 pb/);
+assert.doesNotMatch(page('USD',{...inputs,ois:suspicious,oisSameContract:verified},'2026-11-23'),
+ /la stima dei tassi dei prossimi mesi è in rialzo/);
 assert.match(page('USD',{...inputs,ois:suspicious},'2026-11-12'),/Aspettative a sei mesi da verificare/);
 const poisoned={...inputs,cb:{USD:{...inputs.cb.USD,context:'<script>alert(1)</script>'}}};
 assert.match(page('USD',poisoned,now),/&lt;script&gt;/);
