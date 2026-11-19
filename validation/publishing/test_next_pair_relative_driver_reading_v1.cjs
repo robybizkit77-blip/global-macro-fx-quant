@@ -8,6 +8,7 @@ const json=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const raw=p=>fs.readFileSync(path.join(root,p),'utf8');
 const ranking=require(path.join(root,next,'pair-rankings.js'));
 const engine=require(path.join(root,next,'macro-strength-estimated-v1.js'));
+const {priceOpening}=require(path.join(root,next,'decision-journey.js'));
 const rate=(quality='UFFICIALE')=>({quality,kind:quality==='PROXY'?'GOV_2Y_PROXY':'FUTURES'});
 const estimate={
  status:'STIMA_OPERATIVA_NON_VALIDATA',
@@ -66,8 +67,9 @@ assert.equal(read(pair('EURUSD','USD'),bad),null);
 // Live 28 pairs must be explained, not re-ranked or silently sourced from
 // the archived September D macro model.
 const observed=json('site/control-room-preview/macro-v3-current-evidence.json');
+const prices=json('live_data/sections/ECB_G8_PRICE_HISTORY.json');
 const live=engine.evaluate({
- observed,prices:json('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
+ observed,prices,
  ois:json('site/fx-quant-v2/ois-pricing-snapshot.json'),
  rates:json('live_data/sections/NATIVE_RATES_DATA.json'),
  model:json('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),
@@ -83,10 +85,21 @@ for(const p of live.pairs){
   p.key+' story cannot be a signal or fabricated probability');
  assert(p.favored===p.base||p.favored===p.quote||
   narrative.includes('non assegna una direzione fondamentale'));
+ const opening=priceOpening(p.key,prices,observed.generated_europe_rome_day,live);
+ assert.match(opening.headline,/nelle ultime settimane/);
+ assert.doesNotMatch(opening.headline+' '+opening.lead,/fixing|futures|%/i);
 }
+// A falling EUR/USD favours the quote currency, including when the last day reverses the longer move.
+const testRows=Array.from({length:21},(_,i)=>({Date:'2026-11-'+String(i+1).padStart(2,'0'),EUR:1,
+ USD:i===20?1.14:1.24-i*.01}));
+const testPrices={...prices,last_as_of:'2026-11-21',rows:testRows};
+const simple=priceOpening('EURUSD',testPrices,'2026-11-22',null);
+assert.equal(simple.headline,'Il dollaro USA ha guadagnato terreno contro l’euro nelle ultime settimane');
+assert.equal(simple.lead,'Il 21 novembre l’euro ha recuperato terreno contro il dollaro USA.');
+assert.equal(priceOpening('EURUSD',testPrices,'2026-11-27',null),null);
+assert.equal(priceOpening('EURUSD',{...testPrices,status:'ESTIMATED'},'2026-11-22',null),null);
 const app=raw(next+'app.js'),index=raw(next+'index.html');
-assert(app.includes('pairDriverReading?.(activePair,estimate)'), 'Selected first read must consume the current bilateral view');
-assert(app.includes('const headline=driverReading||activePair?.thesisReason'), 'Missing estimates must fail closed');
-assert(index.includes('pair-rankings.js?v=8'));
-assert(index.includes('app.js?v=18.43-drivers1'));
+assert(app.includes('pairDriverReading?.(activePair,estimate)'), 'The evidence must preserve the current bilateral view');
+assert(app.includes('priceOpening?.(state.pair,prices,today,estimate)'), 'The first read must consume the observed price narrative');
+assert.match(index,/decision-journey\.js\?v=[^\"\n]+[\s\S]*app\.js\?v=/);
 console.log('NEXT_PAIR_RELATIVE_DRIVERS_V1_PASS: 28 FX pairs; stronger-versus-less-weak macro, monetary proxies and 5/20 price divergences; no ranking changes');

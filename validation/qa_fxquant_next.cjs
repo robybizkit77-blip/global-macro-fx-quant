@@ -491,6 +491,16 @@ async function chosenPair(page,key,label){
  assert.equal(await listSelection.getAttribute('aria-pressed'),'true',label+' selection not exposed to assistive technology');
  const p=locator(page,'.pairs-reading-compact');
  assert.equal(await p.count(),1,label+' '+key+' first-read missing');
+ const firstRead=await p.innerText();
+ assert.match(await p.locator('.pairs-reading-head h2').innerText(),/nelle ultime settimane/i,
+  label+' '+key+' must open on the observed move');
+ assert.doesNotMatch(firstRead,/fixing|futures|\d+(?:,\d+)?\s*%|TRADE ATTRACTIVENESS/i,
+  label+' '+key+' exposed technical details in the first reading');
+ const quotes=p.locator('details.pairs-evidence');
+ assert(!await quotes.evaluate(el=>el.open),label+' '+key+' details open without request');
+ assert(!await p.locator('.pairs-price-periods').isVisible(),label+' '+key+' price numbers should be folded');
+ await quotes.locator(':scope > summary').click();
+ assert(await quotes.evaluate(el=>el.open),label+' '+key+' cannot inspect price and evidence');
  assert.equal(await p.locator('.pairs-three-answers > div').count(),3,
   label+' thesis, trade attractiveness and price comparison incomplete');
  const trade=await p.locator('.pairs-trade-assessment').getAttribute('data-pairs-trade-tone');
