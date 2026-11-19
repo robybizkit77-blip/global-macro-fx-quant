@@ -83,7 +83,7 @@ assert(escaped.includes('&lt;img'));
 assert(!escaped.includes('<img'));
 assert.match(view('rates',current,baseState,'yield-selloff'),/aspettative|premi/);
 const site=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
-assert.match(site,/research-editorials\.js\?v=9/);
+assert.match(site,/research-editorials\.js\?v=10/);
 assert.match(site,/editorial-v4\.css\?v=18/);
 assert(site.indexOf('research-editorials.js')<site.indexOf('app.js?v=18'),'Research script must load first');
 console.log('NEXT_RESEARCH_EDITORIAL_V7_PASS routes=7 countries=8 selected_pair=yes dates=distinct fallback=explicit XSS=escaped no_signal_write=true');

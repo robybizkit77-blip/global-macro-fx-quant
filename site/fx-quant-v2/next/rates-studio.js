@@ -18,12 +18,24 @@ function chfGovernmentSnapshot(rows){
    chg10_bp:((last['10Y']-previous['10Y'])*100),
    quality:'SNB · STORICO UFFICIALE'}:null;
 }
+function nzdGovernmentEstimate(get,now){
+ const quote=get('nzdDirectionalProxy');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(quote?.as_of||''))return null;
+ const stamp=quote.as_of.slice(2).replace(/-/g,'');
+ if(quote.source_url!=='https://www.asx.com.au/data/futures/reports/EODWebMarketSummary'+stamp+'ZFT.htm')return null;
+ const model=root.FXV2RatesWorking?.derive(get('rates'),get('nzdBenchmarkResearch'),
+   now,quote,get('nzdAsxGovernmentAnchor'));
+ const row=model?.rates?.NZD;
+ return row?.working_method==='NZD_ASX_6M_PARALLEL_SHIFT_SCENARIO'&&
+   row.scenario_only===true&&row.no_core_effect===true?row:null;
+}
 function make(api){
  const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow}=api;
  const TERMS=['3m','6m','12m'],PAIR_MODES=['2y','10y','slope','spread2y'];
  const dataR=c=>get('rates')?.[c],dataO=c=>get('ois')?.currencies?.[c],dataB=c=>get('cb')?.[c];
  const chfHistory=chfGovernmentHistory(get,dayNow());
  const chfSnapshot=chfGovernmentSnapshot(chfHistory);
+ const nzdEstimate=nzdGovernmentEstimate(get,dayNow());
  const dateDiff=(a,b)=>validDay(a)&&validDay(b)?Math.abs((Date.parse(a+'T12:00:00Z')-Date.parse(b+'T12:00:00Z'))/864e5):null;
  const freshness=d=>{let days=dateDiff(d,dayNow());return days===null?'DATA ASSENTE':days>12?'STORICO':days>5?'DA VERIFICARE':'RECENTE';};
  function usable(c){
@@ -41,7 +53,7 @@ function make(api){
      .sort((x,y)=>x.date.localeCompare(y.date));
  }
  function displayedSovereign(c){
-   return (c==='CHF'&&chfSnapshot)||usable(c);
+   return (c==='CHF'&&chfSnapshot)||(c==='NZD'&&nzdEstimate)||usable(c);
  }
  function displayedSovereignRows(c){
    const rows=sovereignRows(c);
@@ -78,7 +90,10 @@ function make(api){
    const h6=rpRate(c,'6m');
    const d1=h6?.change_1d_bp,d7=h6?.change_1w_bp;
    const genuine=finite(d1)||finite(d7);
-   const intro=!r?'Nessun rendimento verificabile alla data richiesta.':('L’ultimo 2Y '+c+' è '+fmt(r['2Y'],3)+'% e il 10Y '+fmt(r['10Y'],3)+'% (rilevazione '+date(r.date)+').');
+   const estimated=r?.scenario_only===true;
+   const intro=!r?'Nessun rendimento verificabile alla data richiesta.':
+     (estimated?'Stima governativa al '+date(r.date)+' · 2Y ':'L’ultimo 2Y '+c+' è ')+
+     fmt(r['2Y'],3)+'% e 10Y '+fmt(r['10Y'],3)+'%'+(estimated?'.':' (rilevazione '+date(r.date)+').');
    const desk=root.FXQuantRatesEconomic?.read?.({
      country:c,now:dayNow(),asof:last?.date,previous:prev?.date,bp2:f2,bp10:f10,
      kind:o?.kind,quality:o?.quality,h6
@@ -88,7 +103,10 @@ function make(api){
      watch:'Esaminare le fonti originali prima di assumere una tesi.'};
    return {
      ...desk,intro,
-     gov:finite(f2)&&finite(f10)?'Tra le ultime due date comuni dei rendimenti: 2Y '+sign(f2,1,' pb')+', 10Y '+sign(f10,1,' pb')+'; '+movement+'.':'Non bastano due date comuni per misurare il movimento della curva.',
+     headline:estimated?'I governativi NZD sono stimati dai futures ASX.':desk.headline,
+     meaning:estimated?intro+' La base B2 del '+date(r.source_date)+' viene aggiornata con lo stesso movimento ASX per entrambe le scadenze.':desk.meaning,
+     gov:estimated?'Il grafico storico mostra le osservazioni governative fino al '+date(last?.date)+'.':
+       finite(f2)&&finite(f10)?'Tra le ultime due date comuni dei rendimenti: 2Y '+sign(f2,1,' pb')+', 10Y '+sign(f10,1,' pb')+'; '+movement+'.':'Non bastano due date comuni per misurare il movimento della curva.',
      pricing:genuine?'Nel feed '+(o?.kind||'pricing')+' la scadenza 6M registra '+(finite(d1)?sign(d1,1,' pb in 1D'):'variazione 1D non disponibile')+' e '+(finite(d7)?sign(d7,1,' pb in 1W'):'variazione 1W non disponibile')+' (riferimento '+date(h6.as_of)+').'
        :'Per il 6M non ci sono variazioni 1D/1W validate: dai livelli delle scadenze non possiamo ricostruire un repricing avvenuto oggi.',
      caution:!sameTenorDate(c)?'I punti 3M, 6M e 12M riportano date diverse; non costituiscono una curva simultanea.':'Le tre scadenze hanno la stessa data, ma il tipo di strumento resta '+(o?.kind||'non specificato')+'.',
@@ -169,6 +187,15 @@ function make(api){
      +' · <a href="'+source+'">Banca nazionale svizzera</a>. La curva 2Y/10Y sopra si riferisce al '+esc(date(shown))+'.</p>';
    }
    if(c==='NZD'){
+    const estimate=nzdEstimate;
+    if(estimate){
+     const futures=get('nzdDirectionalProxy');
+     return '<p class="source-caption" data-gov-estimate="NZD"><strong>NZD · Stima governativa</strong> · Base RBNZ B2 del '+
+      esc(date(estimate.source_date))+' · <a href="'+esc(futures.source_url)+'">Futures ASX bank bill</a> '+
+      esc(estimate.comparison_window.contract)+' al '+esc(date(estimate.date))+' · movimento '+
+      esc(sign(estimate.comparison_window.futures_6m_bp,1,' pb'))+
+      '. La stessa variazione viene applicata al 2Y e al 10Y. La pendenza resta quella della base B2.</p>';
+    }
     const nzd=get('nzdPostroll');
     if(!Array.isArray(nzd?.daily_observations))return '';
     const latest=nzd.daily_observations.at(-1);
@@ -184,18 +211,19 @@ function make(api){
  }
  function govCard(c){
    const r=displayedSovereign(c),last=displayedSovereignRows(c).at(-1),f=selectedReading(c);
-   const spread=last?(last.y10-last.y2)*100:null;
+   const spread=r?.scenario_only?r.curve_bp:last?(last.y10-last.y2)*100:null;
+   const tag=r?.scenario_only?'Stima al ':'Rif. ';
    return '<div class="rates-stats">'
-      +[['Gov 2Y',r?fmt(r['2Y'],3)+'%':'—','Rif. '+date(r?.date)],
-        ['Gov 10Y',r?fmt(r['10Y'],3)+'%':'—','Rif. '+date(r?.date)],
-        ['10Y − 2Y',finite(spread)?sign(spread,1,' pb'):'—','Calcolo sulle date comuni'],
+      +[['Gov 2Y',r?fmt(r['2Y'],3)+'%':'—',tag+date(r?.date)],
+        ['Gov 10Y',r?fmt(r['10Y'],3)+'%':'—',tag+date(r?.date)],
+        ['10Y − 2Y',finite(spread)?sign(spread,1,' pb'):'—',r?.scenario_only?'Pendenza della base B2':'Calcolo sulle date comuni'],
         ['Tasso ufficiale',f.policy,dataB(c)?.bank||'Banca centrale']].map(([a,b,d])=>
          '<div class="rates-stat"><span>'+esc(a)+'</span><strong>'+esc(b)+'</strong><small>'+esc(d)+'</small></div>').join('')+'</div>';
  }
  function countrySelect(){
    return '<div class="rates-country-strip" role="group" aria-label="Seleziona la valuta G8">'
       +FX.map(k=>{const r=displayedSovereign(k);return '<button class="rates-country '+(k===state.ccy?'selected':'')+'" type="button" data-rate-ccy="'+k+'" aria-pressed="'+String(k===state.ccy)+'">'
-        +'<span>'+FLAGS[k]+' '+k+'</span><strong>'+fmt(r?.['2Y'],2)+'%</strong><small>'+esc(freshness(r?.date))+' · '+date(r?.date)+'</small></button>'}).join('')+'</div>';
+        +'<span>'+FLAGS[k]+' '+k+'</span><strong>'+fmt(r?.['2Y'],2)+'%</strong><small>'+esc(r?.scenario_only?(r.stale_source?'STIMA STORICA':'STIMA'):freshness(r?.date))+' · '+date(r?.date)+'</small></button>'}).join('')+'</div>';
  }
  function govPlot(c){
    const rows=displayedSovereignRows(c).slice(-Number(state.rsWindow||60)),mode=state.rsGovMode||'both';
@@ -281,7 +309,7 @@ function make(api){
      +'<div class="table-wrap"><table class="data-table rates-universe-table"><thead><tr><th>Valuta</th><th>Gov 2Y</th><th>Gov 10Y</th><th>10Y−2Y</th><th>Data GOV</th><th>Pricing 3M</th><th>6M</th><th>12M</th><th>Tipo e qualità</th></tr></thead><tbody>'
      +FX.map(k=>{const r=displayedSovereign(k),o=dataO(k),z=displayedSovereignRows(k).at(-1);
       return '<tr class="'+(k===state.ccy?'active':'')+'"><td><button type="button" data-rate-ccy="'+k+'">'+FLAGS[k]+' '+k+'</button></td><td>'+fmt(r?.['2Y'],3)+'%</td>'
-       +'<td>'+fmt(r?.['10Y'],3)+'%</td><td>'+sign(z?(z.y10-z.y2)*100:null,1,' pb')+'</td><td>'+date(r?.date)+'</td>'
+       +'<td>'+fmt(r?.['10Y'],3)+'%</td><td>'+sign(r?.scenario_only?r.curve_bp:z?(z.y10-z.y2)*100:null,1,' pb')+'</td><td>'+date(r?.date)+(r?.scenario_only?'<small>Stima ASX</small>':'')+'</td>'
        +TERMS.map(t=>{const h=rpRate(k,t);return '<td><span class="rates-cell">'+fmt(h?.rate,3)+'%<small>'+date(h?.as_of)+'</small></span></td>'}).join('')
        +'<td>'+esc(o?.kind||'—')+'<small>'+esc(o?.quality||'n.d.')+'</small></td></tr>';
      }).join('')+'</tbody></table></div>'
@@ -357,5 +385,5 @@ function make(api){
  }
  return render();
 }
-root.FXQuantRates={render:make,chfSnapshot:(get,now)=>chfGovernmentSnapshot(chfGovernmentHistory(get,now))};
+root.FXQuantRates={render:make,chfSnapshot:(get,now)=>chfGovernmentSnapshot(chfGovernmentHistory(get,now)),nzdEstimate:nzdGovernmentEstimate};
 })(window);

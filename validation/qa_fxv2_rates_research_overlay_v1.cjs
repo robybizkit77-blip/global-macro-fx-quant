@@ -13,7 +13,7 @@ const canonicalLive=read('live_data/sections/NATIVE_RATES_DATA.json');
 const researchLive=read('site/fx-quant-v2/chf-nzd-benchmark-research.json');
 const audLive=read('site/fx-quant-v2/aud-rba-f2-research.json');
 const proxyLive=read('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json');
-const anchor=read('site/fx-quant-v2/nzd-asx-government-anchor-v1.json');
+const liveAnchor=read('site/fx-quant-v2/nzd-asx-government-anchor-v1.json');
 const clone=x=>JSON.parse(JSON.stringify(x));
 assert.equal(researchLive.schema,'GMFQ_FXV2_CHF_NZD_BENCHMARK_RESEARCH_V1');
 assert.equal(researchLive.eligible_for_fx_pair_engine,false);
@@ -29,15 +29,17 @@ assert.equal(proxyLive.schema,'GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1');
 assert.equal(proxyLive.governance.pair_engine_effect,'NONE');
 assert.equal(proxyLive.governance.policy_delta_from_proxy_allowed,false);
 assert.equal(proxyLive.source_quality,'OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY');
-assert.ok(proxyLive.as_of>=anchor.asx_6m_as_of,
+assert.ok(proxyLive.as_of>=liveAnchor.asx_6m_as_of,
  'New genuine exchange data may advance from the scenario anchor');
 assert.ok(audLive.as_of>='2026-10-28',
  'A newly published RBA F2 observation must not roll back');
-assert.ok(researchLive.NZD.latest_date>=anchor.government_as_of,
+assert.ok(researchLive.NZD.latest_date>=liveAnchor.government_as_of,
  'Source-verified RBNZ B2 research can advance, not roll backwards');
 
 // Static regression fixture: never reuse changing live rates/dates as
 // assumptions in the deterministic Nov 2026 scenario tests.
+const anchor={...liveAnchor,government_as_of:'2026-11-04','2Y':3.83,'10Y':4.81,
+ asx_6m_as_of:'2026-11-04',asx_6m_rate:3.7};
 const original=clone(canonicalLive);
 original.AUD={...original.AUD,date:'2026-10-28','2Y':4.951,'10Y':5.208};
 original.CHF={...original.CHF,date:'2026-09-30','2Y':0.287,'10Y':0.586};

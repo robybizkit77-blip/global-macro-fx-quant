@@ -54,7 +54,8 @@ const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'u
 const rates=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/rates-studio.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
 assert(page.includes('rates-economic-reading.js?v=20'));
-assert(page.includes('rates-studio.js?v=9'));
+assert(page.includes('rates-studio.js?v=10'));
+assert(page.indexOf('rates-working-model-v1.js')<page.indexOf('rates-studio.js'));
 assert(page.includes('rates-relative-pricing-v1.js?v=1'));
 assert(page.includes('rates-pricing-history-v1.js?v=1'));
 assert(page.includes('rates-pricing-moves-v1.js?v=1'));
@@ -77,6 +78,7 @@ assert(page.indexOf('rates-economic-reading.js')<page.indexOf('rates-studio.js')
 assert(rates.includes('m.headline')&&rates.includes('m.pricingEvidence')&&rates.includes('m.watch'));
 const scriptWindow={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/next/currency-data-fallback.js'),'utf8'),scriptWindow);
+vm.runInNewContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/assets/rates-working-model-v1.js'),'utf8'),scriptWindow.window);
 vm.runInNewContext(rates,scriptWindow);
 vm.runInNewContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/next/research-editorials.js'),'utf8'),scriptWindow);
 const spot=load('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json');
@@ -84,14 +86,14 @@ const chf=load('site/fx-quant-v2/chf-snb-paired-history.json');
 const nzd=load('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
 const data={rates:gov,chfSpot:spot,chfResearch:chf,nzdPostroll:nzd,ois:{currencies:money}};
 const liveDay=[spot.as_of,nzd.source_capture_date].sort().at(-1);
-function render(ccy,overrides={},plots=[],editorial=false){
+function render(ccy,overrides={},plots=[],editorial=false,today=liveDay){
  const fxData={...data,...overrides};
  const api={
   get:key=>fxData[key],FX:names,FLAGS:{},NAMES:{},state:{ccy,against:'USD'},
   plot:spec=>{plots.push(spec);return '';},pageHero:()=>'',esc:x=>String(x??''),fmt:(x,n)=>Number.isFinite(x)?x.toFixed(n):'—',
   sign:()=>'',date:x=>x||'—',finite:Number.isFinite,
   validDay:x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x),
-  dayNow:()=>liveDay
+  dayNow:()=>today
  };
  return editorial?scriptWindow.window.FXQuantResearchEditorial.create(api).render('rates'):
   scriptWindow.window.FXQuantRates.render(api);
@@ -114,6 +116,36 @@ const essay=render('CHF',{},[],true);
 assert.match(essay,new RegExp('Nella serie storica SNB del '+chfLatest.date));
 assert.match(essay,/bull flattening/);
 assert.doesNotMatch(essay,new RegExp('Al '+gov.CHF.date+' il governativo'));
+const market=load('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json');
+const anchor=load('site/fx-quant-v2/nzd-asx-government-anchor-v1.json');
+const research=load('site/fx-quant-v2/chf-nzd-benchmark-research.json');
+const quoteDay=new Date(Date.parse(anchor.government_as_of+'T00:00:00Z')+86400000).toISOString().slice(0,10);
+const scenario={
+ nzdAsxGovernmentAnchor:anchor,
+ nzdBenchmarkResearch:{...research,NZD:{...research.NZD,latest_date:anchor.government_as_of,
+  latest_2Y:anchor['2Y'],latest_10Y:anchor['10Y'],
+  after_roll:[research.NZD.after_roll[0],{date:anchor.government_as_of,'2Y':anchor['2Y'],'10Y':anchor['10Y']}] }},
+ nzdDirectionalProxy:{...market,as_of:quoteDay,
+  source_url:'https://www.asx.com.au/data/futures/reports/EODWebMarketSummary'+quoteDay.slice(2).replace(/-/g,'')+'ZFT.htm',
+  horizons:{'6m':{...market.horizons['6m'],implied_bank_bill_rate:anchor.asx_6m_rate-.04,
+   expiration:anchor.asx_6m_expiration,expiry_label:anchor.asx_6m_contract}}}
+};
+const nzdPlots=[];
+const scenarioToday=[liveDay,quoteDay].sort().at(-1);
+const estimateHtml=render('NZD',scenario,nzdPlots,false,scenarioToday);
+const expected2Y=(anchor['2Y']-.04).toFixed(3);
+const expected10Y=(anchor['10Y']-.04).toFixed(3);
+assert.match(estimateHtml,/data-gov-estimate="NZD"/);
+assert(estimateHtml.includes(expected2Y+'%')&&estimateHtml.includes(expected10Y+'%'));
+assert(estimateHtml.includes('Stima al '+quoteDay));
+assert.match(render('NZD',scenario,[],true,scenarioToday),new RegExp('Stima dei governativi NZD al '+quoteDay));
+assert(nzdPlots.find(x=>x.label==='Storico governativi NZD').lines[0].values.every(x=>x.label<quoteDay),
+ 'Estimated yields must not appear in the observed chart');
+const wrongContract=JSON.parse(JSON.stringify(scenario));
+wrongContract.nzdDirectionalProxy.horizons['6m'].expiration='2027-09-15';
+assert.doesNotMatch(render('NZD',wrongContract,[],false,scenarioToday),/data-gov-estimate=/);
+const newCanonical={...gov,NZD:{...gov.NZD,date:quoteDay}};
+assert.doesNotMatch(render('NZD',{...scenario,rates:newCanonical},[],false,scenarioToday),/data-gov-estimate=/);
 assert.match(render('NZD'),new RegExp('data-gov-reference="NZD".*'+nzd.daily_observations.at(-1).date));
 assert.doesNotMatch(render('CHF',{chfSpot:{...spot,source_url:'https://invalid.example'}}),/data-gov-reference=/);
 assert.doesNotMatch(render('NZD',{nzdPostroll:{...nzd,daily_observations:{}}}),/data-gov-reference=/);
