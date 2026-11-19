@@ -159,6 +159,7 @@
   // retained in the expandable full analysis. The visible continuation is
   // taken VERBATIM from the already-produced market judgment.
   const judgment=feed.desk_judgment.trim(),lead=feed.lead.trim();
+  const hasMoreContext=judgment.replace(/\s+/g,' ')!==lead.replace(/\s+/g,' ');
   const isContinuation=judgment.startsWith(lead)&&judgment.length>lead.length;
   const followThrough=isContinuation?judgment.slice(lead.length).trim():judgment;
   const research=[
@@ -218,14 +219,14 @@
     '<h3>Da monitorare</h3><p>'+safe(feed.watch)+'</p>'+
     '<a class="hourly-driver-action" href="#news">Notizie e calendario <span aria-hidden="true">↗</span></a>'+
     '</article></div></section>'+
-    '<section class="hourly-research-lens" aria-label="Analisi economica integrata">'+
+    (hasMoreContext?'<section class="hourly-research-lens" aria-label="Analisi economica integrata">'+
     '<div class="hourly-lens-heading"><span class="morning-section-label">COSA STA SUCCEDENDO E PERCHÉ CONTA</span>'+
     '<h2>Le connessioni tra i mercati</h2></div>'+
     '<div class="hourly-lens-body"><p>'+safe(followThrough)+'</p>'+
     (isContinuation?
      '<details class="hourly-full-analysis"><summary>Lettura completa del desk</summary>'+
      '<p>'+safe(judgment)+'</p></details>':'')+
-    '</div></section>'+
+    '</div></section>':'')+
     '<section class="hourly-navigation-section" aria-label="Continua l’analisi in FX Quant">'+
     '<div class="hourly-section-head"><div><span class="morning-section-label">DAL QUADRO AI DATI</span>'+
     '<h2>Esplora la ricerca</h2></div><p>Ogni tema della Panoramica ha un approfondimento nel sito.</p></div>'+
