@@ -51,15 +51,16 @@
      prev.Date<=today){
    // USD/EUR strength is reciprocal to EUR/USD. USD/JPY is derived from two
    // EUR-based ECB fixes on exactly the same dates (JPY per USD).
-   const eur=(prev.USD/last.USD-1)*100;
-   const jpy=((last.JPY/last.USD)/(prev.JPY/prev.USD)-1)*100;
-   const eps=.005; // Below half the 0.01% display precision: no directional claim.
-   const bothUp=eur>eps&&jpy>eps,bothDown=eur < -eps&&jpy < -eps;
-   const flat=Math.abs(eur)<=eps&&Math.abs(jpy)<=eps;
+   // Values below the displayed precision should read 0,00%, without a direction.
+   const visibleMove=x=>Math.abs(x)<.005?0:x;
+   const eur=visibleMove((prev.USD/last.USD-1)*100);
+   const jpy=visibleMove(((last.JPY/last.USD)/(prev.JPY/prev.USD)-1)*100);
+   const bothUp=eur>0&&jpy>0,bothDown=eur<0&&jpy<0;
+   const flat=eur===0&&jpy===0;
    const value=bothUp?'USD ↑':bothDown?'USD ↓':flat?'USD stabile':'USD misto';
    const tone=bothUp?'fx':bothDown?'adverse':'neutral';
-   add('currencies','FORZA FX RELATIVA','USD vs EUR / JPY',value,
-    'EUR '+signed(eur,2,'%')+' · JPY '+signed(jpy,2,'%'),
+   add('currencies','FORZA FX RELATIVA','Dollaro contro euro e yen',value,
+    'USD/EUR '+signed(eur,2,'%')+' · USD/JPY '+signed(jpy,2,'%'),
     last.Date,tone,'','BCE · 2 confronti, non indice USD');
   }
   const s=risk.streams||{},sp=s.SP500,vix=s.VIX,hy=s.HY_OAS;
