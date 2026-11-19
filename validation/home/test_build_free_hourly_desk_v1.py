@@ -57,12 +57,13 @@ class FreeDeskTest(unittest.TestCase):
   self.assertTrue(r["provenance"]["chatgpt_automation_unchanged"])
   self.assertGreaterEqual(len(r["news"]),3)
   self.assertLessEqual(len(r["news"]),6)
-  self.assertEqual(r["headline"],"Dollaro misto al fixing BCE")
-  self.assertIn("del 13 novembre, il dollaro ha ceduto contro l’euro e guadagnato contro lo yen",r["lead"])
+  self.assertEqual(r["headline"],"Dollaro misto")
+  self.assertIn("Il 13 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen",r["lead"])
   self.assertIn("Alla chiusura del 12 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito",r["lead"])
-  for key in ("headline","lead","desk_judgment","fx_implications","what_changed"):
-   self.assertNotRegex(r[key],r"\d+(?:,\d+)?\s*(?:%|pb\b|punti\b)")
-  self.assertTrue(any("EUR/USD ha segnato +0,22% e USD/JPY +0,35%" in item["analysis"] for item in r["news"]))
+  for key in ("headline","lead","desk_judgment","fx_implications","what_changed","watch","contrary_evidence"):
+   self.assertNotRegex(r[key],r"\d+(?:,\d+)?\s*(?:%|pb\b|punti\b)|(?i:fixing|\bBCE\b)")
+  self.assertTrue(any("Dollaro misto al fixing BCE" == item["headline"] and
+                      "EUR/USD ha segnato +0,22% e USD/JPY +0,35%" in item["analysis"] for item in r["news"]))
   self.assertTrue(any("S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb" in item["analysis"] for item in r["news"]))
   self.assertIn("VIX è sceso",r["contrary_evidence"])
   self.assertIn(free.ECB_FIXING,r["provenance"]["web_source_urls"])
@@ -109,11 +110,11 @@ class FreeDeskTest(unittest.TestCase):
   p.write_text(json.dumps(d))
   second=self.build(now=NOW+timedelta(hours=1),previous=first)
   self.assertNotEqual(first["material_digest"],second["material_digest"])
-  self.assertEqual(second["headline"],"Dollaro in rialzo al fixing BCE")
+  self.assertEqual(second["headline"],"Dollaro in rialzo")
   d["status"]="ESTIMATED"
   p.write_text(json.dumps(d))
   invalid=self.build()
-  self.assertNotIn("fixing BCE",invalid["headline"])
+  self.assertNotIn("Dollaro",invalid["headline"])
   self.assertNotIn("USD/JPY",invalid["lead"])
  def test_no_recycled_hourly_story(self):
   first=self.build()
