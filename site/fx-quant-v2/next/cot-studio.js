@@ -298,7 +298,7 @@
     }
     function render(){
       const ccy=state.ccy,a=report(ccy),all=FX.map(report).filter(Boolean);
-      const header=pageHero('POSIZIONAMENTO','COT','Come cambiano le posizioni dei fondi e come si muove il cambio nello stesso periodo.');
+      const header=pageHero('COT G8','Le posizioni dei fondi','Come cambiano le posizioni e come si muove il cambio nello stesso periodo.');
       let body=header+deskOverview(all)+countrySelector();
       if(!a)return body+'<div class="empty"><strong>Storico COT da verificare per '+esc(ccy)+'</strong><p>Scegli un’altra valuta per leggere le ultime posizioni disponibili.</p></div>';
       const last=a.last,q=a.deskStats,p=q?.p;
