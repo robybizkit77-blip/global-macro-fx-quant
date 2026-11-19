@@ -176,17 +176,17 @@
     '<div class="hourly-hero-grid">'+
     '<header class="morning-lead hourly-hero" data-hourly-hero-to-sources="true" aria-label="Il quadro generale dei mercati: clicca per aprire notizie e fonti">'+
     '<div class="hourly-hero-upper"><button type="button" class="morning-kicker hourly-kicker-sources" data-hourly-open-sources aria-controls="hourly-desk-news" aria-expanded="false">IL QUADRO GENERALE DEI MERCATI <span aria-hidden="true">↘</span></button>'+
-    '<span class="hourly-research-tag">QUADRO &amp; INTERPRETAZIONE</span></div>'+
+    '</div>'+
     '<h1>'+safe(feed.headline)+'</h1>'+
     '<p class="morning-deck">'+safe(feed.lead)+'</p>'+
-    '<div class="hourly-hero-bottom"><span>Macro <i></i> Tassi <i></i> Mercati <i></i> Forex</span>'+
+    '<div class="hourly-hero-bottom">'+
     '<div class="hourly-hero-actions"><button type="button" class="hourly-hero-sources-button" data-hourly-open-sources aria-controls="hourly-desk-news" aria-expanded="false">Notizie e fonti <span aria-hidden="true">↘</span></button>'+
     '<a href="#currencies">Esplora le valute <span aria-hidden="true">↗</span></a></div></div>'+
     '</header>'+
     '<aside class="hourly-fx-spotlight" aria-label="Implicazioni Forex">'+
     '<div class="hourly-spotlight-top"><span class="morning-section-label">LE CONSEGUENZE PER IL FOREX</span>'+
     '<span class="hourly-spotlight-symbol" aria-hidden="true">⇄</span></div>'+
-    '<h2>La lettura relativa delle valute</h2>'+
+    '<h2>Cosa seguire nei cambi</h2>'+
     '<p>'+safe(feed.fx_implications)+'</p>'+
     '<div class="hourly-spotlight-actions"><a href="#pairs">Approfondisci le coppie FX <span aria-hidden="true">↗</span></a>'+
     '<a href="#rates">Esamina i tassi</a></div>'+
