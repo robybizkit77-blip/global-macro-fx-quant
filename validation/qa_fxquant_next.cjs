@@ -308,19 +308,20 @@ async function g8Choice(page,label){
 async function scenarioMacroJourney(page,label){
  await route(page,'macro');
  const hero=locator(page,'.macro-country-hero');
- const countries=locator(page,'[data-ms-country]');
+ const countries=locator(page,'.macro-country-strip [data-ms-country]');
  assert.equal(await countries.count(),8,label+' Scenario macro must offer all G8 economies');
  assert.equal(await locator(page,'#content > .research-essay').count(),0,
   label+' technical essay must follow the Scenario macro narrative');
- await locator(page,'[data-ms-country="USD"]').click();
+ await locator(page,'.macro-country-strip [data-ms-country="USD"]').click();
  const usd=await hero.innerText();
  assert.match(usd,/Stati Uniti/);
  assert.doesNotMatch(usd,/\d+(?:,\d+)?%|FRED|OIS|\b2Y\b/);
- await locator(page,'[data-ms-country="EUR"]').click();
+ const euroChoice=locator(page,'.macro-country-strip [data-ms-country="EUR"]');
+ await euroChoice.click();
  const eur=await hero.innerText();
  assert.match(eur,/Area euro/);
  assert.notEqual(usd,eur,label+' the first read must follow the selected economy');
- assert.equal(await locator(page,'[data-ms-country="EUR"]').getAttribute('aria-pressed'),'true');
+ assert.equal(await euroChoice.getAttribute('aria-pressed'),'true');
  const proof=hero.locator('.macro-evidence');
  assert(!await proof.evaluate(el=>el.open),label+' data and sources must be closed initially');
  await proof.locator('summary').click();
