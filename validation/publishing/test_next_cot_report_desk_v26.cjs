@@ -7,7 +7,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'../..');
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
-const {validatePrior,statistics,reading,opening,desk,overview}=require(
+const {validatePrior,statistics,reading,desk}=require(
  path.join(root,'site/fx-quant-v2/next/cot-report-reading-v26.js'));
 const {priceEvidence}=require(
  path.join(root,'site/fx-quant-v2/next/cot-evidence-reading.js'));
@@ -23,7 +23,7 @@ for(const ccy of names){
  const hist=a.dates.map((date,i)=>({date,net:a.net[i],long:a.long[i],
   short:a.short[i],netoi:a.netoi[i],percentile:a.percentile[i]}));
  const price=priceEvidence(ccy,hist,fx,new Date().toISOString().slice(0,10));
- const item={ccy,hist,last:hist.at(-1),prev:hist.at(-2),price1:price.price1,
+ const item={ccy,hist,last:hist.at(-1),price1:price.price1,
   priceState:price.priceState,priceRow:price.priceRow};
  const prior=validatePrior(hist,archived,ccy);
  assert(prior&&prior.prior.length===104,ccy+' 104 strict previous weeks');
@@ -51,19 +51,11 @@ for(const ccy of names){
  assert(v.level=== (v.rounded>=80?'EXTREME LONG':v.rounded<=20?'EXTREME SHORT':'NEUTRALE'));
  const story=reading(v);
  assert(story&&story.fact.includes('Motore principale:')&&story.fact.includes('Variazione normalizzata:')&&story.judgment.length>80&&story.verify.includes('prezzo'),ccy+' complete Serafini desk interpretation');
- Object.assign(item,{deskStats:v,delta1:v.delta1,longFlow:v.dLong,shortFlow:v.dShort});
- const first=opening(item);
- assert.match(first.flow,/Nel complesso/);
- assert.match(first.watch,/seguire|aggiornamento/);
- assert.doesNotMatch(Object.values(first).join(' '),/%|\bP104\b|BCE|long|short/i);
- if(price.aligned)assert.match(first.price,/Nello stesso periodo/);
- reports.push(item);
+ item.deskStats=v;reports.push(item);
 }
 assert.equal(reports.length,8);
 const g=desk(reports);
 assert(g&&g.asof===source.USD.dates.at(-1));
-assert.match(overview(g).date,/Posizioni al/);
-assert.doesNotMatch(overview(g).headline+overview(g).summary,/%|Open Interest|Net\/OI/);
 if(g.asof==='2026-11-03'){
  // Rankings use normalized 1W/OI, not raw contract changes or a historic label.
  const normalized=[...reports].map(x=>x.deskStats).sort((a,b)=>b.velocity-a.velocity);
@@ -86,18 +78,6 @@ if(g.asof==='2026-11-03'){
  assert(eur.dLong<0&&eur.dShort>0,'EUR new shorts and long liquidation');
  assert(eur.priceState==='divergente','EUR current COT vs same-Tuesday price diverge');
 }
-const sterling=reports.find(x=>x.ccy==='GBP');
-if(g.asof==='2026-11-10'){
- const first=opening(sterling);
- assert.match(first.title,/riducono le posizioni al ribasso/);
- assert.match(first.flow,/entrambe le esposizioni.*maggiore per le posizioni al ribasso.*prevalgono ancora le posizioni al ribasso/);
- assert.match(first.price,/la sterlina ha guadagnato terreno contro il dollaro USA/);
- assert.match(overview(g).headline,/la sterlina/);
- const franc=opening(reports.find(x=>x.ccy==='CHF'));
- assert.match(franc.price,/direzione opposta al saldo dei fondi/);
-}
-const mismatched=opening({...sterling,priceRow:{...sterling.priceRow,as_of:'2000-01-04'}});
-assert.doesNotMatch(mismatched.price,/ha guadagnato|ha perso|nella stessa direzione|direzione opposta/);
 // Fail closed when the old archive no longer matches live CFTC source.
 // The original inclusive percentile must NEVER silently substitute for P104.
 const forged=structuredClone(archived);
@@ -115,14 +95,15 @@ assert.equal(validatePrior(fake,archived,'USD'),null,'Future/no-overlap fails cl
 const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const studio=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/cot-studio.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
-assert.match(page,/cot-evidence-reading\.js\?v=\d+[\s\S]*cot-report-reading-v26\.js\?v=\d+[\s\S]*cot-studio\.js\?v=\d+/);
-assert.match(page,/cot-studio\.css\?v=\d+/);
+assert(page.indexOf('cot-evidence-reading.js?v=22')<page.indexOf('cot-report-reading-v26.js?v=27'));
+assert(page.indexOf('cot-report-reading-v26.js?v=27')<page.indexOf('cot-studio.js?v=29'));
+assert(page.includes('cot-studio.css?v=29'));
 assert(app.includes("cotPriorReference:'../design-studio-cot-v1-data.json'"));
 assert(!app.includes("cotPrice:'../design-studio-cot-v1-data.json'"));
 assert(studio.includes("get('currencyPrices')"));
 assert(!studio.includes("get('cotPrice')"));
 assert(studio.includes("get('cotPriorReference')"));
-for(const term of ['deskOverview(all)','interpretation(a)','last12(a)','universe(all)','classify(a)','cot-proofline','cot-desk-breakdown','P104','Z-score 104W','Velocity 1W/OI']){
+for(const term of ['deskOverview(all)','interpretation(a)','last12(a)','universe()','classify(a)','cot-proofline','cot-desk-breakdown','P104','Z-score 104W','Velocity 1W/OI']){
  assert(studio.includes(term),'Missing COT V26 feature '+term);
 }
 const bridge=app.slice(app.indexOf('const SOURCES'),app.indexOf('const state='));

@@ -12,10 +12,6 @@
  const sign=(n,d=0)=>(n>0?'+':n<0?'−':'')+Math.abs(n).toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d});
  const round=x=>Math.floor(x+0.5);
  const week=(a,b)=>(Date.parse(a+'T12:00:00Z')-Date.parse(b+'T12:00:00Z'))/86400000;
- const currency={USD:'il dollaro USA',EUR:'l’euro',GBP:'la sterlina',JPY:'lo yen',CHF:'il franco svizzero',
-  CAD:'il dollaro canadese',AUD:'il dollaro australiano',NZD:'il dollaro neozelandese'};
- const dayLabel=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'long',timeZone:'UTC'});
- const dateLabel=value=>{const timestamp=Date.parse(value+'T12:00:00Z');return finite(timestamp)?dayLabel.format(timestamp):value;};
  function validatePrior(hist,arch,ccy){
   if(!FXS.includes(ccy)||!Array.isArray(hist)||hist.length<104||!arch||
      arch.schema!=='GMFQ_COT_DESIGN_STUDIO_V1'||
@@ -163,54 +159,6 @@
   return {headline:flowLabel(a),fact,flow:flowLabel(a),judgment,verify:monitoring,
     price,speed:speed(a),normalized,cause};
  }
- function opening(a){
-  const {last,prev,hist,ccy,delta1,longFlow,shortFlow,price1,priceRow,priceState,deskStats}=a;
-  const name=currency[ccy];
-  const longSide='le posizioni al rialzo',shortSide='le posizioni al ribasso';
-  const favoredSide=delta1>0?'al rialzo':'al ribasso';
-  const currentNet=last.net>0?'al rialzo':last.net<0?'al ribasso':null;
-  const longMatters=Math.abs(longFlow)>Math.abs(shortFlow);
-  const action=delta1===0?'Il saldo dei fondi resta stabile':
-   longMatters?(longFlow>0?'I fondi aumentano le posizioni al rialzo':'I fondi riducono le posizioni al rialzo'):
-   shortFlow>0?'I fondi aumentano le posizioni al ribasso':'I fondi riducono le posizioni al ribasso';
-  const sideText=longFlow===0&&shortFlow===0?'Le posizioni al rialzo e al ribasso sono rimaste ferme.':
-   longFlow*shortFlow>0&&delta1!==0?
-    'Sono '+(longFlow>0?'aumentate':'diminuite')+' entrambe le esposizioni. La variazione è maggiore per '+
-     (longMatters?longSide:shortSide)+'.':
-   [longFlow?(longFlow>0?'Sono aumentate ':'Sono diminuite ')+longSide:'',
-    shortFlow?(shortFlow>0?'sono aumentate ':'sono diminuite ')+shortSide:''].filter(Boolean).join(' e ')+'.';
-  const stock=currentNet?'Nel complesso prevalgono '+(prev.net*last.net>0?'ancora ':'')+'le posizioni '+currentNet+'.':
-   'Nel complesso le posizioni al rialzo e al ribasso si equivalgono.';
-  const recent=hist.slice(-5);
-  const changes=recent.slice(1).map((r,i)=>r.net-recent[i].net);
-  const regular=recent.length===5&&recent.slice(1).every((r,i)=>week(r.date,recent[i].date)===7);
-  const prior=changes.at(-2);
-  const persistent=changes.filter(v=>v*delta1>0).length;
-  const pace=!regular||delta1===0?'':delta1*prior<0?
-   'L’ultima variazione va nella direzione opposta a quella precedente.':
-   persistent>=3?'Il saldo va nella stessa direzione nella maggior parte delle ultime settimane.':
-   'Il movimento recente resta discontinuo.';
-  const tempo=regular&&delta1*prior>0?
-   Math.abs(delta1)>Math.abs(prior)?' L’ultima variazione è più ampia della precedente.':
-   Math.abs(delta1)<Math.abs(prior)?' L’ultima variazione è più contenuta della precedente.':'':'';
-  const counter=ccy==='USD'?'l’euro':'il dollaro USA';
-  const aligned=finite(price1)&&priceRow?.as_of===last.date&&priceRow.priceLabel===(ccy==='USD'?'USD/EUR':ccy+'/USD');
-  const fx=aligned?'Nello stesso periodo '+name+(Math.abs(price1)<.005?' si è mosso poco':
-   price1>0?' ha guadagnato terreno':' ha perso terreno')+' contro '+counter+'.':
-   'Per confrontare il cambio servono quotazioni alle stesse date delle posizioni.';
-  const significant=aligned&&Math.abs(price1)>=.005&&delta1!==0&&
-   (!finite(deskStats?.velocity)||Math.abs(deskStats.velocity)>=.25);
-  const compare=significant&&priceState==='coerente'?' Il cambio si è mosso nella stessa direzione del saldo dei fondi.':
-   significant&&priceState==='divergente'?' Il cambio si è mosso in direzione opposta al saldo dei fondi.':'';
-  const watch=deskStats?.crowd&&currentNet?'Al prossimo aggiornamento, conta se i fondi riducono l’esposizione concentrata '+currentNet+'.':
-   delta1>0&&currentNet==='al ribasso'&&shortFlow<0&&!longMatters?
-   'Al prossimo aggiornamento, verifica se continuano a chiudere posizioni al ribasso e se cominciano ad aumentare quelle al rialzo.':
-   delta1===0?'Al prossimo aggiornamento, guarda quale lato rompe l’equilibrio del saldo.':
-   'Al prossimo aggiornamento, verifica se lo spostamento '+favoredSide+' prosegue e se il cambio va nella stessa direzione.';
-  const flow=sideText[0].toUpperCase()+sideText.slice(1)+' '+stock;
-  return {title:action,date:'Rilevazioni del '+dateLabel(prev.date)+' e del '+dateLabel(last.date)+' '+last.date.slice(0,4),
-   flow,pace:(pace+tempo).trim(),price:fx+compare,watch};
- }
  function desk(all){
   if(!Array.isArray(all)||all.length!==8||all.some(a=>!a?.deskStats)||
      new Set(all.map(a=>a.last?.date)).size!==1)return null;
@@ -244,17 +192,6 @@
   return {asof:all[0].last.date,up,down,comparable,crowd,divergent,all:list,headline,summary,
     question:'Il passo successivo è capire quali cambiamenti vengono da nuovi long o short e quali da chiusure. Solo persistenza, prezzo e tassi coerenti possono rafforzare la tesi FX: il COT non detta il timing.'};
  }
- function overview(d){
-  const currencyName=x=>currency[x.ccy];
-  const headline=d.up?'Il saldo dei fondi recupera di più per '+currencyName(d.up):
-   d.down?'Il saldo dei fondi arretra di più per '+currencyName(d.down):
-   'Il quadro delle posizioni nel G8';
-  const negative=d.up&&d.down?'Il calo più ampio del saldo riguarda '+currencyName(d.down)+'. ':'';
-  const split=d.divergent[0];
-  const summary=negative+(split?'Il cambio e il saldo dei fondi si sono mossi in direzioni opposte per '+currencyName(split)+'. ':'')+
-   (d.comparable?'Il confronto tra valute tiene conto della dimensione stimata dei rispettivi mercati.':'');
-  return {headline,summary,date:'Posizioni al '+dateLabel(d.asof)+' '+d.asof.slice(0,4)};
- }
- root.FXQuantCOTDeskV26={validatePrior,statistics,reading,opening,desk,overview,flowLabel,speed,sign};
+ root.FXQuantCOTDeskV26={validatePrior,statistics,reading,desk,flowLabel,speed,sign};
  if(typeof module!=='undefined'&&module.exports)module.exports=root.FXQuantCOTDeskV26;
 })(typeof window!=='undefined'?window:{});
