@@ -106,20 +106,20 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "FST3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-15",
-          "futures_price": 96.845,
+          "futures_price": 96.8475,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-18T12:41:54Z",
-          "quote_as_of": "2026-11-18",
+          "price_valid_until": "2026-11-19T12:47:46Z",
+          "quote_as_of": "2026-11-19",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 3.155,
+          "rate": 3.1525,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 65.5,
+          "raw_level_minus_spot_policy_bp": 65.2,
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
