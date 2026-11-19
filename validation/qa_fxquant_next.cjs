@@ -324,7 +324,7 @@ async function scenarioMacroJourney(page,label){
  assert.equal(await euroChoice.getAttribute('aria-pressed'),'true');
  const proof=hero.locator('.macro-evidence');
  assert(!await proof.evaluate(el=>el.open),label+' data and sources must be closed initially');
- await proof.locator('summary').click();
+ await proof.locator(':scope > summary').click();
  assert.equal(await proof.locator('.macro-temperature').count(),2);
  assert(await proof.locator('.research-essay').isVisible(),label+' detailed analysis is missing');
  assert(await locator(page,'.macro-main-chart .chart').isVisible(),label+' indicator chart is missing');
