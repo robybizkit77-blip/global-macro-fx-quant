@@ -134,31 +134,31 @@
           "symbol": "CBOT:ZQX2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQG2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-03-01",
-          "futures_price": 95.685,
+          "futures_price": 95.67,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-11-18T09:12:46Z",
-          "quote_as_of": "2026-11-18",
+          "price_valid_until": "2026-11-19T09:24:26Z",
+          "quote_as_of": "2026-11-19",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.315,
+          "rate": 4.33,
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQK2027",
           "contract_description": "May 2027",
           "expiration": "2027-06-01",
-          "futures_price": 95.45,
+          "futures_price": 95.42,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-11-18T10:04:25Z",
-          "quote_as_of": "2026-11-18",
+          "price_valid_until": "2026-11-19T10:02:50Z",
+          "quote_as_of": "2026-11-19",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.55,
+          "rate": 4.58,
           "symbol": "CBOT:ZQK2027"
         }
       },
@@ -170,7 +170,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-11-19T05:04:38.016208Z",
+  "generated_at_utc": "2026-11-19T11:48:28.425485Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
