@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-19T02:37:38.618191Z",
-  "edition_time_rome": "2026-11-19 03:37",
-  "material_digest": "82cc8040e98ac67abb0121117d4a682c26c7ad2b5837297b638a0156e9294ab6",
+  "generated_at_utc": "2026-11-19T11:47:26.789573Z",
+  "edition_time_rome": "2026-11-19 12:47",
+  "material_digest": "dba3787accca51b6da258d347e8b80871617486a7471d4ec6c2e9e521b264709",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-  "lead": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate.",
+  "lead": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. Azioni, credito e volatilità restano le conferme da confrontare per identificare l'effettiva ampiezza della propensione al rischio.",
   "news": [
     {
       "headline": "Forza del dollaro sui cross EUR/USD e USD/JPY",
@@ -21,11 +21,11 @@
       ]
     },
     {
-      "headline": "VIX: +2.55 punti nella chiusura del 2026-11-17",
+      "headline": "VIX: -0.90 punti nella chiusura del 2026-11-18",
       "analysis": "La volatilità azionaria aumenta, mentre una lettura completa dello stress richiede il confronto con credito e valute cicliche. Nessun flusso o acquisto di protezione specifico è deducibile da questo solo livello.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-17",
-      "event_date": "2026-11-17",
+      "published_date": "2026-11-18",
+      "event_date": "2026-11-18",
       "market_area": "RISCHIO",
       "sources": [
         "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
@@ -35,8 +35,8 @@
       "headline": "Oro e petrolio: segnali da distinguere nella lettura macro",
       "analysis": "I prezzi futures osservati offrono un confronto fra oro e WTI. Le differenze possono riflettere tassi reali, domanda energetica e rischio globale, ma non dimostrano quali operatori abbiano comprato o venduto. Serie di fonte secondaria, trattate come proxy direzionali.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-18",
-      "event_date": "2026-11-18",
+      "published_date": "2026-11-19",
+      "event_date": "2026-11-19",
       "market_area": "COMMODITIES",
       "sources": [
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
@@ -44,40 +44,40 @@
       ]
     },
     {
-      "headline": "Svizzera · PIL flash, trimestre su trimestre: +0,2%",
+      "headline": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%",
       "analysis": "Verifica composizione e revisioni nel comunicato prima di aggiornare le aspettative sulla banca centrale. Per misurare una sorpresa serve un consenso documentato prima della pubblicazione.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-16",
-      "event_date": "2026-11-16",
+      "published_date": "2026-11-19",
+      "event_date": "2026-11-19",
       "market_area": "MACRO",
       "sources": [
-        "https://www.seco.admin.ch/en/gdp-flash"
+        "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026"
       ]
     },
     {
-      "headline": "Statement by Governor UEDA concerning the Bank's Semiannual Report on Currency and Monetary Control (Committee on Financial Affairs, Senate)",
+      "headline": "Cyber resilience guidance consultation and AI and quantum effective practices",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
       "kind": "NEWS",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
       "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.boj.or.jp/en/mopo/diet/d_state/dst261119a.htm"
+        "https://www.bankofengland.co.uk/news/2026/november/cyber-resilience-guidance-consultation-and-ai-and-quantum-effective-practices"
       ]
     },
     {
-      "headline": "Minutes of the Federal Open Market Committee, October 27-28, 2026",
+      "headline": "Minutes of the Market Participants Group meeting – 18 November 2026",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-18",
-      "event_date": "2026-11-18",
+      "kind": "NEWS",
+      "published_date": "2026-11-19",
+      "event_date": "2026-11-19",
       "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261118a.htm"
+        "https://www.bankofengland.co.uk/minutes/2026/november/market-participants-group-meeting-18-november-2026"
       ]
     }
   ],
-  "desk_judgment": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
+  "desk_judgment": "Il fronte monetario va letto in termini relativi, confrontando aspettative di politica monetaria e rendimento a breve delle diverse aree. Azioni, credito e volatilità restano le conferme da confrontare per identificare l'effettiva ampiezza della propensione al rischio. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
   "fx_implications": "Negli ultimi fixing BCE il dollaro si è rafforzato sia contro euro sia contro yen. La forza cross va letta assieme ai tassi e al rischio globale. Per USD/JPY conta anche la traiettoria attesa della BoJ; per EUR/USD la differenza fra Fed e BCE.",
   "what_changed": "Sono entrate nuove osservazioni o pubblicazioni rispetto alla precedente edizione. La direzione relativa di tassi, Forex, credito e materie prime viene ricomposta in un solo quadro economico, senza attribuire automaticamente causalità.",
   "contrary_evidence": "Una ripresa delle azioni senza conferma del credito o con volatilità in aumento renderebbe più fragile l'interpretazione risk-on. Le ultime chiusure rappresentano osservazioni datate, non flussi attribuibili a specifici operatori.",
@@ -87,22 +87,27 @@
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
-      "https://www.boj.or.jp/en/mopo/diet/d_state/dst261119a.htm",
-      "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261118a.htm",
-      "https://www.seco.admin.ch/en/gdp-flash"
+      "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026",
+      "https://www.bankofengland.co.uk/minutes/2026/november/market-participants-group-meeting-18-november-2026",
+      "https://www.bankofengland.co.uk/news/2026/november/cyber-resilience-guidance-consultation-and-ai-and-quantum-effective-practices",
+      "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
-      "news": "2026-11-18",
-      "rss_checked_at_utc": "2026-11-19T02:37:38.618191Z",
-      "commodities": "2026-11-18"
+      "news": "2026-11-19",
+      "rss_checked_at_utc": "2026-11-19T11:47:26.789573Z",
+      "commodities": "2026-11-19"
     },
     "no_paid_api": true,
     "no_ai_model": true,
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-19T02:37:38.618191Z",
+      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
+      "material_digest": "82cc8040e98ac67abb0121117d4a682c26c7ad2b5837297b638a0156e9294ab6"
+    },
     {
       "generated_at_utc": "2026-11-18T20:37:37.322214Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
