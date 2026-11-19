@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Publish validated G8 Rates on main without overwriting concurrent writers.
 
-The candidate and its source checks have already succeeded.  A moving main
-branch is retryable ONLY when newer commits touch no Rates-owned file.
-Never force-push and never promote a stale Rates candidate over new Rates data.
+Replay a validated candidate over disjoint changes. If only shared runtime
+files overlap, rebuild them from the latest main and the validated Rates JSON.
+Never promote a stale candidate over newer Rates source data.
 """
 from __future__ import annotations
 
@@ -12,20 +12,23 @@ import json
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
-RATES_OWNED = frozenset({
-    "live_data/sections/NATIVE_RATES_DATA.json",
-    "live_data/sections/RATES_AUDIT_METADATA.json",
+RATES_DATA = "live_data/sections/NATIVE_RATES_DATA.json"
+RATES_METADATA = "live_data/sections/RATES_AUDIT_METADATA.json"
+RATES_SOURCES = frozenset({RATES_DATA, RATES_METADATA})
+SHARED_RUNTIME = frozenset({
     "live_data/manifest.v2.json",
     "payload/part-00.txt",
     "payload/part-15.txt",
 })
+RATES_OWNED = RATES_SOURCES | SHARED_RUNTIME
 SCOPES = {
     "rates": RATES_OWNED,
     "metadata": frozenset({
-        "live_data/sections/RATES_AUDIT_METADATA.json",
+        RATES_METADATA,
         "live_data/manifest.v2.json",
         "payload/part-15.txt",
     }),
@@ -44,8 +47,8 @@ def git(*args: str, cwd: str | Path = ".") -> str:
 
 
 def inspect_new_main_files(changed: set[str]) -> None:
-    """Do not rebase over a new canonical/metadata/runtime writer."""
-    overlap = changed & RATES_OWNED
+    """Refuse changed Rates sources. Derived runtime can be rebuilt."""
+    overlap = changed & RATES_SOURCES
     if overlap:
         raise RuntimeError(
             "RATES_CONCURRENT_SOURCE_CHANGED_FAIL_CLOSED: "
@@ -59,9 +62,8 @@ def canonical_rates_already_identical(remote_sha: str, cwd: str | Path) -> bool:
     This is only a no-op gate. It never publishes, rebases or overwrites
     another writer's sources, and does not equate same date with same data.
     """
-    path = "live_data/sections/NATIVE_RATES_DATA.json"
-    remote_blob = git("rev-parse", f"{remote_sha}:{path}", cwd=cwd)
-    candidate_blob = git("rev-parse", f"HEAD:{path}", cwd=cwd)
+    remote_blob = git("rev-parse", f"{remote_sha}:{RATES_DATA}", cwd=cwd)
+    candidate_blob = git("rev-parse", f"HEAD:{RATES_DATA}", cwd=cwd)
     return bool(remote_blob) and remote_blob == candidate_blob
 
 
@@ -70,7 +72,7 @@ def verify_local_scope(changed: set[str], mode: str) -> None:
         raise RuntimeError(
             "RATES_PUBLISH_SCOPE_VIOLATION: " + repr(sorted(changed))
         )
-    if mode == "rates" and "live_data/sections/NATIVE_RATES_DATA.json" not in changed:
+    if mode == "rates" and RATES_DATA not in changed:
         raise RuntimeError("RATES_CANONICAL_CHANGE_MISSING")
 
 
@@ -93,6 +95,45 @@ def validate_rebased_runtime(cwd: str | Path) -> None:
             raise RuntimeError("RATES_REBASED_RUNTIME_ROUNDTRIP_FAILED")
 
 
+def rebuild_shared_runtime(
+    remote_sha: str, changed: set[str], mode: str, cwd: str | Path, validate,
+) -> None:
+    """Apply the exact validated source files using main's current generators."""
+    verify_local_scope(changed, mode)
+    sources = changed & RATES_SOURCES
+    if not sources:
+        raise RuntimeError("RATES_REBUILD_WITHOUT_SOURCE_CHANGE_REFUSED")
+    candidate = git("rev-parse", "HEAD", cwd=cwd)
+    with tempfile.TemporaryDirectory() as scratch:
+        replacements = {}
+        for source in sources:
+            path = Path(scratch) / Path(source).name
+            path.write_bytes((Path(cwd) / source).read_bytes())
+            replacements[source] = path
+        git("reset", "--hard", remote_sha, cwd=cwd)
+        try:
+            if RATES_DATA in replacements:
+                run([sys.executable, "validation/update_live_direct_section.py",
+                     "--section", "NATIVE_RATES_DATA", "--replacement",
+                     str(replacements[RATES_DATA]), "--apply"], cwd=cwd)
+            if RATES_METADATA in replacements:
+                run([sys.executable, "validation/update_live_derived_sections.py",
+                     "--rates", str(replacements[RATES_METADATA]), "--apply"], cwd=cwd)
+            run([sys.executable, "validation/build_live_manifest_v2.py",
+                 "--write", "live_data/manifest.v2.json"], cwd=cwd)
+            for source, expected in replacements.items():
+                if (Path(cwd) / source).read_bytes() != expected.read_bytes():
+                    raise RuntimeError("RATES_REBUILD_ALTERED_VALIDATED_SOURCE: " + source)
+            rebuilt = set(git("diff", "--name-only", remote_sha, cwd=cwd).splitlines())
+            verify_local_scope(rebuilt, mode)
+            validate(cwd)
+            git("add", "--", *sorted(rebuilt), cwd=cwd)
+            git("commit", "-C", candidate, cwd=cwd)
+        except Exception:
+            git("reset", "--hard", candidate, cwd=cwd)
+            raise
+
+
 def publish(
     *, base_sha: str, mode: str, cwd: str | Path = ".",
     max_attempts: int = 3, validate=validate_rebased_runtime,
@@ -106,6 +147,7 @@ def publish(
         raise RuntimeError("RATES_UNCOMMITTED_CHANGES_REFUSED")
     last_replayed_base = base_sha
     rebased = False
+    runtime_rebuilt = False
 
     for attempt in range(1, max_attempts + 1):
         # Fetch the exact target ref. Only Git's fast-forward push is used:
@@ -122,33 +164,36 @@ def publish(
         if remote_sha != last_replayed_base:
             changed = set(git("diff", "--name-only", last_replayed_base,
                               remote_sha, cwd=cwd).splitlines())
+            own_candidate = set(git("diff", "--name-only", last_replayed_base,
+                                    "HEAD", cwd=cwd).splitlines())
             if mode == "rates" and changed & RATES_OWNED:
                 # Two successful scheduled collectors can observe the exact
                 # same official close. Preserve the first writer and report
                 # a verified no-op, never a second push or false failure.
-                own_candidate = set(git("diff", "--name-only", base_sha,
-                                        "HEAD", cwd=cwd).splitlines())
                 verify_local_scope(own_candidate, mode)
                 if canonical_rates_already_identical(remote_sha, cwd):
                     return {
                         "status": "RATES_ALREADY_PUBLISHED_IDENTICAL",
                         "mode": mode, "attempts": attempt,
                         "disjoint_remote_rebase": rebased,
+                        "shared_runtime_rebuilt": runtime_rebuilt,
                         "changed_files": [],
                         "published_commit": remote_sha,
                         "force_push": False,
                         "canonical_blob_identical": True,
                     }
             inspect_new_main_files(changed)
-            # Replay ONLY our already-validated Rates commit(s) over
-            # disjoint remote changes; fail if Git cannot rebase cleanly.
-            git("rebase", "--onto", remote_sha, last_replayed_base,
-                "HEAD", cwd=cwd)
+            if changed & SHARED_RUNTIME:
+                rebuild_shared_runtime(remote_sha, own_candidate, mode, cwd, validate)
+                runtime_rebuilt = True
+            else:
+                git("rebase", "--onto", remote_sha, last_replayed_base,
+                    "HEAD", cwd=cwd)
+                rebased = True
+                validate(cwd)
             last_replayed_base = remote_sha
-            rebased = True
             if git("status", "--porcelain", "--untracked-files=no", cwd=cwd):
                 raise RuntimeError("RATES_REBASE_NOT_CLEAN")
-            validate(cwd)
 
         own_diff = set(git("diff", "--name-only", remote_sha, "HEAD",
                            cwd=cwd).splitlines())
@@ -160,6 +205,7 @@ def publish(
                 "status": "RATES_SAFE_PUSH_CONFIRMED",
                 "mode": mode, "attempts": attempt,
                 "disjoint_remote_rebase": rebased,
+                "shared_runtime_rebuilt": runtime_rebuilt,
                 "changed_files": sorted(own_diff),
                 "published_commit": git("rev-parse", "HEAD", cwd=cwd),
                 "force_push": False,
