@@ -72,7 +72,7 @@ def main() -> None:
     assert len(ccss) == 1, "Expected exactly one G8 stylesheet"
     contents = contents.replace(ccss[0], "<style>"+currency_css+"</style>")
     contents = contents.replace('<script src="./cot-studio.js?v=1" defer></script>', "<script>"+cot_js+"</script>")
-    contents = contents.replace('<script src="./rates-pricing-moves-v1.js?v=1" defer></script>', "<script>"+pricing_move_js+"</script>")
+    contents = contents.replace('<script src="./rates-pricing-moves-v1.js?v=2" defer></script>', "<script>"+pricing_move_js+"</script>")
     contents = contents.replace('<script src="./rates-pricing-history-v1.js?v=1" defer></script>', "<script>"+pricing_history_js+"</script>")
     contents = contents.replace('<script src="./rates-relative-pricing-v1.js?v=1" defer></script>', "<script>"+relative_pricing_js+"</script>")
     contents = contents.replace('<script src="./pair-monetary-bridge-v1.js?v=2" defer></script>', "<script>"+pair_monetary_js+"</script>")

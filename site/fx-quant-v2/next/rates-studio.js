@@ -5,10 +5,13 @@
  * No mixed-date curve lines, no fabricated OIS/term premium/market-implied probabilities.
  */
 (function(root){
+function chfGovernmentResearch(get,now){
+ return root.FXQuantCurrencyFallback?.researchRatesAxis(
+   'CHF',get('chfResearch'),null,get('rates'),now);
+}
 function chfGovernmentHistory(get,now){
  const feed=get('chfResearch');
- const context=root.FXQuantCurrencyFallback?.researchRatesAxis(
-   'CHF',feed,null,get('rates'),now);
+ const context=chfGovernmentResearch(get,now);
  return context?.status==='STORICO_UFFICIALE_NON_OPERATIVO'?feed.observations:[];
 }
 function chfGovernmentSnapshot(rows){
@@ -182,9 +185,18 @@ function make(api){
        spot.eligible_for_curve_spreads!==false||spot.has_current_2y!==false||
        !validDay(spot.as_of)||spot.as_of<=shown||spot.as_of>today||
        !finite(spot.value_percent))return paired;
-    return paired+'<p class="source-caption" data-gov-reference="CHF"><strong>CHF · Spot governativo 10Y</strong> · '
-     +esc(fmt(spot.value_percent,3))+'% al '+esc(date(spot.as_of))
-     +' · <a href="'+source+'">Banca nazionale svizzera</a>. La curva 2Y/10Y sopra si riferisce al '+esc(date(shown))+'.</p>';
+    const ratesResearch=chfGovernmentResearch(get,today);
+    const estimate=root.FXQuantG8RatesShadow?.chf?.({
+     research:{currencies:{CHF:{ratesResearch}}},chfHistory:get('chfResearch'),spot,now:today});
+    const hasEstimate=estimate?.status==='STIMA_MODELLO_RICERCA'&&estimate.asof===spot.as_of;
+    const estimated2Y=hasEstimate
+     ?' · <strong>2Y stimato '+esc(fmt(estimate.estimate2Y,3))+'%</strong> · fascia indicativa '+
+      esc(fmt(estimate.lower2Y,3))+'–'+esc(fmt(estimate.upper2Y,3))+'%. La stima usa il 10Y SNB e parte dal 2Y del '+
+      esc(date(estimate.anchorAsOf))+'.'
+     :'.';
+    return '<p class="source-caption" data-gov-reference="CHF"'+(hasEstimate?' data-gov-estimate="CHF"':'')+
+     '><strong>CHF · 10Y osservato '+esc(fmt(spot.value_percent,3))+'%</strong> al '+esc(date(spot.as_of))+
+     estimated2Y+' <a href="'+source+'">Fonte SNB</a>. Curva storica 2Y/10Y al '+esc(date(shown))+'.</p>'+paired;
    }
    if(c==='NZD'){
     const estimate=nzdEstimate;
