@@ -115,6 +115,13 @@
 @media(max-width:1250px){.cot-desk-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.cot-proofline{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.cot-desk-overview{padding:17px 14px}.cot-desk-headline{font-size:20px}.cot-desk-narrative{font-size:11.5px}.cot-desk-cards{gap:7px}.cot-desk-card{padding:12px}.cot-desk-card h3{font-size:15px}.cot-desk-card>strong{font-size:12px}.cot-desk-card p{font-size:10px}.cot-desk-monitor{font-size:11px;padding:10px}.cot-proofline{margin:-22px 0 9px;gap:6px}.cot-proofline span{font-size:10px;padding:9px}.cot-velocity-note{font-size:9px}.cot-rank-table{min-width:850px}}
 @media(max-width:380px){.cot-desk-cards{grid-template-columns:1fr}}
+.cot-editorial{grid-template-columns:minmax(0,1fr);min-height:0}
+.cot-editorial .cot-hero-narrative p{font-size:13px;margin:0 0 12px}
+.cot-editorial .cot-hero-narrative .cot-editorial-watch{margin-bottom:0}
+.cot-editorial-watch strong{color:#9ee0ce}
+.cot-evidence{margin-bottom:22px}
+.cot-evidence-hero,.cot-desk-breakdown>.cot-desk-cards{margin-top:14px}
+.cot-country-button{min-height:44px;justify-content:center}
 
 
 /* COT Net/OI report-style concentration alert (same as approved Friday v10).

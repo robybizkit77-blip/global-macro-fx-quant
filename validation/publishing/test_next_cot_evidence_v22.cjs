@@ -59,9 +59,9 @@ assert.match(flowReading(synthetic(5,5,0,5)).detail,/tutte le ultime quattro set
 const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
 const studio=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/cot-studio.js'),'utf8');
-assert(page.indexOf('cot-evidence-reading.js?v=22')<page.indexOf('cot-studio.js?v=2'));
+assert.match(page,/cot-evidence-reading\.js\?v=\d+[\s\S]*cot-studio\.js\?v=\d+/);
 assert(page.includes('app.js?v=18.'),'COT requires versioned Next application asset');
-assert(app.includes("route==='overview'||route==='pairs'||route==='cot'"));
+assert(app.includes('window.FXQuantCOT.render'),'COT uses the source-aware Studio renderer');
 assert(studio.includes("get('currencyPrices')"));
 assert(!studio.includes("get('cotPrice')"),'Stale price pack should no longer control COT comparison');
 console.log('NEXT_COT_V22_PASS: 8/8 COT/ECB Tuesday prices '+lastCFTC+', CFTC gross/4W persistence, missing/future and quote-direction guards.');
