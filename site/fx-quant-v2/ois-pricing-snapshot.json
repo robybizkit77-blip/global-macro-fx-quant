@@ -212,27 +212,27 @@
       "kind": "PROXY FUTURES",
       "quality": "PROXY DIREZIONALE",
       "source": "ASX official NZ futures end-of-day total traded report",
-      "as_of": "2026-11-18",
+      "as_of": "2026-11-19",
       "horizons": {
         "3m": {
-          "rate": 3.57,
-          "as_of": "2026-11-18",
-          "change_1d_bp": null,
-          "change_1w_bp": 4.0,
+          "rate": 3.53,
+          "as_of": "2026-11-19",
+          "change_1d_bp": -4.0,
+          "change_1w_bp": 2.0,
           "contract": "Mar 2027"
         },
         "6m": {
-          "rate": 3.78,
-          "as_of": "2026-11-18",
-          "change_1d_bp": -1.0,
-          "change_1w_bp": 5.0,
+          "rate": 3.73,
+          "as_of": "2026-11-19",
+          "change_1d_bp": -5.0,
+          "change_1w_bp": 3.0,
           "contract": "Jun 2027"
         },
         "12m": {
-          "rate": 3.97,
-          "as_of": "2026-11-18",
-          "change_1d_bp": null,
-          "change_1w_bp": 5.0,
+          "rate": 3.91,
+          "as_of": "2026-11-19",
+          "change_1d_bp": -6.0,
+          "change_1w_bp": 2.0,
           "contract": "Dec 2027"
         }
       }
