@@ -54,11 +54,11 @@ const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'u
 const rates=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/rates-studio.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
 assert(page.includes('rates-economic-reading.js?v=20'));
-assert(page.includes('rates-studio.js?v=10'));
+assert(page.includes('rates-studio.js?v=11'));
 assert(page.indexOf('rates-working-model-v1.js')<page.indexOf('rates-studio.js'));
 assert(page.includes('rates-relative-pricing-v1.js?v=1'));
 assert(page.includes('rates-pricing-history-v1.js?v=1'));
-assert(page.includes('rates-pricing-moves-v1.js?v=1'));
+assert(page.includes('rates-pricing-moves-v1.js?v=2'));
 assert(page.includes('rates-studio.css?v=5'));
 assert(/app\.js\?v=[\w.-]+/.test(page));
 assert(rates.includes('fxRelativeEvidence(c,other)'), 'Rates first read needs a FX handoff');
@@ -78,6 +78,7 @@ assert(page.indexOf('rates-economic-reading.js')<page.indexOf('rates-studio.js')
 assert(rates.includes('m.headline')&&rates.includes('m.pricingEvidence')&&rates.includes('m.watch'));
 const scriptWindow={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/next/currency-data-fallback.js'),'utf8'),scriptWindow);
+vm.runInNewContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/next/g8-rates-shadow.js'),'utf8'),scriptWindow);
 vm.runInNewContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/assets/rates-working-model-v1.js'),'utf8'),scriptWindow.window);
 vm.runInNewContext(rates,scriptWindow);
 vm.runInNewContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/next/research-editorials.js'),'utf8'),scriptWindow);
@@ -104,6 +105,15 @@ const chfHtml=render('CHF',{},chfPlots);
 assert.match(chfHtml,new RegExp('GOV '+chfLatest.date));
 assert.match(chfHtml,new RegExp('data-gov-paired="CHF".*'+chfLatest.date));
 assert.match(chfHtml,new RegExp('data-gov-reference="CHF".*'+spot.as_of+'.*'+chfLatest.date));
+const ratesResearch=scriptWindow.window.FXQuantCurrencyFallback.researchRatesAxis('CHF',chf,null,gov,liveDay);
+const chfEstimate=scriptWindow.window.FXQuantG8RatesShadow.chf({
+ research:{currencies:{CHF:{ratesResearch}}},chfHistory:chf,spot,now:liveDay});
+if(chfEstimate.status==='STIMA_MODELLO_RICERCA'){
+ assert.match(chfHtml,/data-gov-estimate="CHF"/);
+ assert(chfHtml.includes('2Y stimato '+chfEstimate.estimate2Y.toFixed(3)+'%'));
+ assert(chfHtml.includes(chfEstimate.lower2Y.toFixed(3)+'–'+chfEstimate.upper2Y.toFixed(3)));
+ assert(chfHtml.includes('10Y osservato '+spot.value_percent.toFixed(3)+'%'));
+}
 const chfGovPlot=chfPlots.find(x=>x.label==='Storico governativi CHF');
 assert.deepEqual(Array.from(chfGovPlot.lines,x=>x.values.at(-1).label),[chfLatest.date,chfLatest.date]);
 assert.deepEqual(Array.from(chfGovPlot.lines,x=>x.values.at(-1).value),[chfLatest['2Y'],chfLatest['10Y']]);
@@ -112,6 +122,7 @@ assert(chfFxPlot.lines[0].values.every(x=>x.label<=gov.CHF.date),'Research obser
 const invalidChf=render('CHF',{chfResearch:{...chf,eligible_for_core:true}});
 assert.match(invalidChf,new RegExp('GOV '+gov.CHF.date));
 assert.doesNotMatch(invalidChf,/data-gov-paired=/);
+assert.doesNotMatch(invalidChf,/data-gov-estimate="CHF"/);
 const essay=render('CHF',{},[],true);
 assert.match(essay,new RegExp('Nella serie storica SNB del '+chfLatest.date));
 assert.match(essay,/bull flattening/);

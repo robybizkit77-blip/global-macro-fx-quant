@@ -87,6 +87,11 @@ for(const [window,html] of [['1d',gbp],['1w',render({...renderArgs,window:'1w'})
  const signed=(move>0?'+':'')+move.toFixed(1).replace('-', '−').replace('.', ',')+' pb';
  const displayed=html.match(/data-pricing-tenor="6m">(?:(?!data-pricing-tenor=)[\s\S])*?<div class="ois-bp-num [^"]*">([^<]+)<\/div>/)?.[1];
  assert.equal(displayed,signed,'GBP official 6M '+window+' row must show the source move with its sign');
+ if(Math.abs(move)>.05){
+  const mag=Math.abs(move).toFixed(1).replace('.',',');
+  assert(html.includes('Il 6M è '+(move>0?'salito':'sceso')+' di '+mag+' pb'),
+   'Direction in the sentence should not repeat the sign from the numeric row');
+ }
 }
 assert(gbp.includes('data-pricing-ccy="CHF"')&&gbp.includes('data-pricing-ccy="NZD"'),
  'Eight-currency 6M benchmark must keep every G8 classification');
@@ -116,7 +121,7 @@ assert(safe.includes('&lt;img')&&!safe.includes('<img'));
 const page=fs.readFileSync(root+'index.html','utf8');
 const app=fs.readFileSync(root+'app.js','utf8');
 const rates=fs.readFileSync(root+'rates-studio.js','utf8');
-assert(page.indexOf('rates-pricing-moves-v1.js?v=1')<page.indexOf('rates-studio.js?v='));
+assert(page.indexOf('rates-pricing-moves-v1.js?v=2')<page.indexOf('rates-studio.js?v='));
 assert(page.includes('rates-studio.css?v=5'));
 assert(app.includes("oisSameContract:'../ois-same-contract-repricing-research.json'"));
 assert(app.includes("oisOperational:'../../../live_data/sections/OIS_OPERATIONAL_VIEW.json'"));
