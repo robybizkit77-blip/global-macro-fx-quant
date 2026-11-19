@@ -2435,11 +2435,19 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-18T12:15:12.302820Z"
+          },
+          {
+            "date": "2026-11-19",
+            "rate": 0.58,
+            "contract": "SA3Z2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-19T12:09:32.025574Z"
           }
         ]
       },
-      "latest_date": "2026-11-18",
-      "observed_dates": 22,
+      "latest_date": "2026-11-19",
+      "observed_dates": 23,
       "derived_reference_points": 0
     },
     "AUD": {

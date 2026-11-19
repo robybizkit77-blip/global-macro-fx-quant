@@ -67,27 +67,27 @@
       "kind": "OIS",
       "quality": "FONTE UFFICIALE",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "as_of": "2026-11-17",
+      "as_of": "2026-11-18",
       "horizons": {
         "3m": {
-          "rate": 4.3386,
-          "as_of": "2026-11-17",
-          "change_1d_bp": -0.5,
-          "change_1w_bp": 6.3,
+          "rate": 4.3191,
+          "as_of": "2026-11-18",
+          "change_1d_bp": -2.0,
+          "change_1w_bp": 2.4,
           "contract": null
         },
         "6m": {
-          "rate": 4.6523,
-          "as_of": "2026-11-17",
-          "change_1d_bp": -0.3,
-          "change_1w_bp": 8.2,
+          "rate": 4.5992,
+          "as_of": "2026-11-18",
+          "change_1d_bp": -5.3,
+          "change_1w_bp": -1.1,
           "contract": null
         },
         "12m": {
-          "rate": 4.9572,
-          "as_of": "2026-11-17",
-          "change_1d_bp": 0.7,
-          "change_1w_bp": 11.8,
+          "rate": 4.8677,
+          "as_of": "2026-11-18",
+          "change_1d_bp": -8.9,
+          "change_1w_bp": -3.9,
           "contract": null
         }
       }
@@ -96,27 +96,27 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "as_of": "2026-11-18",
+      "as_of": "2026-11-19",
       "horizons": {
         "3m": {
-          "rate": 1.443,
-          "as_of": "2026-11-18",
-          "change_1d_bp": 0.0,
-          "change_1w_bp": 0.3,
+          "rate": 1.454,
+          "as_of": "2026-11-19",
+          "change_1d_bp": 1.1,
+          "change_1w_bp": 1.4,
           "contract": null
         },
         "6m": {
-          "rate": 1.65,
-          "as_of": "2026-11-18",
-          "change_1d_bp": 0.0,
-          "change_1w_bp": 0.8,
+          "rate": 1.648,
+          "as_of": "2026-11-19",
+          "change_1d_bp": -0.2,
+          "change_1w_bp": 0.6,
           "contract": null
         },
         "12m": {
-          "rate": 1.887,
-          "as_of": "2026-11-18",
-          "change_1d_bp": 0.0,
-          "change_1w_bp": 0.5,
+          "rate": 1.885,
+          "as_of": "2026-11-19",
+          "change_1d_bp": -0.2,
+          "change_1w_bp": 0.3,
           "contract": null
         }
       }
@@ -125,7 +125,7 @@
       "kind": "FUTURES SECONDARI",
       "quality": "STIMA INDICATIVA",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "as_of": "2026-11-18",
+      "as_of": "2026-11-19",
       "horizons": {
         "3m": {
           "rate": 0.175,
@@ -142,8 +142,8 @@
           "contract": "SA3M2027"
         },
         "12m": {
-          "rate": 0.59,
-          "as_of": "2026-11-18",
+          "rate": 0.58,
+          "as_of": "2026-11-19",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3Z2027"
@@ -154,27 +154,27 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "as_of": "2026-11-17",
+      "as_of": "2026-11-18",
       "horizons": {
         "3m": {
-          "rate": 2.76,
-          "as_of": "2026-11-17",
-          "change_1d_bp": 2.5,
-          "change_1w_bp": 2.5,
+          "rate": 2.795,
+          "as_of": "2026-11-18",
+          "change_1d_bp": 3.5,
+          "change_1w_bp": 6.0,
           "contract": null
         },
         "6m": {
-          "rate": 2.97,
-          "as_of": "2026-11-17",
-          "change_1d_bp": 1.0,
-          "change_1w_bp": 0.5,
+          "rate": 3.0,
+          "as_of": "2026-11-18",
+          "change_1d_bp": 3.0,
+          "change_1w_bp": 3.5,
           "contract": null
         },
         "12m": {
-          "rate": 3.245,
-          "as_of": "2026-11-17",
-          "change_1d_bp": -1.0,
-          "change_1w_bp": 4.0,
+          "rate": 3.24,
+          "as_of": "2026-11-18",
+          "change_1d_bp": -0.5,
+          "change_1w_bp": 3.5,
           "contract": null
         }
       }
@@ -183,27 +183,27 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "as_of": "2026-11-17",
+      "as_of": "2026-11-18",
       "horizons": {
         "3m": {
           "rate": 4.855,
-          "as_of": "2026-11-17",
+          "as_of": "2026-11-18",
           "change_1d_bp": 0.0,
-          "change_1w_bp": 0.5,
+          "change_1w_bp": 0.0,
           "contract": null
         },
         "6m": {
-          "rate": 4.915,
-          "as_of": "2026-11-17",
-          "change_1d_bp": -0.5,
-          "change_1w_bp": 3.0,
+          "rate": 4.905,
+          "as_of": "2026-11-18",
+          "change_1d_bp": -1.0,
+          "change_1w_bp": -0.5,
           "contract": null
         },
         "12m": {
-          "rate": 4.81,
-          "as_of": "2026-11-17",
-          "change_1d_bp": -0.5,
-          "change_1w_bp": 10.5,
+          "rate": 4.795,
+          "as_of": "2026-11-18",
+          "change_1d_bp": -1.5,
+          "change_1w_bp": 4.5,
           "contract": null
         }
       }
