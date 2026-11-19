@@ -1101,20 +1101,18 @@ const G8_DISCLOSURES=[
  'details.orient-thesis-details',
  'details.strength-method-fold'
 ];
-function g8OpenDisclosures(root){
- return G8_DISCLOSURES.filter(selector=>root.querySelector(selector)?.open);
-}
+const COT_DISCLOSURES=['details.cot-desk-breakdown:not(.cot-evidence)','details.cot-evidence'];
 function render(){
  const route=ROUTES[state.route]?state.route:'overview';
- const openG8=route==='currencies'?g8OpenDisclosures($('content')):[];
+ const disclosures=route==='currencies'?G8_DISCLOSURES:route==='cot'?COT_DISCLOSURES:[];
+ const openDisclosures=disclosures.filter(selector=>$('content').querySelector(selector)?.open);
  // Presentation-only hook for route-scoped colors; no change to calculations or data.
  $('content').dataset.view=route;
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,banks,rates,liquidity,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
  $('content').innerHTML=views[route]();
- // Restore after replacing the DOM; nested details must not close when the
- // user changes currency, comparison, return window or research sorting.
- for(const selector of openG8){
+ // Keep evidence open across country, chart and ranking changes.
+ for(const selector of openDisclosures){
   const panel=$('content').querySelector(selector);
   if(panel)panel.open=true;
  }

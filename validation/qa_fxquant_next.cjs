@@ -190,6 +190,7 @@ async function inspectRoute(page,label,key){
  }else if(key==='cot'){
   assert.equal(await locator(page,'.cot-desk-overview').count(),1,'COT G8 overview missing');
   assert.equal(await locator(page,'.cot-desk-card').count(),4,'COT evidence cards missing');
+  assert(!await locator(page,'.cot-desk-card').first().isVisible(),label+' technical COT cards must start folded');
  }else if(key==='risk'){
   assert.equal(await locator(page,'.risk-research-reading').count(),1,'Risk desk context missing');
  }else if(key==='news'){
@@ -306,6 +307,30 @@ async function g8Choice(page,label){
  assert(note.includes('Che cosa monitorare.') &&
    note.includes('NZD/USD') && note.includes('AUD/NZD'),
   label+' NZD macro/rates proxy must lead to two FX monitoring instruments');
+}
+async function cotNarrativeJourney(page,label){
+ await route(page,'cot');
+ const selector=locator(page,'.cot-country-selector');
+ const hero=locator(page,'.cot-editorial');
+ assert.equal(await selector.locator('button').count(),8,label+' COT country choices missing');
+ await selector.locator('[data-ccy="GBP"]').click();
+ assert.equal(await hero.getAttribute('data-cot-currency'),'GBP');
+ const gbp=await hero.innerText();
+ assert.match(gbp,/Cosa seguire/);
+ assert.doesNotMatch(gbp,/%|\bBCE\b|Z-score|P104|\blong\b|\bshort\b/);
+ const proofs=locator(page,'.cot-evidence');
+ assert(!await proofs.evaluate(el=>el.open));
+ await proofs.locator(':scope > summary').click();
+ assert(await proofs.locator('.cot-statstrip').isVisible());
+ const g8=locator(page,'.cot-desk-overview > .cot-desk-breakdown');
+ await g8.locator(':scope > summary').click();
+ await g8.locator('[data-cot-sort="net"]').click();
+ assert(await g8.evaluate(el=>el.open),label+' sorting must keep the ranking open');
+ assert.equal(await g8.locator('.cot-rank-table tbody tr').count(),8);
+ await selector.locator('[data-ccy="CHF"]').click();
+ assert.equal(await hero.getAttribute('data-cot-currency'),'CHF');
+ assert.notEqual(await hero.innerText(),gbp,label+' COT story must follow the currency');
+ assert(await locator(page,'.cot-graph-theatre .cot-graph-grid').isVisible(),label+' COT charts missing');
 }
 async function scenarioMacroJourney(page,label){
  await route(page,'macro');
@@ -982,6 +1007,7 @@ async function pairLinkJourney(page,label){
     for(const key of Object.keys(routes))inspected.push(await inspectRoute(page,label,key));
     await homeMoneyJourney(page,label);
     await g8Choice(page,label);
+    await cotNarrativeJourney(page,label);
     await scenarioMacroJourney(page,label);
     await macroDriversJourney(page,label);
     await pairJourney(page,label);
