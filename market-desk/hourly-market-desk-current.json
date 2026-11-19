@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-19T21:02:19.453010Z",
-  "edition_time_rome": "2026-11-19 22:02",
-  "material_digest": "2747c8405b120719875be230741a1b0146cf77d6424be543775c31a78663aae8",
+  "generated_at_utc": "2026-11-19T21:43:31.378196Z",
+  "edition_time_rome": "2026-11-19 22:43",
+  "material_digest": "4cbbee29009f54df4b8c83ff9940c7e8b76a41f0b5c8f3de1fa0ce0319f34c02",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
@@ -61,6 +61,18 @@
       "evidence": "Proxy futures da fonte secondaria. Oro −2,00% al 19 novembre. WTI −1,66% al 19 novembre."
     },
     {
+      "headline": "Bank of Canada Media Interview – Barrie 360",
+      "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
+      "kind": "NEWS",
+      "published_date": "2026-11-19",
+      "event_date": "2026-11-19",
+      "market_area": "BANCHE CENTRALI",
+      "sources": [
+        "https://www.bankofcanada.ca/2026/11/bank-canada-media-interview-barrie-360-2026-11-19/"
+      ],
+      "evidence": ""
+    },
+    {
       "headline": "Oil flows through Middle East chokepoints increased in the third quarter",
       "analysis": "Più petrolio è transitato per queste rotte nel terzo trimestre. Il dato aiuta a capire da quali passaggi dipendono le forniture.",
       "kind": "FOLLOW_UP",
@@ -71,23 +83,11 @@
         "https://www.eia.gov/todayinenergy/detail.php?id="
       ],
       "evidence": ""
-    },
-    {
-      "headline": "U.S. natural gas inventories end injection season above normal levels",
-      "analysis": "Questo approfondimento aiuta a leggere come cambia l’offerta di energia.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-18",
-      "event_date": "2026-11-18",
-      "market_area": "ENERGIA",
-      "sources": [
-        "https://www.eia.gov/todayinenergy/detail.php?id=68484"
-      ],
-      "evidence": ""
     }
   ],
-  "desk_judgment": "In Australia la disoccupazione è aumentata a ottobre. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 18 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "desk_judgment": "In Australia la disoccupazione è aumentata a ottobre. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
   "fx_implications": "Il 20 novembre alle 00:30 italiane escono i prezzi al consumo in Giappone. Per lo yen conta se il dato sposta le attese sui tassi della BoJ.",
-  "what_changed": "Nella seduta del 18 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "what_changed": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen.",
   "contrary_evidence": "Il VIX è sceso mentre il credito high yield ha chiesto uno spread più ampio. La tensione nel credito merita una verifica a parte.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
@@ -98,14 +98,14 @@
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026",
+      "https://www.bankofcanada.ca/2026/11/bank-canada-media-interview-barrie-360-2026-11-19/",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "https://www.eia.gov/todayinenergy/detail.php?id=",
-      "https://www.eia.gov/todayinenergy/detail.php?id=68484"
+      "https://www.eia.gov/todayinenergy/detail.php?id="
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-19",
-      "rss_checked_at_utc": "2026-11-19T21:02:19.453010Z",
+      "rss_checked_at_utc": "2026-11-19T21:43:31.378196Z",
       "commodities": "2026-11-19"
     },
     "no_paid_api": true,
@@ -113,6 +113,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-19T21:02:19.453010Z",
+      "headline": "Dollaro misto",
+      "material_digest": "2747c8405b120719875be230741a1b0146cf77d6424be543775c31a78663aae8"
+    },
     {
       "generated_at_utc": "2026-11-19T17:58:03.583558Z",
       "headline": "Dollaro misto",
@@ -227,11 +232,6 @@
       "generated_at_utc": "2026-11-14T16:48:41.450377Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "5be38cf16f2f2fdc7a1293c4418323aaf218b5cd3318531ac5b9347224f227ba"
-    },
-    {
-      "generated_at_utc": "2026-11-14T16:33:38.505925Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "8b2c24ee2f2cf5d78bd01edd09b671f4d4553eda80178910c611fd94a87842d6"
     }
   ]
 }
