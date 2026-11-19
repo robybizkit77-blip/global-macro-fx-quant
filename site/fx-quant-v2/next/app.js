@@ -869,7 +869,8 @@ function pairs(){
  const estimate=get('estimatedMacro');
  const estimateActive=estimate?.status==='STIMA_OPERATIVA_NON_VALIDATA';
  const activePair=estimateActive?estimate.pairs.find(x=>x.key===state.pair):null;
- const all=eurPairs(),keys=Object.keys(all).sort(),p=all[state.pair],s=p?.setup||{},fr=p?.decision_frame||s.structural||{};
+ const keys=Object.keys(eurPairs()).sort();
+ const prices=get('currencyPrices'),today=dayNow();
  const monitor=window.FXQuantThesisMonitor?.analyze?.(get('pairs'),get('thesisHistory'),state.pair)||{ready:false};
  const fav=activePair?.favored||null,quality=activePair?.quality||'STIMA NON DISPONIBILE';
  const choice='<label class="pair-sel-control" for="pair-primary-select"><span>COPPIA DA ANALIZZARE</span><select id="pair-primary-select" aria-label="Seleziona una delle 28 coppie">'+
@@ -878,12 +879,23 @@ function pairs(){
    'Dal '+date(monitor.previousAsOf)+' al '+date(monitor.asof)+': '+monitor.changed.length+' classificazioni cambiate. '+monitor.judgement:
    'Nessuna delle classificazioni monitorate è cambiata rispetto al '+date(monitor.previousAsOf)+'. Non significa che il mercato sia immobile.'
   :'La lettura corrente usa il modello stimato. La cronologia delle variazioni di tesi resta in consolidamento.';
- const favMeaning=fav?'La tesi fondamentale favorisce '+fav+' rispetto a '+(fav===state.pair.slice(0,3)?state.pair.slice(3):state.pair.slice(0,3))+'.':'La stima fondamentale è equilibrata tra le due valute: monitoriamo quale driver cambia per primo.';
+ const opening=window.FXQuantDecisionJourney?.priceOpening?.(state.pair,prices,today,estimate);
+ const macroState=activePair?.macroState,policyState=activePair?.policyState;
+ const driverSummary=macroState==='CONTRARIA'||policyState==='CONTRARIA'?', con economia e tassi in disaccordo':
+  macroState==='FAVOREVOLE'&&policyState==='FAVOREVOLE'?', con il sostegno di economia e tassi':
+  macroState==='FAVOREVOLE'?', soprattutto per il quadro economico':
+  policyState==='FAVOREVOLE'?', soprattutto per il quadro dei tassi':'';
+ const favMeaning=fav?
+  'La stima fondamentale favorisce '+fav+driverSummary+'.'+(opening&&activePair.opposite?
+   ' Il cambio delle ultime settimane va nella direzione opposta.':opening&&activePair.aligned?
+   ' Il cambio delle ultime settimane va nella stessa direzione.':''):
+  activePair?'Nella stima fondamentale, il vantaggio tra le due valute resta da chiarire.':
+  'Il confronto tra le due economie e i loro tassi è in aggiornamento.';
  const driverReading=window.FXQuantPairRankings?.pairDriverReading?.(activePair,estimate)||null;
- const headline=driverReading||activePair?.thesisReason||estimate?.reason||'La lettura corrente si fonda sulle componenti macro e di forza relativa disponibili, con i limiti esposti nel dossier.';
+ const driverDetail=driverReading||activePair?.thesisReason||estimate?.reason||'La lettura corrente si fonda sulle componenti macro e di forza relativa disponibili, con i limiti esposti nel dossier.';
  const tradeText=activePair?.tradeReason||'Il timing dipenderà da un movimento relativo coerente fra macro, tassi e prezzo.';
  const pairProfile=activePair&&window.FXQuantDecisionJourney?.profile?
-  window.FXQuantDecisionJourney.profile(state.pair,get('pairs'),get('currencyPrices'),dayNow(),estimate):null;
+  window.FXQuantDecisionJourney.profile(state.pair,get('pairs'),prices,today,estimate):null;
  const gate=window.FXQuantPairRankings?.pairDecisionWatch?.(activePair,pairProfile)||{
   improve:'Servono nuove evidenze macro/tassi e un prezzo datato.',
   weaken:'Il giudizio corrente è sospeso: non emerge una tesi direzionale da invalidare.',
@@ -892,7 +904,7 @@ function pairs(){
  const riskReading=window.FXQuantPairRankings?.pairRiskReading?.(activePair,pairProfile)||
   'Il rischio del setup non è classificabile con gli input correnti; nessun ingresso viene dedotto.';
  const pairCatalyst=window.FXQuantPairRankings?.pairCatalystWatch?.(
-  activePair,get('calendar'),dayNow())||null;
+  activePair,get('calendar'),today)||null;
  const context='Stima operativa Macro Strength '+date(estimate?.asof)+' · fixing BCE '+date(estimate?.priceAsOf)+
    ' · vecchio motore del '+date(get('pairs')?.macro_baseline_asof)+' archiviato, non utilizzato per il giudizio corrente';
  const saved=state.watch.has(state.pair);
@@ -916,16 +928,17 @@ function pairs(){
   }).join('')+'</ul><small>Fixing BCE al '+date(estimate.priceAsOf)+'</small>':
   '<small>Serve un confronto omogeneo dei fixing BCE sulle due finestre.</small>';
  const main='<section class="panel pairs-reading-compact" aria-label="Sintesi operativa della coppia selezionata">'+
-  '<div class="pairs-reading-head"><div><span class="mini-overline">IL GIUDIZIO FX · '+esc(getPairName(state.pair))+'</span><h2>'+esc(favMeaning)+'</h2></div>'+
-  '<span class="badge info">'+esc(quality)+'</span></div>'+
-  '<p class="pairs-primary-story">'+esc(headline)+'</p>'+
+  '<div class="pairs-reading-head"><div><span class="mini-overline">'+esc(getPairName(state.pair))+'</span><h2>'+
+  esc(opening?.headline||'Il quadro di '+getPairName(state.pair))+'</h2></div></div>'+
+  '<p class="pairs-primary-story">'+esc([opening?.lead,favMeaning].filter(Boolean).join(' '))+'</p>'+
+  (pairProfile?.closes?.length>=22?
+   '<button type="button" class="ghost-btn small pairs-chart-jump" data-pair-chart-jump aria-controls="fx-pair-price-chart">Vedi il grafico del cambio</button>':'')+
+  '<details class="pairs-optional-panel pairs-evidence"><summary><strong>Apri numeri, stime e cosa monitorare</strong><span class="pairs-open-icon" aria-hidden="true">+</span></summary><div class="pairs-details-body">'+
+  '<span class="badge info">'+esc(quality)+'</span><p class="pairs-primary-story">'+esc(driverDetail)+'</p>'+
   '<div class="pairs-three-answers">'+
    '<div><span>TESI FONDAMENTALE</span><strong>'+esc(activePair?.thesisStrength||'NON VALUTABILE')+'</strong></div>'+
    '<div class="pairs-trade-assessment" data-pairs-trade-tone="'+tradeTone+'"><span>TRADE ATTRACTIVENESS</span><strong>'+esc(tradeStatus)+'</strong></div>'+
-   '<div class="pairs-price-assessment"><span>IL PREZZO SEGUE LA TESI?</span>'+priceRead+
-   (pairProfile?.closes?.length>=22?
-    '<button type="button" class="ghost-btn small pairs-chart-jump" data-pair-chart-jump aria-controls="fx-pair-price-chart">Vedi il grafico del cambio</button>':'')+
-   '</div></div>'+
+   '<div class="pairs-price-assessment"><span>IL PREZZO SEGUE LA TESI?</span>'+priceRead+'</div></div>'+
   '<p class="pairs-timing-reading"><strong>Prima di valutare un ingresso.</strong> '+esc(tradeText)+'</p>'+
   '<p class="pairs-why-no-entry"><strong>Rischio operativo.</strong> '+esc(riskReading)+
    ' Una buona tesi fondamentale non equivale a un buon ingresso.</p>'+
@@ -936,16 +949,16 @@ function pairs(){
   (pairCatalyst?.text?'<p class="pairs-next-action pairs-event-watch"><strong>Evento da monitorare.</strong> '+
    esc(pairCatalyst.text)+'</p>':'')+
   '<p class="pairs-vintage">'+esc(context)+'. '+esc(gate.note)+
-  ' La baseline macro non viene aggiornata automaticamente quando cambia il prezzo.</p></section>';
+  ' La baseline macro non viene aggiornata automaticamente quando cambia il prezzo.</p></div></details></section>';
  // Do not show a large empty historical panel when same-day model labels
  // were revised after the archived snapshot. Current estimated rankings do not
  // reuse those archived categorical changes as operational signals.
  const monetary=window.FXQuantPairMonetary?.render?
    window.FXQuantPairMonetary.render({
-    pair:state.pair,favored:fav,today:dayNow(),ois:get('ois'),
+    pair:state.pair,favored:fav,today,ois:get('ois'),
     operational:get('oisOperational'),research:get('oisSameContract'),
     nzd:get('nzdDirectionalProxy'),history:get('oisHistory'),
-    pairs:get('pairs'),prices:get('currencyPrices')
+    pairs:get('pairs'),prices
    }):
    '<section class="pair-monetary-bridge"><p>Movimento monetario relativo da verificare nella pagina Tassi.</p></section>';
  const historyDetail=monitor.ready?

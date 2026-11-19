@@ -22,6 +22,39 @@
   // The chart must end at the exact date used for the pair model.
   return rows.at(-1)?.label===asof?rows:[];
  }
+ const priceCurrency={EUR:'l’euro',USD:'il dollaro USA',GBP:'la sterlina',JPY:'lo yen',
+  CHF:'il franco svizzero',CAD:'il dollaro canadese',AUD:'il dollaro australiano',NZD:'il dollaro neozelandese'};
+ function priceOpening(key,prices,now,estimate){
+  if(!/^[A-Z]{6}$/.test(key||''))return null;
+  const asof=prices?.last_as_of,age=isoDays(asof,now);
+  const base=key.slice(0,3),quote=key.slice(3);
+  if(!priceCurrency[base]||!priceCurrency[quote]||base===quote||
+     prices?.schema!=='GMFQ_ECB_G8_PRICE_HISTORY_V1'||prices.status!=='CURRENT_OFFICIAL_HISTORY'||
+     prices.base!=='EUR'||prices.source_url!=='https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml'||
+     !Number.isInteger(age)||age<0||age>5)return null;
+  const closes=series(prices,key,asof,now);
+  const latest=closes.at(-1);
+  if(!latest)return null;
+  const aligned=estimate?.status==='STIMA_OPERATIVA_NON_VALIDATA'&&estimate.priceAsOf===asof;
+  const weeks=aligned?closes.find(row=>row.label===estimate.priceFrom):closes.at(-21);
+  const prior=aligned?closes.find(row=>row.label===estimate.pricePriorAsOf):closes.at(-2);
+  const leader=from=>{
+   if(!from||from.label>=asof)return null;
+   const move=(latest.value/from.value-1)*100;
+   return Math.abs(move)<.005?'flat':move>0?base:quote;
+  };
+  const trend=leader(weeks),dayMove=leader(prior);
+  if(!trend)return null;
+  const gain=(ccy,verb='ha guadagnato terreno')=>priceCurrency[ccy]+' '+verb+' contro '+priceCurrency[ccy===base?quote:base];
+  const title=trend==='flat'?'Il cambio si è mosso poco nelle ultime settimane':
+   gain(trend)+' nelle ultime settimane';
+  const dayLabel=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'long',timeZone:'UTC'}).format(new Date(asof+'T12:00:00Z'));
+  const dayVerb=trend===dayMove?'ha continuato a guadagnare terreno':
+   trend&&trend!=='flat'?'ha recuperato terreno':undefined;
+  const lead=!dayMove?'La prossima seduta aiuterà a capire se il movimento regge.':
+   'Il '+dayLabel+' '+(dayMove==='flat'?'il cambio si è mosso poco':gain(dayMove,dayVerb))+'.';
+  return {headline:title[0].toUpperCase()+title.slice(1),lead};
+ }
  // Conservative DAILY reference thresholds from the previous 20 ECB fixings.
  // These are not intraday highs/lows, entries, stops or tested trading triggers.
  function watchLevels({asof,fresh,latest,direction,breakHigh,breakLow}){
@@ -257,6 +290,6 @@
   }
   return {overview,pair,data};
  }
- if(typeof window!=='undefined')window.FXQuantDecisionJourney={build,snapshot,profile,series,watchLevels};
- if(typeof module!=='undefined'&&module.exports)module.exports={build,snapshot,profile,series,watchLevels};
+ if(typeof window!=='undefined')window.FXQuantDecisionJourney={build,snapshot,profile,series,watchLevels,priceOpening};
+ if(typeof module!=='undefined'&&module.exports)module.exports={build,snapshot,profile,series,watchLevels,priceOpening};
 })();
