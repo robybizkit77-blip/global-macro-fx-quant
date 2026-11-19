@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_HOURLY_CHECK_V1",
   "status": "VERIFIED",
-  "checked_at_utc": "2026-11-19T20:43:10.588357Z",
-  "edition_generated_at_utc": "2026-11-19T17:58:03.583558Z",
-  "material_digest": "0be7cb2522630fd7f088124200885adb8d19c1b72a7ecdc2e1f850638d0f97ab",
-  "edition_changed": false,
+  "checked_at_utc": "2026-11-19T21:02:19.453010Z",
+  "edition_generated_at_utc": "2026-11-19T21:02:19.453010Z",
+  "material_digest": "2747c8405b120719875be230741a1b0146cf77d6424be543775c31a78663aae8",
+  "edition_changed": true,
   "meaning": "Successful source-build verification; not a claim that every source published new data"
 }

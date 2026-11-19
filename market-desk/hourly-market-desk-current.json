@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-19T17:58:03.583558Z",
-  "edition_time_rome": "2026-11-19 18:58",
-  "material_digest": "0be7cb2522630fd7f088124200885adb8d19c1b72a7ecdc2e1f850638d0f97ab",
+  "generated_at_utc": "2026-11-19T21:02:19.453010Z",
+  "edition_time_rome": "2026-11-19 22:02",
+  "material_digest": "2747c8405b120719875be230741a1b0146cf77d6424be543775c31a78663aae8",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
@@ -58,7 +58,7 @@
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
         "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
       ],
-      "evidence": "Proxy futures da fonte secondaria. Oro −0,85% al 19 novembre. WTI −1,66% al 19 novembre."
+      "evidence": "Proxy futures da fonte secondaria. Oro −2,00% al 19 novembre. WTI −1,66% al 19 novembre."
     },
     {
       "headline": "Oil flows through Middle East chokepoints increased in the third quarter",
@@ -75,7 +75,7 @@
     {
       "headline": "U.S. natural gas inventories end injection season above normal levels",
       "analysis": "Questo approfondimento aiuta a leggere come cambia l’offerta di energia.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-18",
       "event_date": "2026-11-18",
       "market_area": "ENERGIA",
@@ -105,7 +105,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-19",
-      "rss_checked_at_utc": "2026-11-19T17:58:03.583558Z",
+      "rss_checked_at_utc": "2026-11-19T21:02:19.453010Z",
       "commodities": "2026-11-19"
     },
     "no_paid_api": true,
@@ -113,6 +113,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-19T17:58:03.583558Z",
+      "headline": "Dollaro misto",
+      "material_digest": "0be7cb2522630fd7f088124200885adb8d19c1b72a7ecdc2e1f850638d0f97ab"
+    },
     {
       "generated_at_utc": "2026-11-19T17:43:53.371843Z",
       "headline": "Dollaro misto",
@@ -227,11 +232,6 @@
       "generated_at_utc": "2026-11-14T16:33:38.505925Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "8b2c24ee2f2cf5d78bd01edd09b671f4d4553eda80178910c611fd94a87842d6"
-    },
-    {
-      "generated_at_utc": "2026-11-14T09:14:12.974579Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "5be38cf16f2f2fdc7a1293c4418323aaf218b5cd3318531ac5b9347224f227ba"
     }
   ]
 }
