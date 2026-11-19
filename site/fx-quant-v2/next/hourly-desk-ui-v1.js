@@ -59,13 +59,17 @@
  };
  const sourceHost=u=>((String(u||'').match(/^https:\/\/([^/?#:]+)/i)||[])[1]||'').replace(/^www\./,'');
  const areaIt=s=>({'COMMODITIES':'MATERIE PRIME','ENERGY':'ENERGIA','EQUITIES':'AZIONI','FOLLOW_UP':'APPROFONDIMENTO'}[String(s||'').toUpperCase()]||String(s||''));
+ function syncSourcesButtons(desk,expanded){
+  desk?.querySelectorAll('[data-hourly-open-sources]').forEach(button=>
+   button.setAttribute('aria-expanded',String(expanded)));
+ }
  // Event delegation also works after the SPA re-renders the Home.
  function openSources(target,storyId){
   const desk=target?.closest?.('.hourly-market-desk');
   const dossier=desk?.querySelector?.('details#hourly-desk-news');
   if(!dossier)return false;
   dossier.open=true;
-  desk.querySelectorAll?.('[data-hourly-open-sources]')?.forEach?.(b=>b.setAttribute('aria-expanded','true'));
+  syncSourcesButtons(desk,dossier.open);
   const article=typeof storyId==='string'&&/^\d+$/.test(storyId)?
    dossier.querySelector?.('[data-hourly-article="'+storyId+'"]'):null;
   const destination=article||dossier;
@@ -83,6 +87,11 @@
    const hero=target?.closest?.('.hourly-hero[data-hourly-hero-to-sources]');
    if(hero&&!target?.closest?.('a,button,summary'))openSources(hero);
   });
+  // The native details toggle does not bubble. Capture it across Home renders.
+  root.document.addEventListener('toggle',({target})=>{
+   if(target?.matches?.('details#hourly-desk-news'))
+    syncSourcesButtons(target.closest('.hourly-market-desk'),target.open);
+  },true);
  }
 
 
