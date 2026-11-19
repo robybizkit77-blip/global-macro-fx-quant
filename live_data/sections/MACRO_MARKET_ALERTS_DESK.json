@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-18T22:01:25Z",
+  "generated_at_utc": "2026-11-19T03:34:46Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-322a57b7bf2a41f72f2a",
+      "observed_at_utc": "2026-11-18T11:46:07Z",
+      "headline": "Breakingviews - COMMENTARY: Inflation data shows a sharp transatlantic divide",
+      "summary": "Reuters riporta: Breakingviews - COMMENTARY: Inflation data shows a sharp transatlantic divide. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNLUF1UUFWUUVaUExtZTQ5Vlo0dmRMMUtnUUFDTU5RcjdOSkJYbV9JRzBzNlZWUkIxTm53a04xbEwxZHB0V0lRamxzRlJXYzVPbmx1MzFQNVYxaXFTQUQ5Q1ZXaHUyT1R1TXU0dDBHcDhVQ2NFVE1fcnZXdjhPMUZBbmhEQ2UwR1dtZEZpc3lLS2dFbjhIYWdvZ1ByTXM3cGJrMnh6YmZ6T2NSWVoy?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-1857ebd8539aae8b0e65",
+      "observed_at_utc": "2026-11-18T08:45:12Z",
+      "headline": "BoE, in new statement on CPI data, says inflation to rise further",
+      "summary": "Reuters riporta: BoE, in new statement on CPI data, says inflation to rise further. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOYWkzVFZIZGpWS2lKODVQQ0RmTkFYS1luRGFCVDVxSXZVQS1BR2pQdWdqdjNqRHJqd3NsdXFJZ0w1elNwUU02NEc4ZXJxNnZSQThyVzlkN2tyLWhYUGtqTzVmS0xNNjYtNUR0djJEaXpoMm1HNzVJVVRzMGxXaGViRV9iREg0Q2hJeWVIVEhoM0M4d3drT2FjWHMtZUlOUFhw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-15b2b728def9ac9eb9f5",
+      "observed_at_utc": "2026-11-18T22:48:00Z",
+      "headline": "Fed minutes: Higher interest rates needed in December as inflation worries mount",
+      "summary": "AP News riporta: Fed minutes: Higher interest rates needed in December as inflation worries mount. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOd2Q1ZnpsMjBsaWNUMEJIVUxmTTNSeUYyOWphQWtydFJKbDIzN3JiUXpvcEQ0dnhBcFVhRHdGWTR4dTRCQW5FNi1BVE8ycGtnTXEtWkZJMS1COGc5M25oUmNWb1hMemNpZ0p3MlRGSjBRLU1rX2cwRUlrbjNCWEcxazRkazhVd2dTUUFuWU1KN1RiVHBURHc?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-cef7f5beb4184d46b3eb",
       "observed_at_utc": "2026-11-18T17:20:47Z",
@@ -1357,49 +1400,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNbEdIVXlJc2RaUEw2RmFrR2FZcXYzYlBKUG9Cdl9WUVFfalVxT0hGcGFCdW1DS3JMT2daanhDYktBeXVGNGt5TGlsOGZJVWVSMFpnT3ZVa2RBUjZYakRlVlQ3SXd1ZkpTQVNXVkpoNUZoemdycWY0MG02dVk0cWRuWG4taG5VMm9kbEluSHctTVZVMXJwWXNWSWdVcmxQeWtRSW1EWDQ2dTJ6QVV2TzhoeQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-96567632082db469ad0f",
-      "observed_at_utc": "2026-11-09T00:26:00Z",
-      "headline": "Brazil's Lula, worried about high interest rates, pledges budget discipline",
-      "summary": "Reuters riporta: Brazil's Lula, worried about high interest rates, pledges budget discipline. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxOTmRxVlVzb3VXRTFVRFRoNi12OFZQMDRRNGpoQWJNckR5R0p0SFU3VHRwVDZCTkdGZnRra3lueG5maDl0bVRMQkxKVGg2dU1uMjhFMV81bTVSc01HYW1USWo5bGRXZXRES1I1MkhNckRTMThqLTV0M0UwSVkyVHhJZEQ2c0JNekZXcDZPTWg1dktPcXdYZThtWk56ZTNJbW5ORGl6NGlVeDFDcVZWem1EeTZDX0Ywam1jbEJTZUZMR1I?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-6b4e0800a03c0c2ecec1",
-      "observed_at_utc": "2026-11-08T08:38:37Z",
-      "headline": "iShares Nasdaq Top 30 Stocks ETF (QTOP.OQ) | Stock Price & Latest News",
-      "summary": "Reuters riporta: iShares Nasdaq Top 30 Stocks ETF (QTOP.OQ) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE9ab3BZYlF6WFZMNm9ab0JLT3dCZjdXcDE0Z09ERm4zSmhHMjdmYkVEVWV3YkdWSzFQR3dzSTdrekVlT2ZQZ0UzUExpTkZiekw3OXduRF9yNkRxMHdEUUdtdDhTVDI2Unk1anVidg?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c7b165a8b7c74b2f82f0",
-      "observed_at_utc": "2026-11-08T07:48:33Z",
-      "headline": "Calamos Nasdaq-100 Structured Alt Prot ETF - June (CPNJ.N) | Stock Price & Latest News",
-      "summary": "Reuters riporta: Calamos Nasdaq-100 Structured Alt Prot ETF - June (CPNJ.N) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9CMmNTN1JQVmY5dTgxeGR2NzkwS0RhS2NESFVibUlXZDA4blFFV2FtRTZpanR1cWloSUREaXFiSnpaV3NNR0diNkttMy15aUNYcU1UZVZjNGdEbmtWMEJCRS00MjZkbldVMVAw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
