@@ -14,8 +14,9 @@ import math
 from pathlib import Path
 
 from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
-    FORMULA, activity_class, price_class, run as candidate_run,
+    FORMULA, activity_class, price_class,
 )
+from validation.macro.v2_frozen_domestic_research_v1 import run_frozen_candidate
 from validation.macro.v2_us_cpi_prior24_issuer_revised_sensitivity_v1 import (
     audit as usd_issuer_audit,
 )
@@ -177,7 +178,7 @@ def evaluate(candidate, usd, chf):
 
 
 def run():
-    obj = evaluate(candidate_run(as_of=CANDIDATE_DATE),
+    obj = evaluate(run_frozen_candidate(),
                    usd_issuer_audit(), chf_seco_audit())
     obj["receipt_sha256"] = hashlib.sha256(json.dumps(
         obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()

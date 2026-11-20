@@ -20,8 +20,9 @@ from validation.macro.v2_g8_gdp_first_web_growth_features_v1 import (
     SCHEMA as GDP_SCHEMA, run as gdp_run, nonannualized,
 )
 from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
-    FORMULA, run as candidate_run,
+    FORMULA,
 )
+from validation.macro.v2_frozen_domestic_research_v1 import run_frozen_candidate
 
 SCHEMA = "GMFQ_MACRO_V2_G8_GDP_QOQ_VS_OWN_HISTORY_COMPARABILITY_AUDIT_V1"
 CURRENCIES = ("USD", "EUR", "GBP", "JPY", "CHF", "AUD", "NZD", "CAD")
@@ -199,7 +200,7 @@ def audit(gdp, candidate):
 
 def run():
     result = audit(gdp_run(as_of=GDP_CUTOFF),
-                   candidate_run(as_of=CANDIDATE_ASOF))
+                   run_frozen_candidate())
     result["receipt_sha256"] = hashlib.sha256(
         json.dumps(result, ensure_ascii=False, sort_keys=True,
                    separators=(",", ":")).encode()).hexdigest()

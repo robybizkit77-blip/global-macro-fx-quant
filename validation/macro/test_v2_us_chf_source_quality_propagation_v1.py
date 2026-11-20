@@ -8,11 +8,12 @@ import unittest
 from pathlib import Path
 
 from validation.macro.v2_us_chf_source_quality_propagation_v1 import (
-    evaluate, run, CANDIDATE_DATE,
+    evaluate, run,
 )
 from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
-    activity_class, run as candidate_run,
+    activity_class,
 )
+from validation.macro.v2_frozen_domestic_research_v1 import run_frozen_candidate
 from validation.macro.v2_us_cpi_prior24_issuer_revised_sensitivity_v1 import (
     audit as us_audit,
 )
@@ -26,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[2]
 class TwoSourceResearchQualityPropagation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.candidate = candidate_run(as_of=CANDIDATE_DATE)
+        cls.candidate = run_frozen_candidate()
         cls.us = us_audit()
         cls.chf = chf_audit()
         cls.result = evaluate(cls.candidate, cls.us, cls.chf)

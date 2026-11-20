@@ -5,7 +5,7 @@ import json
 import unittest
 from pathlib import Path
 
-from validation.macro.v2_domestic_candidate_explicit_formula_v1 import run as candidate_run
+from validation.macro.v2_frozen_domestic_research_v1 import run_frozen_candidate
 from validation.macro.v2_core_quant_falsification_readiness_v1 import (
     BETA, CORE, DECISIONS, FORWARD_SCHEMA, OUTCOMES, PAIR, RECEIPTS,
     ROOT, WALKFORWARD, _read_lines, evaluate, forward_inspect, run,
@@ -17,7 +17,7 @@ class QuantFalsificationReadinessTests(unittest.TestCase):
     def setUpClass(cls):
         cls.core=json.loads(CORE.read_text())
         cls.setup=json.loads(PAIR.read_text())
-        cls.candidate=candidate_run(as_of="2026-10-27")
+        cls.candidate=run_frozen_candidate()
         cls.history=json.loads(WALKFORWARD.read_text())
         cls.decisions=_read_lines(DECISIONS)
         cls.forward=forward_inspect(json.loads(BETA.read_text()),
@@ -53,6 +53,7 @@ class QuantFalsificationReadinessTests(unittest.TestCase):
         self.assertEqual(r["universe"]["currencies"],8)
         self.assertEqual(r["universe"]["canonical_unique_unordered_pairs"],28)
         self.assertEqual(r["formula_stress"]["economic_axes"],24)
+        self.assertEqual(r["candidate_input_as_of"], "2026-10-27")
         self.assertEqual(r["formula_stress"]["tested_growth_weights"],[0.25,0.5,0.75])
         self.assertEqual(r["summary"]["mathematical_research_gates_checked"],1)
         self.assertEqual(r["summary"]["unmet_or_blocked_launch_quant_gates"],6)
@@ -134,11 +135,13 @@ class QuantFalsificationReadinessTests(unittest.TestCase):
             ROOT/"live_data/sections/MACRO_SERIES.json"
         ]
         before={str(p):p.read_bytes() for p in paths}
-        again=run(as_of="2026-10-28")
+        again=run(as_of=self.result["research_as_of"])
         self.assertEqual(self.result["receipt_sha256"],again["receipt_sha256"])
         self.assertEqual(before,{str(p):p.read_bytes() for p in paths})
-        with self.assertRaises(ValueError):
-            run(as_of="2026-10-29")
+        with self.assertRaisesRegex(ValueError, "outside the research window"):
+            run(as_of="2026-10-26")
+        with self.assertRaisesRegex(ValueError, "no future or undated forward captures"):
+            self.inspect(decisions=[{**self.decisions[0], "decision_cutoff":"2099-12-31T20:00:00Z"}])
 
 
 if __name__=="__main__":
