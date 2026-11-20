@@ -6,9 +6,20 @@ on:
     paths:
       - 'validation/macro/capture_chf_labour_snb_vintage_v1.py'
       - 'validation/macro/test_capture_chf_labour_snb_vintage_v1.py'
+      - 'validation/macro/archive_chf_labour_snb_editions_v1.py'
+      - 'validation/macro/test_archive_chf_labour_snb_editions_v1.py'
       - 'validation/macro/probe_chf_seco_2024_first_month_pdf_bytes_v1.py'
       - 'validation/macro/test_probe_chf_seco_2024_first_month_pdf_bytes_v1.py'
       - '.github/workflows/chf-labour-snb-raw-capture-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/chf-labour-snb-raw-capture-v1.yml'
+      - 'validation/macro/archive_chf_labour_snb_editions_v1.py'
+      - 'validation/macro/capture_chf_labour_snb_vintage_v1.py'
+  schedule:
+    - cron: '17 10 * * 1-5'
+      timezone: 'Europe/Zurich'
   workflow_dispatch:
 
 permissions:
@@ -26,6 +37,7 @@ jobs:
       - name: Run fail-closed read-only capture contract tests
         run: |
           python -m unittest validation.macro.test_capture_chf_labour_snb_vintage_v1 -v
+          python -m unittest validation.macro.test_archive_chf_labour_snb_editions_v1 -v
           python -m unittest validation.macro.test_probe_chf_seco_2024_first_month_pdf_bytes_v1 -v
       - name: No canonical payload changed
         run: git diff --exit-code -- live_data/sections/D.json live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
@@ -108,3 +120,42 @@ jobs:
           path: /tmp/gmfq-chf-snb-vintage/
           if-no-files-found: warn
           retention-days: 90
+
+  archive-new-snb-edition:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'push')
+    needs: deterministic-validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    permissions:
+      contents: write
+    concurrency:
+      group: chf-labour-snb-edition-archive
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Append the observed SNB edition to the research archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive=research/chf-labour-snb-vintages
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          python -m validation.macro.archive_chf_labour_snb_editions_v1 | tee -a "$GITHUB_STEP_SUMMARY"
+          git add -- "$archive"
+          if git diff --cached --quiet; then exit 0; fi
+          git diff --cached --name-status | awk -F '\t' '
+            $1 != "A" || $2 !~ /^research\/chf-labour-snb-vintages\/[0-9]{8}_[0-9]{4}--[0-9]{8}_[0-9]{4}\.json$/ { bad=1 }
+            END { exit bad }'
+          git commit -m 'Archive observed SNB labour edition for macro research'
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git fetch origin main --no-tags
+            git rebase origin/main
+            sleep "$((attempt * 2))"
+          done
+          exit 1
