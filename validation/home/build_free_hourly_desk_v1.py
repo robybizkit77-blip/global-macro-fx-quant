@@ -139,6 +139,7 @@ def closing_risk(feed, today):
     streams = feed.get("streams") if isinstance(feed, dict) else None
     closes = []
     for key, label, unit, decimals in (("SP500", "S&P 500", "%", 2),
+                                        ("NASDAQCOM", "Nasdaq Composite", "%", 2),
                                         ("VIX", "VIX", " punti", 2),
                                         ("HY_OAS", "spread high yield", " pb", 0)):
         row = streams.get(key) if isinstance(streams, dict) else None
@@ -149,7 +150,7 @@ def closing_risk(feed, today):
                 all(safe_number(row.get(k)) for k in ("value", "previous"))):
             continue
         delta = row["value"]-row["previous"]
-        if key == "SP500":
+        if key in ("SP500", "NASDAQCOM"):
             if not row["previous"]:
                 continue
             delta = delta / abs(row["previous"]) * 100
@@ -158,7 +159,11 @@ def closing_risk(feed, today):
         closes.append({"date": observed.isoformat(), "label": label, "change": delta,
                        "display": signed(delta, decimals) + unit, "url": row["source_url"]})
     latest = max((x["date"] for x in closes), default=None)
-    return [x for x in closes if x["date"] == latest]
+    # One equity close for the latest date, with S&P 500 as the tie-break.
+    recent = [x for x in closes if x["date"] == latest]
+    if any(x["label"] == "S&P 500" for x in recent):
+        recent = [x for x in recent if x["label"] != "Nasdaq Composite"]
+    return recent
 
 
 def next_event(events, now):
@@ -243,22 +248,23 @@ def risk_opening(closes):
     if not closes:
         return ""
     changes = {row["label"]: row["change"] for row in closes}
-    shares = changes.get("S&P 500", 0)
+    shares = changes.get("S&P 500", changes.get("Nasdaq Composite", 0))
+    equity = "il Nasdaq Composite" if "Nasdaq Composite" in changes else "Wall Street"
     credit = changes.get("spread high yield", 0)
     vol = changes.get("VIX", 0)
     date_label = short_date(day(closes[0]["date"]))
     if shares < -.005 and credit > .5:
-        return (f"Alla chiusura del {date_label}, Wall Street ha perso terreno e il premio "
+        return (f"Alla chiusura del {date_label}, {equity} ha perso terreno e il premio "
                 "sul debito più rischioso è salito.")
     if shares > .005 and credit < -.5:
-        return (f"Alla chiusura del {date_label}, Wall Street è salita e il premio sul debito "
+        return (f"Alla chiusura del {date_label}, {equity} ha guadagnato terreno e il premio sul debito "
                 "più rischioso si è ridotto.")
     if abs(credit) > .5:
         move = "aumentato" if credit > 0 else "diminuito"
         return f"Alla chiusura del {date_label}, il premio richiesto sul debito più rischioso è {move}."
     if abs(shares) > .005:
-        move = "salita" if shares > 0 else "scesa"
-        return f"Wall Street è {move} alla chiusura del {date_label}."
+        move = "ha guadagnato terreno" if shares > 0 else "ha perso terreno"
+        return f"Alla chiusura del {date_label}, {equity} {move}."
     if abs(vol) > .005:
         move = "salita" if vol > 0 else "scesa"
         return f"La volatilità azionaria è {move} alla chiusura del {date_label}."
@@ -433,12 +439,13 @@ def build(root: Path, now: datetime, previous=None, rss=None):
     if risk_closes:
         risk_date = risk_closes[0]["date"]
         credit = risk_by_label.get("spread high yield", 0)
-        shares = risk_by_label.get("S&P 500", 0)
+        shares = risk_by_label.get("S&P 500", risk_by_label.get("Nasdaq Composite", 0))
+        equity = "Il Nasdaq Composite" if "Nasdaq Composite" in risk_by_label else "Wall Street"
         risk_headline = ("Azioni in calo e credito più cauto" if shares < -.005 and credit > .5 else
                          "Più cautela sul credito" if credit > .5 else
                          "Si riduce il premio sul debito più rischioso" if credit < -.5 else
-                         "Wall Street sale" if shares > .005 else
-                         "Wall Street scende" if shares < -.005 else "Il quadro del rischio")
+                         f"{equity} sale" if shares > .005 else
+                         f"{equity} scende" if shares < -.005 else "Il quadro del rischio")
         risk_watch = ("La volatilità in Borsa è scesa. Da seguire se la cautela nel credito si estende alle prossime sedute."
                       if risk_by_label.get("VIX", 0) < -.005 and credit > .5 else
                       "Da seguire se il movimento prosegue anche alla prossima chiusura.")

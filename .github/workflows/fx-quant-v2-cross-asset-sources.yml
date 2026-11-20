@@ -21,6 +21,11 @@ on:
     - cron: '17 10 * * 1-5'
       timezone: 'America/Chicago'
     - cron: '25 22 * * 1-5'
+  # Retry the public closes when the existing Calendar/News runner finishes.
+  # The native schedules still provide an independent clock.
+  workflow_run:
+    workflows: ['Calendar News Operational Refresh V1']
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -32,11 +37,18 @@ concurrency:
 
 jobs:
   collect:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       contains(fromJSON('["schedule","workflow_dispatch","workflow_run"]'),
+                github.event.workflow_run.event))
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
           fetch-depth: 2
           persist-credentials: true
       - uses: actions/setup-python@v5
