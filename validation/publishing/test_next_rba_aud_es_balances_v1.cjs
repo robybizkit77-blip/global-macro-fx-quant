@@ -40,7 +40,7 @@ const api=ccy=>({get:k=>k==='liquidity'?native:null,FX,
  NAMES:Object.fromEntries(FX.map(x=>[x,x])),
  state:{liqCcy:ccy},plot:()=>'<svg></svg>',
  pageHero:()=>'<h1>Research</h1>',esc,fmt,date:x=>x,
- dayNow:()=>'2026-11-14'});
+ dayNow:()=>new Date().toISOString().slice(0,10)});
 const html=studio.render(api('AUD'));
 assert.match(html,/class="drivers-aud-es-bridge"/);
 assert.match(html,/SECONDO CANALE, NON SECONDA CONFERMA/);
@@ -49,12 +49,16 @@ assert.match(html,/non<\/b> nuovi prestiti/);
 assert.match(html,/valore precedente implicito/);
 assert.match(html,/A3 AESAT giornaliera/);
 assert.match(html,/liquidità netta trasferita ai mercati/);
-assert.match(html,/2026-11-11/);
-assert.match(html,/185\.950/);
-assert.match(html,/\+4\.213/);
+const reserves=html.split('class="drivers-aud-es-bridge"')[1].split('</div>')[0];
+const move=source.weekly_movement_million_aud;
+const signed=(move>0?'+':move<0?'−':'')+
+ new Intl.NumberFormat('it-IT',{useGrouping:'always'}).format(Math.abs(move));
+assert(reserves.includes('Al '+source.source_period));
+assert(reserves.includes(fmt(source.latest_balance_million_aud,0)+' milioni AUD'));
+assert(reserves.includes(signed+' milioni sulla settimana'));
 assert.match(html,/movimento pubblicato/);
 const nativeFact=html.split('data-liq-role="liquidity"')[1]?.split('</div>')[0]||'';
-assert(nativeFact.includes('2026-09-16')&&!nativeFact.includes('2026-11-11'),
+assert(nativeFact.includes(source.asof_canonical_overlap)&&!nativeFact.includes(source.source_period),
  'Official ES research may not silently overwrite original native RBA liquidity');
 for(const c of FX.filter(x=>x!=='AUD'))
  assert(!studio.render(api(c)).includes('drivers-aud-es-bridge'),c);
