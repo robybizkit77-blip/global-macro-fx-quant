@@ -1,17 +1,17 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-19T21:43:31.378196Z",
-  "edition_time_rome": "2026-11-19 22:43",
-  "material_digest": "4cbbee29009f54df4b8c83ff9940c7e8b76a41f0b5c8f3de1fa0ce0319f34c02",
+  "generated_at_utc": "2026-11-20T02:22:30.412197Z",
+  "edition_time_rome": "2026-11-20 03:22",
+  "material_digest": "5fe837b921838ebad8b1be889a7e9a4a8693626e049e808cd89a27f87e13542a",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
-  "lead": "In Australia la disoccupazione è aumentata a ottobre. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
+  "lead": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
   "news": [
     {
       "headline": "Dollaro misto",
-      "analysis": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Il 20 novembre alle 00:30 italiane escono i prezzi al consumo in Giappone. Per lo yen conta se il dato sposta le attese sui tassi della BoJ.",
+      "analysis": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. La prossima verifica è capire se il movimento si estende agli altri cambi.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
@@ -22,7 +22,7 @@
       "evidence": "Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%."
     },
     {
-      "headline": "In Australia la disoccupazione è aumentata a ottobre",
+      "headline": "L’Australia ha pubblicato il dato sulla disoccupazione di ottobre",
       "analysis": "Per il dollaro australiano conta se, dopo il dato, cambiano le attese sui tassi.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
@@ -63,7 +63,7 @@
     {
       "headline": "Bank of Canada Media Interview – Barrie 360",
       "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
       "market_area": "BANCHE CENTRALI",
@@ -85,11 +85,11 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "In Australia la disoccupazione è aumentata a ottobre. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
-  "fx_implications": "Il 20 novembre alle 00:30 italiane escono i prezzi al consumo in Giappone. Per lo yen conta se il dato sposta le attese sui tassi della BoJ.",
+  "desk_judgment": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
+  "fx_implications": "Da seguire se euro e yen si muovono nella stessa direzione contro il dollaro.",
   "what_changed": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen.",
   "contrary_evidence": "Il VIX è sceso mentre il credito high yield ha chiesto uno spread più ampio. La tensione nel credito merita una verifica a parte.",
-  "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
+  "watch": "Nella prossima seduta, guarda se il movimento del dollaro si estende oltre le coppie che lo hanno guidato.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
@@ -105,7 +105,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-19",
-      "rss_checked_at_utc": "2026-11-19T21:43:31.378196Z",
+      "rss_checked_at_utc": "2026-11-20T02:22:30.412197Z",
       "commodities": "2026-11-19"
     },
     "no_paid_api": true,
@@ -113,6 +113,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-19T21:43:31.378196Z",
+      "headline": "Dollaro misto",
+      "material_digest": "4cbbee29009f54df4b8c83ff9940c7e8b76a41f0b5c8f3de1fa0ce0319f34c02"
+    },
     {
       "generated_at_utc": "2026-11-19T21:02:19.453010Z",
       "headline": "Dollaro misto",
@@ -227,11 +232,6 @@
       "generated_at_utc": "2026-11-14T20:45:48.350565Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "d99e2438a9051e4bbc1cbfa93b9c8747411e30b07272dac24a9ab91d4a3af967"
-    },
-    {
-      "generated_at_utc": "2026-11-14T16:48:41.450377Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "5be38cf16f2f2fdc7a1293c4418323aaf218b5cd3318531ac5b9347224f227ba"
     }
   ]
 }
