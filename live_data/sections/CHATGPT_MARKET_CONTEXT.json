@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-20T03:00:18Z",
+  "generated_at_utc": "2026-11-20T11:22:35Z",
   "evaluation_date_europe_rome": "2026-11-20",
   "reference_only": true,
   "policy": {
@@ -82,53 +82,53 @@
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-18",
+        "as_of": "2026-11-19",
         "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
         "policy_rate_pct": 2.5,
         "horizons": {
           "3m": {
-            "rate_pct": 2.795,
-            "delta_vs_policy_bp": 29.5,
-            "change_1d_bp": 3.5,
-            "change_1w_bp": 6.0
+            "rate_pct": 2.785,
+            "delta_vs_policy_bp": 28.5,
+            "change_1d_bp": -1.0,
+            "change_1w_bp": 1.0
           },
           "6m": {
-            "rate_pct": 3.0,
-            "delta_vs_policy_bp": 50.0,
-            "change_1d_bp": 3.0,
-            "change_1w_bp": 3.5
+            "rate_pct": 2.985,
+            "delta_vs_policy_bp": 48.5,
+            "change_1d_bp": -1.5,
+            "change_1w_bp": -3.0
           },
           "12m": {
-            "rate_pct": 3.24,
-            "delta_vs_policy_bp": 74.0,
-            "change_1d_bp": -0.5,
-            "change_1w_bp": 3.5
+            "rate_pct": 3.245,
+            "delta_vs_policy_bp": 74.5,
+            "change_1d_bp": 0.5,
+            "change_1w_bp": -5.0
           }
         }
       },
       "AUD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-18",
+        "as_of": "2026-11-19",
         "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
         "policy_rate_pct": 4.85,
         "horizons": {
           "3m": {
-            "rate_pct": 4.855,
-            "delta_vs_policy_bp": 0.5,
-            "change_1d_bp": 0.0,
-            "change_1w_bp": 0.0
+            "rate_pct": 4.845,
+            "delta_vs_policy_bp": -0.5,
+            "change_1d_bp": -1.0,
+            "change_1w_bp": -1.0
           },
           "6m": {
-            "rate_pct": 4.905,
-            "delta_vs_policy_bp": 5.5,
-            "change_1d_bp": -1.0,
-            "change_1w_bp": -0.5
+            "rate_pct": 4.83,
+            "delta_vs_policy_bp": -2.0,
+            "change_1d_bp": -7.5,
+            "change_1w_bp": -8.0
           },
           "12m": {
-            "rate_pct": 4.795,
-            "delta_vs_policy_bp": -5.5,
-            "change_1d_bp": -1.5,
-            "change_1w_bp": 4.5
+            "rate_pct": 4.615,
+            "delta_vs_policy_bp": -23.5,
+            "change_1d_bp": -18.0,
+            "change_1w_bp": -13.5
           }
         }
       },
@@ -195,9 +195,14 @@
         "change_10y_bp": 8.0
       },
       "AUD": {
-        "state": "STALE",
-        "as_of": "2026-11-11",
-        "reason": "Age 9d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-11-18",
+        "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily · 2026-11-18",
+        "government_2y_pct": 4.813,
+        "government_10y_pct": 5.08,
+        "10y_minus_2y_bp": 26.7,
+        "change_2y_bp": 0.5,
+        "change_10y_bp": 3.6
       },
       "NZD": {
         "state": "STALE",
