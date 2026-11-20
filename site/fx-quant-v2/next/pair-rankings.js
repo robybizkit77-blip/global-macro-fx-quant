@@ -453,7 +453,9 @@
    currencyBody+(active?'<p class="fx-rank-source">Ricerca macro '+esc(date(est.asof))+
    ' · prezzi BCE '+esc(date(est.priceAsOf))+
    ' · GDP in accelerazione verificabile per '+est.coverage.withGDPAcceleration+
-   '/8 economie; 6M ufficiale per '+est.coverage.official6M+'/8.</p>':'')+'</section>'+
+   '/8 economie; 6M ufficiale per '+est.coverage.official6M+'/8.'+
+   (est.by?.CHF?.rankingRate?' CHF: stima 2Y al '+esc(date(est.by.CHF.rankingRate.asof))+
+     (est.by.CHF.rankingRate.score?', contributo ridotto.':', contributo neutro.'):'')+'</p>':'')+'</section>'+
    '<section class="fx-rank-box" aria-label="Cinque coppie FX stimate da studiare">'+
    '<div class="fx-rank-head"><div><span>02 / SELEZIONE FX</span><h3>Fino a 5 coppie da studiare</h3></div>'+
    '<small>STIMA, NON INGRESSO</small></div>'+
