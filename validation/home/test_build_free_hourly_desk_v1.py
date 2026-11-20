@@ -49,6 +49,27 @@ class FreeDeskTest(unittest.TestCase):
   self.assertIn("hourly-market-desk-check.json",workflow)
   self.assertIn("cron: '17 * * * *'",workflow)
   self.assertNotIn("mcp__Automations",workflow)
+ def test_refresh_and_publication_follow_production_source_runs(self):
+  workflow=(ROOT/".github/workflows/next-independent-ai-hourly-desk-v1.yml").read_text()
+  for source in ("Calendar News Operational Refresh V1", "FX Quant V2 Cross-Asset Published Source Refresh"):
+   self.assertIn(source, workflow)
+  self.assertIn("github.event.workflow_run.head_branch == 'main'", workflow)
+  self.assertIn("github.event.workflow_run.conclusion == 'success'", workflow)
+  self.assertIn("Verify the public edition and its source receipt", workflow)
+  cross=(ROOT/".github/workflows/fx-quant-v2-cross-asset-sources.yml").read_text()
+  self.assertIn("workflows: ['Calendar News Operational Refresh V1']", cross)
+  self.assertIn("github.event.workflow_run.head_branch == 'main'", cross)
+ def test_later_nasdaq_close_updates_narrative_while_sp500_waits(self):
+  path=self.root/"site/fx-quant-v2/cross-asset-live-data.json"
+  feed=json.loads(path.read_text())
+  feed["streams"]["NASDAQCOM"]={**feed["streams"]["SP500"],"date":"2026-11-13",
+   "value":23879.2,"previous":24429.88,"source_url":"https://example.com/NASDAQCOM"}
+  path.write_text(json.dumps(feed))
+  result=self.build()
+  row=next(row for row in result["news"] if row["market_area"]=="RISCHIO")
+  self.assertEqual(row["headline"],"Il Nasdaq Composite scende")
+  self.assertIn("Nasdaq Composite −2,25%",row["evidence"])
+  self.assertNotIn("S&P 500",row["evidence"])
  def test_overview_describes_the_fixing_and_previous_close_with_sources(self):
   r=self.build()
   self.assertEqual(r["schema"],free.SCHEMA)

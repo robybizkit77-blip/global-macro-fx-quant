@@ -26,6 +26,13 @@ on:
       - 'site/fx-quant-v2/next/hourly-desk-ui-v1.css'
       - 'site/fx-quant-v2/next/app.js'
       - '.github/workflows/next-independent-ai-hourly-desk-v1.yml'
+  # Rebuild on completed production source runs, including late releases and
+  # unchanged observations, even if the scheduled desk tick is delayed.
+  workflow_run:
+    workflows:
+      - Calendar News Operational Refresh V1
+      - FX Quant V2 Cross-Asset Published Source Refresh
+    types: [completed]
   workflow_dispatch:
   schedule:
     - cron: '17 * * * *'
@@ -51,7 +58,13 @@ jobs:
           node validation/publishing/test_next_independent_hourly_desk_v1.cjs
   generate-and-publish:
     # PRs only run tests; never publish to the public site.
-    if: github.event_name != 'pull_request'
+    if: >-
+      github.event_name != 'pull_request' &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        contains(fromJSON('["schedule","push","workflow_dispatch","workflow_run"]'),
+                 github.event.workflow_run.event)))
     needs: validate
     runs-on: ubuntu-24.04
     timeout-minutes: 12
@@ -114,11 +127,42 @@ jobs:
             fi
             sleep 3
           done
+      - name: Verify the public edition and its source receipt after Pages delivery
+        shell: bash
+        env:
+          PARENT_WORKFLOW: ${{ github.event.workflow_run.name }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/home-public-proof/market-desk"
+          cp "$RUNNER_TEMP"/hourly-market-desk-{current,check}.json "$RUNNER_TEMP/home-public-proof/market-desk/"
+          python - <<'PYTHON'
+          import json
+          import os
+          from pathlib import Path
+          from shutil import copyfile
+          from validation.publishing.verify_pages_http_delivery_v1 import BASE_URL, verify
+
+          runner = Path(os.environ["RUNNER_TEMP"])
+          root = runner / "home-public-proof"
+          paths = ["market-desk/hourly-market-desk-current.json", "market-desk/hourly-market-desk-check.json"]
+          if os.environ.get("PARENT_WORKFLOW") == "FX Quant V2 Cross-Asset Published Source Refresh":
+              path = Path("site/fx-quant-v2/cross-asset-live-data.json")
+              (root / path).parent.mkdir(parents=True, exist_ok=True)
+              copyfile(path, root / path)
+              paths.append(str(path))
+          proof = verify(root, BASE_URL, tuple(paths), budget_seconds=180, interval_seconds=10)
+          (runner / "next-home-public-proof.json").write_text(json.dumps(proof, indent=2) + "\n")
+          print("NEXT_HOME_PUBLIC_HTTP", proof["status"], flush=True)
+          if proof["status"] != "PASS":
+              raise SystemExit("Home feed or input did not reach public Pages")
+          PYTHON
       - name: Retain independent free research edition for audit
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: next-free-hourly-desk-${{ github.run_id }}
           path: |
             ${{ runner.temp }}/hourly-market-desk-current.json
             ${{ runner.temp }}/hourly-market-desk-check.json
+            ${{ runner.temp }}/next-home-public-proof.json
           retention-days: 14
