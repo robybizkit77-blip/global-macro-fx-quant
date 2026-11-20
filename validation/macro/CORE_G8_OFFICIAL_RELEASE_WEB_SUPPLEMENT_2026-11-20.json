@@ -1,0 +1,47 @@
+{
+  "schema": "GMFQ_G8_CORE_OFFICIAL_WEB_RELEASE_ATTESTATIONS_V1",
+  "review_as_of": "2026-11-20",
+  "evidence_class": "OFFICIAL_PUBLISHER_RELEASE_WEB_VALUE_DATE_NOT_IMMUTABLE_BYTES",
+  "historical_full_PIT_vintage_certified": false,
+  "attestations": [
+    {
+      "key": "GBP.inflation",
+      "observation_period": "2026-10",
+      "release_date": "2026-11-18",
+      "release_timestamp_local": "2026-11-18T07:00:00+00:00",
+      "published_value": 3.6,
+      "raw_series_value": 3.6,
+      "transform": "reported_yoy_rate",
+      "publisher": "Office for National Statistics",
+      "url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/october2026",
+      "release_timestamp_source_url": "https://www.ons.gov.uk/releases/consumerpriceinflationukoctober2026",
+      "source_locator": "October 2026 bulletin, section 1 Main points: all-items CPI annual rate (D7G7) 3.6%. The same release's ONS publication page records 18 November at 7:00 a.m. UK time."
+    },
+    {
+      "key": "AUD.labour",
+      "observation_period": "2026-10",
+      "release_date": "2026-11-19",
+      "release_timestamp_local": "2026-11-19T11:30:00+11:00",
+      "published_value": 4.9,
+      "raw_series_value": 4.9,
+      "transform": "level",
+      "publisher": "Australian Bureau of Statistics",
+      "url": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026",
+      "source_locator": "October 2026 Labour Force release, Key statistics (seasonally adjusted): unemployment rate 4.9%. The release date and time on the same page are 19 November at 11:30 a.m. AEDT."
+    },
+    {
+      "key": "JPY.inflation",
+      "observation_period": "2026-10",
+      "release_date": "2026-11-20",
+      "release_timestamp_local": null,
+      "published_value": 2.3,
+      "raw_series_value": 2.3,
+      "transform": "reported_yoy_rate",
+      "publisher": "Statistics Bureau of Japan",
+      "url": "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html",
+      "archive_source_url": "https://www.e-stat.go.jp/stat-search/file-download?fileKind=2&statInfId=000040525997",
+      "source_locator": "October 2026 national CPI (2025 base), table 1 on page 1 of the official results: all-items annual rate 2.3%, released 20 November. The corresponding report is archived by e-Stat. Only the release date is attested."
+    }
+  ],
+  "contradictions": []
+}
