@@ -14,9 +14,18 @@ on:
     paths:
       - '.github/workflows/fx-quant-next-estimated-thesis-history.yml'
       - 'validation/pair_thesis/update_estimated_history_v1.cjs'
+      - 'site/fx-quant-v2/next/macro-strength-estimated-v1.js'
+      - 'site/fx-quant-v2/next/pair-rankings.js'
+      - 'site/control-room-preview/macro-v3-current-evidence.json'
+      - 'site/fx-quant-v2/ois-pricing-snapshot.json'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
   workflow_run:
-    workflows: ['Price History Persistent Daily V1']
+    workflows:
+      - 'Price History Persistent Daily V1'
+      - 'Macro V3 Observed G8 28-Pair Public Context V1'
+      - 'OIS Estimated Snapshot Repricing V1'
+      - 'Rates Persistent Daily V1'
     types: [completed]
   schedule:
     - cron: '35 8,17 * * 1-5'
@@ -59,7 +68,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Record one forward snapshot for a new fixing
+      - name: Recalculate all 28 Next estimates and archive material thesis changes
         shell: bash
         run: |
           set -euo pipefail

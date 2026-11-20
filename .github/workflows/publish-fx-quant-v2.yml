@@ -292,6 +292,38 @@ jobs:
           echo 'V2_PAGES_SYNC_FAILED: no false success claimed' >&2
           exit 1
 
+      - name: Verify Next thesis history and its reader on public Pages
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.name == 'FX Quant Next Estimated Thesis History'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUBLISH_NEEDED: ${{ steps.v2-tree.outputs.publish_needed }}
+        run: |
+          set -euo pipefail
+          if [[ "$PUBLISH_NEEDED" == "false" ]]; then
+            git checkout --detach origin/main
+          fi
+          page_sha="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
+          latest="$(gh api "repos/$GITHUB_REPOSITORY/pages/builds/latest" 2>/dev/null || echo '{}')"
+          if ! jq -e --arg sha "$page_sha" '.commit == $sha and
+            (.status == "built" or .status == "building" or .status == "queued")' <<<"$latest" >/dev/null; then
+            gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds" >/dev/null
+          fi
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from validation.publishing.verify_pages_http_delivery_v1 import BASE_URL, verify
+
+          paths = (
+              "site/fx-quant-v2/next/pair-estimate-history-v1.json",
+              "site/fx-quant-v2/next/pair-rankings.js",
+              "site/fx-quant-v2/next/index.html",
+          )
+          proof = verify(Path("."), BASE_URL, paths, budget_seconds=240, interval_seconds=10)
+          print("NEXT_THESIS_HISTORY_PUBLIC_HTTP", json.dumps(proof, sort_keys=True), flush=True)
+          if proof["status"] != "PASS":
+              raise SystemExit("Next thesis history or its reader did not reach public Pages")
+          PY
+
       - name: Verify the Briefing index and original HTML on public Pages
         if: needs.finalize-briefing.outputs.briefing != ''
         env:
