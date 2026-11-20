@@ -1,11 +1,11 @@
 {
   "schema": "GMFQ_FXV2_RATE_FX_TEMPORAL_READINESS_V1",
-  "report_as_of_evidence_date": "2026-11-19",
+  "report_as_of_evidence_date": "2026-11-20",
   "latest_fx_reference_fixing": "2026-11-19",
   "first_fx_reference_fixing": "2024-09-10",
   "source_hashes_sha256": {
     "ecb_fx_history": "3655aec7a5e63881a7e01ec4b2581c7a667a4f64fdbd2233d00300ebe2a83243",
-    "same_contract_futures_history": "a4bb4dd2be9f3582b21974e6a99b4d0c139c6fb9004e5b1aa53bda1574f78cb9",
+    "same_contract_futures_history": "2521856c859f2e8a10af1dc4d049f00c10cdce0903f808c6ec63155fc4136a3b",
     "macro_candidate_pair_universe": "e16300d8f469ea58886af2e14adc64414090653209b53dd22cbe543870727c6b"
   },
   "method": "SAME_LISTED_FUTURES_CONTRACT_TWO_CONSECUTIVE_ECB_SESSIONS",
@@ -29,16 +29,16 @@
   "summary": {
     "fx_reference_rows": 561,
     "fx_pairs": 28,
-    "archived_same_contract_quotes": 220,
+    "archived_same_contract_quotes": 222,
     "contract_currencies": 3,
-    "strict_currency_rate_moves": 192,
-    "strict_relative_pair_moves": 172,
+    "strict_currency_rate_moves": 193,
+    "strict_relative_pair_moves": 174,
     "distinct_relative_market_days": 24,
     "pairs_with_any_relative_history": 3,
     "pairs_without_relative_history": 25,
     "excluded_roll_or_ambiguous_instrument_groups": 4,
     "relative_events_with_future_ecb_t0": 163,
-    "relative_events_without_future_ecb_t0": 9,
+    "relative_events_without_future_ecb_t0": 11,
     "out_of_sample_predictions": 0,
     "generated_fx_signals": 0
   },
@@ -216,7 +216,7 @@
     "EUR/CHF": {
       "base": "EUR",
       "quote": "CHF",
-      "matched_changes": 55,
+      "matched_changes": 56,
       "market_days": [
         "2026-10-19",
         "2026-10-20",
@@ -245,7 +245,7 @@
       ],
       "horizons": {
         "3m": 18,
-        "6m": 20,
+        "6m": 21,
         "12m": 17
       },
       "fx_signal": null,
@@ -309,7 +309,7 @@
     "EUR/USD": {
       "base": "EUR",
       "quote": "USD",
-      "matched_changes": 56,
+      "matched_changes": 57,
       "market_days": [
         "2026-10-19",
         "2026-10-20",
@@ -338,7 +338,7 @@
       ],
       "horizons": {
         "3m": 18,
-        "6m": 20,
+        "6m": 21,
         "12m": 18
       },
       "fx_signal": null,
@@ -1732,6 +1732,27 @@
     },
     {
       "pair": "EUR/CHF",
+      "tenor": "6m",
+      "previous_market_date": "2026-11-18",
+      "market_date": "2026-11-19",
+      "base_contract": "FST3G2027",
+      "quote_contract": "SA3M2027",
+      "base_rate_change_bp": 0.5,
+      "quote_rate_change_bp": 1.0,
+      "relative_rate_change_bp": -0.5,
+      "source_usable_at_utc": "2026-11-20T04:56:38.237033Z",
+      "first_strictly_post_capture_ecb_date": null,
+      "following_ecb_date": null,
+      "same_day_fx_return": null,
+      "future_fx_return": null,
+      "outcome_used_in_model": false,
+      "is_out_of_sample_prediction": false,
+      "rate_instrument_quality": "SECONDARY_FUTURES_NOT_OIS",
+      "policy_repricing_bp": null,
+      "fx_signal": null
+    },
+    {
+      "pair": "EUR/CHF",
       "tenor": "12m",
       "previous_market_date": "2026-11-18",
       "market_date": "2026-11-19",
@@ -2897,6 +2918,27 @@
       "relative_rate_change_bp": 0.0,
       "source_usable_at_utc": "2026-11-18T21:50:30.443447Z",
       "first_strictly_post_capture_ecb_date": "2026-11-19",
+      "following_ecb_date": null,
+      "same_day_fx_return": null,
+      "future_fx_return": null,
+      "outcome_used_in_model": false,
+      "is_out_of_sample_prediction": false,
+      "rate_instrument_quality": "SECONDARY_FUTURES_NOT_OIS",
+      "policy_repricing_bp": null,
+      "fx_signal": null
+    },
+    {
+      "pair": "EUR/USD",
+      "tenor": "6m",
+      "previous_market_date": "2026-11-18",
+      "market_date": "2026-11-19",
+      "base_contract": "FST3G2027",
+      "quote_contract": "ZQK2027",
+      "base_rate_change_bp": 0.5,
+      "quote_rate_change_bp": 3.0,
+      "relative_rate_change_bp": -2.5,
+      "source_usable_at_utc": "2026-11-20T04:56:38.237033Z",
+      "first_strictly_post_capture_ecb_date": null,
       "following_ecb_date": null,
       "same_day_fx_return": null,
       "future_fx_return": null,
