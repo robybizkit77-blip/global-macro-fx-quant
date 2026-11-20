@@ -7,9 +7,13 @@ on:
       - cot-persistent-weekly-v1-2026-10-14
     paths:
       - '.github/workflows/cot-persistent-weekly-v1.yml'
+      - 'validation/orchestration/plan_cot_release_window_v1.py'
+      - 'validation/orchestration/test_plan_cot_release_window_v1.py'
   pull_request:
     paths:
       - '.github/workflows/cot-persistent-weekly-v1.yml'
+      - 'validation/orchestration/plan_cot_release_window_v1.py'
+      - 'validation/orchestration/test_plan_cot_release_window_v1.py'
   workflow_dispatch:
   schedule:
     # Existing Saturday retry cadence. Add *same-workflow* Monday 22:20
@@ -18,6 +22,10 @@ on:
     # alternatives, admitted by the guarded planner, not new workflows.
     - cron: '20 20 * * 1'
     - cron: '20 21 * * 1'
+    # First official publication attempt at 15:45 New York; the weekend
+    # slots remain independent retries when GitHub or the source is late.
+    - cron: '45 19 * * 5'
+    - cron: '45 20 * * 5'
     # Europe/Rome Saturday retry cadence: 00:00, 02:00, 05:00, 08:00.
     - cron: '0 22 * * 5'
     - cron: '0 23 * * 5'
@@ -45,7 +53,7 @@ jobs:
           fetch-depth: 2
           persist-credentials: true
 
-      - name: DST-safe Saturday and delayed CFTC Monday release gate
+      - name: Resolve official Friday CFTC release and recovery windows
         id: gate
         shell: bash
         env:

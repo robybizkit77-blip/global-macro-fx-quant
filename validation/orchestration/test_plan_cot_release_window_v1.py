@@ -13,6 +13,23 @@ def when(iso):
 
 
 class COTReleaseWindow(unittest.TestCase):
+    def test_friday_checks_follow_new_york_release_and_dst(self):
+        cases = [
+            ("2026-11-20T21:45", "45 20 * * 5", True),
+            ("2026-11-20T21:29", "45 20 * * 5", False),
+            ("2026-11-20T21:45", "45 19 * * 5", False),
+            ("2026-07-10T21:45", "45 19 * * 5", True),
+            ("2026-10-30T20:45", "45 19 * * 5", True),
+            ("2026-11-21T04:56", "45 20 * * 5", True),
+            ("2026-11-22T04:56", "45 20 * * 5", False),
+        ]
+        for instant, slot, expected in cases:
+            with self.subTest(instant=instant, slot=slot):
+                result = plan(when(instant), "schedule", slot)
+                self.assertEqual(result["should_run"], expected)
+                if expected:
+                    self.assertEqual(result["reason"], "FRIDAY_CFTC_RELEASE_CHECK")
+
     def test_monday_16_nov_after_official_delay_is_admitted(self):
         report = plan(when("2026-11-16T22:20:00"), "schedule", "20 21 * * 1")
         self.assertTrue(report["should_run"], report)
