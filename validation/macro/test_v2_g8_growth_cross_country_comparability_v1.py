@@ -7,14 +7,12 @@ import unittest
 from pathlib import Path
 
 from validation.macro.v2_g8_growth_cross_country_comparability_v1 import (
-    CURRENCIES, GDP_CUTOFF, CANDIDATE_ASOF, audit, direction, run, UNITS,
+    CURRENCIES, GDP_CUTOFF, audit, direction, run, UNITS,
 )
 from validation.macro.v2_g8_gdp_first_web_growth_features_v1 import (
     run as gdp_run,
 )
-from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
-    run as candidate_run,
-)
+from validation.macro.v2_frozen_domestic_research_v1 import run_frozen_candidate
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -23,7 +21,7 @@ class G8GDPNonFXComparabilityAuditTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.gdp = gdp_run(as_of=GDP_CUTOFF)
-        cls.candidate = candidate_run(as_of=CANDIDATE_ASOF)
+        cls.candidate = run_frozen_candidate()
         cls.obj = audit(cls.gdp, cls.candidate)
 
     def test_first_web_8_countries_28_exhaustive_pairs_and_dates(self):

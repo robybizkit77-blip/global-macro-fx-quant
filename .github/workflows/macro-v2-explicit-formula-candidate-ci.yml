@@ -6,6 +6,7 @@ on:
       - '.github/workflows/macro-v2-explicit-formula-candidate-ci.yml'
       - 'validation/macro/v2_domestic_candidate_explicit_formula_v1.py'
       - 'validation/macro/test_v2_domestic_candidate_explicit_formula_v1.py'
+      - 'validation/macro/v2_frozen_domestic_research_v1.py'
       - 'validation/macro/v2_source_robustness_triage_v1.py'
       - 'validation/macro/test_v2_source_robustness_triage_v1.py'
       - 'validation/macro/v2_zero_mad_ordinal_quality_v1.py'
@@ -33,9 +34,8 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          from validation.macro.test_v2_domestic_candidate_explicit_formula_v1 import frozen_research_shadow
-          from validation.macro.v2_domestic_candidate_explicit_formula_v1 import build
-          x=build(frozen_research_shadow(),json.loads(Path('live_data/sections/D.json').read_text()))
+          from validation.macro.v2_frozen_domestic_research_v1 import run_frozen_candidate
+          x=run_frozen_candidate()
           assert x['economic_as_of']=='2026-10-27'
           assert [x['summary'][k] for k in (
               'countries_robust_hypothetical_axis_shift_0p10_z',

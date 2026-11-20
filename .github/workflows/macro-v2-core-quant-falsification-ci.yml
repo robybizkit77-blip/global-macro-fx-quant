@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/macro-v2-core-quant-falsification-ci.yml'
       - 'validation/macro/v2_core_quant_falsification_readiness_v1.py'
+      - 'validation/macro/v2_frozen_domestic_research_v1.py'
+      - 'validation/macro/fixtures/v2_g8_frozen_domestic_research_coordinates_2026_10_27.json'
       - 'validation/macro/test_v2_core_quant_falsification_readiness_v1.py'
       - 'validation/macro/v2_us_chf_source_quality_propagation_v1.py'
       - 'validation/macro/test_v2_us_chf_source_quality_propagation_v1.py'
@@ -37,10 +39,10 @@ jobs:
           python -m unittest validation.macro.test_v2_us_chf_source_quality_propagation_v1 -v
       - name: Generate dated quantitative model and archived forward receipt reconciliation
         run: |
-          python -m validation.macro.v2_core_quant_falsification_readiness_v1 --as-of 2026-10-28 --out /tmp/gmfq-core-quant-falsification-2026-10-28.json
+          python -m validation.macro.v2_core_quant_falsification_readiness_v1 --out /tmp/gmfq-core-quant-falsification.json
           python - <<'PY'
           import json,os
-          f=json.load(open('/tmp/gmfq-core-quant-falsification-2026-10-28.json'))
+          f=json.load(open('/tmp/gmfq-core-quant-falsification.json'))
           assert f['status']=='RESEARCH_QUANT_MATH_CHECKED__PIT_OOS_AND_OPERATIONAL_PROMOTION_BLOCKED'
           assert f['universe']['canonical_unique_unordered_pairs']==28
           assert f['formula_stress']['economic_axes']==24
@@ -115,7 +117,7 @@ jobs:
         with:
           name: macro-v2-core-quant-falsification-research
           path: |
-            /tmp/gmfq-core-quant-falsification-2026-10-28.json
+            /tmp/gmfq-core-quant-falsification.json
             /tmp/gmfq-us-chf-source-stress.json
             /tmp/gmfq-g8-gdp-comparability-20261029.json
           retention-days: 21

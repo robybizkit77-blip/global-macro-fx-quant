@@ -17,12 +17,14 @@ import itertools
 import json
 import math
 from collections import Counter
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
-    FORMULA, G8, build as candidate_build, run as candidate_run
+    FORMULA, G8, build as candidate_build
 )
+from validation.macro.v2_frozen_domestic_research_v1 import run_frozen_candidate
 from validation.forward.audit_beta_forward_launch_readiness_v1 import (
     BETA, SCHEMA as FORWARD_SCHEMA, DECISIONS, OUTCOMES, ROOT,
     _read_lines, inspect as forward_inspect,
@@ -33,8 +35,8 @@ CORE=ROOT/"live_data/sections/D.json"
 PAIR=ROOT/"live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json"
 WALKFORWARD=ROOT/"validation/HISTORICAL_WALKFORWARD_V93_CONCLUSION_2026-10-01.json"
 RECEIPTS=ROOT/"validation/forward/receipts"
-EVALUATION_DAY="2026-10-28"
 CANDIDATE_DAY="2026-10-27"
+ROME = ZoneInfo("Europe/Rome")
 
 def need(ok,why):
     if not ok:
@@ -110,12 +112,19 @@ def receipt_reconciliation(receipts,decisions):
         })
     return rows
 
-def evaluate(*,candidate,forward,history,core,setup,receipts,decisions,as_of=EVALUATION_DAY):
-    need(as_of==EVALUATION_DAY,"dated 28 October audit only, not live intraday claim")
+def evaluate(*,candidate,forward,history,core,setup,receipts,decisions,as_of=None):
+    today=datetime.now(ROME).date()
+    as_of=as_of or today.isoformat()
+    cutoff=date.fromisoformat(as_of)
+    need(date.fromisoformat(CANDIDATE_DAY)<=cutoff<=today, "audit day outside the research window")
     universe=prior_pair_universe(core,setup)
-    need(date.fromisoformat(universe["macro_baseline_as_of"]) <= date.fromisoformat(as_of)
-         and date.fromisoformat(universe["pair_price_as_of"]) <= date.fromisoformat(as_of),
+    need(date.fromisoformat(universe["macro_baseline_as_of"]) <= cutoff
+         and date.fromisoformat(universe["pair_price_as_of"]) <= cutoff,
          "no future-dated macro or FX prices")
+    for row in (*decisions, *receipts):
+        observed=datetime.fromisoformat(row["decision_cutoff"])
+        need(observed.utcoffset() is not None and observed.astimezone(ROME).date()<=cutoff,
+             "no future or undated forward captures")
     need(candidate.get("schema")=="GMFQ_MACRO_V2_EXPLICIT_DOMESTIC_CANDIDATE_V1"
          and candidate.get("formula_version")==FORMULA
          and candidate.get("economic_as_of")==CANDIDATE_DAY
@@ -229,6 +238,7 @@ def evaluate(*,candidate,forward,history,core,setup,receipts,decisions,as_of=EVA
     output={
       "schema":SCHEMA,
       "research_as_of":as_of,
+      "candidate_input_as_of":CANDIDATE_DAY,
       "status":"RESEARCH_QUANT_MATH_CHECKED__PIT_OOS_AND_OPERATIONAL_PROMOTION_BLOCKED",
       "model_under_test":"NEW_EXPLICIT_50_50_DOMESTIC_ACTIVITY_NOT_LEGACY_D_NOT_FX_STRENGTH",
       "candidate_formula_version":FORMULA,
@@ -290,8 +300,8 @@ def evaluate(*,candidate,forward,history,core,setup,receipts,decisions,as_of=EVA
                  separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
     return output
 
-def run(*,as_of=EVALUATION_DAY):
-    candidate=candidate_run(as_of=CANDIDATE_DAY)
+def run(*,as_of=None):
+    candidate=run_frozen_candidate()
     core=json.loads(CORE.read_text(encoding="utf-8"))
     setup=json.loads(PAIR.read_text(encoding="utf-8"))
     historical=json.loads(WALKFORWARD.read_text(encoding="utf-8"))
@@ -309,7 +319,7 @@ def run(*,as_of=EVALUATION_DAY):
 
 def main():
     p=argparse.ArgumentParser()
-    p.add_argument("--as-of",default=EVALUATION_DAY)
+    p.add_argument("--as-of",help="Date of this readiness check (Rome), defaults to today")
     p.add_argument("--out",type=Path)
     opts=p.parse_args()
     if opts.out: need(opts.out.resolve().is_relative_to(Path("/tmp")),

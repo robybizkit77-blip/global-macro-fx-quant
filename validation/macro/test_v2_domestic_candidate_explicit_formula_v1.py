@@ -1,13 +1,10 @@
 """Adversarial offline economic formula test; no tradable Core mutation."""
 import copy
 import json
-import math
 import unittest
 from pathlib import Path
 
-from validation.macro.v2_g8_three_axis_economic_shadow_v1 import (
-    SCHEMA as SHADOW_SCHEMA, run as shadow_run
-)
+from validation.macro.v2_g8_three_axis_economic_shadow_v1 import run as shadow_run
 from validation.macro.v2_g8_observed_feature_bridge_v1 import run as observed_run
 from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
     build,run,activity_class,indicative_regime,continuous_weight_interval,
@@ -16,99 +13,7 @@ from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
 )
 
 
-FROZEN_RESEARCH = (Path(__file__).resolve().parents[2] /
-    "validation/macro/fixtures/v2_g8_frozen_domestic_research_coordinates_2026_10_27.json")
-
-
-def frozen_research_shadow():
-    """Reconstitute ONLY a 27-Oct offline regression fixture from CI evidence.
-
-    This deliberately cannot be called today's observation or historical
-    first-release PIT. Only numerical research-test input fields are retained.
-    """
-    fixture = json.loads(FROZEN_RESEARCH.read_text(encoding="utf-8"))
-    assert fixture["schema"] == "GMFQ_MACRO_V2_FROZEN_RESEARCH_COORDINATES_TEST_FIXTURE_V1"
-    assert fixture["economic_as_of"] == "2026-10-27"
-    assert fixture["artifact_id"] == 12721884785
-    assert fixture["original_shadow_receipt_sha256"] == (
-        "8b56f7fac1d97b59f71939105509032dcaa799d9a1a938c9f13a9e4313638027")
-    assert fixture["original_candidate_receipt_sha256"] == (
-        "9f9d4182974db3c5425a8a7e0191da3d3d90ee29a3ef82d258716896c1ee919d")
-    assert fixture["research_coordinates_from_prior_observed_revised_histories_not_historical_first_release_PIT"] is True
-    assert fixture["original_artifact_is_not_live_current_source"] is True
-    assert fixture["eligible_to_recompute_D"] is False
-    assert fixture["eligible_to_recompute_28_pairs"] is False
-    assert set(fixture["countries"]) == set(G8)
-    countries = {}
-    for ccy, source in fixture["countries"].items():
-        g, l, p = (source[k] for k in ("g","l","p"))
-        assert all(type(v) in (float,int) and math.isfinite(v) and abs(v) <= 3
-                   for v in (g,l,p)), ccy
-        assert type(source["estimated"]) is bool
-        flags = list(source["flags"])
-        assert source["estimated"] == (ccy == "USD")
-        assert set(source) == {"g","l","p","lp","ip","flags","estimated"}
-        details = {
-            "growth":{
-                "reference_period":"2026Q2",
-                "method":"FIRST_WEB_GDP_12_PRIOR_QUARTERS_RESEARCH_ONLY",
-                "quality":("GDP_FIRST_WEB_DEFINITION_CAVEAT_NO_PIT"
-                           if ccy in ("EUR","CHF") else
-                           "GDP_FIRST_WEB_RESEARCH_NO_ORIGINAL_DAY_ARCHIVE"),
-                "is_estimate":False,
-            },
-            "labour":{
-                "reference_period":source["lp"],
-                "method":("ESTIMATE_BLS_SHUTDOWN_EXACT_ONE_GAP_25_CALENDAR_MONTHS"
-                          if source["estimated"] else
-                          "OBSERVED_REVISED_HISTORY_24M_OR_12Q"),
-                "quality":("ESTIMATED_NOT_OBSERVED_24_CONSECUTIVE_MONTHS_NO_PIT"
-                           if source["estimated"] else
-                           "RESEARCH_CURRENT_REVISED_HISTORY_NO_HISTORIC_PIT"),
-                "is_estimate":source["estimated"],
-            },
-            "inflation":{
-                "reference_period":source["ip"],
-                "method":("ESTIMATE_BLS_SHUTDOWN_EXACT_ONE_GAP_25_CALENDAR_MONTHS"
-                          if source["estimated"] else
-                          "OBSERVED_REVISED_HISTORY_24M_OR_12Q"),
-                "quality":("ESTIMATED_NOT_OBSERVED_24_CONSECUTIVE_MONTHS_NO_PIT"
-                           if source["estimated"] else
-                           "RESEARCH_CURRENT_REVISED_HISTORY_NO_HISTORIC_PIT"),
-                "is_estimate":source["estimated"],
-            },
-        }
-        countries[ccy] = {
-            "currency":ccy,
-            "growth_relative_to_own_history_z":g,
-            "labour_tightness_relative_to_own_history_z":l,
-            "inflation_pressure_relative_to_own_history_z":p,
-            "illustrative_activity_labour_balance_z":round(.5*(g+l),12),
-            "quality_flags":flags,
-            "dimensions":details,
-            "fx_currency_strength_score":None,
-            "fx_directional_bias":None,
-            "policy_rate_signal":None,
-            "cb_pricing_signal":None,
-            "candidate_for_pair_ranking":False,
-            "approved_for_live_core_D":False,
-        }
-    return {
-        "schema":SHADOW_SCHEMA,
-        "status":"EIGHT_SHADOW_THREE_AXIS_ECONOMIC_SCENARIOS_NOT_MACRO_SCORES",
-        "as_of":fixture["economic_as_of"],
-        "scope":{"activity_weights":{
-            "growth":0.5, "labour_tightness":0.5,"inflation_in_activity":0.0}},
-        "summary":{"research_axes":24,"economies":8,"FX_scores_approved":0},
-        "countries":countries,
-        "observed_data_is_not_historic_publication_vintage_replay":True,
-        "economic_axis_math_not_validated_against_out_of_sample_events":True,
-        "safe_to_publish_new_D":False,
-        "safe_to_update_pair_theses":False,
-        "safe_for_beta":False,
-        "safe_for_forward":False,
-        "writes_live_data":False,
-    }
+from validation.macro.v2_frozen_domestic_research_v1 import frozen_research_shadow
 
 
 class CandidateFormulaTests(unittest.TestCase):
