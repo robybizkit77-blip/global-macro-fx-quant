@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-20T13:00:45.256563Z",
-  "edition_time_rome": "2026-11-20 14:00",
-  "material_digest": "8f692aa82ed9622fb5b15fa90ed9f18e0ad0ea19b79ac01d34433ebfa9a623c0",
+  "generated_at_utc": "2026-11-20T15:26:56.330892Z",
+  "edition_time_rome": "2026-11-20 16:26",
+  "material_digest": "3e461bcee5fc91dcde0887e2ea6dda419ff9456c4653224b80ad8a25161f03c0",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Sono usciti i dati sui prezzi in Giappone",
@@ -103,7 +103,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-20T13:00:45.256563Z",
+      "rss_checked_at_utc": "2026-11-20T15:26:56.330892Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -111,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-20T13:00:45.256563Z",
+      "headline": "Sono usciti i dati sui prezzi in Giappone",
+      "material_digest": "8f692aa82ed9622fb5b15fa90ed9f18e0ad0ea19b79ac01d34433ebfa9a623c0"
+    },
     {
       "generated_at_utc": "2026-11-20T10:38:45.982045Z",
       "headline": "Sono usciti i dati sui prezzi in Giappone",
@@ -225,11 +230,6 @@
       "generated_at_utc": "2026-11-16T11:32:29.704994Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "61608731f7e153deb6d6c7dbbf9ddc513a3bb2bbf3e2f77b86f2391ba484841e"
-    },
-    {
-      "generated_at_utc": "2026-11-16T08:38:06.515171Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "0f65ff90bd7502de2adac2366ca4849d12b5845646ea63aa50d79f88a8d6664b"
     }
   ]
 }
