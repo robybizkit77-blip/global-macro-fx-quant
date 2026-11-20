@@ -12,6 +12,7 @@ from validation.macro.v3_current_g8_28pair_economic_evidence_v1 import (
 )
 from validation.macro.v3_gdp_q3_official_overlay_v1 import observed_q3_updates, LEDGER
 from validation.macro.ons_quarterly_gdp_v1 import latest_growth, previous_quarter
+from validation.macro.esri_quarterly_gdp_v1 import latest_growth as latest_jp_growth
 
 
 class CurrentEconomicEvidenceTests(unittest.TestCase):
@@ -22,6 +23,7 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
         cls.heat = load("MACRO_THERMOMETER_DATA")
         cls.legacy = load("D")
         cls.setup = load("PAIR_SETUP_OPERATIONAL_VIEW")
+        cls.jp_growth = latest_jp_growth(cls.asof)
         cls.result = build(cls.observed, cls.heat, cls.legacy,
                            cls.setup, as_of=cls.asof)
 
@@ -63,6 +65,8 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             expected = (latest_growth(self.asof) or {}).get("reference_quarter", "2026Q3") if c == "GBP" else (
                 "2026Q3" if c in ("USD", "EUR") else "2026Q2"
             )
+            if c == "JPY" and self.jp_growth:
+                expected = self.jp_growth["reference_quarter"]
             self.assertEqual(country["growth"]["reference_quarter"], expected)
             self.assertFalse(country["growth"]["is_growth_strength_score"])
             for dim in ("labour", "inflation"):
@@ -112,7 +116,7 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
 
     def test_q3_latest_real_official_releases_no_fictional_g8_growth(self):
         import math
-        self.assertEqual(self.result["summary"]["GDP_later_quarter_official_releases"], 3)
+        self.assertEqual(self.result["summary"]["GDP_later_quarter_official_releases"], 3 + bool(self.jp_growth))
         countries = self.result["country_evidence"]
         self.assertEqual(set(observed_q3_updates("2026-10-29")), set())
         self.assertEqual(set(observed_q3_updates("2026-10-30")), {"USD"})
@@ -136,7 +140,12 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
         for c in ("USD", "EUR"):
             self.assertEqual(countries[c]["growth"]["prior_documented_quarter"]["reference_quarter"], "2026Q2")
             self.assertIs(countries[c]["growth"]["is_growth_strength_score"], False)
-        for c in set(FX)-{"USD", "EUR", "GBP"}:
+        if self.jp_growth:
+            jpy = countries["JPY"]["growth"]
+            self.assertEqual(jpy, self.jp_growth)
+            self.assertTrue(jpy["prior_value_from_same_esri_edition"])
+            self.assertFalse(jpy["is_growth_strength_score"])
+        for c in set(FX)-{"USD", "EUR", "GBP", "JPY"}:
             self.assertNotIn("prior_documented_quarter", countries[c]["growth"])
         for pair, row in self.result["pair_context"].items():
             for c in (row["base"], row["quote"]):

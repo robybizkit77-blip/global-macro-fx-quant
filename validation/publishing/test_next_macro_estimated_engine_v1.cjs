@@ -29,9 +29,13 @@ assert.deepEqual(result.coverage.currencies,8);
 assert.deepEqual(result.coverage.pairs,28);
 // The separately published Macro feed can still serve its previous snapshot in PR CI.
 const gbpGrowth=doc.countries.GBP.growth;
-assert.equal(result.coverage.withGDPAcceleration,gbpGrowth.prior_documented_quarter?3:2);
+const jpyGrowth=doc.countries.JPY.growth;
+assert.equal(result.coverage.withGDPAcceleration,2+
+ Number(Boolean(gbpGrowth.prior_documented_quarter))+Number(Boolean(jpyGrowth.prior_documented_quarter)));
 if(gbpGrowth.reference_quarter==='2026Q3'&&gbpGrowth.prior_documented_quarter)
  assert.equal(result.by.GBP.growthTrend,1);
+if(jpyGrowth.reference_quarter==='2026Q3'&&jpyGrowth.prior_documented_quarter)
+ assert.equal(result.by.JPY.growthTrend,-1);
 assert.equal(result.coverage.official6M,4,'Do not promote USD/EUR/CHF indicative or NZD proxy to OIS');
 assert.deepEqual(result.method,{economic:0.5,policy:0.3,price:0.2,
  gdpAcceleration:0.45,gdpLevel:0.2,labour:0.35,
