@@ -63,11 +63,14 @@
     'USD/EUR '+signed(eur,2,'%')+' · USD/JPY '+signed(jpy,2,'%'),
     last.Date,tone,'','BCE · 2 confronti, non indice USD');
   }
-  const s=risk.streams||{},sp=s.SP500,vix=s.VIX,hy=s.HY_OAS;
-  if(isSourced(sp)&&sp.previous!==0){
-   const n=(sp.value-sp.previous)/Math.abs(sp.previous)*100;
-   add('risk','AZIONARIO','S&P 500',signed(n,2,'%'),'Ultima chiusura',sp.date,
-    n>0?'constructive':n<0?'adverse':'neutral',chart(sp),'Dato pubblicato');
+  const s=risk.streams||{},sp=s.SP500,nasdaq=s.NASDAQCOM,vix=s.VIX,hy=s.HY_OAS;
+  const hasClose=x=>isSourced(x)&&x.previous>0;
+  const equity=hasClose(nasdaq)&&(!hasClose(sp)||nasdaq.date>sp.date)?nasdaq:sp;
+  if(hasClose(equity)){
+   const n=(equity.value/equity.previous-1)*100;
+   add('risk','AZIONARIO',equity===nasdaq?'Nasdaq Composite':'S&P 500',
+    signed(n,2,'%'),'Ultima chiusura',equity.date,
+    n>0?'constructive':n<0?'adverse':'neutral',chart(equity),'Dato pubblicato');
   }
   if(isSourced(vix)){
    const n=vix.value-vix.previous;

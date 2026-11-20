@@ -130,8 +130,8 @@
     Boolean(inspectSessionWindow(x.pair,args,n,x.to)))}))
    .filter(x=>x.verifiedWindows.length>0);
   const ranks=items=>items.sort((a,b)=>
-   b.verifiedWindows.length-a.verifiedWindows.length||
    b.to.localeCompare(a.to)||
+   b.verifiedWindows.length-a.verifiedWindows.length||
    Number(a.proxy)-Number(b.proxy)||
    (a.pair==='EURUSD'?-1:b.pair==='EURUSD'?1:0)||
    a.pair.localeCompare(b.pair));
@@ -202,13 +202,17 @@
  function render(args={}){
   const picks=choose(args);
   if(!picks.length)return '';
+  const recent=[],historical=[];
+  for(const comparison of picks){
+   (weekdayLag(comparison.to,args.today)>=3?historical:recent).push(comparison);
+  }
   const asof=args.history?.as_of;
-  const status=freshness(args,picks);
+  const status=freshness(args,recent.length?recent:picks);
   const sourceLine='<div class="home-pricing-proof-date-context" data-home-pricing-freshness="'+status.status+'">'+
    '<strong>Ultima data disponibile per fonte</strong> · fixing BCE '+esc(date(status.priceAsOf))+
    ' · archivio 6M '+esc(date(status.moneyAsOf))+
-   '. Ogni coppia riporta la data effettiva del confronto.'+
-   (status.stale?' <strong>Attenzione: almeno una fonte o un confronto è fermo da 3 o più giorni feriali. Lettura soltanto storica.</strong>':'')+
+   '. Le finestre di ogni coppia indicano una data iniziale e una finale.'+
+   (status.stale?' <strong>Le date comuni più recenti sono da archivio. Lettura soltanto storica.</strong>':'')+
    '</div>';
   const row=x=>{
    const sign=x.comparison==='SEGNI_COHERENTI'?'Stesso segno, non causalità':
@@ -222,7 +226,7 @@
    const longRow=({w,n})=>'<div class="home-pricing-proof-multi-row" data-home-pricing-sessions="'+n+'"'+
     ' data-home-pricing-available="true">'+
     '<strong>'+n+' sedute BCE</strong>'+
-    '<span>'+esc(date(w.from))+' → '+esc(date(w.to))+'</span>'+
+    '<span>Riferimento '+esc(date(w.from))+' · fine '+esc(date(w.to))+'</span>'+
     '<span>Δ 6M '+esc(fmt(w.monetaryBp))+' pb · FX '+esc(fmt(w.fxPct))+'%</span>'+
     '<em>'+(w.comparison==='SEGNI_COHERENTI'?'Stesso segno':
      w.comparison==='SEGNI_DIVERGENTI'?'Segni divergenti':'Movimenti contenuti')+
@@ -250,17 +254,22 @@
     '<footer><span>'+esc(x.kinds.base)+' / '+esc(x.kinds.quote)+' · '+esc(labels)+'</span>'+
     '<button type="button" data-command="pair:'+esc(x.pair)+'" aria-label="Apri il dossier '+esc(pairText(x.pair))+'">Apri dossier FX ↗</button></footer></article>';
   };
+  const grid=items=>'<div class="home-pricing-proof-grid" data-home-pricing-count="'+
+   items.length+'">'+items.map(row).join('')+'</div>';
+  const archive=historical.length?
+   '<details class="home-pricing-proof-sources" data-home-pricing-archive><summary>Confronti storici: '+
+   historical.map(x=>esc(pairText(x.pair))+' fino al '+esc(date(x.to))).join(' · ')+'</summary>'+
+   grid(historical)+'</details>':'';
   return '<section class="home-pricing-proof" id="home-pricing-proof" '+
     'data-home-pricing-asof="'+esc(asof||'')+
     '" aria-label="Verifica documentata tra repricing monetario e Forex">'+
     '<div class="home-pricing-proof-heading"><div>'+
     '<span class="morning-section-label">DALLE ASPETTATIVE AI CAMBI · DATI CONSULTABILI</span>'+
     '<h2>Il Forex sta seguendo il repricing dei tassi?</h2>'+
-    '<p>'+(picks.length===2?'Due confronti documentati, uno con USD e uno fra altre valute. ':'Un confronto documentato con storico sufficiente. ')+
-    'La scelta privilegia le finestre verificabili e la recenza, <strong>non per attrattività di trading</strong>.</p></div>'+
+    '<p>I confronti usano variazioni a sei mesi e fixing BCE sulle stesse date.</p></div>'+
     '<a href="#rates">Apri le curve OIS/futures ↗</a></div>'+
     sourceLine+
-    '<div class="home-pricing-proof-grid" data-home-pricing-count="'+picks.length+'">'+picks.map(row).join('')+'</div>'+
+    (recent.length?grid(recent):'')+archive+
     '<details class="home-pricing-proof-sources"><summary>Verifica i dati e il metodo</summary>'+
     '<p>Per ogni coppia si confrontano <strong>due variazioni 6M</strong> di strumenti distinti e la variazione del fixing BCE sulla stessa data iniziale e finale. Contratti secondari senza continuità di codice sono esclusi. OIS, futures e proxy non sono equivalenti.</p>'+
     '<p>La soglia di avviso sulla recenza usa 3 giorni feriali, non giorni di negoziazione certificati; non modifica né stima i dati. La data generale dell’archivio non implica che ogni valuta sia aggiornata fino a quel giorno.</p>'+ 
