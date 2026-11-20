@@ -78,6 +78,7 @@ on:
       - 'FX Quant Next RBNZ Monthly Liquidity Research'
       - 'FX Quant V2 AUD Official RBA F2 Research Refresh'
       - 'FX Quant V2 CHF NZD Same-Basis Research Refresh'
+      - 'CHF SNB 10Y Informational Context V1'
       - 'FX Quant V2 Cross-Asset Published Source Refresh'
       - 'FX Quant V2 Macro Candidate Descriptive Baseline'
       - 'OIS G8 History Persistent Daily V1'
@@ -297,6 +298,7 @@ jobs:
           github.event_name == 'workflow_run' &&
           (github.event.workflow_run.name == 'FX Quant Next Estimated Thesis History' ||
            github.event.workflow_run.name == 'FX Quant V2 AUD Official RBA F2 Research Refresh' ||
+           github.event.workflow_run.name == 'CHF SNB 10Y Informational Context V1' ||
            github.event.workflow_run.name == 'FX Quant V2 CHF NZD Same-Basis Research Refresh')
         env:
           GH_TOKEN: ${{ github.token }}
@@ -325,6 +327,15 @@ jobs:
                   "site/fx-quant-v2/aud-rba-f2-history-research.json",
                   "site/fx-quant-v2/aud-rba-f2-research.json",
                   "site/fx-quant-v2/next/fx-rates-bridge.js",
+              )
+          elif os.environ["SOURCE_WORKFLOW"] == "CHF SNB 10Y Informational Context V1":
+              label = "CHF_2Y_ESTIMATE_PUBLIC_HTTP"
+              paths = (
+                  "site/fx-quant-v2/chf-2y-estimate-research.json",
+                  "site/fx-quant-v2/next/fx-rates-bridge.js",
+                  "site/fx-quant-v2/next/decision-journey.js",
+                  "site/fx-quant-v2/next/app.js",
+                  "site/fx-quant-v2/next/index.html",
               )
           elif os.environ["SOURCE_WORKFLOW"] == "FX Quant V2 CHF NZD Same-Basis Research Refresh":
               label = "CHF_NZD_RESEARCH_PUBLIC_HTTP"
