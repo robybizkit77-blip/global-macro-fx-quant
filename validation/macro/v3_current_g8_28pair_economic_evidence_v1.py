@@ -26,6 +26,7 @@ from validation.macro.v2_g8_observed_feature_bridge_v1 import (
     run as observed_run, SCHEMA as OBSERVED_SCHEMA, ROOT
 )
 from validation.macro.v3_gdp_q3_official_overlay_v1 import observed_q3_updates
+from validation.macro.ons_quarterly_gdp_v1 import latest_growth
 
 FX = ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD")
 SCHEMA = "GMFQ_MACRO_V3_CURRENT_G8_28PAIR_OBSERVED_ECONOMIC_CONTEXT_V1"
@@ -95,7 +96,10 @@ def build(observed, heat, legacy, setup, *, as_of):
          setup.get("price_audit", {}).get("status") == "PASS",
          "28 pair observational overlay must remain source-dated")
 
-    q3_growth = observed_q3_updates(as_of)
+    growth_updates = observed_q3_updates(as_of)
+    uk_growth = latest_growth(as_of)
+    if uk_growth is not None:
+        growth_updates["GBP"] = uk_growth
     countries = {}
     for c in FX:
         upstream = heat["currencies"][c]
@@ -181,12 +185,12 @@ def build(observed, heat, legacy, setup, *, as_of):
             "country_relative_rank": None,
             "not_a_trade_or_policy_signal": True,
         }
-        if c in q3_growth:
-            # Preserve the Q2 issuer statement; show the later actual Q3
-            # independently, never estimating GDP for the other G8 economies.
+        if c in growth_updates:
+            # The UK series can supply the previous quarter from the same
+            # ONS edition. Static releases retain the prior issuer statement.
             previous = countries[c]["growth"]
             countries[c]["growth"] = {
-                **q3_growth[c], "prior_documented_quarter": previous,
+                "prior_documented_quarter": previous, **growth_updates[c],
             }
 
     pairs = setup.get("pairs")
@@ -244,7 +248,7 @@ def build(observed, heat, legacy, setup, *, as_of):
             "numeric_old_D_macro_scores_replaced": 0,
             "pair_trade_signals_generated": 0,
             "GDP_publishers_visible": 8,
-            "GDP_later_quarter_official_releases": len(q3_growth),
+            "GDP_later_quarter_official_releases": len(growth_updates),
         },
         "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
         "point_in_time_historical_backtest_certified": False,
