@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-20",
-  "generated_at_utc": "2026-11-20T16:59:56.196351Z",
+  "generated_at_utc": "2026-11-20T21:12:11.319190Z",
   "items": [
     {
       "as_of": "2026-11-20",
@@ -17,6 +17,48 @@
       "source": "Statistics Bureau of Japan",
       "source_url": "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html",
       "title": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
+    },
+    {
+      "as_of": "2026-11-20",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "1 USD = 158.64422 JPY al fixing 2026-11-20; variazione vs 2026-11-19. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "USDJPY",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-19",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "USD/JPY: -0.83% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-20",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "EUR",
+      "confidence": "A",
+      "detail": "1 EUR = 1.09900 USD al fixing 2026-11-20; variazione vs 2026-11-19. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "EURUSD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-19",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "EUR/USD: -0.02% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-20",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "1 AUD = 0.95366 CAD al fixing 2026-11-20; variazione vs 2026-11-19. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "AUDCAD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-19",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "AUD/CAD: -0.64% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-19",
@@ -84,20 +126,6 @@
     },
     {
       "as_of": "2026-11-19",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "1 USD = 159.97089 JPY al fixing 2026-11-19; variazione vs 2026-11-18. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "USDJPY",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-18",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "USD/JPY: +0.35% fra due fixing BCE"
-    },
-    {
-      "as_of": "2026-11-19",
       "category": "MARKET_GOVERNMENT_RATES",
       "ccy": "USD",
       "confidence": "A",
@@ -133,20 +161,6 @@
       "source": "ICE Data Indices via FRED",
       "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
       "title": "Credito IG OAS: +1.0 pb nella chiusura del 2026-11-19"
-    },
-    {
-      "as_of": "2026-11-19",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "EUR",
-      "confidence": "A",
-      "detail": "1 EUR = 1.09920 USD al fixing 2026-11-19; variazione vs 2026-11-18. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "EURUSD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-18",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "EUR/USD: +0.22% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-19",
@@ -195,20 +209,6 @@
       "title": "CAD: repricing implicito da futures più dovish (-1.5 bp 6M in 1D)"
     },
     {
-      "as_of": "2026-11-19",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "1 AUD = 0.95976 CAD al fixing 2026-11-19; variazione vs 2026-11-18. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "AUDCAD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-18",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "AUD/CAD: -0.33% fra due fixing BCE"
-    },
-    {
       "as_of": "2026-11-18",
       "category": "MARKET_EQUITY_CLOSE",
       "ccy": "",
@@ -254,7 +254,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-20T16:59:56.196351Z",
+  "last_checked_at_utc": "2026-11-20T21:12:11.319190Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
