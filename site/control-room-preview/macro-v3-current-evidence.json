@@ -228,22 +228,25 @@
         "national_definitions_are_not_fully_cross_country_equivalent": true,
         "nonannualized_qoq_descriptive_pct": 0.7,
         "prior_documented_quarter": {
+          "historical_pit_training_vintages_certified": false,
           "is_growth_strength_score": false,
           "later_revisions_not_identical_to_first_release": true,
           "national_definitions_are_not_fully_cross_country_equivalent": true,
           "nonannualized_qoq_descriptive_pct": 0.5,
-          "publisher_release_day": "2026-09-30",
-          "publisher_source": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/quarterlynationalaccounts/apriltojune2026",
+          "publisher_release_day": "2026-11-12",
+          "publisher_source": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/julytoseptember2026",
           "reference_quarter": "2026Q2",
           "reported_unit": "PERCENT_QOQ_SA",
           "reported_value": 0.5
         },
+        "prior_value_from_same_ons_edition": true,
         "publication_stage": "FIRST_QUARTERLY_ESTIMATE",
         "publisher_release_day": "2026-11-12",
         "publisher_source": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/julytoseptember2026",
         "reference_quarter": "2026Q3",
         "reported_unit": "PERCENT_QOQ_SA",
-        "reported_value": 0.7
+        "reported_value": 0.7,
+        "source_first_observed_at_utc": "2026-11-20T17:40:26.396224+00:00"
       },
       "inflation": {
         "change_direction": "UP",
@@ -1439,9 +1442,9 @@
   "safe_to_recompute_structural_pair_theses": false,
   "safe_to_republish_D": false,
   "schema": "GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1",
-  "snapshot_content_sha256": "86ea9638e0f85b204103d9eca489f8a31fc5fbb22e4b6ebf8441d8bdcda419a4",
+  "snapshot_content_sha256": "1a3fd26897b1b395aab69fb6a4f55726b5ae8dbc5af460199da89b7def51a944",
   "source_observation_periods_not_release_days": true,
-  "source_receipt_sha256": "8cf5f3bd78c60a06ef7e6ccced423247c14f40ac98b5e8cdd4bd97ea4009a3dd",
+  "source_receipt_sha256": "6348bdea4ae8221a2bcad618d9b10213464404db64f935030b23ddaf682d55a2",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
   "status": "OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL",
   "summary": {
