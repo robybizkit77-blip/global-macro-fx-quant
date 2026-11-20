@@ -109,7 +109,7 @@ const chfRead=(data,history,asOf=liveAsOf,clock=comparisonDay)=>
 const audChf=chfRead(rates,chf);
 const estimated=(key,source,clock=comparisonDay)=>
  mod.snapshot(rates,prices,key,liveAsOf,clock,aud,chf,nzd,reconciled,source);
-assert(!estimated('AUDCAD',estimateFeed).estimate,'The CHF estimate is scoped to AUD/CHF');
+assert(!estimated('AUDCAD',estimateFeed).estimate,'The estimate only supplies a CHF leg');
 assert(!estimated('AUDCHF',{...estimateFeed,eligible_for_core:true}).estimate);
 assert(!estimated('AUDCHF',estimateFeed,'2026-12-05').estimate,'Too-old inputs cannot produce a fresh estimate');
 const chf2y=estimated('AUDCHF',estimateFeed);
@@ -120,10 +120,35 @@ if(aud.last_observation_date==='2026-11-18'&&comparisonDay==='2026-11-20'&&
  assert.equal(e.start,'2026-11-09');
  assert.equal(e.end,'2026-11-18');
  assert.equal(e.weekdays,7);
- assert(Math.abs(e.aud2Bp-5.6)<1e-9&&Math.abs(e.chf10Bp-15)<1e-9);
+ assert.equal(e.observedCurrency,'AUD');
+ assert(Math.abs(e.observed2Bp-5.6)<1e-9&&Math.abs(e.chf10Bp-15)<1e-9);
  assert(e.spreadBp<0&&e.low<0&&e.high>0&&e.uncertain);
  assert.equal(chf2y.ready,false);
  assert.match(mod.brief(chf2y).label,/Stima differenziale 2Y.*segno incerto/);
+}
+const chfCrosses=['AUDCHF','CADCHF','CHFJPY','EURCHF','GBPCHF','NZDCHF','USDCHF'];
+if(liveAsOf==='2026-11-19'&&comparisonDay==='2026-11-20'&&
+   estimateFeed.observations.some(r=>r.date==='2026-11-19')){
+ for(const pair of chfCrosses){
+  const result=estimated(pair,estimateFeed),e=result.estimate;
+  assert(e&&!result.ready&&!result.short,'Estimate must stay separate from observed coverage: '+pair);
+  assert.equal(e.observedCurrency,pair.replace('CHF',''));
+  assert.equal(e.end,['AUDCHF','CADCHF'].includes(pair)?'2026-11-18':'2026-11-19');
+  const direction=pair.startsWith('CHF')?-1:1;
+  assert(Math.abs(e.spreadBp-direction*(e.observed2Bp-e.chf2Bp))<1e-9);
+ }
+ const nzdEstimate=estimated('NZDCHF',estimateFeed).estimate;
+ assert.match(nzdEstimate.observedSource,/RBNZ B2/);
+ assert(!mod.snapshot(rates,prices,'NZDCHF',liveAsOf,comparisonDay,aud,chf,nzd,
+   {...reconciled,benchmark_2Y:'May 2028'},estimateFeed).estimate);
+ const baseChf=estimated('CHFJPY',estimateFeed).estimate;
+ const quoteChf=estimated('JPYCHF',estimateFeed).estimate;
+ assert(Math.abs(baseChf.spreadBp+quoteChf.spreadBp)<1e-9);
+ assert(Math.abs(baseChf.low+quoteChf.high)<1e-9);
+ assert(Math.abs((1+baseChf.fxPct/100)*(1+quoteChf.fxPct/100)-1)<1e-9);
+ const confirmed={...rates,CHF:{...rates.JPY}};
+ const withOfficial=mod.snapshot(confirmed,prices,'CHFJPY',liveAsOf,comparisonDay,aud,chf,nzd,reconciled,estimateFeed);
+ assert(withOfficial.ready&&!withOfficial.estimate,'Observed aligned rates supersede the estimate');
 }
 assert(!chfRead(rates,chf,asof,now).historical,'A later RBA vintage cannot reach the archived desk');
 assert(!chfRead(rates,{...chf,eligible_for_core:true}).historical,'Invalid CHF research cannot feed the historical comparison');
