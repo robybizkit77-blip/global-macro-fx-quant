@@ -27,7 +27,10 @@ assert.equal(result.legacyMacroAsOf,'2026-09-25');
 assert.equal(result.priceAsOf,prices.last_as_of);
 assert.deepEqual(result.coverage.currencies,8);
 assert.deepEqual(result.coverage.pairs,28);
-assert.equal(result.coverage.withGDPAcceleration,2,'Only USD/EUR have adjacent GDP quarters');
+// The separately published Macro feed can still serve its previous snapshot in PR CI.
+const gbpHasQ3=doc.countries.GBP.growth.reference_quarter==='2026Q3';
+assert.equal(result.coverage.withGDPAcceleration,gbpHasQ3?3:2);
+assert.equal(result.by.GBP.growthTrend,gbpHasQ3?1:null);
 assert.equal(result.coverage.official6M,4,'Do not promote USD/EUR/CHF indicative or NZD proxy to OIS');
 assert.deepEqual(result.method,{economic:0.5,policy:0.3,price:0.2,
  gdpAcceleration:0.45,gdpLevel:0.2,labour:0.35,

@@ -60,7 +60,7 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             self.assertIsNone(country["macro_score"])
             self.assertIsNone(country["country_relative_rank"])
             self.assertEqual(country["growth"]["reference_quarter"],
-                             "2026Q3" if c in ("USD", "EUR") else "2026Q2")
+                             "2026Q3" if c in ("USD", "EUR", "GBP") else "2026Q2")
             self.assertFalse(country["growth"]["is_growth_strength_score"])
             for dim in ("labour", "inflation"):
                 item = country[dim]
@@ -109,19 +109,26 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
 
     def test_q3_latest_real_official_releases_no_fictional_g8_growth(self):
         import math
-        self.assertEqual(self.result["summary"]["GDP_later_quarter_official_releases"], 2)
+        self.assertEqual(self.result["summary"]["GDP_later_quarter_official_releases"], 3)
         countries = self.result["country_evidence"]
         self.assertEqual(set(observed_q3_updates("2026-10-29")), set())
         self.assertEqual(set(observed_q3_updates("2026-10-30")), {"USD"})
         self.assertEqual(set(observed_q3_updates("2026-10-31")), {"USD", "EUR"})
+        self.assertEqual(set(observed_q3_updates("2026-11-12")), {"USD", "EUR"})
+        self.assertEqual(set(observed_q3_updates("2026-11-13")), {"USD", "EUR", "GBP"})
         self.assertTrue(math.isclose(
             countries["USD"]["growth"]["nonannualized_qoq_descriptive_pct"],
             100*((1+3.4/100)**.25-1), abs_tol=1e-6))
         self.assertEqual(countries["EUR"]["growth"]["nonannualized_qoq_descriptive_pct"], 0.4)
-        for c in ("USD", "EUR"):
+        gbp = countries["GBP"]["growth"]
+        self.assertEqual(gbp["publication_stage"], "FIRST_QUARTERLY_ESTIMATE")
+        self.assertEqual(gbp["nonannualized_qoq_descriptive_pct"], 0.7)
+        self.assertEqual(gbp["prior_documented_quarter"]["nonannualized_qoq_descriptive_pct"], 0.5)
+        self.assertEqual(gbp["reported_unit"], gbp["prior_documented_quarter"]["reported_unit"])
+        for c in ("USD", "EUR", "GBP"):
             self.assertEqual(countries[c]["growth"]["prior_documented_quarter"]["reference_quarter"], "2026Q2")
             self.assertIs(countries[c]["growth"]["is_growth_strength_score"], False)
-        for c in set(FX)-{"USD", "EUR"}:
+        for c in set(FX)-{"USD", "EUR", "GBP"}:
             self.assertNotIn("prior_documented_quarter", countries[c]["growth"])
         for pair, row in self.result["pair_context"].items():
             for c in (row["base"], row["quote"]):
@@ -132,6 +139,7 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             lambda d: d["events"][0].update(reported_value=6.5),
             lambda d: d["events"][1].update(source_url="https://example.org/"),
             lambda d: d["events"][0].update(publisher_release_day="2026-10-20"),
+            lambda d: d["events"][2].update(reported_unit="PERCENT_QOQ_UNADJUSTED"),
         ):
             ledger = json.loads(LEDGER.read_text())
             change(ledger)
