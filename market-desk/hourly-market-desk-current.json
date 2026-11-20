@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-20T10:13:46.424486Z",
-  "edition_time_rome": "2026-11-20 11:13",
-  "material_digest": "874ea38a4d8d9ba8c97b2a69ef9d7960a78aa91a8cbacf2c6a54fedd2bed443c",
+  "generated_at_utc": "2026-11-20T10:38:45.982045Z",
+  "edition_time_rome": "2026-11-20 11:38",
+  "material_digest": "f744344fedb0b3c4f8f1b82ebb3fc7470569e3578fef54d4bcc8c735f20ccc94",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Sono usciti i dati sui prezzi in Giappone",
-  "lead": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. La volatilità azionaria è salita alla chiusura del 19 novembre.",
+  "lead": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno.",
   "news": [
     {
       "headline": "Dollaro misto",
@@ -34,16 +34,17 @@
       "evidence": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     },
     {
-      "headline": "Il quadro del rischio",
-      "analysis": "La volatilità azionaria è salita alla chiusura del 19 novembre. Da seguire se il movimento prosegue anche alla prossima chiusura.",
+      "headline": "Il Nasdaq Composite scende",
+      "analysis": "Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno. Da seguire se il movimento prosegue anche alla prossima chiusura.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
       "market_area": "RISCHIO",
       "sources": [
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
         "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
       ],
-      "evidence": "Alla chiusura del 19 novembre, VIX +3,88 punti."
+      "evidence": "Alla chiusura del 19 novembre, Nasdaq Composite −2,25% e VIX +3,88 punti."
     },
     {
       "headline": "Oro e petrolio in calo",
@@ -83,7 +84,7 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. La volatilità azionaria è salita alla chiusura del 19 novembre.",
+  "desk_judgment": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno.",
   "fx_implications": "Da seguire se euro e yen si muovono nella stessa direzione contro il dollaro.",
   "what_changed": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
@@ -91,6 +92,7 @@
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bankofcanada.ca/2026/11/bank-canada-media-interview-barrie-360-2026-11-19/",
@@ -101,7 +103,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-20T10:13:46.424486Z",
+      "rss_checked_at_utc": "2026-11-20T10:38:45.982045Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -109,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-20T10:13:46.424486Z",
+      "headline": "Sono usciti i dati sui prezzi in Giappone",
+      "material_digest": "874ea38a4d8d9ba8c97b2a69ef9d7960a78aa91a8cbacf2c6a54fedd2bed443c"
+    },
     {
       "generated_at_utc": "2026-11-20T02:22:30.412197Z",
       "headline": "Dollaro misto",
@@ -223,11 +230,6 @@
       "generated_at_utc": "2026-11-16T08:02:14.877976Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "731ea26b691752b8a88d68eaa5144b9033857a963306839685a5efbd2004914c"
-    },
-    {
-      "generated_at_utc": "2026-11-16T01:05:44.505128Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "b2c1630a578e52a77dd13330c40305d2b6b46ee3fc7fc50eeceabd4bd07d7ae9"
     }
   ]
 }
