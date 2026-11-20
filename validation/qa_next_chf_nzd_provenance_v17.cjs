@@ -1,5 +1,5 @@
 'use strict';
-/* Next V17: dated CHF & post-roll NZD research must NEVER become 5/20 FX/2Y verdict. */
+/* Archived CHF/NZD context cannot become a 5/20 verdict. Reconciled B2 is separate. */
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const j=p=>JSON.parse(fs.readFileSync(p,'utf8'));
 const rates=j('live_data/sections/NATIVE_RATES_DATA.json');
@@ -8,6 +8,7 @@ const prices=j('live_data/sections/ECB_G8_PRICE_HISTORY.json');
 const aud=j('site/fx-quant-v2/aud-rba-f2-history-research.json');
 const chf=j('site/fx-quant-v2/chf-snb-paired-history.json');
 const nzd=j('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
+const reconciled=j('site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json');
 const legacy=j('site/fx-quant-v2/chf-nzd-benchmark-research.json');
 const mod=require('../site/fx-quant-v2/next/fx-rates-bridge.js');
 // Preserve the archived 6 Nov FX fixture; assess the independent, later NZD
@@ -83,6 +84,25 @@ for(const pair of ['EURCHF','NZDUSD','CHFNZD']){
    'Only verified contemporary sovereign 2Y may validate '+pair);
  }else assert.equal(mod.brief(live).ready,false,'Stale/noncanonical CHF/NZD must remain unavailable: '+pair);
 }
+const comparisonDay=[aud.publication_date,reconciled.publication_date,liveAsOf].sort().at(-1);
+const audNzd=(b2,now=comparisonDay)=>mod.snapshot(rates,prices,'AUDNZD',liveAsOf,now,aud,chf,nzd,b2);
+const withB2=audNzd(reconciled);
+if(aud.last_observation_date==='2026-11-18'&&reconciled.last_observation_date==='2026-11-19'&&comparisonDay==='2026-11-20'){
+ assert(withB2.ready&&withB2.researchOnly&&withB2.nzdResearch);
+ assert.equal(withB2.short.start,'2026-11-11');
+ assert.equal(withB2.short.end,'2026-11-18');
+ assert(Math.abs(withB2.short.spreadBp+8.4)<1e-9);
+ assert.equal(withB2.medium,null,'Fourteen post-roll dates cannot support 20 intervals');
+}
+assert(!audNzd(reconciled,'2026-11-06').nzdResearch,'Future RBNZ research cannot leak into archived analysis');
+for(const changed of [
+ {...reconciled,eligible_for_core:true},
+ {...reconciled,benchmark_2Y:'May 2028'},
+ {...reconciled,html_xlsx_matched_dates:reconciled.html_xlsx_matched_dates.slice(0,5)}
+]){
+ assert(!audNzd(changed).nzdResearch,'Failed provenance must disable the B2 comparison overlay');
+}
+assert(!mod.snapshot(rates,prices,'NZDUSD',liveAsOf,comparisonDay,aud,chf,nzd,reconciled).nzdResearch);
 const before=JSON.stringify(rates);
 for(const x of all)assert(typeof x.ready==='boolean');
 assert.equal(JSON.stringify(rates),before,'Research must not mutate native rates');
@@ -150,8 +170,9 @@ assert.doesNotMatch(html,/data-source-context=/,'Official fully current pair mus
 const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const app=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
 const journey=fs.readFileSync('site/fx-quant-v2/next/decision-journey.js','utf8');
-assert(page.includes('fx-rates-bridge.js?v=17')&&page.includes('app.js?v=18'));
+assert(/fx-rates-bridge\.js\?v=\d+"/.test(page)&&/app\.js\?v=[\w.-]+"/.test(page));
 assert(app.includes("chfResearch:'../chf-snb-paired-history.json'"));
 assert(app.includes("nzdPostroll:'../nzd-b2-postroll-web-research.json'"));
+assert(app.includes("nzdReconciled:'../nzd-rbnz-b2-reconciled-research.json'")&&journey.includes("get('nzdReconciled')"));
 assert(journey.includes("get('chfResearch')")&&journey.includes("get('nzdPostroll')"));
 console.log('NEXT_V17_SOURCE_PROVENANCE_PASS',JSON.stringify({CHF:chfContext[0].lastDate,NZD:nzdContext[0].lastDate,NZD_intervals:nzdContext[0].intervals,short:shortCount,medium:mediumCount,core_changed:false}));

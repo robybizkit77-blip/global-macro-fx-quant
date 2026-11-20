@@ -181,7 +181,7 @@ assert(model.includes('FXQuantRatesBridge')&&model.includes('ratesEvidence'),'Pa
 const dossierFn=model.slice(model.indexOf('  function pair(){'),model.indexOf('  return {overview,pair,data};'));
 assert(!/\bconst window\s*=/.test(dossierFn),'A local window variable hides global browser module access');
 assert(dossierFn.includes('const chartWindow='),'Price chart lookback must not shadow the Window global');
-assert(page.includes('fx-rates-bridge.js?v=17'));
+assert(/fx-rates-bridge\.js\?v=\d+"/.test(page),'Rates bridge needs a versioned script URL');
 assert(/decision-journey\.js\?v=[\w.-]+/.test(page)&&
  page.indexOf('fx-rates-bridge.js')<page.indexOf('decision-journey.js'),
  'Rates bridge must load before the versioned decision engine');
