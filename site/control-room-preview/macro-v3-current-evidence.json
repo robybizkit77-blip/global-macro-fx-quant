@@ -222,15 +222,28 @@
       "FX_strength": null,
       "country_relative_rank": null,
       "growth": {
+        "historical_pit_training_vintages_certified": false,
         "is_growth_strength_score": false,
         "later_revisions_not_identical_to_first_release": true,
         "national_definitions_are_not_fully_cross_country_equivalent": true,
-        "nonannualized_qoq_descriptive_pct": 0.5,
-        "publisher_release_day": "2026-09-30",
-        "publisher_source": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/quarterlynationalaccounts/apriltojune2026",
-        "reference_quarter": "2026Q2",
+        "nonannualized_qoq_descriptive_pct": 0.7,
+        "prior_documented_quarter": {
+          "is_growth_strength_score": false,
+          "later_revisions_not_identical_to_first_release": true,
+          "national_definitions_are_not_fully_cross_country_equivalent": true,
+          "nonannualized_qoq_descriptive_pct": 0.5,
+          "publisher_release_day": "2026-09-30",
+          "publisher_source": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/quarterlynationalaccounts/apriltojune2026",
+          "reference_quarter": "2026Q2",
+          "reported_unit": "PERCENT_QOQ_SA",
+          "reported_value": 0.5
+        },
+        "publication_stage": "FIRST_QUARTERLY_ESTIMATE",
+        "publisher_release_day": "2026-11-12",
+        "publisher_source": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/julytoseptember2026",
+        "reference_quarter": "2026Q3",
         "reported_unit": "PERCENT_QOQ_SA",
-        "reported_value": 0.5
+        "reported_value": 0.7
       },
       "inflation": {
         "change_direction": "UP",
@@ -832,12 +845,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "EUR": 0.4,
-        "GBP": 0.5
+        "GBP": 0.7
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "EUR": "2026Q3",
-        "GBP": "2026Q2"
+        "GBP": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -972,12 +985,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "AUD": 0.4,
-        "GBP": 0.5
+        "GBP": 0.7
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "AUD": "2026Q2",
-        "GBP": "2026Q2"
+        "GBP": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -1007,12 +1020,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "CAD": 0.8,
-        "GBP": 0.5
+        "GBP": 0.7
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "CAD": "2026Q2",
-        "GBP": "2026Q2"
+        "GBP": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -1042,12 +1055,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "CHF": 1.5,
-        "GBP": 0.5
+        "GBP": 0.7
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "CHF": "2026Q2",
-        "GBP": "2026Q2"
+        "GBP": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -1076,12 +1089,12 @@
       "base": "GBP",
       "estimated_FX_expected_return": null,
       "growth": {
-        "GBP": 0.5,
+        "GBP": 0.7,
         "JPY": 0.3
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "GBP": "2026Q2",
+        "GBP": "2026Q3",
         "JPY": "2026Q2"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
@@ -1111,12 +1124,12 @@
       "base": "GBP",
       "estimated_FX_expected_return": null,
       "growth": {
-        "GBP": 0.5,
+        "GBP": 0.7,
         "NZD": 0.2
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "GBP": "2026Q2",
+        "GBP": "2026Q3",
         "NZD": "2026Q2"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
@@ -1146,12 +1159,12 @@
       "base": "GBP",
       "estimated_FX_expected_return": null,
       "growth": {
-        "GBP": 0.5,
+        "GBP": 0.7,
         "USD": 0.839373
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "GBP": "2026Q2",
+        "GBP": "2026Q3",
         "USD": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
@@ -1426,13 +1439,13 @@
   "safe_to_recompute_structural_pair_theses": false,
   "safe_to_republish_D": false,
   "schema": "GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1",
-  "snapshot_content_sha256": "8b4e73ecbae12759a2cd32b0945554258273edda71ddf6cbf4a8c61349a22852",
+  "snapshot_content_sha256": "86ea9638e0f85b204103d9eca489f8a31fc5fbb22e4b6ebf8441d8bdcda419a4",
   "source_observation_periods_not_release_days": true,
-  "source_receipt_sha256": "b66274b88b82d587cafac2431ca6a489b8116d96c028965e3b65ba9ea131cc72",
+  "source_receipt_sha256": "8cf5f3bd78c60a06ef7e6ccced423247c14f40ac98b5e8cdd4bd97ea4009a3dd",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
   "status": "OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL",
   "summary": {
-    "GDP_later_quarter_official_releases": 2,
+    "GDP_later_quarter_official_releases": 3,
     "GDP_publishers_visible": 8,
     "currencies": 8,
     "economic_dimensions": 24,
