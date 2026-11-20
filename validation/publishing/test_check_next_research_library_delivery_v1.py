@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from validation.publishing.check_next_research_library_delivery_v1 import (
-    DIRECTORY, ROOT, latest, parse_date, report_type, run,
+    CROSS_ASSET_REVIEW, DIRECTORY, ROOT, latest, parse_date, report_type, run,
 )
 
 NAMES = (
@@ -64,6 +64,14 @@ class ReportDeliveryTest(unittest.TestCase):
         selected = latest(self.root, "2026-11-13")["latest"]
         self.assertEqual(len(selected), 8)
         self.assertEqual(next(x for x in selected if x["type"] == "ois")["filename"], new)
+
+    def test_approved_review_is_the_cross_asset_edition_after_its_publication_date(self):
+        write(self.root, CROSS_ASSET_REVIEW)
+        write(self.root, "Global_Markets_Review_20_Novembre_2026_DARK_SLATE_V14.html")
+        for day, name in (("2026-11-13", NAMES[6]), ("2026-11-20", CROSS_ASSET_REVIEW)):
+            selected = latest(self.root, day)["latest"]
+            self.assertEqual(len(selected), 8)
+            self.assertEqual(next(x for x in selected if x["type"] == "cross")["filename"], name)
 
     def test_invalid_html_in_new_final_is_blocked(self):
         write(self.root, "Briefing_Forex_Commodities_2026-11-13_V5_DEFINITIVO.html",

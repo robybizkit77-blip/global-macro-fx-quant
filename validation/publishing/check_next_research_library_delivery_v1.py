@@ -20,6 +20,7 @@ from validation.publishing.verify_pages_http_delivery_v1 import BASE_URL, verify
 
 ROOT = Path(__file__).resolve().parents[2]
 DIRECTORY = Path("site/fx-quant-v2/next/reports")
+CROSS_ASSET_REVIEW = "Global_Markets_Review_14_Novembre_2026_DARK_SLATE_V13_SOLO_SEZIONI.html"
 BLOCKED = re.compile(r"(?:^|_)(?:PROVA|TEST|BOZZA|DRAFT|BACKUP|ANTEPRIMA|PREVIEW|LEGACY|OLD|DATI_PARZIALI)(?:_|\.|$)", re.I)
 PREFIXES = {
     "daily": ("Briefing_Forex_Commodities_",),
@@ -36,6 +37,8 @@ MONTHS = {"JAN": 1, "FEB": 2, "MAR": 3, "APR": 4, "MAY": 5, "JUN": 6,
 
 
 def parse_date(name: str) -> str | None:
+    if name == CROSS_ASSET_REVIEW:
+        return "2026-11-14"
     match = re.search(r"(?:^|_)(20\d{2}-\d{2}-\d{2})(?:_|\.|$)", name)
     if match:
         day = match.group(1)
@@ -53,6 +56,8 @@ def parse_date(name: str) -> str | None:
 
 
 def report_type(name: str) -> str | None:
+    if name == CROSS_ASSET_REVIEW:
+        return "cross"
     return next((key for key, stems in PREFIXES.items()
                  if any(name.startswith(stem) for stem in stems)), None)
 
