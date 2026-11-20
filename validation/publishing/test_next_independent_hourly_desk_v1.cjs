@@ -213,6 +213,12 @@ assert(/non intraday/i.test(pulseHTML)&&!pulseHTML.includes('tempo reale</p>'),
  'The Home must explicitly separate delayed closes from live data');
 assert(pulseHTML.includes('class="hourly-decision-grid"')&&pulseHTML.includes(sample.what_changed),
  'The original substantive desk interpretation survives the visual hierarchy');
+const fresher=structuredClone(research);
+fresher.streams.NASDAQCOM={...stream('2026-11-13',102,104,[]),
+ source_url:'https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM'};
+const latestEquity=win.FXQuantHomePulse.render({feed:pulseFeed,risk:fresher,esc,date:displayDate,dayNow:today});
+assert(latestEquity.includes('Nasdaq Composite')&&!latestEquity.includes('S&amp;P 500'));
+assert(latestEquity.includes('13/11/2026'),'Equity tile uses the newest eligible published close');
 const unsupported=structuredClone(research);
 unsupported.streams.VIX.quality='ESTIMATED';
 unsupported.streams.HY_OAS.date='2026-10-01';
