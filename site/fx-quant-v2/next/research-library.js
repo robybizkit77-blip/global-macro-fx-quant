@@ -6,6 +6,7 @@
 const BASE='../../website-v1/reports/';
 const ROOT='./reports/';
 const PUBLIC_API='https://api.github.com/repos/robybizkit77-blip/global-macro-fx-quant/contents/site/fx-quant-v2/next/reports?ref=main';
+const CROSS_ASSET_REVIEW='Global_Markets_Review_14_Novembre_2026_DARK_SLATE_V13_SOLO_SEZIONI.html';
 const REPORTS=Object.freeze([
  {type:'daily',date:'2026-11-16',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-16_V3_METODO_INTEGRATO_DEFINITIVO.html',desc:'Scenario Forex, catalizzatori macro e lettura di oro e petrolio.'},
  {type:'macro',date:'2026-11-06',title:'Weekly Global Macro Report',file:'Weekly_Global_Macro_Report_2026-11-06_COUNTRY_BOOK_NARRATIVO_V4_CORRETTA.html',desc:'Country Book: crescita, inflazione, lavoro, tassi, rischio e forza relativa delle valute.'},
@@ -31,11 +32,12 @@ function reportType(file){
  if(file.startsWith('Weekly_CB_Sentiment_Report_'))return 'cb';
  if(file.startsWith('Weekly_CB_Pricing_G8_')||file.startsWith('Weekly_Central_Bank_Pricing_G8_'))return 'ois';
  if(file.startsWith('COT_FX_G8_'))return 'cot';
- if(file.startsWith('Weekly_Global_Macro_Strength_Cross_Asset_'))return 'cross';
+ if(file===CROSS_ASSET_REVIEW||file.startsWith('Weekly_Global_Macro_Strength_Cross_Asset_'))return 'cross';
  if(file.startsWith('Weekly_FX_Pair_Selection_'))return 'pairs';
  return null;
 }
 function reportDate(file){
+ if(file===CROSS_ASSET_REVIEW)return '2026-11-14';
  const iso=file.match(/(?:^|_)(20\d{2}-\d{2}-\d{2})(?:_|\.|$)/);
  if(iso)return iso[1];
  const cot=file.match(/^COT_FX_G8_(\d{2})_([A-Z]{3})_(20\d{2})_/i);
@@ -55,7 +57,8 @@ function remoteReport(file){
  const desc=type==='cot'&&file!==canonical.file
   ?'Posizioni CFTC, flussi dei fondi e confronto con il cambio.'
   :canonical.desc;
- return {...canonical,desc,date,file,publicUrl:ROOT+encodeURIComponent(file)};
+ const title=file===CROSS_ASSET_REVIEW?'Global Markets Review':canonical.title;
+ return {...canonical,title,desc,date,file,publicUrl:ROOT+encodeURIComponent(file)};
 }
 function latestPerType(items){
  const selected=new Map();
