@@ -1,7 +1,20 @@
 {
   "content_as_of": "2026-11-19",
-  "generated_at_utc": "2026-11-20T03:25:06.187938Z",
+  "generated_at_utc": "2026-11-20T04:25:04.362235Z",
   "items": [
+    {
+      "as_of": "2026-11-19",
+      "category": "MARKET_VOLATILITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 28.44; confronto con chiusura 2026-11-18. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "HIGH",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-18",
+      "source": "Cboe Global Markets, VIX daily close",
+      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "title": "VIX: +3.88 punti nella chiusura del 2026-11-19"
+    },
     {
       "as_of": "2026-11-19",
       "category": "MACRO_OFFICIAL_ACTUAL",
@@ -145,19 +158,6 @@
     },
     {
       "as_of": "2026-11-18",
-      "category": "MARKET_VOLATILITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 24.56; confronto con chiusura 2026-11-17. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-17",
-      "source": "Cboe Global Markets, VIX daily close",
-      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "title": "VIX: -0.90 punti nella chiusura del 2026-11-18"
-    },
-    {
-      "as_of": "2026-11-18",
       "category": "MARKET_CREDIT_OAS",
       "ccy": "",
       "confidence": "B",
@@ -238,7 +238,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-20T03:25:06.187938Z",
+  "last_checked_at_utc": "2026-11-20T04:25:04.362235Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
