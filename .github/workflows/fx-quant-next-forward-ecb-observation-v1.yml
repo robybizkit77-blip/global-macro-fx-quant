@@ -1,0 +1,61 @@
+name: FX Quant Next Forward ECB Observation V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/fx-quant-next-forward-ecb-observation-v1.yml'
+      - 'validation/pair_thesis/*next_forward_ecb_v1.py'
+      - 'validation/forward/observe_official_ecb_reference_outcomes_v1.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fx-quant-next-forward-ecb-observation-v1.yml'
+      - 'validation/pair_thesis/*next_forward_ecb_v1.py'
+  workflow_run:
+    workflows:
+      - 'FX Quant Next Estimated Thesis History'
+      - 'Price History Persistent Daily V1'
+    types: [completed]
+  schedule:
+    - cron: '27 19 * * 1-5'
+      timezone: 'Europe/Rome'
+
+permissions:
+  contents: read
+
+jobs:
+  research:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event != 'pull_request')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
+          fetch-depth: 0
+          filter: blob:none
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test archive integrity, timing and reference comparison
+        run: python -m unittest validation.pair_thesis.test_check_next_forward_ecb_v1 -v
+      - name: Observe official fixings after prior archived Next estimates
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.pair_thesis.check_next_forward_ecb_v1 \
+            --out "$RUNNER_TEMP/next-forward-ecb.json" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Retain dated read-only research evidence
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-forward-ecb-${{ github.run_id }}
+          path: ${{ runner.temp }}/next-forward-ecb.json
+          if-no-files-found: error
+          retention-days: 90
