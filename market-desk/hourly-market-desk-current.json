@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-20T15:26:56.330892Z",
-  "edition_time_rome": "2026-11-20 16:26",
-  "material_digest": "3e461bcee5fc91dcde0887e2ea6dda419ff9456c4653224b80ad8a25161f03c0",
+  "generated_at_utc": "2026-11-20T15:31:27.267356Z",
+  "edition_time_rome": "2026-11-20 16:31",
+  "material_digest": "962d03b4260f801ead76f4148730eee6765dcca62f0992c4fd32306c54df56db",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Sono usciti i dati sui prezzi in Giappone",
-  "lead": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno.",
+  "lead": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno e il premio sul debito più rischioso è salito.",
   "news": [
     {
       "headline": "Dollaro misto",
@@ -34,17 +34,18 @@
       "evidence": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     },
     {
-      "headline": "Il Nasdaq Composite scende",
-      "analysis": "Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno. Da seguire se il movimento prosegue anche alla prossima chiusura.",
+      "headline": "Azioni in calo e credito più cauto",
+      "analysis": "Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno e il premio sul debito più rischioso è salito. Da seguire se il movimento prosegue anche alla prossima chiusura.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
       "market_area": "RISCHIO",
       "sources": [
         "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
-        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
+        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
       ],
-      "evidence": "Alla chiusura del 19 novembre, Nasdaq Composite −2,25% e VIX +3,88 punti."
+      "evidence": "Alla chiusura del 19 novembre, Nasdaq Composite −2,25%, VIX +3,88 punti e spread high yield +5 pb."
     },
     {
       "headline": "Oro e petrolio in calo",
@@ -84,7 +85,7 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno. Nella seduta del 19 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
+  "desk_judgment": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 19 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
   "fx_implications": "Da seguire se euro e yen si muovono nella stessa direzione contro il dollaro.",
   "what_changed": "Nella seduta del 19 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
@@ -92,6 +93,7 @@
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
       "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
@@ -103,7 +105,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-20T15:26:56.330892Z",
+      "rss_checked_at_utc": "2026-11-20T15:31:27.267356Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -111,6 +113,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-20T15:26:56.330892Z",
+      "headline": "Sono usciti i dati sui prezzi in Giappone",
+      "material_digest": "3e461bcee5fc91dcde0887e2ea6dda419ff9456c4653224b80ad8a25161f03c0"
+    },
     {
       "generated_at_utc": "2026-11-20T13:00:45.256563Z",
       "headline": "Sono usciti i dati sui prezzi in Giappone",
@@ -225,11 +232,6 @@
       "generated_at_utc": "2026-11-16T14:47:50.713936Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "42a355de5ee20864ca6edb32cf5d28747f5d3811c620c539735459c29e04d303"
-    },
-    {
-      "generated_at_utc": "2026-11-16T11:32:29.704994Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "61608731f7e153deb6d6c7dbbf9ddc513a3bb2bbf3e2f77b86f2391ba484841e"
     }
   ]
 }
