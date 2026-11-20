@@ -13,6 +13,7 @@ from validation.macro.v3_current_g8_28pair_economic_evidence_v1 import (
 from validation.macro.v3_gdp_q3_official_overlay_v1 import observed_q3_updates, LEDGER
 from validation.macro.ons_quarterly_gdp_v1 import latest_growth, previous_quarter
 from validation.macro.esri_quarterly_gdp_v1 import latest_growth as latest_jp_growth
+from validation.macro.seco_quarterly_gdp_v1 import latest_growth as latest_ch_growth
 
 
 class CurrentEconomicEvidenceTests(unittest.TestCase):
@@ -24,6 +25,7 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
         cls.legacy = load("D")
         cls.setup = load("PAIR_SETUP_OPERATIONAL_VIEW")
         cls.jp_growth = latest_jp_growth(cls.asof)
+        cls.ch_growth = latest_ch_growth(cls.asof)
         cls.result = build(cls.observed, cls.heat, cls.legacy,
                            cls.setup, as_of=cls.asof)
 
@@ -67,6 +69,8 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             )
             if c == "JPY" and self.jp_growth:
                 expected = self.jp_growth["reference_quarter"]
+            if c == "CHF" and self.ch_growth:
+                expected = self.ch_growth["reference_quarter"]
             self.assertEqual(country["growth"]["reference_quarter"], expected)
             self.assertFalse(country["growth"]["is_growth_strength_score"])
             for dim in ("labour", "inflation"):
@@ -124,8 +128,8 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
         self.assertEqual(set(observed_q3_updates("2026-11-12")), {"USD", "EUR"})
         self.assertEqual(set(observed_q3_updates("2026-11-13")), {"USD", "EUR", "GBP"})
         self.assertNotIn("CHF", observed_q3_updates("2026-11-16"))
-        chf = countries["CHF"]["growth"]
-        self.assertEqual(chf, observed_q3_updates("2026-11-17")["CHF"])
+        chf = observed_q3_updates("2026-11-17")["CHF"]
+        self.assertEqual(countries["CHF"]["growth"], self.ch_growth or chf)
         self.assertEqual(chf["nonannualized_qoq_descriptive_pct"], 0.2)
         self.assertEqual(chf["publisher_release_day"], "2026-11-16")
         self.assertEqual(chf["publication_stage"], "PRELIMINARY_FLASH")
