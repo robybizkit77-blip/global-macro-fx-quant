@@ -108,7 +108,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 150.8,
+              "bp": 151.29999999999998,
               "material": true,
               "side": "AUD"
             }
@@ -138,7 +138,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 150.8,
+            "bp": 151.29999999999998,
             "material": true,
             "side": "AUD"
           }
@@ -260,7 +260,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 452.09999999999997,
+              "bp": 452.59999999999997,
               "material": true,
               "side": "AUD"
             }
@@ -290,7 +290,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 452.09999999999997,
+            "bp": 452.59999999999997,
             "material": true,
             "side": "AUD"
           }
@@ -411,7 +411,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 295.5,
+              "bp": 296,
               "material": true,
               "side": "AUD"
             }
@@ -441,7 +441,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 295.5,
+            "bp": 296,
             "material": true,
             "side": "AUD"
           }
@@ -563,7 +563,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 91.79999999999997,
+              "bp": 92.29999999999995,
               "material": true,
               "side": "AUD"
             }
@@ -593,7 +593,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 91.79999999999997,
+            "bp": 92.29999999999995,
             "material": true,
             "side": "AUD"
           }
@@ -680,7 +680,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 4.800000000000004,
+              "bp": 5.299999999999994,
               "material": false,
               "side": "—"
             }
@@ -710,7 +710,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 4.800000000000004,
+            "bp": 5.299999999999994,
             "material": false,
             "side": "—"
           }
@@ -1255,7 +1255,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -172.20920879999997,
+              "bp": -172.70920879999997,
               "material": true,
               "side": "AUD"
             }
@@ -1285,7 +1285,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -172.20920879999997,
+            "bp": -172.70920879999997,
             "material": true,
             "side": "AUD"
           }
@@ -2173,7 +2173,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -19.551771729519363,
+              "bp": -20.051771729519352,
               "material": false,
               "side": "—"
             }
@@ -2203,7 +2203,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -19.551771729519363,
+            "bp": -20.051771729519352,
             "material": false,
             "side": "—"
           }
