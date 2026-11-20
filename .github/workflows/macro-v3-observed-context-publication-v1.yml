@@ -15,6 +15,9 @@ on:
       - 'validation/macro/esri_quarterly_gdp_v1.py'
       - 'validation/macro/test_esri_quarterly_gdp_v1.py'
       - 'validation/macro/ESRI_FIRST_QUARTERLY_GDP_V1.json'
+      - 'validation/macro/seco_quarterly_gdp_v1.py'
+      - 'validation/macro/test_seco_quarterly_gdp_v1.py'
+      - 'validation/macro/SECO_FLASH_QUARTERLY_GDP_V1.json'
       - 'validation/macro/v3_gdp_q3_official_overlay_v1.py'
       - 'validation/macro/fixtures/v3_gdp_q3_2026_official_web_updates_v1.json'
       - '.github/workflows/macro-v3-observed-context-publication-v1.yml'
@@ -23,6 +26,8 @@ on:
     paths:
       - 'validation/macro/esri_quarterly_gdp_v1.py'
       - 'validation/macro/test_esri_quarterly_gdp_v1.py'
+      - 'validation/macro/seco_quarterly_gdp_v1.py'
+      - 'validation/macro/test_seco_quarterly_gdp_v1.py'
       - 'validation/macro/ons_quarterly_gdp_v1.py'
       - 'validation/macro/test_ons_quarterly_gdp_v1.py'
       - 'validation/macro/v3_current_g8_28pair_economic_evidence_v1.py'
@@ -70,6 +75,7 @@ jobs:
           python -m unittest validation.macro.test_v3_current_g8_28pair_economic_evidence_v1 -v
           python -m unittest validation.macro.test_ons_quarterly_gdp_v1 -v
           python -m unittest validation.macro.test_esri_quarterly_gdp_v1 -v
+          python -m unittest validation.macro.test_seco_quarterly_gdp_v1 -v
       - name: Collect and archive the latest ONS UK quarterly first estimate
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
@@ -87,6 +93,17 @@ jobs:
           cat /tmp/esri-quarterly-gdp-collection.json >> "$GITHUB_STEP_SUMMARY"
           if grep -q 'SOURCE_UNAVAILABLE_ARCHIVE_RETAINED' /tmp/esri-quarterly-gdp-collection.json; then
             echo "::warning::Latest ESRI preliminary GDP was not validated; using prior verified GDP evidence."
+          fi
+      - name: Collect and archive the next Swiss SECO flash GDP edition
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          python -m validation.macro.seco_quarterly_gdp_v1 --apply | tee /tmp/seco-quarterly-gdp-collection.json
+          cat /tmp/seco-quarterly-gdp-collection.json >> "$GITHUB_STEP_SUMMARY"
+          if grep -q 'SOURCE_UNAVAILABLE_ARCHIVE_RETAINED' /tmp/seco-quarterly-gdp-collection.json; then
+            echo "::warning::Latest SECO flash GDP was not validated; using prior verified GDP evidence."
+          elif grep -q '"prior_fallback_reason"' /tmp/seco-quarterly-gdp-collection.json; then
+            echo "::warning::SECO detailed prior quarter was not validated; comparing against its archived flash."
           fi
       - name: Generate verified public Macro V3 context
         run: |
@@ -127,7 +144,8 @@ jobs:
           print(json.dumps(persist(
               managed=('site/control-room-preview/macro-v3-current-evidence.json',
                        'validation/macro/ONS_FIRST_QUARTERLY_GDP_V1.json',
-                       'validation/macro/ESRI_FIRST_QUARTERLY_GDP_V1.json'),
+                       'validation/macro/ESRI_FIRST_QUARTERLY_GDP_V1.json',
+                       'validation/macro/SECO_FLASH_QUARTERLY_GDP_V1.json'),
               protected=(
                   'live_data/sections/MACRO_SERIES.json',
                   'live_data/sections/MACRO_THERMOMETER_DATA.json',
@@ -140,6 +158,8 @@ jobs:
                   'validation/macro/ONS_FIRST_QUARTERLY_GDP_V1.json',
                   'validation/macro/esri_quarterly_gdp_v1.py',
                   'validation/macro/ESRI_FIRST_QUARTERLY_GDP_V1.json',
+                  'validation/macro/seco_quarterly_gdp_v1.py',
+                  'validation/macro/SECO_FLASH_QUARTERLY_GDP_V1.json',
                   'validation/macro/capture_uk_ch_gdp_official_firstseen_v11.py',
                   'validation/macro/capture_official_postrelease_actuals_v1.py',
                   'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json',
