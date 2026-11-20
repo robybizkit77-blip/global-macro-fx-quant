@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html lang="it"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/><meta content="dark" name="color-scheme"/><title>COT FX G8 · 17 novembre 2026 · DARK QUANT DESK v10</title><style>
+:root{--bg:#07111f;--card:#101d31;--card2:#13233a;--text:#edf4ff;--muted:#9fb0c8;--line:#213650;--blue:#59a8ff;--cyan:#69d2ff;--green:#5fe0a1;--amber:#ffc866;--red:#ff7a87;--short:#ff7280}
+*{box-sizing:border-box}html,body{margin:0;width:100%;max-width:100%;overflow-x:hidden}body{background:linear-gradient(180deg,#06101c,#091523 26%,#07111f);color:var(--text);font:14px/1.48 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;overflow-wrap:anywhere}.w{width:min(100%,900px);margin:auto;padding:9px 8px 36px}.hero,.card{width:100%;min-width:0;max-width:100%}.hero{padding:18px 16px;border:1px solid rgba(105,210,255,.22);border-radius:20px;background:radial-gradient(circle at top right,rgba(89,168,255,.22),transparent 34%),linear-gradient(145deg,#12243e,#0b1729 70%);box-shadow:0 14px 30px rgba(0,0,0,.25)}.eye,.sec,.k{text-transform:uppercase;letter-spacing:.12em;font-weight:850}.eye{font-size:10.5px;color:#8fc9ff}.hero h1{font-size:27px;line-height:1.06;margin:6px 0}.hero p{margin:0;color:#c4d2e6;font-size:13px}.chip,.pill{display:inline-block;border-radius:999px;padding:4px 8px;font-size:10.5px;font-weight:800}.chip{margin:11px 4px 0 0;background:rgba(255,255,255,.06);color:#c8d8ea}.sec{margin:17px 2px 7px;font-size:11px;color:#90b7e2}.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:14px;margin:8px 0;box-shadow:0 10px 22px rgba(0,0,0,.15)}h2{font-size:18px;margin:0 0 8px}h3{font-size:15px;margin:0 0 6px}p{margin:6px 0;color:#d8e3f2}.muted{color:var(--muted);font-size:11.5px}.grid{display:grid;grid-template-columns:1fr;gap:8px}.metric{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:11px}.k{font-size:9.5px;color:var(--muted)}.v{font-size:17px;font-weight:850;margin-top:3px}.g{color:#7df0b6;background:rgba(95,224,161,.11)}.r{color:#ff9ca7;background:rgba(255,122,135,.11)}.a{color:#ffd27f;background:rgba(255,200,102,.11)}.b{color:#8bc5ff;background:rgba(89,168,255,.11)}.p{color:#ffb6be;background:rgba(255,114,128,.11)}.scroll{display:block;width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}table{border-collapse:collapse;min-width:680px;width:100%;font-size:11.5px}th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:center}th{background:#0b1626;color:#90b7e2;font-size:10px;text-transform:uppercase}td:first-child,th:first-child{text-align:left}.pos{color:var(--green);font-weight:800}.neg{color:var(--short);font-weight:800}.alert{color:#ff6b79!important;font-weight:900!important;background:rgba(255,122,135,.12)!important;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(255,122,135,.24);}.chart{background:#0b1626;border:1px solid #203551;border-radius:14px;padding:12px}.bar{display:grid;grid-template-columns:46px minmax(0,1fr) 42px;gap:7px;align-items:center;margin:8px 0;font-size:11px}.track{height:11px;background:#1b2b40;border-radius:8px;overflow:hidden}.fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#59a8ff,#69d2ff)}.fill.risk{background:linear-gradient(90deg,#b83e54,#ff7280)}.zero{font-size:10px;color:#7188a5}.fx{border-left:4px solid #345e82}.fx.warn{border-left-color:var(--amber)}.fx.bad{border-left-color:var(--red)}.fx.good{border-left-color:var(--green)}.row{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}.flow{padding:9px 10px;border-radius:11px;background:#0b1626;margin-top:8px;font-size:12px}.focus{border-left:4px solid var(--cyan)}.call{padding:10px;border:1px dashed #365170;border-radius:12px;background:rgba(255,255,255,.025);font-size:12px}.foot{text-align:center;color:#7188a5;font-size:10px;margin-top:17px}@media(min-width:721px){.w{padding:20px 15px 45px}.hero{padding:24px}.hero h1{font-size:35px}.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}.grid.four{grid-template-columns:repeat(4,1fr)}.card{padding:16px}}.snapshot .snap{padding:12px}.snapshot .snap>.k{font-size:10px;letter-spacing:.08em}.snapshot .snap>.v{font-size:24px;line-height:1.05;margin:5px 0 9px}.miniMetrics{display:grid;grid-template-columns:1fr 1fr;gap:7px}.miniMetrics.one{grid-template-columns:1fr}.miniMetric{min-width:0;border-radius:11px;padding:9px 10px;border:1px solid rgba(255,255,255,.08)}.miniMetric span{display:block;font-size:9.5px;letter-spacing:.07em;font-weight:850;color:#aebed2;margin-bottom:3px}.miniMetric strong{display:block;font-size:20px;line-height:1.08;white-space:nowrap}.miniMetric small{font-size:11px;font-weight:600;color:#c7d3e2}.riskbox{background:rgba(255,122,135,.09);border-color:rgba(255,122,135,.18)}.riskbox strong{color:#ff8794}.greenbox{background:rgba(95,224,161,.09);border-color:rgba(95,224,161,.18)}.greenbox strong{color:#6ce8aa}.amberbox{background:rgba(255,200,102,.10);border-color:rgba(255,200,102,.22)}.amberbox strong{color:#ffd05f}.bluebox{background:rgba(89,168,255,.10);border-color:rgba(89,168,255,.23)}.bluebox strong{color:#70b8ff}.miniMetric .textMetric{font-size:15px;color:#edf4ff;white-space:normal}@media(max-width:430px){.snapshot .snap>.v{font-size:26px}.miniMetric strong{font-size:22px}.miniMetric span{font-size:10px}.snapshot .snap{padding:14px}}
+.snapshot2 .snap2{padding:12px;min-height:148px}
+.snapshot2 .snap2>.k{font-size:9.5px;letter-spacing:.07em;white-space:nowrap}
+.snapshot2 .snap2>.v{font-size:23px;line-height:1;margin:6px 0 9px}
+.snapshot2 .danger{color:#ff8e9a}.snapshot2 .warning{color:#ffd06b}.snapshot2 .info{color:#78bdff}
+.metricrow{display:grid;grid-template-columns:1fr;gap:7px}.metricrow.two{grid-template-columns:1fr 1fr}
+.qbox{min-width:0;border-radius:11px;padding:8px 9px;min-height:58px;display:flex;flex-direction:column;justify-content:center}
+.qbox span{font-size:8.5px;line-height:1.1;letter-spacing:.04em;font-weight:850;color:#b6c6d9;white-space:nowrap;margin-bottom:5px}
+.qbox strong{font-size:18px;line-height:1;font-weight:900;white-space:nowrap}
+.qbox small{font-size:9px;color:#c7d3e2}
+.dangerbox{background:rgba(255,122,135,.09);border:1px solid rgba(255,122,135,.25)}.dangerbox strong{color:#ff6878}
+.warnbox{background:rgba(255,200,102,.10);border:1px solid rgba(255,200,102,.25)}.warnbox strong{color:#ffc94f}
+.infobox{background:rgba(89,168,255,.10);border:1px solid rgba(89,168,255,.25)}.infobox strong{color:#edf4ff}.infobox span{color:#70b8ff}
+.qbox .phrase{font-size:14px;white-space:normal;line-height:1.12}
+@media(max-width:430px){
+ .snapshot2 .snap2{min-height:0;padding:14px}
+ .snapshot2 .snap2>.v{font-size:27px}
+ .snapshot2 .snap2>.k{font-size:10px}
+ .qbox{min-height:62px;padding:9px 10px}
+ .qbox span{font-size:9px}
+ .qbox strong{font-size:21px}
+ .qbox .phrase{font-size:16px}
+}
+
+.operative .opcard{position:relative;padding:14px}.state{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-size:9px;line-height:1.1;font-weight:900;letter-spacing:.035em}.dangerstate{background:rgba(255,122,135,.12);color:#ff8c98}.warnstate{background:rgba(255,200,102,.12);color:#ffd274}.goodstate{background:rgba(95,224,161,.12);color:#79eab2}.neutralstate{background:rgba(159,176,200,.10);color:#b8c7da}.infostate{background:rgba(89,168,255,.12);color:#83c2ff}
+.opgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:9px 0}.opgrid>div{background:#0b1626;border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:8px 9px}.opgrid span,.deskread>span{display:block;color:#91a8c3;font-size:9px;letter-spacing:.07em;font-weight:900;margin-bottom:3px}.opgrid strong{font-size:14px}.down{color:#ff7a87}.up{color:#5fe0a1}
+.deskread{margin-top:10px;padding:10px 11px;border-radius:12px;background:linear-gradient(135deg,rgba(89,168,255,.10),rgba(255,114,128,.07));border:1px solid rgba(89,168,255,.20)}.deskread>span{color:#79bdff}.deskread p{margin:2px 0;font-size:12.5px}
+.triggers{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.triggers>div{padding:8px 9px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);font-size:10.5px;color:#bdcadb}.triggers b{font-size:9px;color:#dce8f7;letter-spacing:.03em}
+@media(max-width:430px){.operative .opcard{padding:14px}.state{font-size:9.5px}.opgrid strong{font-size:15px}.deskread p{font-size:13px}.triggers{grid-template-columns:1fr}.triggers>div{font-size:11px}}
+
+.netoi-alert{display:inline-block;color:#ff6b79!important;background:rgba(255,122,135,.12);
+border:1px solid rgba(255,122,135,.28);border-radius:8px;padding:2px 6px;font-weight:900!important}
+
+/* Sezione 04 — prova editoriale: invariati dati e identità DARK QUANT DESK */
+.operative .opcard{padding:16px}.operative .ophead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}.operative .ophead h2{font-size:20px;margin:0}
+.operative .opsummary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0 9px}.operative .opsummary>div{min-width:0;padding:10px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#0b1626}.operative .opsummary span{display:block;color:#91a8c3;font-size:9px;font-weight:850;letter-spacing:.055em;text-transform:uppercase}.operative .opsummary strong{display:block;font-size:12px;line-height:1.3;margin-top:4px}
+.operative .opnumbers{padding:8px 10px;background:rgba(89,168,255,.055);border-radius:10px;font-size:11px;color:#c0d0e5;margin:0 0 11px}.operative .opnumbers .netoi-alert{font-size:11px}
+.operative .opstory{display:grid;gap:9px}.operative .opstory>div{padding-left:11px;border-left:2px solid #355576}.operative .opstory .takeaway{border-left-color:#59a8ff;background:rgba(89,168,255,.065);padding:10px 11px;border-radius:0 10px 10px 0}.operative .opstory h3{font-size:11px;letter-spacing:.035em;color:#92c7ff;margin:0 0 4px}.operative .opstory p{font-size:12.5px;line-height:1.5;margin:0;color:#dce7f5}
+.operative .opconditions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}.operative .opconditions>div{padding:10px;border-radius:11px;background:#0b1626;border:1px solid rgba(255,255,255,.07)}.operative .opconditions h3{font-size:10px;margin:0 0 5px}.operative .opconditions .yes h3{color:#6fe5ab}.operative .opconditions .no h3{color:#ff9ca7}.operative .opconditions p{font-size:11px;line-height:1.45;margin:0}
+@media(max-width:430px){.operative .opsummary{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.operative .opsummary>div{padding:8px 6px}.operative .opsummary strong{font-size:11px}.operative .opsummary span{font-size:8px}.operative .opconditions{grid-template-columns:1fr}.operative .opstory p{font-size:13px}}
+
+/* Segnali COT: EXTREME LONG verde, EXTREME SHORT rosso */
+.pill.extreme-long{color:#7df0b6;background:rgba(95,224,161,.14);border:1px solid rgba(95,224,161,.24)}
+.pill.extreme-short{color:#ffadb6;background:rgba(255,114,128,.15);border:1px solid rgba(255,114,128,.35)}
+
+/* v9 canonical carried forward: no layout redesign; 2026-10-27 data edition */
+.ophead .pill{margin:0 0 4px 3px}.row small{color:var(--muted)}.data-note{font-size:11px;color:#95aaca}.chart .fill.extreme-long{background:linear-gradient(90deg,#288f65,#5fe0a1)}.chart .fill.extreme-short{background:linear-gradient(90deg,#ad3348,#ff7280)}.nowrap{white-space:nowrap}.hero .subtitle{color:#d3deef;margin-top:8px}.foot a,.card a{color:#8bc5ff;text-decoration:underline;text-decoration-color:#3a5d85}.subtle{border:1px solid rgba(89,168,255,.2);background:rgba(89,168,255,.055);border-radius:12px;padding:10px 12px;margin:8px 0}.opnumbers b{color:#9fbad6}.minor{font-size:10.5px;color:#9fb0c8}.focus h2{color:#edf4ff}
+/* v10, solo sezione 04: meno metriche duplicate e maggiore spazio alla diagnosi. */
+.interpretative .claritycard{padding:19px 19px 17px;display:flex;flex-direction:column;gap:0}
+.interpretative .ophead{align-items:center;gap:10px}
+.interpretative .ophead h2{font-size:20px;letter-spacing:.015em;flex:none}
+.interpretative .signalbox{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:7px}
+.interpretative .signalbox .pill{margin:0}
+.interpretative .signalbox .netoi-alert{font-size:10px}
+.interpretative .diagnosis{font-size:16.5px;font-weight:800;line-height:1.28;color:#f2f6ff;margin:14px 0 5px}
+.interpretative .phase{font-size:9.5px;font-weight:850;letter-spacing:.095em;color:#94b9df;text-transform:uppercase;margin:0 0 12px}
+.interpretative .reading{color:#d9e7f7;line-height:1.66;font-size:13.35px;margin:0 0 12px}
+.interpretative .reading strong{color:#f2f6ff;font-weight:800}
+.interpretative .verdict{padding:13px 14px 12px;border-left:3px solid #5caafa;border-radius:0 11px 11px 0;background:rgba(89,168,255,.07);margin:0 0 13px}
+.interpretative .verdict p{margin:5px 0 0;color:#dceafd;font-size:13.15px;line-height:1.57}
+.interpretative .verdict strong{color:#f1f7ff;font-weight:800}
+.interpretative .microtitle{font-size:9.5px;font-weight:900;letter-spacing:.085em;color:#94c7ff}
+.interpretative .watchline{border-top:1px solid rgba(148,173,203,.16);padding-top:12px;margin-top:auto}
+.interpretative .watchline .microtitle{color:#86dab1}
+.interpretative .watchline p{font-size:12.6px;line-height:1.57;margin:6px 0 0;color:#bfcee2}
+@media(max-width:720px){.interpretative .claritycard{padding:16px}.interpretative .diagnosis{font-size:17px}.interpretative .reading{font-size:14px}.interpretative .verdict p{font-size:13.5px}.interpretative .watchline p{font-size:13px}}
+@media(max-width:390px){.interpretative .ophead{align-items:flex-start}.interpretative .ophead .signalbox{max-width:70%;gap:4px}.interpretative .signalbox .netoi-alert{font-size:9px}.interpretative .diagnosis{font-size:16px}}
+
+/* v10 complete percentile 104W + ECB 1W price + Z-score */
+body{background:linear-gradient(180deg,#06101c,#091523 26%,#07111f)}
+@media print {body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.card,.metric{break-inside:avoid}.w{width:100%;max-width:100%}}
+
+/* Lettura aggiuntiva della metrica Z-score, senza modificare il layout canonico. */
+.z-helper{margin-top:11px;padding:11px 12px;border-left:3px solid var(--cyan);border-radius:0 11px 11px 0;background:rgba(89,168,255,.065)}
+.z-helper>b{color:#c8e8ff;font-size:12px}.z-helper p{margin:5px 0 0;font-size:12px;line-height:1.5;color:#ccdaed}
+
+/* COT v10 · final editorial table system — applies to all four tables */
+.w{width:min(100%,1100px);padding:22px 18px 62px}
+.hero{padding:25px 27px;border-radius:21px}
+.sec{margin:25px 4px 9px;font-size:11px;color:#8cbced;letter-spacing:.12em}
+.card{padding:20px 21px;margin:9px 0 13px;border-radius:18px}
+.card h2{font-size:19px;letter-spacing:-.016em;margin-bottom:12px}
+.card > .scroll{margin:12px 0 14px}
+.card .muted{font-size:11.5px;line-height:1.6;color:#9eb1c9}
+.ranking-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:3px 0 13px}
+.rank-explainer{font-size:11.5px;line-height:1.5;color:#b9cadd;max-width:530px}
+.rank-explainer strong{color:#edf4ff}
+.rank-legend{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.rank-legend span{white-space:nowrap;display:inline-flex;align-items:center;gap:6px;border-radius:7px;border:1px solid #2b3d57;padding:5px 8px;background:#101f33;color:#ccdaeb;font-weight:750;font-size:10px}
+.rank-legend i{width:7px;height:7px;display:inline-block;border-radius:50%;background:#83c2ff}
+.rank-legend .rank-long i{background:#61dca1}
+.rank-legend .rank-short i{background:#ff7f8b}
+.z-callout{display:flex;gap:11px;align-items:center;margin:9px 0 15px;padding:10px 13px;background:linear-gradient(110deg,rgba(72,151,223,.10),rgba(23,49,79,.06));border:1px solid rgba(112,181,239,.19);border-radius:12px}
+.z-icon{font-family:Georgia,serif;width:30px;height:30px;display:grid;place-items:center;border:1px solid #36618a;border-radius:9px;color:#91d5ff;background:#183452;font-size:21px;flex:none}
+.z-callout strong,.z-callout span:not(.z-icon){display:block}
+.z-callout strong{font-size:12px;color:#e8f4ff}
+.z-callout div span{font-size:11px;line-height:1.5;color:#b7cfe9;margin-top:2px}
+.z-helper{padding:13px 15px;margin-top:16px;border:1px solid rgba(90,173,244,.23);border-left:3px solid #69d2ff;border-radius:10px;background:rgba(89,168,255,.065)}
+.z-helper>b{font-size:11px;letter-spacing:.06em;color:#a5daff}
+.z-helper p{font-size:12px;line-height:1.65;color:#d1e0f0}
+.table-kicker{font-size:12px;color:#acc0d7;margin:0 0 12px;line-height:1.52}
+.scroll{border-radius:12px;overflow-x:auto;overflow-y:visible;border:1px solid #263b56;background:#0c192c}
+table.clean-table{border-collapse:separate;border-spacing:0;min-width:0;width:100%;table-layout:auto;font-size:12px;font-variant-numeric:tabular-nums}
+.clean-table th,.clean-table td{vertical-align:middle;box-sizing:border-box}
+.clean-table thead th{padding:12px 10px;white-space:nowrap;font-size:9.2px;letter-spacing:.045em;color:#95c9f5;background:#091726;border-bottom:1px solid #2e4b69;text-align:right;font-weight:850}
+.clean-table thead th:first-child{text-align:left;padding-left:15px}
+.clean-table thead th:last-child{padding-right:15px}
+.clean-table tbody td{padding:12px 10px;border-bottom:1px solid rgba(141,172,205,.11);white-space:nowrap;text-align:right;background:transparent;color:#e6effb;font-size:12px}
+.clean-table tbody tr:last-child td{border-bottom:0}
+.clean-table tbody tr{background:rgba(17,35,57,.64);transition:background .12s ease}
+.clean-table tbody tr:nth-child(2n){background:rgba(12,27,46,.92)}
+.clean-table tbody tr:hover{background:#193650}
+.clean-table tbody tr.group-start:not(:first-child) td{border-top:7px solid #091726}
+.clean-table tbody td.currency{text-align:left;padding-left:14px;border-left:3px solid transparent;font-weight:900;color:#f3f7fe;min-width:90px}
+.clean-table tbody tr[data-group=extreme-long] td.currency{border-left-color:#5fe0a1}
+.clean-table tbody tr[data-group=neutral] td.currency{border-left-color:#59a8ff}
+.clean-table tbody tr[data-group=extreme-short] td.currency{border-left-color:#ff7280}
+.clean-table tbody td.interpret{max-width:240px;text-align:left;white-space:normal;color:#c8d8ea;line-height:1.4;font-size:11.5px}
+.clean-table tbody td.numeric.pos,.clean-table tbody td.numeric .pos{color:#74e5af}
+.clean-table tbody td.numeric.neg,.clean-table tbody td.numeric .neg{color:#ff91a0}
+.clean-table .pill{font-size:10px;padding:5px 9px;white-space:nowrap}
+.clean-table .percentile-num{font-weight:900;font-size:13px;color:#eef4ff}
+.clean-table .z-chip{display:inline-block;min-width:51px;text-align:center;border-radius:7px;padding:5px 6px;font-size:11px;font-weight:900;border:1px solid rgba(115,156,194,.21);background:rgba(95,140,184,.09)}
+.clean-table .z-chip.z-hot-positive{color:#6ce6ab;border-color:rgba(95,224,161,.28);background:rgba(95,224,161,.1)}
+.clean-table .z-chip.z-hot-negative{color:#ff8998;border-color:rgba(255,122,135,.3);background:rgba(255,122,135,.11)}
+.clean-table .z-chip.z-positive{color:#b1e9d1}
+.clean-table .z-chip.z-negative{color:#ffc1c8}
+.clean-table .netoi-alert{font-size:10.8px;padding:4px 6px}
+.state-tag{display:inline-flex;align-items:center;gap:5px;border-radius:7px;padding:5px 9px;font-size:10.5px;font-weight:800;line-height:1.15;white-space:nowrap}
+.state-aligned{color:#79e5b2;background:rgba(95,224,161,.1);border:1px solid rgba(95,224,161,.2)}
+.state-divergence{color:#ffc97b;background:rgba(255,200,102,.10);border:1px solid rgba(255,200,102,.24)}
+.state-neutral{color:#98c8f0;background:rgba(89,168,255,.1);border:1px solid rgba(89,168,255,.22)}
+.under-label{display:block;font-size:9.5px;color:#a0b8cd;margin-top:5px}
+.table-1 tbody td:nth-child(5){text-align:center}
+.table-2 tbody td:last-child{min-width:130px}
+.table-3 tbody td:last-child{width:230px;min-width:170px}
+.table-4 tbody td:last-child{width:245px;min-width:185px}
+.table-3 tbody td:last-child,.table-4 tbody td:last-child{font-size:11px}
+.operative.interpretative .claritycard[data-group=extreme-long]{border-top:2px solid rgba(95,224,161,.36)}
+.operative.interpretative .claritycard[data-group=extreme-short]{border-top:2px solid rgba(255,114,128,.32)}
+.operative.interpretative .claritycard[data-group=neutral]{border-top:2px solid rgba(89,168,255,.28)}
+@media(max-width:900px) and (min-width:641px){
+ .w{padding:17px 12px 40px}.card{padding:15px}.clean-table{min-width:800px}.clean-table thead th{font-size:9px}
+}
+@media(max-width:640px){
+ .w{padding:9px 8px 42px}
+ .hero{padding:20px 17px}
+ .card{padding:16px 12px;border-radius:15px}
+ .sec{margin-top:22px}
+ .ranking-head{gap:9px}
+ .rank-legend{gap:4px}
+ .rank-legend span{font-size:9px;padding:5px 6px}
+ .z-callout{gap:8px;padding:10px;margin-bottom:13px}
+ .z-callout div span{font-size:10.8px}
+ .scroll{border:none;background:transparent;overflow:visible;border-radius:0}
+ table.clean-table{display:block;min-width:0;width:100%}
+ .clean-table thead{display:none}
+ .clean-table tbody{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+ .clean-table tbody tr,.clean-table tbody tr.group-start:not(:first-child){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:0;padding:5px 8px 10px;border:1px solid #28405f;border-left:3px solid #59a8ff;border-radius:12px;background:linear-gradient(165deg,#152840,#102036);overflow:hidden}
+ .clean-table tbody tr:nth-child(2n){background:linear-gradient(165deg,#13243a,#0d1d30)}
+ .clean-table tbody tr[data-group=extreme-long]{border-left-color:#5fe0a1}
+ .clean-table tbody tr[data-group=neutral]{border-left-color:#59a8ff}
+ .clean-table tbody tr[data-group=extreme-short]{border-left-color:#ff7280}
+ .clean-table tbody tr.group-start:not(:first-child){margin-top:7px;border-top:1px solid #28405f}
+ .clean-table tbody td,.clean-table tbody td.numeric,.clean-table tbody td.interpret{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;border:0!important;white-space:normal!important;min-width:0;min-height:58px;max-width:none!important;width:auto!important;text-align:left!important;padding:8px 9px!important;background:transparent!important;overflow-wrap:anywhere;font-size:13px}
+ .clean-table tbody td:before{content:attr(data-label);display:block;font-size:9px;line-height:1.12;letter-spacing:.065em;text-transform:uppercase;color:#89abc8;font-weight:850;white-space:normal}
+ .clean-table tbody td.currency{grid-column:1/-1;min-height:36px;padding:7px 9px 5px!important;border-left:0!important;border-bottom:1px solid rgba(141,172,205,.13)!important;font-size:16px!important;color:#f7fbff}
+ .clean-table tbody td.currency:before{display:none}
+ .clean-table tbody td.interpret{grid-column:1/-1;min-height:0;font-size:12px!important}
+ .clean-table tbody td:nth-child(5):not(.interpret){text-align:left!important}
+ .clean-table .percentile-num{font-size:15px}
+ .clean-table .pill,.clean-table .state-tag{font-size:10px}
+ .clean-table .z-chip{font-size:12px;min-width:0}
+ .table-1 tbody td:nth-child(5){grid-column:1/-1;min-height:53px}
+ .table-1 tbody td:nth-child(5) .pill{align-self:flex-start}
+ .table-1 tbody td:last-child{grid-column:2}
+ .table-2 tbody td:last-child{grid-column:1/-1}
+ .table-3 tbody td:last-child{grid-column:1/-1}
+ .table-4 tbody td:last-child{grid-column:1/-1}
+ .table-1 tbody td:nth-child(4),.table-1 tbody td:nth-child(5){border-bottom:none!important}
+ .table-kicker{font-size:11.3px}
+ .operative.interpretative .claritycard{padding:16px}
+}
+@media print{.clean-table tbody tr{break-inside:avoid} .scroll{overflow:visible} .w{width:100%;max-width:1100px}}
+
+
+/* FIX 2026-11-06: all table headings sit in the same geometric column as their data. */
+@media (min-width:641px){
+  table.clean-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;min-width:0;}
+  .clean-table th,.clean-table td{box-sizing:border-box;vertical-align:middle;font-variant-numeric:tabular-nums;}
+  .clean-table thead th{font-size:10px;line-height:1.3;letter-spacing:.025em;padding:14px 11px;text-align:right;white-space:normal;vertical-align:middle;overflow-wrap:normal;}
+  .clean-table tbody td{font-size:12.4px;line-height:1.45;padding:14px 11px;text-align:right;vertical-align:middle;}
+  .clean-table thead th:first-child,.clean-table tbody td.currency{text-align:left;padding-left:17px;}
+  .clean-table thead th:last-child,.clean-table tbody td.interpret{padding-right:17px;}
+  .clean-table tbody td.interpret{max-width:none;width:auto;}
+  .clean-table tbody tr.group-start:not(:first-child) td{border-top-width:4px;}
+  .clean-table tbody td.currency{min-width:0;}
+  .table-1 th:nth-child(1),.table-1 td:nth-child(1){width:12%}
+  .table-1 th:nth-child(2),.table-1 td:nth-child(2){width:12%}
+  .table-1 th:nth-child(3),.table-1 td:nth-child(3){width:12%}
+  .table-1 th:nth-child(4),.table-1 td:nth-child(4){width:16%}
+  .table-1 th:nth-child(5),.table-1 td:nth-child(5){width:20%;text-align:center}
+  .table-1 th:nth-child(6),.table-1 td:nth-child(6){width:14%}
+  .table-1 th:nth-child(7),.table-1 td:nth-child(7){width:14%}
+  .table-2 th:nth-child(1),.table-2 td:nth-child(1){width:18%}
+  .table-2 th:nth-child(2),.table-2 td:nth-child(2){width:23%}
+  .table-2 th:nth-child(3),.table-2 td:nth-child(3){width:21%}
+  .table-2 th:nth-child(4),.table-2 td:nth-child(4){width:38%}
+  .table-3 th:nth-child(1),.table-3 td:nth-child(1){width:16%}
+  .table-3 th:nth-child(2),.table-3 td:nth-child(2){width:16%}
+  .table-3 th:nth-child(3),.table-3 td:nth-child(3){width:16%}
+  .table-3 th:nth-child(4),.table-3 td:nth-child(4){width:16%}
+  .table-3 th:nth-child(5),.table-3 td:nth-child(5){width:36%}
+  .table-4 th:nth-child(1),.table-4 td:nth-child(1){width:12%}
+  .table-4 th:nth-child(2),.table-4 td:nth-child(2){width:14%}
+  .table-4 th:nth-child(3),.table-4 td:nth-child(3){width:13%}
+  .table-4 th:nth-child(4),.table-4 td:nth-child(4){width:14%}
+  .table-4 th:nth-child(5),.table-4 td:nth-child(5){width:13%}
+  .table-4 th:nth-child(6),.table-4 td:nth-child(6){width:34%}
+  /* Text-based columns: header and row content share the same left edge. */
+  .table-2 thead th:last-child,.table-2 tbody td:last-child,
+  .table-3 thead th:last-child,.table-3 tbody td:last-child,
+  .table-4 thead th:last-child,.table-4 tbody td:last-child{
+    text-align:left!important;padding-left:18px!important;
+  }
+  .table-2 tbody td:last-child,.table-3 tbody td:last-child,.table-4 tbody td:last-child{min-width:0!important;max-width:none!important;width:auto!important;}
+  .table-2 tbody td.interpret,.table-3 tbody td.interpret,.table-4 tbody td.interpret{font-size:12px;}
+  /* Keep a stable column grid on intermediate screens without clipping text. */
+}
+@media (min-width:641px) and (max-width:1040px){
+  .clean-table.table-1{min-width:910px}
+  .clean-table.table-4{min-width:850px}
+  .clean-table thead th{font-size:9.5px}
+  .scroll{overflow-x:auto;overflow-y:hidden}
+}
+@media (max-width:640px){
+  .clean-table tbody tr{box-sizing:border-box;}
+  .clean-table tbody td.interpret{font-size:12.5px!important;}
+  .clean-table tbody td.interpret:before{margin-bottom:2px}
+  .clean-table tbody td.currency{letter-spacing:.02em;flex-direction:row!important;justify-content:flex-start!important;align-items:center!important;gap:8px!important}
+  .clean-table .state-tag{max-width:100%;white-space:normal}
+  .clean-table .pill{max-width:100%;white-space:normal}
+  .scroll{max-width:100%}
+}
+
+
+/* v10 · Sezione 04 — diagnosi narrativa, giudizi diretti, ipotesi falsificabili.
+   CSS scoped; layout e tabelle della release controllata non vengono alterati. */
+.s4-intro{background:linear-gradient(125deg,rgba(25,54,82,.75),rgba(13,26,45,.8));border:1px solid rgba(105,210,255,.25);border-radius:16px;padding:18px 19px;margin:8px 0 13px}
+.s4-intro .s4-kicker{font-size:10px;letter-spacing:.13em;font-weight:900;color:#8dcfff}
+.s4-intro p{font-size:13px;line-height:1.6;margin:9px 0 11px;color:#e1edf9}
+.s4-intro p strong{color:#fff}
+.s4-footnote{font-size:11px;line-height:1.5;color:#a8bfda;border-top:1px solid rgba(142,180,217,.16);padding-top:10px}
+.s4-stories{gap:12px}
+.s4-stories .s4-card{gap:0;display:flex;flex-direction:column;padding:19px;border-left:1px solid #294462!important;min-width:0}
+.s4-card .ophead{padding-bottom:12px;border-bottom:1px solid rgba(156,186,216,.14);align-items:center}
+.s4-card .ophead .signalbox{gap:5px}
+.s4-card .ophead h2{font-size:18px}
+.s4-card .s4-label{font-size:10px;letter-spacing:.095em;font-weight:900;color:#9bc8f2;padding-top:16px}
+.s4-card .diagnosis{font-size:16px;font-weight:800;line-height:1.32;margin:6px 0 15px;color:#fbfdff}
+.s4-card .microtitle{font-size:10px;letter-spacing:.08em;color:#93bde2;font-weight:900}
+.s4-card .s4-explanation p,.s4-card .s4-judgement p,.s4-card .s4-watch p{font-size:12.5px;line-height:1.6;margin:7px 0 0;color:#d6e5f6}
+.s4-card .s4-explanation{margin-bottom:17px}
+.s4-card .s4-explanation b,.s4-card .s4-judgement strong{color:#fbfdff;font-weight:800}
+.s4-card .s4-judgement{background:rgba(89,168,255,.07);border-left:3px solid #7ab6f2;padding:13px 14px 14px;border-radius:0 11px 11px 0;margin-bottom:15px}
+.s4-card.s4-positive .s4-judgement{border-left-color:#5fe0a1;background:rgba(95,224,161,.065)}
+.s4-card.s4-positive .s4-judgement .microtitle{color:#76e4b3}
+.s4-card.s4-negative .s4-judgement{border-left-color:#ff7280;background:rgba(255,114,128,.062)}
+.s4-card.s4-negative .s4-judgement .microtitle{color:#ffadb7}
+.s4-card.s4-caution .s4-judgement{border-left-color:#ffc866;background:rgba(255,200,102,.06)}
+.s4-card.s4-caution .s4-judgement .microtitle{color:#ffdc96}
+.s4-card .s4-watch{margin-top:auto;border-top:1px solid rgba(145,179,211,.17);padding-top:13px}
+.s4-card .s4-watch .microtitle{color:#93bfde}
+.s4-card .s4-watch p{color:#bdcfe4;font-size:12.3px}
+@media(max-width:720px){.s4-intro{padding:15px 16px}.s4-intro p{font-size:13px}.s4-stories .s4-card{padding:16px}.s4-card .diagnosis{font-size:16px}.s4-card .s4-explanation p,.s4-card .s4-judgement p{font-size:12.5px}.s4-card .s4-watch p{font-size:12.3px}}
+@media print{.s4-card{break-inside:avoid}}
+
+/* Experimental reading upgrade: scoped to Sections 03 and 06, approved typography unchanged. */
+.interpretive-panel .table-kicker{font-size:12px;line-height:1.65;margin:0 0 13px}
+.reading-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 15px}
+.reading-tile{min-width:0;border:1px solid rgba(118,168,208,.19);background:linear-gradient(135deg,rgba(45,76,107,.22),rgba(12,27,45,.36));border-radius:12px;padding:13px 13px 12px}
+.reading-overline{display:block;color:#93c4ee;font-size:9px;font-weight:850;letter-spacing:.09em;margin-bottom:6px}
+.reading-tile strong{display:block;font-size:13px;color:#f2f7ff;line-height:1.3}
+.reading-tile p{font-size:11.6px;color:#bccfe3;line-height:1.47;margin:6px 0 0}
+.interpretive-panel .clean-table .judgement-cell{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.interpretive-panel .clean-table .judgement-why{color:#bcd0e3;font-size:11px;line-height:1.42;max-width:100%;font-weight:450}
+.interpretive-panel .clean-table .state-tag{white-space:normal;text-align:left;font-size:10px;line-height:1.2}
+.interpretive-panel .state-bear{color:#ffabb5;background:rgba(255,114,128,.10);border:1px solid rgba(255,114,128,.24)}
+.interpretive-panel .clean-table.table-3 .pace-heading{font-size:11.6px;color:#eff5ff;font-weight:850;display:block;line-height:1.4}
+.interpretive-panel .clean-table.table-3 .pace-explain{color:#aabed4;font-size:10.7px;line-height:1.4;display:block;margin-top:5px}
+.timeline-legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:14px 0 12px}
+.timeline-legend>div{border:1px solid #2b4361;border-radius:10px;background:#0c1b2f;padding:10px 11px;min-width:0}
+.timeline-legend small{display:block;letter-spacing:.045em;font-size:9px;font-weight:850;color:#91b2d3;margin-bottom:5px}
+.timeline-legend b{color:#e7f3fe;font-size:14px;display:block}
+.timeline-legend span{color:#91abc8;font-size:10px}
+.quant-details{margin-top:15px;border:1px solid #28405f;border-radius:12px;background:rgba(12,27,46,.5);padding:13px 14px}
+.quant-details summary{color:#93ccfc;font-weight:800;font-size:12px;cursor:pointer;line-height:1.35;list-style:auto}
+.quant-details .muted{margin:9px 0 10px}
+.quant-details .scroll{margin-bottom:0}
+.quant-details .detail-table tbody td{font-variant-numeric:tabular-nums}
+.crowding-review .card{margin-top:9px}
+.crowding-process{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 0 17px}
+.crowding-process>div{background:#0c1b2d;border:1px solid #27405d;border-radius:12px;padding:13px;min-width:0}
+.crowding-process span{font-size:9px;font-weight:850;letter-spacing:.08em;color:#8fbfef;display:block;margin-bottom:7px}
+.crowding-process strong{font-size:12.8px;color:#edf6ff}
+.crowding-process p{font-size:11.8px;line-height:1.5;margin:7px 0 0;color:#bcd0e4}
+.crowding-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:13px}
+.crowd-card{background:linear-gradient(150deg,rgba(255,114,128,.065),rgba(17,35,57,.75));border:1px solid rgba(255,114,128,.22);border-radius:13px;padding:17px 17px 14px;min-width:0}
+.crowd-name{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.crowd-name strong{font-size:16px;color:#f4f7ff}
+.crowd-risk{font-size:10px;color:#ffa9b3;font-weight:850;border:1px solid rgba(255,114,128,.25);border-radius:7px;padding:4px 7px}
+.crowd-metrics{display:flex;gap:8px;margin:11px 0;flex-wrap:wrap}
+.crowd-metrics span{background:rgba(255,114,128,.07);padding:6px 9px;border-radius:8px;color:#bcd0e4;font-size:11px}
+.crowd-metrics b{color:#ffb3bc}
+.crowd-card p{font-size:12.2px;line-height:1.57;color:#d2dfec;margin:9px 0}
+.crowd-card .crowd-verdict{border-left:3px solid #ff7584;background:rgba(255,114,128,.075);padding:9px 11px;border-radius:0 9px 9px 0}
+.crowd-card .crowd-verdict strong{color:#f5e4e9}
+.crowd-card .crowd-watch{color:#a5d1f6}
+.crowd-contrast{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:11px 0 15px}
+.crowd-example{border:1px solid #2a4663;border-radius:12px;padding:13px 14px;background:#0d2034}
+.crowd-example strong{color:#e8f4fd;font-size:12.5px}
+.crowd-example p{color:#c1d2e5;font-size:11.8px;line-height:1.58;margin:6px 0 0}
+@media (min-width:641px){
+ .interpretive-panel .table-2 th:nth-child(1), .interpretive-panel .table-2 td:nth-child(1){width:13%!important}
+ .interpretive-panel .table-2 th:nth-child(2), .interpretive-panel .table-2 td:nth-child(2){width:16%!important}
+ .interpretive-panel .table-2 th:nth-child(3), .interpretive-panel .table-2 td:nth-child(3){width:17%!important}
+ .interpretive-panel .table-2 th:nth-child(4), .interpretive-panel .table-2 td:nth-child(4){width:54%!important}
+ .interpretive-panel .table-3 th:nth-child(1), .interpretive-panel .table-3 td:nth-child(1){width:12%!important}
+ .interpretive-panel .table-3 th:nth-child(2), .interpretive-panel .table-3 td:nth-child(2){width:16%!important}
+ .interpretive-panel .table-3 th:nth-child(3), .interpretive-panel .table-3 td:nth-child(3){width:16%!important}
+ .interpretive-panel .table-3 th:nth-child(4), .interpretive-panel .table-3 td:nth-child(4){width:15%!important}
+ .interpretive-panel .table-3 th:nth-child(5), .interpretive-panel .table-3 td:nth-child(5){width:41%!important}
+ .interpretive-panel .table-2 .clean-table td.interpret,.interpretive-panel .table-3 .clean-table td.interpret{text-align:left}
+ .quant-details .detail-table th:nth-child(n), .quant-details .detail-table td:nth-child(n){width:25%!important}
+}
+@media (min-width:641px) and (max-width:910px){
+ .interpretive-panel .clean-table.table-2,.interpretive-panel .clean-table.table-3{min-width:790px}
+ .interpretive-panel .scroll{overflow-x:auto}
+ .reading-tile{padding:11px 10px}
+}
+@media (max-width:720px){
+ .reading-strip,.crowding-process{grid-template-columns:1fr}
+ .reading-tile{padding:11px 13px}
+ .reading-tile p{font-size:12px}
+ .crowding-grid,.crowd-contrast{grid-template-columns:1fr}
+ .timeline-legend{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+ .timeline-legend>div{padding:8px 7px}
+ .timeline-legend b{font-size:13px}
+ .timeline-legend small{font-size:8px}
+ .timeline-legend span{font-size:9px}
+}
+@media (max-width:480px){
+ .timeline-legend{grid-template-columns:1fr}
+ .timeline-legend>div{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1px 10px;padding:10px 13px}
+ .timeline-legend small{grid-column:1;grid-row:1;font-size:9px;margin:0}
+ .timeline-legend span{grid-column:1;grid-row:2;font-size:10px}
+ .timeline-legend b{grid-column:2;grid-row:1/span 2;font-size:14px}
+}
+.quant-details summary{list-style:none!important;display:flex;align-items:center;gap:8px}
+.quant-details summary::-webkit-details-marker{display:none}
+.quant-details summary::before{content:"▸";color:#8fcaff;font-size:17px;line-height:1;flex:none}
+.quant-details[open] summary::before{content:"▾"}
+@media (max-width:640px){
+ .interpretive-panel .clean-table tbody td.interpret{min-height:0}
+ .interpretive-panel .clean-table .judgement-why{font-size:12px}
+ .interpretive-panel .clean-table.table-3 .pace-heading{font-size:13px}
+ .interpretive-panel .clean-table.table-3 .pace-explain{font-size:11.8px}
+ .quant-details{padding:11px}
+ .quant-details .detail-table tbody td:last-child{grid-column:auto!important}
+ .crowding-review .interpretive-panel{padding:16px 13px}
+ .crowding-process>div{padding:11px 13px}
+ .crowd-card{padding:14px}
+}
+
+</style></head><body><main class="w"><header class="hero"><div class="eye">CFTC · Institutional Positioning</div><h1>COT FX G8</h1>
+<p>DARK QUANT DESK · COT as of <b>17 novembre 2026</b> · pubblicato <b>20 novembre 2026</b><br/>Stock → Flusso → Velocità → Prezzo</p>
+<span class="chip">Legacy Futures Only</span><span class="chip">Non-Commercial</span><span class="chip">Percentile 104W · esatto</span><span class="chip">8 valute</span>
+<p class="subtitle"><b>AUD è il movimento più netto della settimana: aumentano gli short, scendono i long e il cambio cede il 2,44% contro USD.</b> Anche NZD ed EUR vedono aumentare gli short. Sulla sterlina il saldo short si riduce di quasi 11 mila contratti, mentre GBP/USD scende dell’1,72%. Il recupero della sterlina resta da vedere sul prezzo.</p>
+</header><div class="sec">01 · Desk snapshot</div><div class="grid four snapshot2">
+<div class="metric snap2"><div class="k danger">● PIÙ AFFOLLATO</div><div class="v">AUD</div><div class="metricrow"><div class="qbox dangerbox"><span>NET / OPEN INTEREST</span><strong>−48,6%</strong><small>Short concentrati</small></div></div></div>
+<div class="metric snap2"><div class="k danger">● IMPULSO PIÙ NEGATIVO</div><div class="v">AUD</div><div class="metricrow"><div class="qbox dangerbox"><span>Δ NET 1W</span><strong>−30,3K</strong><small>Liquidazioni long e nuovi short</small></div></div></div>
+<div class="metric snap2"><div class="k info">● MAGGIOR RECUPERO DEL NET</div><div class="v">GBP</div><div class="metricrow"><div class="qbox infobox"><span>Δ NET 1W</span><strong>+10,9K</strong><small>Nuovi long e short covering</small></div></div></div>
+<div class="metric snap2"><div class="k info">● PRESSIONE FX</div><div class="v">EUR</div><div class="metricrow"><div class="qbox infobox"><span>PREZZO 1W</span><strong>−2,01%</strong><small>EUR/USD in calo</small></div></div></div>
+</div><div class="sec">02 · Posizionamento attuale</div><section class="card"><h2>La classifica dei fondi · dall’estremo long all’estremo short</h2><div class="ranking-head">
+<div class="rank-explainer">Ordine per <strong>percentile 104W decrescente</strong>, non per contratti netti. Il segnale è relativo allo storico.</div>
+<div aria-label="Riepilogo delle classificazioni" class="rank-legend"><span class="rank-long"><i></i>4 Extreme Long</span><span class="rank-neutral"><i></i>1 Neutrale</span><span class="rank-short"><i></i>3 Extreme Short</span></div>
+</div><div class="z-callout"><span aria-hidden="true" class="z-icon">σ</span><div><strong>Z-score 104W presente</strong><span>La colonna finale misura la distanza dalla media storica: 0 = nella media; ±2 = distanza elevata. Non confonderlo con Net positivo o negativo.</span></div></div><div class="scroll"><table class="clean-table table-1">
+<thead><tr><th>Valuta</th><th>Net</th><th>Δ Net 1W</th><th>Percentile 104W</th><th>Segnale</th><th>Net/OI</th><th>Z-score 104W</th></tr></thead><tbody><tr class="group-start" data-code="CHF" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇨🇭 <b>CHF</b></span></td><td class="numeric neg" data-label="Net">−8,3K</td><td class="numeric pos" data-label="Δ Net 1W">+0,9K</td><td class="numeric" data-label="Percentile 104W"><span class="percentile-num">100°</span></td><td data-label="Segnale"><span class="pill extreme-long">EXTREME LONG</span></td><td class="numeric" data-label="Net/OI">-6.6%</td><td class="numeric" data-label="Z-score 104W"><span class="z-chip z-hot-positive">+3.09</span></td></tr><tr data-code="JPY" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇯🇵 <b>JPY</b></span></td><td class="numeric pos" data-label="Net">+116,3K</td><td class="numeric neg" data-label="Δ Net 1W">−6,8K</td><td class="numeric" data-label="Percentile 104W"><span class="percentile-num">81°</span></td><td data-label="Segnale"><span class="pill extreme-long">EXTREME LONG</span></td><td class="numeric" data-label="Net/OI">+29.8%</td><td class="numeric" data-label="Z-score 104W"><span class="z-chip z-positive">+1.02</span></td></tr><tr data-code="USD" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇺🇸 <b>USD</b></span></td><td class="numeric pos" data-label="Net">+13,3K</td><td class="numeric neg" data-label="Δ Net 1W">−0,5K</td><td class="numeric" data-label="Percentile 104W"><span class="percentile-num">81°</span></td><td data-label="Segnale"><span class="pill extreme-long">EXTREME LONG</span></td><td class="numeric" data-label="Net/OI">+23.9%</td><td class="numeric" data-label="Z-score 104W"><span class="z-chip z-positive">+1.08</span></td></tr><tr data-code="CAD" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇨🇦 <b>CAD</b></span></td><td class="numeric neg" data-label="Net">−45,0K</td><td class="numeric neg" data-label="Δ Net 1W">−12,5K</td><td class="numeric" data-label="Percentile 104W"><span class="percentile-num">80°</span></td><td data-label="Segnale"><span class="pill extreme-long">EXTREME LONG</span></td><td class="numeric" data-label="Net/OI">-12.6%</td><td class="numeric" data-label="Z-score 104W"><span class="z-chip z-positive">+0.94</span></td></tr><tr class="group-start" data-code="GBP" data-group="neutral"><td class="currency" data-label="Valuta"><span class="nowrap">🇬🇧 <b>GBP</b></span></td><td class="numeric neg" data-label="Net">−32,3K</td><td class="numeric pos" data-label="Δ Net 1W">+10,9K</td><td class="numeric" data-label="Percentile 104W"><span class="percentile-num">50°</span></td><td data-label="Segnale"><span class="pill neutral">NEUTRALE</span></td><td class="numeric" data-label="Net/OI">-13.8%</td><td class="numeric" data-label="Z-score 104W"><span class="z-chip z-negative">-0.12</span></td></tr><tr class="group-start" data-code="EUR" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇪🇺 <b>EUR</b></span></td><td class="numeric neg" data-label="Net">−142,7K</td><td class="numeric neg" data-label="Δ Net 1W">−6,3K</td><td class="numeric" data-label="Percentile 104W"><span class="percentile-num">2°</span></td><td data-label="Segnale"><span class="pill extreme-short">EXTREME SHORT</span></td><td class="numeric" data-label="Net/OI">-16.5%</td><td class="numeric" data-label="Z-score 104W"><span class="z-chip z-hot-negative">-2.11</span></td></tr><tr data-code="NZD" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇳🇿 <b>NZD</b></span></td><td class="numeric neg" data-label="Net">−63,2K</td><td class="numeric neg" data-label="Δ Net 1W">−7,9K</td><td class="numeric" data-label="Percentile 104W"><span class="percentile-num">2°</span></td><td data-label="Segnale"><span class="pill extreme-short">EXTREME SHORT</span></td><td class="numeric" data-label="Net/OI"><span class="netoi-alert">⚠ -46.1%</span></td><td class="numeric" data-label="Z-score 104W"><span class="z-chip z-negative">-1.61</span></td></tr><tr data-code="AUD" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇦🇺 <b>AUD</b></span></td><td class="numeric neg" data-label="Net">−182,1K</td><td class="numeric neg" data-label="Δ Net 1W">−30,3K</td><td class="numeric" data-label="Percentile 104W"><span class="percentile-num">0°</span></td><td data-label="Segnale"><span class="pill extreme-short">EXTREME SHORT</span></td><td class="numeric" data-label="Net/OI"><span class="netoi-alert">⚠ -48.6%</span></td><td class="numeric" data-label="Z-score 104W"><span class="z-chip z-hot-negative">-2.63</span></td></tr></tbody></table></div>
+<p class="muted">Percentili <b>esatti</b> sulle 104 rilevazioni precedenti (dal 19/11/2024 al 10/11/2026), settimana corrente esclusa. Soglie applicate <b>dopo</b> arrotondamento all’intero: ≥80° LONG verde, ≤20° SHORT rosso. Z-score su media e deviazione standard campionaria delle 104 osservazioni. <b>Il 100° percentile CHF è relativo: il Net resta negativo.</b></p>
+<div class="z-helper" id="z-score-spiegazione"><b>COME LEGGERE LO Z-SCORE 104W</b><p>Misura quanto il Net attuale si trova lontano dalla <b>media degli ultimi 2 anni</b>, usando la variabilità storica (deviazione standard). <b>0</b> = nella media; <b>+2</b> = molto sopra; <b>−2</b> = molto sotto. Il segno indica lo scostamento dalla media, <b>non</b> se i fondi siano net long o net short. Per esempio, CHF può avere uno Z-score positivo pur restando Net negativo. Non è un segnale di acquisto o vendita.</p></div>
+</section><div class="sec">03 · Grafici del positioning</div><div class="grid two">
+<section class="card"><h2>Percentile storico 104W · esatto</h2><div class="chart"><div class="bar"><b>CHF</b><div class="track"><div class="fill extreme-long" style="width:100.00%"></div></div><span>100°</span></div><div class="bar"><b>JPY</b><div class="track"><div class="fill extreme-long" style="width:80.77%"></div></div><span>81°</span></div><div class="bar"><b>USD</b><div class="track"><div class="fill extreme-long" style="width:80.77%"></div></div><span>81°</span></div><div class="bar"><b>CAD</b><div class="track"><div class="fill extreme-long" style="width:79.81%"></div></div><span>80°</span></div><div class="bar"><b>GBP</b><div class="track"><div class="fill neutral" style="width:50.00%"></div></div><span>50°</span></div><div class="bar"><b>EUR</b><div class="track"><div class="fill extreme-short" style="width:1.92%"></div></div><span>2°</span></div><div class="bar"><b>NZD</b><div class="track"><div class="fill extreme-short" style="width:1.92%"></div></div><span>2°</span></div><div class="bar"><b>AUD</b><div class="track"><div class="fill extreme-short" style="width:1.00%"></div></div><span>0°</span></div></div>
+<p class="muted">Classifica esatta: quota delle 104 osservazioni precedenti con Net ≤ Net attuale. Un percentile LONG alto non implica necessariamente un Net positivo.</p></section>
+<section class="card"><h2>Impulso dell'ultima settimana</h2><div class="chart"><div class="bar"><b>GBP</b><div class="track"><div class="fill" style="width:57.71%"></div></div><span>+4,7%</span></div><div class="bar"><b>CHF</b><div class="track"><div class="fill" style="width:8.52%"></div></div><span>+0,7%</span></div><div class="bar"><b>EUR</b><div class="track"><div class="fill risk" style="width:9.00%"></div></div><span>-0,7%</span></div><div class="bar"><b>USD</b><div class="track"><div class="fill risk" style="width:10.36%"></div></div><span>-0,8%</span></div><div class="bar"><b>JPY</b><div class="track"><div class="fill risk" style="width:21.50%"></div></div><span>-1,7%</span></div><div class="bar"><b>CAD</b><div class="track"><div class="fill risk" style="width:42.95%"></div></div><span>-3,5%</span></div><div class="bar"><b>NZD</b><div class="track"><div class="fill risk" style="width:70.95%"></div></div><span>-5,7%</span></div><div class="bar"><b>AUD</b><div class="track"><div class="fill risk" style="width:100.00%"></div></div><span>-8,1%</span></div></div>
+<p class="muted">Velocity = Δ Net 1W / Open Interest attuale. Barra relativa al valore assoluto massimo osservato questa settimana.</p></section>
+</div><section class="card interpretive-panel" id="cot-prezzo">
+<h2>Il prezzo conferma quello che fanno i fondi?</h2>
+<p class="table-kicker">Nel periodo 10–17 novembre il dollaro si rafforza contro l’euro, e tutte le altre valute G8 scendono contro USD. Il confronto è fra flusso netto e variazione del cambio nella stessa finestra, non una prova di causalità.</p>
+<div class="reading-strip reading-strip-three"><div class="reading-tile"><span class="reading-overline">CONFERMA INIZIALE</span><strong>🇦🇺 AUD</strong><p>Fondi più short e AUD/USD debole.</p></div><div class="reading-tile"><span class="reading-overline">DIVERGENZA</span><strong>🇬🇧 GBP</strong><p>Il saldo short si riduce, ma GBP/USD scende.</p></div><div class="reading-tile"><span class="reading-overline">FLUSSO DEBOLE</span><strong>🇨🇭 CHF</strong><p>Net quasi fermo: evitare conclusioni forzate.</p></div></div>
+<div class="scroll"><table class="clean-table table-2">
+<thead><tr><th>Valuta</th><th>Δ Net 1W</th><th>Prezzo 1W</th><th>Come leggerlo</th></tr></thead><tbody><tr class="group-start" data-code="CHF" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇨🇭 <b>CHF</b></span></td><td class="numeric pos" data-label="Δ Net 1W">+0,9K</td><td class="numeric neg" data-label="Prezzo 1W">-2,32%</td><td class="interpret" data-label="Come leggerlo"><div class="judgement-cell"><span class="state-tag state-divergence">Divergenza</span><span class="judgement-why">Il prezzo contraddice il flusso dei fondi; finestra BCE 10–17/11</span></div></td></tr><tr data-code="JPY" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇯🇵 <b>JPY</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−6,8K</td><td class="numeric neg" data-label="Prezzo 1W">-0,70%</td><td class="interpret" data-label="Come leggerlo"><div class="judgement-cell"><span class="state-tag state-bear">Conferma iniziale</span><span class="judgement-why">Fondi e cambio si muovono nella stessa direzione; finestra BCE 10–17/11</span></div></td></tr><tr data-code="USD" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇺🇸 <b>USD</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−0,5K</td><td class="numeric pos" data-label="Prezzo 1W">+2,05%</td><td class="interpret" data-label="Come leggerlo"><div class="judgement-cell"><span class="state-tag state-divergence">Divergenza</span><span class="judgement-why">Il prezzo contraddice il flusso dei fondi; finestra BCE 10–17/11</span></div></td></tr><tr data-code="CAD" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇨🇦 <b>CAD</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−12,5K</td><td class="numeric neg" data-label="Prezzo 1W">-1,08%</td><td class="interpret" data-label="Come leggerlo"><div class="judgement-cell"><span class="state-tag state-bear">Conferma iniziale</span><span class="judgement-why">Fondi e cambio si muovono nella stessa direzione; finestra BCE 10–17/11</span></div></td></tr><tr class="group-start" data-code="GBP" data-group="neutral"><td class="currency" data-label="Valuta"><span class="nowrap">🇬🇧 <b>GBP</b></span></td><td class="numeric pos" data-label="Δ Net 1W">+10,9K</td><td class="numeric neg" data-label="Prezzo 1W">-1,72%</td><td class="interpret" data-label="Come leggerlo"><div class="judgement-cell"><span class="state-tag state-divergence">Divergenza</span><span class="judgement-why">Il prezzo contraddice il flusso dei fondi; finestra BCE 10–17/11</span></div></td></tr><tr class="group-start" data-code="EUR" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇪🇺 <b>EUR</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−6,3K</td><td class="numeric neg" data-label="Prezzo 1W">-2,01%</td><td class="interpret" data-label="Come leggerlo"><div class="judgement-cell"><span class="state-tag state-bear">Conferma iniziale</span><span class="judgement-why">Fondi e cambio si muovono nella stessa direzione; finestra BCE 10–17/11</span></div></td></tr><tr data-code="NZD" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇳🇿 <b>NZD</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−7,9K</td><td class="numeric neg" data-label="Prezzo 1W">-2,30%</td><td class="interpret" data-label="Come leggerlo"><div class="judgement-cell"><span class="state-tag state-bear">Conferma iniziale</span><span class="judgement-why">Fondi e cambio si muovono nella stessa direzione; finestra BCE 10–17/11</span></div></td></tr><tr data-code="AUD" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇦🇺 <b>AUD</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−30,3K</td><td class="numeric neg" data-label="Prezzo 1W">-2,44%</td><td class="interpret" data-label="Come leggerlo"><div class="judgement-cell"><span class="state-tag state-bear">Conferma iniziale</span><span class="judgement-why">Fondi e cambio si muovono nella stessa direzione; finestra BCE 10–17/11</span></div></td></tr></tbody></table></div>
+<p class="muted"><b>Regola di lettura:</b> “conferma” indica coerenza direzionale, non causalità né forza predittiva dimostrata. Le valute sono espresse in USD tramite fixing BCE; per USD utilizziamo <b>USD/EUR</b> come proxy, <b>non</b> il future Dollar Index.</p>
+</section><section class="card interpretive-panel" id="ritmo-flussi">
+<h2>Il movimento dei fondi sta cambiando?</h2>
+<p class="table-kicker">Il ritmo va letto su intervalli non sovrapposti: quattro settimane precedenti, tre settimane successive e ultima settimana. I cambiamenti più netti sono l’accelerazione ribassista su AUD e il ritorno delle vendite su EUR.</p>
+<div class="reading-strip reading-strip-three"><div class="reading-tile"><span class="reading-overline">ACCELERAZIONE SHORT</span><strong>🇦🇺 AUD</strong><p>Nuovi short e liquidazione long.</p></div><div class="reading-tile"><span class="reading-overline">SHORT IN AUMENTO</span><strong>🇪🇺 EUR</strong><p>Gli short aumentano più dei long e EUR/USD scende.</p></div><div class="reading-tile"><span class="reading-overline">CAMBIO DI RITMO</span><strong>🇯🇵 JPY</strong><p>Nuovi long, ma aumento short ancora maggiore.</p></div></div>
+<div aria-label="Le tre finestre non sovrapposte" class="timeline-legend">
+<div><small>FASE PRECEDENTE · 4 settimane</small><b>8 → 4W</b><span>22 set → 20 ott</span></div>
+<div><small>ULTIME 3 SETTIMANE PRECEDENTI</small><b>4 → 1W</b><span>20 ott → 10 nov</span></div>
+<div><small>FLUSSO ATTUALE · 1 settimana</small><b>Ultima 1W</b><span>10 nov → 17 nov</span></div>
+</div>
+<div class="scroll"><table class="clean-table table-3">
+<thead><tr><th>Valuta</th><th>8 → 4W<br/>Net / sett.</th><th>4 → 1W<br/>Net / sett.</th><th>Ultima 1W<br/>Δ Net</th><th>Giudizio sul ritmo</th></tr></thead><tbody><tr class="group-start" data-code="CHF" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇨🇭 <b>CHF</b></span></td><td class="numeric pos" data-label="8→4W, media/sett.">+2,2K</td><td class="numeric pos" data-label="4→1W, media/sett.">+3,0K</td><td class="numeric pos" data-label="Ultima 1W">+0,9K</td><td class="interpret" data-label="Giudizio sul ritmo"><strong class="pace-heading">Recupero in rallentamento</strong></td></tr><tr data-code="JPY" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇯🇵 <b>JPY</b></span></td><td class="numeric neg" data-label="8→4W, media/sett.">−0,5K</td><td class="numeric pos" data-label="4→1W, media/sett.">+17,7K</td><td class="numeric neg" data-label="Ultima 1W">−6,8K</td><td class="interpret" data-label="Giudizio sul ritmo"><strong class="pace-heading">Recupero interrotto, saldo settimanale in calo</strong></td></tr><tr data-code="USD" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇺🇸 <b>USD</b></span></td><td class="numeric pos" data-label="8→4W, media/sett.">+1,2K</td><td class="numeric neg" data-label="4→1W, media/sett.">−0,4K</td><td class="numeric neg" data-label="Ultima 1W">−0,5K</td><td class="interpret" data-label="Giudizio sul ritmo"><strong class="pace-heading">Lieve calo, vicino al ritmo precedente</strong></td></tr><tr data-code="CAD" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇨🇦 <b>CAD</b></span></td><td class="numeric neg" data-label="8→4W, media/sett.">−5,4K</td><td class="numeric pos" data-label="4→1W, media/sett.">+14,0K</td><td class="numeric neg" data-label="Ultima 1W">−12,5K</td><td class="interpret" data-label="Giudizio sul ritmo"><strong class="pace-heading">Netta inversione del flusso settimanale</strong></td></tr><tr class="group-start" data-code="GBP" data-group="neutral"><td class="currency" data-label="Valuta"><span class="nowrap">🇬🇧 <b>GBP</b></span></td><td class="numeric pos" data-label="8→4W, media/sett.">+0,5K</td><td class="numeric pos" data-label="4→1W, media/sett.">+12,4K</td><td class="numeric pos" data-label="Ultima 1W">+10,9K</td><td class="interpret" data-label="Giudizio sul ritmo"><strong class="pace-heading">Recupero ancora sostenuto</strong></td></tr><tr class="group-start" data-code="EUR" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇪🇺 <b>EUR</b></span></td><td class="numeric neg" data-label="8→4W, media/sett.">−20,5K</td><td class="numeric neg" data-label="4→1W, media/sett.">−0,6K</td><td class="numeric neg" data-label="Ultima 1W">−6,3K</td><td class="interpret" data-label="Giudizio sul ritmo"><strong class="pace-heading">Pressione ribassista in ripresa</strong></td></tr><tr data-code="NZD" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇳🇿 <b>NZD</b></span></td><td class="numeric neg" data-label="8→4W, media/sett.">−11,7K</td><td class="numeric pos" data-label="4→1W, media/sett.">+0,9K</td><td class="numeric neg" data-label="Ultima 1W">−7,9K</td><td class="interpret" data-label="Giudizio sul ritmo"><strong class="pace-heading">Torna la pressione ribassista</strong></td></tr><tr data-code="AUD" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇦🇺 <b>AUD</b></span></td><td class="numeric neg" data-label="8→4W, media/sett.">−20,1K</td><td class="numeric neg" data-label="4→1W, media/sett.">−8,2K</td><td class="numeric neg" data-label="Ultima 1W">−30,3K</td><td class="interpret" data-label="Giudizio sul ritmo"><strong class="pace-heading">Pressione ribassista in accelerazione</strong></td></tr></tbody></table></div>
+<p class="muted">Un ritmo positivo significa Net in miglioramento; uno negativo significa Net in peggioramento. <b>“Rallenta” non equivale a “inverte”.</b> I ritmi storici sono medie su 4 e 3 settimane, non singole osservazioni settimanali: sono utili per leggere una transizione, non per dimostrare accelerazione statistica.</p>
+<details class="quant-details"><summary>Mostra anche i valori cumulati originali Δ Net 1W / 4W / 8W</summary>
+<p class="muted">I numeri sottostanti sono variazioni totali del Net e conservano la lettura quantitativa completa.</p>
+<div class="scroll"><table class="clean-table detail-table"><thead><tr><th>Valuta</th><th>Δ Net 1W</th><th>Δ Net 4W</th><th>Δ Net 8W</th></tr></thead><tbody><tr class="group-start" data-code="CHF" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇨🇭 <b>CHF</b></span></td><td class="numeric pos" data-label="Δ Net 1W">+0,9K</td><td class="numeric pos" data-label="Δ Net 4W">+9,9K</td><td class="numeric pos" data-label="Δ Net 8W">+18,5K</td></tr><tr data-code="JPY" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇯🇵 <b>JPY</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−6,8K</td><td class="numeric pos" data-label="Δ Net 4W">+46,4K</td><td class="numeric pos" data-label="Δ Net 8W">+44,3K</td></tr><tr data-code="USD" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇺🇸 <b>USD</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−0,5K</td><td class="numeric neg" data-label="Δ Net 4W">−1,7K</td><td class="numeric pos" data-label="Δ Net 8W">+3,0K</td></tr><tr data-code="CAD" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇨🇦 <b>CAD</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−12,5K</td><td class="numeric pos" data-label="Δ Net 4W">+29,7K</td><td class="numeric pos" data-label="Δ Net 8W">+8,2K</td></tr><tr class="group-start" data-code="GBP" data-group="neutral"><td class="currency" data-label="Valuta"><span class="nowrap">🇬🇧 <b>GBP</b></span></td><td class="numeric pos" data-label="Δ Net 1W">+10,9K</td><td class="numeric pos" data-label="Δ Net 4W">+48,1K</td><td class="numeric pos" data-label="Δ Net 8W">+50,3K</td></tr><tr class="group-start" data-code="EUR" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇪🇺 <b>EUR</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−6,3K</td><td class="numeric neg" data-label="Δ Net 4W">−8,2K</td><td class="numeric neg" data-label="Δ Net 8W">−90,4K</td></tr><tr data-code="NZD" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇳🇿 <b>NZD</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−7,9K</td><td class="numeric neg" data-label="Δ Net 4W">−5,1K</td><td class="numeric neg" data-label="Δ Net 8W">−51,9K</td></tr><tr data-code="AUD" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇦🇺 <b>AUD</b></span></td><td class="numeric neg" data-label="Δ Net 1W">−30,3K</td><td class="numeric neg" data-label="Δ Net 4W">−54,8K</td><td class="numeric neg" data-label="Δ Net 8W">−135,2K</td></tr></tbody></table></div></details>
+</section><div class="sec">04 · Cosa vedo davvero</div><section aria-label="Sintesi chiara del posizionamento COT" class="s4-intro"><div class="s4-kicker">LA LETTURA IN 20 SECONDI</div><p>AUD e NZD vedono uscire long ed entrare short, con i cambi in discesa. Sull’euro le vendite tornano dopo tre settimane quasi piatte. La sterlina è la divergenza più netta: saldo in recupero di quasi 11 mila contratti e cambio ancora debole. Sullo yen si interrompe il recupero dei flussi, anche se il saldo resta long.</p><div class="s4-footnote">Posizioni al <b>17 novembre</b>. Cambi di riferimento BCE dal <b>10 al 17 novembre</b>.</div></section><div class="grid two operative interpretative s4-stories"><section aria-label="COT CHF, analisi e giudizio" class="card opcard fx claritycard s4-card s4-caution"><div class="ophead"><h2>🇨🇭 CHF</h2><div class="signalbox"><span class="pill extreme-long">EXTREME LONG</span></div></div><div class="s4-label">IL RECUPERO RALLENTA</div><div class="diagnosis">Il saldo migliora appena e il franco scende contro il dollaro.</div><div class="s4-explanation"><div class="microtitle">COSA STA SUCCEDENDO</div><p>Il recupero prosegue grazie a un piccolo aumento dei long. Gli short restano quasi fermi e il saldo migliora di appena 872 contratti, contro circa 3 mila a settimana nella fase precedente. CHF/USD cede il 2,32%.</p></div><div class="s4-judgement"><div class="microtitle">IL MIO GIUDIZIO</div><p>Il 100° percentile misura quanto è migliorato il saldo rispetto al suo storico. Restano comunque 8,3 mila contratti net short, e il prezzo mostra che la domanda di franco non ha ancora preso il sopravvento.</p></div><div class="s4-watch"><div class="microtitle">COSA CONFERMEREBBE O SMENTIREBBE LA TESI</div><p>Un saldo in ulteriore recupero con un CHF più forte darebbe peso al movimento. Se il saldo torna a peggiorare, il recupero recente perde forza.</p></div></section><section aria-label="COT JPY, analisi e giudizio" class="card opcard fx claritycard s4-card s4-caution"><div class="ophead"><h2>🇯🇵 JPY</h2><div class="signalbox"><span class="pill extreme-long">EXTREME LONG</span></div></div><div class="s4-label">IL RECUPERO SI INTERROMPE</div><div class="diagnosis">Il saldo resta long, ma questa settimana gli short crescono più dei long.</div><div class="s4-explanation"><div class="microtitle">COSA STA SUCCEDENDO</div><p>Gli speculatori aumentano entrambi i lati, con quasi 15,8 mila short in più contro 9 mila long. Il saldo perde 6,8 mila contratti dopo una fase di forte recupero. Anche lo yen arretra, dello 0,70% contro USD.</p></div><div class="s4-judgement"><div class="microtitle">IL MIO GIUDIZIO</div><p>Il saldo resta positivo di 116,3 mila contratti e vicino al 30% dell’open interest. Se lo yen continua a scendere, resta spazio per alleggerimenti delle posizioni long.</p></div><div class="s4-watch"><div class="microtitle">COSA CONFERMEREBBE O SMENTIREBBE LA TESI</div><p>Un’altra settimana di short in aumento accompagnata da USD/JPY in salita confermerebbe la perdita di slancio. Una ripresa dello yen con saldo in recupero ridimensionerebbe il segnale.</p></div></section><section aria-label="COT USD, analisi e giudizio" class="card opcard fx claritycard s4-card s4-neutral"><div class="ophead"><h2>🇺🇸 USD</h2><div class="signalbox"><span class="pill extreme-long">EXTREME LONG</span></div></div><div class="s4-label">IL CAMBIO CORRE PIÙ DEL COT</div><div class="diagnosis">Il dollaro sale contro l’euro mentre il saldo sul Dollar Index si riduce appena.</div><div class="s4-explanation"><div class="microtitle">COSA STA SUCCEDENDO</div><p>Sul future Dollar Index aumentano sia long sia short, con un lieve vantaggio degli short. Il saldo scende di 468 contratti e resta positivo. Intanto il dollaro guadagna il 2,05% contro l’euro.</p></div><div class="s4-judgement"><div class="microtitle">IL MIO GIUDIZIO</div><p>Il cambio mostra forza del dollaro. Il COT conferma che gli speculatori restano net long sul Dollar Index, con un saldo in lieve calo che indica un impulso settimanale più debole.</p></div><div class="s4-watch"><div class="microtitle">COSA CONFERMEREBBE O SMENTIREBBE LA TESI</div><p>Un nuovo aumento del saldo long, accompagnato da un dollaro forte contro più valute, confermerebbe la forza del dollaro. Se il prezzo perde terreno mentre il saldo cala ancora, viene meno il sostegno del cambio.</p></div></section><section aria-label="COT CAD, analisi e giudizio" class="card opcard fx claritycard s4-card s4-negative"><div class="ophead"><h2>🇨🇦 CAD</h2><div class="signalbox"><span class="pill extreme-long">EXTREME LONG</span></div></div><div class="s4-label">TORNANO GLI SHORT</div><div class="diagnosis">Il recupero da fine ottobre perde slancio con il cambio in discesa.</div><div class="s4-explanation"><div class="microtitle">COSA STA SUCCEDENDO</div><p>I long aumentano di 3,9 mila contratti, gli short di 16,3 mila. Il saldo peggiora di 12,5 mila e il CAD cede l’1,08% contro USD. Nelle tre settimane precedenti il saldo migliorava in media di 14 mila contratti a settimana.</p></div><div class="s4-judgement"><div class="microtitle">IL MIO GIUDIZIO</div><p>La pressione ribassista è tornata. L’80° percentile descrive un saldo relativamente alto rispetto alla storia recente, che resta comunque short di 45 mila contratti.</p></div><div class="s4-watch"><div class="microtitle">COSA CONFERMEREBBE O SMENTIREBBE LA TESI</div><p>Nuovi short con USD/CAD in salita darebbero continuità. Ricoperture e recupero del CAD suggerirebbero che questa settimana è stata una battuta d’arresto nel miglioramento precedente.</p></div></section><section aria-label="COT GBP, analisi e giudizio" class="card opcard fx claritycard s4-card s4-positive"><div class="ophead"><h2>🇬🇧 GBP</h2><div class="signalbox"><span class="pill neutral">NEUTRALE</span></div></div><div class="s4-label">RECUPERO ANCORA SOLO NEI FLUSSI</div><div class="diagnosis">Entrano long e si riducono gli short, mentre GBP/USD arretra.</div><div class="s4-explanation"><div class="microtitle">COSA STA SUCCEDENDO</div><p>Il saldo migliora di 10,9 mila contratti, soprattutto grazie ai 9 mila long in più. Gli short si riducono di 1,9 mila contratti. GBP/USD scende comunque dell’1,72%.</p></div><div class="s4-judgement"><div class="microtitle">IL MIO GIUDIZIO</div><p>È il recupero più netto tra le G8 questa settimana, ma il cambio resta debole. La sterlina è la divergenza da seguire se il dollaro perde impulso.</p></div><div class="s4-watch"><div class="microtitle">COSA CONFERMEREBBE O SMENTIREBBE LA TESI</div><p>Un recupero di GBP/USD accompagnato da altri long darebbe seguito alla divergenza. Se tornano gli short mentre il cambio resta debole, il recupero nel COT perde valore.</p></div></section><section aria-label="COT EUR, analisi e giudizio" class="card opcard fx claritycard s4-card s4-negative"><div class="ophead"><h2>🇪🇺 EUR</h2><div class="signalbox"><span class="pill extreme-short">EXTREME SHORT</span></div></div><div class="s4-label">GLI SHORT TORNANO A PREMERE</div><div class="diagnosis">Il saldo torna a peggiorare e EUR/USD scende del 2,01%.</div><div class="s4-explanation"><div class="microtitle">COSA STA SUCCEDENDO</div><p>Ai 2,6 mila long in più si contrappongono 8,9 mila short aggiuntivi. Il saldo perde 6,3 mila contratti dopo tre settimane quasi piatte in media. La discesa di EUR/USD va nella stessa direzione.</p></div><div class="s4-judgement"><div class="microtitle">IL MIO GIUDIZIO</div><p>La pressione è ripartita, con un’intensità inferiore a quella fra fine settembre e metà ottobre. Il saldo è al 2° percentile. Per una svolta servirebbe un cambiamento sia nei flussi sia sul prezzo.</p></div><div class="s4-watch"><div class="microtitle">COSA CONFERMEREBBE O SMENTIREBBE LA TESI</div><p>Short ancora in aumento e nuovi minimi di EUR/USD confermerebbero il quadro. Short in calo insieme a un rimbalzo del cambio sarebbero le prime prove a favore di una svolta.</p></div></section><section aria-label="COT NZD, analisi e giudizio" class="card opcard fx claritycard s4-card s4-negative"><div class="ophead"><h2>🇳🇿 NZD</h2><div class="signalbox"><span class="pill extreme-short">EXTREME SHORT</span><span class="netoi-alert">⚠ Net/OI −46,1%</span></div></div><div class="s4-label">IL NET TORNA A SCENDERE</div><div class="diagnosis">Il breve miglioramento si esaurisce, con nuovi short e cambio debole.</div><div class="s4-explanation"><div class="microtitle">COSA STA SUCCEDENDO</div><p>Gli short aumentano di 7,3 mila contratti e i long si riducono di circa 600. Il saldo perde 7,9 mila dopo tre settimane di lieve recupero nel complesso. NZD/USD cede il 2,30%.</p></div><div class="s4-judgement"><div class="microtitle">IL MIO GIUDIZIO</div><p>La pressione ribassista è tornata. Con un saldo pari al −46,1% dell’open interest, un recupero del cambio potrebbe accelerare se gli speculatori iniziassero a chiudere gli short.</p></div><div class="s4-watch"><div class="microtitle">COSA CONFERMEREBBE O SMENTIREBBE LA TESI</div><p>Ulteriori short con NZD/USD debole rafforzerebbero la lettura. Per parlare di svolta servirebbero ricoperture e un recupero del cambio.</p></div></section><section aria-label="COT AUD, analisi e giudizio" class="card opcard fx claritycard s4-card s4-negative"><div class="ophead"><h2>🇦🇺 AUD</h2><div class="signalbox"><span class="pill extreme-short">EXTREME SHORT</span><span class="netoi-alert">⚠ Net/OI −48,6%</span></div></div><div class="s4-label">LA PRESSIONE PIÙ NETTA</div><div class="diagnosis">Scendono i long, salgono gli short e il prezzo segue.</div><div class="s4-explanation"><div class="microtitle">COSA STA SUCCEDENDO</div><p>I long calano di 17,3 mila contratti e gli short aumentano di 13 mila. Il saldo perde 30,3 mila in una settimana, contro circa 8,2 mila a settimana nella fase precedente. AUD/USD cede il 2,44%.</p></div><div class="s4-judgement"><div class="microtitle">IL MIO GIUDIZIO</div><p>È la pressione ribassista più chiara del report. Il saldo al −48,6% dell’open interest segnala anche spazio per ricoperture rapide se il cambio smette di scendere.</p></div><div class="s4-watch"><div class="microtitle">COSA CONFERMEREBBE O SMENTIREBBE LA TESI</div><p>Un altro aumento degli short con AUD/USD sui minimi confermerebbe la pressione. Short in calo e recupero del prezzo cambierebbero il quadro.</p></div></section></div><div class="sec">05 · Gross flows · Chi apre e chi chiude</div><section class="card"><h2>Dietro al Net: variazione dei long e degli short</h2><p class="table-kicker">Long e short sono riportati separatamente nella tabella sottostante. Le variazioni si riferiscono al 10–17 novembre 2026.</p><p></p><div class="scroll"><table class="clean-table table-4"><thead><tr><th>Valuta</th><th>Long attuali</th><th>Δ Long</th><th>Short attuali</th><th>Δ Short</th><th>Motore del flusso</th></tr></thead><tbody><tr class="group-start" data-code="CHF" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇨🇭 <b>CHF</b></span></td><td class="numeric" data-label="Long attuali">33.456</td><td class="numeric pos" data-label="Δ Long">+842</td><td class="numeric" data-label="Short attuali">41.737</td><td class="numeric pos" data-label="Δ Short">-30</td><td class="interpret" data-label="Motore del flusso">Nuovi long e ricoperture short</td></tr><tr data-code="JPY" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇯🇵 <b>JPY</b></span></td><td class="numeric" data-label="Long attuali">258.756</td><td class="numeric pos" data-label="Δ Long">+8.997</td><td class="numeric" data-label="Short attuali">142.439</td><td class="numeric neg" data-label="Δ Short">+15.793</td><td class="interpret" data-label="Motore del flusso">Nuovi long, ma anche nuovi short</td></tr><tr data-code="USD" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇺🇸 <b>USD</b></span></td><td class="numeric" data-label="Long attuali">36.596</td><td class="numeric pos" data-label="Δ Long">+1.820</td><td class="numeric" data-label="Short attuali">23.251</td><td class="numeric neg" data-label="Δ Short">+2.288</td><td class="interpret" data-label="Motore del flusso">Nuovi long, ma anche nuovi short</td></tr><tr data-code="CAD" data-group="extreme-long"><td class="currency" data-label="Valuta"><span class="nowrap">🇨🇦 <b>CAD</b></span></td><td class="numeric" data-label="Long attuali">111.591</td><td class="numeric pos" data-label="Δ Long">+3.888</td><td class="numeric" data-label="Short attuali">156.639</td><td class="numeric neg" data-label="Δ Short">+16.344</td><td class="interpret" data-label="Motore del flusso">Nuovi long, ma anche nuovi short</td></tr><tr class="group-start" data-code="GBP" data-group="neutral"><td class="currency" data-label="Valuta"><span class="nowrap">🇬🇧 <b>GBP</b></span></td><td class="numeric" data-label="Long attuali">70.999</td><td class="numeric pos" data-label="Δ Long">+8.994</td><td class="numeric" data-label="Short attuali">103.303</td><td class="numeric pos" data-label="Δ Short">-1.918</td><td class="interpret" data-label="Motore del flusso">Nuovi long e ricoperture short</td></tr><tr class="group-start" data-code="EUR" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇪🇺 <b>EUR</b></span></td><td class="numeric" data-label="Long attuali">230.074</td><td class="numeric pos" data-label="Δ Long">+2.596</td><td class="numeric" data-label="Short attuali">372.784</td><td class="numeric neg" data-label="Δ Short">+8.910</td><td class="interpret" data-label="Motore del flusso">Nuovi long, ma anche nuovi short</td></tr><tr data-code="NZD" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇳🇿 <b>NZD</b></span></td><td class="numeric" data-label="Long attuali">17.291</td><td class="numeric neg" data-label="Δ Long">-590</td><td class="numeric" data-label="Short attuali">80.536</td><td class="numeric neg" data-label="Δ Short">+7.289</td><td class="interpret" data-label="Motore del flusso">Liquidazione long e nuovi short</td></tr><tr data-code="AUD" data-group="extreme-short"><td class="currency" data-label="Valuta"><span class="nowrap">🇦🇺 <b>AUD</b></span></td><td class="numeric" data-label="Long attuali">81.148</td><td class="numeric neg" data-label="Δ Long">-17.299</td><td class="numeric" data-label="Short attuali">263.208</td><td class="numeric neg" data-label="Δ Short">+13.008</td><td class="interpret" data-label="Motore del flusso">Liquidazione long e nuovi short</td></tr></tbody></table></div><p class="muted"></p></section><div class="sec">06 · Posizioni affollate e rischio di rimbalzo</div><div class="crowding-review" id="rischio-crowding">
+<section class="card interpretive-panel"><h2>Su AUD e NZD continuano a crescere gli short</h2><p class="table-kicker">Molti contratti puntano già sul ribasso. Se i cambi iniziano a risalire, chi è short può ricomprare per chiudere la posizione e accelerare il rimbalzo.</p><div class="crowding-process"><div><span>01 · POSIZIONI</span><strong>Quanto pesa il ribasso?</strong><p>Su entrambe le valute ci sono molti più contratti al ribasso che al rialzo. La differenza vale quasi metà dei contratti aperti.</p></div><div><span>02 · ULTIMA SETTIMANA</span><strong>Cosa fanno i fondi?</strong><p>Aumentano le posizioni al ribasso e riducono quelle al rialzo, sia su AUD sia su NZD.</p></div><div><span>03 · PREZZO</span><strong>Si vede già un rimbalzo?</strong><p>Dal 10 al 17 novembre, AUD/USD è sceso del 2,44% e NZD/USD del 2,30%. Un recupero dei cambi insieme a un calo degli short sarebbe il primo segnale di svolta.</p></div></div><div class="crowding-grid"><article class="crowd-card"><div class="crowd-name"><strong>🇦🇺 AUD</strong><span class="crowd-risk">Short affollati</span></div><div class="crowd-metrics"><span>Percentile <b>0°</b></span><span>Net/OI <b>−48,6%</b></span></div><p>Nuovi short e liquidazione long, con prezzo in discesa.</p><p class="crowd-verdict"><strong>Tesi short forte, ingresso poco attraente da inseguire.</strong></p><p class="crowd-watch">Una svolta richiede short in calo e AUD/USD in recupero.</p></article><article class="crowd-card"><div class="crowd-name"><strong>🇳🇿 NZD</strong><span class="crowd-risk">Short affollati</span></div><div class="crowd-metrics"><span>Percentile <b>2°</b></span><span>Net/OI <b>−46,1%</b></span></div><p>Short in aumento, long in calo, prezzo debole.</p><p class="crowd-verdict"><strong>Elevata vulnerabilità a squeeze, ma inversione non osservata.</strong></p><p class="crowd-watch">Conferma solo con ricoperture e NZD/USD in recupero.</p></article></div><div class="crowd-contrast"><div class="crowd-example"><strong>🇬🇧 GBP · ricoperture</strong><p>Short in calo e long in aumento, ma GBP/USD scende: divergenza.</p></div><div class="crowd-example"><strong>🇨🇭 CHF · estremo relativo</strong><p>Percentile 100° ma Net ancora negativo: non significa fondi net long.</p></div></div></section></div><div class="sec">07 · Dalla fotografia alla verifica</div><section class="card focus"><h2>Tre controlli da fare sul mercato, senza forzare segnali</h2><div class="reading-strip reading-strip-three"><div class="reading-tile"><strong>01 · AUD/NZD</strong><p>Short molto affollati: controllare se il prossimo COT mostra ricoperture e se il prezzo recupera.</p></div><div class="reading-tile"><strong>02 · EUR/GBP</strong><p>EUR perde terreno anche nel COT, mentre sulla GBP il saldo short si riduce. Verificare se questa differenza comincia a vedersi su EUR/GBP.</p></div><div class="reading-tile"><strong>03 · USD/JPY</strong><p>Il JPY perde slancio nel COT, mentre il dollaro sale contro EUR malgrado il lieve calo del saldo long sul Dollar Index. Controllare se USD/JPY continua a salire e se il prossimo COT conferma il calo del saldo long sullo yen.</p></div></div></section><div class="sec">08 · Nota metodologica e fonti</div><section class="card">
+<p><b>Data COT as-of:</b> martedì 17 novembre 2026; <b>pubblicazione:</b> venerdì 20 novembre 2026. <b>Fonte primaria:</b> <a href="https://www.cftc.gov/dea/newcot/deafut.txt">CFTC Legacy Futures Only</a> Non-Commercial, posizioni “All”. Contratti EUR 099741; GBP 096742; JPY 097741; CHF 092741; AUD 232741; NZD 112741; CAD 090741; USD Index 098662.</p>
+<p><b>Storico 104 settimane:</b> <a href="https://github.com/robybizkit77-blip/global-macro-fx-quant/blob/main/live_data/sections/V250_COT_CHART_DATA.json">serie settimanali G8 archiviate nella nostra Control Room</a>, 104 osservazioni CFTC dal 19/11/2024 al 10/11/2026 per ciascuna valuta. Il percentile è <b>100 × conteggio(Net storico ≤ Net nuovo) / 104</b> con settimana attuale esclusa, arrotondato all’intero prima delle soglie <b>80/20</b>; zero può significare un nuovo minimo e cento un nuovo massimo.</p>
+<p><b>Z-score 104W:</b> (Net attuale − media Net delle 104 settimane precedenti) / deviazione standard <b>campionaria</b> delle 104 settimane precedenti (ddof=1). Non è probabilità di inversione e va interpretato con eventuali cambi di regime.</p>
+<p><b>Flussi:</b> Net = Long − Short, Δ Net = Δ Long − Δ Short, Velocity = Δ Net 1W / Open Interest. Δ Net 4W e 8W confrontati con i martedì precedenti; i valori gross sono variazioni di posizioni aggregate, non identificano singole transazioni.</p>
+<p><b>Prezzi 1W:</b> cambi di riferimento BCE del <a href="https://www.ecb.europa.eu/stats/exchange/eurofxref/shared/pdf/2026/11/20261110.pdf">10 novembre</a> e del <a href="https://www.ecb.europa.eu/stats/exchange/eurofxref/shared/pdf/2026/11/20261117.pdf">17 novembre</a>, ricostruzione coerente delle 7 valute in USD: (USD per EUR)/(valuta per EUR). Per USD si utilizza 1/(USD per EUR), ossia <b>USD/EUR</b> come proxy; non va confuso col future ICE Dollar Index. Sono fixing valutari di riferimento, non prezzi di regolamento futures.</p>
+<p><b>Concentrazione Net/OI:</b> alert rosso al raggiungimento di <b>±30,0%</b> incluso, dopo arrotondamento a un decimale. Il percentile classifica solo il rango storico; il CHF è classificato EXTREME LONG ma è ancora net short (−8,3K), così come il CAD (−45,0K).</p>
+<p><b>Limite temporale:</b> la fotografia COT del 17/11 è stata pubblicata il 20/11. Il confronto con il cambio copre i fixing dal 10/11 al 17/11. I movimenti dal 18/11 in avanti sono fuori dalla finestra. Trend e rischio crowding sono letture descrittive, non previsioni probabilistiche validate.</p>
+</section><div class="foot">GLOBAL MACRO FX · COT POSITIONING DESK · 20 NOV 2026 · DARK QUANT DESK v10 · DATI CFTC 17 NOV</div></main></body></html>
