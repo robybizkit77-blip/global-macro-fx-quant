@@ -1,4 +1,14 @@
 {
-  "editions": [],
+  "editions": [
+    {
+      "first_observed_at_utc": "2026-11-20T17:40:26.396224+00:00",
+      "prior_qoq": 0.5,
+      "publisher_release_day": "2026-11-12",
+      "quarter": "2026Q3",
+      "reported_value": 0.7,
+      "source_html_sha256": "4ae3152477718cbf20c11fe0afc36bd3eca5003eb786c5703902af6f5c60a58d",
+      "source_url": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/julytoseptember2026"
+    }
+  ],
   "schema": "GMFQ_ONS_FIRST_QUARTERLY_GDP_V1"
 }
