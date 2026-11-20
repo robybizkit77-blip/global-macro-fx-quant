@@ -67,27 +67,27 @@
       "kind": "OIS",
       "quality": "FONTE UFFICIALE",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "as_of": "2026-11-18",
+      "as_of": "2026-11-19",
       "horizons": {
         "3m": {
-          "rate": 4.3191,
-          "as_of": "2026-11-18",
-          "change_1d_bp": -2.0,
-          "change_1w_bp": 2.4,
+          "rate": 4.3333,
+          "as_of": "2026-11-19",
+          "change_1d_bp": 1.4,
+          "change_1w_bp": 2.1,
           "contract": null
         },
         "6m": {
-          "rate": 4.5992,
-          "as_of": "2026-11-18",
-          "change_1d_bp": -5.3,
-          "change_1w_bp": -1.1,
+          "rate": 4.6315,
+          "as_of": "2026-11-19",
+          "change_1d_bp": 3.2,
+          "change_1w_bp": -0.1,
           "contract": null
         },
         "12m": {
-          "rate": 4.8677,
-          "as_of": "2026-11-18",
-          "change_1d_bp": -8.9,
-          "change_1w_bp": -3.9,
+          "rate": 4.9282,
+          "as_of": "2026-11-19",
+          "change_1d_bp": 6.0,
+          "change_1w_bp": -3.5,
           "contract": null
         }
       }
