@@ -437,16 +437,12 @@
       "no_core_or_backtest_effect": true
     },
     "NASDAQCOM": {
-      "date": "2026-11-18",
-      "previous_date": "2026-11-17",
-      "value": 24429.88,
-      "previous": 24328.38,
-      "change_1d_pct": 0.4172,
+      "date": "2026-11-19",
+      "previous_date": "2026-11-18",
+      "value": 23879.2,
+      "previous": 24429.88,
+      "change_1d_pct": -2.2541,
       "history": [
-        [
-          "2026-06-30",
-          26213.72
-        ],
         [
           "2026-07-01",
           26040.03
@@ -842,6 +838,10 @@
         [
           "2026-11-18",
           24429.88
+        ],
+        [
+          "2026-11-19",
+          23879.2
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
