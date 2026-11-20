@@ -120,6 +120,16 @@
    (stale?' · Verifica non recente':'')};
  }
 
+ // Compare the publication times of the narratives. Checking an old edition
+ // again is useful evidence about the feed, but does not write a new story.
+ function preferMorning(morning,hourly,today,now=Date.now()){
+  if(morning?.edition_date!==today)return false;
+  const morningTime=Date.parse(morning.created_at_utc);
+  if(!Number.isFinite(morningTime)||morningTime>now)return false;
+  const hourlyTime=Date.parse(hourly?.generated_at_utc);
+  return !Number.isFinite(hourlyTime)||hourlyTime>now||morningTime>hourlyTime;
+ }
+
  function render({feed,check,risk,currencyPrices,esc,date,dayNow,nowUtc}={}){
   if(feed?.schema!==SCHEMA||feed.status!=='ACTIVE'||typeof esc!=='function'||
      !goodDay(feed.generated_at_utc?.slice(0,10))||!goodDay(dayNow?.())||
@@ -256,5 +266,5 @@
     'I dati storici non sono movimenti intraday e l’interpretazione non costituisce un segnale di ingresso.</p>'+
     '</footer></article>';
  }
- root.FXQuantHourlyDesk={render,checkReading,SCHEMA,titleItaliano,openSources};
+ root.FXQuantHourlyDesk={render,checkReading,preferMorning,SCHEMA,titleItaliano,openSources};
 })(typeof window!=='undefined'?window:globalThis);

@@ -448,6 +448,9 @@
    if(url.protocol!=='https:'||url.username||url.password||url.port)return false;
    if(x.quality==='ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT')
     return x.ccy==='USD'&&url.hostname==='www.bls.gov'&&url.pathname==='/news.release/cpi.htm';
+   if(x.quality==='STATISTICS_BUREAU_JAPAN_NATIONAL_CPI_RUNNER_FIRST_SEEN_NOT_ISSUER_PIT')
+    return x.ccy==='JPY'&&x.event_type==='INFLATION'&&url.hostname==='www.stat.go.jp'&&
+     url.pathname==='/data/cpi/sokuhou/tsuki/index-z.html';
    if(x.quality==='OFFICIAL_PAGE_FIRST_OBSERVATION_NOT_FIRST_RELEASE_PIT')
     return (x.ccy==='USD'&&url.hostname==='www.bls.gov'&&
         /^\/news\.release\/eci(?:\.nr0)?\.htm$/.test(url.pathname))||

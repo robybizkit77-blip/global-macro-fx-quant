@@ -33,6 +33,20 @@ const sample={
  sources:['https://www.bls.gov/news.release/ppi.htm']}],
  provenance:{web_source_urls:['https://www.bls.gov/news.release/ppi.htm']}
 };
+
+const preferMorning=win.FXQuantHourlyDesk.preferMorning;
+const morning={edition_date:today(),created_at_utc:'2026-11-13T13:10:00Z'};
+const pageNow=Date.parse('2026-11-13T14:30:00Z');
+assert.equal(preferMorning(morning,sample,today(),pageNow),true,
+ 'The newer morning narrative takes precedence over an older hourly edition');
+assert.equal(preferMorning(morning,{...sample,generated_at_utc:'2026-11-13T14:00:00Z'},today(),pageNow),false,
+ 'A genuinely newer hourly edition can take precedence again');
+assert.equal(preferMorning(morning,{...sample,generated_at_utc:morning.created_at_utc},today(),pageNow),false);
+assert.equal(preferMorning(morning,{...sample,generated_at_utc:'2026-11-13T15:00:00Z'},today(),pageNow),true);
+assert.equal(preferMorning({...morning,created_at_utc:'2026-11-13T15:00:00Z'},sample,today(),pageNow),false);
+assert.equal(preferMorning({...morning,edition_date:'2026-11-12'},sample,today(),pageNow),false);
+assert.equal(preferMorning({...morning,created_at_utc:null},sample,today(),pageNow),false);
+
 const render=feed=>win.FXQuantHourlyDesk.render({feed,esc,date,dayNow:today});
 assert.equal(render(null),null,'No free edition = existing Morning remains');
 assert.equal(render({...sample,status:'AWAITING_SECRET'}),null);

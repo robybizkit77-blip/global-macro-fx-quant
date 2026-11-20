@@ -86,7 +86,7 @@ assert(app.includes('currentResearch')&&app.includes('watchForPair:x=>'));
 assert(app.includes('feed:morning,plot,esc,date,dayNow,currentResearch'),
  'App must pass current dated research to the morning presentation');
 assert(app.includes("e.target.closest('[data-pair]')"),'Pair buttons must navigate to selected dossier');
-assert(idx.includes('morning-desk-v1.js?v=7'));
+assert(idx.includes('morning-desk-v1.js?v=8'));
 assert(idx.includes('morning-desk-v1.css?v=5'));
 assert(idx.includes('app.js?v=18.44-estimates'));
 assert(css.includes('morning-fx-pulse-cases'));

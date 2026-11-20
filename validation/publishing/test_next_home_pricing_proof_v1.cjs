@@ -204,7 +204,7 @@ assert(index.indexOf('pair-monetary-bridge-v1.js?v=2')<
  'Home module must load after monetary archive validators and before App');
 assert(index.includes('home-pricing-proof-v1.css?v=4'));
 assert(source.includes("window.FXQuantHomePricingProof?.render?.("));
-assert(source.includes("if(hourly)return moneyProof?"));
+assert(source.includes(`moneyProof+'<section class="hourly-decision-section"'`));
 assert(source.includes("post+moneyProof+'<section class=\"morning-prose\"'"));
 assert(source.includes(' +moneyProof\n +\'<section class="dashboard-main dashboard-reading-chart">'),
  'Legacy fallback Home also needs the same source-first monetary comparison');
