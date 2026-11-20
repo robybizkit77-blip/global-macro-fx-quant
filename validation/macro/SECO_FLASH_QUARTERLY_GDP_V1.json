@@ -1,4 +1,22 @@
 {
-  "schema": "GMFQ_SECO_FLASH_QUARTERLY_GDP_V1",
-  "editions": []
+  "editions": [
+    {
+      "first_observed_at_utc": "2026-11-20T20:52:30.486678+00:00",
+      "prior": {
+        "publication_stage": "QUARTERLY_NATIONAL_ACCOUNTS",
+        "publisher_release_day": "2026-09-03",
+        "quarter": "2026Q2",
+        "reported_value": 1.5,
+        "source_html_sha256": "2367f55a506c747272817641b5547dea56f67cb467c07b1cf64a198f35f10005",
+        "source_url": "https://www.seco.admin.ch/en/newnsb/xrrzuLVT1pbC"
+      },
+      "publication_stage": "PRELIMINARY_FLASH",
+      "publisher_release_day": "2026-11-16",
+      "quarter": "2026Q3",
+      "reported_value": 0.2,
+      "source_html_sha256": "0f33c400657b2152310348aa9a0def8f4050c06315366f231eb73f165c1a4578",
+      "source_url": "https://www.seco.admin.ch/en/newnsb/eOpqmkpQhZVQ"
+    }
+  ],
+  "schema": "GMFQ_SECO_FLASH_QUARTERLY_GDP_V1"
 }

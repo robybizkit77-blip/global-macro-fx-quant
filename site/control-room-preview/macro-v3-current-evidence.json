@@ -121,7 +121,7 @@
           "nonannualized_qoq_descriptive_pct": 1.5,
           "publication_stage": "QUARTERLY_NATIONAL_ACCOUNTS",
           "publisher_release_day": "2026-09-03",
-          "publisher_source": "https://www.seco.admin.ch/it/newnsb/xrrzuLVT1pbC",
+          "publisher_source": "https://www.seco.admin.ch/en/newnsb/xrrzuLVT1pbC",
           "reference_quarter": "2026Q2",
           "reported_unit": "PERCENT_QOQ_SA_CALENDAR_SPORTS",
           "reported_value": 1.5
@@ -132,7 +132,8 @@
         "publisher_source": "https://www.seco.admin.ch/en/newnsb/eOpqmkpQhZVQ",
         "reference_quarter": "2026Q3",
         "reported_unit": "PERCENT_QOQ_SA_CALENDAR_SPORTS",
-        "reported_value": 0.2
+        "reported_value": 0.2,
+        "source_first_observed_at_utc": "2026-11-20T20:52:30.486678+00:00"
       },
       "inflation": {
         "change_direction": "UP",
@@ -1476,9 +1477,9 @@
   "safe_to_recompute_structural_pair_theses": false,
   "safe_to_republish_D": false,
   "schema": "GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1",
-  "snapshot_content_sha256": "febe6093d9288be1a0e35e52b4886bdee71240465159c216c54bccd8a1f61938",
+  "snapshot_content_sha256": "6078b4a23670a6cb4bd5299ddacb6e584673e54cf15b486ffd286ce4c43397a3",
   "source_observation_periods_not_release_days": true,
-  "source_receipt_sha256": "3395a98f0970fb8b0a1c3dfcd51dbb739c4986729b2967d68e5fd6bf45d8b096",
+  "source_receipt_sha256": "32c91872b8c9bfb19a336a70f6bb0175e921a7f0db0776b9dc804153647f8ffd",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
   "status": "OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL",
   "summary": {
