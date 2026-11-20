@@ -1,0 +1,138 @@
+{
+  "available_to_research_from_utc": "2026-11-20T11:07:56.878849+00:00",
+  "observations_in_this_edition": [
+    {
+      "period": "2024-09",
+      "value": 2.51993921575243
+    },
+    {
+      "period": "2024-10",
+      "value": 2.55556143063224
+    },
+    {
+      "period": "2024-11",
+      "value": 2.57802152897487
+    },
+    {
+      "period": "2024-12",
+      "value": 2.59488978145098
+    },
+    {
+      "period": "2025-01",
+      "value": 2.62097141503346
+    },
+    {
+      "period": "2025-02",
+      "value": 2.66482450482267
+    },
+    {
+      "period": "2025-03",
+      "value": 2.7234417860277
+    },
+    {
+      "period": "2025-04",
+      "value": 2.74108939092936
+    },
+    {
+      "period": "2025-05",
+      "value": 2.79564294801819
+    },
+    {
+      "period": "2025-06",
+      "value": 2.86960690236018
+    },
+    {
+      "period": "2025-07",
+      "value": 2.90716095602001
+    },
+    {
+      "period": "2025-08",
+      "value": 2.92635705798708
+    },
+    {
+      "period": "2025-09",
+      "value": 2.96401718003213
+    },
+    {
+      "period": "2025-10",
+      "value": 2.96698965851313
+    },
+    {
+      "period": "2025-11",
+      "value": 2.95576665214307
+    },
+    {
+      "period": "2025-12",
+      "value": 2.96788603270498
+    },
+    {
+      "period": "2026-01",
+      "value": 2.94029060571337
+    },
+    {
+      "period": "2026-02",
+      "value": 2.97289463188928
+    },
+    {
+      "period": "2026-03",
+      "value": 3.00499949583219
+    },
+    {
+      "period": "2026-04",
+      "value": 3.0113155969001
+    },
+    {
+      "period": "2026-05",
+      "value": 3.06516810074254
+    },
+    {
+      "period": "2026-06",
+      "value": 3.11515019282721
+    },
+    {
+      "period": "2026-07",
+      "value": 3.13449828588257
+    },
+    {
+      "period": "2026-08",
+      "value": 3.13505640627403
+    },
+    {
+      "period": "2026-09",
+      "value": 3.1249882357461
+    }
+  ],
+  "schema": "GMFQ_CHF_LABOUR_SNB_OBSERVED_EDITION_V1",
+  "snb_metadata_as_reported": {
+    "editionDate": "20261021_0900",
+    "publicSinceDate": "20261021_0900"
+  },
+  "source_capture": {
+    "authority": "SECO",
+    "cube": "amarbma",
+    "first_release_exact_value_certified": false,
+    "first_release_instant_utc": null,
+    "historical_vintages_certified": false,
+    "http_date_as_reported": "Fri, 20 Nov 2026 11:07:55 GMT",
+    "http_etag_as_reported": "\"08d536a1f20269cbf8a1aabd94689f549171e9e999b2452a33392a1975176f46c\"",
+    "http_last_modified_as_reported": null,
+    "identity": "CHF.labour",
+    "latest_period": "2026-09",
+    "latest_value": 3.1249882357461,
+    "live_data_written": false,
+    "observation_count": 681,
+    "observation_frequency": "M",
+    "official_transport": "Swiss National Bank data portal",
+    "provenance_status": "CONTEMPORANEOUS_CLIENT_CAPTURE_NOT_HISTORICAL_INITIAL_RELEASE",
+    "raw_payload_bytes": 258705,
+    "raw_payload_sha256": "ba7e5d215edb255b52169e3822a6e89a7fed16813d181de0431d277602d3bd3c",
+    "retrieval_completed_utc": "2026-11-20T11:07:56.878849+00:00",
+    "retrieval_started_utc": "2026-11-20T11:07:54.989767+00:00",
+    "safe_to_publish_new_D": false,
+    "schema": "GMFQ_CHF_LABOUR_SNB_READONLY_CAPTURE_V1",
+    "series_label": "Jobless rate - Seasonally adjusted",
+    "source_url": "https://data.snb.ch/api/cube/amarbma/data/json/en",
+    "transformation": "level",
+    "unit": "percent"
+  }
+}
