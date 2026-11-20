@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 from validation.publishing.check_next_weekly_editorial_preflight_v1 import (
-    ROOT, DIRECTORY, TEMPLATES, check_edition, scan,
+    CROSS_ASSET_REVIEW, ROOT, DIRECTORY, TEMPLATES, check_edition, scan,
 )
 
 
@@ -17,11 +17,11 @@ class SundayEditorialPreflight(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         (self.root / DIRECTORY).mkdir(parents=True)
-        for _, template, _ in TEMPLATES.values():
+        for template, _ in TEMPLATES.values():
             shutil.copyfile(ROOT / DIRECTORY / template, self.root / DIRECTORY / template)
 
     def candidate(self, category, *, extra=None):
-        prefix, template, _ = TEMPLATES[category]
+        template, _ = TEMPLATES[category]
         name = {
             "bank": "Weekly_Bank_FX_Report_2026-11-13_DARK_DESK_NARRATIVO_V5.html",
             "cb": "Weekly_CB_Sentiment_Report_2026-11-13_DARK_RESEARCH_DESK_WANT_CAN_V4_PALETTE.html",
@@ -51,7 +51,7 @@ class SundayEditorialPreflight(unittest.TestCase):
         return path
 
     def test_current_repo_is_not_mistaken_for_four_generated_weekly_reports(self):
-        result = scan(ROOT, date(2026, 11, 13))
+        result = scan(ROOT, date(2026, 11, 14))
         self.assertEqual(result["status"], "WEEKLY_STRUCTURAL_PREFLIGHT_ONLY")
         self.assertEqual(result["expected_new_types"], 4)
         self.assertEqual(result["new_files_validated"] +
@@ -91,6 +91,19 @@ class SundayEditorialPreflight(unittest.TestCase):
             check_edition(self.root, "cross", thursday, date(2026, 11, 15))
         with self.assertRaisesRegex(ValueError, "WEEKLY_DATE_IN_FUTURE"):
             check_edition(self.root, "cross", p, date(2026, 11, 12))
+
+    def test_approved_saturday_review_documents_the_friday_close(self):
+        p = ROOT / DIRECTORY / CROSS_ASSET_REVIEW
+        result = check_edition(ROOT, "cross", p, date(2026, 11, 14))
+        self.assertEqual(result["reference_friday"], "2026-11-13")
+        self.assertEqual(result["edition_date"], "2026-11-14")
+        self.assertEqual(result["status"], "STRUCTURAL_EDITORIAL_PREFLIGHT_PASS")
+        bad = self.root / DIRECTORY / CROSS_ASSET_REVIEW
+        bad.write_text(p.read_text(encoding="utf-8").replace(
+            "settimana chiusa venerdì 13 novembre 2026",
+            "settimana chiusa venerdì 6 novembre 2026"), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "WEEKLY_FRIDAY_CUTOFF_MISSING"):
+            check_edition(self.root, "cross", bad, date(2026, 11, 14))
 
     def test_unapproved_draft_is_rejected_before_publication(self):
         p = self.candidate("bank")

@@ -10,7 +10,7 @@ Absence of a new report is reported as NOT_PRODUCED, never as delivered.
 from __future__ import annotations
 
 import argparse
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from difflib import SequenceMatcher
 from html import unescape
 import json
@@ -18,7 +18,7 @@ from pathlib import Path
 import re
 
 from validation.publishing.check_next_research_library_delivery_v1 import (
-    ROOT, DIRECTORY, BLOCKED, parse_date,
+    ROOT, DIRECTORY, BLOCKED, CROSS_ASSET_REVIEW, parse_date, report_type,
 )
 
 MIN_DATE = date(2026, 11, 13)
@@ -26,14 +26,10 @@ G8 = ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD")
 MONTHS_IT = ("gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
              "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre")
 TEMPLATES = {
-    "bank": ("Weekly_Bank_FX_Report_",
-             "Weekly_Bank_FX_Report_2026-11-06_DARK_DESK_NARRATIVO_V5.html", 22000),
-    "cb": ("Weekly_CB_Sentiment_Report_",
-           "Weekly_CB_Sentiment_Report_2026-11-06_DARK_RESEARCH_DESK_WANT_CAN_V4_PALETTE.html", 25000),
-    "cross": ("Weekly_Global_Macro_Strength_Cross_Asset_",
-              "Weekly_Global_Macro_Strength_Cross_Asset_2026-10-17_DARK_EDITORIAL_PRO_CLEAN.html", 13000),
-    "pairs": ("Weekly_FX_Pair_Selection_",
-              "Weekly_FX_Pair_Selection_Conviction_2026-10-17.html", 9000),
+    "bank": ("Weekly_Bank_FX_Report_2026-11-06_DARK_DESK_NARRATIVO_V5.html", 22000),
+    "cb": ("Weekly_CB_Sentiment_Report_2026-11-06_DARK_RESEARCH_DESK_WANT_CAN_V4_PALETTE.html", 25000),
+    "cross": ("Weekly_Global_Macro_Strength_Cross_Asset_2026-10-17_DARK_EDITORIAL_PRO_CLEAN.html", 13000),
+    "pairs": ("Weekly_FX_Pair_Selection_Conviction_2026-10-17.html", 9000),
 }
 SOURCE_URI = re.compile(r"""href\s*=\s*["']https?://[^"']+["']""", re.I)
 PAIR = re.compile(
@@ -66,19 +62,21 @@ def check_edition(root: Path, category: str, candidate: Path,
                   latest_allowed: date | None = None) -> dict:
     if category not in TEMPLATES:
         raise ValueError(f"UNRECOGNIZED_TYPE:{category}")
-    prefix, template_name, minimum = TEMPLATES[category]
+    template_name, minimum = TEMPLATES[category]
     name = candidate.name
-    if not (name.startswith(prefix) and name.lower().endswith(".html")):
+    if not (report_type(name) == category and name.lower().endswith(".html")):
         raise ValueError(f"UNEXPECTED_WEEKLY_FILENAME:{name}")
     if BLOCKED.search(name):
         raise ValueError(f"UNAPPROVED_WEEKLY_FILENAME:{name}")
     day_str = parse_date(name)
     if day_str is None:
         raise ValueError(f"WEEKLY_DATE_INVALID:{name}")
-    day = date.fromisoformat(day_str)
-    if day < MIN_DATE or day.weekday() != 4:
+    edition_day = date.fromisoformat(day_str)
+    # The approved Saturday edition explicitly covers the Friday close.
+    reference_friday = edition_day - timedelta(days=1) if name == CROSS_ASSET_REVIEW else edition_day
+    if reference_friday < MIN_DATE or reference_friday.weekday() != 4:
         raise ValueError(f"NOT_A_CLOSED_FRIDAY_WEEK:{name}")
-    if latest_allowed and day > latest_allowed:
+    if latest_allowed and edition_day > latest_allowed:
         raise ValueError(f"WEEKLY_DATE_IN_FUTURE:{name}")
     raw = candidate.read_bytes()
     html = raw.decode("utf-8")
@@ -92,10 +90,14 @@ def check_edition(root: Path, category: str, candidate: Path,
     if not title:
         raise ValueError(f"WEEKLY_TITLE_MISSING:{name}")
     title_text = body_text(title.group(1)).lower()
-    title_date = f"{day.day} {MONTHS_IT[day.month - 1]} {day.year}"
+    title_date = f"{edition_day.day} {MONTHS_IT[edition_day.month - 1]} {edition_day.year}"
     if title_date not in title_text and day_str not in title_text:
         raise ValueError(f"WEEKLY_TITLE_REFERENCE_DATE_MISMATCH:{name}")
     text = body_text(html)
+    if name == CROSS_ASSET_REVIEW:
+        friday_text = f"{reference_friday.day} {MONTHS_IT[reference_friday.month - 1]} {reference_friday.year}"
+        if f"settimana chiusa venerdì {friday_text}" not in text.lower():
+            raise ValueError(f"WEEKLY_FRIDAY_CUTOFF_MISSING:{name}")
     if PLACEHOLDER.search(text) or len(text) < 3400:
         raise ValueError(f"WEEKLY_UNFINISHED_EDITORIAL:{name}")
     # This is a *minimum attributable references* gate, NOT independent
@@ -151,7 +153,8 @@ def check_edition(root: Path, category: str, candidate: Path,
     same_css = bool(template_css and current_css and
                     template_css.group(1) == current_css.group(1))
     return {
-        "type": category, "filename": name, "reference_friday": day_str,
+        "type": category, "filename": name, "reference_friday": reference_friday.isoformat(),
+        "edition_date": day_str,
         "status": "STRUCTURAL_EDITORIAL_PREFLIGHT_PASS",
         "source_links_observed": sources,
         "canonical_css_identical": same_css,
@@ -167,9 +170,11 @@ def scan(root: Path = ROOT, latest_allowed: date | None = None) -> dict:
         raise ValueError("WEEKLY_REPORT_DIRECTORY_NOT_PRESENT")
     results = []
     latest_allowed = latest_allowed or datetime.now().astimezone().date()
-    for category, (prefix, _, _) in TEMPLATES.items():
+    for category in TEMPLATES:
         candidates = []
-        for path in files.glob(prefix + "*.html"):
+        for path in files.glob("*.html"):
+            if report_type(path.name) != category:
+                continue
             date_str = parse_date(path.name)
             if date_str and date_str >= MIN_DATE.isoformat():
                 candidates.append(path)
@@ -178,7 +183,7 @@ def scan(root: Path = ROOT, latest_allowed: date | None = None) -> dict:
             continue
         checks = [check_edition(root, category, p, latest_allowed)
                   for p in sorted(candidates)]
-        results.append(max(checks, key=lambda x: (x["reference_friday"], x["filename"])))
+        results.append(max(checks, key=lambda x: (x["reference_friday"], x["edition_date"], x["filename"])))
     return {
         "status": "WEEKLY_STRUCTURAL_PREFLIGHT_ONLY",
         "expected_new_types": len(TEMPLATES),
