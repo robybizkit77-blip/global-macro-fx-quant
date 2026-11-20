@@ -91,6 +91,20 @@ assert.equal(getPost(ukFeed,[ukActual],'2026-11-12','2026-11-12T07:02:00Z'),'',
 const late={...ukFeed,created_at_utc:'2026-11-12T08:29:00Z'};
 assert(getPost(late,[ukActual],'2026-11-12','2026-11-12T09:00:00Z').includes('PIL preliminare'),
  'same-day result must survive a delayed frozen morning edition');
+const japanFeed={...ukFeed,edition_date:'2026-11-20',observation_cutoff_exclusive:'2026-11-20',
+ created_at_utc:'2026-11-20T04:52:44Z'};
+const japanActual={...ukActual,ccy:'JPY',event_type:'INFLATION',as_of:'2026-11-20',
+ title:'Giappone · CPI nazionale core: +2,2%',
+ detail:'CPI complessivo +2,3%.',
+ source_url:'https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html',
+ quality:'STATISTICS_BUREAU_JAPAN_NATIONAL_CPI_RUNNER_FIRST_SEEN_NOT_ISSUER_PIT',
+ first_runner_observed_at_utc:'2026-11-20T09:50:27Z'};
+const japanNow='2026-11-20T10:00:00Z';
+const japanPost=getPost(japanFeed,[japanActual],'2026-11-20',japanNow);
+assert(japanPost.includes('CPI nazionale core')&&japanPost.includes('BoJ')&&japanPost.includes('USD/JPY'));
+assert.equal(getPost(japanFeed,[{...japanActual,source_url:'https://www.stat.go.jp/data/cpi/other.html'}],
+ '2026-11-20',japanNow),'');
+assert.equal(getPost(japanFeed,[japanActual],'2026-11-20','2026-11-20T09:49:00Z'),'');
 const invalidCB={...ukActual,ccy:'NZD',event_type:'CENTRAL_BANK_DECISION'};
 assert.equal(getPost(ukFeed,[invalidCB],'2026-11-12','2026-11-12T09:00:00Z'),'',
  'CB headlines without a structured validated issuer actual must not be promoted');
