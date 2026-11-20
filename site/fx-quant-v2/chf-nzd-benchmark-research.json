@@ -27,10 +27,10 @@
   },
   "NZD": {
     "status": "RBNZ_GOVT_B2_WEB_RESEARCH_UNAPPROVED",
-    "source": "Reserve Bank of New Zealand B2 · archived manual public-page research",
+    "source": "Reserve Bank of New Zealand · B2 government benchmarks (public HTML research)",
     "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
     "roll_date": "2026-10-30",
-    "latest_date": "2026-11-16",
+    "latest_date": "2026-11-19",
     "old_benchmark": {
       "2Y": "May 2028",
       "10Y": "May 2036"
@@ -53,80 +53,30 @@
         "10Y": 4.9
       },
       {
-        "date": "2026-11-02",
-        "2Y": 3.97,
-        "10Y": 4.91
-      },
-      {
-        "date": "2026-11-03",
-        "2Y": 3.95,
-        "10Y": 4.88
-      },
-      {
-        "date": "2026-11-04",
-        "2Y": 3.83,
-        "10Y": 4.81
-      },
-      {
-        "date": "2026-11-05",
-        "2Y": 3.78,
-        "10Y": 4.74
-      },
-      {
-        "date": "2026-11-06",
-        "2Y": 3.79,
-        "10Y": 4.76
-      },
-      {
-        "date": "2026-11-09",
-        "2Y": 3.8,
-        "10Y": 4.76
-      },
-      {
-        "date": "2026-11-10",
-        "2Y": 3.77,
-        "10Y": 4.71
-      },
-      {
-        "date": "2026-11-11",
-        "2Y": 3.85,
-        "10Y": 4.77
-      },
-      {
-        "date": "2026-11-12",
-        "2Y": 3.82,
-        "10Y": 4.73
-      },
-      {
-        "date": "2026-11-13",
-        "2Y": 3.91,
-        "10Y": 4.82
-      },
-      {
-        "date": "2026-11-16",
-        "2Y": 3.94,
-        "10Y": 4.85
+        "date": "2026-11-19",
+        "2Y": 3.89,
+        "10Y": 4.79
       }
     ],
-    "latest_2Y": 3.94,
-    "latest_10Y": 4.85,
-    "latest_curve_bp": 91.0,
+    "latest_2Y": 3.89,
+    "latest_10Y": 4.79,
+    "latest_curve_bp": 90.0,
     "same_benchmark_change_bp": {
-      "2Y": -2.0,
-      "10Y": -5.0,
+      "2Y": -7.0,
+      "10Y": -11.0,
       "start": "2026-10-30",
-      "end": "2026-11-16"
+      "end": "2026-11-19"
     },
     "cross_roll_change_allowed": false,
-    "research_only_note": "RBNZ B2 daily NZFMA government benchmarks, previously captured by human page review; now reconciled with the independent dated V2 research file. NOT an automated fresh RBNZ read; no XLSX reconciliation, official OIS, Core, FX pair signals or backtests; do not join yields across the 30 Oct benchmark roll.",
+    "research_only_note": "RBNZ government benchmark closing yields, public HTML; not XLSX-reconciled. Roll 30 Oct preserved; no Core or backtests.",
     "eligible_for_core": false,
     "eligible_for_pair_spreads": false,
     "eligible_for_backtests": false,
     "eligible_for_automatic_promotion": false,
     "independent_xlsx_reconciled": false,
-    "source_release_date": "2026-11-17",
-    "source_capture_method": "ALREADY_STORED_MANUAL_WEB_RESEARCH_NOT_RUNNER_FETCH",
-    "source_release_date_quality": "PUBLISHER_RELEASE_DATE_RECORDED_IN_MANUAL_ARCHIVE"
+    "source_release_date": "2026-11-20",
+    "source_capture_method": "OFFICIAL_HTML_PUBLIC_TABLE_NOT_INDEPENDENT_XLSX",
+    "source_release_date_quality": "OFFICIAL_RBNZ_PUBLIC_PAGE_DATE"
   },
   "same_benchmark_or_date_cross_roll_only": true,
   "source_dates_may_differ": true,
