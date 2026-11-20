@@ -521,14 +521,14 @@ function overview(){
    today:dayNow(),prices:get('currencyPrices'),pairs:get('pairs'),
    history:get('oisHistory')
   })||'');
- // Independent FREE GitHub desk replaces the historical morning when—and only when—
- // a source-validated edition actually exists. A missing feed cannot blank Home.
- const hourly=typeof window==='undefined'?null:
-  window.FXQuantHourlyDesk?.render?.({feed:get('hourlyDesk'),check:get('hourlyCheck'),risk:get('risk'),currencyPrices:get('currencyPrices'),esc,date,dayNow});
- if(hourly)return moneyProof?
-  hourly.replace('<section class="hourly-decision-section"',
-   moneyProof+'<section class="hourly-decision-section"'):hourly;
- const morning=get('morningDesk');
+ const desk=typeof window==='undefined'?null:window.FXQuantHourlyDesk;
+ const hourlyFeed=get('hourlyDesk'),morning=get('morningDesk');
+ const renderedHourly=desk?.render?.({feed:hourlyFeed,check:get('hourlyCheck'),risk:get('risk'),
+  currencyPrices:get('currencyPrices'),esc,date,dayNow});
+ const hourly=renderedHourly&&moneyProof?
+  renderedHourly.replace('<section class="hourly-decision-section"',
+   moneyProof+'<section class="hourly-decision-section"'):renderedHourly;
+ if(hourly&&!desk.preferMorning?.(morning,hourlyFeed,dayNow()))return hourly;
  if(typeof window!=='undefined' && window.FXQuantMorningDesk?.build && morning){
   // A new, independently dated FX snapshot must never rewrite the archived
   // morning narrative or be mistaken for a pre-release trading signal.
@@ -553,6 +553,7 @@ function overview(){
      post+moneyProof+'<section class="morning-prose"'):edition;
   }
  }
+ if(hourly)return hourly;
  const context=researchCase();
  const fxDesk=fxHomeDesk();
  const u=get('rates')?.USD||{},d=get('dxy')||{},risk=get('risk')?.streams||{};
