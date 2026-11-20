@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "bfb99e7553a46ed49ae5a26a372d65d0120047b4c6b31b2e5d9d48fc99b76123",
-  "runtime_bytes": 3058841,
+  "runtime_sha256": "5485985efc2cd43cf48ea8249252526104ffbf808b685efba5bb43253c99961a",
+  "runtime_bytes": 3058857,
   "part_count": 16,
   "direct_section_count": 12,
   "derived_section_count": 2,
@@ -101,8 +101,8 @@
       "key": "V250_COT_CHART_DATA",
       "file": "V250_COT_CHART_DATA.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 41133,
-      "sha256": "685af40100db12d1e3a9638808ff20cc9d673014bd2877e93a1beb8f1050062b",
+      "bytes": 41150,
+      "sha256": "096188d5adab4166d5c4c66c9629e529916b9972cf7be364a2cb2d4fad4c3348",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
@@ -111,8 +111,8 @@
       "key": "V247_COT_STORIES",
       "file": "V247_COT_STORIES.json",
       "mode": "DERIVED_BUILDER_REQUIRED",
-      "bytes": 5154,
-      "sha256": "231ebb0d40f9c513cd6c5011c61c780968bd7636eefb1bf1c7769721d423db4b",
+      "bytes": 5153,
+      "sha256": "0321dd349744cba9f7f3269ce119375b2c162981bc4828a65da18e6540bc88f6",
       "occurrences_in_payload": 0,
       "part": null,
       "direct_update_allowed": false
