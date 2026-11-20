@@ -1,7 +1,23 @@
 {
-  "content_as_of": "2026-11-19",
-  "generated_at_utc": "2026-11-20T08:52:40.995772Z",
+  "content_as_of": "2026-11-20",
+  "generated_at_utc": "2026-11-20T09:50:28.819499Z",
   "items": [
+    {
+      "as_of": "2026-11-20",
+      "category": "MACRO_OFFICIAL_ACTUAL",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Fonte ufficiale per 2026-10: +2,2%. Previsione pre-evento con provenienza sufficiente non disponibile. Non attribuiamo causalmente il movimento di tassi, OIS o FX alla pubblicazione senza quotazioni pre/post sincronizzate. Prima osservazione del nostro runner: 2026-11-20T09:50:27Z. Composizione della stessa pubblicazione nazionale: headline +2,3%; core esclusi freschi +2,2%; esclusi freschi ed energia +2,2%. Base indice 2025, variazioni annue NSA; NON CPI preliminare di Tokyo.",
+      "event_key": "JPY|2026-11-20|INFLATION|Japan Consumer Price Index",
+      "event_type": "INFLATION",
+      "first_runner_observed_at_utc": "2026-11-20T09:50:27Z",
+      "importance": "HIGH",
+      "metric_id": "JP_CPI_OCT26_CORE_EX_FRESH_FOOD_YOY_NSA",
+      "quality": "STATISTICS_BUREAU_JAPAN_NATIONAL_CPI_RUNNER_FIRST_SEEN_NOT_ISSUER_PIT",
+      "source": "Statistics Bureau of Japan",
+      "source_url": "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html",
+      "title": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
+    },
     {
       "as_of": "2026-11-19",
       "category": "MARKET_VOLATILITY_CLOSE",
@@ -14,6 +30,17 @@
       "source": "Cboe Global Markets, VIX daily close",
       "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "title": "VIX: +3.88 punti nella chiusura del 2026-11-19"
+    },
+    {
+      "as_of": "2026-11-19",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "Movimento 1D -18.0 bp sul bucket 12M; variazione 1W -13.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+      "title": "AUD: repricing implicito da futures più dovish (-18.0 bp 12M in 1D)"
     },
     {
       "as_of": "2026-11-19",
@@ -96,6 +123,17 @@
     },
     {
       "as_of": "2026-11-19",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "CAD",
+      "confidence": "A",
+      "detail": "Movimento 1D -1.5 bp sul bucket 6M; variazione 1W -3.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+      "title": "CAD: repricing implicito da futures più dovish (-1.5 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-11-19",
       "category": "MARKET_FX_ECB_FIXING",
       "ccy": "AUD",
       "confidence": "A",
@@ -118,17 +156,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
       "title": "GBP: repricing OIS più dovish (-8.9 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-18",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "CAD",
-      "confidence": "A",
-      "detail": "Movimento 1D +3.5 bp sul bucket 3M; variazione 1W +6.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "title": "CAD: repricing implicito da futures più hawkish (+3.5 bp 3M in 1D)"
     },
     {
       "as_of": "2026-11-18",
@@ -195,17 +222,6 @@
       "title": "EUR: governativo 2Y -0.7 pb, 10Y -1.4 pb"
     },
     {
-      "as_of": "2026-11-18",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "Movimento 1D -1.5 bp sul bucket 12M; variazione 1W +4.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing implicito da futures più dovish (-1.5 bp 12M in 1D)"
-    },
-    {
       "as_of": "2026-11-16",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "CHF",
@@ -238,7 +254,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-20T08:52:40.995772Z",
+  "last_checked_at_utc": "2026-11-20T09:50:28.819499Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -549,12 +565,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 3.0,
-            "date": "2026-11-18",
+            "6m_rate_pct": 2.985,
+            "date": "2026-11-19",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -604,14 +620,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.58,
-            "date": "2026-11-19",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "ESTIMATED_INFORMATIONAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-            "status": "DAILY_CONTEXT_ONLY"
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -864,14 +873,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.58,
-            "date": "2026-11-19",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "ESTIMATED_INFORMATIONAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-            "status": "DAILY_CONTEXT_ONLY"
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -959,12 +961,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 3.0,
-            "date": "2026-11-18",
+            "6m_rate_pct": 2.985,
+            "date": "2026-11-19",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
             "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
             "status": "DAILY_CONTEXT_ONLY"
           },
