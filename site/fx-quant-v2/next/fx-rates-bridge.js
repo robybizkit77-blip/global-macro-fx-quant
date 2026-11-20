@@ -250,8 +250,8 @@
  }
  function build(api){
   const {get,state,plot,fmt,sign,date,esc,dayNow}=api;
-  const pair=state.pair||'EURUSD',doc=get('pairs');
-  const r=snapshot(get('rates'),get('currencyPrices'),pair,doc?.price_asof,dayNow(),get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'),get('nzdReconciled'));
+  const pair=state.pair||'EURUSD',doc=get('pairs'),prices=get('currencyPrices');
+  const r=snapshot(get('rates'),prices,pair,doc?.price_asof,dayNow(),get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'),get('nzdReconciled'));
   function read(x){
    if(!x)return 'Non verificabile con la copertura attuale.';
    const direction=x.direction==='STESSO SEGNO'?'si sono mossi nello stesso verso'
@@ -265,7 +265,7 @@
     const h=r.historical;
     return '<section class="decision-rates-bridge" aria-label="Confronto storico AUD/CHF" data-historical-rate-asof="'+esc(h.asof)+'">'
      +'<div class="decision-rates-heading"><div><span>PREZZO FX / TASSI 2Y</span><h2>AUD/CHF · ultimo confronto osservato al '+date(h.asof)+'</h2></div><a href="#rates" class="decision-rates-link">Apri Tassi & OIS</a></div>'
-     +'<p class="decision-rate-unavailable">Il fixing BCE arriva al '+date(doc?.price_asof)+'. La serie svizzera 2Y della BNS è disponibile fino al '+date(h.sourceAsOf)+'.</p>'
+     +'<p class="decision-rate-unavailable">Il fixing BCE arriva al '+date(prices.last_as_of)+'. La serie svizzera 2Y della BNS è disponibile fino al '+date(h.sourceAsOf)+'.</p>'
      +'<div class="decision-rates-analysis"><span>CONFRONTO STORICO · DIFFERENZIALE AUD MENO CHF</span>'+pill(h.short,true)+pill(h.medium,true)+'</div>'
      +'<p class="decision-source">Fonti: rendimenti governativi RBA F2 e BNS, cambio calcolato sui fixing BCE delle stesse date. I movimenti si riferiscono al periodo indicato.</p></section>';
    }
