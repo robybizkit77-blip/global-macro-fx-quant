@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""US Federal Reserve H.8 bank credit via FRED TOTBKCR, research only.
+"""US Federal Reserve H.8 bank credit and SLOOS via FRED, research only.
 
-Official Fed publisher, FRED data mirror. Weekly Wednesday, billions USD
-seasonally adjusted. Revisable stock, NOT new loan originations, NOT macro
-surprise, NOT observed FX flows. Strictly isolated from NATIVE_LIQ_DATA.
+Official Fed publisher, FRED data mirror. H.8 is a revisable weekly stock in
+billions USD, seasonally adjusted. SLOOS is a quarterly net percentage for
+large and middle-market C&I borrowers. Both are isolated from NATIVE_LIQ_DATA.
 """
 from __future__ import annotations
 import argparse
@@ -27,13 +27,16 @@ SERIES="TOTBKCR"
 ANCHOR_DATE="2026-09-09"
 ANCHOR_VALUE=19866.6568
 SCHEMA="GMFQ_NEXT_US_H8_CREDIT_RESEARCH_V1"
+SLOOS_SERIES="DRTSCILM"
+SLOOS_API="https://fred.stlouisfed.org/graph/fredgraph.csv?id=DRTSCILM&cosd=2024-01-01"
+SLOOS_PUBLIC="https://fred.stlouisfed.org/series/DRTSCILM"
 
 def require(ok,why):
     if not ok:
         raise ValueError("US_H8_FRED_SOURCE_WITHHELD: "+why)
 
-def fetch():
-    req=urllib.request.Request(API,headers={
+def fetch(url=API):
+    req=urllib.request.Request(url,headers={
         "Accept":"text/csv","User-Agent":"FX-Quant-Research-Sources/1.0"})
     with urllib.request.urlopen(req,timeout=30) as response:
         require(response.geturl().startswith("https://fred.stlouisfed.org/graph/"),
@@ -95,7 +98,44 @@ def existing_obs(txt):
     try:return ast.literal_eval(dt.group(1)),ast.literal_eval(v.group(1))
     except (SyntaxError,ValueError):return None
 
-def emit_js(data,checked):
+def parse_sloos(text,*,today):
+    rows=csv.DictReader(io.StringIO(text))
+    date_key="observation_date" if "observation_date" in (rows.fieldnames or []) else "DATE"
+    if rows.fieldnames!=[date_key,SLOOS_SERIES]:
+        raise ValueError("SLOOS exact series/CSV key mismatch")
+    observations=[]
+    for row in rows:
+        when=date.fromisoformat(row[date_key] or "")
+        if when.day!=1 or when.month not in (1,4,7,10) or when>today:
+            raise ValueError("SLOOS invalid survey period")
+        datum=(row[SLOOS_SERIES] or "").strip()
+        if datum in ("","."):
+            continue
+        net=float(datum)
+        if not -100<=net<=100:
+            raise ValueError("SLOOS net percentage outside range")
+        if observations:
+            previous=date.fromisoformat(observations[-1][0])
+            if (when.year-previous.year)*12+when.month-previous.month!=3:
+                raise ValueError("SLOOS quarterly ordering or gap")
+        observations.append([when.isoformat(),net])
+    if len(observations)<4:
+        raise ValueError("SLOOS insufficient quarterly observations")
+    if observations[-1][0]<"2026-10-01":
+        raise ValueError("SLOOS series predates the verified October 2026 release")
+    return {"series_id":SLOOS_SERIES,"source_url":SLOOS_PUBLIC,"frequency":"Q",
+            "observations":observations[-12:]}
+
+def existing_payload(text):
+    json_start=text.find("const data=")
+    if json_start!=-1:
+        try:
+            return json.JSONDecoder().raw_decode(text[json_start+len("const data="):])[0]
+        except ValueError:
+            pass
+    return {}
+
+def emit_js(data,checked,lending_standards=None):
     obj={
       "schema":SCHEMA,
       "status":"VERIFIED_FED_H8_FRED_MIRROR_RESEARCH_ONLY",
@@ -115,27 +155,57 @@ def emit_js(data,checked):
       "dates":data["dates"],"values":data["values"],
       "inference":"Stock Fed H.8 rivisto via FRED; non nuovi prestiti, prestiti originati o easing automatico. Ricerca separata dalla serie canonica."
     }
-    return ("'use strict';\n/* Validated Fed H.8 source via FRED; research-only. */\n"
+    if lending_standards is not None:
+        obj["lending_standards"]=lending_standards
+    return ("'use strict';\n/* Validated Fed H.8 and SLOOS via FRED; research-only. */\n"
         "(function(root){\n const data="+json.dumps(obj,ensure_ascii=False,indent=1)
         +";\n root.FXQuantUSBanksCreditResearch=Object.freeze(data);\n"
         " if(typeof module!=='undefined'&&module.exports)module.exports=data;\n"
         "})(typeof window!=='undefined'?window:globalThis);\n")
 
-def run(destination=DEST,*,apply=False,fixture=None,today=None):
+def run(destination=DEST,*,apply=False,fixture=None,sloos_fixture=None,today=None):
     today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
-    parsed=parse(Path(fixture).read_text(encoding="utf-8") if fixture else fetch(),today=today)
-    before=existing_obs(destination.read_text(encoding="utf-8")) if destination.exists() else None
-    state="NO_CHANGE" if before==(parsed["dates"],parsed["values"]) else "UPDATE_AVAILABLE"
+    text=destination.read_text(encoding="utf-8") if destination.exists() else ""
+    previous=existing_payload(text)
+    before=existing_obs(text)
+    prior_sloos=previous.get("lending_standards")
+    sloos=prior_sloos
+    sloos_status={"status":"SKIPPED_FIXTURE"}
+    if sloos_fixture or not fixture:
+        try:
+            candidate=parse_sloos(Path(sloos_fixture).read_text(encoding="utf-8")
+                                  if sloos_fixture else fetch(SLOOS_API),today=today)
+            period=candidate["observations"][-1][0]
+            if prior_sloos and period<prior_sloos["observations"][-1][0]:
+                raise ValueError("SLOOS latest survey regressed")
+            sloos=candidate
+            sloos_status={"status":"VERIFIED","latest_survey_period":period}
+        except (OSError,ValueError,UnicodeError) as error:
+            sloos_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:320]}
+            if prior_sloos:
+                sloos_status["retained_survey_period"]=prior_sloos["observations"][-1][0]
+    h8_status={"status":"VERIFIED"}
+    try:
+        parsed=parse(Path(fixture).read_text(encoding="utf-8") if fixture else fetch(),today=today)
+    except (OSError,ValueError,UnicodeError) as error:
+        if not (before and previous.get("schema")==SCHEMA and sloos!=prior_sloos):
+            raise
+        parsed=previous
+        h8_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:320]}
+    changed=before!=(parsed["dates"],parsed["values"]) or sloos!=prior_sloos
+    state="UPDATE_AVAILABLE" if changed else "NO_CHANGE"
     receipt={
       "schema":"GMFQ_US_H8_FRED_CREDIT_SOURCE_RECEIPT_V1","status":state,
       "series":SERIES,"source":PUBLIC,"latest_observation":parsed["latest_observation"],
       "series_count":len(parsed["dates"]),"canonical_reference_revision_pct":parsed["reference_week_revision_pct"],
       "retrieved_on_rome":today.isoformat(),"first_release_verified":False,
+      "h8":h8_status,"sloos":sloos_status,
       "canonical_liquidity_unchanged":True,"fx_rank_effect":"NONE",
       "write_state":"NO_MUTATION"}
     if apply and state=="UPDATE_AVAILABLE":
         destination.parent.mkdir(parents=True,exist_ok=True)
-        destination.write_text(emit_js(parsed,today.isoformat()),encoding="utf-8")
+        checked=today.isoformat() if h8_status["status"]=="VERIFIED" else previous["last_checked_rome"]
+        destination.write_text(emit_js(parsed,checked,sloos),encoding="utf-8")
         receipt["write_state"]="RESEARCH_SIDECAR_ONLY"
     return receipt
 
@@ -143,11 +213,12 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument("--apply",action="store_true")
     p.add_argument("--fixture",type=Path)
+    p.add_argument("--sloos-fixture",type=Path)
     p.add_argument("--destination",type=Path,default=DEST)
     p.add_argument("--receipt",type=Path)
     args=p.parse_args()
     try:
-        receipt=run(args.destination,apply=args.apply,fixture=args.fixture)
+        receipt=run(args.destination,apply=args.apply,fixture=args.fixture,sloos_fixture=args.sloos_fixture)
     except (OSError,TimeoutError,ValueError,UnicodeError) as error:
         receipt={"schema":"GMFQ_US_H8_FRED_CREDIT_SOURCE_RECEIPT_V1",
                  "status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE",

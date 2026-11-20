@@ -1,5 +1,5 @@
 'use strict';
-/* Validated Fed H.8 source via FRED; research-only. */
+/* Validated Fed H.8 and SLOOS via FRED; research-only. */
 (function(root){
  const data={
  "schema": "GMFQ_NEXT_US_H8_CREDIT_RESEARCH_V1",
@@ -19,7 +19,7 @@
  "eligible_for_fx_core": false,
  "eligible_for_backtest": false,
  "observation_is_not_publication_date": true,
- "last_checked_rome": "2026-11-14",
+ "last_checked_rome": "2026-11-20",
  "latest_observation": "2026-11-04",
  "reference_week_revision_pct": 0.0835,
  "dates": [
@@ -72,7 +72,62 @@
   20025.0788,
   20083.1228
  ],
- "inference": "Stock Fed H.8 rivisto via FRED; non nuovi prestiti, prestiti originati o easing automatico. Ricerca separata dalla serie canonica."
+ "inference": "Stock Fed H.8 rivisto via FRED; non nuovi prestiti, prestiti originati o easing automatico. Ricerca separata dalla serie canonica.",
+ "lending_standards": {
+  "series_id": "DRTSCILM",
+  "source_url": "https://fred.stlouisfed.org/series/DRTSCILM",
+  "frequency": "Q",
+  "observations": [
+   [
+    "2024-01-01",
+    14.5
+   ],
+   [
+    "2024-04-01",
+    15.6
+   ],
+   [
+    "2024-07-01",
+    7.9
+   ],
+   [
+    "2024-10-01",
+    0.0
+   ],
+   [
+    "2025-01-01",
+    6.2
+   ],
+   [
+    "2025-04-01",
+    18.5
+   ],
+   [
+    "2025-07-01",
+    9.5
+   ],
+   [
+    "2025-10-01",
+    6.5
+   ],
+   [
+    "2026-01-01",
+    5.3
+   ],
+   [
+    "2026-04-01",
+    8.1
+   ],
+   [
+    "2026-07-01",
+    0.0
+   ],
+   [
+    "2026-10-01",
+    1.7
+   ]
+  ]
+ }
 };
  root.FXQuantUSBanksCreditResearch=Object.freeze(data);
  if(typeof module!=='undefined'&&module.exports)module.exports=data;

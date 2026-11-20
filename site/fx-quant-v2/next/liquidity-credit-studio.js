@@ -416,9 +416,36 @@
    ' miliardi USD, '+(diff>0?'+':diff<0?'−':'')+esc(fmt(Math.abs(diff),2))+
    ' miliardi ('+(diff>0?'+':diff<0?'−':'')+esc(fmt(Math.abs(move),2))+'%) rispetto alla settimana precedente. '+
    'Questo aggregato Fed comprende anche titoli bancari e non misura direttamente la domanda di nuovi finanziamenti.</p>'+
-   '<p><b>Lettura economica:</b> per giudicare la trasmissione serve capire se crescono i prestiti, se cambiano gli standard SLOOS (attualmente sospesi per discrepanza tra varianti) e se il pricing Fed relativo produce una reazione coerente di USD. Non deduciamo flussi valutari dal solo stock.</p>'+
+   '<p><b>Lettura economica:</b> per giudicare la trasmissione serve capire se crescono i prestiti, se cambiano gli standard SLOOS e se il pricing Fed relativo produce una reazione coerente di USD. Non deduciamo flussi valutari dal solo stock.</p>'+
    '<div class="drivers-cad-source"><span>'+stale+' · '+esc(lastDate)+' · H.8 TOTBKCR · fonte aggiornata via FRED, vintage iniziale non certificato</span>'+
    '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: Federal Reserve / FRED ↗</a></div></section>'};
+ }
+ function usSloosResearch(esc,fmt,now){
+  const x=root.FXQuantUSBanksCreditResearch?.lending_standards;
+  const url='https://fred.stlouisfed.org/series/DRTSCILM';
+  if(x?.series_id!=='DRTSCILM'||x.source_url!==url||x.frequency!=='Q'||
+     !Array.isArray(x.observations)||x.observations.length<2)return '';
+  const [prior,latest]=x.observations.slice(-2);
+  const valid=row=>Array.isArray(row)&&/^\d{4}-(01|04|07|10)-01$/.test(row[0])&&
+   finite(row[1])&&Math.abs(row[1])<=100;
+  const today=dateMs(observationDate(now));
+  if(!valid(prior)||!valid(latest)||prior[0]>=latest[0]||
+     !finite(today)||dateMs(latest[0])>today)return '';
+  const month=new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric',timeZone:'UTC'});
+  const period=row=>month.format(dateMs(row[0]));
+  const net=row=>(row[1]>0?'+':row[1]<0?'−':'')+fmt(Math.abs(row[1]),1)+'%';
+  const reading=Math.abs(latest[1])<5?'Nel complesso gli standard sono rimasti pressoché invariati.':
+   latest[1]>0?'Hanno prevalso le banche che hanno irrigidito gli standard.':
+   'Hanno prevalso le banche che hanno allentato gli standard.';
+  const stale=(today-dateMs(latest[0]))/864e5>135;
+  return '<section class="drivers-cad-official drivers-us-sloos" aria-label="Standard di prestito Fed SLOOS">'+
+   '<span class="mini-overline">FED SLOOS · '+(stale?'EDIZIONE STORICA':'SURVEY TRIMESTRALE')+'</span>'+
+   '<h3>Standard di prestito per le imprese grandi e medie</h3>'+
+   '<p>Nell’edizione di '+esc(period(latest))+' il saldo netto è '+esc(net(latest))+
+   ', da '+esc(net(prior))+' a '+esc(period(prior))+'. '+reading+
+   ' Il saldo è la quota di banche che hanno irrigidito gli standard meno la quota che li ha allentati, nei tre mesi coperti dal sondaggio.</p>'+
+   '<div class="drivers-cad-source"><span>Prestiti commerciali e industriali · DRTSCILM</span>'+
+   '<a href="'+url+'" target="_blank" rel="noopener noreferrer">Fonte: Federal Reserve / FRED ↗</a></div></section>';
  }
  function cadIssuerResearch(esc,fmt,now){
   const x=root.FXQuantCADCreditResearch;
@@ -617,6 +644,7 @@
    (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):null)||
    (selected==='USD'?usFedCreditResearch(esc,fmt,today):null)||
    (selected==='CAD'?cadIssuerResearch(esc,fmt,today):null);
+  const sloos=selected==='USD'?usSloosResearch(esc,fmt,today):'';
   const headline=official?.headline||'La lettura del credito resta aperta';
   const opening=official?.opening||'Le rilevazioni disponibili non permettono di stabilire se il credito stia accelerando o frenando. Per capire come si finanziano famiglie e imprese servono osservazioni confrontabili sui prestiti e sui costi.';
   const liquidityAudit=audits[0];
@@ -639,7 +667,7 @@
    '<p class="drivers-lead drivers-liquidity-opening">'+esc(opening)+'</p>'+
    '<div class="drivers-story"><div><span>PERCHÉ CONTA PER IL CAMBIO</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div>'+
    '<div><span>COSA CONTROLLARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
-   liquidityRead+(official?.html||'')+
+   liquidityRead+(official?.html||'')+sloos+
    (root.FXQuantDriverMarketAudit?.render?.({get,esc,dayNow},selected)||'')+
    '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
    '<details class="drivers-source-provenance-fold"><summary>Fonti e storico</summary>'+

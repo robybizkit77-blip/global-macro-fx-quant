@@ -378,6 +378,18 @@ async function macroDriversJourney(page,label){
  assert(usH8Text.includes('TOTBKCR')&&usH8Text.includes('FRED')&&
         usH8Text.includes('titoli bancari'),
   label+' USD source identity and bank-credit stock interpretation are missing');
+ const officialSloos=locator(page,'.drivers-us-sloos');
+ const sloosSource=await page.evaluate(()=>window.FXQuantUSBanksCreditResearch?.lending_standards);
+ assert.equal(sloosSource?.series_id,'DRTSCILM',label+' SLOOS must target large and middle-market firms');
+ const [sloosPeriod,sloosNet]=sloosSource.observations.at(-1);
+ const edition=new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric',timeZone:'UTC'})
+  .format(new Date(sloosPeriod+'T12:00:00Z'));
+ const netText=(sloosNet>0?'+':sloosNet<0?'−':'')+
+  Math.abs(sloosNet).toLocaleString('it-IT',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+ assert((await officialSloos.innerText()).includes('Nell’edizione di '+edition+' il saldo netto è '+netText),
+  label+' USD must show the actual period and net percentage for the verified survey');
+ assert.equal(await officialSloos.locator('a').getAttribute('href'),
+  'https://fred.stlouisfed.org/series/DRTSCILM',label+' SLOOS source link');
  const usSloos=locator(page,'[data-liq-role="conditions"]');
  assert.equal(await usSloos.getAttribute('data-source-safety'),'withheld',
   label+' uncertified USD SLOOS variant must remain withheld');
@@ -391,6 +403,7 @@ async function macroDriversJourney(page,label){
  assert(await sourceContract.evaluate(el=>el.open),label+' registry/source provenance cannot open');
  assert(await usSloos.isVisible(),label+' the provenance disclosure must reveal withheld SLOOS');
  await locator(page,'[data-liq-country="EUR"]').click();
+ assert.equal(await officialSloos.count(),0,label+' Fed SLOOS belongs only in the USD dossier');
  const officialECB=locator(page,'.drivers-eur-official');
  assert.equal(await officialECB.count(),1,
   label+' certified ECB NFC series must be visible in EUR research without replacing native credit');
@@ -408,14 +421,16 @@ async function macroDriversJourney(page,label){
  assert(audSource.includes('RBA')&&audSource.includes('D2')&&
         audSource.includes('pubblicato')&&audSource.includes('rotture statistiche'),
   label+' AUD card must separate official break-adjusted growth, publication date and D2 stock');
- assert(audSource.includes('SECONDO CANALE, NON SECONDA CONFERMA')&&
-        audSource.includes('bilancio settimanale RBA')&&
-        audSource.includes('valore precedente implicito')&&
-        audSource.includes('2026-11-11'),
-  label+' RBA ES weekly evidence must stay distinct from credit growth and FX');
  const audES=locator(page,'.drivers-aud-es-bridge');
  assert.equal(await audES.count(),1,
   label+' RBA ES reserves must appear within the existing AUD editorial dossier');
+ const audESPeriod=await page.evaluate(()=>window.FXQuantAUDESBalancesResearch?.source_period);
+ const audESText=await audES.innerText();
+ assert(audESPeriod&&audESText.includes('SECONDO CANALE, NON SECONDA CONFERMA')&&
+        audESText.includes('bilancio settimanale RBA')&&
+        audESText.includes('valore precedente implicito')&&
+        audESText.includes(audESPeriod),
+  label+' current RBA ES weekly evidence must stay distinct from credit growth and FX');
  const audCanonical=await locator(page,'[data-liq-role="credit"]').textContent();
  assert(audCanonical.includes('31/07/2026')&&!audCanonical.includes('Ultimo 2026-09'),
   label+' AUD native credit stock must not be replaced by research source');
