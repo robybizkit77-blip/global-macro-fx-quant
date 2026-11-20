@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-20T17:02:58.948641Z",
-  "edition_time_rome": "2026-11-20 18:02",
-  "material_digest": "4d6cf2bf4778264701f9bb211290fd1d8ea95555fe827f725540daabfaf49af4",
+  "generated_at_utc": "2026-11-20T21:13:08.600701Z",
+  "edition_time_rome": "2026-11-20 22:13",
+  "material_digest": "f88585d52447c0b65f87bb622134dcfddbff3b2f450ae7752f0bf1c928fd8c9f",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
-  "lead": "Sono usciti i dati sui prezzi in Giappone. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno e il premio sul debito più rischioso è salito.",
+  "lead": "Sono usciti i dati sui prezzi in Giappone. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
   "news": [
     {
       "headline": "Dollaro misto",
@@ -35,17 +35,17 @@
     },
     {
       "headline": "Azioni in calo e credito più cauto",
-      "analysis": "Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno e il premio sul debito più rischioso è salito. Da seguire se il movimento prosegue anche alla prossima chiusura.",
+      "analysis": "Alla chiusura del 19 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. Da seguire se il movimento prosegue anche alla prossima chiusura.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
       "market_area": "RISCHIO",
       "sources": [
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
         "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
         "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
       ],
-      "evidence": "Alla chiusura del 19 novembre, Nasdaq Composite −2,25%, VIX +3,88 punti e spread high yield +5 pb."
+      "evidence": "Alla chiusura del 19 novembre, S&P 500 −2,02%, VIX +3,88 punti e spread high yield +5 pb."
     },
     {
       "headline": "Oro e petrolio in calo",
@@ -58,7 +58,7 @@
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
         "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
       ],
-      "evidence": "Proxy futures da fonte secondaria. Oro −4,06% al 20 novembre. WTI −0,59% al 20 novembre."
+      "evidence": "Proxy futures da fonte secondaria. Oro −4,78% al 20 novembre. WTI −0,59% al 20 novembre."
     },
     {
       "headline": "Bank of Canada Media Interview – Barrie 360",
@@ -85,7 +85,7 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Sono usciti i dati sui prezzi in Giappone. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 19 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
+  "desk_judgment": "Sono usciti i dati sui prezzi in Giappone. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 19 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
   "fx_implications": "Da seguire se euro e yen si muovono nella stessa direzione contro il dollaro.",
   "what_changed": "Nella seduta del 19 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
@@ -94,7 +94,7 @@
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bankofcanada.ca/2026/11/bank-canada-media-interview-barrie-360-2026-11-19/",
@@ -105,7 +105,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-20T17:02:58.948641Z",
+      "rss_checked_at_utc": "2026-11-20T21:13:08.600701Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -113,6 +113,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-20T17:02:58.948641Z",
+      "headline": "Dollaro misto",
+      "material_digest": "4d6cf2bf4778264701f9bb211290fd1d8ea95555fe827f725540daabfaf49af4"
+    },
     {
       "generated_at_utc": "2026-11-20T15:31:27.267356Z",
       "headline": "Sono usciti i dati sui prezzi in Giappone",
@@ -227,11 +232,6 @@
       "generated_at_utc": "2026-11-16T18:38:09.041445Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "28eb9f16d1258de84688e7fb2211f8a37acdb41bccf15af20f516d603877e61d"
-    },
-    {
-      "generated_at_utc": "2026-11-16T15:06:27.926490Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "3942a44620830fc632d6841a4b0b05b89d57d9d91e0b2b33eeb6ef12f2121294"
     }
   ]
 }
