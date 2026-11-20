@@ -103,6 +103,23 @@ for(const changed of [
  assert(!audNzd(changed).nzdResearch,'Failed provenance must disable the B2 comparison overlay');
 }
 assert(!mod.snapshot(rates,prices,'NZDUSD',liveAsOf,comparisonDay,aud,chf,nzd,reconciled).nzdResearch);
+const chfRead=(data,history,asOf=liveAsOf,clock=comparisonDay)=>
+ mod.snapshot(data,prices,'AUDCHF',asOf,clock,aud,history,nzd,reconciled);
+const audChf=chfRead(rates,chf);
+assert(!chfRead(rates,chf,asof,now).historical,'A later RBA vintage cannot reach the archived desk');
+assert(!chfRead(rates,{...chf,eligible_for_core:true}).historical,'Invalid CHF research cannot feed the historical comparison');
+if(aud.last_observation_date==='2026-11-18'&&chf.last_observation_date==='2026-10-30'&&liveAsOf>='2026-11-18'){
+ assert(!audChf.ready&&!audChf.short&&!audChf.medium,'Archived matched 2Y does not become a live verdict');
+ assert.equal(audChf.historical.asof,'2026-10-30');
+ assert.equal(audChf.historical.short.start,'2026-10-23');
+ assert.equal(audChf.historical.medium.start,'2026-10-01');
+ assert(Math.abs(audChf.historical.short.spreadBp-0.4)<1e-9);
+ assert(Math.abs(audChf.historical.medium.spreadBp+3.2)<1e-9);
+ assert(!mod.brief(audChf).ready);
+ const newAnchor=chf.observations.at(-2);
+ const advanced={...rates,CHF:{...rates.CHF,...newAnchor}};
+ assert.deepEqual(chfRead(advanced,chf).historical,audChf.historical,'The CHF anchor can advance within the validated archive');
+}
 const before=JSON.stringify(rates);
 for(const x of all)assert(typeof x.ready==='boolean');
 assert.equal(JSON.stringify(rates),before,'Research must not mutate native rates');
@@ -167,6 +184,13 @@ assert.doesNotMatch(researchHtml,/<svg/,'Research context does not manufacture a
 state.pair='EURUSD';
 html=mod.build({...api,plot:()=>'<svg></svg>'}).render();
 assert.doesNotMatch(html,/data-source-context=/,'Official fully current pair must not show irrelevant CHF/NZD source context');
+if(audChf.historical){
+ const observed=mod.build({...api,state:{pair:'AUDCHF'},dayNow:()=>comparisonDay,
+   get:k=>({rates,pairs,currencyPrices:prices,audDailyResearch:aud,chfResearch:chf,nzdPostroll:nzd})[k]}).render();
+ assert.match(observed,/data-historical-rate-asof=/);
+ assert.match(observed,/ultimo confronto osservato al/);
+ assert.doesNotMatch(observed,/data-rate-asof=|data-horizon=/);
+}
 const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const app=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
 const journey=fs.readFileSync('site/fx-quant-v2/next/decision-journey.js','utf8');
