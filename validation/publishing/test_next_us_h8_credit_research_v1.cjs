@@ -59,9 +59,27 @@ assert.match(usd,/TOTBKCR/);
 assert.match(usd,/titoli bancari/);
 assert.match(usd,/SLOOS/);
 assert.match(usd,/non deduciamo flussi valutari/i);
+const sloos=source.lending_standards;
+assert.equal(sloos.series_id,'DRTSCILM');
+assert.equal(sloos.frequency,'Q');
+assert(sloos.observations.length>=4);
+assert.match(usd,/drivers-us-sloos/);
+const [sloosPeriod,sloosValue]=sloos.observations.at(-1);
+const sloosLabel=new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric',timeZone:'UTC'})
+ .format(new Date(sloosPeriod+'T12:00:00Z'));
+assert(usd.includes('Nell’edizione di '+sloosLabel+' il saldo netto è '+(sloosValue>0?'+':sloosValue<0?'−':'')+fmt(Math.abs(sloosValue),1)+'%'));
+assert(!unverified.includes('drivers-us-sloos'));
+const originalUS=globalThis.FXQuantUSBanksCreditResearch;
+globalThis.FXQuantUSBanksCreditResearch={...originalUS,lending_standards:{...sloos,series_id:'DRTSCIS'}};
+try {
+ assert(!studio.render(api('USD')).includes('drivers-us-sloos'));
+} finally {
+ globalThis.FXQuantUSBanksCreditResearch=originalUS;
+}
 const nativeCredit=usd.split('data-liq-role="credit"')[1].split('</div>')[0];
 assert(!nativeCredit.includes('TOTBKCR'),'never substitute research into the canonical credit fact');
 assert(!studio.render(api('EUR')).includes('drivers-us-official'),'US credit must be country-specific');
+assert(!studio.render(api('EUR')).includes('drivers-us-sloos'),'US SLOOS must be country-specific');
 console.log('USD_FED_H8_RESEARCH_SIDECAR_PASS',JSON.stringify({
  sourceDate:source.latest_observation,observations:source.dates.length,
  latest:source.values.at(-1),lastNative:native.USD.credit.last_date,

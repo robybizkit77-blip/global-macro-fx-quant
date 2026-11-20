@@ -3,7 +3,7 @@ name: US Fed H8 Bank Credit Research Refresh V1
 on:
   workflow_dispatch:
   schedule:
-    # Daily check for the previous week's H.8 release; no invented same-day price.
+    # Check the weekly H.8 and quarterly SLOOS sources on weekdays.
     - cron: '51 6 * * 1-5'
   push:
     branches: [main]
@@ -32,13 +32,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Validate exact source, revision overlap, weekly cadence and no Core effect
+      - name: Validate Fed series identity, cadence and research publication
         run: python -m unittest validation.liquidity.test_refresh_us_h8_bank_credit_fred_v1 -v
       - name: Snapshot canonical liquidity and FX ranking
         run: |
           sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/h8-runtime.before
           sha256sum live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json > /tmp/h8-fx.before
-      - name: Collect official Fed H8 via FRED stock, with guarded sidecar apply
+      - name: Collect Fed H8 bank credit and SLOOS via FRED
         run: |
           python validation/liquidity/refresh_us_h8_bank_credit_fred_v1.py \
             --apply --receipt /tmp/us-h8-fred-receipt.json

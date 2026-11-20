@@ -151,7 +151,7 @@ def markdown(report):
         f"**Canali:** {report['channels']} · storici: {report['historical_periods']} · assenti: {report['missing_series']} · mappatura/automazione non pronta nello snapshot: {report['not_source_mapping_ready']}",
         "",
         "## Criticità da risolvere",
-        "- **USD SLOOS:** divergenza tra valori con la stessa etichetta/periodo; variante esatta non accertata. Dato sospeso nella pagina Next.",
+        "- **USD SLOOS:** la variante del feed storico resta sospesa per la discrepanza tra valori. La scheda USD mostra separatamente la serie DRTSCILM quando è verificata.",
         "- **CAD credito:** presente solo una candidata nel dataset di ricerca; non promossa al feed operativo.",
         "- **Acquisizione:** una mappatura fonte pronta non dimostra aggiornamento eseguito; non presentare i feed come live.",
         "",
