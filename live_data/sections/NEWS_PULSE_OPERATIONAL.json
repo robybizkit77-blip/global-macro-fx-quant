@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-20",
-  "generated_at_utc": "2026-11-20T21:12:11.319190Z",
+  "generated_at_utc": "2026-11-20T23:16:10.894411Z",
   "items": [
     {
       "as_of": "2026-11-20",
@@ -34,6 +34,18 @@
     },
     {
       "as_of": "2026-11-20",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "Fra 2026-11-19 e 2026-11-20; 2Y 4.630%, 10Y 4.920%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-19",
+      "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-20",
+      "title": "USD: governativo 2Y -13.0 pb, 10Y -12.0 pb"
+    },
+    {
+      "as_of": "2026-11-20",
       "category": "MARKET_FX_ECB_FIXING",
       "ccy": "EUR",
       "confidence": "A",
@@ -59,6 +71,19 @@
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "title": "AUD/CAD: -0.64% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-19",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 7175.83; confronto con chiusura 2026-11-18. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "HIGH",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-18",
+      "source": "S&P Dow Jones Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+      "title": "S&P 500: -2.02% nella chiusura del 2026-11-19"
     },
     {
       "as_of": "2026-11-19",
@@ -123,18 +148,6 @@
       "source": "Australian Bureau of Statistics",
       "source_url": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026",
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
-    },
-    {
-      "as_of": "2026-11-19",
-      "category": "MARKET_GOVERNMENT_RATES",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "Fra 2026-11-18 e 2026-11-19; 2Y 4.760%, 10Y 5.040%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
-      "importance": "MEDIUM",
-      "quality": "FULL_CURRENT_OFFICIAL",
-      "reference_previous_date": "2026-11-18",
-      "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-19",
-      "title": "USD: governativo 2Y -4.0 pb, 10Y -3.0 pb"
     },
     {
       "as_of": "2026-11-19",
@@ -209,19 +222,6 @@
       "title": "CAD: repricing implicito da futures più dovish (-1.5 bp 6M in 1D)"
     },
     {
-      "as_of": "2026-11-18",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 7323.63; confronto con chiusura 2026-11-17. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-17",
-      "source": "S&P Dow Jones Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-      "title": "S&P 500: -0.23% nella chiusura del 2026-11-18"
-    },
-    {
       "as_of": "2026-11-16",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "CHF",
@@ -254,7 +254,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-20T21:12:11.319190Z",
+  "last_checked_at_utc": "2026-11-20T23:16:10.894411Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -449,6 +449,61 @@
           "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
           "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
         },
+        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/other20261120b.htm",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-20T21:15:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 4.485,
+            "date": "2026-11-20",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-20",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-20",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 4.63
+          }
+        },
+        "source": "Federal Reserve Board",
+        "source_id": "FED_PRESS",
+        "title": "Federal Reserve announces College Fed Challenge winners",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/other20261120b.htm"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "USD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
         "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/other20261120a.htm",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-11-20T15:00:00Z",
@@ -462,7 +517,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 4.485,
+            "date": "2026-11-20",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -471,13 +533,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-19",
+            "date": "2026-11-20",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-19",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-20",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.76
+            "yield_2y_pct": 4.63
           }
         },
         "source": "Federal Reserve Board",
@@ -642,54 +704,6 @@
         "source_id": "BOC_PRESS",
         "title": "Bank of Canada Media Interview – Barrie 360",
         "url": "https://www.bankofcanada.ca/2026/11/bank-canada-media-interview-barrie-360-2026-11-19/"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "USD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261119a.htm",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-19T16:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-19",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-19",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.76
-          }
-        },
-        "source": "Federal Reserve Board",
-        "source_id": "FED_PRESS",
-        "title": "Federal Reserve Board issues enforcement action with former employee of First Security Bancorp",
-        "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261119a.htm"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -1136,8 +1150,8 @@
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/financial-system-remains-resilient-as-global-risks-increase"
       }
     ],
-    "last_attempt_day_rome": "2026-11-20",
-    "latest_published_at_utc": "2026-11-20T15:00:00Z",
+    "last_attempt_day_rome": "2026-11-21",
+    "latest_published_at_utc": "2026-11-20T21:15:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1151,9 +1165,9 @@
     "source_failures": 0,
     "sources": [
       {
-        "accepted_items": 7,
+        "accepted_items": 8,
         "ccy": "USD",
-        "entries_rejected": 13,
+        "entries_rejected": 12,
         "feed_entries_seen": 20,
         "feed_url": "https://www.federalreserve.gov/feeds/press_all.xml",
         "source": "Federal Reserve Board",
