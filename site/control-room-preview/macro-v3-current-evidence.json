@@ -107,15 +107,32 @@
       "FX_strength": null,
       "country_relative_rank": null,
       "growth": {
+        "comparison_uses_distinct_publisher_editions": true,
+        "historical_pit_training_vintages_certified": false,
         "is_growth_strength_score": false,
         "later_revisions_not_identical_to_first_release": true,
         "national_definitions_are_not_fully_cross_country_equivalent": true,
-        "nonannualized_qoq_descriptive_pct": 1.5,
-        "publisher_release_day": "2026-08-14",
-        "publisher_source": "https://www.schweizerischesseeschifffahrtsamt.eda.admin.ch/en/newnsb/1BH4HnCuYPWb_WqjPywR4",
-        "reference_quarter": "2026Q2",
+        "nonannualized_qoq_descriptive_pct": 0.2,
+        "prior_documented_quarter": {
+          "historical_pit_training_vintages_certified": false,
+          "is_growth_strength_score": false,
+          "later_revisions_not_identical_to_first_release": true,
+          "national_definitions_are_not_fully_cross_country_equivalent": true,
+          "nonannualized_qoq_descriptive_pct": 1.5,
+          "publication_stage": "QUARTERLY_NATIONAL_ACCOUNTS",
+          "publisher_release_day": "2026-09-03",
+          "publisher_source": "https://www.seco.admin.ch/it/newnsb/xrrzuLVT1pbC",
+          "reference_quarter": "2026Q2",
+          "reported_unit": "PERCENT_QOQ_SA_CALENDAR_SPORTS",
+          "reported_value": 1.5
+        },
+        "publication_stage": "PRELIMINARY_FLASH",
+        "publisher_methodology": "https://www.seco.admin.ch/dam/en/sd-web/NuK0BItA1ufL/2026-06-Factsheet-Quarterly-National-Accounts-SECO.pdf",
+        "publisher_release_day": "2026-11-16",
+        "publisher_source": "https://www.seco.admin.ch/en/newnsb/eOpqmkpQhZVQ",
+        "reference_quarter": "2026Q3",
         "reported_unit": "PERCENT_QOQ_SA_CALENDAR_SPORTS",
-        "reported_value": 1.5
+        "reported_value": 0.2
       },
       "inflation": {
         "change_direction": "UP",
@@ -515,12 +532,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "AUD": 0.4,
-        "CHF": 1.5
+        "CHF": 0.2
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "AUD": "2026Q2",
-        "CHF": "2026Q2"
+        "CHF": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -655,12 +672,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "CAD": 0.8,
-        "CHF": 1.5
+        "CHF": 0.2
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "CAD": "2026Q2",
-        "CHF": "2026Q2"
+        "CHF": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -724,12 +741,12 @@
       "base": "CHF",
       "estimated_FX_expected_return": null,
       "growth": {
-        "CHF": 1.5,
+        "CHF": 0.2,
         "JPY": -0.0
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "CHF": "2026Q2",
+        "CHF": "2026Q3",
         "JPY": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
@@ -829,12 +846,12 @@
       "base": "EUR",
       "estimated_FX_expected_return": null,
       "growth": {
-        "CHF": 1.5,
+        "CHF": 0.2,
         "EUR": 0.4
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "CHF": "2026Q2",
+        "CHF": "2026Q3",
         "EUR": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
@@ -1074,12 +1091,12 @@
       "base": "GBP",
       "estimated_FX_expected_return": null,
       "growth": {
-        "CHF": 1.5,
+        "CHF": 0.2,
         "GBP": 0.7
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "CHF": "2026Q2",
+        "CHF": "2026Q3",
         "GBP": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
@@ -1249,12 +1266,12 @@
       "base": "NZD",
       "estimated_FX_expected_return": null,
       "growth": {
-        "CHF": 1.5,
+        "CHF": 0.2,
         "NZD": 0.2
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "CHF": "2026Q2",
+        "CHF": "2026Q3",
         "NZD": "2026Q2"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
@@ -1389,12 +1406,12 @@
       "base": "USD",
       "estimated_FX_expected_return": null,
       "growth": {
-        "CHF": 1.5,
+        "CHF": 0.2,
         "USD": 0.839373
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "CHF": "2026Q2",
+        "CHF": "2026Q3",
         "USD": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
@@ -1459,13 +1476,13 @@
   "safe_to_recompute_structural_pair_theses": false,
   "safe_to_republish_D": false,
   "schema": "GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1",
-  "snapshot_content_sha256": "e52b134e4965b38a0bdf8ae9627102bc32b593f93ce6d3bcc564c148916e6270",
+  "snapshot_content_sha256": "febe6093d9288be1a0e35e52b4886bdee71240465159c216c54bccd8a1f61938",
   "source_observation_periods_not_release_days": true,
-  "source_receipt_sha256": "30311dde72ef0dabc601ba113bb3b3af167ae6cc982da2522eb56330baf09fb8",
+  "source_receipt_sha256": "3395a98f0970fb8b0a1c3dfcd51dbb739c4986729b2967d68e5fd6bf45d8b096",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
   "status": "OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL",
   "summary": {
-    "GDP_later_quarter_official_releases": 4,
+    "GDP_later_quarter_official_releases": 5,
     "GDP_publishers_visible": 8,
     "currencies": 8,
     "economic_dimensions": 24,
