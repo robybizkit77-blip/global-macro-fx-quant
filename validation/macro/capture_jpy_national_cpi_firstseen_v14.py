@@ -41,8 +41,12 @@ def need(ok,reason):
 
 def parse_japan(raw):
     need(type(raw) is bytes and 50<len(raw)<=2_000_000,"source HTML invalid")
+    # The issuer currently serves a Shift_JIS page; UTF-8 fixtures and
+    # any UTF-8 version continue to use the default decoder.
+    shift_jis = re.search(rb'<meta\s+charset\s*=\s*["\']?shift[_-]jis\b',
+                          raw[:4096], re.IGNORECASE)
     p=PlainText()
-    p.feed(raw.decode("utf-8",errors="replace"))
+    p.feed(raw.decode("cp932" if shift_jis else "utf-8"))
     s=unicodedata.normalize("NFKC",p.value()).replace("％","%")
     # This path is a rolling latest month, so old September and Tokyo preview
     # are common even after the scheduled October publication time.
