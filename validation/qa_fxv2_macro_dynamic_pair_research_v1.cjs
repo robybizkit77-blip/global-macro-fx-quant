@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('fs'),path=require('path');
 const ROOT=path.resolve(__dirname,'..');
-const {evaluate,buildCountry}=require('../site/fx-quant-v2/assets/pair-macro-dynamics-research-v1.js');
+const {evaluate}=require('../site/fx-quant-v2/assets/pair-macro-dynamics-research-v1.js');
 const {validate}=require('../site/fx-quant-v2/assets/pair-macro-observed-context-v1.js');
 const doc=JSON.parse(fs.readFileSync(path.join(ROOT,'site/control-room-preview/macro-v3-current-evidence.json'),'utf8'));
 const core=fs.readFileSync(path.join(ROOT,'live_data/sections/D.json'),'utf8');
@@ -13,6 +13,15 @@ assert.match(sourceDay,/^\d{4}-\d{2}-\d{2}$/);
 const todayRome=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 assert(sourceDay<=todayRome,'Macro V3 source cannot be dated in the future');
 let yesGDP=0;
+const comparisonWindow=g=>g.prior_documented_quarter?
+ g.prior_documented_quarter.reference_quarter+'/'+g.reference_quarter:null;
+const assertGDP=(result,source)=>{
+ const prior=source.prior_documented_quarter;
+ assert.equal(result.qoq_pct,source.nonannualized_qoq_descriptive_pct);
+ const pp=prior?source.nonannualized_qoq_descriptive_pct-prior.nonannualized_qoq_descriptive_pct:null;
+ if(pp===null)assert.equal(result.qoq_change_pp,null);
+ else assert(Math.abs(result.qoq_change_pp-pp)<=0.0000005+Number.EPSILON);
+};
 for(const key of Object.keys(doc.pair_context)){
  const out=evaluate(doc,key,sourceDay,validate);
  assert.equal(out.pair,key);
@@ -23,30 +32,27 @@ for(const key of Object.keys(doc.pair_context)){
  assert.equal(out.macro_score,null);
  assert.equal(out.expected_fx_return,null);
  assert(out.summary.includes('non possiamo dedurre un repricing'));
+ const [base,quote]=key.split('/').map(currency=>doc.countries[currency]);
+ assertGDP(out.base.growth,base.growth);
+ assertGDP(out.quote.growth,quote.growth);
+ const baseWindow=comparisonWindow(base.growth),quoteWindow=comparisonWindow(quote.growth);
+ assert.equal(out.comparable.growth_acceleration,baseWindow!==null&&baseWindow===quoteWindow,key+' GDP window parity');
+ assert.equal(out.comparable.inflation_trend_same_period,base.inflation.observation_period===quote.inflation.observation_period);
+ assert.equal(out.comparable.labour_trend_same_period,base.labour.observation_period===quote.labour.observation_period);
  if(out.comparable.growth_acceleration)yesGDP++;
 }
-assert.equal(yesGDP,1,'Only USD/EUR have two contiguous recent GDP quarters in source');
 const eu=evaluate(doc,'EURUSD',sourceDay,validate);
-assert.equal(eu.base.growth.qoq_change_pp,-0.2);
-assert.equal(eu.quote.growth.qoq_change_pp,0.466464);
-assert.equal(eu.comparable.inflation_trend_same_period,false,'EUR October and USD September are not synchronized');
-assert(eu.summary.includes('Inflazione non sincronizzata'),'source-period mismatch must be visible');
-// Labour source periods can move independently (EUR September / USD October).
-// Test comparison parity against actual published periods, never a frozen expectation.
-const labourPeriodsAligned=doc.countries.EUR.labour.observation_period===doc.countries.USD.labour.observation_period;
-assert.equal(eu.comparable.labour_trend_same_period,labourPeriodsAligned);
-if(!labourPeriodsAligned)assert(eu.summary.includes('Disoccupazione con periodi/frequenze diversi'),'unsynchronized labour context must be visible');
-assert.equal(eu.base.inflation.change_pp,1);
-assert.equal(eu.quote.inflation.change_pp,0.25372);
-assert(eu.summary.includes('PIL: variazione del ritmo'));
-const aud=evaluate(doc,'AUDCAD',sourceDay,validate);
-assert.equal(aud.base.growth.qoq_change_pp,null);
-assert.equal(aud.quote.growth.qoq_change_pp,null);
-assert.equal(aud.comparable.inflation_trend_same_period,false);
-assert(aud.summary.includes('niente confronto diretto'));
-const nz=evaluate(doc,'AUDNZD',sourceDay,validate);
-assert.equal(nz.comparable.inflation_trend_same_period,true);
-assert.equal(nz.comparable.labour_trend_same_period,false);
+if(eu.comparable.growth_acceleration)assert.match(eu.summary,/PIL: variazione del ritmo/);
+if(!eu.comparable.inflation_trend_same_period)assert.match(eu.summary,/Inflazione non sincronizzata/);
+if(!eu.comparable.labour_trend_same_period)assert.match(eu.summary,/Disoccupazione con periodi\/frequenze diversi/);
+assert.equal(eu.base.inflation.change_pp,doc.countries.EUR.inflation.change_over_three_observation_intervals_pp);
+assert.equal(eu.quote.inflation.change_pp,doc.countries.USD.inflation.change_over_three_observation_intervals_pp);
+const partial=clone(doc);
+delete partial.countries.EUR.growth.prior_documented_quarter;
+const oneQuarter=evaluate(partial,'EURUSD',sourceDay,validate);
+assert.equal(oneQuarter.base.growth.qoq_change_pp,null);
+assert.equal(oneQuarter.comparable.growth_acceleration,false);
+assert.match(oneQuarter.summary,/PIL: accelerazione relativa NON calcolabile/);
 assert.equal(evaluate(doc,'EURUSD',dateOffset(sourceDay,11),validate),null,'Stale Macro V3 never current');
 assert.equal(evaluate(doc,'EURUSD',dateOffset(sourceDay,-1),validate),null,'future source must fail');
 assert.equal(evaluate(doc,'USDEUR',sourceDay,validate),null,'unregistered pair not fabricated');
@@ -57,4 +63,4 @@ const bad=clone(doc);bad.countries.CHF.labour.change_over_three_observation_inte
 assert.throws(()=>evaluate(bad,'CHFJPY',sourceDay,validate),/invalid labour/);
 assert.equal(fs.readFileSync(path.join(ROOT,'live_data/sections/D.json'),'utf8'),core);
 assert.equal(fs.readFileSync(path.join(ROOT,'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),'utf8'),pairs);
-console.log('FXV2_MACRO_DYNAMIC_28PAIR_RESEARCH_PASS GDP comparable 1/28, no FX signal or Core rebase');
+console.log('FXV2_MACRO_DYNAMIC_28PAIR_RESEARCH_PASS GDP comparable '+yesGDP+'/28, no FX signal or Core rebase');

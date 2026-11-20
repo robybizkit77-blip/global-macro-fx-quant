@@ -11,6 +11,8 @@ const overviewEnd=app.indexOf('\nfunction currencies(){',overviewStart);
 assert(helperStart>=0&&overviewStart>helperStart&&overviewEnd>overviewStart,'Missing Next Research functions');
 new vm.Script(app,{filename:'next-app.js'});
 const functions=app.slice(helperStart,overviewEnd);
+const chartFunctions=app.slice(app.indexOf('function historyRates(c){'),app.indexOf('function plot(opts){'))+
+ app.slice(app.indexOf('function homeScreenChart(){'),app.indexOf('function homePairPreview(k){'));
 const initial={
  currencyPrices:json('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
  rates:json('live_data/sections/NATIVE_RATES_DATA.json'),
@@ -29,7 +31,7 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const date=x=>validDay(x)?x.slice(8,10)+'/'+x.slice(5,7)+'/'+x.slice(0,4):esc(x||'n.d.');
 const fmt=(v,n=2)=>finite(v)?v.toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n}):'—';
 const sign=(v,n=1,suffix='')=>finite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),n)+suffix:'—';
-function evaluate(data,now='2026-11-10'){
+function evaluate(data,now='2026-11-10',homeChart=null){
  const ctx={
   get:k=>data[k]||null,finite,validDay,esc,date,fmt,sign,
   dayNow:()=>now,
@@ -38,13 +40,14 @@ function evaluate(data,now='2026-11-10'){
   eurPairs:()=>data.pairs?.pairs||{},
   getPairName:key=>key.slice(0,3)+'/'+key.slice(3),
   homeScreenChart:()=>'<div class="test-chart"></div>',
-  state:{homeEvidenceOpen:false,homeDossierOpen:false},
+  choose:()=>'',plot:({lines})=>lines.map(x=>x.values.map(y=>y.label).join(',')).join(' | '),
+  state:{homeEvidenceOpen:false,homeDossierOpen:false,homeChart},
   FX:['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'],
   FLAGS:{USD:'USD',EUR:'EUR',GBP:'GBP',JPY:'JPY',CHF:'CHF',AUD:'AUD',NZD:'NZD',CAD:'CAD'},
   ROUTES:{rates:'Tassi & OIS',risk:'Rischio'}
  };
  vm.createContext(ctx);
- new vm.Script(functions+'\nvar qa={context:researchCase(),article:overview(),rates:researchBridge("rates"),risk:researchBridge("risk")};').runInContext(ctx,{timeout:1000});
+ new vm.Script((homeChart?chartFunctions:'')+functions+'\nvar qa={context:researchCase(),article:overview(),rates:researchBridge("rates"),risk:researchBridge("risk")};').runInContext(ctx,{timeout:1000});
  return ctx.qa;
 }
 const baseline=evaluate(initial);
@@ -119,7 +122,8 @@ assert.equal(x.context.focus,'nasdaq');
 assert.match(x.article,/data-research-kind="stress"/);
 assert.match(x.article,/Il mio giudizio\./,'The Home needs an explicit market verdict');
 assert.match(x.article,/disoccupazione/,'The Home must connect macro to the market narrative');
-assert.match(x.article,/EUR\/USD/,'The Home must connect FX pairs to the market narrative');
+if(!sourceAhead)assert.match(x.article,/EUR\/USD/,'The Home must connect dated FX pairs to the market narrative');
+else assert.doesNotMatch(x.article,/Nel dossier EUR\/USD al/,'Future pair dossiers must be withheld');
 if(!sourceAhead)assert.match(x.article,/USD\/JPY/,'Aligned data should surface price-versus-thesis divergence');
 else assert.match(x.article,/nessuna selezione automatica/i,
  'Unaligned future FX snapshot cannot be promoted during a historical risk shock');
@@ -142,6 +146,34 @@ assert.match(evaluate(futurePricing,'2026-11-10').article,
  /non abbiamo una scadenza monetaria USA a sei mesi utilizzabile/);
 assert.doesNotMatch(evaluate(futurePricing,'2026-11-10').article,
  /20\/11\/2026/,'Future-dated monetary reference must not appear in the analysis');
+const later=clone(stress);
+later.dxy.as_of='2026-11-11';
+later.pairs.price_asof='2026-11-12';
+later.cot.EUR={signal:'EXTREME SHORT',today:'CFTC al 2026-11-13: fondi net short'};
+later.cot.AUD={signal:'EXTREME SHORT',today:'CFTC al 2026-11-13: fondi net short'};
+later.macro.currencies.USD.inflation.as_of='2026-12';
+const historical=evaluate(later,'2026-11-10').article;
+assert.doesNotMatch(historical,/1[1-3]\/11\/2026|2026-12|Il COT aggiunge una sfumatura|Nel dossier EUR\/USD al/,
+ 'Future FX quotes, pair narratives, positioning and macro periods must be withheld');
+const dated=clone(later);
+dated.dxy.as_of='2026-11-09';
+dated.pairs.price_asof='2026-11-09';
+dated.cot.EUR.today='CFTC al 2026-11-03: fondi net short';
+const datedHistory=evaluate(dated,'2026-11-10').article;
+assert.match(datedHistory,/proxy del dollaro ricavato dai fixing BCE ha registrato/);
+assert.match(datedHistory,/Nel dossier EUR\/USD al 09\/11\/2026/);
+assert.match(datedHistory,/Il COT aggiunge una sfumatura: sull’euro/);
+assert.doesNotMatch(datedHistory,/anche sul dollaro australiano il posizionamento/,
+ 'Each positioning entry has its own date');
+const chartOnly={risk:{streams:{NASDAQCOM:{
+ date:'2026-11-11',change_1d_pct:9.99,publisher:'FRED',
+ history:[['2026-11-09',100],['2026-11-10',101],['2026-11-11',111]]
+}}}};
+const chart=evaluate(chartOnly,'2026-11-10','nasdaq').article;
+assert.match(chart,/Ultimo 10\/11\/2026/);
+assert.match(chart,/2026-11-09,2026-11-10/);
+assert.doesNotMatch(chart,/11\/11\/2026|2026-11-11|9,99%/,
+ 'The chart and its annotation use the same historical cutoff');
 const relief=clone(stress);
 relief.risk.streams.NASDAQCOM.change_1d_pct=3.2;
 relief.risk.streams.VIX.previous=31;relief.risk.streams.VIX.value=23;
@@ -177,6 +209,7 @@ const empty=evaluate({});
 assert.equal(empty.context.kind,'mixed');
 assert.match(empty.article,/letter-proof-empty/);
 const malicious=clone(initial);
+malicious.pairs.price_asof='2026-11-10';
 malicious.pairs.pairs.EURUSD.decision_frame.relation='<img src=x onerror=alert(1)>';
 const html=evaluate(malicious).article;
 assert(html.includes('&lt;img'));
