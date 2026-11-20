@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-20T02:22:30.412197Z",
-  "edition_time_rome": "2026-11-20 03:22",
-  "material_digest": "5fe837b921838ebad8b1be889a7e9a4a8693626e049e808cd89a27f87e13542a",
+  "generated_at_utc": "2026-11-20T10:13:46.424486Z",
+  "edition_time_rome": "2026-11-20 11:13",
+  "material_digest": "874ea38a4d8d9ba8c97b2a69ef9d7960a78aa91a8cbacf2c6a54fedd2bed443c",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
-  "headline": "Dollaro misto",
-  "lead": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
+  "headline": "Sono usciti i dati sui prezzi in Giappone",
+  "lead": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. La volatilità azionaria è salita alla chiusura del 19 novembre.",
   "news": [
     {
       "headline": "Dollaro misto",
@@ -22,43 +22,41 @@
       "evidence": "Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%."
     },
     {
-      "headline": "L’Australia ha pubblicato il dato sulla disoccupazione di ottobre",
-      "analysis": "Per il dollaro australiano conta se, dopo il dato, cambiano le attese sui tassi.",
+      "headline": "Sono usciti i dati sui prezzi in Giappone",
+      "analysis": "Il punto da seguire è se cambiano le attese sui tassi in Giappone.",
+      "kind": "FOLLOW_UP",
+      "published_date": "2026-11-20",
+      "event_date": "2026-11-20",
+      "market_area": "MACRO",
+      "sources": [
+        "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html"
+      ],
+      "evidence": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
+    },
+    {
+      "headline": "Il quadro del rischio",
+      "analysis": "La volatilità azionaria è salita alla chiusura del 19 novembre. Da seguire se il movimento prosegue anche alla prossima chiusura.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-19",
       "event_date": "2026-11-19",
-      "market_area": "MACRO",
-      "sources": [
-        "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026"
-      ],
-      "evidence": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
-    },
-    {
-      "headline": "Azioni in calo e credito più cauto",
-      "analysis": "Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. La volatilità in Borsa è scesa. Da seguire se la cautela nel credito si estende alle prossime sedute.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-18",
-      "event_date": "2026-11-18",
       "market_area": "RISCHIO",
       "sources": [
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
+        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
       ],
-      "evidence": "Alla chiusura del 18 novembre, S&P 500 −0,23%, VIX −0,90 punti e spread high yield +4 pb."
+      "evidence": "Alla chiusura del 19 novembre, VIX +3,88 punti."
     },
     {
       "headline": "Oro e petrolio in calo",
       "analysis": "Se il movimento del petrolio prosegue, guarda come reagisce il dollaro canadese.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-19",
-      "event_date": "2026-11-19",
+      "published_date": "2026-11-20",
+      "event_date": "2026-11-20",
       "market_area": "COMMODITIES",
       "sources": [
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
         "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
       ],
-      "evidence": "Proxy futures da fonte secondaria. Oro −2,00% al 19 novembre. WTI −1,66% al 19 novembre."
+      "evidence": "Proxy futures da fonte secondaria. Oro −4,06% al 20 novembre. WTI −0,59% al 20 novembre."
     },
     {
       "headline": "Bank of Canada Media Interview – Barrie 360",
@@ -85,34 +83,37 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 18 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
+  "desk_judgment": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. La volatilità azionaria è salita alla chiusura del 19 novembre.",
   "fx_implications": "Da seguire se euro e yen si muovono nella stessa direzione contro il dollaro.",
   "what_changed": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen.",
-  "contrary_evidence": "Il VIX è sceso mentre il credito high yield ha chiesto uno spread più ampio. La tensione nel credito merita una verifica a parte.",
+  "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
   "watch": "Nella prossima seduta, guarda se il movimento del dollaro si estende oltre le coppie che lo hanno guidato.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
-      "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026",
       "https://www.bankofcanada.ca/2026/11/bank-canada-media-interview-barrie-360-2026-11-19/",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "https://www.eia.gov/todayinenergy/detail.php?id="
+      "https://www.eia.gov/todayinenergy/detail.php?id=",
+      "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
-      "news": "2026-11-19",
-      "rss_checked_at_utc": "2026-11-20T02:22:30.412197Z",
-      "commodities": "2026-11-19"
+      "news": "2026-11-20",
+      "rss_checked_at_utc": "2026-11-20T10:13:46.424486Z",
+      "commodities": "2026-11-20"
     },
     "no_paid_api": true,
     "no_ai_model": true,
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-20T02:22:30.412197Z",
+      "headline": "Dollaro misto",
+      "material_digest": "5fe837b921838ebad8b1be889a7e9a4a8693626e049e808cd89a27f87e13542a"
+    },
     {
       "generated_at_utc": "2026-11-19T21:43:31.378196Z",
       "headline": "Dollaro misto",
@@ -227,11 +228,6 @@
       "generated_at_utc": "2026-11-16T01:05:44.505128Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "b2c1630a578e52a77dd13330c40305d2b6b46ee3fc7fc50eeceabd4bd07d7ae9"
-    },
-    {
-      "generated_at_utc": "2026-11-14T20:45:48.350565Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "d99e2438a9051e4bbc1cbfa93b9c8747411e30b07272dac24a9ab91d4a3af967"
     }
   ]
 }
