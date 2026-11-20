@@ -123,7 +123,7 @@ assert(!article.includes('data-home-calendar-reconciled="true"'),
 const app=read(next+'app.js');
 assert(app.includes("estimated,rates:get('rates'),calendar:get('calendar')"));
 const index=read(next+'index.html');
-assert(index.includes('./morning-desk-v1.js?v=7'));
+assert(index.includes('./morning-desk-v1.js?v=8'));
 assert(index.includes('./morning-desk-v1.css?v=5'));
 assert(index.includes('./app.js?v=18.58-home-money-pricing'));
 assert(index.includes('./hourly-desk-ui-v1.js?v=8'));
