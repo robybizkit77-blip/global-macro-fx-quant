@@ -133,12 +133,12 @@ class NZDPublicResearch(unittest.TestCase):
         self.assertFalse(archive["eligible_for_core"])
         self.assertFalse(archive["automated_access_authorized"])
 
-    def test_source_permission_gate_is_active(self):
+    def test_automated_reconciliation_has_bounded_main_only_access(self):
         workflow=(ROOT/".github/workflows/fxv2-chf-nzd-benchmark-research.yml").read_text()
-        self.assertIn("secrets.RBNZ_AUTOMATED_ACCESS_AUTHORIZED",workflow)
-        self.assertIn('if [ "${RBNZ_AUTOMATED_ACCESS_AUTHORIZED:-}" != "true" ]; then',
-                      workflow)
-        self.assertIn("NZD_RBNZ_DIRECT=SKIPPED_NO_AUTOMATED_ACCESS_PERMISSION",workflow)
+        read=workflow.split("Read both official RBNZ B2 formats",1)[1].split("Use authorized eolas API",1)[0]
+        self.assertIn("github.event_name != 'pull_request'",read)
+        self.assertIn("https://www.rbnz.govt.nz/about-our-site/terms-of-use",read)
+        self.assertIn("reconcile_fxv2_nzd_b2_postroll_v1.py",read)
         self.assertIn("EOLAS_API_KEY",workflow)
         self.assertIn("test_fxv2_nzd_manual_public_source_v1.py",workflow)
 

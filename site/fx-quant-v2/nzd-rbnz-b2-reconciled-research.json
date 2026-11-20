@@ -1,0 +1,109 @@
+{
+  "schema": "GMFQ_NZD_RBNZ_B2_RECONCILED_RESEARCH_V1",
+  "status": "RBNZ_B2_HTML_XLSX_AGREE_POSTROLL_RESEARCH_ONLY",
+  "source": "Reserve Bank of New Zealand B2 · NZFMA indicative government bond closing yields",
+  "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "xlsx_url": "https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx",
+  "html_sha256": "09cf0969bd3d431ce2f25d05471a35b3fde139581aa9ba63a09aabf5a45f75dc",
+  "xlsx_sha256": "249eceab605f57044ac04ba988ee047301a6889595c89e322c58bd1b3b5619ff",
+  "publication_date": "2026-11-20",
+  "last_observation_date": "2026-11-19",
+  "benchmark_roll_date": "2026-10-30",
+  "benchmark_2Y": "April 2029",
+  "benchmark_10Y": "April 2037",
+  "html_xlsx_matched_dates": [
+    "2026-11-06",
+    "2026-11-09",
+    "2026-11-10",
+    "2026-11-11",
+    "2026-11-12",
+    "2026-11-13",
+    "2026-11-16",
+    "2026-11-17",
+    "2026-11-18",
+    "2026-11-19"
+  ],
+  "observations": [
+    {
+      "date": "2026-10-30",
+      "2Y": 3.96,
+      "10Y": 4.9
+    },
+    {
+      "date": "2026-11-02",
+      "2Y": 3.97,
+      "10Y": 4.91
+    },
+    {
+      "date": "2026-11-03",
+      "2Y": 3.95,
+      "10Y": 4.88
+    },
+    {
+      "date": "2026-11-04",
+      "2Y": 3.83,
+      "10Y": 4.81
+    },
+    {
+      "date": "2026-11-05",
+      "2Y": 3.78,
+      "10Y": 4.74
+    },
+    {
+      "date": "2026-11-06",
+      "2Y": 3.79,
+      "10Y": 4.76
+    },
+    {
+      "date": "2026-11-09",
+      "2Y": 3.8,
+      "10Y": 4.76
+    },
+    {
+      "date": "2026-11-10",
+      "2Y": 3.77,
+      "10Y": 4.71
+    },
+    {
+      "date": "2026-11-11",
+      "2Y": 3.85,
+      "10Y": 4.77
+    },
+    {
+      "date": "2026-11-12",
+      "2Y": 3.82,
+      "10Y": 4.73
+    },
+    {
+      "date": "2026-11-13",
+      "2Y": 3.91,
+      "10Y": 4.82
+    },
+    {
+      "date": "2026-11-16",
+      "2Y": 3.94,
+      "10Y": 4.85
+    },
+    {
+      "date": "2026-11-17",
+      "2Y": 3.94,
+      "10Y": 4.85
+    },
+    {
+      "date": "2026-11-18",
+      "2Y": 3.94,
+      "10Y": 4.85
+    },
+    {
+      "date": "2026-11-19",
+      "2Y": 3.89,
+      "10Y": 4.79
+    }
+  ],
+  "research_only": true,
+  "no_interpolation": true,
+  "eligible_for_core": false,
+  "eligible_for_fx_pair_engine": false,
+  "eligible_for_backtests": false,
+  "eligible_for_automatic_promotion": false
+}

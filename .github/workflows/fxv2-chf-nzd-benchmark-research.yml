@@ -12,6 +12,8 @@ on:
       - 'validation/rates/report_fxv2_chf_nzd_freshness_v1.py'
       - 'validation/rates/test_report_fxv2_chf_nzd_freshness_v1.py'
       - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
+      - 'validation/rates/reconcile_fxv2_nzd_b2_postroll_v1.py'
+      - 'validation/rates/test_reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_rbnz_b2_daily_web_v1.py'
@@ -36,6 +38,8 @@ on:
       - 'validation/rates/report_fxv2_chf_nzd_freshness_v1.py'
       - 'validation/rates/test_report_fxv2_chf_nzd_freshness_v1.py'
       - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
+      - 'validation/rates/reconcile_fxv2_nzd_b2_postroll_v1.py'
+      - 'validation/rates/test_reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_rbnz_b2_daily_web_v1.py'
@@ -84,6 +88,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: python3 -m pip install --disable-pip-version-check --no-input openpyxl==3.1.5
       - name: Test CHF matched SNB tenors and NZD benchmark roll safeguards
         run: |
           python3 validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py
@@ -91,6 +96,7 @@ jobs:
           python3 validation/rates/test_certify_rates_parent_source_execution_v1.py
           python3 validation/rates/test_report_fxv2_chf_nzd_freshness_v1.py
           python3 validation/rates/test_collect_rbnz_b2_daily_web_v1.py
+          python3 validation/rates/test_reconcile_fxv2_nzd_b2_postroll_v1.py
           python3 validation/rates/test_fxv2_nzd_manual_public_source_v1.py
           python3 validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py
           python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
@@ -144,26 +150,19 @@ jobs:
             --upstream-source-verified "$PARENT_RATES_SOURCE_VERIFIED" \
             --output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
 
-      - name: Read RBNZ B2 official HTML only with the owner's prior written permission
-        if: steps.gate.outputs.should_run == 'true'
+      - name: Read both official RBNZ B2 formats and reconcile the same edition
+        if: steps.gate.outputs.should_run == 'true' && github.event_name != 'pull_request'
         shell: bash
-        env:
-          RBNZ_AUTOMATED_ACCESS_AUTHORIZED: ${{ secrets.RBNZ_AUTOMATED_ACCESS_AUTHORIZED }}
         run: |
           set -euo pipefail
-          # RBNZ terms require PRIOR WRITTEN PERMISSION for automated access.
-          # An undocumented HTTP 403 is not authorization to retry/bypass.
-          # This flag is owner-provided ONLY after obtaining written permission.
-          if [ "${RBNZ_AUTOMATED_ACCESS_AUTHORIZED:-}" != "true" ]; then
-            echo 'NZD_RBNZ_DIRECT=SKIPPED_NO_AUTOMATED_ACCESS_PERMISSION'
-            echo 'NZD_RBNZ_DIRECT=SKIPPED_NO_AUTOMATED_ACCESS_PERMISSION' >> "$GITHUB_STEP_SUMMARY"
-            rm -f /tmp/fxv2-rbnz-b2-daily-source.json
-          elif python3 validation/rates/collect_rbnz_b2_daily_web_v1.py \
-              --output /tmp/fxv2-rbnz-b2-daily-source.json; then
-            echo 'FXV2_RBNZ_B2_AUTHORIZED_SOURCE_READ_SUCCEEDED'
+          # https://www.rbnz.govt.nz/about-our-site/terms-of-use (12 Nov 2026).
+          # Two requests per eligible run with the prescribed User-Agent.
+          # HTTP errors end the direct attempt without retries or alternate hosts.
+          if python3 validation/rates/reconcile_fxv2_nzd_b2_postroll_v1.py \
+              --web-receipt /tmp/fxv2-rbnz-b2-daily-source.json; then
+            echo 'FXV2_RBNZ_B2_HTML_XLSX_RECONCILED' | tee -a "$GITHUB_STEP_SUMMARY"
           else
-            echo 'FXV2_RBNZ_B2_AUTHORIZED_SOURCE_UNAVAILABLE: previous dated NZD context retained'
-            rm -f /tmp/fxv2-rbnz-b2-daily-source.json
+            echo 'FXV2_RBNZ_B2_RECONCILIATION_UNAVAILABLE: previous reconciled research retained' | tee -a "$GITHUB_STEP_SUMMARY"
           fi
       # Free eolas: Tue/Thu 06:30 Rome, max 10 scheduled requests/month.
       # Set EOLAS_PRO_ENABLED=true ONLY with a confirmed paid Pro entitlement.
@@ -264,10 +263,12 @@ jobs:
           set -euo pipefail
           FILE=site/fx-quant-v2/chf-nzd-benchmark-research.json
           CHF_HISTORY=site/fx-quant-v2/chf-snb-paired-history.json
+          NZD_HISTORY=site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json
           git diff --exit-code -- live_data payload
           git add "$FILE"
           if [ -f "$CHF_HISTORY" ]; then git add "$CHF_HISTORY"; fi
-          if git diff --cached --quiet -- "$FILE" "$CHF_HISTORY"; then
+          if [ -f "$NZD_HISTORY" ]; then git add "$NZD_HISTORY"; fi
+          if git diff --cached --quiet -- "$FILE" "$CHF_HISTORY" "$NZD_HISTORY"; then
             echo 'FXV2_CHF_NZD_UNCHANGED_SOURCE_OBSERVATIONS'
             exit 0
           fi
@@ -300,5 +301,6 @@ jobs:
             /tmp/fxv2-snb-paired-historical-review.json
             site/fx-quant-v2/chf-snb-paired-history.json
             site/fx-quant-v2/chf-nzd-benchmark-research.json
+            site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json
           if-no-files-found: warn
           retention-days: 14

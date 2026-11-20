@@ -53,6 +53,17 @@ class OfficialPublicHTML(unittest.TestCase):
             m.parse(fixture(missing_bond=True),now_nz=NOW)
         with self.assertRaises(ValueError):
             m.parse(fixture(roll="05 November 2026"),now_nz=NOW)
+    def test_current_benchmark_tables_survive_unrelated_banner_change(self):
+        def schedule(old, new):
+            return ("<table><tr><th>Date Range</th><th>Benchmark Bond</th></tr>"
+                    "<tr><td>October 31, 2025 through October 29, 2026</td>"
+                    f"<td>{old}</td></tr><tr><td>From 30 October 2026</td><td>{new}</td></tr></table>")
+        html=fixture().split("<h3>Changes",1)[0]+schedule("May 2028","April 2029")+schedule("May 2036","April 2037")
+        self.assertEqual(m.parse(html,now_nz=NOW)["as_of"],"2026-11-03")
+        future=html.replace("<td>April 2029</td></tr></table>",
+                            "<td>April 2029</td></tr><tr><td>From 6 November 2026</td><td>May 2030</td></tr></table>")
+        with self.assertRaisesRegex(ValueError, "schedule changed"):
+            m.parse(future,now_nz=NOW)
     def test_future_publication(self):
         with self.assertRaises(ValueError):
             m.parse(fixture(release="05 November 2026"),now_nz=NOW)

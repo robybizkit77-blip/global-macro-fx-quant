@@ -9,7 +9,8 @@
  const days=(a,b)=>isDay(a)&&isDay(b)?Math.round((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/864e5):null;
 
  const isGovSource=r=>/^FULL_CURRENT_OFFICIAL/.test(r?.quality||'')||
-  r?.quality==='OFFICIAL_RBA_F2_DAILY_RESEARCH_ONLY';
+  r?.quality==='OFFICIAL_RBA_F2_DAILY_RESEARCH_ONLY'||
+  r?.quality==='OFFICIAL_RBNZ_B2_RECONCILED_RESEARCH_ONLY';
  // RBA daily observations remain independent research: no Core or FX engine writes.
  function researchRates(rateData,research,modelDate,now){
   const a=rateData?.AUD,o=research?.observations;
@@ -44,6 +45,38 @@
    source:'Reserve Bank of Australia F2 · assessed government 2Y/10Y daily, research only',
    history2:{dates:o.map(v=>v.date),values:o.map(v=>v['2Y'])},
    researchOnly:true,sourcePublicationDate:research.publication_date}};
+ }
+ function nzdResearchRates(rateData,source,now){
+  const rows=source?.observations,matched=source?.html_xlsx_matched_dates;
+  if(source?.schema!=='GMFQ_NZD_RBNZ_B2_RECONCILED_RESEARCH_V1'||
+   source.status!=='RBNZ_B2_HTML_XLSX_AGREE_POSTROLL_RESEARCH_ONLY'||
+   source.source_url!=='https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates'||
+   source.xlsx_url!=='https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx'||
+   ![source.html_sha256,source.xlsx_sha256].every(d=>typeof d==='string'&&/^[0-9a-f]{64}$/.test(d))||
+   source.benchmark_roll_date!=='2026-10-30'||source.benchmark_2Y!=='April 2029'||
+   source.benchmark_10Y!=='April 2037'||source.research_only!==true||source.no_interpolation!==true||
+   source.eligible_for_core!==false||source.eligible_for_fx_pair_engine!==false||
+   source.eligible_for_backtests!==false||source.eligible_for_automatic_promotion!==false||
+   !isDay(source.publication_date)||source.publication_date>now||
+   !isDay(source.last_observation_date)||source.last_observation_date>source.publication_date||
+   !Array.isArray(rows)||rows.length<6||rows.length>300||
+   rows[0]?.date!==source.benchmark_roll_date||rows.at(-1)?.date!==source.last_observation_date||
+   !Array.isArray(matched)||matched.length<6||matched.at(-1)!==source.last_observation_date)return rateData;
+  let prior='';
+  const dates=new Set();
+  for(const row of rows){
+   if(!isDay(row?.date)||row.date<=prior||
+    ![row['2Y'],row['10Y']].every(v=>isNum(v)&&v>-5&&v<25))return rateData;
+   dates.add(row.date);
+   prior=row.date;
+  }
+  if(!matched.every((d,i)=>dates.has(d)&&(i===0||d>matched[i-1])))return rateData;
+  return {...rateData,NZD:{
+   date:source.last_observation_date,quality:'OFFICIAL_RBNZ_B2_RECONCILED_RESEARCH_ONLY',
+   source:'RBNZ B2 / NZFMA · benchmark aprile 2029 · tabella ed Excel riconciliati',
+   history2:{dates:rows.map(r=>r.date),values:rows.map(r=>r['2Y'])},
+   researchOnly:true,sourcePublicationDate:source.publication_date,
+  }};
  }
  // Research-only CHF & NZD source context, never a market-grade confirmation.
  // No historical 2Y is merged into canonical rates; no interpolation or roll splice.
@@ -152,8 +185,9 @@
   const direction=(Math.abs(fx)<1e-10||Math.abs(bp)<1e-10)?'NEUTRO':fx*bp>0?'STESSO SEGNO':'SEGNO OPPOSTO';
   return {n,start:start.date,end:last.date,days:span,fxPct:fx,spreadBp:bp,direction};
  }
- function snapshot(rateData,prices,pair,modelDate,now,audHistory,chfHistory,nzdPostroll){
-  const eff=String(pair||'').includes('AUD')?researchRates(rateData,audHistory,modelDate,now):rateData;
+ function snapshot(rateData,prices,pair,modelDate,now,audHistory,chfHistory,nzdPostroll,nzdReconciled){
+  const aud=String(pair||'').includes('AUD')?researchRates(rateData,audHistory,modelDate,now):rateData;
+  const eff=pair==='AUDNZD'&&aud?.AUD?.researchOnly?nzdResearchRates(aud,nzdReconciled,now):aud;
   const base=String(pair||'').slice(0,3),quote=String(pair||'').slice(3,6);
   const a=eff?.[base],b=eff?.[quote],rows=commonObservations(eff,prices,pair,modelDate,now),latest=rows.at(-1);
   const lag=latest?days(latest.date,modelDate):null,age=latest?days(latest.date,now):null;
@@ -161,17 +195,21 @@
   const ready=Boolean(latest&&sourceOK&&lag!==null&&lag>=0&&lag<=3&&age!==null&&age>=0&&age<=5);
   const short=ready?metrics(rows,5,12):null;
   const medium=ready?metrics(rows,20,45):null;
-  const reason=!sourceOK?'Mancano due rendimenti governativi 2Y ufficiali confrontabili come serie di origine.'
+  const context=researchedSources(rateData,pair,modelDate,now,chfHistory,nzdPostroll);
+  const chf=pair==='AUDCHF'&&context.find(c=>c.currency==='CHF');
+  const reason=!ready&&chf?'Il 2Y svizzero della serie SNB comparabile si ferma al '+chf.lastDate+
+    '. Per aggiornare il confronto serve un 2Y CHF su date più recenti in comune con AUD e fixing BCE.'
+    :!sourceOK?'Mancano due rendimenti governativi 2Y ufficiali confrontabili come serie di origine.'
     :!latest?'Non esistono abbastanza fixing BCE e rendimenti 2Y sulle stesse date.'
     :!ready?'Ultima osservazione FX/2Y comune troppo vecchia per confrontare i movimenti recenti.'
     :!short?'Storico troppo discontinuo: 5 intervalli fra date comuni coprono più di 12 giorni o sono insufficienti.'
     :'';
-  const context=researchedSources(rateData,pair,modelDate,now,chfHistory,nzdPostroll);
-  return {pair,base,quote,rows,latest,age,lag,ready:ready&&Boolean(short),researchOnly:!!(a?.researchOnly||b?.researchOnly),context,
+  const nzdResearch=b?.quality==='OFFICIAL_RBNZ_B2_RECONCILED_RESEARCH_ONLY';
+  return {pair,base,quote,rows,latest,age,lag,ready:ready&&Boolean(short),researchOnly:!!(a?.researchOnly||b?.researchOnly),context,nzdResearch,
    short,medium,reason,
    firstSource:a?.source||'',secondSource:b?.source||'',
    // This series is a relative sovereign yield difference; never an OIS spread.
-   kind:(a?.researchOnly||b?.researchOnly)?'2Y GOV · RBA F2 RICERCA (NON CORE / NON OIS)':'2Y GOV · DIFFERENZIALE INDICATIVO (NON OIS)'};
+   kind:nzdResearch?'2Y GOV · RBA F2 / RBNZ B2 RICERCA':(a?.researchOnly||b?.researchOnly)?'2Y GOV · RBA F2 RICERCA (NON CORE / NON OIS)':'2Y GOV · DIFFERENZIALE INDICATIVO (NON OIS)'};
  }
  // A short, source-dated research observation, never a trade decision.
  function brief(r){
@@ -186,15 +224,15 @@
   const tone=r.medium&&r.short.direction!==r.medium.direction?'mixed':
     r.short.direction==='SEGNO OPPOSTO'?'divergent':
     r.short.direction==='STESSO SEGNO'?'aligned':'uncertain';
-  const label='5 intervalli '+short+' · 20 '+long+(r.researchOnly?' · RBA F2 ricerca':'');
+  const label='5 intervalli '+short+' · 20 '+long+(r.nzdResearch?' · RBA F2 / RBNZ B2 ricerca':r.researchOnly?' · RBA F2 ricerca':'');
   return {ready:true,asof:r.latest.date,tone,label,
    researchOnly:!!r.researchOnly,
-   explanation:'Confronto di segno su fixing BCE e governativi 2Y con le stesse date; non OIS, non causalità né segnale.'+(r.researchOnly?' RBA F2 AUD è ricerca, non Core né backtest.':'')};
+   explanation:'Confronto di segno su fixing BCE e governativi 2Y con le stesse date; non OIS, non causalità né segnale.'+(r.nzdResearch?' Confronto di ricerca tra RBA F2 e RBNZ B2 dopo il cambio di benchmark NZD.':r.researchOnly?' RBA F2 AUD è ricerca, non Core né backtest.':'')};
  }
  function build(api){
   const {get,state,plot,fmt,sign,date,esc,dayNow}=api;
   const pair=state.pair||'EURUSD',doc=get('pairs');
-  const r=snapshot(get('rates'),get('currencyPrices'),pair,doc?.price_asof,dayNow(),get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'));
+  const r=snapshot(get('rates'),get('currencyPrices'),pair,doc?.price_asof,dayNow(),get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'),get('nzdReconciled'));
   function read(x){
    if(!x)return 'Non verificabile con la copertura attuale.';
    const direction=x.direction==='STESSO SEGNO'?'si sono mossi nello stesso verso'
@@ -223,7 +261,7 @@
     +'<div class="decision-rates-body"><div class="decision-rates-visual"><span>GRAFICO · '+esc(r.base)+' 2Y − '+esc(r.quote)+' 2Y</span>'+figure+'<small>Rendimenti governativi 2Y ufficiali. Spread espresso in punti base, non OIS né differenziale di carry. Visualizzazione sulle ultime '+line.length+' date comuni.'+(r.researchOnly?' AUD RBA F2: osservazioni giornaliere pubblicate settimanalmente; ricerca non canonica, non benchmark amministrato.':'')+'</small></div>'
     +'<div class="decision-rates-analysis"><span>COSA CONFERMANO I DATI?</span><h3>'+esc(r.medium&&r.medium.direction!==short.direction?'Segnali diversi tra breve e medio periodo.':short.direction==='STESSO SEGNO'?'Movimenti concordi, ma non prova causale.':short.direction==='SEGNO OPPOSTO'?'Prezzo e spread 2Y divergono.':'Confronto direzionale non conclusivo.')+'</h3>'
     +pill(short)
-    +(r.medium?pill(r.medium):'<p class="decision-rate-data-gap">Orizzonte 20 intervalli (21 date comuni) non comparabile: osservazioni troppo rade o intervallo superiore a 45 giorni.</p>')
+    +(r.medium?pill(r.medium):'<p class="decision-rate-data-gap">'+(r.nzdResearch&&r.rows.length<21?'Orizzonte 20 intervalli in attesa: '+r.rows.length+' delle 21 date comuni richieste dopo il cambio del benchmark NZD del 30/10/2026.':'Orizzonte 20 intervalli (21 date comuni) non comparabile: osservazioni troppo rade o intervallo superiore a 45 giorni.')+'</p>')
     +'<p class="decision-rates-verdict">'+esc(verdict+recentDifferent)+'</p></div></div>'
     +'<details class="decision-rates-method"><summary>Fonti, date e limiti del confronto</summary><p>'+esc(read(short))+' '+esc(read(r.medium))+'</p>'
     +'<p>'+esc(r.base)+': '+esc(r.firstSource)+'; '+esc(r.quote)+': '+esc(r.secondSource)+'. I benchmark governativi e le metodologie possono differire (par, spot, zero-coupon): lo spread è indicativo. '+(r.researchOnly?'RBA F2: pubblicazione settimanale di osservazioni giornaliere, valutazioni di ricerca non benchmark amministrati; nessuna idoneità point-in-time per backtest. ':'')+'Non stiamo confrontando curve OIS e non inferiamo che i tassi causino il movimento FX.</p></details></section>';
