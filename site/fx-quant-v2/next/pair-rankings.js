@@ -321,7 +321,15 @@
   const latest=snapshots?.at(-1),previous=snapshots?.at(-2);
   const unavailable='<p class="fx-watch-thesis">Storico della tesi in raccolta</p>';
   if(!latest||!previous||!validDay(latest.fixing)||!validDay(previous.fixing)||
-     latest.fixing>today||previous.fixing>=latest.fixing||!latest.method||latest.method!==previous.method)return unavailable;
+     latest.fixing>today||previous.fixing>latest.fixing||!latest.method||latest.method!==previous.method)return unavailable;
+  let dates='Stime archiviate con fixing del '+date(previous.fixing)+' e del '+date(latest.fixing);
+  if(previous.fixing===latest.fixing){
+   const before=Date.parse(previous.capturedAt),after=Date.parse(latest.capturedAt);
+   if(!finite(before)||!finite(after)||before>=after)return unavailable;
+   const rome=new Intl.DateTimeFormat('it-IT',{timeZone:'Europe/Rome',day:'2-digit',month:'2-digit',
+    hour:'2-digit',minute:'2-digit'});
+   dates='Stime sullo stesso fixing BCE del '+date(latest.fixing)+' · '+rome.format(before)+' → '+rome.format(after)+' IT';
+  }
   const from=previous.pairs?.[key],to=latest.pairs?.[key];
   if(!from||!to||!from.thesis||!to.thesis||!from.timing||!to.timing)return unavailable;
   const favoredLabel=x=>x.favored||'Equilibrio';
@@ -332,7 +340,7 @@
   const reading=changes.length?changes[0]:'Giudizi su tesi e timing invariati';
   return '<p class="fx-watch-thesis"><strong>'+esc(reading)+'</strong>'+
    (changes.length>1?'<span> · '+esc(changes.slice(1).join(' · '))+'</span>':'')+
-   '<small>Stime archiviate con fixing del '+esc(date(previous.fixing))+' e del '+esc(date(latest.fixing))+'</small></p>';
+   '<small>'+esc(dates)+'</small></p>';
  }
  function renderWatchlist(saved,pairs,agenda,market,history,esc,sign,date){
   if(!saved.length)return '<p class="fx-rank-unavailable">La watchlist è vuota. Apri una coppia e seleziona «Salva nella watchlist».</p>';
