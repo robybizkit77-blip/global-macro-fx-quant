@@ -127,16 +127,27 @@ if(aud.last_observation_date==='2026-11-18'&&comparisonDay==='2026-11-20'&&
  assert.match(mod.brief(chf2y).label,/Stima differenziale 2Y.*segno incerto/);
 }
 const chfCrosses=['AUDCHF','CADCHF','CHFJPY','EURCHF','GBPCHF','NZDCHF','USDCHF'];
-if(liveAsOf==='2026-11-19'&&comparisonDay==='2026-11-20'&&
-   estimateFeed.observations.some(r=>r.date==='2026-11-19')){
- for(const pair of chfCrosses){
-  const result=estimated(pair,estimateFeed),e=result.estimate;
-  assert(e&&!result.ready&&!result.short,'Estimate must stay separate from observed coverage: '+pair);
-  assert.equal(e.observedCurrency,pair.replace('CHF',''));
-  assert.equal(e.end,['AUDCHF','CADCHF'].includes(pair)?'2026-11-18':'2026-11-19');
-  const direction=pair.startsWith('CHF')?-1:1;
-  assert(Math.abs(e.spreadBp-direction*(e.observed2Bp-e.chf2Bp))<1e-9);
- }
+const comparisonFixture=liveAsOf==='2026-11-19'&&comparisonDay==='2026-11-20'&&
+ estimateFeed.observations.some(r=>r.date==='2026-11-19');
+const snbDates=new Set(estimateFeed.observations.map(r=>r.date));
+for(const pair of chfCrosses){
+ const result=estimated(pair,estimateFeed),e=result.estimate;
+ if(comparisonFixture)assert(e,'The benchmark fixture supports the estimate for '+pair);
+ if(!e)continue;
+ assert(!result.ready&&!result.short,'Estimate must stay separate from observed coverage: '+pair);
+ const ccy=pair.replace('CHF',''),native=rates[ccy];
+ const observed=ccy==='AUD'?aud:ccy==='NZD'&&reconciled.last_observation_date>=native.date?reconciled:null;
+ const observedDates=new Set(observed?observed.observations.map(r=>r.date):
+  native.history2.dates.filter((d,i)=>d<=native.date&&Number.isFinite(native.history2.values[i])));
+ const latestDates=[...new Set(prices.rows.filter(r=>r.Date<=liveAsOf&&r.Date<=prices.last_as_of&&
+  snbDates.has(r.Date)&&observedDates.has(r.Date)&&r.CHF>0&&r[ccy]>0).map(r=>r.Date))].sort();
+ assert.equal(e.observedCurrency,ccy);
+ assert.equal(e.end,latestDates.at(-1),pair+' must use the latest common fixing');
+ assert.equal(e.start,latestDates.at(-6),pair+' must use the sixth latest common fixing');
+ const direction=pair.startsWith('CHF')?-1:1;
+ assert(Math.abs(e.spreadBp-direction*(e.observed2Bp-e.chf2Bp))<1e-9);
+}
+if(comparisonFixture){
  const nzdEstimate=estimated('NZDCHF',estimateFeed).estimate;
  assert.match(nzdEstimate.observedSource,/RBNZ B2/);
  assert(!mod.snapshot(rates,prices,'NZDCHF',liveAsOf,comparisonDay,aud,chf,nzd,
