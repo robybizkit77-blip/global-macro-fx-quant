@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Admit CFTC catch-up after officially delayed Monday releases.
+"""Admit Friday CFTC collection and weekend or delayed-Monday recovery.
 
 Run within the existing two COT workflows. A schedule is merely a polling
 opportunity: the CFTC candidate builder remains the authoritative, fail-closed
@@ -13,6 +13,11 @@ import os
 from zoneinfo import ZoneInfo
 
 ROME = ZoneInfo("Europe/Rome")
+NEW_YORK = ZoneInfo("America/New_York")
+FRIDAY_SLOTS = {
+    "45 19 * * 5": -4,  # Friday 15:45 EDT
+    "45 20 * * 5": -5,  # Friday 15:45 EST
+}
 # UTC twin cron hours map to the same intended local Saturday retry hour.
 SATURDAY_SLOTS = {
     "0 22 * * 5": 2,  # Saturday 00:00 CEST
@@ -47,6 +52,17 @@ def plan(now: datetime, event: str, cron: str = "") -> dict:
         return base | {"should_run": True, "reason": "EXPLICIT_VALIDATION_OR_RECOVERY"}
     if event != "schedule":
         return base | {"reason": "UNRECOGNIZED_EVENT"}
+
+    if cron in FRIDAY_SLOTS:
+        issuer_clock = now.astimezone(NEW_YORK)
+        issuer_offset = int(issuer_clock.utcoffset().total_seconds() // 3600)
+        after_release = (
+            (issuer_clock.weekday() == 4 and issuer_clock.time() >= time(15, 30))
+            or (issuer_clock.weekday() == 5 and issuer_clock.time() < time(12))
+        )
+        if issuer_offset == FRIDAY_SLOTS[cron] and after_release:
+            return base | {"should_run": True, "reason": "FRIDAY_CFTC_RELEASE_CHECK"}
+        return base | {"reason": "FRIDAY_TWIN_OR_OUT_OF_WINDOW"}
 
     offset_hours = int(local.utcoffset().total_seconds() // 3600)
     if cron in SATURDAY_SLOTS:
