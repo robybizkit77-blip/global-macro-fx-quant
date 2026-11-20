@@ -307,7 +307,7 @@
       "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
     },
     "GBP": {
-      "as_of": "2026-11-18",
+      "as_of": "2026-11-19",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -315,25 +315,25 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -8.9,
-          "change_1w_bp": -3.9,
+          "change_1d_bp": 6.0,
+          "change_1w_bp": -3.5,
           "policy_comparison_temporally_aligned": true,
-          "policy_delta_bp": 86.8,
-          "rate": 4.8677
+          "policy_delta_bp": 92.8,
+          "rate": 4.9282
         },
         "3m": {
-          "change_1d_bp": -2.0,
-          "change_1w_bp": 2.4,
+          "change_1d_bp": 1.4,
+          "change_1w_bp": 2.1,
           "policy_comparison_temporally_aligned": true,
-          "policy_delta_bp": 31.9,
-          "rate": 4.3191
+          "policy_delta_bp": 33.3,
+          "rate": 4.3333
         },
         "6m": {
-          "change_1d_bp": -5.3,
-          "change_1w_bp": -1.1,
+          "change_1d_bp": 3.2,
+          "change_1w_bp": -0.1,
           "policy_comparison_temporally_aligned": true,
-          "policy_delta_bp": 59.9,
-          "rate": 4.5992
+          "policy_delta_bp": 63.2,
+          "rate": 4.6315
         }
       },
       "official_status": "ACTIVE",
