@@ -12,13 +12,17 @@ from pathlib import Path
 from validation.macro.v2_g8_observed_feature_bridge_v1 import ROOT
 
 LEDGER = ROOT / "validation/macro/fixtures/v3_gdp_q3_2026_official_web_updates_v1.json"
-SCHEMA = "GMFQ_MACRO_V3_GDP_Q3_2026_TWO_OFFICIAL_WEB_RELEASES_V1"
+SCHEMA = "GMFQ_MACRO_V3_GDP_Q3_2026_OFFICIAL_WEB_RELEASES_V1"
 PINNED = {
     "USD": ("2026Q3", "2026-10-29", 3.4, "PERCENT_SAAR_ANNUALIZED",
             "ADVANCE", "https://bea.gov/news/2026/gdp-advance-estimate-3rd-quarter-2026"),
     "EUR": ("2026Q3", "2026-10-30", 0.4, "PERCENT_QOQ_SA_CALENDAR",
             "PRELIMINARY_FLASH",
             "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-30102026-ap"),
+    "GBP": ("2026Q3", "2026-11-12", 0.7, "PERCENT_QOQ_SA",
+            "FIRST_QUARTERLY_ESTIMATE",
+            "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/"
+            "gdpfirstquarterlyestimateuk/julytoseptember2026"),
 }
 
 def observed_q3_updates(as_of: str, *, evidence=None) -> dict:
