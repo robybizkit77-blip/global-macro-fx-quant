@@ -521,7 +521,7 @@ function overview(){
    today:dayNow(),prices:get('currencyPrices'),pairs:get('pairs'),
    history:get('oisHistory')
   })||'');
- const desk=window.FXQuantHourlyDesk;
+ const desk=typeof window==='undefined'?null:window.FXQuantHourlyDesk;
  const hourlyFeed=get('hourlyDesk'),morning=get('morningDesk');
  const renderedHourly=desk?.render?.({feed:hourlyFeed,check:get('hourlyCheck'),risk:get('risk'),
   currencyPrices:get('currencyPrices'),esc,date,dayNow});
