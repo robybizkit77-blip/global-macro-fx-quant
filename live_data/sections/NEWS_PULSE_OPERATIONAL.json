@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-20",
-  "generated_at_utc": "2026-11-20T09:50:28.819499Z",
+  "generated_at_utc": "2026-11-20T12:12:27.110948Z",
   "items": [
     {
       "as_of": "2026-11-20",
@@ -17,6 +17,19 @@
       "source": "Statistics Bureau of Japan",
       "source_url": "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html",
       "title": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
+    },
+    {
+      "as_of": "2026-11-19",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 23879.20; confronto con chiusura 2026-11-18. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "HIGH",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-18",
+      "source": "Nasdaq, Inc. via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
+      "title": "Nasdaq Composite: -2.25% nella chiusura del 2026-11-19"
     },
     {
       "as_of": "2026-11-19",
@@ -100,6 +113,18 @@
     },
     {
       "as_of": "2026-11-19",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "EUR",
+      "confidence": "A",
+      "detail": "Fra 2026-11-18 e 2026-11-19; 2Y 3.125%, 10Y 3.442%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-18",
+      "source": "European Central Bank · AAA Svensson spot curve · 2026-11-19",
+      "title": "EUR: governativo 2Y +3.9 pb, 10Y +3.1 pb"
+    },
+    {
+      "as_of": "2026-11-19",
       "category": "FUTURES_IMPLIED_REPRICING",
       "ccy": "JPY",
       "confidence": "A",
@@ -172,19 +197,6 @@
     },
     {
       "as_of": "2026-11-18",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 24429.88; confronto con chiusura 2026-11-17. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-17",
-      "source": "Nasdaq, Inc. via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
-      "title": "Nasdaq Composite: +0.42% nella chiusura del 2026-11-18"
-    },
-    {
-      "as_of": "2026-11-18",
       "category": "MARKET_CREDIT_OAS",
       "ccy": "",
       "confidence": "B",
@@ -208,18 +220,6 @@
       "source": "ICE Data Indices via FRED",
       "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
       "title": "Credito IG OAS: +1.0 pb nella chiusura del 2026-11-18"
-    },
-    {
-      "as_of": "2026-11-18",
-      "category": "MARKET_GOVERNMENT_RATES",
-      "ccy": "EUR",
-      "confidence": "A",
-      "detail": "Fra 2026-11-17 e 2026-11-18; 2Y 3.086%, 10Y 3.410%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
-      "importance": "MEDIUM",
-      "quality": "FULL_CURRENT_OFFICIAL",
-      "reference_previous_date": "2026-11-17",
-      "source": "European Central Bank · AAA Svensson spot curve · 2026-11-18",
-      "title": "EUR: governativo 2Y -0.7 pb, 10Y -1.4 pb"
     },
     {
       "as_of": "2026-11-16",
@@ -254,7 +254,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-20T09:50:28.819499Z",
+  "last_checked_at_utc": "2026-11-20T12:12:27.110948Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -471,13 +471,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-18",
+            "date": "2026-11-19",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-18",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-19",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.085907912
+            "yield_2y_pct": 3.1250637519
           }
         },
         "source": "Banca centrale europea",
@@ -724,13 +724,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-18",
+            "date": "2026-11-19",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-18",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-19",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.71368072699646
+            "yield_2y_pct": 4.734728709320078
           }
         },
         "source": "Bank of England",
@@ -779,13 +779,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-18",
+            "date": "2026-11-19",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-18",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-19",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.71368072699646
+            "yield_2y_pct": 4.734728709320078
           }
         },
         "source": "Bank of England",
@@ -1073,13 +1073,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-18",
+            "date": "2026-11-19",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-18",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-19",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.085907912
+            "yield_2y_pct": 3.1250637519
           }
         },
         "source": "Banca centrale europea",
@@ -1171,9 +1171,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 4,
+        "accepted_items": 3,
         "ccy": "GBP",
-        "entries_rejected": 46,
+        "entries_rejected": 47,
         "feed_entries_seen": 50,
         "feed_url": "https://www.bankofengland.co.uk/rss/news",
         "source": "Bank of England",
