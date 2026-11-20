@@ -7,6 +7,7 @@ const BASE='../../website-v1/reports/';
 const ROOT='./reports/';
 const PUBLIC_API='https://api.github.com/repos/robybizkit77-blip/global-macro-fx-quant/contents/site/fx-quant-v2/next/reports?ref=main';
 const CROSS_ASSET_REVIEW='Global_Markets_Review_14_Novembre_2026_DARK_SLATE_V13_SOLO_SEZIONI.html';
+const CROSS_ASSET_V13=/^Weekly_Global_Macro_Strength_Cross_Asset_20\d{2}-\d{2}-\d{2}_DARK_SLATE_V13\.html$/;
 const REPORTS=Object.freeze([
  {type:'daily',date:'2026-11-16',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-16_V3_METODO_INTEGRATO_DEFINITIVO.html',desc:'Scenario Forex, catalizzatori macro e lettura di oro e petrolio.'},
  {type:'macro',date:'2026-11-06',title:'Weekly Global Macro Report',file:'Weekly_Global_Macro_Report_2026-11-06_COUNTRY_BOOK_NARRATIVO_V4_CORRETTA.html',desc:'Country Book: crescita, inflazione, lavoro, tassi, rischio e forza relativa delle valute.'},
@@ -57,7 +58,7 @@ function remoteReport(file){
  const desc=type==='cot'&&file!==canonical.file
   ?'Posizioni CFTC, flussi dei fondi e confronto con il cambio.'
   :canonical.desc;
- const title=file===CROSS_ASSET_REVIEW?'Global Markets Review':canonical.title;
+ const title=file===CROSS_ASSET_REVIEW||CROSS_ASSET_V13.test(file)?'Global Markets Review':canonical.title;
  return {...canonical,title,desc,date,file,publicUrl:ROOT+encodeURIComponent(file)};
 }
 function latestPerType(items){

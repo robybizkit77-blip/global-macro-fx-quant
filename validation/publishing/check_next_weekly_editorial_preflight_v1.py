@@ -38,6 +38,8 @@ PAIR = re.compile(
 PLACEHOLDER = re.compile(
     r"\blorem ipsum\b|\bTODO\s*:|\bTBD\b|"
     r"\[(?:inserire|add source|placeholder)[^\]]*\]", re.I)
+CROSS_ASSET_V13 = re.compile(r"Weekly_Global_Macro_Strength_Cross_Asset_20\d{2}-\d{2}-\d{2}_DARK_SLATE_V13\.html")
+REVIEW_SECTIONS = {"wallstreet", "mondo", "obbligazioni", "materie", "valute", "bitcoin", "prossima"}
 
 
 def body_text(html: str) -> str:
@@ -68,6 +70,10 @@ def check_edition(root: Path, category: str, candidate: Path,
         raise ValueError(f"UNEXPECTED_WEEKLY_FILENAME:{name}")
     if BLOCKED.search(name):
         raise ValueError(f"UNAPPROVED_WEEKLY_FILENAME:{name}")
+    recurring_review = CROSS_ASSET_V13.fullmatch(name) is not None
+    is_review = name == CROSS_ASSET_REVIEW or recurring_review
+    if recurring_review:
+        template_name = CROSS_ASSET_REVIEW
     day_str = parse_date(name)
     if day_str is None:
         raise ValueError(f"WEEKLY_DATE_INVALID:{name}")
@@ -94,10 +100,15 @@ def check_edition(root: Path, category: str, candidate: Path,
     if title_date not in title_text and day_str not in title_text:
         raise ValueError(f"WEEKLY_TITLE_REFERENCE_DATE_MISMATCH:{name}")
     text = body_text(html)
-    if name == CROSS_ASSET_REVIEW:
+    if is_review:
+        if "global markets review" not in title_text or not re.search(r"\bdark slate v13\b", title_text):
+            raise ValueError(f"WEEKLY_V13_TITLE_MISMATCH:{name}")
         friday_text = f"{reference_friday.day} {MONTHS_IT[reference_friday.month - 1]} {reference_friday.year}"
         if f"settimana chiusa venerdì {friday_text}" not in text.lower():
             raise ValueError(f"WEEKLY_FRIDAY_CUTOFF_MISSING:{name}")
+        sections = set(re.findall(r"""<section\b[^>]*\bid=["']([^"']+)["']""", html, re.I))
+        if not REVIEW_SECTIONS.issubset(sections) or len(re.findall(r"<figure\b", html, re.I)) != 9:
+            raise ValueError(f"WEEKLY_V13_STRUCTURE_MISMATCH:{name}")
     if PLACEHOLDER.search(text) or len(text) < 3400:
         raise ValueError(f"WEEKLY_UNFINISHED_EDITORIAL:{name}")
     # This is a *minimum attributable references* gate, NOT independent
