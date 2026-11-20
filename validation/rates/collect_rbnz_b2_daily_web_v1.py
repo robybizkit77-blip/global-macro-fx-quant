@@ -22,8 +22,7 @@ NZ = ZoneInfo("Pacific/Auckland")
 BOND_2 = "April 2029"
 BOND_10 = "April 2037"
 ROLL = "2026-10-30"
-# Page note published 2 November: 1Y Apr27 -> May28; 2Y May28 -> Apr29;
-# 10Y May36 -> Apr37. Revalidate if authority changes its benchmark again.
+USER_AGENT = "RBNZ-Automated-Agent/GlobalMacroFXQuant/B2Research"
 EXPECTED_ROLL_NOTE_DATE = dt.date(2026, 11, 2)
 ENGLISH = {
     "Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,
@@ -93,6 +92,25 @@ def validate_layout(rows: list[list[str]]) -> bool:
             return True
     return False
 
+def validate_benchmark_schedule(tables: list[list[list[str]]], text: str) -> None:
+    schedules = [table for table in tables if table[0] == ["Date Range", "Benchmark Bond"]]
+    if schedules:
+        for old, current in (("May 2028", BOND_2), ("May 2036", BOND_10)):
+            matches = [table for table in schedules if any(
+                len(row) == 2 and row[0].endswith("October 29, 2026") and row[1] == old
+                for row in table)]
+            must(len(matches) == 1 and len(matches[0][-1]) == 2 and
+                 matches[0][-1][0].lower().removeprefix("from ") == "30 october 2026" and
+                 matches[0][-1][1] == current,
+                 "current government bond schedule changed: " + current)
+        return
+    # Older releases retained the complete roll notice on the main page.
+    note = re.search(r"Changes to the 1, 2 and 10-year bond benchmarks\s+(\d{1,2}) "
+                     r"([A-Za-z]+) (\d{4})", text, re.I)
+    must(bool(note), "current official bond-roll notice or schedule missing")
+    note_date = dt.datetime.strptime(" ".join(note.groups()), "%d %B %Y").date()
+    must(note_date == EXPECTED_ROLL_NOTE_DATE, "new bond roll note requires review")
+
 def parse(html: str, *, now_nz: dt.datetime) -> dict:
     must(now_nz.tzinfo is not None, "aware NZ time required")
     now = now_nz.astimezone(NZ).date()
@@ -104,13 +122,7 @@ def parse(html: str, *, now_nz: dt.datetime) -> dict:
          "official government bond group missing")
     must(BOND_2.lower() in txt.lower() and BOND_10.lower() in txt.lower(),
          "current benchmark names not present")
-    # A later 'Changes to the ... benchmarks' note must be reviewed before
-    # continuing with the April-2029/2037 bond identifiers.
-    note=re.search(r"Changes to the 1, 2 and 10-year bond benchmarks\s+(\d{1,2}) "
-                   r"([A-Za-z]+) (\d{4})",txt,re.I)
-    must(bool(note), "current official bond-roll note missing")
-    note_date = dt.datetime.strptime(" ".join(note.groups()),"%d %B %Y").date()
-    must(note_date == EXPECTED_ROLL_NOTE_DATE, "new bond roll note requires review")
+    validate_benchmark_schedule(parser.tables, txt)
     published=re.search(r"Released:\s+(\d{1,2}) ([A-Za-z]+) (\d{4})",txt)
     must(bool(published), "official release date missing")
     release=dt.datetime.strptime(" ".join(published.groups()),"%d %B %Y").date()
@@ -157,7 +169,7 @@ def parse(html: str, *, now_nz: dt.datetime) -> dict:
         "release_date":release.isoformat(),
         "benchmark_roll_date":ROLL,
         "benchmark_2Y":BOND_2, "benchmark_10Y":BOND_10,
-        "benchmark_note_date":note_date.isoformat(),
+        "benchmark_note_date":EXPECTED_ROLL_NOTE_DATE.isoformat(),
         "post_roll_table_rows":[
             {"date":day.isoformat(),"2Y":y2,"10Y":y10}
             for day,y2,y10 in post[-12:]
@@ -171,7 +183,7 @@ def parse(html: str, *, now_nz: dt.datetime) -> dict:
 
 def fetch() -> str:
     request=Request(URL,headers={
-        "User-Agent":"GlobalMacroFXQuant-RBNZ-B2-Research/1.0 (contact via project GitHub)",
+        "User-Agent":USER_AGENT,
         "Accept":"text/html,application/xhtml+xml",
         "Cache-Control":"no-cache",
     })

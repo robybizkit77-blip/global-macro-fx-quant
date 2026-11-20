@@ -13,6 +13,7 @@ const SOURCES={
  audDailyResearch:'../aud-rba-f2-history-research.json',
  chfResearch:'../chf-snb-paired-history.json',
  nzdPostroll:'../nzd-b2-postroll-web-research.json',
+ nzdReconciled:'../nzd-rbnz-b2-reconciled-research.json',
  nzdBenchmarkResearch:'../chf-nzd-benchmark-research.json',
  nzdAsxGovernmentAnchor:'../nzd-asx-government-anchor-v1.json',
  chfSpot:'../../../live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json',
@@ -191,7 +192,7 @@ function pairCoverage(k){
  const p=typeof window!=='undefined'&&window.FXQuantDecisionJourney?.profile?
   window.FXQuantDecisionJourney.profile(k,model,prices,today):null;
  const y=typeof window!=='undefined'&&window.FXQuantRatesBridge?.snapshot?
-  window.FXQuantRatesBridge.snapshot(rates,prices,k,model?.price_asof,today,get('audDailyResearch'),get('chfResearch'),get('nzdPostroll')):null;
+  window.FXQuantRatesBridge.snapshot(rates,prices,k,model?.price_asof,today,get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'),get('nzdReconciled')):null;
  return {price:!!(p?.fresh&&p.closes?.length>=22),reference:!!p?.watch?.ready,
   rateShort:!!(y?.ready&&y.short),rateMedium:!!(y?.ready&&y.medium),rateResearch:!!(y?.ready&&y.researchOnly)};
 }

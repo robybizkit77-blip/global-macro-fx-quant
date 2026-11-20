@@ -173,7 +173,7 @@
     typeof require==='function'?require('./fx-rates-bridge.js'):null;
   function rateBrief(key){
    return rateBridge?.snapshot&&rateBridge?.brief?
-    rateBridge.brief(rateBridge.snapshot(get('rates'),history,key,market?.price_asof,now,get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'))):
+    rateBridge.brief(rateBridge.snapshot(get('rates'),history,key,market?.price_asof,now,get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'),get('nzdReconciled'))):
     {ready:false,asof:null,tone:'unavailable',label:'2Y governativi non verificabili'};
   }
   const data=snapshot(market,history,now);
@@ -233,7 +233,7 @@
        'Non disponibile';
    const rateSnapshot=rateBridge?.snapshot?
      rateBridge.snapshot(get('rates'),history,item.key,market?.price_asof,now,
-       get('audDailyResearch'),get('chfResearch'),get('nzdPostroll')):null;
+       get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'),get('nzdReconciled')):null;
    const rateView=rateBridge?.brief?rateBridge.brief(rateSnapshot):rateBrief(item.key);
    const deskStory=typeof window!=='undefined'&&window.FXQuantPairDesk?.render?
      window.FXQuantPairDesk.render({

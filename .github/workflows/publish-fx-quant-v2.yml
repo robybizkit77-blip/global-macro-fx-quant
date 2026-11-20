@@ -296,7 +296,8 @@ jobs:
         if: >-
           github.event_name == 'workflow_run' &&
           (github.event.workflow_run.name == 'FX Quant Next Estimated Thesis History' ||
-           github.event.workflow_run.name == 'FX Quant V2 AUD Official RBA F2 Research Refresh')
+           github.event.workflow_run.name == 'FX Quant V2 AUD Official RBA F2 Research Refresh' ||
+           github.event.workflow_run.name == 'FX Quant V2 CHF NZD Same-Basis Research Refresh')
         env:
           GH_TOKEN: ${{ github.token }}
           PUBLISH_NEEDED: ${{ steps.v2-tree.outputs.publish_needed }}
@@ -324,6 +325,15 @@ jobs:
                   "site/fx-quant-v2/aud-rba-f2-history-research.json",
                   "site/fx-quant-v2/aud-rba-f2-research.json",
                   "site/fx-quant-v2/next/fx-rates-bridge.js",
+              )
+          elif os.environ["SOURCE_WORKFLOW"] == "FX Quant V2 CHF NZD Same-Basis Research Refresh":
+              label = "NZD_B2_PUBLIC_HTTP"
+              paths = (
+                  "site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json",
+                  "site/fx-quant-v2/next/fx-rates-bridge.js",
+                  "site/fx-quant-v2/next/decision-journey.js",
+                  "site/fx-quant-v2/next/app.js",
+                  "site/fx-quant-v2/next/index.html",
               )
           else:
               label = "NEXT_THESIS_HISTORY_PUBLIC_HTTP"
