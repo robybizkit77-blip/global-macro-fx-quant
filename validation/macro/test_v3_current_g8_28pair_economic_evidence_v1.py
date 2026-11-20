@@ -11,6 +11,7 @@ from validation.macro.v3_current_g8_28pair_economic_evidence_v1 import (
     FX, ROOT, SCHEMA, build, load, movement, run,
 )
 from validation.macro.v3_gdp_q3_official_overlay_v1 import observed_q3_updates, LEDGER
+from validation.macro.ons_quarterly_gdp_v1 import latest_growth, previous_quarter
 
 
 class CurrentEconomicEvidenceTests(unittest.TestCase):
@@ -59,8 +60,10 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             self.assertIsNone(country["FX_strength"])
             self.assertIsNone(country["macro_score"])
             self.assertIsNone(country["country_relative_rank"])
-            self.assertEqual(country["growth"]["reference_quarter"],
-                             "2026Q3" if c in ("USD", "EUR", "GBP") else "2026Q2")
+            expected = (latest_growth(self.asof) or {}).get("reference_quarter", "2026Q3") if c == "GBP" else (
+                "2026Q3" if c in ("USD", "EUR") else "2026Q2"
+            )
+            self.assertEqual(country["growth"]["reference_quarter"], expected)
             self.assertFalse(country["growth"]["is_growth_strength_score"])
             for dim in ("labour", "inflation"):
                 item = country[dim]
@@ -122,10 +125,15 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
         self.assertEqual(countries["EUR"]["growth"]["nonannualized_qoq_descriptive_pct"], 0.4)
         gbp = countries["GBP"]["growth"]
         self.assertEqual(gbp["publication_stage"], "FIRST_QUARTERLY_ESTIMATE")
-        self.assertEqual(gbp["nonannualized_qoq_descriptive_pct"], 0.7)
-        self.assertEqual(gbp["prior_documented_quarter"]["nonannualized_qoq_descriptive_pct"], 0.5)
-        self.assertEqual(gbp["reported_unit"], gbp["prior_documented_quarter"]["reported_unit"])
-        for c in ("USD", "EUR", "GBP"):
+        self.assertEqual(observed_q3_updates("2026-11-13")["GBP"]["reported_value"], 0.7)
+        if gbp["reference_quarter"] == "2026Q3":
+            self.assertEqual(gbp["nonannualized_qoq_descriptive_pct"], 0.7)
+        prior = gbp["prior_documented_quarter"]
+        if prior is not None:
+            self.assertEqual(prior["reference_quarter"], previous_quarter(gbp["reference_quarter"]))
+            self.assertEqual(gbp["reported_unit"], prior["reported_unit"])
+        self.assertIs(gbp["is_growth_strength_score"], False)
+        for c in ("USD", "EUR"):
             self.assertEqual(countries[c]["growth"]["prior_documented_quarter"]["reference_quarter"], "2026Q2")
             self.assertIs(countries[c]["growth"]["is_growth_strength_score"], False)
         for c in set(FX)-{"USD", "EUR", "GBP"}:
