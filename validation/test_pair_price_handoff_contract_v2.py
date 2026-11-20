@@ -58,8 +58,9 @@ class HandoffTests(unittest.TestCase):
         self.assertIn("queue: max", flow)
         self.assertIn("cancel-in-progress: false", flow)
         self.assertIn("pair-validation-pr-{0}", flow)
-        self.assertIn("Main moved since validation. Safe retry required.", flow)
-        self.assertIn("Main moved during Pair persistence. Safe retry required.", flow)
+        self.assertIn("from validation.macro.persist_calendar_news_safe_v12 import persist", flow)
+        self.assertIn("protected=('live_data/sections/D.json', 'live_data/sections/ECB_G8_PRICE_HISTORY.json'", flow)
+        self.assertIn("fetch-depth: 0", flow)
         self.assertIn("steps.handoff.outputs.status == 'PRICE_CONTEXT_UPDATE'", flow)
         self.assertEqual(flow.count("    - cron:"), 1)
 

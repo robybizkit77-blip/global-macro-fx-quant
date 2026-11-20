@@ -61,7 +61,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
-          fetch-depth: 2
+          fetch-depth: 0
           persist-credentials: true
       - uses: actions/setup-python@v5
         with:
@@ -107,7 +107,7 @@ jobs:
           print('- Price: '+str(x.get('candidate_price_asof')))
           print('- No new entries, stops or structural Macro scores')
           PY
-      - name: Persist validated Price-only Pair context on main
+      - name: Persist validated Price-only Pair context with scoped retry
         if: >-
           github.event_name != 'pull_request' &&
           steps.handoff.outputs.status == 'PRICE_CONTEXT_UPDATE'
@@ -115,25 +115,27 @@ jobs:
         run: |
           set -euo pipefail
           BASE_SHA="$(git rev-parse HEAD)"
-          test "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$BASE_SHA" || {
-            echo 'Main moved since validation. Safe retry required.' >&2; exit 1;
-          }
           cp /tmp/pair-setup/PAIR_SETUP_OPERATIONAL_VIEW.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
           node validation/pair_thesis/update_history_v1.cjs \
             /tmp/pair-setup/PAIR_SETUP_OPERATIONAL_VIEW.json \
             site/fx-quant-v2/next/pair-thesis-history.json \
             /tmp/pair-setup/pair-thesis-history.json "$BASE_SHA"
           cp /tmp/pair-setup/pair-thesis-history.json site/fx-quant-v2/next/pair-thesis-history.json
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json site/fx-quant-v2/next/pair-thesis-history.json
-          git diff --cached --quiet && { echo 'No changed canonical Pair dataset'; exit 0; }
-          git commit -m 'Refresh Pair Price context from ECB (Macro baseline frozen)'
-          test "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$BASE_SHA" || {
-            echo 'Main moved during Pair persistence. Safe retry required.' >&2; exit 1;
-          }
-          git push origin HEAD:main
-          echo PAIR_PRICE_HANDOFF_MAIN_PERSISTED
+          python3 - <<'PY' | tee /tmp/pair-setup/persist.json
+          import json
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+
+          print(json.dumps(persist(
+              managed=('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
+                       'site/fx-quant-v2/next/pair-thesis-history.json'),
+              protected=('live_data/sections/D.json', 'live_data/sections/ECB_G8_PRICE_HISTORY.json',
+                         'index.html', 'payload', 'dashboard', 'site/website-v1/price-runtime.js',
+                         'validation/export_pair_setup_operational_view.mjs',
+                         'validation/pair_price_handoff_contract_v2.py',
+                         'validation/pair_thesis/update_history_v1.cjs'),
+              commit_message='Refresh Pair Price context from ECB (Macro baseline frozen)',
+          )))
+          PY
       - name: Verify no write for PR or blocked Macro rebase
         if: >-
           github.event_name == 'pull_request' ||

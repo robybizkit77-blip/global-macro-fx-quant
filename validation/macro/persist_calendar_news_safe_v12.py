@@ -49,20 +49,23 @@ def changed_files(repo: Path, *args: str):
     return set(filter(None, r.stdout.splitlines()))
 
 
-def persist(repo: Path = ROOT, *, managed=MANAGED, max_attempts=MAX_ATTEMPTS,
+def persist(repo: Path = ROOT, *, managed=MANAGED, protected=(), max_attempts=MAX_ATTEMPTS,
             commit_message="Refresh official release ledgers and operational Calendar/News"):
     repo = Path(repo).resolve()
     managed = tuple(managed)
     if not managed or any(not x or x.startswith("/") or ".." in Path(x).parts
                           for x in managed) or len(managed) != len(set(managed)):
         raise ValueError("invalid managed-file contract")
+    protected = set(protected)
+    if any(not x or x.startswith("/") or ".." in Path(x).parts for x in protected):
+        raise ValueError("invalid protected-input path")
     if max_attempts < 1 or max_attempts > 10:
         raise ValueError("invalid retry budget")
     if (not isinstance(commit_message, str) or not commit_message.strip()
             or chr(10) in commit_message or chr(13) in commit_message):
         raise ValueError("invalid commit message")
     before = git(repo, "rev-parse", "HEAD").stdout.strip()
-    dirty = changed_files(repo)
+    dirty = changed_files(repo) | changed_files(repo, "--cached")
     if not dirty:
         return {"status": "NO_TRACKED_CHANGES", "attempts": 0}
     unexpected = dirty - set(managed)
@@ -87,14 +90,20 @@ def persist(repo: Path = ROOT, *, managed=MANAGED, max_attempts=MAX_ATTEMPTS,
         if git(repo, "merge-base", "--is-ancestor", before, "origin/main",
                check=False).returncode != 0:
             raise RuntimeError("REMOTE_MAIN_DIVERGED_FROM_CHECKOUT_NO_REWRITE")
-        # A remote change only conflicts if it touches a file this runner
-        # is writing. Other managed files can move safely without overwrite.
+        # A concurrent write to any candidate output or explicitly declared
+        # upstream input invalidates the original validation.
         overlap = changed_files(
             repo, before, "origin/main", "--", *sorted(dirty))
         if overlap:
             raise RuntimeError(
                 "REMOTE_MANAGED_FILES_MOVED_FAIL_CLOSED: "
                 + ", ".join(sorted(overlap)))
+        if protected:
+            changed_inputs = changed_files(repo, before, "origin/main", "--", *sorted(protected))
+            if changed_inputs:
+                raise RuntimeError(
+                    "REMOTE_PROTECTED_INPUTS_MOVED_FAIL_CLOSED: "
+                    + ", ".join(sorted(changed_inputs)))
         latest = git(repo, "rev-parse", "origin/main").stdout.strip()
         if latest == before:
             raise RuntimeError(
