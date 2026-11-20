@@ -65,6 +65,16 @@ class OnsQuarterlyGDPTests(unittest.TestCase):
         self.assertEqual(result["reported_value"], 0)
         self.assertIsNone(result["prior_qoq"])
 
+    def test_prior_from_ons_wording_in_previous_first_estimates(self):
+        headline = HEADLINE + "increased by 0.1% in Quarter 4 (Oct to Dec) 2025"
+        q4 = html(Q4.replace("2026", "2025"), "12 February 2026",
+                  headline + ", following a 0.1% increase in the previous quarter.")
+        self.assertEqual(parse_bulletin(q4, TODAY.date())["prior_qoq"], 0.1)
+        q1 = html("GDP first quarterly estimate, UK: January to March 2026", "14 May 2026",
+                  HEADLINE + "increased by 0.6% in Quarter 1 (Jan to Mar) 2026, "
+                  "following revised growth of 0.2% in Quarter 4 (Oct to Dec) 2025.")
+        self.assertEqual(parse_bulletin(q1, TODAY.date())["prior_qoq"], 0.2)
+
     def test_rollover_and_same_edition_revision(self):
         self.assertEqual(self.run_capture()["status"], "ARCHIVED")
         original = self.archive.read_bytes()

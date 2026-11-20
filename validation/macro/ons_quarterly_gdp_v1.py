@@ -88,16 +88,21 @@ def parse_bulletin(raw, today):
         raise Pending("ONS_REAL_GDP_QOQ_NOT_SINGLE_EXACT_MATCH")
     hit = hits[0]
     value = signed_amount(hit.group("verb"), hit.group("rate")) if hit.group("verb") else 0.0
+    directions = r"growth|increase|fall|decrease|contraction|decline"
+    rate = r"\d+(?:\.\d+)?"
     prior = re.match(
-        r"\s*,?\s*following\s+(?:(?:a\s+)?(?P<sign>growth|increase|fall|decrease|contraction|decline)\s+of\s+"
-        r"(?P<rate>\d+(?:\.\d+)?)\s*%|(?P<flat>no\s+growth))\s+in\s+" +
-        reference(previous_quarter(quarter)), lead.group(1)[hit.end():], re.I,
+        rf"\s*,?\s*following\s+(?:an?\s+)?(?:(?:un)?revised\s+)?"
+        rf"(?:(?P<sign>{directions})\s+of\s+(?P<rate>{rate})\s*%|"
+        rf"(?P<leading_rate>{rate})\s*%\s+(?P<trailing_sign>{directions})|no\s+growth)"
+        rf"\s+in\s+(?:{reference(previous_quarter(quarter))}|the previous quarter\b)",
+        lead.group(1)[hit.end():], re.I,
     )
     prior_value = None
     if prior:
-        sign = -1 if prior.group("sign") and prior.group("sign").lower() in (
-            "fall", "decrease", "contraction", "decline") else 1
-        prior_value = sign * signed_amount("increased", prior.group("rate")) if prior.group("rate") else 0.0
+        direction = prior.group("sign") or prior.group("trailing_sign") or "growth"
+        amount = prior.group("rate") or prior.group("leading_rate")
+        sign = -1 if direction.lower() in ("fall", "decrease", "contraction", "decline") else 1
+        prior_value = sign * signed_amount("increased", amount) if amount else 0.0
     return {"quarter": quarter, "publisher_release_day": released.isoformat(),
             "reported_value": value, "prior_qoq": prior_value, "source_url": edition_url(quarter)}
 
