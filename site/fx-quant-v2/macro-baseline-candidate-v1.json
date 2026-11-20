@@ -82,12 +82,12 @@
     },
     "GBP": {
       "growth_qoq_pct": {
-        "value": 0.5,
+        "value": 0.7,
         "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
-        "period": "2026Q2",
-        "publisher_release_day": "2026-09-30",
-        "gdp_acceleration_pp": null,
-        "acceleration_quality": "UNAVAILABLE_NO_MATCHED_PRIOR",
+        "period": "2026Q3",
+        "publisher_release_day": "2026-11-12",
+        "gdp_acceleration_pp": 0.2,
+        "acceleration_quality": "TWO_CONTIGUOUS_QUARTERS",
         "level_does_not_measure_relative_fx_strength": true
       },
       "inflation_change_pp": {
@@ -582,9 +582,9 @@
           "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "growth_acceleration_pp": {
-          "same_quarter_and_historical_depth": false,
-          "delta_base_minus_quote_pp": null,
-          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+          "same_quarter_and_historical_depth": true,
+          "delta_base_minus_quote_pp": -0.4,
+          "reason": "WITHIN_COUNTRY_ACCELERATIONS_SAME_QUARTER"
         }
       },
       "macro_fx_signal": null,
@@ -807,9 +807,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
-          "same_quarter_and_historical_depth": false,
-          "delta_base_minus_quote_pp": null,
-          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+          "same_quarter_and_historical_depth": true,
+          "delta_base_minus_quote_pp": -0.266464,
+          "reason": "WITHIN_COUNTRY_ACCELERATIONS_SAME_QUARTER"
         }
       },
       "macro_fx_signal": null,
@@ -997,8 +997,8 @@
     "currencies": 8,
     "features": 24,
     "pairs": 28,
-    "gdp_accelerations_calculable": 2,
-    "pair_gdp_acceleration_contrasts": 1,
+    "gdp_accelerations_calculable": 3,
+    "pair_gdp_acceleration_contrasts": 3,
     "estimated_macro_scores": 0,
     "trading_signals_generated": 0
   },
@@ -1013,5 +1013,5 @@
   "eligible_for_backtests": false,
   "eligible_for_automatic_core_rebase": false,
   "canonical_fx_core_untouched": true,
-  "source_content_sha256": "e78d92337bc205a6c44a5545ba9cf5970735599082e4691697b528ce01641564"
+  "source_content_sha256": "7ca7d7574bc7288b343d51e3ac389fedca5a3473f4539e588931067ed44c8394"
 }
