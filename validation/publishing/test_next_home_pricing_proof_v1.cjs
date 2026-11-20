@@ -54,7 +54,7 @@ const html=render(args);
 assert(html.includes('id="home-pricing-proof"'));
 assert.equal((html.match(/class="home-pricing-proof-card"/g)||[]).length,2);
 assert(html.includes('DALLE ASPETTATIVE AI CAMBI'));
-assert(html.includes('non per attrattività di trading'));
+assert(html.includes('Gli esempi sono retrospettivi, non una graduatoria di opportunità'));
 assert(html.includes('non la prova che i tassi abbiano causato'));
 assert(html.includes('rates-pricing-history-v1.json'));
 assert(html.includes('ECB_G8_PRICE_HISTORY.json'));
@@ -177,6 +177,21 @@ const staleHtml=render({...weekendArgs,today:'2026-11-19'});
 assert(staleHtml.includes('data-home-pricing-freshness="ARCHIVIO_NON_RECENTE"'));
 assert(staleHtml.includes('Questa verifica non è recente'));
 assert(staleHtml.includes('Lettura soltanto storica'));
+assert(staleHtml.includes('<details class="home-pricing-proof-sources" data-home-pricing-archive>'),
+ 'Older comparisons belong in a closed historical disclosure');
+const mixedHistory=structuredClone(liveHistory);
+mixedHistory.currencies.USD.tenors['6m']=mixedHistory.currencies.USD.tenors['6m']
+ .filter(point=>point.date<='2026-11-17');
+const mixedDate={...liveArgs,history:mixedHistory,today:'2026-11-20'};
+const mixedHtml=render(mixedDate);
+const archiveStart=mixedHtml.indexOf('data-home-pricing-archive');
+assert(archiveStart>0,'Earlier USD comparison should be disclosed as historical');
+assert(mixedHtml.indexOf('data-home-pricing-to="2026-11-19"')<archiveStart,
+ 'The latest comparable fixing must appear in the visible grid');
+assert(mixedHtml.slice(archiveStart).includes('data-home-pricing-to="2026-11-17"'),
+ 'The old snapshot stays accessible as evidence');
+assert.match(mixedHtml,/20 sedute BCE<\/strong><span>Riferimento \d{2}\/10\/2026 · fine \d{2}\/11\/2026/,
+ 'October window starts are explicitly separated from the final date');
 const weekendHtml=render(weekendArgs);
 assert(weekendHtml.includes('data-home-pricing-freshness="CONFRONTO_STORICO_DATATO"'));
 assert(weekendHtml.includes('fixing BCE 13/11/2026'));
@@ -198,8 +213,8 @@ assert(!early.includes('data-home-pricing-to="2026-11-12"'),
  'Historical evidence must respect requested as-of, not look ahead');
 const source=read(site+'app.js'),index=read(site+'index.html');
 assert(index.indexOf('pair-monetary-bridge-v1.js?v=2')<
- index.indexOf('home-pricing-proof-v1.js?v=6')&&
- index.indexOf('home-pricing-proof-v1.js?v=6')<
+ index.indexOf('home-pricing-proof-v1.js?v=7')&&
+ index.indexOf('home-pricing-proof-v1.js?v=7')<
  index.search(/src="\.\/app\.js\?v=[\w.-]+" defer/),
  'Home module must load after monetary archive validators and before App');
 assert(index.includes('home-pricing-proof-v1.css?v=4'));
