@@ -188,8 +188,7 @@ def build(observed, heat, legacy, setup, *, as_of):
             "not_a_trade_or_policy_signal": True,
         }
         if c in growth_updates:
-            # Archived editions can supply both quarters. Static releases
-            # retain the prior issuer statement.
+            # An update can supply its own comparable prior issuer statement.
             previous = countries[c]["growth"]
             countries[c]["growth"] = {
                 "prior_documented_quarter": previous, **growth_updates[c],

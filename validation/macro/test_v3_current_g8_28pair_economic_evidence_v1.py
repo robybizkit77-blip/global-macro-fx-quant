@@ -63,7 +63,7 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             self.assertIsNone(country["macro_score"])
             self.assertIsNone(country["country_relative_rank"])
             expected = (latest_growth(self.asof) or {}).get("reference_quarter", "2026Q3") if c == "GBP" else (
-                "2026Q3" if c in ("USD", "EUR") else "2026Q2"
+                "2026Q3" if c in ("USD", "EUR", "CHF") else "2026Q2"
             )
             if c == "JPY" and self.jp_growth:
                 expected = self.jp_growth["reference_quarter"]
@@ -116,13 +116,26 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
 
     def test_q3_latest_real_official_releases_no_fictional_g8_growth(self):
         import math
-        self.assertEqual(self.result["summary"]["GDP_later_quarter_official_releases"], 3 + bool(self.jp_growth))
+        self.assertEqual(self.result["summary"]["GDP_later_quarter_official_releases"], 4 + bool(self.jp_growth))
         countries = self.result["country_evidence"]
         self.assertEqual(set(observed_q3_updates("2026-10-29")), set())
         self.assertEqual(set(observed_q3_updates("2026-10-30")), {"USD"})
         self.assertEqual(set(observed_q3_updates("2026-10-31")), {"USD", "EUR"})
         self.assertEqual(set(observed_q3_updates("2026-11-12")), {"USD", "EUR"})
         self.assertEqual(set(observed_q3_updates("2026-11-13")), {"USD", "EUR", "GBP"})
+        self.assertNotIn("CHF", observed_q3_updates("2026-11-16"))
+        chf = countries["CHF"]["growth"]
+        self.assertEqual(chf, observed_q3_updates("2026-11-17")["CHF"])
+        self.assertEqual(chf["nonannualized_qoq_descriptive_pct"], 0.2)
+        self.assertEqual(chf["publisher_release_day"], "2026-11-16")
+        self.assertEqual(chf["publication_stage"], "PRELIMINARY_FLASH")
+        self.assertTrue(chf["comparison_uses_distinct_publisher_editions"])
+        chf_prior = chf["prior_documented_quarter"]
+        self.assertEqual(chf_prior["reference_quarter"], "2026Q2")
+        self.assertEqual(chf_prior["publisher_release_day"], "2026-09-03")
+        self.assertEqual(chf_prior["nonannualized_qoq_descriptive_pct"], 1.5)
+        self.assertEqual(chf_prior["reported_unit"], chf["reported_unit"])
+        self.assertNotEqual(chf_prior["publisher_source"], chf["publisher_source"])
         self.assertTrue(math.isclose(
             countries["USD"]["growth"]["nonannualized_qoq_descriptive_pct"],
             100*((1+3.4/100)**.25-1), abs_tol=1e-6))
@@ -145,18 +158,20 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             self.assertEqual(jpy, self.jp_growth)
             self.assertTrue(jpy["prior_value_from_same_esri_edition"])
             self.assertFalse(jpy["is_growth_strength_score"])
-        for c in set(FX)-{"USD", "EUR", "GBP", "JPY"}:
+        for c in set(FX)-{"USD", "EUR", "GBP", "JPY", "CHF"}:
             self.assertNotIn("prior_documented_quarter", countries[c]["growth"])
         for pair, row in self.result["pair_context"].items():
             for c in (row["base"], row["quote"]):
                 self.assertEqual(row["growth_periods"][c], countries[c]["growth"]["reference_quarter"])
             self.assertIsNone(row["pair_trade_bias"])
-        events = json.loads(LEDGER.read_text())["events"]
         for change in (
             lambda d: d["events"][0].update(reported_value=6.5),
             lambda d: d["events"][1].update(source_url="https://example.org/"),
             lambda d: d["events"][0].update(publisher_release_day="2026-10-20"),
             lambda d: d["events"][2].update(reported_unit="PERCENT_QOQ_UNADJUSTED"),
+            lambda d: d["events"][3]["prior_documented_quarter"].update(
+                reported_unit="PERCENT_QOQ_SA_CALENDAR"),
+            lambda d: d["events"][3].update(methodology_url="https://example.org/"),
         ):
             ledger = json.loads(LEDGER.read_text())
             change(ledger)
