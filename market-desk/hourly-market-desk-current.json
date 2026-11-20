@@ -1,25 +1,25 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-20T15:31:27.267356Z",
-  "edition_time_rome": "2026-11-20 16:31",
-  "material_digest": "962d03b4260f801ead76f4148730eee6765dcca62f0992c4fd32306c54df56db",
+  "generated_at_utc": "2026-11-20T17:02:58.948641Z",
+  "edition_time_rome": "2026-11-20 18:02",
+  "material_digest": "4d6cf2bf4778264701f9bb211290fd1d8ea95555fe827f725540daabfaf49af4",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
-  "headline": "Sono usciti i dati sui prezzi in Giappone",
-  "lead": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno e il premio sul debito più rischioso è salito.",
+  "headline": "Dollaro misto",
+  "lead": "Sono usciti i dati sui prezzi in Giappone. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno e il premio sul debito più rischioso è salito.",
   "news": [
     {
       "headline": "Dollaro misto",
-      "analysis": "Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. La prossima verifica è capire se il movimento si estende agli altri cambi.",
+      "analysis": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. La prossima verifica è capire se il movimento si estende agli altri cambi.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-19",
-      "event_date": "2026-11-19",
+      "published_date": "2026-11-20",
+      "event_date": "2026-11-20",
       "market_area": "FOREX",
       "sources": [
         "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
       ],
-      "evidence": "Al fixing BCE del 19 novembre, EUR/USD ha segnato +0,22% e USD/JPY +0,35%."
+      "evidence": "Al fixing BCE del 20 novembre, EUR/USD ha segnato −0,02% e USD/JPY −0,83%."
     },
     {
       "headline": "Sono usciti i dati sui prezzi in Giappone",
@@ -85,7 +85,7 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Sono usciti i dati sui prezzi in Giappone. Il 19 novembre il dollaro ha ceduto contro l’euro e guadagnato contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 19 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
+  "desk_judgment": "Sono usciti i dati sui prezzi in Giappone. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, il Nasdaq Composite ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 19 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
   "fx_implications": "Da seguire se euro e yen si muovono nella stessa direzione contro il dollaro.",
   "what_changed": "Nella seduta del 19 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
@@ -105,7 +105,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-20T15:31:27.267356Z",
+      "rss_checked_at_utc": "2026-11-20T17:02:58.948641Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -113,6 +113,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-20T15:31:27.267356Z",
+      "headline": "Sono usciti i dati sui prezzi in Giappone",
+      "material_digest": "962d03b4260f801ead76f4148730eee6765dcca62f0992c4fd32306c54df56db"
+    },
     {
       "generated_at_utc": "2026-11-20T15:26:56.330892Z",
       "headline": "Sono usciti i dati sui prezzi in Giappone",
@@ -227,11 +232,6 @@
       "generated_at_utc": "2026-11-16T15:06:27.926490Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "3942a44620830fc632d6841a4b0b05b89d57d9d91e0b2b33eeb6ef12f2121294"
-    },
-    {
-      "generated_at_utc": "2026-11-16T14:47:50.713936Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "42a355de5ee20864ca6edb32cf5d28747f5d3811c620c539735459c29e04d303"
     }
   ]
 }
