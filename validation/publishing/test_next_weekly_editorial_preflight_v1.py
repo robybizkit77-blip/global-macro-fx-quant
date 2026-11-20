@@ -105,6 +105,31 @@ class SundayEditorialPreflight(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "WEEKLY_FRIDAY_CUTOFF_MISSING"):
             check_edition(self.root, "cross", bad, date(2026, 11, 14))
 
+    def test_recurring_review_requires_the_correct_title_and_approved_structure(self):
+        original = (ROOT / DIRECTORY / CROSS_ASSET_REVIEW).read_text(encoding="utf-8")
+        (self.root / DIRECTORY / CROSS_ASSET_REVIEW).write_text(original, encoding="utf-8")
+        candidate = self.root / DIRECTORY / "Weekly_Global_Macro_Strength_Cross_Asset_2026-11-20_DARK_SLATE_V13.html"
+        content = original.replace("14 novembre 2026", "20 novembre 2026").replace(
+            "settimana chiusa venerdì 13 novembre 2026", "settimana chiusa venerdì 20 novembre 2026")
+        candidate.write_text(content, encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "REPORT_DATE_ONLY_REPRINT"):
+            check_edition(self.root, "cross", candidate, date(2026, 11, 22))
+        # A mock update is deliberately distinct from a date-only copy of the model.
+        content = content.replace("</body>", "<p>" + "Fixture con nuova analisi. " * 150 + "</p></body>")
+        for html, expected in (
+            (content.replace("DARK SLATE V13", "DARK SLATE V11", 1), "WEEKLY_V13_TITLE_MISMATCH"),
+            (content.replace('<figure', '<div', 1), "WEEKLY_V13_STRUCTURE_MISMATCH"),
+            (content, None),
+        ):
+            candidate.write_text(html, encoding="utf-8")
+            if expected:
+                with self.assertRaisesRegex(ValueError, expected):
+                    check_edition(self.root, "cross", candidate, date(2026, 11, 22))
+            else:
+                result = check_edition(self.root, "cross", candidate, date(2026, 11, 22))
+                self.assertEqual(result["reference_friday"], "2026-11-20")
+                self.assertEqual(result["status"], "STRUCTURAL_EDITORIAL_PREFLIGHT_PASS")
+
     def test_unapproved_draft_is_rejected_before_publication(self):
         p = self.candidate("bank")
         draft = p.with_name(p.name.replace(".html", "_PROVA.html"))

@@ -13,7 +13,7 @@ new vm.Script(src,{filename:'research-library.js'});
 const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
 assert.match(index,/research-library\.css\?v=1/);
-assert.match(index,/research-library\.js\?v=15/);
+assert.match(index,/research-library\.js\?v=16/);
 assert.match(index,/11 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
@@ -60,10 +60,14 @@ assert.equal(L.filterReports('all','inesistente').length,0);
 assert.equal(L.filterReports()[0].date,'2026-11-16');
 assert.equal(L.reportDate('COT_FX_G8_03_NOV_2026_V10.html'),'2026-11-03');
 const approvedReview='Global_Markets_Review_14_Novembre_2026_DARK_SLATE_V13_SOLO_SEZIONI.html';
+const recurringReview='Weekly_Global_Macro_Strength_Cross_Asset_2026-11-20_DARK_SLATE_V13.html';
 const weeklyIndex=JSON.parse(read('site/fx-quant-v2/next/reports/weekly-latest.json'));
 assert.deepEqual(weeklyIndex.files.filter(file=>L.reportType(file)==='cross'),[approvedReview]);
 assert.equal(L.reportType(approvedReview),'cross');
 assert.equal(L.reportDate(approvedReview),'2026-11-14');
+assert.equal(L.reportDate(recurringReview),'2026-11-20');
+assert.equal(L.remoteReport(recurringReview).title,'Global Markets Review');
+assert.equal(L.remoteReport(recurringReview.replace('.html','_BOZZA.html')),null);
 assert.equal(L.reportType('Global_Markets_Review_14_Novembre_2026_DARK_SLATE_V12_APERTURE_ALLINEATE.html'),null);
 assert.ok(read('site/fx-quant-v2/next/reports/'+approvedReview).includes('settimana chiusa venerdì 13 novembre 2026'));
 assert.equal(L.reportDate('Weekly_CB_Pricing_G8_2026-11-06_V7.html'),'2026-11-06');
@@ -173,6 +177,15 @@ assert.match(L.render(),/data-library-type="ois"/);
    ['Global Markets Review','2026-11-14','./reports/'+approvedReview]
   ]);
   assert.equal(L.filterReports().length,8);
+  globalThis.fetch=async(url,opts)=>{
+   if(url==='./reports/weekly-latest.json')return {ok:true,json:async()=>({files:[recurringReview]})};
+   if(url==='./reports/'+recurringReview&&opts.method==='HEAD')return {ok:true};
+   return {ok:false,status:404};
+  };
+  await L.refresh();
+  assert.deepEqual(L.filterReports('cross').map(r=>[r.title,r.date,L.url(r)]),[
+   ['Global Markets Review','2026-11-20','./reports/'+recurringReview]
+  ]);
   const missingName='Briefing_Forex_Commodities_2026-11-16_V6_DEFINITIVO.html';
   globalThis.fetch=async(url)=>url==='./reports/daily-latest.json'
    ?{ok:true,json:async()=>({file:missingName})}:{ok:false,status:404};
