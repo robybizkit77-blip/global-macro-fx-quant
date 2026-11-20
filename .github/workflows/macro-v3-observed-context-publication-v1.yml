@@ -32,7 +32,7 @@ permissions:
   pages: write
 
 concurrency:
-  group: publish-dashboard-pages-v1
+  group: ${{ github.event_name == 'pull_request' && format('macro-v3-context-validation-pr-{0}', github.event.pull_request.number) || 'publish-dashboard-pages-v1' }}
   queue: max
   cancel-in-progress: false
 
