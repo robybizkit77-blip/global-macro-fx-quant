@@ -297,12 +297,14 @@ function homeScreenChart(){
   const a=r.NASDAQCOM;
   lines=[{name:'Nasdaq Composite',color:'#95d8ef',values:priceHistory('NASDAQCOM').slice(-w)}];
   label='Azionario USA · Nasdaq Composite';unit='';asof=a?.date;
-  result='Variazione giornaliera '+sign(a?.change_1d_pct,2,'%')+' al '+date(a?.date)+'. Fonte '+String(a?.publisher||'non disponibile')+'. Chiusura daily, non intraday.';
+  result=(observationOn(a?.date)?'Variazione giornaliera '+sign(a.change_1d_pct,2,'%')+' al '+date(a.date)+'. ':'')+
+   'Fonte '+String(a?.publisher||'non disponibile')+'. Chiusura daily, non intraday.';
  }else if(keys==='rates'){
   const a=historyRates('USD').slice(-w);
   lines=[{name:'Treasury 2Y',color:'#95d8ef',values:a.map(x=>({label:x.label,value:x.v2}))},{name:'Treasury 10Y',color:'#ef6479',values:a.map(x=>({label:x.label,value:x.v10}))}];
   label='UST · Front-end e long-end';unit='%';asof=u?.date;
-  result='2Y '+sign(u?.chg2_bp,1,' pb')+' · 10Y '+sign(u?.chg10_bp,1,' pb')+'. Sono rendimenti, non OIS.';
+  result=(observationOn(u?.date)?'2Y '+sign(u.chg2_bp,1,' pb')+' · 10Y '+sign(u.chg10_bp,1,' pb')+'. ':'')+
+   'Sono rendimenti, non OIS.';
  }else if(keys==='dxy'){
   lines=[{name:'DXY proxy BCE',color:'#86dfba',values:dxyHistory().slice(-w)}];label='Dollaro · fixing BCE';asof=d?.as_of;
   result='Proxy sintetico, non indice ICE o prezzo intraday.';
@@ -312,6 +314,7 @@ function homeScreenChart(){
   unit=keys==='hy'?'%':'';
   result='Fonte '+String(s?.publisher||'non disponibile')+'. Serie daily close, non intraday.';
  }
+ if(!observationOn(asof))asof=lines[0]?.values.at(-1)?.label;
  return '<div class="analysis-chart-head"><div><span class="micro-over">LAB / DATI DATATI</span><h3>'+esc(label)+'</h3></div><span class="time-label">Ultimo '+date(asof)+'</span></div>'
  +'<div class="analyst-toolbar"><div class="chart-tabset">'+choose('',[{label:'Forza G8 FX',value:'fx'},{label:'Nasdaq',value:'nasdaq'},{label:'2Y / 10Y',value:'rates'},{label:'USD proxy',value:'dxy'},{label:'VIX',value:'vix'},{label:'HY',value:'hy'}],keys,'data-hchart')+'</div><div class="chart-tabset">'+choose('',[{label:'5',value:5},{label:'20',value:20},{label:'60',value:60}],w,'data-hwindow')+'</div></div>'
  +plot({lines,unit,label:'Storico '+label,window:w})
@@ -350,6 +353,8 @@ function researchCase(){
  const focus={stress:'nasdaq',relief:'nasdaq','bond-rally':'rates','yield-selloff':'rates','fx-divergence':'dxy',mixed:'rates'}[kind];
  return {kind,leadDate,latest:max,focus,aligned,usRates,fxAligned,n,v,h,u,d,usdDelta};
 }
+function observationOn(day,cutoff=dayNow()){return validDay(day)&&day<=cutoff}
+function cotObservationDay(row){return row?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1]}
 function researchEvidence(ctx){
  const {kind,n,v,h,u,d,leadDate}=ctx;
  const rows=[];
@@ -406,7 +411,8 @@ function fxHomeDesk(){
  const rows=(prices?.rows||[]).filter(x=>validDay(x?.Date)&&x.Date<=dayNow()
    &&FX.every(c=>c==='EUR'||finite(x[c])&&x[c]>0)).sort((a,b)=>a.Date.localeCompare(b.Date));
  const end=rows.at(-1),previous=rows.at(-2),baseline=rows.at(-6);
- const ready=!!(end&&previous&&baseline&&end.Date===prices.last_as_of&&end.Date===pairs?.price_asof);
+ const ready=!!(end&&previous&&baseline&&end.Date===prices.last_as_of&&end.Date===pairs?.price_asof&&
+  (!pairs.macro_baseline_asof||observationOn(pairs.macro_baseline_asof)));
  const recent=ready&&fresh(end.Date,8);
  const empty='Il fixing BCE delle otto valute e il motore delle 28 coppie non sono allineati su una data recente. Non attribuiamo forza relativa o vantaggi FX al mercato attuale senza una fotografia coerente.';
  if(!ready)return {ready:false,recent:false,asof:end?.Date||null,headline:'FOREX G8 · Perché manca ancora una lettura relativa verificabile',
@@ -465,8 +471,8 @@ function fxHomeDesk(){
  const macroContext=eurusd?.decision_frame?.macroSide==='USD'?
    'La componente Macro del modello favorisce USD rispetto a EUR, mentre il confronto Tassi/CB non produce un vincitore completo.':
    'Il motore Macro/Tassi non dà un orientamento completo per EUR/USD.';
- const cot=get('cot')||{},dateMatch=cot.AUD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1];
- const cotValid=validDay(dateMatch)&&dateMatch<=end.Date;
+ const cot=get('cot')||{},dateMatch=cotObservationDay(cot.AUD);
+ const cotValid=observationOn(dateMatch,end.Date)&&dateMatch===cotObservationDay(cot.NZD);
  const nzdCrowded=cot.NZD?.today?.match(/Net\/OI\s+([+-]?\d+(?:\.\d+)?)%/);
  const audCrowded=cot.AUD?.today?.match(/Net\/OI\s+([+-]?\d+(?:\.\d+)?)%/);
  const crowded=cotValid&&nzdCrowded&&audCrowded&&
@@ -558,12 +564,17 @@ function overview(){
   }
  }
  if(hourly)return hourly;
+ const cutoff=dayNow();
+ const observedOn=d=>observationOn(d,cutoff);
  const context=researchCase();
  const fxDesk=fxHomeDesk();
  const u=get('rates')?.USD||{},d=get('dxy')||{},risk=get('risk')?.streams||{};
  const n=risk.NASDAQCOM||{},sp=risk.SP500||{},vx=risk.VIX||{},hy=risk.HY_OAS||{};
  const m=get('macro')?.currencies?.USD||{},oc=get('ois')?.currencies?.USD||{},cb=get('cb')?.USD||{};
- const cot=get('cot')||{},pairData=eurPairs(),pairAsOf=get('pairs')?.price_asof;
+ const cot=Object.fromEntries(Object.entries(get('cot')||{}).filter(([,row])=>observedOn(cotObservationDay(row))));
+ const pairAsOf=get('pairs')?.price_asof;
+ const pairBaseline=get('pairs')?.macro_baseline_asof;
+ const pairData=observedOn(pairAsOf)&&(!pairBaseline||observedOn(pairBaseline))?eurPairs():{};
  const usd2=finite(u['2Y'])&&finite(u.chg2_bp)&&context.usRates;
  const usd10=finite(u['10Y'])&&finite(u.chg10_bp)&&context.usRates;
  const equity=finite(n.change_1d_pct)&&validDay(n.date)&&context.aligned;
@@ -579,7 +590,8 @@ function overview(){
  const latest=context.latest;
  const focusDate=context.leadDate||latest;
  const tooOld=!focusDate||!fresh(focusDate,8);
- const dx=finite(d.value)&&finite(d.previous_value)&&d.previous_value!==0&&validDay(d.as_of)?(d.value/d.previous_value-1)*100:null;
+ const dx=observedOn(d.as_of)&&finite(d.value)&&finite(d.previous_value)&&d.previous_value!==0?
+  (d.value/d.previous_value-1)*100:null;
  const headlineBase=sharedDate
    ?'Non è soltanto una correzione azionaria. Il mercato sta cambiando idea sulla crescita?'
    :stress?'Il rischio torna al centro. Che cosa ci stanno dicendo i mercati?'
@@ -595,7 +607,7 @@ function overview(){
    :bonds?'Il movimento che merita attenzione parte dai Treasury: il 2Y USA è sceso di '+fmt(Math.abs(u.chg2_bp),1)+' punti base e il 10Y di '+fmt(Math.abs(u.chg10_bp),1)+' al '+date(u.date)+'. Potrebbe essere un nuovo percorso atteso della Fed, ma l’ipotesi va verificata sui futures e non dedotta dal solo governativo.'
    :yieldsUp?'I Treasury si muovono nella direzione opposta: il 2Y USA sale di '+fmt(u.chg2_bp,1)+' punti base e il 10Y di '+fmt(u.chg10_bp,1)+' al '+date(u.date)+'. Dobbiamo capire se il movimento riguarda le attese di banca centrale o i premi sul lungo termine.'
    :divergent?'Al '+date(u.date)+' il Treasury 2Y si è mosso di '+sign(u.chg2_bp,1,' punti base')+', mentre il proxy del dollaro è variato di '+sign(context.usdDelta,2,'%')+'. La divergenza è sulla stessa data ma non dimostra che uno dei due mercati sia in errore.'
-   :equity?'Nell’ultima seduta disponibile, il Nasdaq ha registrato '+sign(n.change_1d_pct,2,'%')+' al '+date(n.date)+'. '+(finite(vx.value)&&validDay(vx.date)?'Il VIX è a '+fmt(vx.value,2)+' al '+date(vx.date)+'. ':'')+'Il punto non è trovare subito una spiegazione unica, ma distinguere ciò che si è mosso insieme da ciò che richiede ancora conferma.'
+   :equity?'Nell’ultima seduta disponibile, il Nasdaq ha registrato '+sign(n.change_1d_pct,2,'%')+' al '+date(n.date)+'. '+(finite(vx.value)&&observedOn(vx.date)?'Il VIX è a '+fmt(vx.value,2)+' al '+date(vx.date)+'. ':'')+'Il punto non è trovare subito una spiegazione unica, ma distinguere ciò che si è mosso insieme da ciò che richiede ancora conferma.'
    :'Non tutti i feed cross-asset sono disponibili con date confrontabili. In questo caso un’analisi seria comincia da ciò che possiamo documentare e segnala ciò che non possiamo ancora concludere.';
  const follow=sharedDate
    ?'Nella stessa seduta il rendimento Treasury a due anni è diminuito di '+fmt(Math.abs(u.chg2_bp),1)+' punti base e quello a dieci anni di '+fmt(Math.abs(u.chg10_bp),1)+'. I prezzi dei Treasury si muovono in senso opposto ai rendimenti: è un quadro compatibile con domanda di duration. Ma dai prezzi non possiamo sapere chi abbia comprato, né attribuire automaticamente il movimento al timore di recessione.'
@@ -610,17 +622,20 @@ function overview(){
      ' pb: il movimento non è parallelo. ')+
    'Per attribuirlo alla banca centrale servono variazioni OIS/futures della stessa scadenza e data; il prezzo dei Treasury non identifica da solo gli operatori né il motivo.':
    'Non abbiamo 2Y e 10Y USA con variazioni verificabili sulla stessa seduta: non attribuiamo al mercato una modifica della curva non misurata.';
- const macroInf=m.inflation,macroLab=m.labour;
+ const macroPeriodKnown=entry=>/^\d{4}-\d{2}$/.test(entry?.as_of||'')?
+  entry.as_of<=cutoff.slice(0,7):observedOn(entry?.as_of);
+ const macroInf=macroPeriodKnown(m.inflation)?m.inflation:null;
+ const macroLab=macroPeriodKnown(m.labour)?m.labour:null;
  const macroReading=finite(macroInf?.latest_value)&&finite(macroLab?.latest_value)
    ?'Il quadro macro complica la lettura. L’ultimo dato di inflazione headline USA presente nel nostro archivio è '+fmt(macroInf.latest_value,2)+'% ('+(macroInf.as_of||'periodo da verificare')+'), con direzione '+(macroInf.direction||'non disponibile').toLowerCase()+'. Il tasso di disoccupazione è '+fmt(macroLab.latest_value,1)+'% ('+(macroLab.as_of||'periodo da verificare')+'), con direzione '+(macroLab.direction||'non disponibile').toLowerCase()+'. Sono osservazioni riferite a periodi diversi e non necessariamente a prime pubblicazioni point-in-time. Non autorizzano la conclusione che crescita e inflazione siano già entrambe in discesa.'
    :'La fotografia macro di inflazione e lavoro non è abbastanza completa per sostenere una tesi sul ciclo. In particolare, non attribuiamo al mercato un turning point che non è verificato dai dati.';
  const o6=oc.horizons?.['6m'];
- const pricingReading=finite(o6?.rate)&&validDay(o6.as_of)&&o6.as_of<=dayNow()
+ const money6Valid=finite(o6?.rate)&&observedOn(o6?.as_of);
+ const pricingReading=money6Valid
    ?'Il contratto indicativo a sei mesi per gli Stati Uniti riporta '+fmt(o6.rate,3)+'% al '+date(o6.as_of)+' ('+(oc.kind||'strumento da classificare')+', qualità '+(oc.quality||'non classificata')+'). Questo livello non è un tasso OIS ufficiale e non va confrontato meccanicamente con il range Fed. '+(finite(o6.change_1d_bp)?'La variazione a un giorno riportata è '+sign(o6.change_1d_bp,1,' pb')+'.':'In questo snapshot manca una variazione giornaliera certificata: non possiamo dire di quanto siano cambiate le aspettative in questa seduta.')
    :'Il feed non offre una scadenza 6M USA con strumento e data verificabili. Per parlare di repricing monetario occorre un confronto omogeneo tra scadenze e sessioni.';
  // The 6M level is context, not evidence of a same-session Fed repricing.
  // Do not align different dates or instruments; no absent daily delta is inferred.
- const money6Valid=finite(o6?.rate)&&validDay(o6?.as_of)&&o6.as_of<=dayNow();
  const money6SameSession=money6Valid&&o6.as_of===focusDate;
  const pricingQuick=!money6Valid
    ?'Per la seduta esaminata non abbiamo una scadenza monetaria USA a sei mesi utilizzabile. Il movimento dei Treasury, da solo, non dimostra un riprezzamento Fed.'
@@ -640,7 +655,7 @@ function overview(){
  const eurText=eur?.decision_frame?.relation||eur?.setup?.structural?.relation;
  const audText=aud?.decision_frame?.relation||aud?.setup?.structural?.relation;
  const cleanPairSentence=x=>String(x||'').replace(/[.!?]+$/,'');
- const pairStory=eurText&&audText&&validDay(pairAsOf)
+ const pairStory=eurText&&audText
    ?'Il controllo più utile arriva dalle singole coppie. Nel dossier EUR/USD al '+date(pairAsOf)+' il modello descrive: «'+cleanPairSentence(eurText)+'». Sul cross AUD/CAD, invece: «'+cleanPairSentence(audText)+'». Il primo caso e il secondo non devono produrre la stessa conclusione per il solo fatto di appartenere al Forex: contano il differenziale relativo e la conferma del prezzo. '+(eur.setup?.price?.text?'Il modello classifica il prezzo EUR/USD come «'+eur.setup.price.text+'»; ':'')+(aud.setup?.price?.text?'quello AUD/CAD come «'+aud.setup.price.text+'».':'')
    :'Le tesi relative sulle coppie non sono disponibili con un fixing sufficientemente tracciabile. È meglio non nominare un candidato che attribuirgli una forza non dimostrata.';
  const thesis=sharedDate
@@ -659,7 +674,7 @@ function overview(){
   :'La tesi resta aperta: richiede osservazioni della stessa seduta e differenziali coerenti. Un movimento isolato non basta a identificare un cambio di regime.';
  const sourceDates=[
   ['Cross-asset',n.date],['Treasury 2Y',u.date],['Dollaro proxy BCE',d.as_of],
-  ['CPI USA',macroInf?.as_of],['Lavoro USA',macroLab?.as_of],['Futures USD 6M',o6?.as_of],['Coppie FX',pairAsOf],['COT',cot.AUD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1]]
+  ['CPI USA',macroInf?.as_of],['Lavoro USA',macroLab?.as_of],['Futures USD 6M',o6?.as_of],['Coppie FX',Object.keys(pairData).length?pairAsOf:null],['COT',cotObservationDay(cot.AUD)]
  ].filter(x=>x[1]&&(!validDay(x[1])||x[1]<=dayNow())).map(([k,v])=>esc(k)+' '+date(v)).join(' · ');
  const section=(title,body,cl='')=>'<section class="letter-section '+cl+'"><h2>'+title+'</h2><p>'+body+'</p></section>';
  const metric=(label,value,day,source,key)=>({label,value:validDay(day)&&day<=dayNow()?value:'—',day:validDay(day)&&day<=dayNow()?date(day):'n.d.',source,key});
@@ -709,11 +724,11 @@ function overview(){
  const deskLabChange=Array.isArray(macroLab?.history)&&macroLab.history.length>1&&finite(macroLab.history.at(-1))&&finite(macroLab.history.at(-2))?macroLab.history.at(-1)-macroLab.history.at(-2):null;
  const deskPeriod=x=>/^\d{4}-\d{2}$/.test(String(x||''))?x.slice(5,7)+'/'+x.slice(0,4):date(x);
  const deskFxDate=validDay(d.as_of)&&d.as_of<=dayNow()?d.as_of:null;
- const deskPairValid=validDay(pairAsOf)&&pairAsOf<=dayNow()&&fresh(pairAsOf,8);
+ const deskPairValid=Object.keys(pairData).length>0&&fresh(pairAsOf,8);
  const deskClean=get('pairs')?.quality_distribution?.PULITO||0;
  const deskCount=get('pairs')?.pair_count||0;
- const deskCotDate=cot.USD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1]||null;
- const deskCotOk=validDay(deskCotDate)&&deskCotDate<=dayNow();
+ const deskCotDate=cotObservationDay(cot.USD);
+ const deskCotOk=observedOn(deskCotDate);
  const deskVixRecent=deskVixDate&&fresh(deskVixDate,8);
  // A newer rates/FX observation takes editorial precedence over an older VIX close.
  const deskRiskLeading=deskVixRecent&&(!validDay(focusDate)||deskVixDate>=focusDate);
