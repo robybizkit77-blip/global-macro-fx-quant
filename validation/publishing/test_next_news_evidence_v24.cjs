@@ -19,7 +19,7 @@ assert.match(x.gap,/orologi diversi/);
 assert.equal(x.pulse.filter(y=>y.kind==='OIS osservato').length,1);
 assert.equal(x.pulse.filter(y=>y.kind==='Futures: pricing implicito').length,3);
 assert(x.pulse.every(y=>!y.macroSurprise&&!y.reactionProven),'No unfounded event-market causality');
-assert(x.pulse.every(y=>y.kind==='Macro · dato ufficiale BLS'?
+assert(x.pulse.every(y=>y.kind.startsWith('Macro · dato ufficiale')?
  y.impact.includes('NON misurata'):y.impact.includes('NON reazione provata')));
 assert(x.official.every(y=>!y.reactionProven&&y.impact.includes('NON verificata')));
 assert(x.official.every(y=>y.why.length>30&&y.verify.length>25),'Evidence-driven official relevance');
@@ -28,13 +28,17 @@ const summary=x.official.find(y=>y.title.startsWith('Summary of Opinions'));
 if(summary)assert.match(summary.time||'',/^\d{2}:\d{2}$/);
 const bankRate=x.official.find(y=>y.title.startsWith('Bank rate increased'));
 if(bankRate)assert(bankRate.verify.includes('Consultare'));
-assert(x.official.some(y=>y.kind==='Fondamentali energia'));
 assert(x.official.every(y=>y.displayTitle&&typeof y.displayTitle==='string'),
  'Every original release must have a safe Italian first-read label');
 const translated=x.official.filter(y=>y.displayTitle!==y.title);
 assert(translated.length>=8,'Known English institutional headlines require Italian first-read translations');
-const energy=x.official.find(y=>/Hydropower generation in the Southwest/i.test(y.title));
-if(energy)assert(energy.displayTitle.includes('produzione idroelettrica'));
+const energy=parse({official_releases:{headlines:[{
+ title:'Hydropower generation in the Southwest fell to record lows this summer',
+ source:'EIA',published_at_utc:'2026-11-10T11:00:00Z',
+ desk_context:{topic:'ENERGY_FUNDAMENTALS'}
+}]}},today).official[0];
+assert.equal(energy.kind,'Fondamentali energia');
+assert(energy.displayTitle.includes('produzione idroelettrica'));
 const meridian=x.official.find(y=>/Project Meridian FX APAC/i.test(y.title));
 if(meridian)assert(meridian.displayTitle.includes('collaborazione'));
 const fomc=x.official.find(y=>/revised tentative schedule.*Federal Open Market Committee/i.test(y.title));
@@ -71,6 +75,17 @@ assert(cpiToday&&cpiToday.asof==='2026-11-10'&&cpiToday.url?.startsWith('https:/
 assert(cpiToday.why.includes('Fed')&&cpiToday.verify.includes('USD/JPY'));
 assert(cpiToday.impact.includes('NON misurata'));
 assert(!cpiToday.macroSurprise&&!cpiToday.reactionProven);
+const jpCpi=parse({items:[{
+ category:'MACRO_OFFICIAL_ACTUAL',ccy:'JPY',as_of:'2026-11-20',
+ title:'Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a',
+ source:'Statistics Bureau of Japan',
+ source_url:'https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html',
+ first_runner_observed_at_utc:'2026-11-20T05:17:00Z'
+}]},'2026-11-20').pulse[0];
+assert.equal(jpCpi.kind,'Macro · dato ufficiale');
+assert.equal(jpCpi.source,'Statistics Bureau of Japan');
+assert.doesNotMatch(jpCpi.why+' '+jpCpi.verify,/\b(Fed|BLS|USD)\b/);
+assert.equal(jpCpi.reactionProven,false);
 const past=parse(feed,'2026-11-06');
 assert.equal(past.official.some(y=>y.asof>'2026-11-06'),false,'No lookahead into later news');
 const empty=parse(null,today);
@@ -90,7 +105,7 @@ assert.equal(romeDate('2026-11-09T21:00:00Z').date,'2026-11-09');
 assert.equal(romeDate('invalid'),null);
 const html=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
-assert(html.indexOf('news-evidence-reading.js?v=27')<html.indexOf('app.js?v=18.'),'News source interpreter must load before current Next app');
+assert(html.indexOf('news-evidence-reading.js?v=28')<html.indexOf('app.js?v=18.'),'News source interpreter must load before current Next app');
 for(const field of ['x.title','x.body','x.why','x.verify','x.impact','x.source','x.url']){
  assert(app.includes('esc('+field+')'),'News output is not escaped: '+field);
 }
@@ -112,6 +127,6 @@ assert(firstReadCss.includes('#content[data-view="news"]')&&firstReadCss.include
 assert(!firstReadCss.includes('.sidebar')&&!firstReadCss.includes('.pair-studio'),
  'Do not restyle previously approved site sections');
 
-assert(app.includes("route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'"),
+assert(app.includes("innerHTML=views[route]()"),
  'Generic news essay must not duplicate source-specific reading');
 console.log('NEXT_NEWS_V24_PASS: at least 4 dated pricing items, 15/15 official releases, UTC->Rome, no false surprise/reaction, safe source URLs and no duplicate essay.');

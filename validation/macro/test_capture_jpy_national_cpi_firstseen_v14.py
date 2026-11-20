@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 from datetime import datetime,timedelta,timezone
 import tempfile
 from pathlib import Path
@@ -36,6 +37,15 @@ class JapanNationalCpiTests(unittest.TestCase):
             "JP_CPI_OCT26_CORE_EX_FRESH_FOOD_YOY_NSA":2.3,
             "JP_CPI_OCT26_EX_FRESH_ENERGY_YOY_NSA":2.6})
         self.assertNotIn(9.9,got.values())
+
+    def test_shift_jis_issuer_page_is_captured_from_original_bytes(self):
+        raw = HTML.decode("utf-8").replace(
+            "<head>", '<head><meta charset="Shift_JIS">').encode("cp932")
+        rows, report = jp.capture([], AFTER, lambda url, _: (raw, url),
+                                  observed_clock=lambda: SEEN)
+        self.assertEqual(report["new_actuals"], 1)
+        self.assertEqual(rows[0]["metrics_percent"], jp.parse_japan(HTML))
+        self.assertEqual(rows[0]["source_html_sha256"], hashlib.sha256(raw).hexdigest())
 
     def test_not_before_release(self):
         calls=[]
