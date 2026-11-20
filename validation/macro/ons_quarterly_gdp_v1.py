@@ -107,17 +107,17 @@ def parse_bulletin(raw, today):
             "reported_value": value, "prior_qoq": prior_value, "source_url": edition_url(quarter)}
 
 
-def load_archive(path):
+def load_archive(path, *, schema=SCHEMA, minimum=MIN_QUARTER, url_for=edition_url):
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schema") != SCHEMA or not isinstance(data.get("editions"), list):
-        raise ValueError("invalid ONS archive schema")
+    if data.get("schema") != schema or not isinstance(data.get("editions"), list):
+        raise ValueError("invalid quarterly GDP archive schema")
     previous = None
     for record in data["editions"]:
         quarter = record["quarter"]
         released = date.fromisoformat(record["publisher_release_day"])
         seen = datetime.fromisoformat(record["first_observed_at_utc"])
         amounts = (record["reported_value"], record["prior_qoq"])
-        if (quarter < MIN_QUARTER or record["source_url"] != edition_url(quarter)
+        if (quarter < minimum or record["source_url"] != url_for(quarter)
                 or any(type(v) not in (int, float) or not -30 < v < 30
                        for v in amounts if v is not None)
                 or amounts[0] is None or seen.utcoffset() is None
@@ -125,14 +125,13 @@ def load_archive(path):
                 or not re.fullmatch(r"[0-9a-f]{64}", record["source_html_sha256"])
                 or (previous and (quarter <= previous["quarter"]
                                   or released <= date.fromisoformat(previous["publisher_release_day"])))):
-            raise ValueError("invalid or out-of-order ONS archived edition")
+            raise ValueError("invalid or out-of-order quarterly GDP archived edition")
         previous = record
     return data
 
 
-def latest_growth(as_of, *, path=ARCHIVE):
+def archived_growth(as_of, editions, *, stage, same_edition_field):
     day = date.fromisoformat(as_of)
-    editions = load_archive(path)["editions"]
     for row in reversed(editions):
         released = date.fromisoformat(row["publisher_release_day"])
         seen = datetime.fromisoformat(row["first_observed_at_utc"]).astimezone(ROME).date()
@@ -151,13 +150,28 @@ def latest_growth(as_of, *, path=ARCHIVE):
         prior = row["prior_qoq"]
         return {
             **observation(row["quarter"], row["reported_value"]),
-            "publication_stage": "FIRST_QUARTERLY_ESTIMATE",
+            "publication_stage": stage,
             "prior_documented_quarter": observation(previous_quarter(row["quarter"]), prior)
             if prior is not None else None,
-            "prior_value_from_same_ons_edition": prior is not None,
+            same_edition_field: prior is not None,
             "source_first_observed_at_utc": row["first_observed_at_utc"],
+            **({"publisher_csv_source": row["csv_url"]} if "csv_url" in row else {}),
         }
     return None
+
+
+def latest_growth(as_of, *, path=ARCHIVE):
+    return archived_growth(as_of, load_archive(path)["editions"], stage="FIRST_QUARTERLY_ESTIMATE",
+                           same_edition_field="prior_value_from_same_ons_edition")
+
+
+def append_edition(path, data, record, now):
+    data["editions"].append({
+        **record, "first_observed_at_utc": now.astimezone(timezone.utc).isoformat(),
+    })
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary.replace(path)
 
 
 def collect(now, *, path=ARCHIVE, fetch=retrieve, apply=False):
@@ -188,13 +202,7 @@ def collect(now, *, path=ARCHIVE, fetch=retrieve, apply=False):
         return {"status": "SOURCE_UNAVAILABLE_ARCHIVE_RETAINED", "reason": str(error),
                 "last_archived_quarter": latest["quarter"] if latest else None}
     if apply:
-        data["editions"].append({
-            **item, "first_observed_at_utc": now.astimezone(timezone.utc).isoformat(),
-            "source_html_sha256": sha256(dated).hexdigest(),
-        })
-        temporary = path.with_suffix(".tmp")
-        temporary.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        temporary.replace(path)
+        append_edition(path, data, {**item, "source_html_sha256": sha256(dated).hexdigest()}, now)
     return {"status": "ARCHIVED" if apply else "VERIFIED_PREVIEW", **item}
 
 
