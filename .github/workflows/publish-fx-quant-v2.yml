@@ -327,8 +327,9 @@ jobs:
                   "site/fx-quant-v2/next/fx-rates-bridge.js",
               )
           elif os.environ["SOURCE_WORKFLOW"] == "FX Quant V2 CHF NZD Same-Basis Research Refresh":
-              label = "NZD_B2_PUBLIC_HTTP"
+              label = "CHF_NZD_RESEARCH_PUBLIC_HTTP"
               paths = (
+                  "site/fx-quant-v2/chf-snb-paired-history.json",
                   "site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json",
                   "site/fx-quant-v2/next/fx-rates-bridge.js",
                   "site/fx-quant-v2/next/decision-journey.js",
