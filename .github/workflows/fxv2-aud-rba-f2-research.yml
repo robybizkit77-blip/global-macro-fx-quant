@@ -45,6 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
           fetch-depth: 2
           persist-credentials: true
       - uses: actions/setup-python@v5
@@ -54,12 +55,9 @@ jobs:
         run: python3 validation/rates/test_refresh_fxv2_aud_rba_f2_context.py
       - name: Test daily observations and fail-closed research history
         run: python3 validation/rates/test_build_fxv2_aud_f2_daily_history_v1.py
-      - name: Fetch RBA F2 and build dated AUD research record
+      - name: Fetch one official RBA edition and verify both AUD research files
         if: github.event_name != 'pull_request'
-        run: python3 validation/rates/refresh_fxv2_aud_rba_f2_context.py
-      - name: Preserve RBA F2 official daily source history as isolated research
-        if: github.event_name != 'pull_request'
-        run: python3 validation/rates/build_fxv2_aud_f2_daily_history_v1.py
+        run: python3 validation/rates/build_fxv2_aud_f2_daily_history_v1.py --refresh-snapshot
       - name: Publish only AUD research when official observations advance
         if: github.event_name != 'pull_request'
         shell: bash

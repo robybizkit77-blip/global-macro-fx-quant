@@ -16,7 +16,7 @@ import math
 from pathlib import Path
 
 from refresh_fxv2_aud_rba_f2_context import (
-    CANONICAL, SERIES_2Y, SERIES_10Y, URL, demand, fetch, parse_f2
+    CANONICAL, SERIES_2Y, SERIES_10Y, URL, SYDNEY, build as build_snapshot, demand, fetch, parse_f2
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -85,8 +85,9 @@ def validate_and_merge(candidate: dict, canonical: dict, source_snapshot: dict,
            "unapproved research schema")
     end = candidate["last_observation_date"]
     demand(end == source_snapshot["as_of"]
-           and candidate["publication_date"] == source_snapshot["publication_date"],
-           "history latest observation/release must match independently stored F2 snapshot")
+           and candidate["publication_date"] == source_snapshot["publication_date"]
+           and candidate["source_response_sha256"] == source_snapshot["source_sha256"],
+           "history and latest snapshot must match the same F2 edition")
     demand(abs(candidate["observations"][-1]["2Y"] - source_snapshot["2Y"]) < 1e-8
            and abs(candidate["observations"][-1]["10Y"] - source_snapshot["10Y"]) < 1e-8,
            "latest F2 2Y/10Y does not match research snapshot")
@@ -101,30 +102,50 @@ def validate_and_merge(candidate: dict, canonical: dict, source_snapshot: dict,
         old = {x["date"]: x for x in previous.get("observations", [])}
         fresh = {x["date"]: x for x in candidate["observations"]}
         demand(not old or any(d in fresh for d in old), "source history has no shared dates")
-        for d, row in old.items():
-            if d in fresh:
-                demand(row == fresh[d],
-                       "RBA revised prior official observation: quarantine for independent review")
         demand(end >= previous["last_observation_date"], "official daily history rollback")
+        revised = [{"date": day, "previous": old[day], "current": fresh[day]}
+                   for day in sorted(old.keys() & fresh.keys()) if old[day] != fresh[day]]
         if end == previous["last_observation_date"]:
-            demand(candidate["source_response_sha256"] == previous["source_response_sha256"],
+            demand(not revised and candidate["source_response_sha256"] == previous["source_response_sha256"],
                    "RBA source changed without a newer observation: review needed")
+            return previous
+        demand(candidate["publication_date"] > previous["publication_date"],
+               "a new observation requires a newer official F2 publication")
+        if revised:
+            candidate = {
+                **candidate,
+                "source_revisions": {
+                    "previous_publication_date": previous["publication_date"],
+                    "previous_source_response_sha256": previous["source_response_sha256"],
+                    "changed_observations": revised,
+                },
+            }
     return candidate
 
 
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--as-of", type=dt.date.fromisoformat,
-                   default=dt.datetime.now(dt.timezone.utc).date())
+                   default=dt.datetime.now(SYDNEY).date())
     p.add_argument("--input", type=Path, help="offline test CSV only")
     p.add_argument("--output", type=Path, default=TARGET)
+    p.add_argument("--refresh-snapshot", action="store_true",
+                   help="Validate both published research files from this single response")
     args = p.parse_args()
     raw = args.input.read_bytes() if args.input else fetch()
     candidate = parse_daily(raw, args.as_of)
     canon = json.loads(CANONICAL.read_text("utf-8"))
     snapshot = json.loads(SOURCE_SNAPSHOT.read_text("utf-8"))
+    if args.refresh_snapshot:
+        proposed = build_snapshot(parse_f2(raw, args.as_of), canon, snapshot, args.as_of)
+        if proposed["source_sha256"] != snapshot.get("source_sha256"):
+            snapshot = proposed
     previous = json.loads(args.output.read_text("utf-8")) if args.output.exists() else None
     result = validate_and_merge(candidate, canon, snapshot, previous, args.as_of)
+    if args.refresh_snapshot:
+        snapshot_text = json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n"
+        if SOURCE_SNAPSHOT.read_text("utf-8") != snapshot_text:
+            SOURCE_SNAPSHOT.write_text(snapshot_text, "utf-8")
     text = json.dumps(result, indent=2, ensure_ascii=False) + "\n"
     if not args.output.exists() or args.output.read_text("utf-8") != text:
         args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -132,7 +153,9 @@ def main() -> int:
     print("AUD_F2_DAILY_RESEARCH_PASS", json.dumps({
         "last_date": result["last_observation_date"],
         "publication_date": result["publication_date"],
-        "observations": len(result["observations"]), "core_written": False}))
+        "observations": len(result["observations"]),
+        "revised_observations": len(result.get("source_revisions", {}).get("changed_observations", [])),
+        "core_written": False}))
     return 0
 
 

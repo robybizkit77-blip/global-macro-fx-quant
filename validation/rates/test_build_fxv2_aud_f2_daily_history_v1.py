@@ -41,6 +41,10 @@ def fixture(n=40, pub=PUB, duplicate=False, wrong_source=False, invalid=False):
 class AUDDailyResearchContract(unittest.TestCase):
  def source(self):
     return m.parse_daily(fixture(),TODAY)
+ def snapshot(self,c):
+    last=c['observations'][-1]
+    return {'as_of':c['last_observation_date'],'publication_date':c['publication_date'],
+            '2Y':last['2Y'],'10Y':last['10Y'],'source_sha256':c['source_response_sha256']}
  def test_preserve_actual_daily_rows(self):
     c=self.source()
     self.assertEqual(c['status'],'OFFICIAL_F2_DAILY_RESEARCH_ONLY_NOT_POINT_IN_TIME')
@@ -66,29 +70,47 @@ class AUDDailyResearchContract(unittest.TestCase):
     with self.assertRaises(ValueError):m.parse_daily(fixture(n=10),TODAY)
  def test_canonical_and_research_anchor_reconcile(self):
     c=self.source()
-    snapshot={'as_of':'2026-11-04','publication_date':'2026-11-06',
-              '2Y':4.826,'10Y':5.082}
+    snapshot=self.snapshot(c)
     canon={'AUD':{'date':'2026-11-04'}}
     m.validate_and_merge(c,canon,snapshot,None,TODAY)
     with self.assertRaises(ValueError):
         m.validate_and_merge(c,canon,{**snapshot,'2Y':1.0},None,TODAY)
+    with self.assertRaisesRegex(ValueError,'same F2 edition'):
+        m.validate_and_merge(c,canon,{**snapshot,'source_sha256':'a'*64},None,TODAY)
     with self.assertRaises(ValueError):
         m.validate_and_merge(c,{'AUD':{'date':'2026-11-05'}},snapshot,None,TODAY)
  def test_source_revision_detected(self):
     c=self.source()
-    snap={'as_of':'2026-11-04','publication_date':'2026-11-06',
-          '2Y':4.826,'10Y':5.082}
+    snap=self.snapshot(c)
     canon={'AUD':{'date':'2026-11-04'}}
     m.validate_and_merge(c,canon,snap,c,TODAY)
     prior={**c,'observations':[dict(r) for r in c['observations']]}
     prior['observations'][1]['2Y']+=.1
     with self.assertRaises(ValueError):
         m.validate_and_merge(c,canon,snap,prior,TODAY)
+ def test_new_release_preserves_observed_revision_and_is_idempotent(self):
+    prior=self.source()
+    c={**prior,'observations':[dict(r) for r in prior['observations']],
+       'last_observation_date':'2026-11-11','publication_date':'2026-11-13',
+       'source_response_sha256':'b'*64}
+    first=c['observations'][0]
+    first['2Y']+=.001
+    c['observations'].append({'date':'2026-11-11','2Y':4.808,'10Y':5.044})
+    today=dt.date(2026,11,13)
+    canon={'AUD':{'date':'2026-11-11'}}
+    result=m.validate_and_merge(c,canon,self.snapshot(c),prior,today)
+    receipt=result['source_revisions']
+    self.assertEqual(receipt['previous_source_response_sha256'],prior['source_response_sha256'])
+    self.assertEqual(receipt['changed_observations'],[
+        {'date':first['date'],'previous':prior['observations'][0],'current':first}])
+    self.assertEqual(m.validate_and_merge(c,canon,self.snapshot(c),result,today),result)
+    same_edition={**c,'publication_date':prior['publication_date']}
+    with self.assertRaisesRegex(ValueError,'newer official F2 publication'):
+        m.validate_and_merge(same_edition,canon,self.snapshot(same_edition),prior,today)
  def test_placeholder_not_promoted(self):
     c=self.source()
     p={'schema':m.SCHEMA,'status':'AWAITING_OFFICIAL_F2_DAILY_HISTORY','observations':[]}
-    snap={'as_of':'2026-11-04','publication_date':'2026-11-06',
-          '2Y':4.826,'10Y':5.082}
+    snap=self.snapshot(c)
     m.validate_and_merge(c,{'AUD':{'date':'2026-11-04'}},snap,p,TODAY)
 
 if __name__=='__main__':unittest.main()
