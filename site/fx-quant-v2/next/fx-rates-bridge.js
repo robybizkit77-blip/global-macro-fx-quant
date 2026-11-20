@@ -205,13 +205,9 @@
   const short=metrics(joined,5,12),medium=metrics(joined,20,45);
   return short||medium?{asof:joined.at(-1).date,sourceAsOf:end,short,medium}:null;
  }
- function estimateChf(base,quote,observedRates,prices,modelDate,now,source){
+ function chfEstimateInputs(source,now){
   const c=source?.calibration,o=source?.observations;
-  const chfIsBase=base==='CHF',observedCurrency=chfIsBase?quote:base;
-  const weekly=observedRates?.quality==='OFFICIAL_RBA_F2_DAILY_RESEARCH_ONLY';
-  if(!isGovSource(observedRates)||!isDay(observedRates.date)||
-     (observedCurrency==='AUD'&&!weekly)||!Array.isArray(prices?.rows)||
-     !isDay(modelDate)||!isDay(now)||modelDate>now||
+  if(!isDay(now)||
      source?.schema!=='GMFQ_CHF_2Y_FROM_SNB_10Y_ESTIMATE_V1'||
      source.research_only!==true||source.eligible_for_core!==false||source.eligible_for_backtests!==false||
      source.spot_source_url!==SNB_10Y_SOURCE||!Array.isArray(o)||o.length<6||o.length>65||
@@ -226,16 +222,14 @@
    prior=row.date;
    values.set(row.date,row.yield_percent);
   }
-  const chf={date:prior,history2:{dates:[...values.keys()],values:[...values.values()]}};
-  const legs=chfIsBase?[chf,observedRates]:[observedRates,chf];
-  const joined=matchFixings([base,quote],prices,legs,modelDate,now);
-  if(joined.length<6)return null;
-  const end=joined.at(-1),start=joined.at(-6),span=days(start.date,end.date);
-  // F2 observations come out weekly, so the latest estimated comparison can
-  // predate the FX snapshot by a full F2 publication cycle.
-  if(span===null||span>12||days(end.date,now)>(weekly?10:5)||start.date<=c.holdout_through)return null;
+  return {c,values,latest:prior};
+ }
+ function chf2yChange({c,values},start,end){
+  const span=days(start,end);
+  if(!Number.isInteger(span)||span<1||span>12||start<=c.holdout_through||
+    !values.has(start)||!values.has(end))return null;
   let weekdays=0;
-  const first=Date.parse(start.date+'T12:00:00Z');
+  const first=Date.parse(start+'T12:00:00Z');
   for(let i=0;i<span;i++){
    const day=new Date(first+i*864e5).getUTCDay();
    if(day!==0&&day!==6)weekdays++;
@@ -244,15 +238,63 @@
   if(!(fit&&isNum(fit.beta)&&fit.beta>0&&fit.beta<2&&isNum(fit.abs_error_p90_bp)&&
     fit.abs_error_p90_bp>0&&isNum(fit.mae_bp)&&isNum(fit.flat_mae_bp)&&fit.mae_bp<fit.flat_mae_bp&&
     Number.isInteger(fit.holdout_count)&&fit.holdout_count>=20))return null;
-  const chf10Bp=(values.get(end.date)-values.get(start.date))*100;
+  const chf10Bp=(values.get(end)-values.get(start))*100;
+  return {weekdays,chf10Bp,chf2Bp:fit.beta*chf10Bp,errorBp:fit.abs_error_p90_bp,holdoutCount:fit.holdout_count};
+ }
+ function estimateChf(base,quote,observedRates,prices,modelDate,now,source){
+  const chfIsBase=base==='CHF',observedCurrency=chfIsBase?quote:base;
+  const weekly=observedRates?.quality==='OFFICIAL_RBA_F2_DAILY_RESEARCH_ONLY';
+  if(!isGovSource(observedRates)||!isDay(observedRates.date)||
+     (observedCurrency==='AUD'&&!weekly)||!Array.isArray(prices?.rows)||
+     !isDay(modelDate)||modelDate>now)return null;
+  const input=chfEstimateInputs(source,now);
+  if(!input)return null;
+  const {values,latest}=input;
+  const chf={date:latest,history2:{dates:[...values.keys()],values:[...values.values()]}};
+  const legs=chfIsBase?[chf,observedRates]:[observedRates,chf];
+  const joined=matchFixings([base,quote],prices,legs,modelDate,now);
+  if(joined.length<6)return null;
+  const end=joined.at(-1),start=joined.at(-6);
+  // F2 observations come out weekly, so the latest estimated comparison can
+  // predate the FX snapshot by a full F2 publication cycle.
+  if(days(end.date,now)>(weekly?10:5))return null;
+  const change=chf2yChange(input,start.date,end.date);
+  if(!change)return null;
+  const {weekdays,chf10Bp,chf2Bp,errorBp,holdoutCount}=change;
   const yields=yieldsByDate(observedRates,modelDate,now);
   const observed2Bp=(yields.get(end.date)-yields.get(start.date))*100;
-  const chf2Bp=fit.beta*chf10Bp;
   const spreadBp=chfIsBase?chf2Bp-observed2Bp:observed2Bp-chf2Bp;
-  const low=spreadBp-fit.abs_error_p90_bp,high=spreadBp+fit.abs_error_p90_bp;
+  const low=spreadBp-errorBp,high=spreadBp+errorBp;
   return {start:start.date,end:end.date,fxPct:(end.spot/start.spot-1)*100,weekdays,
     observedCurrency,observed2Bp,observedSource:observedRates.source,
-    chf10Bp,chf2Bp,spreadBp,low,high,uncertain:low<=0&&high>=0,holdoutCount:fit.holdout_count};
+    chf10Bp,chf2Bp,spreadBp,low,high,uncertain:low<=0&&high>=0,holdoutCount};
+ }
+ function withChfCurrencyRanking(estimate,source,now){
+  const chf=estimate?.by?.CHF;
+  if(estimate?.status!=='STIMA_OPERATIVA_NON_VALIDATA'||estimate.currencies?.length!==8||
+     chf?.rate?.quality!=='ASSENTE'||chf.rankingRate||!isNum(chf.score)||
+     !isNum(estimate.method?.policy))return estimate;
+  const input=chfEstimateInputs(source,now);
+  if(!input)return estimate;
+  // The G8 ranking combines separately dated features. Use the latest
+  // observed CHF close and its exact weekly reference, without interpolation.
+  const end=input.latest;
+  if(!(days(end,now)>=0&&days(end,now)<=5))return estimate;
+  const start=new Date(Date.parse(end+'T12:00:00Z')-7*864e5).toISOString().slice(0,10);
+  const change=chf2yChange(input,start,end);
+  if(!change)return estimate;
+  const low=change.chf2Bp-change.errorBp,high=change.chf2Bp+change.errorBp;
+  // Existing observed 2Y proxy uses half weight and a 5 bp materiality
+  // threshold. Use half its weight here and apply the threshold to the
+  // conservative edge of the empirical error band.
+  const score=low>=5?0.25:high<=-5?-0.25:0;
+  const rankingRate={start,asof:end,changeBp:change.chf2Bp,low,high,score,source:source.spot_source_url};
+  const total=Math.max(-1,Math.min(1,chf.score+estimate.method.policy*score));
+  const label=total>=0.25?'favorevole':total<=-0.25?'sfavorevole':'misto';
+  const currencies=estimate.currencies.map(row=>row.ccy==='CHF'?{...row,rankingRate,score:total,label}:row)
+    .sort((a,b)=>b.score-a.score||a.ccy.localeCompare(b.ccy))
+    .map((row,i)=>({...row,rank:i+1}));
+  return {...estimate,currencies,by:Object.fromEntries(currencies.map(row=>[row.ccy,row]))};
  }
  function snapshot(rateData,prices,pair,modelDate,now,audHistory,chfHistory,nzdPostroll,nzdReconciled,chfEstimate){
   const aud=String(pair||'').includes('AUD')?researchRates(rateData,audHistory,modelDate,now):rateData;
@@ -371,6 +413,7 @@
   }
   return {data:r,render};
  }
- if(typeof window!=='undefined')window.FXQuantRatesBridge={snapshot,commonObservations,metrics,brief,build,researchRates,researchedSources};
- if(typeof module!=='undefined'&&module.exports)module.exports={snapshot,commonObservations,metrics,brief,build,researchRates,researchedSources};
+ const api={snapshot,commonObservations,metrics,brief,build,researchRates,researchedSources,withChfCurrencyRanking};
+ if(typeof window!=='undefined')window.FXQuantRatesBridge=api;
+ if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();

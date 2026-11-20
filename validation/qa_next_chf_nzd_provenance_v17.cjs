@@ -251,4 +251,48 @@ assert(app.includes("chfResearch:'../chf-snb-paired-history.json'"));
 assert(app.includes("nzdPostroll:'../nzd-b2-postroll-web-research.json'"));
 assert(app.includes("nzdReconciled:'../nzd-rbnz-b2-reconciled-research.json'")&&journey.includes("get('nzdReconciled')"));
 assert(journey.includes("get('chfResearch')")&&journey.includes("get('nzdPostroll')"));
+assert(app.includes('withChfCurrencyRanking?.(estimate,state.data.chf2yEstimate,now)'));
+
+// Weekly CHF is a dated ranking input. The pair thesis and its official
+// rate data stay on their existing path, even when the estimate is strong.
+const rankingDay='2026-11-20';
+const weeklyFeed={...estimateFeed,observations:estimateFeed.observations.filter(row=>row.date<=rankingDay)};
+const makeRanking=(quality='ASSENTE')=>{
+ const currencies=Object.keys(rates).map(ccy=>({ccy,score:ccy==='USD'?.06:0,
+  rate:{quality:ccy==='CHF'?quality:'UFFICIALE'}}));
+ return {status:'STIMA_OPERATIVA_NON_VALIDATA',method:{policy:.3},currencies,pairs,
+  by:Object.fromEntries(currencies.map(row=>[row.ccy,row]))};
+};
+const original=makeRanking();
+const weekly=mod.withChfCurrencyRanking(original,weeklyFeed,rankingDay);
+const weeklyRate=weekly.by.CHF.rankingRate;
+assert.equal(weeklyRate.start,'2026-11-13');
+assert.equal(weeklyRate.asof,rankingDay);
+assert(weeklyRate.low<0&&weeklyRate.high>0);
+assert.equal(weeklyRate.score,0,'A range crossing zero supplies context, not a directional vote');
+assert.equal(weekly.by.CHF.score,original.by.CHF.score);
+assert.equal(weekly.by.CHF.rate,original.by.CHF.rate);
+assert.equal(weekly.pairs,original.pairs);
+assert.equal(mod.withChfCurrencyRanking(weekly,weeklyFeed,rankingDay),weekly);
+const stronger=structuredClone(weeklyFeed);
+stronger.observations.at(-1).yield_percent=.90;
+const supported=mod.withChfCurrencyRanking(original,stronger,rankingDay);
+assert.equal(supported.by.CHF.rankingRate.score,.25);
+assert.equal(supported.by.CHF.score,.075);
+assert.equal(supported.currencies[0].ccy,'CHF');
+assert.equal(supported.pairs,original.pairs);
+stronger.observations.at(-1).yield_percent=.30;
+assert.equal(mod.withChfCurrencyRanking(original,stronger,rankingDay).by.CHF.rankingRate.score,-.25);
+stronger.observations.at(-1).yield_percent=.72;
+assert.equal(mod.withChfCurrencyRanking(original,stronger,rankingDay).by.CHF.rankingRate.score,0,
+ 'Even a positive range needs to clear the existing 5 bp threshold');
+for(const q of ['UFFICIALE','PROXY']){
+ const preferred=makeRanking(q);
+ assert.equal(mod.withChfCurrencyRanking(preferred,weeklyFeed,rankingDay),preferred);
+}
+const missingStart={...weeklyFeed,observations:weeklyFeed.observations.filter(row=>row.date!=='2026-11-13')};
+assert.equal(mod.withChfCurrencyRanking(original,missingStart,rankingDay),original);
+assert.equal(mod.withChfCurrencyRanking(original,weeklyFeed,'2026-11-26'),original);
+assert.equal(mod.withChfCurrencyRanking(original,weeklyFeed,'2026-11-19'),original);
+assert.equal(mod.withChfCurrencyRanking(original,{...weeklyFeed,eligible_for_core:true},rankingDay),original);
 console.log('NEXT_V17_SOURCE_PROVENANCE_PASS',JSON.stringify({CHF:chfContext[0].lastDate,NZD:nzdContext[0].lastDate,NZD_intervals:nzdContext[0].intervals,short:shortCount,medium:mediumCount,core_changed:false}));

@@ -62,11 +62,13 @@ function routeLink(route,label,cls='ghost-btn small'){return '<a class="'+cls+'"
 const get=k=>k==='estimatedMacro'?estimatedMacro():(state.data[k]||null);
 function estimatedMacro(){
  if(!window.FXQuantMacroEstimated?.evaluate)return {status:'STIMA_SOSPESA',reason:'Modulo stimato non caricato'};
- return window.FXQuantMacroEstimated.evaluate({
+ const now=dayNow();
+ const estimate=window.FXQuantMacroEstimated.evaluate({
   observed:state.data.macroObserved,prices:state.data.currencyPrices,
   ois:state.data.ois,rates:state.data.rates,model:state.data.pairs,
-  now:dayNow(),rankingFn:window.FXQuantPairRankings?.currencyRanking
+  now,rankingFn:window.FXQuantPairRankings?.currencyRanking
  });
+ return window.FXQuantRatesBridge?.withChfCurrencyRanking?.(estimate,state.data.chf2yEstimate,now)||estimate;
 }
 const choose=(id,options,selected,attr='data-select')=>options.map(v=>'<button type="button" class="pill '+(String(v.value)===String(selected)?'active':'')+'" '+attr+'="'+esc(v.value)+'" aria-pressed="'+String(String(v.value)===String(selected))+'">'+esc(v.label)+'</button>').join('');
 const timeWindows=[{label:'5 sedute',value:5},{label:'20 sedute',value:20},{label:'60 sedute',value:60},{label:'Tutto',value:9999}];

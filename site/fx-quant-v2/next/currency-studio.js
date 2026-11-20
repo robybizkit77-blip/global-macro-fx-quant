@@ -197,6 +197,7 @@ function build(api){
    const rank=current?'#'+current.rank:(x.price.position?'P#'+x.price.position:'—');
    const m=desk?.macro||{},p=desk?.market||{},comparison=desk?.comparison||{};
    const sixProof=pricingProof(x.ccy);
+   const chfRate=current?.rankingRate;
    const label=current?(current.macroScore>=.25?'Momentum economico positivo':
     current.macroScore<=-.25?'Momentum economico debole':'Momentum economico misto'):
     m.title||'Stima non disponibile';
@@ -231,7 +232,9 @@ function build(api){
     '<span class="strength-name"><b>'+rank+'</b><strong>'+FLAGS[x.ccy]+' '+x.ccy+'</strong></span>'+
     '<span class="strength-brief"><strong>'+esc(label)+'</strong><small>'+esc(directions)+'</small></span>'+
     '<span class="strength-market-brief '+(comparison.state==='DIVERGENZA_DA_STUDIARE'?'divergent':'')+
-     '"><strong>'+esc(sixProof?.label||marketLabel)+'</strong><small>'+esc(sixProof?.short||marketDetail)+'</small></span>'+
+     '"><strong>'+esc(chfRate?'2Y CHF stimato':sixProof?.label||marketLabel)+'</strong><small>'+
+     esc(chfRate?sign(chfRate.changeBp,1,' pb')+' · '+date(chfRate.asof)+' · '+(chfRate.score?'peso ridotto':'contributo neutro'):
+      sixProof?.short||marketDetail)+'</small></span>'+
     '<span class="strength-price-brief '+tone+'"><strong>'+esc(x.price.label)+
     '</strong><small>Forza FX · 20 fixing</small></span>'+
     '<span class="strength-reading"><strong>'+ (x.ccy===country?'Selezionata':'Seleziona')+
@@ -380,7 +383,13 @@ function build(api){
    x.macro.ok?'Nell’ultimo quadro disponibile l’inflazione '+(x.macro.inflationDirection==='SALE'?'sale':x.macro.inflationDirection==='SCENDE'?'scende':'è stabile')+
     ' e la disoccupazione '+(x.macro.labourDirection==='SALE'?'sale':x.macro.labourDirection==='SCENDE'?'scende':'è stabile')+'.':
     'I prossimi dati su attività e lavoro aiuteranno a chiarire la direzione dell’economia.';
-  const estimatedPolicy=cur?
+  const chfRate=cur?.rankingRate;
+  const chfRankingDetail=chfRate?
+   'Il 2Y svizzero è stimato a '+sign(chfRate.changeBp,1,' pb')+' dal '+date(chfRate.start)+' al '+date(chfRate.asof)+
+   '. Fascia basata sull’errore storico da '+sign(chfRate.low,1,' pb')+' a '+sign(chfRate.high,1,' pb')+
+   '. '+(chfRate.score?'Il movimento supera la soglia del ranking anche al margine più prudente. Entra con peso ridotto.':
+    'Il margine più prudente della fascia non supera la soglia di 5 pb. Il contributo al ranking resta neutro.'):null;
+  const estimatedPolicy=chfRate?plainRates(sixProof):cur?
    (cur.rate.quality==='UFFICIALE'?
     'Nel riferimento '+cur.rate.kind+' a sei mesi ('+date(cur.rate.asof)+
     ') la variazione settimanale è '+(cur.rate.score>0?'al rialzo':
@@ -460,7 +469,7 @@ function build(api){
    '</div></div>'+
    '<div class="strength-first-reading">'+
    '<p><strong>Il quadro economico.</strong> '+esc(estimatedEconomic)+'</p>'+
-   '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(plainRates(sixProof))+'</p>'+
+   '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(chfRankingDetail||plainRates(sixProof))+'</p>'+
    '<p><strong>Che cosa mostra il Forex.</strong> '+esc(opening.lead)+'</p>'+
    '</div>'+
    '<p class="strength-first-watch"><strong>Che cosa monitorare.</strong> '+esc(nextCheck)+'</p>'+
@@ -472,10 +481,12 @@ function build(api){
      ' / '+esc(label)+'</span><p>'+esc(main)+'</p><small>'+esc(note)+'</small></article>').join('')+
    '</div><div class="strength-additional">'+
     '<p><strong>Tassi attesi:</strong> '+esc(sixProof?.summary||estimatedPolicy)+'</p>'+
+    (chfRate?'<p>Il contributo alla classifica deriva dal <a href="'+esc(chfRate.source)+'" target="_blank" rel="noopener noreferrer">10Y osservato dalla BNS</a>. La fascia usa scarti storici su una settimana.</p>':'')+
     '<p><strong>Forza dei cambi:</strong> '+esc(priceSummary)+'</p>'+
     '<p><strong>Verifica specifica:</strong> '+esc(fxMonitorWatch)+'</p>'+
     (desk?'<p><strong>Da monitorare:</strong> '+esc(desk.watch)+'</p>':'')+
-    '<p><strong>Copertura della stima:</strong> '+(cur?'fonti macro '+cur.gdpPeriod+' / '+cur.labourPeriod+'; '+cur.rate.quality+' '+date(cur.rate.asof):'non disponibile')+'. I contributi mancanti non sono dati zero osservati. Il punteggio non è testato out-of-sample.</p>'+
+    '<p><strong>Copertura della stima:</strong> '+(cur?'fonti macro '+cur.gdpPeriod+' / '+cur.labourPeriod+'; '+
+     (chfRate?'2Y CHF stimato '+date(chfRate.asof):cur.rate.quality+' '+date(cur.rate.asof)):'non disponibile')+'. I contributi mancanti non sono dati zero osservati. Il punteggio non è testato out-of-sample.</p>'+
     cbText+cotText+'</div>'+
    '<nav class="strength-links"><a href="#macro">Macro completa</a><a href="#rates">Tassi &amp; OIS</a>'+
    '<a href="#cot">COT</a><a href="#pairs">Coppie FX</a></nav>'+shadowResearch()+
