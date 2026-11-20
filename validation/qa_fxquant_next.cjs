@@ -209,12 +209,19 @@ async function homeMoneyJourney(page,label){
  const visible=await proof.innerText();
  assert(!/Non disponibile|non è verificabile/i.test(visible),
   label+' Home monetary comparison still discusses unavailable windows');
- const withUsd=await cards.nth(0).getAttribute('data-home-pricing-pair');
- assert(withUsd&&withUsd.includes('USD'),label+' first verified cross must include USD');
+ const archive=proof.locator('details[data-home-pricing-archive]');
+ if(await archive.count()){
+  assert.equal(await archive.locator('.home-pricing-proof-card:visible').count(),0,
+   label+' archived comparisons must start closed');
+  await archive.locator(':scope > summary').click();
+ }
+ const symbols=await cards.evaluateAll(rows=>rows.map(row=>row.dataset.homePricingPair));
+ assert(symbols.every(symbol=>/^[A-Z]{6}$/.test(symbol)),label+' expected validated pair symbols');
+ const usdIndex=symbols.findIndex(symbol=>symbol.includes('USD'));
  if(count===2){
-  const withoutUsd=await cards.nth(1).getAttribute('data-home-pricing-pair');
-  assert(withoutUsd&&!withoutUsd.includes('USD'),
-   label+' second verified cross must avoid USD');
+  assert(usdIndex>=0,label+' the two examples include one USD cross');
+  const withUsd=symbols[usdIndex],withoutUsd=symbols[1-usdIndex];
+  assert(!withoutUsd.includes('USD'),label+' the second example must avoid USD');
   const first=new Set([withUsd.slice(0,3),withUsd.slice(3)]);
   assert(![withoutUsd.slice(0,3),withoutUsd.slice(3)].some(x=>first.has(x)),
    label+' two selected comparisons unnecessarily repeat a currency');
@@ -239,7 +246,7 @@ async function homeMoneyJourney(page,label){
    assert.equal(await row.getAttribute('data-home-pricing-available'),'true',
     label+' a shown horizon must have valid dated 6M/FX evidence');
    const text=(await row.innerText()).replace(/\s+/g,' ');
-   assert(/\d{2}\/\d{2}\/\d{4}\s*→\s*\d{2}\/\d{2}\/\d{4}/.test(text),
+   assert(/Riferimento \d{2}\/\d{2}\/\d{4} · fine \d{2}\/\d{2}\/\d{4}/.test(text),
     label+' missing source-aligned date interval at '+period+' sessions');
    assert(/Δ 6M.+pb.+FX.+%/.test(text),
     label+' longer horizon missing numeric 6M/Forex comparison');
@@ -250,13 +257,15 @@ async function homeMoneyJourney(page,label){
    label+' accordion label omits an available horizon');
  }
  await proof.screenshot({path:evidence+'/'+label+'-verified-money-fx.png'});
- await proof.locator('.home-pricing-proof-sources > summary').click();
+ await proof.locator('.home-pricing-proof-sources:not([data-home-pricing-archive]) > summary').click();
  assert.equal(await proof.locator('.home-pricing-proof-sources nav a').count(),3);
- await cards.nth(0).locator('[data-command]').click();
+ const pairIndex=usdIndex<0?0:usdIndex;
+ const pair=symbols[pairIndex];
+ await cards.nth(pairIndex).locator('[data-command]').click();
  await page.waitForFunction(k=>document.querySelector('#content')?.dataset.view==='pairs'&&
-  document.querySelector('.pair-monetary-bridge')?.dataset.pairMonetaryPair===k,withUsd);
+  document.querySelector('.pair-monetary-bridge')?.dataset.pairMonetaryPair===k,pair);
  assert.equal(await locator(page,'.pair-monetary-bridge').getAttribute('data-pair-monetary-pair'),
-  withUsd,label+' no matching pair dossier opened from Home');
+  pair,label+' no matching pair dossier opened from Home');
 }
 async function g8Choice(page,label){
  await route(page,'currencies');
