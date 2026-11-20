@@ -2408,6 +2408,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-19T15:17:20.870347Z"
+          },
+          {
+            "date": "2026-11-20",
+            "rate": 0.295,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-20T15:26:16.364193Z"
           }
         ],
         "12m": [
