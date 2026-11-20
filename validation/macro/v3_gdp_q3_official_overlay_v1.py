@@ -23,7 +23,14 @@ PINNED = {
             "FIRST_QUARTERLY_ESTIMATE",
             "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/"
             "gdpfirstquarterlyestimateuk/julytoseptember2026"),
+    "CHF": ("2026Q3", "2026-11-16", 0.2, "PERCENT_QOQ_SA_CALENDAR_SPORTS",
+            "PRELIMINARY_FLASH", "https://www.seco.admin.ch/en/newnsb/eOpqmkpQhZVQ"),
 }
+SECO_METHODOLOGY = ("https://www.seco.admin.ch/dam/en/sd-web/NuK0BItA1ufL/"
+                    "2026-06-Factsheet-Quarterly-National-Accounts-SECO.pdf")
+SECO_PRIOR = ("2026Q2", "2026-09-03", 1.5, "PERCENT_QOQ_SA_CALENDAR_SPORTS",
+              "QUARTERLY_NATIONAL_ACCOUNTS", "https://www.seco.admin.ch/it/newnsb/xrrzuLVT1pbC")
+
 
 def observed_q3_updates(as_of: str, *, evidence=None) -> dict:
     """Only verifiable releases known strictly before as_of; no look-ahead."""
@@ -53,6 +60,11 @@ def observed_q3_updates(as_of: str, *, evidence=None) -> dict:
         observed = tuple(r.get(k) for k in keys)
         if c not in PINNED or c in result or observed != PINNED[c]:
             raise ValueError("MACRO_V3_GDP_Q3_SOURCE_VALUE_DATE_UNIT_DRIFT")
+        if c == "CHF":
+            prior = r.get("prior_documented_quarter")
+            if (not isinstance(prior, dict) or tuple(prior.get(k) for k in keys) != SECO_PRIOR
+                    or r.get("methodology_url") != SECO_METHODOLOGY):
+                raise ValueError("MACRO_V3_GDP_Q3_SECO_COMPARISON_DRIFT")
         # Events are observable only after release, not from GDP quarter end.
         published = date.fromisoformat(r["publisher_release_day"])
         result[c] = None
@@ -74,6 +86,16 @@ def observed_q3_updates(as_of: str, *, evidence=None) -> dict:
             "later_revisions_not_identical_to_first_release": True,
             "historical_pit_training_vintages_certified": False,
         }
+        if c == "CHF":
+            # The Q2 detailed release uses the same definition as the Q3 flash.
+            prior_quarter = {**result[c], **{k: prior[k] for k in keys[:-1]},
+                             "publisher_source": prior["source_url"],
+                             "nonannualized_qoq_descriptive_pct": prior["reported_value"]}
+            result[c].update(
+                prior_documented_quarter=prior_quarter,
+                publisher_methodology=r["methodology_url"],
+                comparison_uses_distinct_publisher_editions=True,
+            )
     if set(result) != set(PINNED):
         raise ValueError("MACRO_V3_GDP_Q3_MISSING_SOURCE")
     return {c: v for c, v in result.items() if v is not None}

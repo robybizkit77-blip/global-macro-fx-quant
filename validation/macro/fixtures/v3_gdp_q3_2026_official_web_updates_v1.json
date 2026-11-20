@@ -31,6 +31,24 @@
       "reported_unit": "PERCENT_QOQ_SA",
       "publication_stage": "FIRST_QUARTERLY_ESTIMATE",
       "source_url": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/julytoseptember2026"
+    },
+    {
+      "currency": "CHF",
+      "reference_quarter": "2026Q3",
+      "publisher_release_day": "2026-11-16",
+      "reported_value": 0.2,
+      "reported_unit": "PERCENT_QOQ_SA_CALENDAR_SPORTS",
+      "publication_stage": "PRELIMINARY_FLASH",
+      "source_url": "https://www.seco.admin.ch/en/newnsb/eOpqmkpQhZVQ",
+      "methodology_url": "https://www.seco.admin.ch/dam/en/sd-web/NuK0BItA1ufL/2026-06-Factsheet-Quarterly-National-Accounts-SECO.pdf",
+      "prior_documented_quarter": {
+        "reference_quarter": "2026Q2",
+        "publisher_release_day": "2026-09-03",
+        "reported_value": 1.5,
+        "reported_unit": "PERCENT_QOQ_SA_CALENDAR_SPORTS",
+        "publication_stage": "QUARTERLY_NATIONAL_ACCOUNTS",
+        "source_url": "https://www.seco.admin.ch/it/newnsb/xrrzuLVT1pbC"
+      }
     }
   ]
 }
