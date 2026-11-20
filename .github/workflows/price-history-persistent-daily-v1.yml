@@ -13,6 +13,8 @@ on:
   pull_request:
     paths:
       - 'validation/fetch_ecb_g8_price_history.py'
+      - 'validation/macro/persist_calendar_news_safe_v12.py'
+      - 'validation/macro/test_persist_calendar_news_safe_v12.py'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
       - '.github/workflows/price-history-persistent-daily-v1.yml'
       - 'validation/preview_price_history_schedule_gate_v1.py'
@@ -66,11 +68,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref }}
+          fetch-depth: 0
           persist-credentials: true
 
       - name: Test active Preview price history slot contract
-        run: python3 validation/test_preview_price_history_schedule_gate_v1.py
+        run: |
+          python3 validation/test_preview_price_history_schedule_gate_v1.py
+          python3 -m unittest validation.macro.test_persist_calendar_news_safe_v12 -v
 
       - name: Resolve ECB G8 history Rome slot from scheduled UTC cron
         id: gate
@@ -119,6 +124,8 @@ jobs:
           assert len(m)==1,m
           runtime=f'{m[0][:4]}-{m[0][4:6]}-{m[0][6:8]}'
           assert h['last_as_of']>=runtime,(h['last_as_of'],runtime)
+          prior=json.load(open('live_data/sections/ECB_G8_PRICE_HISTORY.json'))
+          assert h['last_as_of']>=prior['last_as_of'],(h['last_as_of'],prior['last_as_of'])
           print('PRICE_HISTORY_CANDIDATE_PASS',h['first_as_of'],h['last_as_of'],h['row_count'],'runtime',runtime)
           PY
 
@@ -149,25 +156,22 @@ jobs:
           git diff --exit-code
           echo PRICE_HISTORY_VALIDATION_ONLY_PASS
 
-      - name: Persist validated history to main with remote-head lease
+      - name: Persist validated ECB history with scoped retry on concurrent writes
         if: steps.gate.outputs.should_run == 'true' && github.ref == 'refs/heads/main' && steps.classify.outputs.status == 'UPDATE_AVAILABLE'
         shell: bash
-        env:
-          TARGET_BRANCH: main
         run: |
           set -euo pipefail
-          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA" = "$GITHUB_SHA"
           cp /tmp/price-history/candidate.json live_data/sections/ECB_G8_PRICE_HISTORY.json
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add live_data/sections/ECB_G8_PRICE_HISTORY.json
-          git diff --cached --quiet && { echo 'No Price history changes to persist'; exit 0; }
-          git commit -m 'Refresh official ECB G8 price history'
-          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
-          git push origin "HEAD:$TARGET_BRANCH"
-          echo PRICE_HISTORY_MAIN_UPDATE_PUSHED
+          python3 - <<'PY' | tee /tmp/price-history/persist.json
+          import json
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+
+          print(json.dumps(persist(
+              managed=('live_data/sections/ECB_G8_PRICE_HISTORY.json',),
+              protected=('payload/part-15.txt', 'validation/fetch_ecb_g8_price_history.py'),
+              commit_message='Refresh official ECB G8 price history',
+          )))
+          PY
 
       - name: Upload Price history evidence
         if: always() && steps.gate.outputs.should_run == 'true'

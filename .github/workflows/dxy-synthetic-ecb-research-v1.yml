@@ -65,9 +65,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git add -- live_data/sections/DXY_SYNTHETIC_ECB.json
-          if git diff --cached --quiet; then echo DXY_ALREADY_CURRENT; exit 0; fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m "Refresh DXY ECB-based synthetic research series"
-          git push origin HEAD:main
+          python3 - <<'PY'
+          import json
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+
+          print(json.dumps(persist(
+              managed=('live_data/sections/DXY_SYNTHETIC_ECB.json',),
+              protected=('live_data/sections/ECB_G8_PRICE_HISTORY.json',
+                         'validation/build_dxy_synthetic_ecb_v1.py'),
+              commit_message='Refresh DXY ECB-based synthetic research series',
+          )))
+          PY

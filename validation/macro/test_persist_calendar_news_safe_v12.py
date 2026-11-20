@@ -123,8 +123,24 @@ class CalendarConcurrentPersistenceTests(unittest.TestCase):
         self.assertEqual(
             run(self.b, "show", "HEAD:"+LEDGER), "first-observed-runner-B")
 
+    def test_moved_protected_input_requires_fresh_validation(self):
+        write(self.a, LEDGER, "candidate based on original input\n")
+        self.push_remote("README.md", "new upstream observation\n")
+        with self.assertRaisesRegex(RuntimeError,
+                                    "REMOTE_PROTECTED_INPUTS_MOVED_FAIL_CLOSED: README.md"):
+            persist(self.a, managed=MANAGED, protected=("README.md",))
+        self.assertEqual(run(self.b, "show", "HEAD:"+LEDGER), "")
+
     def test_unexpected_file_modification_refused(self):
         write(self.a, "README.md", "do not publish this\n")
+        write(self.a, LEDGER, "important\n")
+        with self.assertRaisesRegex(ValueError, "UNEXPECTED_WORKTREE_CHANGE"):
+            persist(self.a, managed=MANAGED)
+        self.assertEqual(run(self.a, "log", "-1", "--format=%s"), "initial")
+
+    def test_unexpected_staged_modification_refused(self):
+        write(self.a, "README.md", "staged outside allowed scope\n")
+        run(self.a, "add", "README.md")
         write(self.a, LEDGER, "important\n")
         with self.assertRaisesRegex(ValueError, "UNEXPECTED_WORKTREE_CHANGE"):
             persist(self.a, managed=MANAGED)
