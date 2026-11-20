@@ -5,6 +5,8 @@ on:
     paths:
       - 'validation/collect_chf_snb_10y_context_v1.py'
       - 'validation/test_collect_chf_snb_10y_context_v1.py'
+      - 'validation/rates/build_chf_2y_estimate_research_v1.py'
+      - 'validation/rates/test_build_chf_2y_estimate_research_v1.py'
       - 'live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'
       - '.github/workflows/chf-snb-10y-informational-context-v1.yml'
   push:
@@ -12,6 +14,8 @@ on:
     paths:
       - 'validation/collect_chf_snb_10y_context_v1.py'
       - 'validation/test_collect_chf_snb_10y_context_v1.py'
+      - 'validation/rates/build_chf_2y_estimate_research_v1.py'
+      - 'validation/rates/test_build_chf_2y_estimate_research_v1.py'
       - 'live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'
       - '.github/workflows/chf-snb-10y-informational-context-v1.yml'
   schedule:
@@ -40,6 +44,7 @@ jobs:
         run: |
           python -m py_compile validation/collect_chf_snb_10y_context_v1.py validation/test_collect_chf_snb_10y_context_v1.py
           python validation/test_collect_chf_snb_10y_context_v1.py
+          python validation/rates/test_build_chf_2y_estimate_research_v1.py
       - name: Fetch official 10Y or remain fail-closed
         shell: bash
         run: |
@@ -64,6 +69,9 @@ jobs:
           else
             echo 'SNB_10Y_SOURCE_WITHHELD: no credible new observation; keeping last snapshot.'
           fi
+      - name: Append the same dated 10Y close to the AUD/CHF estimate inputs
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: python validation/rates/build_chf_2y_estimate_research_v1.py
       - name: Assert core Rates/OIS and Preview design untouched
         shell: bash
         run: |
@@ -73,22 +81,30 @@ jobs:
           python - <<'PY'
           import subprocess
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
-          assert changed <= {'live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'},changed
+          assert changed <= {'live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json',
+                             'site/fx-quant-v2/chf-2y-estimate-research.json'},changed
           print('SNB_10Y_CONTEXT_EXACT_SCOPE_PASS',sorted(changed))
           PY
-      - name: Persist informational 10Y to main only
+      - name: Persist both research inputs to main
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         shell: bash
         run: |
           set -euo pipefail
           FILE=live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json
-          if git diff --quiet -- "$FILE"; then echo SNB_10Y_NO_NEW_OBSERVATION; exit 0; fi
-          LOCAL_SHA=$(git rev-parse HEAD)
-          git fetch origin main --quiet
-          test "$(git rev-parse origin/main)" = "$LOCAL_SHA" || { echo 'main moved; no unsafe write' >&2; exit 1; }
+          ESTIMATE=site/fx-quant-v2/chf-2y-estimate-research.json
+          if git diff --quiet -- "$FILE" "$ESTIMATE"; then echo SNB_10Y_NO_NEW_OBSERVATION; exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- "$FILE"
+          git add -- "$FILE" "$ESTIMATE"
           git commit -m 'Refresh SNB CHF 10Y informational-only spot context'
-          git push origin HEAD:main
-          echo SNB_10Y_CONTEXT_PERSISTED_NO_SIGNAL_PROMOTION
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo SNB_10Y_CONTEXT_PERSISTED_NO_SIGNAL_PROMOTION
+              exit 0
+            fi
+            git fetch origin main --quiet
+            git rebase origin/main
+            sleep "$((attempt * 2))"
+          done
+          echo SNB_10Y_CONTEXT_NOT_PERSISTED >&2
+          exit 1

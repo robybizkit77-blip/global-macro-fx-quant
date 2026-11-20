@@ -12,6 +12,8 @@
   r?.quality==='OFFICIAL_RBA_F2_DAILY_RESEARCH_ONLY'||
   r?.quality==='OFFICIAL_RBNZ_B2_RECONCILED_RESEARCH_ONLY';
  const SNB_SPOT_SOURCE='https://data.snb.ch/api/cube/rendeiduebd/data/json/en';
+ const SNB_10Y_SOURCE='https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates';
+ const hasDigest=value=>typeof value==='string'&&/^[0-9a-f]{64}$/.test(value);
  // RBA daily observations remain independent research: no Core or FX engine writes.
  function researchRates(rateData,research,modelDate,now){
   const a=rateData?.AUD,o=research?.observations;
@@ -203,7 +205,51 @@
   const short=metrics(joined,5,12),medium=metrics(joined,20,45);
   return short||medium?{asof:joined.at(-1).date,sourceAsOf:end,short,medium}:null;
  }
- function snapshot(rateData,prices,pair,modelDate,now,audHistory,chfHistory,nzdPostroll,nzdReconciled){
+ function estimateAudChf(aud,prices,modelDate,now,source){
+  const c=source?.calibration,o=source?.observations;
+  if(aud?.quality!=='OFFICIAL_RBA_F2_DAILY_RESEARCH_ONLY'||!Array.isArray(prices?.rows)||
+     !isDay(modelDate)||!isDay(now)||modelDate>now||
+     source?.schema!=='GMFQ_CHF_2Y_FROM_SNB_10Y_ESTIMATE_V1'||
+     source.research_only!==true||source.eligible_for_core!==false||source.eligible_for_backtests!==false||
+     source.spot_source_url!==SNB_10Y_SOURCE||!Array.isArray(o)||o.length<6||o.length>65||
+     c?.model!=='CHF_2Y_CHANGE_BETA_TIMES_SNB_10Y_CHANGE'||c.source_url!==SNB_SPOT_SOURCE||
+     !hasDigest(c.source_sha256)||c.holdout_nonoverlapping!==true||c.calibration_data_latest_vintage!==true||
+     !isDay(c.train_before)||!isDay(c.holdout_through)||c.train_before>c.holdout_through)return null;
+  let prior='';
+  const values=new Map();
+  for(const row of o){
+   if(!isDay(row?.date)||row.date<=prior||row.date>now||
+     !isNum(row.yield_percent)||row.yield_percent < -3||row.yield_percent > 18||!hasDigest(row.source_sha256))return null;
+   prior=row.date;
+   values.set(row.date,row.yield_percent);
+  }
+  const chf={date:prior,history2:{dates:[...values.keys()],values:[...values.values()]}};
+  const joined=matchFixings(['AUD','CHF'],prices,[aud,chf],modelDate,now);
+  if(joined.length<6)return null;
+  const end=joined.at(-1),start=joined.at(-6),span=days(start.date,end.date);
+  // F2 observations come out weekly, so the latest estimated comparison can
+  // predate the FX snapshot by a full F2 publication cycle.
+  if(span===null||span>12||days(end.date,now)>10||start.date<=c.holdout_through)return null;
+  let weekdays=0;
+  const first=Date.parse(start.date+'T12:00:00Z');
+  for(let i=0;i<span;i++){
+   const day=new Date(first+i*864e5).getUTCDay();
+   if(day!==0&&day!==6)weekdays++;
+  }
+  const fit=c.horizons?.[weekdays];
+  if(!(fit&&isNum(fit.beta)&&fit.beta>0&&fit.beta<2&&isNum(fit.abs_error_p90_bp)&&
+    fit.abs_error_p90_bp>0&&isNum(fit.mae_bp)&&isNum(fit.flat_mae_bp)&&fit.mae_bp<fit.flat_mae_bp&&
+    Number.isInteger(fit.holdout_count)&&fit.holdout_count>=20))return null;
+  const chf10Bp=(values.get(end.date)-values.get(start.date))*100;
+  const audYields=aud.history2;
+  const aud2Bp=(audYields.values[audYields.dates.indexOf(end.date)]-
+    audYields.values[audYields.dates.indexOf(start.date)])*100;
+  const chf2Bp=fit.beta*chf10Bp,spreadBp=aud2Bp-chf2Bp;
+  const low=spreadBp-fit.abs_error_p90_bp,high=spreadBp+fit.abs_error_p90_bp;
+  return {start:start.date,end:end.date,fxPct:(end.spot/start.spot-1)*100,weekdays,
+    aud2Bp,chf10Bp,chf2Bp,spreadBp,low,high,uncertain:low<=0&&high>=0,holdoutCount:fit.holdout_count};
+ }
+ function snapshot(rateData,prices,pair,modelDate,now,audHistory,chfHistory,nzdPostroll,nzdReconciled,chfEstimate){
   const aud=String(pair||'').includes('AUD')?researchRates(rateData,audHistory,modelDate,now):rateData;
   const eff=pair==='AUDNZD'&&aud?.AUD?.researchOnly?nzdResearchRates(aud,nzdReconciled,now):aud;
   const base=String(pair||'').slice(0,3),quote=String(pair||'').slice(3,6);
@@ -216,6 +262,7 @@
   const context=researchedSources(rateData,pair,modelDate,now,chfHistory,nzdPostroll);
   const chf=pair==='AUDCHF'&&context.find(c=>c.currency==='CHF');
   const historical=chf?historicalAudChf(aud.AUD,anchoredChfRows(rateData,chfHistory,modelDate,now),prices,modelDate,now):null;
+  const estimate=pair==='AUDCHF'&&!short?estimateAudChf(aud?.AUD,prices,modelDate,now,chfEstimate):null;
   const reason=!ready&&chf?'Il 2Y svizzero della serie SNB comparabile si ferma al '+chf.lastDate+
     '. Per aggiornare il confronto serve un 2Y CHF su date più recenti in comune con AUD e fixing BCE.'
     :!sourceOK?'Mancano due rendimenti governativi 2Y ufficiali confrontabili come serie di origine.'
@@ -224,7 +271,7 @@
     :!short?'Storico troppo discontinuo: 5 intervalli fra date comuni coprono più di 12 giorni o sono insufficienti.'
     :'';
   const nzdResearch=b?.quality==='OFFICIAL_RBNZ_B2_RECONCILED_RESEARCH_ONLY';
-  return {pair,base,quote,rows,latest,age,lag,ready:ready&&Boolean(short),researchOnly:!!(a?.researchOnly||b?.researchOnly),context,nzdResearch,historical,
+  return {pair,base,quote,rows,latest,age,lag,ready:ready&&Boolean(short),researchOnly:!!(a?.researchOnly||b?.researchOnly),context,nzdResearch,historical,estimate,
    short,medium,reason,
    firstSource:a?.source||'',secondSource:b?.source||'',
    // This series is a relative sovereign yield difference; never an OIS spread.
@@ -232,6 +279,9 @@
  }
  // A short, source-dated research observation, never a trade decision.
  function brief(r){
+  if(r?.estimate)return {ready:false,asof:null,tone:'unavailable',
+   label:'Stima differenziale 2Y · '+r.estimate.end+(r.estimate.uncertain?' · segno incerto':''),
+   explanation:'Il 2Y svizzero è stimato dalla variazione del 10Y BNS sulle date comuni.'};
   if(!r?.ready||!r.short||!r.latest?.date)return {
    ready:false,asof:null,tone:'unavailable',label:r?.historical?'Ultimo confronto storico 2Y · '+r.historical.asof:'2Y governativi non verificabili'+(r?.context?.length?' · '+r.context.map(x=>x.currency==='NZD'?'NZD '+x.intervals+'/5 post-roll':'CHF SNB '+x.lastDate).join(' / '):''),
    explanation:r?.reason||'Dati tassi/FX non disponibili su date comuni.',
@@ -251,7 +301,7 @@
  function build(api){
   const {get,state,plot,fmt,sign,date,esc,dayNow}=api;
   const pair=state.pair||'EURUSD',doc=get('pairs'),prices=get('currencyPrices');
-  const r=snapshot(get('rates'),prices,pair,doc?.price_asof,dayNow(),get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'),get('nzdReconciled'));
+  const r=snapshot(get('rates'),prices,pair,doc?.price_asof,dayNow(),get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'),get('nzdReconciled'),get('chf2yEstimate'));
   function read(x){
    if(!x)return 'Non verificabile con la copertura attuale.';
    const direction=x.direction==='STESSO SEGNO'?'si sono mossi nello stesso verso'
@@ -261,13 +311,23 @@
   }
   const pill=(x,historical=false)=>x?'<div class="decision-rate-horizon" '+(historical?'data-historical-horizon':'data-horizon')+'="'+x.n+'"><span>'+x.n+' INTERVALLI · '+(x.n+1)+' DATE COMUNI · '+x.days+' GIORNI</span><strong>'+sign(x.fxPct,2,'%')+' FX <b>vs</b> '+sign(x.spreadBp,1,' bp')+' 2Y</strong><small>'+esc(x.direction)+' · '+date(x.start)+' → '+date(x.end)+'</small></div>':'';
   function render(){
-   if(!r.ready&&r.historical){
-    const h=r.historical;
-    return '<section class="decision-rates-bridge" aria-label="Confronto storico AUD/CHF" data-historical-rate-asof="'+esc(h.asof)+'">'
-     +'<div class="decision-rates-heading"><div><span>PREZZO FX / TASSI 2Y</span><h2>AUD/CHF · ultimo confronto osservato al '+date(h.asof)+'</h2></div><a href="#rates" class="decision-rates-link">Apri Tassi & OIS</a></div>'
-     +'<p class="decision-rate-unavailable">Il fixing BCE arriva al '+date(prices.last_as_of)+'. La serie svizzera 2Y della BNS è disponibile fino al '+date(h.sourceAsOf)+'.</p>'
-     +'<div class="decision-rates-analysis"><span>CONFRONTO STORICO · DIFFERENZIALE AUD MENO CHF</span>'+pill(h.short,true)+pill(h.medium,true)+'</div>'
-     +'<p class="decision-source">Fonti: rendimenti governativi RBA F2 e BNS, cambio calcolato sui fixing BCE delle stesse date. I movimenti si riferiscono al periodo indicato.</p></section>';
+   if(!r.ready&&(r.estimate||r.historical)){
+    const h=r.historical,e=r.estimate;
+    const attributes=(h?' data-historical-rate-asof="'+esc(h.asof)+'"':'')+
+      (e?' data-estimated-rate-asof="'+esc(e.end)+'"':'');
+    const title=e?'AUD/CHF · stima del differenziale 2Y':'AUD/CHF · ultimo confronto osservato al '+date(h.asof);
+    const estimated=e?'<div class="decision-rates-analysis"><span>STIMA · '+date(e.start)+' → '+date(e.end)+' · 6 DATE COMUNI</span>'
+      +'<div class="decision-rate-horizon"><strong>'+sign(e.fxPct,2,'%')+' FX <b>vs</b> '+sign(e.spreadBp,1,' pb')+' 2Y stimato</strong>'
+      +'<small>AUD 2Y '+sign(e.aud2Bp,1,' pb')+' osservati · CHF 2Y '+sign(e.chf2Bp,1,' pb')+' stimati dal 10Y BNS</small></div>'
+      +'<p class="decision-rate-data-gap">Fascia basata sull’errore storico da '+sign(e.low,1,' pb')+' a '+sign(e.high,1,' pb')+'. '
+      +(e.uncertain?'La fascia comprende lo zero, quindi il verso del differenziale resta incerto.':'La fascia storica resta dallo stesso lato dello zero.')
+      +' Il test usa '+e.holdoutCount+' periodi non sovrapposti di pari durata.</p></div>':'';
+    const archived=h?'<div class="decision-rates-analysis"'+(e?' style="margin-top:12px"':'')+'><span>CONFRONTO STORICO OSSERVATO AL '+date(h.asof)+' · AUD MENO CHF</span>'+pill(h.short,true)+pill(h.medium,true)+'</div>':'';
+    return '<section class="decision-rates-bridge" aria-label="'+esc(title)+'"'+attributes+'>'
+     +'<div class="decision-rates-heading"><div><span>PREZZO FX / TASSI 2Y</span><h2>'+title+'</h2></div><a href="#rates" class="decision-rates-link">Apri Tassi & OIS</a></div>'
+     +(h?'<p class="decision-rate-unavailable">Il fixing BCE arriva al '+date(prices.last_as_of)+'. La serie svizzera 2Y della BNS è disponibile fino al '+date(h.sourceAsOf)+'.</p>':'')
+     +estimated+archived
+     +'<p class="decision-source">Fonti: rendimenti governativi RBA F2 e BNS, cambio calcolato sui fixing BCE delle stesse date.</p></section>';
    }
    if(!r.ready)return '<section class="decision-rates-bridge" aria-label="Conferma tassi e prezzo"><div class="decision-rates-heading"><span>PREZZO FX / TASSI 2Y</span><h2>La verifica sui tassi non è disponibile.</h2></div><p class="decision-rate-unavailable">'+esc(r.reason)+'</p>'+(r.context.length?'<div class="decision-source-evidence"><span>FONTI DI RICERCA OSSERVATE · NON IDONEE AL VERDETTO 5/20</span>'+r.context.map(x=>'<p data-source-context="'+x.currency+'">'+esc(x.text)+'</p>').join('')+'</div>':'')+'<small>Per evitare una falsa divergenza non confrontiamo serie di date diverse o osservazioni troppo distanti. Le curve OIS storiche non sono disponibili qui.</small></section>';
    const sel=[20,60,120].includes(Number(state.pairPriceWindow))?Number(state.pairPriceWindow):60;

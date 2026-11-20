@@ -9,6 +9,7 @@ const aud=j('site/fx-quant-v2/aud-rba-f2-history-research.json');
 const chf=j('site/fx-quant-v2/chf-snb-paired-history.json');
 const nzd=j('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
 const reconciled=j('site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json');
+const estimateFeed=j('site/fx-quant-v2/chf-2y-estimate-research.json');
 const legacy=j('site/fx-quant-v2/chf-nzd-benchmark-research.json');
 const mod=require('../site/fx-quant-v2/next/fx-rates-bridge.js');
 // Preserve the archived 6 Nov FX fixture; assess the independent, later NZD
@@ -106,6 +107,24 @@ assert(!mod.snapshot(rates,prices,'NZDUSD',liveAsOf,comparisonDay,aud,chf,nzd,re
 const chfRead=(data,history,asOf=liveAsOf,clock=comparisonDay)=>
  mod.snapshot(data,prices,'AUDCHF',asOf,clock,aud,history,nzd,reconciled);
 const audChf=chfRead(rates,chf);
+const estimated=(key,source,clock=comparisonDay)=>
+ mod.snapshot(rates,prices,key,liveAsOf,clock,aud,chf,nzd,reconciled,source);
+assert(!estimated('AUDCAD',estimateFeed).estimate,'The CHF estimate is scoped to AUD/CHF');
+assert(!estimated('AUDCHF',{...estimateFeed,eligible_for_core:true}).estimate);
+assert(!estimated('AUDCHF',estimateFeed,'2026-12-05').estimate,'Too-old inputs cannot produce a fresh estimate');
+const chf2y=estimated('AUDCHF',estimateFeed);
+if(aud.last_observation_date==='2026-11-18'&&comparisonDay==='2026-11-20'&&
+   estimateFeed.observations.some(x=>x.date==='2026-11-18')){
+ const e=chf2y.estimate;
+ assert(e,'The verified live inputs must produce an estimate');
+ assert.equal(e.start,'2026-11-09');
+ assert.equal(e.end,'2026-11-18');
+ assert.equal(e.weekdays,7);
+ assert(Math.abs(e.aud2Bp-5.6)<1e-9&&Math.abs(e.chf10Bp-15)<1e-9);
+ assert(e.spreadBp<0&&e.low<0&&e.high>0&&e.uncertain);
+ assert.equal(chf2y.ready,false);
+ assert.match(mod.brief(chf2y).label,/Stima differenziale 2Y.*segno incerto/);
+}
 assert(!chfRead(rates,chf,asof,now).historical,'A later RBA vintage cannot reach the archived desk');
 assert(!chfRead(rates,{...chf,eligible_for_core:true}).historical,'Invalid CHF research cannot feed the historical comparison');
 if(aud.last_observation_date==='2026-11-18'&&chf.last_observation_date==='2026-10-30'&&liveAsOf>='2026-11-18'){
@@ -190,6 +209,14 @@ if(audChf.historical){
  assert.match(observed,/data-historical-rate-asof=/);
  assert.match(observed,/ultimo confronto osservato al/);
  assert.doesNotMatch(observed,/data-rate-asof=|data-horizon=/);
+}
+if(chf2y.estimate){
+ const mixed=mod.build({...api,state:{pair:'AUDCHF'},dayNow:()=>comparisonDay,
+   get:k=>({rates,pairs,currencyPrices:prices,audDailyResearch:aud,chfResearch:chf,chf2yEstimate:estimateFeed})[k]}).render();
+ assert.match(mixed,/data-estimated-rate-asof=/);
+ assert.match(mixed,/2Y stimato/);
+ assert.match(mixed,/Fascia basata sull’errore storico/);
+ assert.doesNotMatch(mixed,/data-rate-asof=|data-horizon=/);
 }
 const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const app=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');

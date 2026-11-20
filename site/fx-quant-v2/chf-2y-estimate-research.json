@@ -1,0 +1,110 @@
+{
+  "schema": "GMFQ_CHF_2Y_FROM_SNB_10Y_ESTIMATE_V1",
+  "research_only": true,
+  "eligible_for_core": false,
+  "eligible_for_backtests": false,
+  "spot_source_url": "https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates",
+  "observations": [
+    {
+      "date": "2026-11-04",
+      "yield_percent": 0.525,
+      "source_sha256": "40d61d6649ea0297c4e03c9f77c360d3df25212da3aaad854d81311e8dae9bb0"
+    },
+    {
+      "date": "2026-11-05",
+      "yield_percent": 0.475,
+      "source_sha256": "c97778b2f562aa19fd2f42df96bf73e0934a90c5d49b59d10b9b9434684114d1"
+    },
+    {
+      "date": "2026-11-06",
+      "yield_percent": 0.45,
+      "source_sha256": "7244e436e7d969c669caf0b230bcea2d8a17d82d806f8857e1f3276312cef660"
+    },
+    {
+      "date": "2026-11-09",
+      "yield_percent": 0.459,
+      "source_sha256": "e0ca051a620201dcabe5b379f8f0abb123cf20d012acb22f3826adbe02deca45"
+    },
+    {
+      "date": "2026-11-10",
+      "yield_percent": 0.47,
+      "source_sha256": "5a48190026329849fb9de1e76ccfeb74ba419b2c29db133c2e806c21029ce72d"
+    },
+    {
+      "date": "2026-11-13",
+      "yield_percent": 0.593,
+      "source_sha256": "a8101473a7df52301ca9be5355ddd8fde4d8b246d8ed5cbf80feefe18f1df152"
+    },
+    {
+      "date": "2026-11-16",
+      "yield_percent": 0.595,
+      "source_sha256": "f3aae74f11ffc17d0e675d4674f805d92f2b21a43b21e8554918423e0144b224"
+    },
+    {
+      "date": "2026-11-17",
+      "yield_percent": 0.567,
+      "source_sha256": "91e098f860076a491aab2eb0a4238e0412dde8d31d57236a18a98b5ea5313a4b"
+    },
+    {
+      "date": "2026-11-18",
+      "yield_percent": 0.609,
+      "source_sha256": "01bd87845868955c9b8dff2743d4fbd9a9d5777982910ae0e996bc594ee61764"
+    },
+    {
+      "date": "2026-11-19",
+      "yield_percent": 0.614,
+      "source_sha256": "150b5315ec683d4ef6ca9c999becb21b2577f7e2610cc763b85e20ba4d30ec6d"
+    }
+  ],
+  "calibration": {
+    "model": "CHF_2Y_CHANGE_BETA_TIMES_SNB_10Y_CHANGE",
+    "source_url": "https://data.snb.ch/api/cube/rendeiduebd/data/json/en",
+    "source_sha256": "f6e07c934ea05e8c0de3e644ace678c1aea69813bc7b5887ca86f722635215f8",
+    "train_before": "2026-01-01",
+    "holdout_through": "2026-10-30",
+    "holdout_nonoverlapping": true,
+    "calibration_data_latest_vintage": true,
+    "horizons": {
+      "5": {
+        "beta": 0.750383,
+        "abs_error_p90_bp": 7.301,
+        "mae_bp": 3.726,
+        "flat_mae_bp": 5.452,
+        "train_count": 970,
+        "holdout_count": 42
+      },
+      "6": {
+        "beta": 0.763316,
+        "abs_error_p90_bp": 6.784,
+        "mae_bp": 2.589,
+        "flat_mae_bp": 3.894,
+        "train_count": 967,
+        "holdout_count": 35
+      },
+      "7": {
+        "beta": 0.767461,
+        "abs_error_p90_bp": 6.337,
+        "mae_bp": 3.326,
+        "flat_mae_bp": 5.79,
+        "train_count": 967,
+        "holdout_count": 30
+      },
+      "8": {
+        "beta": 0.770016,
+        "abs_error_p90_bp": 8.7,
+        "mae_bp": 3.518,
+        "flat_mae_bp": 5.315,
+        "train_count": 962,
+        "holdout_count": 26
+      },
+      "9": {
+        "beta": 0.762307,
+        "abs_error_p90_bp": 9.259,
+        "mae_bp": 4.572,
+        "flat_mae_bp": 7.27,
+        "train_count": 961,
+        "holdout_count": 23
+      }
+    }
+  }
+}
