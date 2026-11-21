@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-21T02:23:27.580199Z",
-  "edition_time_rome": "2026-11-21 03:23",
-  "material_digest": "a6bc1802391972ebd555a8a51ea1050f77c2e051915ac453a32b0dfa49a8df24",
+  "generated_at_utc": "2026-11-21T02:24:54.274280Z",
+  "edition_time_rome": "2026-11-21 03:24",
+  "material_digest": "7cf32dce68d62335d865c588cad2caec9dc01a481506a71dc4dcb7c52772218a",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
-  "lead": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
+  "lead": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. La volatilità azionaria è salita alla chiusura del 20 novembre.",
   "news": [
     {
       "headline": "Dollaro misto",
@@ -34,18 +34,16 @@
       "evidence": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     },
     {
-      "headline": "Azioni in calo e credito più cauto",
-      "analysis": "Alla chiusura del 19 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. Da seguire se il movimento prosegue anche alla prossima chiusura.",
+      "headline": "Il quadro del rischio",
+      "analysis": "La volatilità azionaria è salita alla chiusura del 20 novembre. Da seguire se il movimento prosegue anche alla prossima chiusura.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-19",
-      "event_date": "2026-11-19",
+      "published_date": "2026-11-20",
+      "event_date": "2026-11-20",
       "market_area": "RISCHIO",
       "sources": [
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
+        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
       ],
-      "evidence": "Alla chiusura del 19 novembre, S&P 500 −2,02%, VIX +3,88 punti e spread high yield +5 pb."
+      "evidence": "Alla chiusura del 20 novembre, VIX +7,45 punti."
     },
     {
       "headline": "Oro e petrolio in calo",
@@ -85,7 +83,7 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
+  "desk_judgment": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. La volatilità azionaria è salita alla chiusura del 20 novembre.",
   "fx_implications": "Da seguire se euro e yen si muovono nella stessa direzione contro il dollaro.",
   "what_changed": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
@@ -93,8 +91,6 @@
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bankofcanada.ca/2026/11/bank-canada-media-interview-barrie-360-2026-11-19/",
@@ -105,7 +101,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-21T02:23:27.580199Z",
+      "rss_checked_at_utc": "2026-11-21T02:24:54.274280Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -113,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-21T02:23:27.580199Z",
+      "headline": "Dollaro misto",
+      "material_digest": "a6bc1802391972ebd555a8a51ea1050f77c2e051915ac453a32b0dfa49a8df24"
+    },
     {
       "generated_at_utc": "2026-11-20T21:13:08.600701Z",
       "headline": "Dollaro misto",
@@ -227,11 +228,6 @@
       "generated_at_utc": "2026-11-17T11:58:21.198896Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "ef5fda834fe276ec3fa7419d7cf2b994d91ea18aebbc829a02ab552482d4260e"
-    },
-    {
-      "generated_at_utc": "2026-11-17T02:30:25.978793Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "913497d13caf54a3d34964cf4e0c3b7a452c586501555b9875a87dec1ff3def8"
     }
   ]
 }
