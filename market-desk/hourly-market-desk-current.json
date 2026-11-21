@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-21T19:34:58.707367Z",
-  "edition_time_rome": "2026-11-21 20:34",
-  "material_digest": "3686586d3d2db8dc76c3e1743bda3fc9daa02fad90831037891434c7ac588b49",
+  "generated_at_utc": "2026-11-21T19:44:25.457193Z",
+  "edition_time_rome": "2026-11-21 20:44",
+  "material_digest": "3eade66ea26d7a0665d44270c747aca69033a74f1cea927fe3585d260baed335",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Volatilità in rialzo, dollaro misto",
@@ -84,10 +84,10 @@
     }
   ],
   "desk_judgment": "La volatilità azionaria è salita alla chiusura del 20 novembre. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen.",
-  "fx_implications": "Se la volatilità resta alta, segui la tenuta dello yen contro il dollaro. Un rafforzamento anche contro l’euro darebbe più peso alla lettura sullo yen.",
+  "fx_implications": "Il 22 novembre alle 23:00 italiane è in programma PMI flash Australia (AUD). Da verificare la risposta dei tassi e di AUD.",
   "what_changed": "Nei proxy futures del 20 novembre l’oro scende e il WTI sale.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
-  "watch": "Nella prossima seduta, guarda se il movimento del dollaro si estende oltre le coppie che lo hanno guidato.",
+  "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
@@ -101,7 +101,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-21T19:34:58.707367Z",
+      "rss_checked_at_utc": "2026-11-21T19:44:25.457193Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-21T19:34:58.707367Z",
+      "headline": "Volatilità in rialzo, dollaro misto",
+      "material_digest": "3686586d3d2db8dc76c3e1743bda3fc9daa02fad90831037891434c7ac588b49"
+    },
     {
       "generated_at_utc": "2026-11-21T19:28:33.417800Z",
       "headline": "Dollaro misto",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-19T02:37:38.618191Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "82cc8040e98ac67abb0121117d4a682c26c7ad2b5837297b638a0156e9294ab6"
-    },
-    {
-      "generated_at_utc": "2026-11-18T20:37:37.322214Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "3a2a9da0a16e898d814787a51e51604f9dfb8af7066906c71c032f1d962f443b"
     }
   ]
 }
