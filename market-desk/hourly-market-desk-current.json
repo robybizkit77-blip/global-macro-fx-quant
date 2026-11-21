@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-20T21:13:08.600701Z",
-  "edition_time_rome": "2026-11-20 22:13",
-  "material_digest": "f88585d52447c0b65f87bb622134dcfddbff3b2f450ae7752f0bf1c928fd8c9f",
+  "generated_at_utc": "2026-11-21T02:23:27.580199Z",
+  "edition_time_rome": "2026-11-21 03:23",
+  "material_digest": "a6bc1802391972ebd555a8a51ea1050f77c2e051915ac453a32b0dfa49a8df24",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
-  "lead": "Sono usciti i dati sui prezzi in Giappone. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
+  "lead": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
   "news": [
     {
       "headline": "Dollaro misto",
@@ -85,9 +85,9 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Sono usciti i dati sui prezzi in Giappone. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 19 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
+  "desk_judgment": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Alla chiusura del 19 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
   "fx_implications": "Da seguire se euro e yen si muovono nella stessa direzione contro il dollaro.",
-  "what_changed": "Nella seduta del 19 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
+  "what_changed": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
   "watch": "Nella prossima seduta, guarda se il movimento del dollaro si estende oltre le coppie che lo hanno guidato.",
   "provenance": {
@@ -105,7 +105,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-20T21:13:08.600701Z",
+      "rss_checked_at_utc": "2026-11-21T02:23:27.580199Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -113,6 +113,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-20T21:13:08.600701Z",
+      "headline": "Dollaro misto",
+      "material_digest": "f88585d52447c0b65f87bb622134dcfddbff3b2f450ae7752f0bf1c928fd8c9f"
+    },
     {
       "generated_at_utc": "2026-11-20T17:02:58.948641Z",
       "headline": "Dollaro misto",
@@ -227,11 +232,6 @@
       "generated_at_utc": "2026-11-17T02:30:25.978793Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "913497d13caf54a3d34964cf4e0c3b7a452c586501555b9875a87dec1ff3def8"
-    },
-    {
-      "generated_at_utc": "2026-11-16T18:38:09.041445Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "28eb9f16d1258de84688e7fb2211f8a37acdb41bccf15af20f516d603877e61d"
     }
   ]
 }
