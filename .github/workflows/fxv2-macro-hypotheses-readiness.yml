@@ -1,0 +1,40 @@
+name: FXV2 Macro Hypotheses Research Readiness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/fxv2_macro_hypothesis_coverage_v1.py'
+      - 'validation/macro/test_fxv2_macro_hypothesis_coverage_v1.py'
+      - 'validation/macro/FXV2_MACRO_HYPOTHESES_PREREGISTRATION_2026-11-04.md'
+      - '.github/workflows/fxv2-macro-hypotheses-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macro-hypotheses-coverage-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test missingness, provenance and zero-FX signals
+        run: |
+          python3 -m unittest validation.macro.test_fxv2_macro_hypothesis_coverage_v1 -v
+          python3 -m validation.macro.fxv2_macro_hypothesis_coverage_v1 --output /tmp/fxv2-macro-hypotheses-v1.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          x = json.loads(Path('/tmp/fxv2-macro-hypotheses-v1.json').read_text())
+          assert x['backtest_executed'] is False
+          assert x['released_to_fx_core'] is False
+          assert x['prediction_accuracy'] is None
+          assert x['official_PIT_training_panel_certified'] is False
+          assert len(x['experiments']) == 4
+          print('FXV2_MACRO_HYPOTHESES_RESEARCH_ONLY',
+                x['source_as_of'], x['individual_axis_coverage'])
+          PY
