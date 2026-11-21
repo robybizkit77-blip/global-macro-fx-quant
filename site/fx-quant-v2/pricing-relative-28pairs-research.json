@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_FXV2_RELATIVE_PRICING_28PAIR_RESEARCH_V1",
   "pricing_source_schema": "GMFQ_FXV2_PRICING_SNAPSHOT_V1",
-  "pricing_source_content_sha256": "b538f782fe9978d2627a1417e6139fd72087faf8472fd555a1bd5e6a7f4068df",
+  "pricing_source_content_sha256": "1b8285de13e315d09c91770e47d8511f475e105a7df235bdf2f1de5ede321eb1",
   "pricing_source_snapshot_date": "2026-11-21",
   "calculation": "100 * (base rate percent - quote rate percent) per labeled 3m/6m/12m bucket",
   "comparability": "ARITHMETIC_ONLY_MIXED_OVERNIGHT_FUTURES_BANK_BILL_BASIS_AND_EXPIRIES",
@@ -19,8 +19,8 @@
     "currencies": 8,
     "pairs": 28,
     "horizon_comparisons": 84,
-    "same_date_comparisons": 37,
-    "mixed_date_comparisons": 47,
+    "same_date_comparisons": 36,
+    "mixed_date_comparisons": 48,
     "estimated_comparisons": 54,
     "proxy_comparisons": 21,
     "generated_fx_signals": 0,
@@ -121,9 +121,9 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": 453.5,
+          "spread_bp": 455.5,
           "base_rate_pct": 4.83,
-          "quote_rate_pct": 0.295,
+          "quote_rate_pct": 0.275,
           "base_as_of": "2026-11-19",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 1,
@@ -141,9 +141,9 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 412.5,
+          "spread_bp": 413.5,
           "base_rate_pct": 4.615,
-          "quote_rate_pct": 0.49,
+          "quote_rate_pct": 0.48,
           "base_as_of": "2026-11-19",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 1,
@@ -397,9 +397,9 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": 269.0,
+          "spread_bp": 271.0,
           "base_rate_pct": 2.985,
-          "quote_rate_pct": 0.295,
+          "quote_rate_pct": 0.275,
           "base_as_of": "2026-11-19",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 1,
@@ -417,9 +417,9 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 275.5,
+          "spread_bp": 276.5,
           "base_rate_pct": 3.245,
-          "quote_rate_pct": 0.49,
+          "quote_rate_pct": 0.48,
           "base_as_of": "2026-11-19",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 1,
@@ -535,8 +535,8 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": -135.3,
-          "base_rate_pct": 0.295,
+          "spread_bp": -137.3,
+          "base_rate_pct": 0.275,
           "quote_rate_pct": 1.648,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
@@ -555,8 +555,8 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": -139.5,
-          "base_rate_pct": 0.49,
+          "spread_bp": -140.5,
+          "base_rate_pct": 0.48,
           "quote_rate_pct": 1.885,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
@@ -584,13 +584,13 @@
       "quote": "AUD",
       "horizons": {
         "3m": {
-          "spread_bp": -224.25,
-          "base_rate_pct": 2.6025,
+          "spread_bp": -225.0,
+          "base_rate_pct": 2.595,
           "quote_rate_pct": 4.845,
-          "base_as_of": "2026-11-19",
+          "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
-          "date_gap_days": 0,
-          "same_date": true,
+          "date_gap_days": 1,
+          "same_date": false,
           "base_kind": "FUTURES SECONDARI",
           "quote_kind": "FUTURES",
           "base_quality": "STIMA INDICATIVA",
@@ -624,8 +624,8 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": -155.75,
-          "base_rate_pct": 3.0575,
+          "spread_bp": -157.25,
+          "base_rate_pct": 3.0425,
           "quote_rate_pct": 4.615,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
@@ -653,13 +653,13 @@
       "quote": "CAD",
       "horizons": {
         "3m": {
-          "spread_bp": -18.25,
-          "base_rate_pct": 2.6025,
+          "spread_bp": -19.0,
+          "base_rate_pct": 2.595,
           "quote_rate_pct": 2.785,
-          "base_as_of": "2026-11-19",
+          "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
-          "date_gap_days": 0,
-          "same_date": true,
+          "date_gap_days": 1,
+          "same_date": false,
           "base_kind": "FUTURES SECONDARI",
           "quote_kind": "FUTURES",
           "base_quality": "STIMA INDICATIVA",
@@ -693,8 +693,8 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": -18.75,
-          "base_rate_pct": 3.0575,
+          "spread_bp": -20.25,
+          "base_rate_pct": 3.0425,
           "quote_rate_pct": 3.245,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
@@ -722,13 +722,13 @@
       "quote": "CHF",
       "horizons": {
         "3m": {
-          "spread_bp": 248.25,
-          "base_rate_pct": 2.6025,
+          "spread_bp": 247.5,
+          "base_rate_pct": 2.595,
           "quote_rate_pct": 0.12,
-          "base_as_of": "2026-11-19",
+          "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
-          "date_gap_days": 1,
-          "same_date": false,
+          "date_gap_days": 0,
+          "same_date": true,
           "base_kind": "FUTURES SECONDARI",
           "quote_kind": "FUTURES SECONDARI",
           "base_quality": "STIMA INDICATIVA",
@@ -742,9 +742,9 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": 253.5,
+          "spread_bp": 255.5,
           "base_rate_pct": 2.83,
-          "quote_rate_pct": 0.295,
+          "quote_rate_pct": 0.275,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 0,
@@ -762,9 +762,9 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 256.75,
-          "base_rate_pct": 3.0575,
-          "quote_rate_pct": 0.49,
+          "spread_bp": 256.25,
+          "base_rate_pct": 3.0425,
+          "quote_rate_pct": 0.48,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 0,
@@ -791,13 +791,13 @@
       "quote": "GBP",
       "horizons": {
         "3m": {
-          "spread_bp": -173.08,
-          "base_rate_pct": 2.6025,
+          "spread_bp": -173.83,
+          "base_rate_pct": 2.595,
           "quote_rate_pct": 4.3333,
-          "base_as_of": "2026-11-19",
+          "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
-          "date_gap_days": 0,
-          "same_date": true,
+          "date_gap_days": 1,
+          "same_date": false,
           "base_kind": "FUTURES SECONDARI",
           "quote_kind": "OIS",
           "base_quality": "STIMA INDICATIVA",
@@ -831,8 +831,8 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": -187.07,
-          "base_rate_pct": 3.0575,
+          "spread_bp": -188.57,
+          "base_rate_pct": 3.0425,
           "quote_rate_pct": 4.9282,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
@@ -860,13 +860,13 @@
       "quote": "JPY",
       "horizons": {
         "3m": {
-          "spread_bp": 114.85,
-          "base_rate_pct": 2.6025,
+          "spread_bp": 114.1,
+          "base_rate_pct": 2.595,
           "quote_rate_pct": 1.454,
-          "base_as_of": "2026-11-19",
+          "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
-          "date_gap_days": 0,
-          "same_date": true,
+          "date_gap_days": 1,
+          "same_date": false,
           "base_kind": "FUTURES SECONDARI",
           "quote_kind": "FUTURES",
           "base_quality": "STIMA INDICATIVA",
@@ -900,8 +900,8 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 117.25,
-          "base_rate_pct": 3.0575,
+          "spread_bp": 115.75,
+          "base_rate_pct": 3.0425,
           "quote_rate_pct": 1.885,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
@@ -929,13 +929,13 @@
       "quote": "NZD",
       "horizons": {
         "3m": {
-          "spread_bp": -91.75,
-          "base_rate_pct": 2.6025,
+          "spread_bp": -92.5,
+          "base_rate_pct": 2.595,
           "quote_rate_pct": 3.52,
-          "base_as_of": "2026-11-19",
+          "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
-          "date_gap_days": 1,
-          "same_date": false,
+          "date_gap_days": 0,
+          "same_date": true,
           "base_kind": "FUTURES SECONDARI",
           "quote_kind": "PROXY FUTURES",
           "base_quality": "STIMA INDICATIVA",
@@ -969,8 +969,8 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": -82.25,
-          "base_rate_pct": 3.0575,
+          "spread_bp": -83.75,
+          "base_rate_pct": 3.0425,
           "quote_rate_pct": 3.88,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
@@ -998,13 +998,13 @@
       "quote": "USD",
       "horizons": {
         "3m": {
-          "spread_bp": -166.25,
-          "base_rate_pct": 2.6025,
+          "spread_bp": -167.0,
+          "base_rate_pct": 2.595,
           "quote_rate_pct": 4.265,
-          "base_as_of": "2026-11-19",
+          "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
-          "date_gap_days": 1,
-          "same_date": false,
+          "date_gap_days": 0,
+          "same_date": true,
           "base_kind": "FUTURES SECONDARI",
           "quote_kind": "FUTURES SECONDARI",
           "base_quality": "STIMA INDICATIVA",
@@ -1038,8 +1038,8 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": -140.25,
-          "base_rate_pct": 3.0575,
+          "spread_bp": -141.75,
+          "base_rate_pct": 3.0425,
           "quote_rate_pct": 4.46,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
@@ -1225,9 +1225,9 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": 433.65,
+          "spread_bp": 435.65,
           "base_rate_pct": 4.6315,
-          "quote_rate_pct": 0.295,
+          "quote_rate_pct": 0.275,
           "base_as_of": "2026-11-19",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 1,
@@ -1245,9 +1245,9 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 443.82,
+          "spread_bp": 444.82,
           "base_rate_pct": 4.9282,
-          "quote_rate_pct": 0.49,
+          "quote_rate_pct": 0.48,
           "base_as_of": "2026-11-19",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 1,
@@ -1570,9 +1570,9 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": 342.5,
+          "spread_bp": 344.5,
           "base_rate_pct": 3.72,
-          "quote_rate_pct": 0.295,
+          "quote_rate_pct": 0.275,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 0,
@@ -1590,9 +1590,9 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 339.0,
+          "spread_bp": 340.0,
           "base_rate_pct": 3.88,
-          "quote_rate_pct": 0.49,
+          "quote_rate_pct": 0.48,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 0,
@@ -1846,9 +1846,9 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": 414.0,
+          "spread_bp": 416.0,
           "base_rate_pct": 4.435,
-          "quote_rate_pct": 0.295,
+          "quote_rate_pct": 0.275,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 0,
@@ -1866,9 +1866,9 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 397.0,
+          "spread_bp": 398.0,
           "base_rate_pct": 4.46,
-          "quote_rate_pct": 0.49,
+          "quote_rate_pct": 0.48,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 0,
