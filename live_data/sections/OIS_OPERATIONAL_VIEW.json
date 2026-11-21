@@ -203,22 +203,22 @@
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
-          "futures_price": 97.1325,
+          "futures_price": 97.17,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-19T22:06:13Z",
-          "quote_as_of": "2026-11-19",
+          "price_valid_until": "2026-11-20T22:13:23Z",
+          "quote_as_of": "2026-11-20",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 36.8,
+          "raw_level_minus_spot_policy_bp": 33.0,
           "symbol": "EUREX:FST3G2027"
         }
       },
@@ -260,8 +260,8 @@
           },
           "6m": {
             "contract": "FST3G2027",
-            "quote_as_of": "2026-11-19",
-            "rate_indicative": 2.8675,
+            "quote_as_of": "2026-11-20",
+            "rate_indicative": 2.83,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           }
         },
@@ -449,7 +449,8 @@
       "backtest_eligible_as_official": false,
       "change_1d_available": false,
       "change_1w_available": false,
-      "confidence": "B",
+      "confidence": "C",
+      "conflicted_source_eligible_for_repricing": false,
       "direction_vs_policy": "WITHHELD",
       "horizons": {
         "12m": {
@@ -468,7 +469,7 @@
           "quote_timestamp_verified": true,
           "rate": 4.46,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 58.5,
+          "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQX2027"
         },
         "3m": {
@@ -478,16 +479,16 @@
           "contract": "ZQG2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-03-01",
-          "futures_price": 95.715,
+          "futures_price": 95.735,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-20T09:31:29Z",
+          "price_valid_until": "2026-11-20T21:59:59Z",
           "quote_as_of": "2026-11-20",
-          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
-          "quote_timestamp_verified": true,
-          "rate": 4.285,
+          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
+          "quote_timestamp_verified": false,
+          "rate": 4.265,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 41.0,
+          "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
@@ -506,13 +507,14 @@
           "quote_timestamp_verified": true,
           "rate": 4.485,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 61.0,
+          "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQK2027"
         }
       },
-      "input_mode": "LIVE_SECONDARY_OVERLAY",
+      "input_mode": "LIVE_SECONDARY_CONFLICT_INDICATIVE",
       "market_direction_proxy": null,
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
+      "note": "Indicative secondary futures quotes have unresolved same-contract/same-day source disagreement; first and later prints are preserved separately. Levels may be displayed as provisional estimates only. No official OIS, policy delta or 1D/1W repricing is certified.",
       "official_status": "WITHHELD",
       "operational_status": "GREEN_ESTIMATED",
       "policy_rate": 3.875,
@@ -528,7 +530,17 @@
         "weekly_min_age_days": 5,
         "weekly_reference_captured_at_utc": null
       },
-      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
+      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+      "source_conflict_keys": [
+        {
+          "contract": "ZQG2027",
+          "event_id": "c6f31e42515ab681d2b6bb2d537fcc63af42d8f083f0584b3c357a666bbcf6e3",
+          "horizon": "3m",
+          "observation_date": "2026-11-20"
+        }
+      ],
+      "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
+      "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS"
     }
   },
   "official_runtime_untouched": true,

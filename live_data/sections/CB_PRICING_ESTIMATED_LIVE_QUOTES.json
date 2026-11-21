@@ -93,17 +93,17 @@
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
-          "futures_price": 97.1325,
+          "futures_price": 97.17,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-11-19T22:06:13Z",
-          "quote_as_of": "2026-11-19",
+          "price_valid_until": "2026-11-20T22:13:23Z",
+          "quote_as_of": "2026-11-20",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.8675,
+          "rate": 2.83,
           "symbol": "EUREX:FST3G2027"
         }
       },
@@ -117,7 +117,7 @@
     "USD": {
       "as_of": "2026-11-20",
       "confidence_grade": "B",
-      "freshness_status": "LIVE_OR_RECENT_SESSION",
+      "freshness_status": "SOURCE_CONFLICT_NOT_CERTIFIED",
       "horizons": {
         "12m": {
           "business_day_lag": 0,
@@ -138,13 +138,13 @@
           "contract": "ZQG2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-03-01",
-          "futures_price": 95.715,
+          "futures_price": 95.735,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-11-20T09:31:29Z",
+          "price_valid_until": "2026-11-20T21:59:59Z",
           "quote_as_of": "2026-11-20",
-          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
-          "quote_timestamp_verified": true,
-          "rate": 4.285,
+          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
+          "quote_timestamp_verified": false,
+          "rate": 4.265,
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
@@ -163,14 +163,23 @@
         }
       },
       "instrument": "30 Day Federal Funds Futures",
-      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
+      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS. Same listed contract and quote day had conflicting source values; first observed version retained, later version quarantined. No policy-level, OIS or daily repricing inference.",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+      "source_conflict_keys": [
+        {
+          "contract": "ZQG2027",
+          "event_id": "c6f31e42515ab681d2b6bb2d537fcc63af42d8f083f0584b3c357a666bbcf6e3",
+          "horizon": "3m",
+          "observation_date": "2026-11-20"
+        }
+      ],
+      "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
       "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
       "source_url": "https://www.tradingview.com/symbols/CBOT-ZQ1%21/contracts/",
-      "status": "LIVE_SECONDARY_READY"
+      "status": "LIVE_SECONDARY_CONFLICT_QUARANTINED"
     }
   },
-  "generated_at_utc": "2026-11-21T02:25:15.728251Z",
+  "generated_at_utc": "2026-11-21T09:38:52.955502Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
