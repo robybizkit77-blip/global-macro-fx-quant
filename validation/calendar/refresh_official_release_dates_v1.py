@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh upcoming BEA and ABS schedule rows from the original publishers."""
+"""Refresh upcoming BEA, ABS and SECO schedules from the original publishers."""
 
 import json
 import re
@@ -16,8 +16,11 @@ BEA = "https://www.bea.gov/news/schedule?output=1"
 BEA_NEXT = "https://www.bea.gov/news/schedule/next-year?output=1"
 ABS = ("https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/"
        "consumer-price-index-australia")
+SECO_GDP = "https://www.seco.admin.ch/en/gross-domestic-product"
+SECO_FLASH = "https://www.seco.admin.ch/en/gdp-flash"
 SYDNEY = ZoneInfo("Australia/Sydney")
 NEW_YORK = ZoneInfo("America/New_York")
+ZURICH = ZoneInfo("Europe/Zurich")
 ROME = ZoneInfo("Europe/Rome")
 
 GDP = re.compile(r"GDP \((Advance|Second|Third) Estimate\)(?:, .+| and .+)?")
@@ -41,11 +44,11 @@ def fetch(url):
     return blob.decode("utf-8")
 
 
-def event(ccy, when, kind, title, period, family, source):
+def event(ccy, when, kind, title, period, family, source, *, quality="OFFICIAL_CALENDAR"):
     return {
         "ccy": ccy, "date": when.date().isoformat(), "time_local": when.strftime("%H:%M"),
         "timezone": when.tzinfo.key, "event_type": kind, "title": title,
-        "reference_period": period, "importance": "HIGH", "quality": "OFFICIAL_CALENDAR",
+        "reference_period": period, "importance": "HIGH", "quality": quality,
         "source_family": family, "source_url": source,
     }
 
@@ -98,6 +101,37 @@ def parse_abs(document):
         rows.append(event("AUD", when, "INFLATION", "Consumer Price Index, Australia", period, "ABS", ABS))
     if not rows:
         raise ValueError("ABS upcoming CPI schedule rows missing")
+    return rows
+
+
+def parse_seco(document, source):
+    heading = re.search(
+        r'<h2\b[^>]*\bid="Publication-schedule"[^>]*>\s*Publication schedule\s*</h2>',
+        document, re.I,
+    )
+    section = re.split(r"<h2\b", document[heading.end():], maxsplit=1, flags=re.I)[0] if heading else ""
+    provisional = re.search(
+        r"<h3\b[^>]*>\s*Provisional dates\s*</h3>.*?<ul\b[^>]*>(.*?)</ul>", section, re.S | re.I,
+    )
+    if not provisional:
+        raise ValueError("SECO provisional schedule missing")
+    title = {SECO_GDP: "Swiss quarterly GDP", SECO_FLASH: "Swiss GDP flash"}[source]
+    rows = []
+    for item in re.findall(r"<li\b[^>]*>(.*?)</li>", provisional[1], re.S | re.I):
+        row = re.fullmatch(
+            r"(Q[1-4] \d{4}) ([A-Z][a-z]+) (\d{1,2} [A-Z][a-z]+ \d{4}), "
+            r"(\d{1,2}:\d{2}) ([ap])\.m\.", plain(item),
+        )
+        if not row:
+            raise ValueError("SECO schedule row missing quarter or local clock")
+        period, weekday, day, clock, meridiem = row.groups()
+        when = datetime.strptime(f"{day} {clock} {meridiem.upper()}M", "%d %B %Y %I:%M %p")
+        if when.strftime("%A") != weekday:
+            raise ValueError("SECO weekday disagrees with release date")
+        rows.append(event("CHF", when.replace(tzinfo=ZURICH), "GROWTH", title, period, "SECO", source,
+                          quality="OFFICIAL_PROVISIONAL"))
+    if not rows:
+        raise ValueError("SECO schedule rows missing")
     return rows
 
 
@@ -166,7 +200,8 @@ def refresh(path, now, read=fetch):
         raise ValueError("official release seed contract changed")
     events = payload["events"]
     receipts = []
-    for name, url in (("BEA", BEA), ("BEA_NEXT", BEA_NEXT), ("ABS", ABS)):
+    for name, url in (("BEA", BEA), ("BEA_NEXT", BEA_NEXT), ("ABS", ABS),
+                      ("SECO_GDP", SECO_GDP), ("SECO_FLASH", SECO_FLASH)):
         try:
             document = read(url)
             if name.startswith("BEA"):
@@ -174,8 +209,10 @@ def refresh(path, now, read=fetch):
                 expected = now.astimezone(NEW_YORK).year + (name == "BEA_NEXT")
                 if year != expected:
                     raise ValueError("BEA schedule year disagrees with requested edition")
-            else:
+            elif name == "ABS":
                 rows = parse_abs(document)
+            else:
+                rows = parse_seco(document, url)
             events, count = apply_rows(events, rows, now)
         except (OSError, ValueError) as error:
             receipts.append({"source": name, "status": "SOURCE_BLOCKED_RETAINED",

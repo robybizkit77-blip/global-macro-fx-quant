@@ -826,6 +826,32 @@
       "quality": "OFFICIAL_CALENDAR",
       "source_family": "ABS",
       "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2026-12-02",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "November 2026",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://dam-api.bfs.admin.ch/hub/api/dam/assets/36353838/master"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-01-05",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "December 2026",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://dam-api.bfs.admin.ch/hub/api/dam/assets/36353838/master"
     }
   ]
 }
