@@ -316,6 +316,25 @@
   return '<span class="fx-watch-price"><strong>'+esc(sign(flat?0:move,2,'%'))+'</strong> '+esc(direction)+
    '<small>Fixing BCE del '+esc(date(prior.label))+' e del '+esc(date(last.label))+'</small></span>';
  }
+ function thesisChanges(from,to){
+  if(!from||!to||!from.thesis||!to.thesis||!from.timing||!to.timing)return null;
+  const changes=[];
+  if(from.favored!==to.favored)changes.push('Valuta favorita '+(from.favored||'nessuna')+' → '+(to.favored||'nessuna'));
+  if(from.thesis!==to.thesis)changes.push('Forza della tesi '+from.thesis.toLowerCase()+' → '+to.thesis.toLowerCase());
+  if(from.timing!==to.timing)changes.push('Timing '+from.timing.toLowerCase()+' → '+to.timing.toLowerCase());
+  return changes;
+ }
+ function estimatedSessionChange(key,history,estimate,today){
+  const start=estimate?.pricePriorAsOf,end=estimate?.priceAsOf;
+  if(estimate?.status!=='STIMA_OPERATIVA_NON_VALIDATA'||!validDay(start)||!validDay(end)||
+     start>=end||end>today||history?.schema!=='GMFQ_NEXT_ESTIMATED_FX_THESIS_HISTORY_V1'||
+     !Array.isArray(history.snapshots))return null;
+  const latest=history.snapshots.at(-1);
+  const previous=history.snapshots.findLast(snapshot=>snapshot.fixing===start);
+  if(latest?.fixing!==end||!latest.method||previous?.method!==latest.method)return null;
+  const changes=thesisChanges(previous.pairs?.[key],latest.pairs?.[key]);
+  return changes&&{start,end,changes};
+ }
  function watchThesisReading(key,history,today,esc,date){
   const snapshots=history?.schema==='GMFQ_NEXT_ESTIMATED_FX_THESIS_HISTORY_V1'&&Array.isArray(history.snapshots)?history.snapshots:[];
   const latest=snapshots?.at(-1),previous=snapshots?.at(-2);
@@ -330,13 +349,8 @@
     hour:'2-digit',minute:'2-digit'});
    dates='Stime sullo stesso fixing BCE del '+date(latest.fixing)+' · '+rome.format(before)+' → '+rome.format(after)+' IT';
   }
-  const from=previous.pairs?.[key],to=latest.pairs?.[key];
-  if(!from||!to||!from.thesis||!to.thesis||!from.timing||!to.timing)return unavailable;
-  const favoredLabel=x=>x.favored||'Equilibrio';
-  const changes=[];
-  if(from.favored!==to.favored)changes.push('Valuta favorita '+favoredLabel(from)+' → '+favoredLabel(to));
-  if(from.thesis!==to.thesis)changes.push('Forza della tesi '+from.thesis.toLowerCase()+' → '+to.thesis.toLowerCase());
-  if(from.timing!==to.timing)changes.push('Timing '+from.timing.toLowerCase()+' → '+to.timing.toLowerCase());
+  const changes=thesisChanges(previous.pairs?.[key],latest.pairs?.[key]);
+  if(!changes)return unavailable;
   const reading=changes.length?changes[0]:'Giudizi su tesi e timing invariati';
   return '<p class="fx-watch-thesis"><strong>'+esc(reading)+'</strong>'+
    (changes.length>1?'<span> · '+esc(changes.slice(1).join(' · '))+'</span>':'')+
@@ -478,7 +492,7 @@
    '<p>'+esc(est?.warning||'Le osservazioni non consentono oggi una valutazione affidabile.')+'</p>'+
    '</details></section></div>';
  }
- const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,pairRiskReading,pairDriverReading,pairCatalystWatch,render};
+ const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,pairRiskReading,pairDriverReading,pairCatalystWatch,estimatedSessionChange,render};
  root.FXQuantPairRankings=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
