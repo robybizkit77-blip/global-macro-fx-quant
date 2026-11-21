@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-21T19:28:33.417800Z",
-  "edition_time_rome": "2026-11-21 20:28",
-  "material_digest": "7ecd32c240a034c592890bb15be827be561c82ddf80e8caebc23e066c9faf209",
+  "generated_at_utc": "2026-11-21T19:34:58.707367Z",
+  "edition_time_rome": "2026-11-21 20:34",
+  "material_digest": "3686586d3d2db8dc76c3e1743bda3fc9daa02fad90831037891434c7ac588b49",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
-  "headline": "Dollaro misto",
-  "lead": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. La volatilità azionaria è salita alla chiusura del 20 novembre.",
+  "headline": "Volatilità in rialzo, dollaro misto",
+  "lead": "La volatilità azionaria è salita alla chiusura del 20 novembre. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen.",
   "news": [
     {
       "headline": "Dollaro misto",
@@ -83,8 +83,8 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. La volatilità azionaria è salita alla chiusura del 20 novembre.",
-  "fx_implications": "Da seguire se euro e yen si muovono nella stessa direzione contro il dollaro.",
+  "desk_judgment": "La volatilità azionaria è salita alla chiusura del 20 novembre. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen.",
+  "fx_implications": "Se la volatilità resta alta, segui la tenuta dello yen contro il dollaro. Un rafforzamento anche contro l’euro darebbe più peso alla lettura sullo yen.",
   "what_changed": "Nei proxy futures del 20 novembre l’oro scende e il WTI sale.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
   "watch": "Nella prossima seduta, guarda se il movimento del dollaro si estende oltre le coppie che lo hanno guidato.",
@@ -101,7 +101,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-21T19:28:33.417800Z",
+      "rss_checked_at_utc": "2026-11-21T19:34:58.707367Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-21T19:28:33.417800Z",
+      "headline": "Dollaro misto",
+      "material_digest": "7ecd32c240a034c592890bb15be827be561c82ddf80e8caebc23e066c9faf209"
+    },
     {
       "generated_at_utc": "2026-11-21T11:14:01.335248Z",
       "headline": "Dollaro misto",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-18T20:37:37.322214Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "3a2a9da0a16e898d814787a51e51604f9dfb8af7066906c71c032f1d962f443b"
-    },
-    {
-      "generated_at_utc": "2026-11-18T11:50:05.725670Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "a5d6416e71628786487479333226ed385524e0093ee572927429f1e8efea9a8c"
     }
   ]
 }
