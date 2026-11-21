@@ -283,7 +283,7 @@ jobs:
           print('OFFICIAL_BOJ_OCT30_CB_SOURCE_INTEGRITY_PASS')
           PY
 
-      - name: Validate and refresh official BEA and ABS release dates
+      - name: Validate and refresh official BEA, ABS and SECO release dates
         run: |
           set -euo pipefail
           python -m unittest validation.calendar.test_refresh_official_release_dates_v1 -v

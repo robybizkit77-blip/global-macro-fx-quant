@@ -185,5 +185,10 @@ assert(render(agendaFixture,'2026-11-16',Date.parse('2026-11-16T13:29Z'))
 
 const empty=parse(null,now);assert.equal(empty.total,0);
 assert(render(null,now).includes('Calendario non disponibile'));
-assert.equal(parse(data,'2027-01-01').total,0);
+const newYearFixture={...agendaFixture,events:[
+ ...agendaFixture.events,{...nextDayUnknown,date:'2027-01-05'}
+]};
+assert.deepEqual(parse(newYearFixture,'2027-01-01',Date.parse('2027-01-01T12:00:00Z'))
+ .events.map(e=>e.day),['2027-01-05']);
+assert.equal(parse(newYearFixture,'2027-01-06',Date.parse('2027-01-06T12:00:00Z')).total,0);
 console.log('NEXT_MACRO_CALENDAR_G8_LIFECYCLE_TODAY_POSTEVENT_NO_FAKE_ACTUAL_PASS');
