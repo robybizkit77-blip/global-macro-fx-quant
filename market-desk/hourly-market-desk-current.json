@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-21T02:24:54.274280Z",
-  "edition_time_rome": "2026-11-21 03:24",
-  "material_digest": "7cf32dce68d62335d865c588cad2caec9dc01a481506a71dc4dcb7c52772218a",
+  "generated_at_utc": "2026-11-21T03:19:55.680886Z",
+  "edition_time_rome": "2026-11-21 04:19",
+  "material_digest": "47b957d0c38ec4aa175258ea042d57611440e8887e2725a7e73649a242a4f49e",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
@@ -101,7 +101,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-21T02:24:54.274280Z",
+      "rss_checked_at_utc": "2026-11-21T03:19:55.680886Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-21T02:24:54.274280Z",
+      "headline": "Dollaro misto",
+      "material_digest": "7cf32dce68d62335d865c588cad2caec9dc01a481506a71dc4dcb7c52772218a"
+    },
     {
       "generated_at_utc": "2026-11-21T02:23:27.580199Z",
       "headline": "Dollaro misto",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-17T20:59:55.153894Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "6cf6f6d496fb9728ab147652b8c83ce0c09df8b089dc17e5bf5265f841b6f689"
-    },
-    {
-      "generated_at_utc": "2026-11-17T11:58:21.198896Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "ef5fda834fe276ec3fa7419d7cf2b994d91ea18aebbc829a02ab552482d4260e"
     }
   ]
 }
