@@ -5,7 +5,7 @@
   "eligible_for_backtests_as_official_ois": false,
   "official_ois_created": false,
   "date_gaps_interpolated": false,
-  "excluded_conflicted_contract_days": 22,
+  "excluded_conflicted_contract_days": 23,
   "note": "Archive quotes have source dates but may be collected later. Official published 3M/6M/12M futures tenor series can rotate contracts. Secondary rates always retain their listed contract identity; NZD past references are derived from ASX proxy deltas, not independent observations. No meeting probabilities or signals.",
   "currencies": {
     "USD": {
@@ -513,19 +513,11 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-19T20:58:28.648442Z"
-          },
-          {
-            "date": "2026-11-20",
-            "rate": 4.46,
-            "contract": "ZQX2027",
-            "source_class": "SECONDARY_SAME_CONTRACT",
-            "derived": false,
-            "captured_at_utc": "2026-11-20T22:25:35.706013Z"
           }
         ]
       },
-      "latest_date": "2026-11-20",
-      "observed_dates": 23,
+      "latest_date": "2026-11-19",
+      "observed_dates": 22,
       "derived_reference_points": 0
     },
     "EUR": {
