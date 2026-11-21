@@ -13,7 +13,9 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+OFFICIAL_SEED = "live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json"
 MANAGED = (
+    OFFICIAL_SEED,
     "live_data/sections/CALENDAR_OPERATIONAL_VIEW.json",
     "live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json",
     "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
@@ -119,4 +121,4 @@ def persist(repo: Path = ROOT, *, managed=MANAGED, protected=(), max_attempts=MA
 
 
 if __name__ == "__main__":
-    print(json.dumps(persist(), ensure_ascii=False, sort_keys=True))
+    print(json.dumps(persist(protected=(OFFICIAL_SEED,)), ensure_ascii=False, sort_keys=True))
