@@ -838,7 +838,7 @@
       "importance": "HIGH",
       "quality": "OFFICIAL_CALENDAR",
       "source_family": "FSO",
-      "source_url": "https://dam-api.bfs.admin.ch/hub/api/dam/assets/36353838/master"
+      "source_url": "https://statistik.admin.ch/en/agenda/2026-0060"
     },
     {
       "ccy": "CHF",
@@ -851,7 +851,7 @@
       "importance": "HIGH",
       "quality": "OFFICIAL_CALENDAR",
       "source_family": "FSO",
-      "source_url": "https://dam-api.bfs.admin.ch/hub/api/dam/assets/36353838/master"
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-0003"
     },
     {
       "ccy": "CHF",
@@ -969,6 +969,162 @@
       "quality": "OFFICIAL_PROVISIONAL",
       "source_family": "SECO",
       "source_url": "https://www.seco.admin.ch/en/gdp-flash"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-02-12",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "January 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-634"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-03-04",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "February 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-637"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-04-02",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "March 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-639"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-05-04",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "April 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-641"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-06-03",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "May 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-642"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-07-02",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "June 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-643"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-08-03",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "July 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-644"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-09-02",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "August 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-645"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-10-04",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "September 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-646"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-11-02",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "October 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-647"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2027-12-02",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "November 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2027-648"
+    },
+    {
+      "ccy": "CHF",
+      "date": "2028-01-04",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "event_type": "INFLATION",
+      "title": "Swiss Consumer Price Index",
+      "reference_period": "December 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "FSO",
+      "source_url": "https://statistik.admin.ch/en/agenda/2028-7"
     }
   ]
 }
