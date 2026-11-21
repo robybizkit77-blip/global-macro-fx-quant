@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-21T17:21:53Z",
-  "evaluation_date_europe_rome": "2026-11-21",
+  "generated_at_utc": "2026-11-21T23:04:09Z",
+  "evaluation_date_europe_rome": "2026-11-22",
   "reference_only": true,
   "policy": {
     "fail_closed": true,
@@ -20,7 +20,7 @@
       },
       "EUR": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-19",
+        "as_of": "2026-11-20",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "GBP": {
@@ -51,26 +51,26 @@
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-19",
+        "as_of": "2026-11-20",
         "source": "Tokyo Financial Exchange · Three-month TONA Futures",
         "policy_rate_pct": 1.25,
         "horizons": {
           "3m": {
             "rate_pct": 1.454,
             "delta_vs_policy_bp": 20.4,
-            "change_1d_bp": 1.1,
+            "change_1d_bp": 0.0,
             "change_1w_bp": 1.4
           },
           "6m": {
             "rate_pct": 1.648,
             "delta_vs_policy_bp": 39.8,
-            "change_1d_bp": -0.2,
+            "change_1d_bp": 0.0,
             "change_1w_bp": 0.6
           },
           "12m": {
             "rate_pct": 1.885,
             "delta_vs_policy_bp": 63.5,
-            "change_1d_bp": -0.2,
+            "change_1d_bp": 0.0,
             "change_1w_bp": 0.3
           }
         }
@@ -82,53 +82,53 @@
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-19",
+        "as_of": "2026-11-20",
         "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
         "policy_rate_pct": 2.5,
         "horizons": {
           "3m": {
-            "rate_pct": 2.785,
-            "delta_vs_policy_bp": 28.5,
-            "change_1d_bp": -1.0,
-            "change_1w_bp": 1.0
+            "rate_pct": 2.74,
+            "delta_vs_policy_bp": 24.0,
+            "change_1d_bp": -4.5,
+            "change_1w_bp": -4.5
           },
           "6m": {
-            "rate_pct": 2.985,
-            "delta_vs_policy_bp": 48.5,
-            "change_1d_bp": -1.5,
-            "change_1w_bp": -3.0
+            "rate_pct": 2.895,
+            "delta_vs_policy_bp": 39.5,
+            "change_1d_bp": -9.0,
+            "change_1w_bp": -14.0
           },
           "12m": {
-            "rate_pct": 3.245,
-            "delta_vs_policy_bp": 74.5,
-            "change_1d_bp": 0.5,
-            "change_1w_bp": -5.0
+            "rate_pct": 3.12,
+            "delta_vs_policy_bp": 62.0,
+            "change_1d_bp": -12.5,
+            "change_1w_bp": -21.0
           }
         }
       },
       "AUD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-19",
+        "as_of": "2026-11-20",
         "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
         "policy_rate_pct": 4.85,
         "horizons": {
           "3m": {
-            "rate_pct": 4.845,
-            "delta_vs_policy_bp": -0.5,
-            "change_1d_bp": -1.0,
-            "change_1w_bp": -1.0
+            "rate_pct": 4.84,
+            "delta_vs_policy_bp": -1.0,
+            "change_1d_bp": -0.5,
+            "change_1w_bp": -1.5
           },
           "6m": {
-            "rate_pct": 4.83,
-            "delta_vs_policy_bp": -2.0,
-            "change_1d_bp": -7.5,
-            "change_1w_bp": -8.0
+            "rate_pct": 4.81,
+            "delta_vs_policy_bp": -4.0,
+            "change_1d_bp": -2.0,
+            "change_1w_bp": -10.5
           },
           "12m": {
-            "rate_pct": 4.615,
-            "delta_vs_policy_bp": -23.5,
-            "change_1d_bp": -18.0,
-            "change_1w_bp": -13.5
+            "rate_pct": 4.595,
+            "delta_vs_policy_bp": -25.5,
+            "change_1d_bp": -2.0,
+            "change_1w_bp": -20.5
           }
         }
       },
@@ -182,7 +182,7 @@
       "CHF": {
         "state": "STALE",
         "as_of": "2026-09-30",
-        "reason": "Age 52d exceeds the 3d alert limit."
+        "reason": "Age 53d exceeds the 3d alert limit."
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
@@ -195,19 +195,14 @@
         "change_10y_bp": 3.0
       },
       "AUD": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-11-18",
-        "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily · 2026-11-18",
-        "government_2y_pct": 4.813,
-        "government_10y_pct": 5.08,
-        "10y_minus_2y_bp": 26.7,
-        "change_2y_bp": 0.5,
-        "change_10y_bp": 3.6
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "NZD": {
         "state": "STALE",
         "as_of": "2026-10-16",
-        "reason": "Age 36d exceeds the 3d alert limit."
+        "reason": "Age 37d exceeds the 3d alert limit."
       }
     },
     "cot_weekly": {
