@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_FXV2_PRICING_SNAPSHOT_V1",
-  "snapshot_built_from_repo_date": "2026-11-21",
+  "snapshot_built_from_repo_date": "2026-11-22",
   "ui_only": true,
   "eligible_for_fx_engine": false,
   "notes": "Automatically refreshed from dated G8 operational futures/OIS, secondary estimated futures and NZD ASX bank-bill proxy. Each tenor retains its own observation date; no fake OIS, no FX signal.",
@@ -26,7 +26,7 @@
           "contract": "ZQK2027"
         },
         "12m": {
-          "rate": 4.46,
+          "rate": 4.49,
           "as_of": "2026-11-20",
           "change_1d_bp": null,
           "change_1w_bp": null,
