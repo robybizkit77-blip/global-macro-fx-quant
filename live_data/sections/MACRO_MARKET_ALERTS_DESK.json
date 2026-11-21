@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-21T18:01:09Z",
+  "generated_at_utc": "2026-11-21T23:24:15Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-4a70343e715886ad53da",
+      "observed_at_utc": "2026-11-21T19:38:00Z",
+      "headline": "Iran strikes 3 tankers as it shows off missile launchers, and other Mideast news",
+      "summary": "AP News riporta: Iran strikes 3 tankers as it shows off missile launchers, and other Mideast news. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOUVlUcjlPZURmRnhmY2JJZVVBTkhfUEM2bmhqRDZfQkZJMTBEc2hQSDdRVFQ0N1BjTW1rMXNrSnM4R0R6SVcyZXJpWEVVU3hkU0dsX0otVk1HNV9abFFBTkVUeXMtdHk2WVFUcEVFOVVUVlZUeTFUdXBuVzVHMVFmeFdFVExwTWtJVC1sd0dEVDVSdXdHZUhVRDc4MU5rYU1laFBn?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-2efd221cfa85513db790",
+      "observed_at_utc": "2026-11-20T18:13:43Z",
+      "headline": "Fed's Cook says central bank watching AI industry financing",
+      "summary": "Reuters riporta: Fed's Cook says central bank watching AI industry financing. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNRHI2aWRzcEgxVVM4TVNuQWFOMVpVZ2cwb19XUEo2ZlhhYjJQXzJlMXdZVFlRVFdicHlrYmoxRE9GZ1NZUFF0R09CeFZ4SV80dWh5M0YxUzFyUEVqMXJLUDBGR0Q5NEhNMkhDYWRRVHZMVWZYZ05UczcyT1hvMkdJLW5jSDZyQU9lUloza1hhQ2EzZWl1cldEaXdmUE50aWJZVGoxYmF3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-c90caa450f915cb467f0",
+      "observed_at_utc": "2026-11-20T17:46:00Z",
+      "headline": "France, Germany to take key ECB roles, with Spain set for presidency",
+      "summary": "Reuters riporta: France, Germany to take key ECB roles, with Spain set for presidency. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "EUR"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQcjllM3pwaEdPaV9uRElsVHZoY1lFbzN1TlMzVE5DcE0ydGo2cVBnRWJhOUNUWmpkS2o5aHFDcHpSWkh0NGlGRXBIbFFMRUpxeDBkaTRPbnVWSi1GVS03cEJiMDJTYWYzY0ZtMDdCNENvSG1lN3lSdmJ2R1RBWElzZ3VEOEhTS2I4clh1SExsNHpwUExrOXpwM2Y5UUtja19yME9ONUlSV3VhSlZOQjVWTXVR?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-73f1fdb1fc19820d36cd",
       "observed_at_utc": "2026-11-21T07:57:00Z",
@@ -1365,49 +1408,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE9MZmtLTUlISU03SjJHMGNHSllrSFVla2ZRb09OcGItZnU1RmJ4dGZud05SR3FZV3JGSjhQWnhtZVVYdzV1NzROQ1JXOU9NcFZ3TkphSnEyZmNIY2taV054emJJUG1yZw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-cee1939a50341d654b3c",
-      "observed_at_utc": "2026-11-10T19:14:00Z",
-      "headline": "Tankers burn in the Middle East despite hopes for de-escalation",
-      "summary": "Reuters riporta: Tankers burn in the Middle East despite hopes for de-escalation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxObk1HVHlrMXF2OXBza19vMDdFUENMek40em9sQmVNLXdWOFduMEJlVU4ycmVzeE1MYWt0YV9FRDR1OTVSc05jWFQ5QnJ1bjlZSGk4bXhwUEk2cGhBeTBlMkI5VEkzbHF4YlNKdkpYdFYzWUtua1RqWEh2VFR2TkppS3hsQlBrb1hHLTJBSzh6ZngyNXc5bk9XTWNJbWlaSWlxZDlwcGl1WTdEWFhOZ2RZSVRxMA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-e60c84b7d5bac89abe23",
-      "observed_at_utc": "2026-11-11T14:02:23Z",
-      "headline": "COMMENTARY: A 50 bps rate hike? Warsh's Fed has a comms problem",
-      "summary": "Reuters riporta: COMMENTARY: A 50 bps rate hike? Warsh's Fed has a comms problem. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxOVmdEZENBbDFmNjBmQ1lkUUdxbTUwZlZCZDF0MUo5cXZCTzMxNmdORWpkWl9WX1RucHdsR0VuSWhLOXhSYjZTYUstRFl6WWJ6V3JYallmel9vc0xhS2VGa0EwVGRkdE95MEVlU3RLb3owb0cweERFQUxXaFRqNXJiYURqN2F0WEVWSVY1SzkxbzVqN2V1NlMyMUxXTG1SQ0VEZUZZQm43SUxlbWpRSG15TVhRdUJDdXF5Q1laUmV1MGg?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-0241daed8e4687dd53f3",
-      "observed_at_utc": "2026-11-11T11:41:04Z",
-      "headline": "Japan advisers urge focus on sustaining growth after inflation hits BOJ goal",
-      "summary": "Reuters riporta: Japan advisers urge focus on sustaining growth after inflation hits BOJ goal. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQWFpTTUNEWng3NnFaRDIzRnhobm96aUZCNjIzbzFrb0Jld2o2Q0poa1Z2bS1zNmJmUnJkYWNlQ1lVWkV5NFc0eTV2N2FpTFRjM3BaUzNaMzFzZUJ2dXY5bXZtcUZHUndCZVlBcXUyUGxWUkQ5MDBmdTA5NHdGT2NwRWxFUjR1NnVyV2xGN3UyTFlVMmJFT2pqb3RCbnlsWXVvZWxtc3lhd1N6aUxJUjhMUFpRQXJDU0hWNGdNZHBSdlNjdkNHOGxz?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
