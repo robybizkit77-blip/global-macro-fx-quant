@@ -3,10 +3,10 @@
     "cb_schedule_available": 8,
     "consensus_available_events": 0,
     "g8_total": 8,
-    "macro_ccy_coverage": 7,
+    "macro_ccy_coverage": 8,
     "previous_only_events": 0,
-    "upcoming_macro_events": 41,
-    "upcoming_total_events": 49
+    "upcoming_macro_events": 52,
+    "upcoming_total_events": 60
   },
   "events": [
     {
@@ -136,6 +136,38 @@
       "time_local": "11:30",
       "timezone": "Australia/Sydney",
       "title": "Consumer Price Index, Australia"
+    },
+    {
+      "ccy": "CHF",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2026-11-30",
+      "event_type": "GROWTH",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_PROVISIONAL",
+      "reference_period": "Q3 2026",
+      "source_family": "SECO",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.seco.admin.ch/en/gross-domestic-product",
+      "status": "UPCOMING",
+      "time_local": "09:00",
+      "timezone": "Europe/Zurich",
+      "title": "Swiss quarterly GDP"
+    },
+    {
+      "ccy": "CHF",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2026-12-02",
+      "event_type": "INFLATION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "reference_period": "November 2026",
+      "source_family": "FSO",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://dam-api.bfs.admin.ch/hub/api/dam/assets/36353838/master",
+      "status": "UPCOMING",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "title": "Swiss Consumer Price Index"
     },
     {
       "bank": "Reserve Bank of Australia",
@@ -313,6 +345,22 @@
       "title": "Personal Income and Outlays"
     },
     {
+      "ccy": "CHF",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-01-05",
+      "event_type": "INFLATION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "reference_period": "December 2026",
+      "source_family": "FSO",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://dam-api.bfs.admin.ch/hub/api/dam/assets/36353838/master",
+      "status": "UPCOMING",
+      "time_local": "08:30",
+      "timezone": "Europe/Zurich",
+      "title": "Swiss Consumer Price Index"
+    },
+    {
       "ccy": "AUD",
       "consensus_status": "NOT_PRESENT",
       "date": "2027-01-06",
@@ -377,6 +425,22 @@
       "title": "Personal Income and Outlays"
     },
     {
+      "ccy": "CHF",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-02-16",
+      "event_type": "GROWTH",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_PROVISIONAL",
+      "reference_period": "Q4 2026",
+      "source_family": "SECO",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.seco.admin.ch/en/gdp-flash",
+      "status": "UPCOMING",
+      "time_local": "09:00",
+      "timezone": "Europe/Zurich",
+      "title": "Swiss GDP flash"
+    },
+    {
       "ccy": "AUD",
       "consensus_status": "NOT_PRESENT",
       "date": "2027-02-24",
@@ -423,6 +487,22 @@
       "time_local": "08:30",
       "timezone": "America/New_York",
       "title": "Personal Income and Outlays"
+    },
+    {
+      "ccy": "CHF",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-03-01",
+      "event_type": "GROWTH",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_PROVISIONAL",
+      "reference_period": "Q4 2026",
+      "source_family": "SECO",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.seco.admin.ch/en/gross-domestic-product",
+      "status": "UPCOMING",
+      "time_local": "09:00",
+      "timezone": "Europe/Zurich",
+      "title": "Swiss quarterly GDP"
     },
     {
       "ccy": "AUD",
@@ -521,6 +601,22 @@
       "title": "Personal Income and Outlays"
     },
     {
+      "ccy": "CHF",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-05-18",
+      "event_type": "GROWTH",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_PROVISIONAL",
+      "reference_period": "Q1 2027",
+      "source_family": "SECO",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.seco.admin.ch/en/gdp-flash",
+      "status": "UPCOMING",
+      "time_local": "09:00",
+      "timezone": "Europe/Zurich",
+      "title": "Swiss GDP flash"
+    },
+    {
       "ccy": "USD",
       "consensus_status": "NOT_PRESENT",
       "date": "2027-05-27",
@@ -551,6 +647,22 @@
       "time_local": "08:30",
       "timezone": "America/New_York",
       "title": "Personal Income and Outlays"
+    },
+    {
+      "ccy": "CHF",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-06-01",
+      "event_type": "GROWTH",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_PROVISIONAL",
+      "reference_period": "Q1 2027",
+      "source_family": "SECO",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.seco.admin.ch/en/gross-domestic-product",
+      "status": "UPCOMING",
+      "time_local": "09:00",
+      "timezone": "Europe/Zurich",
+      "title": "Swiss quarterly GDP"
     },
     {
       "ccy": "USD",
@@ -617,6 +729,22 @@
       "title": "Personal Income and Outlays"
     },
     {
+      "ccy": "CHF",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-08-17",
+      "event_type": "GROWTH",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_PROVISIONAL",
+      "reference_period": "Q2 2027",
+      "source_family": "SECO",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.seco.admin.ch/en/gdp-flash",
+      "status": "UPCOMING",
+      "time_local": "09:00",
+      "timezone": "Europe/Zurich",
+      "title": "Swiss GDP flash"
+    },
+    {
       "ccy": "USD",
       "consensus_status": "NOT_PRESENT",
       "date": "2027-08-25",
@@ -647,6 +775,22 @@
       "time_local": "08:30",
       "timezone": "America/New_York",
       "title": "Personal Income and Outlays"
+    },
+    {
+      "ccy": "CHF",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-09-06",
+      "event_type": "GROWTH",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_PROVISIONAL",
+      "reference_period": "Q2 2027",
+      "source_family": "SECO",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.seco.admin.ch/en/gross-domestic-product",
+      "status": "UPCOMING",
+      "time_local": "09:00",
+      "timezone": "Europe/Zurich",
+      "title": "Swiss quarterly GDP"
     },
     {
       "ccy": "USD",
@@ -713,6 +857,22 @@
       "title": "Personal Income and Outlays"
     },
     {
+      "ccy": "CHF",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-11-16",
+      "event_type": "GROWTH",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_PROVISIONAL",
+      "reference_period": "Q3 2027",
+      "source_family": "SECO",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.seco.admin.ch/en/gdp-flash",
+      "status": "UPCOMING",
+      "time_local": "09:00",
+      "timezone": "Europe/Zurich",
+      "title": "Swiss GDP flash"
+    },
+    {
       "ccy": "USD",
       "consensus_status": "NOT_PRESENT",
       "date": "2027-11-24",
@@ -743,6 +903,22 @@
       "time_local": "08:30",
       "timezone": "America/New_York",
       "title": "Personal Income and Outlays"
+    },
+    {
+      "ccy": "CHF",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-11-30",
+      "event_type": "GROWTH",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_PROVISIONAL",
+      "reference_period": "Q3 2027",
+      "source_family": "SECO",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.seco.admin.ch/en/gross-domestic-product",
+      "status": "UPCOMING",
+      "time_local": "09:00",
+      "timezone": "Europe/Zurich",
+      "title": "Swiss quarterly GDP"
     },
     {
       "ccy": "USD",
@@ -777,8 +953,8 @@
       "title": "Personal Income and Outlays"
     }
   ],
-  "generated_at_utc": "2026-11-21T20:27:42.631733Z",
-  "last_checked_at_utc": "2026-11-21T20:27:42.631733Z",
+  "generated_at_utc": "2026-11-21T21:23:34.463241Z",
+  "last_checked_at_utc": "2026-11-21T21:23:34.463241Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
@@ -790,6 +966,7 @@
     "macro_release_currencies": [
       "AUD",
       "CAD",
+      "CHF",
       "EUR",
       "GBP",
       "JPY",
