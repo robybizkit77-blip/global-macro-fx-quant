@@ -5,7 +5,7 @@
   "eligible_for_backtests_as_official_ois": false,
   "official_ois_created": false,
   "date_gaps_interpolated": false,
-  "excluded_conflicted_contract_days": 19,
+  "excluded_conflicted_contract_days": 22,
   "note": "Archive quotes have source dates but may be collected later. Official published 3M/6M/12M futures tenor series can rotate contracts. Secondary rates always retain their listed contract identity; NZD past references are derived from ASX proxy deltas, not independent observations. No meeting probabilities or signals.",
   "currencies": {
     "USD": {
@@ -717,6 +717,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-20T20:00:07.871291Z"
+          },
+          {
+            "date": "2026-11-20",
+            "rate": 2.595,
+            "contract": "FST3X2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-21T19:05:43.840343Z"
           }
         ],
         "6m": [
@@ -1081,14 +1089,6 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-19T12:52:27.528593Z"
-          },
-          {
-            "date": "2026-11-20",
-            "rate": 3.0575,
-            "contract": "FST3U2027",
-            "source_class": "SECONDARY_SAME_CONTRACT",
-            "derived": false,
-            "captured_at_utc": "2026-11-20T13:03:55.620438Z"
           }
         ]
       },
@@ -2424,14 +2424,6 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-19T15:17:20.870347Z"
-          },
-          {
-            "date": "2026-11-20",
-            "rate": 0.295,
-            "contract": "SA3M2027",
-            "source_class": "SECONDARY_SAME_CONTRACT",
-            "derived": false,
-            "captured_at_utc": "2026-11-20T15:26:16.364193Z"
           }
         ],
         "12m": [
@@ -2602,14 +2594,6 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-19T12:09:32.025574Z"
-          },
-          {
-            "date": "2026-11-20",
-            "rate": 0.49,
-            "contract": "SA3Z2027",
-            "source_class": "SECONDARY_SAME_CONTRACT",
-            "derived": false,
-            "captured_at_utc": "2026-11-20T11:50:13.884355Z"
           }
         ]
       },

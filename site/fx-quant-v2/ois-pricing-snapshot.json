@@ -41,8 +41,8 @@
       "as_of": "2026-11-20",
       "horizons": {
         "3m": {
-          "rate": 2.6025,
-          "as_of": "2026-11-19",
+          "rate": 2.595,
+          "as_of": "2026-11-20",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3X2026"
@@ -55,7 +55,7 @@
           "contract": "FST3G2027"
         },
         "12m": {
-          "rate": 3.0575,
+          "rate": 3.0425,
           "as_of": "2026-11-20",
           "change_1d_bp": null,
           "change_1w_bp": null,
@@ -135,14 +135,14 @@
           "contract": "SA3H2027"
         },
         "6m": {
-          "rate": 0.295,
+          "rate": 0.275,
           "as_of": "2026-11-20",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3M2027"
         },
         "12m": {
-          "rate": 0.49,
+          "rate": 0.48,
           "as_of": "2026-11-20",
           "change_1d_bp": null,
           "change_1w_bp": null,
