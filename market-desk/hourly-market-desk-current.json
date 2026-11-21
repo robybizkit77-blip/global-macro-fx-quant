@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-21T03:19:55.680886Z",
-  "edition_time_rome": "2026-11-21 04:19",
-  "material_digest": "47b957d0c38ec4aa175258ea042d57611440e8887e2725a7e73649a242a4f49e",
+  "generated_at_utc": "2026-11-21T11:14:01.335248Z",
+  "edition_time_rome": "2026-11-21 12:14",
+  "material_digest": "ccdac0a0aa01fbb482f730b1dcc71bce0397a281d9bda7047b0d1359a090e3c7",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
@@ -46,7 +46,7 @@
       "evidence": "Alla chiusura del 20 novembre, VIX +7,45 punti."
     },
     {
-      "headline": "Oro e petrolio in calo",
+      "headline": "L’oro scende, il petrolio sale",
       "analysis": "Se il movimento del petrolio prosegue, guarda come reagisce il dollaro canadese.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-20",
@@ -56,7 +56,7 @@
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
         "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
       ],
-      "evidence": "Proxy futures da fonte secondaria. Oro −4,78% al 20 novembre. WTI −0,59% al 20 novembre."
+      "evidence": "Proxy futures da fonte secondaria. Oro −3,98% al 20 novembre. WTI +0,49% al 20 novembre."
     },
     {
       "headline": "Bank of Canada Media Interview – Barrie 360",
@@ -101,7 +101,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-21T03:19:55.680886Z",
+      "rss_checked_at_utc": "2026-11-21T11:14:01.335248Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-21T03:19:55.680886Z",
+      "headline": "Dollaro misto",
+      "material_digest": "47b957d0c38ec4aa175258ea042d57611440e8887e2725a7e73649a242a4f49e"
+    },
     {
       "generated_at_utc": "2026-11-21T02:24:54.274280Z",
       "headline": "Dollaro misto",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-18T02:56:04.270672Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "6cefb397c663b835454a788e0234b24529a11d2f3a5898f13424e9501b762f7c"
-    },
-    {
-      "generated_at_utc": "2026-11-17T20:59:55.153894Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "6cf6f6d496fb9728ab147652b8c83ce0c09df8b089dc17e5bf5265f841b6f689"
     }
   ]
 }
