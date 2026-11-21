@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_FXV2_RELATIVE_PRICING_28PAIR_RESEARCH_V1",
   "pricing_source_schema": "GMFQ_FXV2_PRICING_SNAPSHOT_V1",
-  "pricing_source_content_sha256": "45c3086c309408fd20e569399d8e67654cfe5ea69791c1412372c96e0ea5cd08",
-  "pricing_source_snapshot_date": "2026-11-21",
+  "pricing_source_content_sha256": "9852f4473e9c42f233b429017cfa140426008b7449bad1805d8024b5de849f3f",
+  "pricing_source_snapshot_date": "2026-11-22",
   "calculation": "100 * (base rate percent - quote rate percent) per labeled 3m/6m/12m bucket",
   "comparability": "ARITHMETIC_ONLY_MIXED_OVERNIGHT_FUTURES_BANK_BILL_BASIS_AND_EXPIRIES",
   "source_dates_are_independent": true,
@@ -348,9 +348,9 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 13.5,
+          "spread_bp": 10.5,
           "base_rate_pct": 4.595,
-          "quote_rate_pct": 4.46,
+          "quote_rate_pct": 4.49,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 0,
@@ -1038,9 +1038,9 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": -141.75,
+          "spread_bp": -144.75,
           "base_rate_pct": 3.0425,
-          "quote_rate_pct": 4.46,
+          "quote_rate_pct": 4.49,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 0,
@@ -1452,9 +1452,9 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 46.82,
+          "spread_bp": 43.82,
           "base_rate_pct": 4.9282,
-          "quote_rate_pct": 4.46,
+          "quote_rate_pct": 4.49,
           "base_as_of": "2026-11-19",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 1,
@@ -1728,9 +1728,9 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": -58.0,
+          "spread_bp": -61.0,
           "base_rate_pct": 3.88,
-          "quote_rate_pct": 4.46,
+          "quote_rate_pct": 4.49,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 0,
@@ -1797,8 +1797,8 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 134.0,
-          "base_rate_pct": 4.46,
+          "spread_bp": 137.0,
+          "base_rate_pct": 4.49,
           "quote_rate_pct": 3.12,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
@@ -1866,8 +1866,8 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 398.0,
-          "base_rate_pct": 4.46,
+          "spread_bp": 401.0,
+          "base_rate_pct": 4.49,
           "quote_rate_pct": 0.48,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
@@ -1935,8 +1935,8 @@
           "fx_signal": null
         },
         "12m": {
-          "spread_bp": 257.5,
-          "base_rate_pct": 4.46,
+          "spread_bp": 260.5,
+          "base_rate_pct": 4.49,
           "quote_rate_pct": 1.885,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
