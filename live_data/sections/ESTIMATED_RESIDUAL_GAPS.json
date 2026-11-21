@@ -273,16 +273,16 @@
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
       "confidence": "B_FOR_DIRECTION_ONLY",
       "proxy_as_of": "2026-11-20",
-      "value": 82.72,
-      "change_1d_pct": -0.5889,
-      "change_1w_pct": -6.5944,
+      "value": 83.62,
+      "change_1d_pct": 0.4927,
+      "change_1w_pct": -5.5781,
       "source": "Yahoo Finance public chart JSON · WTI Crude Oil Last Day Financial Futures (CL=F)",
       "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "vendor_symbol": "CL=F",
       "currency": "USD",
       "exchange_name": "NYM",
       "instrument_type": "FUTURE",
-      "fetched_at_utc": "2026-11-20T03:41:30.630750Z",
+      "fetched_at_utc": "2026-11-21T03:25:33.453228Z",
       "official_canonical_untouched": true,
       "same_date_source_vintages": [
         {
@@ -310,9 +310,22 @@
           "prior_change_1w_pct": -2.5432,
           "new_change_1w_pct": -2.1028,
           "interpretation": "Vendor snapshot changed; not a new market session or official settlement revision."
+        },
+        {
+          "kind": "SECONDARY_SAME_DATE_SNAPSHOT_DIFFERENCE",
+          "market_date": "2026-11-20",
+          "prior_fetched_at_utc": "2026-11-20T03:41:30.630750Z",
+          "new_fetched_at_utc": "2026-11-21T03:25:33.453228Z",
+          "prior_value": 82.72,
+          "new_value": 83.62,
+          "prior_change_1d_pct": -0.5889,
+          "new_change_1d_pct": 0.4927,
+          "prior_change_1w_pct": -6.5944,
+          "new_change_1w_pct": -5.5781,
+          "interpretation": "Vendor snapshot changed; not a new market session or official settlement revision."
         }
       ],
-      "vintage_audit_count": 2,
+      "vintage_audit_count": 3,
       "interpretation": "Secondary futures market proxy for live WTI level/direction only. It does not replace canonical EIA WTI spot, does not certify NYMEX history, and has no Core/backtest effect."
     }
   },
