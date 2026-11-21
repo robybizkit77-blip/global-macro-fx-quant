@@ -895,10 +895,13 @@ function pairs(){
  const fav=activePair?.favored||null,quality=activePair?.quality||'STIMA NON DISPONIBILE';
  const choice='<label class="pair-sel-control" for="pair-primary-select"><span>COPPIA DA ANALIZZARE</span><select id="pair-primary-select" aria-label="Seleziona una delle 28 coppie">'+
   keys.map(k=>'<option value="'+esc(k)+'"'+(k===state.pair?' selected':'')+'>'+esc(getPairName(k))+'</option>').join('')+'</select></label>';
- const report=monitor.ready?monitor.changed.length?
+ const structuralReport=monitor.ready?(monitor.changed.length?
    'Dal '+date(monitor.previousAsOf)+' al '+date(monitor.asof)+': '+monitor.changed.length+' classificazioni cambiate. '+monitor.judgement:
-   'Nessuna delle classificazioni monitorate è cambiata rispetto al '+date(monitor.previousAsOf)+'. Non significa che il mercato sia immobile.'
-  :'La lettura corrente usa il modello stimato. La cronologia delle variazioni di tesi resta in consolidamento.';
+   'Giudizi strutturali invariati rispetto al '+date(monitor.previousAsOf)+'.'):'';
+ const change=window.FXQuantPairRankings?.estimatedSessionChange?.(
+  state.pair,get('estimatedThesisHistory'),estimate,today);
+ const changeDates=change?'Stima Next · fixing BCE '+date(change.start)+' → '+date(change.end):'';
+ const changeSummary=change?changeDates+' · '+(change.changes[0]||'Giudizi invariati'):structuralReport;
  const opening=window.FXQuantDecisionJourney?.priceOpening?.(state.pair,prices,today,estimate);
  const macroState=activePair?.macroState,policyState=activePair?.policyState;
  const driverSummary=macroState==='CONTRARIA'||policyState==='CONTRARIA'?', con economia e tassi in disaccordo':
@@ -970,9 +973,6 @@ function pairs(){
    esc(pairCatalyst.text)+'</p>':'')+
   '<p class="pairs-vintage">'+esc(context)+'. '+esc(gate.note)+
   ' La baseline macro non viene aggiornata automaticamente quando cambia il prezzo.</p></div></details></section>';
- // Do not show a large empty historical panel when same-day model labels
- // were revised after the archived snapshot. Current estimated rankings do not
- // reuse those archived categorical changes as operational signals.
  const monetary=window.FXQuantPairMonetary?.render?
    window.FXQuantPairMonetary.render({
     pair:state.pair,favored:fav,today,ois:get('ois'),
@@ -981,9 +981,13 @@ function pairs(){
     pairs:get('pairs'),prices
    }):
    '<section class="pair-monetary-bridge"><p>Movimento monetario relativo da verificare nella pagina Tassi.</p></section>';
- const historyDetail=monitor.ready?
-  '<details class="pairs-optional-panel"><summary><span><strong>Archivio storico · Come è cambiata la tesi?</strong><small>'+esc(report)+'</small></span><span class="pairs-open-icon">+</span></summary>'+
-  (window.FXQuantThesisMonitor?.render?.(get('pairs'),get('thesisHistory'),state.pair)||'')+'</details>':'';
+ const historyDetail=(change||monitor.ready)?
+  '<details class="pairs-optional-panel"><summary><span><strong>Archivio storico · Come è cambiata la tesi?</strong><small>'+esc(changeSummary)+'</small></span><span class="pairs-open-icon">+</span></summary>'+
+  (change?'<div class="pairs-details-body"><p><strong>'+esc(changeDates)+'</strong></p><p>'+
+   esc(change.changes.join(' · ')||'Valuta favorita, forza della tesi e timing invariati.')+
+   '</p><small>Ultima valutazione archiviata per ciascun fixing.</small></div>':'')+
+  (monitor.ready?'<div class="pairs-details-body"><p><strong>Archivio del modello strutturale</strong></p>'+
+   (window.FXQuantThesisMonitor?.render?.(get('pairs'),get('thesisHistory'),state.pair)||'')+'</div>':'')+'</details>':'';
  const originalDecision=typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?
   window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).pair():
   '<div class="empty">Grafico e lettura del prezzo non disponibili.</div>';

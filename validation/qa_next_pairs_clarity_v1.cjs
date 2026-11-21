@@ -28,8 +28,10 @@ for(const key of ['id="pair-primary-select"','28 coppie G8, una sola tesi alla v
 }
 assert(pairs.includes('FXQuantPairMonetary.render')&&pairs.includes('chooser+main+monetary+historyDetail+detail'),
  'Relative 6M must appear only inside the selected pair dossier before advanced pricing');
-assert(pairs.includes('const historyDetail=monitor.ready?'),
- 'Do not show an empty comparison if no dated thesis history exists');
+assert(pairs.includes('const historyDetail=(change||monitor.ready)?')&&
+ pairs.includes("state.pair,get('estimatedThesisHistory'),estimate,today")&&
+ pairs.includes('Archivio del modello strutturale'),
+ 'The visible comparison must use the Next archive and identify the separate structural history');
 assert(pairs.includes('const drill=state.pairDetailOpen?'),
  'Pair detail must remain opt-in after the 8-currency/28-pair first read');
 assert(pairs.includes('+ranking+drill+'),
@@ -63,6 +65,25 @@ const rootData=JSON.parse(read('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.j
 assert.equal(Object.keys(rootData.pairs).length,28);
 assert(rootData.pairs.EURUSD&&rootData.pairs.AUDCAD&&rootData.pairs.CADJPY);
 const rankingModule=require('../site/fx-quant-v2/next/pair-rankings.js');
+const archived=(fixing,favored,thesis,timing,method='v1')=>({
+ fixing,method,pairs:{CADJPY:{favored,thesis,timing}}
+});
+const estimatedHistory={schema:'GMFQ_NEXT_ESTIMATED_FX_THESIS_HISTORY_V1',snapshots:[
+ archived('2026-11-19','JPY','PARZIALE','IN ATTESA'),
+ archived('2026-11-20','JPY','PARZIALE','DA VALIDARE'),
+ archived('2026-11-20',null,'NON DISTINTA','NON VALUTABILE')
+]};
+const datedEstimate={status:'STIMA_OPERATIVA_NON_VALIDATA',pricePriorAsOf:'2026-11-19',priceAsOf:'2026-11-20'};
+const comparison=(estimate=datedEstimate,history=estimatedHistory)=>
+ rankingModule.estimatedSessionChange('CADJPY',history,estimate,'2026-11-21');
+assert.deepEqual(comparison(),{start:'2026-11-19',end:'2026-11-20',changes:[
+ 'Valuta favorita JPY → nessuna','Forza della tesi parziale → non distinta','Timing in attesa → non valutabile'
+]});
+assert.equal(comparison({...datedEstimate,priceAsOf:'2026-11-21'}),null,'No claim for a fixing still missing in the archive');
+assert.equal(comparison({...datedEstimate,pricePriorAsOf:'2026-11-18'}),null,'Do not skip a missing fixing');
+assert.equal(comparison(datedEstimate,{...estimatedHistory,snapshots:[
+ estimatedHistory.snapshots[0],archived('2026-11-20',null,'NON DISTINTA','NON VALUTABILE','v2')
+]}),null,'A method change is not a comparable daily change');
 globalThis.FXQuantDecisionJourney=require('../site/fx-quant-v2/next/decision-journey.js');
 const marketPrices={source:'ECB euro foreign exchange reference rates',rows:[
  {Date:'2026-11-12',EUR:1,CHF:.91},{Date:'2026-11-13',EUR:1,CHF:.92},{Date:'2026-11-16',EUR:1,CHF:.93}
