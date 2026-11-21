@@ -2010,7 +2010,20 @@ async function getState(page){
                 summary.green_estimated!==ccys.filter(x=>x.operational_status==='GREEN_ESTIMATED').length||
                 summary.operational_withheld!==ccys.filter(x=>x.operational_status==='WITHHELD').length)
                throw Error('public CB pricing summary not source-reconciled');
-             return summary;
+             // Four official-level sources may supply only three eligible
+             // policy-delta curves after an interest-rate decision (BoE).
+             const day=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Rome'});
+             const certifiedRepricing=ccys.filter(x=>{
+               const age=(Date.parse(day+'T00:00:00Z')-
+                 Date.parse((x.as_of||'')+'T00:00:00Z'))/86400000;
+               return x.operational_status==='GREEN_OFFICIAL'&&
+                 x.official_status==='ACTIVE'&&x.quality==='OFFICIAL_CERTIFIED'&&
+                 x.backtest_eligible_as_official===true&&age>=0&&age<=4&&
+                 ['3m','6m','12m'].every(t=>
+                   Number.isFinite(x.horizons?.[t]?.rate)&&
+                   Number.isFinite(x.horizons?.[t]?.policy_delta_bp));
+             }).length;
+             return {...summary,certifiedRepricing};
            }):null;
          if(pageName==='cot'&&['cot-crowding-focus-20261022','cot-weekly-position-20261022','cot-percentile-vs-net-20261022'].includes(navigationVersion)){
            const n=Math.min(3,Number(reading.crowding));
@@ -2093,7 +2106,7 @@ async function getState(page){
             reading.pageWidth>Math.max(reading.viewport+16,reading.originalWidth+2)||
             (pageName==='banche'?
                reading.status!=='READ_ONLY'||
-               reading.certified!==String(publicPricingSummary.green_official)||
+               reading.certified!==String(publicPricingSummary.certifiedRepricing)||
                reading.estimated!==String(publicPricingSummary.green_estimated)||
                reading.withheld!==String(publicPricingSummary.operational_withheld):
                reading.status!=='READ_ONLY'||reading.conflicts!==''||
