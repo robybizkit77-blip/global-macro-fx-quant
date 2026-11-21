@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-20",
-  "generated_at_utc": "2026-11-21T04:21:34.860348Z",
+  "generated_at_utc": "2026-11-21T11:14:46.821660Z",
   "items": [
     {
       "as_of": "2026-11-20",
@@ -254,7 +254,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-21T04:21:34.860348Z",
+  "last_checked_at_utc": "2026-11-21T11:14:46.821660Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1235,9 +1235,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 3,
+        "accepted_items": 2,
         "ccy": "NZD",
-        "entries_rejected": 47,
+        "entries_rejected": 48,
         "feed_entries_seen": 50,
         "feed_url": "https://www.rbnz.govt.nz/feeds/news",
         "source": "Reserve Bank of New Zealand",
