@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Refresh upcoming BEA, ABS and SECO schedules from the original publishers."""
+"""Refresh upcoming BEA, ABS, SECO and FSO schedules from the original publishers."""
 
 import json
 import re
 from datetime import date, datetime, timezone
+from email.utils import parsedate_to_datetime
 from html import unescape
 from pathlib import Path
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
+from xml.etree import ElementTree
 from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -18,6 +20,7 @@ ABS = ("https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/"
        "consumer-price-index-australia")
 SECO_GDP = "https://www.seco.admin.ch/en/gross-domestic-product"
 SECO_FLASH = "https://www.seco.admin.ch/en/gdp-flash"
+FSO_CPI = "https://statistik.admin.ch/en/rss/agenda?prodima=900086"
 SYDNEY = ZoneInfo("Australia/Sydney")
 NEW_YORK = ZoneInfo("America/New_York")
 ZURICH = ZoneInfo("Europe/Zurich")
@@ -33,7 +36,7 @@ def plain(markup):
 
 def fetch(url):
     request = Request(url, headers={"User-Agent": "FXQuant/1.0 (official release calendars)",
-                                    "Accept": "text/html"})
+                                    "Accept": "application/rss+xml" if url == FSO_CPI else "text/html"})
     with urlopen(request, timeout=15) as response:
         served = urlsplit(response.geturl())
         if served.scheme != "https" or served.hostname != urlsplit(url).hostname:
@@ -135,6 +138,42 @@ def parse_seco(document, source):
     return rows
 
 
+def parse_fso(document):
+    try:
+        channel = ElementTree.fromstring(document).find("channel")
+    except ElementTree.ParseError as error:
+        raise ValueError("FSO agenda RSS is not valid XML") from error
+    if channel is None or channel.findtext("language") != "en":
+        raise ValueError("FSO English agenda channel missing")
+    rows = []
+    for item in channel.findall("item"):
+        title = (item.findtext("title") or "").strip()
+        match = re.fullmatch(
+            r"Swiss Consumer Price Index in ([A-Z][a-z]+?)(?: and annual inflation)? (\d{4})", title,
+        )
+        if not match:
+            continue
+        month, year = match.groups()
+        period = f"{month} {year}"
+        reference = datetime.strptime(period, "%B %Y").date()
+        source = (item.findtext("link") or "").strip()
+        url = urlsplit(source)
+        if (url.scheme, url.netloc) != ("https", "statistik.admin.ch") or not re.fullmatch(
+            r"/en/agenda/\d{4}-\d+", url.path
+        ) or url.query or url.fragment:
+            raise ValueError("FSO release has no official agenda link")
+        published = parsedate_to_datetime(item.findtext("pubDate") or "")
+        if published.utcoffset() is None:
+            raise ValueError("FSO release clock has no UTC offset")
+        when = published.astimezone(ZURICH)
+        if published.utcoffset() != when.utcoffset() or when.date().replace(day=1) <= reference:
+            raise ValueError("FSO release clock disagrees with Zurich time or reference month")
+        rows.append(event("CHF", when, "INFLATION", "Swiss Consumer Price Index", period, "FSO", source))
+    if not rows:
+        raise ValueError("FSO upcoming CPI schedule rows missing")
+    return rows
+
+
 def identity(row):
     title = row.get("title", "")
     period = row.get("reference_period", "")
@@ -201,7 +240,7 @@ def refresh(path, now, read=fetch):
     events = payload["events"]
     receipts = []
     for name, url in (("BEA", BEA), ("BEA_NEXT", BEA_NEXT), ("ABS", ABS),
-                      ("SECO_GDP", SECO_GDP), ("SECO_FLASH", SECO_FLASH)):
+                      ("SECO_GDP", SECO_GDP), ("SECO_FLASH", SECO_FLASH), ("FSO_CPI", FSO_CPI)):
         try:
             document = read(url)
             if name.startswith("BEA"):
@@ -211,6 +250,8 @@ def refresh(path, now, read=fetch):
                     raise ValueError("BEA schedule year disagrees with requested edition")
             elif name == "ABS":
                 rows = parse_abs(document)
+            elif name == "FSO_CPI":
+                rows = parse_fso(document)
             else:
                 rows = parse_seco(document, url)
             events, count = apply_rows(events, rows, now)
