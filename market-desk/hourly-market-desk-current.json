@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-21T20:28:24.036385Z",
-  "edition_time_rome": "2026-11-21 21:28",
-  "material_digest": "28f2aa20b9c396f7e3fc73ce0719112bc25de44de7658783b1a14076743ef81e",
+  "generated_at_utc": "2026-11-21T21:23:59.803112Z",
+  "edition_time_rome": "2026-11-21 22:23",
+  "material_digest": "d8bd9f1d72f994ac03b0ce597373a4629bbb05fe1312e895016b9cb85c3523ac",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Volatilità in rialzo, dollaro misto",
@@ -101,7 +101,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-21T20:28:24.036385Z",
+      "rss_checked_at_utc": "2026-11-21T21:23:59.803112Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-21T20:28:24.036385Z",
+      "headline": "Volatilità in rialzo, dollaro misto",
+      "material_digest": "28f2aa20b9c396f7e3fc73ce0719112bc25de44de7658783b1a14076743ef81e"
+    },
     {
       "generated_at_utc": "2026-11-21T19:44:25.457193Z",
       "headline": "Volatilità in rialzo, dollaro misto",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-19T14:12:22.126666Z",
       "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
       "material_digest": "4733ab22cd7ab55b6842be39b815a0848e2b1433028cd0ea9be6574c7b2d69b5"
-    },
-    {
-      "generated_at_utc": "2026-11-19T11:47:26.789573Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "dba3787accca51b6da258d347e8b80871617486a7471d4ec6c2e9e521b264709"
     }
   ]
 }
