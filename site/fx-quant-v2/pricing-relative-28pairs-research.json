@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_FXV2_RELATIVE_PRICING_28PAIR_RESEARCH_V1",
   "pricing_source_schema": "GMFQ_FXV2_PRICING_SNAPSHOT_V1",
-  "pricing_source_content_sha256": "619ecdacc26ec3c041a19257d0b8d9ab85c90458fed3928ee8ac1dc2d9b60597",
+  "pricing_source_content_sha256": "b538f782fe9978d2627a1417e6139fd72087faf8472fd555a1bd5e6a7f4068df",
   "pricing_source_snapshot_date": "2026-11-21",
   "calculation": "100 * (base rate percent - quote rate percent) per labeled 3m/6m/12m bucket",
   "comparability": "ARITHMETIC_ONLY_MIXED_OVERNIGHT_FUTURES_BANK_BILL_BASIS_AND_EXPIRIES",
@@ -328,9 +328,9 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": 34.5,
+          "spread_bp": 39.5,
           "base_rate_pct": 4.83,
-          "quote_rate_pct": 4.485,
+          "quote_rate_pct": 4.435,
           "base_as_of": "2026-11-19",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 1,
@@ -1018,9 +1018,9 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": -165.5,
+          "spread_bp": -160.5,
           "base_rate_pct": 2.83,
-          "quote_rate_pct": 4.485,
+          "quote_rate_pct": 4.435,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 0,
@@ -1432,9 +1432,9 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": 14.65,
+          "spread_bp": 19.65,
           "base_rate_pct": 4.6315,
-          "quote_rate_pct": 4.485,
+          "quote_rate_pct": 4.435,
           "base_as_of": "2026-11-19",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 1,
@@ -1708,9 +1708,9 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": -76.5,
+          "spread_bp": -71.5,
           "base_rate_pct": 3.72,
-          "quote_rate_pct": 4.485,
+          "quote_rate_pct": 4.435,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
           "date_gap_days": 0,
@@ -1777,8 +1777,8 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": 150.0,
-          "base_rate_pct": 4.485,
+          "spread_bp": 145.0,
+          "base_rate_pct": 4.435,
           "quote_rate_pct": 2.985,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
@@ -1846,8 +1846,8 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": 419.0,
-          "base_rate_pct": 4.485,
+          "spread_bp": 414.0,
+          "base_rate_pct": 4.435,
           "quote_rate_pct": 0.295,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-20",
@@ -1915,8 +1915,8 @@
           "fx_signal": null
         },
         "6m": {
-          "spread_bp": 283.7,
-          "base_rate_pct": 4.485,
+          "spread_bp": 278.7,
+          "base_rate_pct": 4.435,
           "quote_rate_pct": 1.648,
           "base_as_of": "2026-11-20",
           "quote_as_of": "2026-11-19",
