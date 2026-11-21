@@ -23,7 +23,8 @@
   const olderThanResearchWindow=(now,then) => researchAge(now,then)>14;
   const olderThanSnbStatisticalAnchor=(now,then) => researchAge(now,then)>45;
 
-  function derive(canonical, research, today, asxProxy=null, asxAnchor=null) {
+  function derive(canonical, research, today, asxProxy=null, asxAnchor=null,
+                  reconciledAsxBase=null) {
     const out={schema:"GMFQ_FXV2_WORKING_RATES_V1",rates:{},warnings:[],
       eligible_for_fx_engine:false,eligible_for_backtests:false,
       scenario_only:true};
@@ -163,20 +164,21 @@
     // Research-only model. No sovereign yield is inferred as an observed quote.
     // Only SAME-CONTRACT listed NZD bank-bill 6M changes can move the scenario.
     const a=asxAnchor, q=asxProxy, h=q?.horizons?.["6m"];
+    const base=reconciledAsxBase??out.rates.NZD;
     if(nzd && out.rates.NZD &&
        a?.schema==="GMFQ_FXV2_NZD_ASX_6M_GOVT_SCENARIO_ANCHOR_V1" &&
        a.eligible_for_fx_engine===false && a.eligible_for_backtests===false &&
-       a.government_as_of===nzd.latest_date &&
+       a.government_as_of===base?.date && a.government_as_of>=nzd.roll_date &&
        a.gov_benchmark_2y===nzd.new_benchmark?.["2Y"] &&
        a.gov_benchmark_10y===nzd.new_benchmark?.["10Y"] &&
-       a["2Y"]===nzd.latest_2Y && a["10Y"]===nzd.latest_10Y &&
+       a["2Y"]===base["2Y"] && a["10Y"]===base["10Y"] &&
        a.asx_6m_as_of===a.government_as_of &&
        q?.schema==="GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1" &&
        q.currency==="NZD" && q.status==="LIVE_DIRECTIONAL_PROXY_READY" &&
        q.governance?.pair_engine_effect==="NONE" &&
        q.governance?.policy_delta_from_proxy_allowed===false &&
        q.source_quality==="OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY" &&
-       inPast(today,q.as_of) && q.as_of>a.asx_6m_as_of &&
+       inPast(today,q.as_of) && q.as_of>nzd.latest_date && q.as_of>a.asx_6m_as_of &&
        h?.expiration===a.asx_6m_expiration &&
        h?.expiry_label===a.asx_6m_contract &&
        valid(h.implied_bank_bill_rate,0,20) &&
