@@ -70,6 +70,35 @@ class FreeDeskTest(unittest.TestCase):
   self.assertEqual(row["headline"],"Il Nasdaq Composite scende")
   self.assertIn("Nasdaq Composite −2,25%",row["evidence"])
   self.assertNotIn("S&P 500",row["evidence"])
+ def test_panorama_leads_with_material_volatility_only_when_the_sources_agree(self):
+  cross=self.root/"site/fx-quant-v2/cross-asset-live-data.json"
+  feed=json.loads(cross.read_text())
+  vix=feed["streams"]["VIX"]
+  vix.update(date="2026-11-13",value=35.89,previous=28.44)
+  cross.write_text(json.dumps(feed))
+  px=self.sections/"ECB_G8_PRICE_HISTORY.json"
+  prices=json.loads(px.read_text())
+  prices["rows"][-1].update(USD=1.0920,JPY=172.64)
+  px.write_text(json.dumps(prices))
+  pulse_path=self.sections/"NEWS_PULSE_OPERATIONAL.json"
+  pulse=json.loads(pulse_path.read_text())
+  item=next(row for row in pulse["items"] if row["category"]=="MARKET_VOLATILITY_CLOSE")
+  item.update(title="VIX: +7.45 punti nella chiusura del 2026-11-13",
+              source_url=vix["source_url"], quality="PUBLISHED_SOURCE_RESEARCH_ONLY", importance="HIGH")
+  pulse_path.write_text(json.dumps(pulse))
+  r=self.build()
+  self.assertEqual(r["headline"],"Volatilità in rialzo, dollaro misto")
+  self.assertTrue(r["lead"].startswith("La volatilità azionaria è salita alla chiusura del 13 novembre."))
+  self.assertIn("ceduto contro lo yen",r["lead"])
+  self.assertIn("rafforzamento anche contro l’euro",r["fx_implications"])
+  item["title"]="VIX: +0.60 punti nella chiusura del 2026-11-13"
+  pulse_path.write_text(json.dumps(pulse))
+  self.assertEqual(self.build()["headline"],"Dollaro misto")
+  item.update(title="VIX: +7.45 punti nella chiusura del 2026-11-12",as_of="2026-11-12")
+  pulse_path.write_text(json.dumps(pulse))
+  vix["date"]="2026-11-12"
+  cross.write_text(json.dumps(feed))
+  self.assertEqual(self.build()["headline"],"Dollaro misto")
  def test_overview_describes_the_fixing_and_previous_close_with_sources(self):
   r=self.build()
   self.assertEqual(r["schema"],free.SCHEMA)
