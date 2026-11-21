@@ -404,7 +404,7 @@ def build(root: Path, now: datetime, previous=None, rss=None):
     else:
         contradiction = "La tenuta del movimento dipende anche dal sostegno dei tassi a breve."
     judgment = sentence_join((lead, monetary))
-    changes = monetary or fx_reading or macro_fact or risk_story or lead
+    commodity_reading = ""
 
     # Source-linked evidence / official headlines, without pretending to have
     # read the body of RSS links. Narrative is based only on their titles.
@@ -457,6 +457,15 @@ def build(root: Path, now: datetime, previous=None, rss=None):
         commodity_date = max(gold_date, oil_date)
         gold_change, oil_change = gold["change_1d_pct"], oil["change_1d_pct"]
         movement = lambda delta: "sale" if delta > .005 else "scende" if delta < -.005 else "resta stabile"
+        latest_moves = []
+        if gold_date == commodity_date:
+            latest_moves.append(f"l’oro {movement(gold_change)}")
+        if oil_date == commodity_date:
+            latest_moves.append(f"il {oil_label} {movement(oil_change)}")
+        commodity_reading = (
+            f"Nei proxy futures del {short_date(day(commodity_date))} "
+            + " e ".join(latest_moves) + "."
+        )
         if gold_date == oil_date:
             commodity_headline = (f"Oro e petrolio in {'calo' if gold_change < 0 else 'rialzo'}"
                                   if abs(gold_change) > .005 and abs(oil_change) > .005 and gold_change * oil_change > 0 else
@@ -497,6 +506,7 @@ def build(root: Path, now: datetime, previous=None, rss=None):
             [h["url"]])
     if not news:
         raise ValueError("No source-linked news or background facts for publication")
+    changes = sentence_join((commodity_reading, monetary)) or risk_story or macro_fact or fx_reading or lead
     citations = sorted({u for item in news for u in item["sources"]})
     # Core source fingerprint does not use the collection time. A new edition
     # is legitimate only if an observation / RSS title / calendar fact changes.
@@ -508,7 +518,7 @@ def build(root: Path, now: datetime, previous=None, rss=None):
         "rss": [(x.get("url"), x.get("published_at_utc")) for x in recent],
         "news_reading": [(item["headline"], item["analysis"], item["evidence"], item["sources"]) for item in news],
         "session_reading": {"fx": fx, "risk": risk_closes, "headline": headline, "lead": lead,
-                            "fx_implications": fx_interpretation,
+                            "fx_implications": fx_interpretation, "what_changed": changes,
                             "catalyst": (catalyst[0].isoformat(), catalyst[1]["title"]) if catalyst else None},
     }
     signature = hashlib.sha256(json.dumps(material, sort_keys=True, ensure_ascii=False).encode()).hexdigest()

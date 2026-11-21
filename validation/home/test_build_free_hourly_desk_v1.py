@@ -153,6 +153,23 @@ class FreeDeskTest(unittest.TestCase):
   self.assertEqual(first["generated_at_utc"],again["generated_at_utc"])
   self.assertEqual(first["material_digest"],again["material_digest"])
 
+ def test_home_surfaces_updated_commodity_direction_with_same_fx_headline(self):
+  first=self.build()
+  path=self.sections/"ESTIMATED_RESIDUAL_GAPS.json"
+  gaps=json.loads(path.read_text())
+  gaps["lanes"]["WTI.market_proxy"]["change_1d_pct"]=-0.59
+  path.write_text(json.dumps(gaps))
+  second=self.build(now=NOW+timedelta(hours=1),previous=first)
+  self.assertEqual(second["headline"],first["headline"])
+  self.assertEqual(second["lead"],first["lead"])
+  self.assertIn("Nei proxy futures del 13 novembre l’oro sale e il WTI scende.",second["what_changed"])
+  self.assertNotEqual(second["what_changed"],first["what_changed"])
+  gaps["lanes"]["WTI.market_proxy"]["proxy_as_of"]="2026-11-12"
+  path.write_text(json.dumps(gaps))
+  split_dates=self.build()
+  self.assertIn("Nei proxy futures del 13 novembre l’oro sale.",split_dates["what_changed"])
+  self.assertNotIn("WTI scende",split_dates["what_changed"])
+
  def test_hourly_check_receipt_does_not_recycle_edition(self):
   first=self.build()
   new_time=NOW+timedelta(hours=1)
