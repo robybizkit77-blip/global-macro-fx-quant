@@ -413,7 +413,7 @@
   }
   return {data:r,render};
  }
- const api={snapshot,commonObservations,metrics,brief,build,researchRates,researchedSources,withChfCurrencyRanking};
+ const api={snapshot,commonObservations,metrics,brief,build,researchRates,nzdResearchRates,researchedSources,withChfCurrencyRanking};
  if(typeof window!=='undefined')window.FXQuantRatesBridge=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();

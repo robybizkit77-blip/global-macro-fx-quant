@@ -35,13 +35,30 @@ function chfRecentGovernment(get,today,pairedDate,validDay){
   research:{currencies:{CHF:{ratesResearch}}},chfHistory:get('chfResearch'),spot,now:today});
  return {spot,estimate:estimate?.status==='STIMA_MODELLO_RICERCA'&&estimate.asof===spot.as_of?estimate:null};
 }
-function nzdGovernmentEstimate(get,now){
+function nzdGovernmentHistory(get,now){
+ const feed=get('nzdReconciled');
+ const proof=root.FXQuantRatesBridge?.nzdResearchRates({},feed,now)?.NZD;
+ if(!proof)return [];
+ const reconciled=new Set(feed.html_xlsx_matched_dates);
+ return feed.observations.filter(row=>reconciled.has(row.date));
+}
+function nzdGovernmentSnapshot(get,now,history=nzdGovernmentHistory(get,now)){
+ const latest=history.at(-1);
+ return latest&&latest.date>(get('rates')?.NZD?.date||'')
+   ? {...latest,quality:'RBNZ B2 · UFFICIALE RICONCILIATO'}:null;
+}
+function nzdGovernmentEstimate(get,now,history=nzdGovernmentHistory(get,now)){
  const quote=get('nzdDirectionalProxy');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(quote?.as_of||''))return null;
  const stamp=quote.as_of.slice(2).replace(/-/g,'');
- if(quote.source_url!=='https://www.asx.com.au/data/futures/reports/EODWebMarketSummary'+stamp+'ZFT.htm')return null;
+ const asxReport=stamp=>'https://www.asx.com.au/data/futures/reports/EODWebMarketSummary'+stamp+'ZFT.htm';
+ const anchor=get('nzdAsxGovernmentAnchor');
+ if(quote.source_url!==asxReport(stamp)||history.at(-1)?.date>=quote.as_of||
+    !/^\d{4}-\d{2}-\d{2}$/.test(anchor?.asx_6m_as_of||'')||
+    anchor.asx_source!==asxReport(anchor.asx_6m_as_of.slice(2).replace(/-/g,'')))return null;
+ const base=history.find(row=>row.date===anchor.government_as_of);
  const model=root.FXV2RatesWorking?.derive(get('rates'),get('nzdBenchmarkResearch'),
-   now,quote,get('nzdAsxGovernmentAnchor'));
+   now,quote,anchor,base);
  const row=model?.rates?.NZD;
  return row?.working_method==='NZD_ASX_6M_PARALLEL_SHIFT_SCENARIO'&&
    row.scenario_only===true&&row.no_core_effect===true?row:null;
@@ -53,7 +70,9 @@ function make(api){
  const chfHistory=chfGovernmentHistory(get,dayNow());
  const chfSnapshot=chfGovernmentSnapshot(chfHistory);
  const chfRecent=chfRecentGovernment(get,dayNow(),chfSnapshot?.date||usable('CHF')?.date||'',validDay);
- const nzdEstimate=nzdGovernmentEstimate(get,dayNow());
+ const nzdHistory=nzdGovernmentHistory(get,dayNow());
+ const nzdObserved=nzdGovernmentSnapshot(get,dayNow(),nzdHistory);
+ const nzdEstimate=nzdGovernmentEstimate(get,dayNow(),nzdHistory);
  const dateDiff=(a,b)=>validDay(a)&&validDay(b)?Math.abs((Date.parse(a+'T12:00:00Z')-Date.parse(b+'T12:00:00Z'))/864e5):null;
  const freshness=d=>{let days=dateDiff(d,dayNow());return days===null?'DATA ASSENTE':days>12?'STORICO':days>5?'DA VERIFICARE':'RECENTE';};
  function usable(c){
@@ -71,9 +90,10 @@ function make(api){
      .sort((x,y)=>x.date.localeCompare(y.date));
  }
  function displayedSovereign(c){
-   return (c==='CHF'&&chfSnapshot)||(c==='NZD'&&nzdEstimate)||usable(c);
+   return (c==='CHF'&&chfSnapshot)||(c==='NZD'&&(nzdEstimate||nzdObserved))||usable(c);
  }
  function displayedSovereignRows(c){
+   if(c==='NZD'&&nzdObserved)return nzdHistory.map(x=>({date:x.date,y2:x['2Y'],y10:x['10Y']}));
    const rows=sovereignRows(c);
    if(c!=='CHF'||!chfHistory.length)return rows;
    const cutoff=usable(c)?.date;
@@ -206,11 +226,17 @@ function make(api){
     const estimate=nzdEstimate;
     if(estimate){
      const futures=get('nzdDirectionalProxy');
-     return '<p class="source-caption" data-gov-estimate="NZD"><strong>NZD · Stima governativa</strong> · Base RBNZ B2 del '+
-      esc(date(estimate.source_date))+' · <a href="'+esc(futures.source_url)+'">Futures ASX bank bill</a> '+
+     return '<p class="source-caption" data-gov-estimate="NZD"><strong>NZD · Stima governativa</strong> · '+
+      '<a href="https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates">Base RBNZ B2</a> del '+esc(date(estimate.source_date))+
+      ' · <a href="'+esc(futures.source_url)+'">Futures ASX bank bill</a> '+
       esc(estimate.comparison_window.contract)+' al '+esc(date(estimate.date))+' · movimento '+
       esc(sign(estimate.comparison_window.futures_6m_bp,1,' pb'))+
       '. La stessa variazione viene applicata al 2Y e al 10Y. La pendenza resta quella della base B2.</p>';
+    }
+    if(nzdObserved){
+     const source=get('nzdReconciled');
+     return '<p class="source-caption" data-gov-reference="NZD"><strong>NZD · Governativi osservati</strong> · '
+      +'<a href="'+esc(source.source_url)+'">RBNZ B2</a> · tabella ed Excel concordi al '+esc(date(nzdObserved.date))+'.</p>';
     }
     const nzd=get('nzdPostroll');
     if(!Array.isArray(nzd?.daily_observations))return '';
@@ -351,7 +377,7 @@ function make(api){
  function explanations(c){
    const r=selectedReading(c);
    const cards=[
-     ['01','FATTO OSSERVATO','Cosa è successo?',r.intro+' '+r.gov],
+     ['01',displayedSovereign(c)?.scenario_only?'STIMA GOVERNATIVA':'FATTO OSSERVATO','Cosa è successo?',r.intro+' '+r.gov],
      ['02','PRICING','Cosa ha davvero repricizzato?',r.pricing+' '+r.caution],
      ['03','INTERPRETAZIONE','Come leggere il 2Y rispetto al 10Y?','Il 2Y riflette prevalentemente aspettative di tassi a breve e premi. Il 10Y risente anche di crescita, aspettative d’inflazione, rendimenti reali, term premium, deficit/supply e domanda di duration. Non confondere una classificazione di curva con una causa dimostrata.'],
      ['04','TESI FALSIFICABILE','Cosa confermerebbe o smentirebbe?',r.monitor]
@@ -422,5 +448,5 @@ function make(api){
  }
  return render();
 }
-root.FXQuantRates={render:make,chfSnapshot:(get,now)=>chfGovernmentSnapshot(chfGovernmentHistory(get,now)),nzdEstimate:nzdGovernmentEstimate};
+root.FXQuantRates={render:make,chfSnapshot:(get,now)=>chfGovernmentSnapshot(chfGovernmentHistory(get,now)),nzdEstimate:nzdGovernmentEstimate,nzdObserved:nzdGovernmentSnapshot};
 })(window);

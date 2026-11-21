@@ -291,6 +291,16 @@ assert.equal(laterResult.working_method,'POST_ROLL_B2_SAME_BENCHMARK',
 assert.equal(laterResult.date,laterB2.NZD.latest_date);
 assert.equal(laterResult['2Y'],3.81);
 assert.equal(laterResult['10Y'],4.79);
+const historicBase={date:anchor.government_as_of,'2Y':anchor['2Y'],'10Y':anchor['10Y']};
+const advancedScenario=derive(frozenCanonical,laterB2,laterQuote.as_of,laterQuote,anchor,historicBase).rates.NZD;
+assert.equal(advancedScenario.working_method,'NZD_ASX_6M_PARALLEL_SHIFT_SCENARIO');
+assert.equal(advancedScenario.date,laterQuote.as_of);
+assert.equal(advancedScenario.comparison_window.futures_6m_bp,-8);
+assert.equal(derive(frozenCanonical,laterB2,laterQuote.as_of,laterQuote,anchor,
+ {...historicBase,'2Y':anchor['2Y']+0.01}).rates.NZD.working_method,'POST_ROLL_B2_SAME_BENCHMARK',
+ 'A dated base with a price mismatch cannot revive the scenario');
+assert.equal(derive(frozenCanonical,researchAdvanced,scenarioToday,quote,anchor,historicBase).rates.NZD.working_method,
+ 'POST_ROLL_B2_SAME_BENCHMARK','Same-day official observation still takes priority');
 assert.equal(JSON.stringify(canonical),before,'ASX scenario must not mutate canonical rates');
 const futureAsOf=copy(frozenResearch);
 futureAsOf.NZD.latest_date=shiftDays(staleAt,1);

@@ -57,12 +57,14 @@
    const c=country,canonical=rates[c],h=ois[c]?.horizons?.['6m'],o=ois[c],rO=rates[state.against]||null;
    const snb=c==='CHF'&&typeof window!=='undefined'&&window.FXQuantRates?.chfSnapshot?.(get,dayNow());
    const estimate=c==='NZD'&&typeof window!=='undefined'&&window.FXQuantRates?.nzdEstimate?.(get,dayNow());
-   const r=snb||canonical;
+   const b2=c==='NZD'&&typeof window!=='undefined'&&window.FXQuantRates?.nzdObserved?.(get,dayNow());
+   const r=snb||b2||canonical;
    const rOK=r&&finite(r['2Y'])&&finite(r['10Y'])&&finite(r.chg2_bp)&&finite(r.chg10_bp)&&isDate(r.date);
    const front=rOK?r.chg2_bp:null,long=rOK?r.chg10_bp:null;
    const both=finite(front)&&finite(long)&&(front>0&&long>0||front<0&&long<0);
    const curve=both?(front<0?(front<long?'bull steepening':'bull flattening'):(front>long?'bear flattening':'bear steepening')):'movimento di curva non univoco';
    const description=estimate?'Stima dei governativi NZD al '+date(estimate.date)+'. Il 2Y è '+fmt(estimate['2Y'],3)+'% e il 10Y '+fmt(estimate['10Y'],3)+'%.':
+    b2?'Rendimenti B2 osservati al '+date(b2.date)+': 2Y '+fmt(b2['2Y'],3)+'% e 10Y '+fmt(b2['10Y'],3)+'%.':
     rOK?(snb?'Nella serie storica SNB del ':'Al ')+date(r.date)+' il governativo 2Y di '+c+' è '+fmt(r['2Y'],3)+'%, il 10Y '+fmt(r['10Y'],3)+'%; le variazioni sono '+move(front)+' e '+move(long)+'. La lettura di forma è '+curve+'.'
     :'Per '+c+' non abbiamo contemporaneamente livelli e variazioni verificabili di 2Y e 10Y, quindi non assegniamo un nuovo regime alla curva.';
    const repricing=h&&finite(h.rate)&&isDate(h.as_of)
