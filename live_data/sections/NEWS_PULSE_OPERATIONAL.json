@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-20",
-  "generated_at_utc": "2026-11-21T19:43:37.111727Z",
+  "generated_at_utc": "2026-11-21T21:23:34.525007Z",
   "items": [
     {
       "as_of": "2026-11-20",
@@ -30,6 +30,28 @@
       "source": "Statistics Bureau of Japan",
       "source_url": "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html",
       "title": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
+    },
+    {
+      "as_of": "2026-11-20",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "CAD",
+      "confidence": "A",
+      "detail": "Movimento 1D -12.5 bp sul bucket 12M; variazione 1W -21.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+      "title": "CAD: repricing implicito da futures più dovish (-12.5 bp 12M in 1D)"
+    },
+    {
+      "as_of": "2026-11-20",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "Movimento 1D -2.0 bp sul bucket 6M; variazione 1W -10.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+      "title": "AUD: repricing implicito da futures più dovish (-2.0 bp 6M in 1D)"
     },
     {
       "as_of": "2026-11-20",
@@ -70,6 +92,17 @@
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "title": "EUR/USD: -0.02% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-20",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Movimento 1D +0.0 bp sul bucket 6M; variazione 1W +0.6 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+      "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
     },
     {
       "as_of": "2026-11-20",
@@ -121,17 +154,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
       "title": "GBP: repricing OIS più hawkish (+6.0 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-19",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "Movimento 1D -18.0 bp sul bucket 12M; variazione 1W -13.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing implicito da futures più dovish (-18.0 bp 12M in 1D)"
     },
     {
       "as_of": "2026-11-19",
@@ -189,17 +211,6 @@
     },
     {
       "as_of": "2026-11-19",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "JPY",
-      "confidence": "A",
-      "detail": "Movimento 1D +1.1 bp sul bucket 3M; variazione 1W +1.4 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "title": "JPY: repricing implicito da futures più hawkish (+1.1 bp 3M in 1D)"
-    },
-    {
-      "as_of": "2026-11-19",
       "category": "MARKET_GOVERNMENT_RATES",
       "ccy": "JPY",
       "confidence": "A",
@@ -209,17 +220,6 @@
       "reference_previous_date": "2026-11-18",
       "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-19",
       "title": "JPY: governativo 2Y -1.9 pb, 10Y -4.6 pb"
-    },
-    {
-      "as_of": "2026-11-19",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "CAD",
-      "confidence": "A",
-      "detail": "Movimento 1D -1.5 bp sul bucket 6M; variazione 1W -3.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "title": "CAD: repricing implicito da futures più dovish (-1.5 bp 6M in 1D)"
     },
     {
       "as_of": "2026-11-16",
@@ -254,7 +254,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-21T19:43:37.111727Z",
+  "last_checked_at_utc": "2026-11-21T21:23:34.525007Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -628,11 +628,11 @@
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
             "6m_rate_pct": 1.648,
-            "date": "2026-11-19",
+            "date": "2026-11-20",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Tokyo Financial Exchange · Three-month TONA Futures",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -682,12 +682,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.985,
-            "date": "2026-11-19",
+            "6m_rate_pct": 2.895,
+            "date": "2026-11-20",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
             "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -888,11 +888,11 @@
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
             "6m_rate_pct": 1.648,
-            "date": "2026-11-19",
+            "date": "2026-11-20",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
             "source": "Tokyo Financial Exchange · Three-month TONA Futures",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -982,8 +982,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.985,
-            "date": "2026-11-19",
+            "6m_rate_pct": 2.895,
+            "date": "2026-11-20",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
