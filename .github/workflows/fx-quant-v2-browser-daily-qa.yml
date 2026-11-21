@@ -158,9 +158,46 @@ jobs:
         with:
           node-version: '22'
       - name: Install Chromium browser tooling
+        shell: bash
         run: |
+          set -euo pipefail
+          started=$SECONDS
           npm install --no-save playwright
-          npx playwright install --with-deps chromium
+          npx playwright install --only-shell chromium
+
+          verify_chromium() {
+            node <<'NODE'
+          const { chromium } = require('playwright');
+
+          async function verifyChromium() {
+            const browser = await chromium.launch({ headless: true, timeout: 15000 });
+            try {
+              const page = await browser.newPage();
+              await page.setContent('<title>FX Quant browser check</title>', { timeout: 10000 });
+              if (await page.title() !== 'FX Quant browser check') {
+                throw new Error('Chromium did not render the test page');
+              }
+            } finally {
+              await browser.close();
+            }
+          }
+
+          verifyChromium().catch(error => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE
+          }
+
+          # The runner normally has the libraries required by headless Chromium.
+          mode=runner-dependencies
+          if ! verify_chromium; then
+            echo 'FXV2_CHROMIUM_SETUP_RETRY installing system dependencies'
+            npx playwright install-deps chromium
+            verify_chromium
+            mode=installed-dependencies
+          fi
+          echo "FXV2_CHROMIUM_SETUP_PASS mode=$mode elapsed_seconds=$((SECONDS-started))"
       - name: Start local V2 preview for pull requests
         if: github.event_name == 'pull_request'
         run: |
