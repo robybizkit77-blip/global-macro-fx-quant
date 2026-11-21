@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-20",
-  "generated_at_utc": "2026-11-21T11:14:46.821660Z",
+  "generated_at_utc": "2026-11-21T14:38:05.437301Z",
   "items": [
     {
       "as_of": "2026-11-20",
@@ -254,7 +254,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-21T11:14:46.821660Z",
+  "last_checked_at_utc": "2026-11-21T14:38:05.437301Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -462,7 +462,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.485,
+            "6m_rate_pct": 4.435,
             "date": "2026-11-20",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
@@ -517,7 +517,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.485,
+            "6m_rate_pct": 4.435,
             "date": "2026-11-20",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
