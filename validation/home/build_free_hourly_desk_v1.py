@@ -360,8 +360,30 @@ def build(root: Path, now: datetime, previous=None, rss=None):
         else:
             verb = "guadagnato" if fx["state"] == "strong" else "ceduto"
             fx_reading = f"Il {fixing_date} il dollaro ha {verb} contro euro e yen."
+    risk_fact = ""
+    if risk_closes:
+        risk_date = short_date(day(risk_closes[0]["date"]))
+        moves = [f"{row['label']} {row['display']}" for row in risk_closes]
+        risk_fact = f"Alla chiusura del {risk_date}, " + ", ".join(moves[:-1]) + (" e " if len(moves)>1 else "") + moves[-1] + "."
+    risk_story = risk_opening(risk_closes)
+    vix = next((row for row in risk_closes if row["label"] == "VIX"), None)
+    vix_alert = lookup("MARKET_VOLATILITY_CLOSE", lambda row: vix is not None
+                       and row["as_of"] == vix["date"] and row.get("source_url") == vix["url"]
+                       and row.get("importance") == "HIGH"
+                       and row.get("quality") == "PUBLISHED_SOURCE_RESEARCH_ONLY")
+    lead_with_volatility = False
+    if vix_alert and (not fx or vix["date"] >= fx["date"]):
+        pulse_change = signed_from_title(vix_alert["title"], "punti")
+        lead_with_volatility = pulse_change is not None and abs(pulse_change - vix["change"]) < .0051
+
     if macro_fact and (not fx or fx["date"] < today.isoformat()):
         headline = macro_fact.rstrip(".")
+        lead_with_volatility = False
+    elif lead_with_volatility:
+        direction = "in rialzo" if vix["change"] > 0 else "in calo"
+        headline = f"Volatilità {direction}"
+        if fx and fx["date"] == vix["date"]:
+            headline += f", {fx_headline.lower()}"
     elif fx:
         headline = fx_headline
     elif risk_closes:
@@ -369,13 +391,13 @@ def build(root: Path, now: datetime, previous=None, rss=None):
     else:
         headline = f"Mercati, le ultime osservazioni al {short_date(asof)}"
 
-    risk_fact = ""
-    if risk_closes:
-        risk_date = short_date(day(risk_closes[0]["date"]))
-        moves = [f"{row['label']} {row['display']}" for row in risk_closes]
-        risk_fact = f"Alla chiusura del {risk_date}, " + ", ".join(moves[:-1]) + (" e " if len(moves)>1 else "") + moves[-1] + "."
-    risk_story = risk_opening(risk_closes)
-    lead = sentence_join((macro_fact, fx_reading, risk_story)) or (
+    lead_parts = (macro_fact, fx_reading, risk_story)
+    if lead_with_volatility:
+        risk_date = short_date(day(vix["date"]))
+        vix_direction = "è salita" if vix["change"] > 0 else "è scesa"
+        volatility_first = f"La volatilità azionaria {vix_direction} alla chiusura del {risk_date}."
+        lead_parts = (volatility_first, fx_reading, macro_fact, risk_story if risk_story != volatility_first else "")
+    lead = sentence_join(lead_parts) or (
         f"Il quadro di mercato resta quello del {short_date(asof)}, in attesa della prossima seduta."
     )
     monetary = monetary_evidence = ""
@@ -390,7 +412,13 @@ def build(root: Path, now: datetime, previous=None, rss=None):
         if abs(relative_bp) >= .05:
             favored = "degli Stati Uniti" if relative_bp > 0 else "dell’area euro"
             monetary = f"Nella seduta del {rates_date}, il confronto tra i rendimenti governativi a breve si è mosso a favore {favored}."
-    fx_interpretation = sentence_join((event_sentence, event_relevance)) or (
+    fx_interpretation = sentence_join((event_sentence, event_relevance))
+    if not fx_interpretation and lead_with_volatility and vix["change"] > 0 and (
+        fx and fx["date"] == vix["date"] and fx["state"] == "mixed" and fx["usd_jpy_pct"] < -.005
+    ):
+        fx_interpretation = ("Se la volatilità resta alta, segui la tenuta dello yen contro il dollaro. "
+                             "Un rafforzamento anche contro l’euro darebbe più peso alla lettura sullo yen.")
+    fx_interpretation = fx_interpretation or (
         "Da seguire se euro e yen si muovono nella stessa direzione contro il dollaro."
     )
     watch = ("Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.") if catalyst else (
