@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-20",
-  "generated_at_utc": "2026-11-22T06:58:24.653871Z",
+  "generated_at_utc": "2026-11-22T14:33:05.690624Z",
   "items": [
     {
       "as_of": "2026-11-20",
@@ -254,7 +254,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-22T06:58:24.653871Z",
+  "last_checked_at_utc": "2026-11-22T14:33:05.690624Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1209,9 +1209,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 9,
+        "accepted_items": 7,
         "ccy": "JPY",
-        "entries_rejected": 38,
+        "entries_rejected": 40,
         "feed_entries_seen": 47,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
@@ -1259,9 +1259,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 5,
+        "accepted_items": 4,
         "ccy": "ENERGY",
-        "entries_rejected": 25,
+        "entries_rejected": 26,
         "feed_entries_seen": 30,
         "feed_url": "https://www.eia.gov/rss/todayinenergy.xml",
         "source": "U.S. Energy Information Administration",
