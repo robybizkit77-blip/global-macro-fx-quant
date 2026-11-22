@@ -110,6 +110,19 @@ def main() -> None:
         r7 = append_snapshots(restored, "2026-10-20T08:15:00Z", p)
         assert r7["currencies"] == ["CHF"], r7
 
+        before = p.read_bytes()
+        late = view("2026-10-20")
+        late["currencies"]["GBP"] = row("GBP", True, "2026-10-19")
+        late["currencies"]["NZD"] = partial["currencies"]["NZD"]
+        r8 = append_snapshots(late, "2026-10-20T21:00:00Z", p, official_only=True)
+        assert r8["currencies"] == ["JPY", "CAD", "AUD"], r8
+        after = p.read_bytes()
+        assert after.startswith(before)
+        assert all(json.loads(line)["source_as_of"] == "2026-10-20"
+                   for line in after[len(before):].splitlines())
+        r9 = append_snapshots(late, "2026-10-20T22:00:00Z", p, official_only=True)
+        assert r9["appended"] == 0 and p.read_bytes() == after, r9
+
         print("OIS_G8_HISTORY_SNAPSHOT_V1_PASS")
 
 
