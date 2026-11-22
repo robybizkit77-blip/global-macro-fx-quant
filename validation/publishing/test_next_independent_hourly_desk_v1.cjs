@@ -10,6 +10,8 @@ const pulseSrc=fs.readFileSync(path.join(ROOT,next,'home-market-pulse-v1.js'),'u
 const deskListeners=new Map();
 const win={document:{addEventListener(type,handler,capture){deskListeners.set(type,{handler,capture});}}};
 const ctx={window:win};
+vm.runInNewContext(fs.readFileSync(path.join(ROOT,next,'calendar-operational-reading.js'),'utf8'),ctx,
+ {filename:'calendar-operational-reading.js',timeout:2500});
 vm.runInNewContext(pulseSrc,ctx,{filename:'home-market-pulse-v1.js',timeout:2500});
 vm.runInNewContext(src,ctx,{filename:'hourly-desk-ui-v1.js',timeout:2500});
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -52,7 +54,7 @@ assert.equal(render(null),null,'No free edition = existing Morning remains');
 assert.equal(render({...sample,status:'AWAITING_SECRET'}),null);
 assert.equal(render({...sample,generated_at_utc:'2026-10-01T14:00:00Z'}),null);
 const out=render(sample);
-assert(out.includes('Ultime novità disponibili'), 'Timestamp must refer to last actual evidence edition, not last refresh check');
+assert(out.includes('Ultima analisi pubblicata'), 'Timestamp must refer to last actual evidence edition, not last refresh check');
 assert(!out.includes('Aggiornamento desk'), 'Misleading fresh-update label must not reappear');
 assert(out.includes('l’orario dell’edizione cambia soltanto quando'), 'Published edition must explain hourly unchanged checks');
 
@@ -67,9 +69,9 @@ const checkRender=check=>win.FXQuantHourlyDesk.render({
 });
 const withReceipt=checkRender(verifiedCheck);
 assert(withReceipt.includes('data-hourly-check-status="verified"'));
-assert(withReceipt.includes('Controllo fonti completato')&&
+assert(withReceipt.includes('Ultimo controllo delle fonti')&&
  withReceipt.includes('Edizione invariata'));
-assert(withReceipt.includes('13:50 Europe/Rome'),
+assert(withReceipt.includes('datetime="2026-11-13T12:50:00Z"')&&withReceipt.includes('13:50'),
  'Unchanged source check must NOT overwrite the true edition time');
 assert(withReceipt.includes('15:14'),'Check timestamp should use Europe/Rome daylight-saving offset');
 const staleCheck=win.FXQuantHourlyDesk.render({
@@ -88,12 +90,35 @@ assert(checkRender({...verifiedCheck,edition_changed:true})
  .includes('Nuova edizione pubblicata'));
 
 const oldEdition=render({...sample,generated_at_utc:'2026-11-10T12:50:00Z'});
-assert(oldEdition?.includes('Ultima edizione conservata'), 'Dated older editions must be labeled conservatively');
+assert(oldEdition?.includes('Edizione d’archivio'), 'Dated older editions must be labeled conservatively');
+
+const nextEvent={
+ title:'PMI flash Australia',ccy:'AUD',date:'2026-11-16',time_local:'09:00',
+ timezone:'Australia/Sydney',status:'UPCOMING',importance:'HIGH',quality:'OFFICIAL_PROVISIONAL',
+ event_type:'PMI',source_url:'https://www.pmi.spglobal.com/Public/Home/PDF/UK_Rel_Dates'
+};
+const agenda={
+ schema:'GMFQ_CALENDAR_OPERATIONAL_VIEW_V3',last_checked_at_utc:'2026-11-15T14:00:00Z',
+ events:[{...nextEvent,title:'PMI precedente',date:'2026-11-15'},
+  {...nextEvent,title:'PMI senza orario',time_local:null},nextEvent]
+};
+const catalyst=(calendar,when='2026-11-15T21:00:00Z')=>
+ win.FXQuantHourlyDesk.renderCatalyst({calendar,today:'2026-11-15',nowMs:Date.parse(when),esc,date});
+const catalystHtml=catalyst(agenda);
+assert.match(catalystHtml,/data-home-catalyst="upcoming"/);
+assert.match(catalystHtml,/2026-11-15T22:00:00\.000Z">2026-11-15 · <strong>23:00<\/strong> ora di Roma/);
+assert.match(catalystHtml,/Calendario provvisorio/);
+assert.match(catalystHtml,/#news\?event=AUD%7C2026-11-16%7CPMI%7CPMI%20flash%20Australia/);
+assert.match(catalystHtml,/data-cal-currency="AUD"/);
+assert.doesNotMatch(catalystHtml,/PMI precedente|PMI senza orario/);
+assert.match(catalyst(agenda,'2026-11-15T22:00:00Z'),/data-home-catalyst="unavailable"/);
+assert.match(catalyst({...agenda,last_checked_at_utc:'2026-11-06T14:00:00Z'}),/data-home-catalyst="unavailable"/);
+assert.match(catalyst({...agenda,events:[{...nextEvent,source_url:null}]}),/data-home-catalyst="unavailable"/);
 
 assert(out.includes('data-standalone-market-desk="active"'));
 assert(out.indexOf('IL QUADRO GENERALE DEI MERCATI')<out.indexOf('Notizie e fonti di questa edizione'),
  'Overall narrative must come before article drilldown');
-assert(out.includes('LE CONSEGUENZE PER IL FOREX'));
+assert(out.includes('PROSSIMO CATALIZZATORE')&&out.includes('Lettura Forex dell’edizione'));
 assert(out.includes('data-hourly-hero-to-sources="true"'),
  'The market-picture hero must lead to source evidence');
 assert(out.includes('data-hourly-open-sources'),
@@ -318,7 +343,7 @@ assert(app.includes("check:get('hourlyCheck')"),
 assert(app.includes("fetch('../../../market-desk/hourly-market-desk-current.json'"),'Optional fetch endpoint missing');
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
 assert.match(index,/hourly-desk-ui-v1\.js\?v=\d+/);
-assert(index.includes('hourly-desk-ui-v1.css?v=6'));
+assert.match(index,/hourly-desk-ui-v1\.css\?v=\d+/);
 const pulseScript=index.search(/home-market-pulse-v1\.js\?v=\d+/);
 assert(pulseScript>=0&&index.includes('home-market-pulse-v1.css?v=3'),
  'The source-based data visualization must load before the editorial Home UI');

@@ -299,7 +299,7 @@
   };
  }
 
- function build({feed,plot,esc,date,dayNow,currentResearch}){
+ function build({feed,plot,esc,date,dayNow,currentResearch,overviewContext=''}){
   if(!sound(feed)||feed.edition_date>dayNow())return null;
   const current=feed.edition_date===dayNow();
   const correction=officialReconciliation(feed,currentResearch?.calendar,dayNow(),date,
@@ -380,6 +380,7 @@
    '<span>'+(feed.edition_status==='MORNING_SNAPSHOT'?
      'Osservazioni precedenti alla seduta':'Edizione pubblicata in ritardo o ricostruita')+
    '</span></div></header>'+
+   overviewContext+
    firstRead+
    '<aside class="morning-catalyst"><div class="morning-section-label">'+
    (correction?'CATALIZZATORE UFFICIALE · CALENDARIO AGGIORNATO':'IL CATALIZZATORE')+
