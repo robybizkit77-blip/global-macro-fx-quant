@@ -101,7 +101,7 @@ def make_record(currency: str, row: dict, captured_at_utc: str) -> dict:
     }
 
 
-def append_snapshots(view: dict, captured_at_utc: str, path: Path) -> dict:
+def append_snapshots(view: dict, captured_at_utc: str, path: Path, *, official_only: bool = False) -> dict:
     currencies = view.get("currencies") or {}
     missing = [c for c in CCYS if c not in currencies]
     if missing:
@@ -119,7 +119,13 @@ def append_snapshots(view: dict, captured_at_utc: str, path: Path) -> dict:
 
     appended: list[dict] = []
     for c in CCYS:
-        rec = make_record(c, currencies[c], captured_at_utc)
+        row = currencies[c]
+        if official_only:
+            if row["operational_status"] != "GREEN_OFFICIAL":
+                continue
+            if row.get("official_status") != "ACTIVE" or row.get("backtest_eligible_as_official") is not True:
+                raise SystemExit(f"{c}: official history requires a certified active curve")
+        rec = make_record(c, row, captured_at_utc)
         if latest_fp.get(c) == rec["fingerprint"]:
             continue
         appended.append(rec)
@@ -144,6 +150,7 @@ def main() -> None:
     ap.add_argument("--view", default=str(VIEW_PATH))
     ap.add_argument("--history", default=str(HISTORY_PATH))
     ap.add_argument("--captured-at-utc")
+    ap.add_argument("--official-only", action="store_true", help="Archive only certified official curves")
     args = ap.parse_args()
 
     captured = args.captured_at_utc or datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -158,7 +165,7 @@ def main() -> None:
     withheld = sum(r.get("operational_status") == "WITHHELD" for r in ccys.values())
     if green + withheld != 8 or green != summary.get("operational_green") or withheld != summary.get("operational_withheld"):
         raise SystemExit("OIS G8 history: coverage mismatch")
-    result = append_snapshots(view, captured, Path(args.history))
+    result = append_snapshots(view, captured, Path(args.history), official_only=args.official_only)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
 
 

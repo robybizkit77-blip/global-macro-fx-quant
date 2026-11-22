@@ -25,6 +25,8 @@ on:
       - 'validation/cb_pricing/build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/build_next_g8_pricing_history_v1.py'
       - 'validation/cb_pricing/test_build_next_g8_pricing_history_v1.py'
+      - 'validation/cb_pricing/ois_g8_history_snapshot_v1.py'
+      - 'validation/cb_pricing/test_ois_g8_history_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_operational_view_v1.py'
       - 'validation/cb_pricing/test_ois_official_runtime_parity_v1.py'
       - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
@@ -44,6 +46,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'live_data/sections/OIS_DATA.json'
       - 'validation/cb_pricing/OIS_ESTIMATED_REPRICING_CONTRACT_V1_2026-10-15.json'
       - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
       - 'validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py'
@@ -66,6 +69,8 @@ on:
       - 'validation/cb_pricing/build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/build_next_g8_pricing_history_v1.py'
       - 'validation/cb_pricing/test_build_next_g8_pricing_history_v1.py'
+      - 'validation/cb_pricing/ois_g8_history_snapshot_v1.py'
+      - 'validation/cb_pricing/test_ois_g8_history_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_operational_view_v1.py'
       - 'validation/cb_pricing/test_ois_official_runtime_parity_v1.py'
       - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
@@ -85,6 +90,7 @@ on:
   workflow_run:
     workflows: ['CB Pricing Persistent Daily V1']
     types: [completed]
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: '20 6 * * 1-5'
@@ -220,6 +226,9 @@ jobs:
       - name: Refresh dated pricing fallback and Next history from matching source data
         run: |
           python validation/cb_pricing/build_fxv2_ois_fallback_v1.py
+          # CB inputs can advance after the G8 archive's regular run.
+          python validation/cb_pricing/ois_g8_history_snapshot_v1.py --official-only
+          python validation/cb_pricing/test_ois_g8_history_snapshot_v1.py
           python validation/cb_pricing/build_next_g8_pricing_history_v1.py
           python validation/cb_pricing/test_build_next_g8_pricing_history_v1.py
           python validation/cb_pricing/build_next_g8_pricing_history_v1.py --check

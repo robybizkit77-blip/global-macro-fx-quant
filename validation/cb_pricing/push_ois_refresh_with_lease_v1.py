@@ -13,11 +13,16 @@ import subprocess
 import sys
 from pathlib import Path
 
+from ois_g8_history_snapshot_v1 import make_record
+
+G8_HISTORY = "validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl"
+OPERATIONAL_VIEW = "live_data/sections/OIS_OPERATIONAL_VIEW.json"
+
 ESTIMATED_PATHS = (
     "live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json",
     "live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
     "live_data/sections/CB_PRICING_ESTIMATED.json",
-    "live_data/sections/OIS_OPERATIONAL_VIEW.json",
+    OPERATIONAL_VIEW,
     # Publishing the operational view without its matching pending-source
     # dossier can leave Home and Rates contradictory until the next G8 job.
     # Both writers share the existing exclusive concurrency group and lease.
@@ -28,10 +33,9 @@ ESTIMATED_PATHS = (
     "site/fx-quant-v2/ois-pricing-snapshot.json",
     "site/fx-quant-v2/ois-same-contract-repricing-research.json",
     "site/fx-quant-v2/next/rates-pricing-history-v1.json",
+    G8_HISTORY,
 )
-G8_PATHS = ESTIMATED_PATHS + (
-    "validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl",
-)
+G8_PATHS = ESTIMATED_PATHS
 # Changing any of these upstream invalidates the observations or the producer
 # contract. They require a NEW refresh rather than a blind rebase.
 PROTECTED = (
@@ -66,6 +70,24 @@ def git(*args: str, cwd: Path | None = None, check: bool = True) -> subprocess.C
     return result
 
 
+def verify_official_history_append(base_sha: str, cwd: Path | None) -> None:
+    before = git("show", f"{base_sha}:{G8_HISTORY}", cwd=cwd).stdout.encode("utf-8")
+    root = cwd if cwd is not None else Path.cwd()
+    after = (root / G8_HISTORY).read_bytes()
+    if not after.startswith(before):
+        raise LeaseError("REFUSED_G8_HISTORY_REWRITE")
+    currencies = json.loads((root / OPERATIONAL_VIEW).read_text(encoding="utf-8"))["currencies"]
+    for line in after[len(before):].splitlines():
+        rec = json.loads(line)
+        row = currencies.get(rec.get("currency"), {})
+        if (row.get("operational_status") != "GREEN_OFFICIAL"
+                or row.get("official_status") != "ACTIVE"
+                or row.get("backtest_eligible_as_official") is not True
+                or not rec.get("captured_at_utc")
+                or rec != make_record(rec["currency"], row, rec["captured_at_utc"])):
+            raise LeaseError("REFUSED_NON_OFFICIAL_G8_HISTORY_APPEND")
+
+
 def persist(base_sha: str, mode: str, *, cwd: Path | None = None, attempts: int = 4) -> dict:
     if mode not in COMMITS:
         raise LeaseError("Invalid writer mode")
@@ -79,6 +101,8 @@ def persist(base_sha: str, mode: str, *, cwd: Path | None = None, attempts: int 
     staged = git("diff", "--cached", "--name-only", cwd=cwd).stdout.splitlines()
     if not set(unstaged + staged).issubset(paths):
         raise LeaseError("REFUSED_OUT_OF_SCOPE: " + json.dumps(sorted(set(unstaged + staged) - set(paths))))
+    if mode == "estimated" and G8_HISTORY in unstaged + staged:
+        verify_official_history_append(base_sha, cwd)
     git("add", "--", *paths, cwd=cwd)
     pending = git("diff", "--cached", "--quiet", cwd=cwd, check=False)
     if pending.returncode == 0:

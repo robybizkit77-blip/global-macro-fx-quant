@@ -2,13 +2,16 @@
 """Repository-level smoke tests for OIS push safety using local bare git repos."""
 from __future__ import annotations
 
+import json
 import subprocess
 import tempfile
 from pathlib import Path
 
 from push_ois_refresh_with_lease_v1 import (
-    ESTIMATED_PATHS, G8_PATHS, LeaseError, persist,
+    ESTIMATED_PATHS, G8_HISTORY, G8_PATHS, OPERATIONAL_VIEW, LeaseError, persist,
 )
+from ois_g8_history_snapshot_v1 import make_record
+from test_ois_g8_history_snapshot_v1 import view
 
 
 def git(*args: str, cwd: Path | None = None) -> str:
@@ -142,16 +145,41 @@ def test_readiness_atomic_writer_scope():
                 raise AssertionError("readiness rebase risk accepted: "+mode)
             except LeaseError as exc:
                 assert "REFUSED_PROTECTED_OIS_CHANGE" in str(exc),exc
-    # G8-only history cannot be published by the estimated OIS writer.
+
+
+def test_estimated_history_rejects_rewrite():
     with tempfile.TemporaryDirectory() as td:
-        _,writer,_=fixture(Path(td))
-        base=git("rev-parse","HEAD",cwd=writer)
-        write(writer,"validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl","out of scope\n")
+        _, writer, _ = fixture(Path(td))
+        base = git("rev-parse", "HEAD", cwd=writer)
+        write(writer, G8_HISTORY, "rewritten history\n")
         try:
-            persist(base,"estimated",cwd=writer)
-            raise AssertionError("estimated writer accepted G8-only history")
+            persist(base, "estimated", cwd=writer)
+            raise AssertionError("estimated writer rewrote G8 history")
         except LeaseError as exc:
-            assert "REFUSED_OUT_OF_SCOPE" in str(exc),exc
+            assert "REFUSED_G8_HISTORY_REWRITE" in str(exc), exc
+
+
+def test_estimated_history_requires_certified_official_append():
+    for currency in ("CAD", "USD"):
+        with tempfile.TemporaryDirectory() as td:
+            origin, writer, _ = fixture(Path(td))
+            base = git("rev-parse", "HEAD", cwd=writer)
+            operational = view("2026-10-20")
+            record = make_record(currency, operational["currencies"][currency], "2026-10-20T21:00:00Z")
+            write(writer, OPERATIONAL_VIEW, json.dumps(operational))
+            write(writer, G8_HISTORY, "v1\n" + json.dumps(record) + "\n")
+            if currency == "CAD":
+                assert persist(base, "estimated", cwd=writer)["status"] == "PUSHED"
+                saved = git("--git-dir", str(origin), "show", "main:" + G8_HISTORY)
+                assert saved.splitlines()[0] == "v1" and json.loads(saved.splitlines()[1]) == record
+            else:
+                try:
+                    persist(base, "estimated", cwd=writer)
+                    raise AssertionError("estimated writer appended an unofficial curve")
+                except LeaseError as exc:
+                    assert "REFUSED_NON_OFFICIAL_G8_HISTORY_APPEND" in str(exc), exc
+                assert git("--git-dir", str(origin), "show", "main:" + G8_HISTORY) == "v1"
+
 
 def test_noop_scope():
     with tempfile.TemporaryDirectory() as td:
@@ -170,8 +198,11 @@ if __name__ == "__main__":
     test_unrelated_change()
     test_unrelated_change_without_repository_identity()
     test_refuse_protected("estimated", "live_data/sections/OIS_DATA.json")
+    test_refuse_protected("estimated", G8_HISTORY)
     test_refuse_protected("g8", ESTIMATED_PATHS[0])
     test_refuse_protected("g8", "validation/cb_pricing/ois_g8_history_snapshot_v1.py")
     test_readiness_atomic_writer_scope()
+    test_estimated_history_rejects_rewrite()
+    test_estimated_history_requires_certified_official_append()
     test_noop_scope()
     print("OIS_SAFE_PUSH_LEASE_V1: PASS (unrelated rebase, protected refusal, no-change, scope)")
