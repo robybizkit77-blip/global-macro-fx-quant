@@ -21,7 +21,7 @@ const REPORTS=Object.freeze([
 const CATEGORIES=Object.freeze([['all','Tutti'],['daily','Daily Forex'],['macro','Global Macro'],['bank','Banche FX'],['cb','Banche centrali'],['ois','Curve OIS'],['cot','COT'],['cross','Cross-Asset'],['pairs','Coppie FX']]);
 const MONTHS=Object.freeze({GEN:1,FEB:2,MAR:3,APR:4,MAG:5,GIU:6,LUG:7,AGO:8,SET:9,OTT:10,NOV:11,DIC:12});
 const BLOCKED=/(_PROVA|_TEST|_BOZZA|_DRAFT|_BACKUP|_ANTEPRIMA|_PREVIEW|_LEGACY|_OLD|_DATI_PARZIALI)(_|\.|$)/i;
-let category='all',query='',remoteReports=[],localReports=[],lastLookupAt=0,refreshInFlight=false;
+let category='all',query='',remoteReports=[],localReports=[],lastLookupAt=0,refreshInFlight=false,catalogReady=false;
 const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('it-IT').trim();
 const label=x=>(CATEGORIES.find(c=>c[0]===x)||['','Report'])[1];
@@ -111,9 +111,12 @@ function editionStatus(r,today=romeDay()){
 }
 function url(r){return r.publicUrl||(r.date>='2026-11-01'?ROOT:BASE)+encodeURIComponent(r.file);}
 function card(r,today,featured=false){
- const status=editionStatus(r,today),heading=featured?'h2':'h3';
+ const archived=featured&&catalogReady&&![...localReports,...remoteReports].some(report=>report.file===r.file);
+ const status=archived?{state:'unverified',text:'Indice del Briefing non verificato'}:editionStatus(r,today);
+ const heading=featured?'h2':'h3';
+ const tag=featured?(archived?'Briefing d’archivio':'Ultimo Briefing'):label(r.type);
  return '<article class="rl-card'+(featured?' rl-featured':'')+'"><div class="rl-card-copy">'+
-  '<div class="rl-card-meta"><span class="rl-tag">'+(featured?'Ultimo Briefing':esc(label(r.type)))+
+  '<div class="rl-card-meta"><span class="rl-tag">'+esc(tag)+
   '</span><time datetime="'+esc(r.date)+'">'+datestr(r.date)+'</time></div>'+
   '<'+heading+'>'+esc(r.title)+'</'+heading+'><p>'+esc(r.desc)+'</p></div>'+
   '<div class="rl-card-bottom"><span class="rl-status" data-edition-state="'+esc(status.state)+'">'+esc(status.text)+'</span>'+
@@ -125,6 +128,7 @@ function rows(today=romeDay(),list=filterReports()){
   '<p class="rl-empty">Nessun report corrisponde alla ricerca. Cambia categoria o parola chiave.</p>';
 }
 function libraryView(today=romeDay()){
+ if(root.document&&!catalogReady)return {loading:true,featured:'',weekly:'',hideWeekly:true,count:''};
  const items=filterReports(),daily=items.find(r=>r.type==='daily');
  const weekly=items.filter(r=>r.type!=='daily');
  return {featured:daily?card(daily,today,true):'',weekly:rows(today,weekly),
@@ -136,6 +140,7 @@ function render(){
  const view=libraryView();
  return '<header class="rl-head"><h1>Research Library</h1>'+
   '<p>Briefing feriale e ultima edizione pubblicata per ogni categoria.</p></header>'+
+  '<p id="library-loading" class="rl-loading" role="status"'+(view.loading?'':' hidden')+'>Verifica delle edizioni pubblicate in corso…</p>'+
   '<div id="library-featured"'+(view.featured?'':' hidden')+'>'+view.featured+'</div>'+
   '<section class="rl-controls" aria-label="Filtri e ricerca"><div id="library-filterbar" class="rl-filters">'+filters()+'</div>'+
   '<label class="rl-search" for="library-search"><span>Cerca fra gli ultimi report</span><input id="library-search" type="search" autocomplete="off" placeholder="Es. OIS, COT, Fed, macro..." value="'+esc(query)+'"></label></section>'+
@@ -154,6 +159,7 @@ function sync(){
  const featured=node('library-featured'),weekly=node('library-weekly'),grid=node('library-grid');
  if(!featured||!weekly||!grid)return;
  const view=libraryView();
+ node('library-loading').hidden=!view.loading;
  featured.hidden=!view.featured;
  if(featured.innerHTML!==view.featured)featured.innerHTML=view.featured;
  weekly.hidden=view.hideWeekly;
@@ -162,46 +168,52 @@ function sync(){
  node('library-filterbar').querySelectorAll('[data-library-type]').forEach(button=>
   button.setAttribute('aria-pressed',String(button.dataset.libraryType===category)));
 }
-async function verifyPublished(report){
+async function verifyPublished(report,signal){
  try{
-  const response=await root.fetch(report.publicUrl,{method:'HEAD',cache:'no-store'});
+  const response=await root.fetch(report.publicUrl,{method:'HEAD',cache:'no-store',signal});
   return response.ok?report:null;
  }catch(_){return null;}
 }
-async function refreshCatalog(filename,isDaily){
+async function refreshCatalog(filename,isDaily,signal){
  try{
-  const response=await root.fetch(ROOT+filename,{cache:'no-store'});
+  const response=await root.fetch(ROOT+filename,{cache:'no-store',signal});
   if(!response.ok)return;
   const entry=await response.json();
   const files=isDaily?[entry?.file]:entry?.files;
   if(!Array.isArray(files))return;
   const reports=latestPerType(files.map(remoteReport).filter(r=>r&&(r.type==='daily')===isDaily));
-  const published=await Promise.all(reports.map(verifyPublished));
+  const published=await Promise.all(reports.map(report=>verifyPublished(report,signal)));
   localReports=latestPerType([...localReports,...published.filter(Boolean)]);
-  sync();
  }catch(_){/* Keep the last verified editions. */}
 }
-async function refreshRemote(){
+async function refreshRemote(signal){
  try{
-  const response=await root.fetch(PUBLIC_API,{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
+  const response=await root.fetch(PUBLIC_API,{headers:{Accept:'application/vnd.github+json'},cache:'no-store',signal});
   if(!response.ok)throw Error('Repo API '+response.status);
   const entries=await response.json();
   if(!Array.isArray(entries))throw Error('Invalid catalog');
   const found=latestPerType(entries.filter(e=>e&&e.type==='file'&&typeof e.name==='string').map(e=>remoteReport(e.name)).filter(Boolean));
-  const published=await Promise.all(found.map(verifyPublished));
+  const published=await Promise.all(found.map(report=>verifyPublished(report,signal)));
   remoteReports=published.filter(Boolean);
  }catch(_){/* Keep last verified edition or pinned catalog. */}
- sync();
 }
 async function refresh(){
  if(typeof root.fetch!=='function'||refreshInFlight)return;
  refreshInFlight=true;lastLookupAt=Date.now();
- try{await Promise.all([
-  refreshCatalog('daily-latest.json',true),
-  refreshCatalog('weekly-latest.json',false),
-  refreshRemote()
- ]);}
- finally{refreshInFlight=false;}
+ try{
+  // Render the first catalog only after the indexes and fallback have had a
+  // chance to verify their links. Bound the wait even if a source stalls.
+  const signal=root.AbortSignal.timeout(5000);
+  await Promise.all([
+   refreshCatalog('daily-latest.json',true,signal),
+   refreshCatalog('weekly-latest.json',false,signal),
+   refreshRemote(signal)
+  ]);
+ }finally{
+  catalogReady=true;
+  refreshInFlight=false;
+  sync();
+ }
 }
 const api={REPORTS,CATEGORIES,filterReports,reportType,reportDate,remoteReport,latestPerType,editionStatus,render,rows,setCategory,setQuery,sync,url,refresh};
 root.FXQuantResearchLibrary=api;
