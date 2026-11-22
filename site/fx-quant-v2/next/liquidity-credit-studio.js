@@ -632,7 +632,8 @@
   };
   const cards=FX.map(ccy=>{
     const item=ccy==='NZD'&&nzd?nzd:all[ccy],reading=interpret(item),active=ccy===selected;
-    return '<button class="drivers-country" type="button" data-liq-country="'+ccy+'" aria-pressed="'+String(active)+'">'+
+    return '<button class="drivers-country" type="button" data-liq-country="'+ccy+'" aria-controls="liquidity-dossier" aria-label="'+
+     esc(ccy+' · '+(NAMES[ccy]||ccy))+'" aria-pressed="'+String(active)+'">'+
      '<span class="drivers-country-head"><b>'+esc(FLAGS[ccy]||'')+' '+ccy+'</b><small>'+esc(NAMES[ccy]||ccy)+'</small></span>'+
      (ccy==='CHF'?'<span class="drivers-mini-state" data-tone="neutral">Apri scheda CHF</span>':
       '<span class="drivers-mini-state" data-tone="'+reading.liquidity.tone+'">Liquidità · '+esc(reading.liquidity.label)+'</span>'+
@@ -660,18 +661,19 @@
   const historicalCount=audits.filter(x=>x.state==='STORICO').length;
   const sourceStatus='<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(historicalCount)+
    ' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica.</p>';
-  return pageHero('LIQUIDITÀ E CREDITO G8','Liquidità & Credito. <em>Il denaro arriva all’economia?</em>',
-   'Le banche possono avere più liquidità anche quando famiglie e imprese faticano a finanziarsi. Qui seguiamo entrambi i passaggi.')+
+  return pageHero('CONDIZIONI FINANZIARIE G8','Liquidità & Credito',
+   'Come si muovono le riserve delle banche e il credito a famiglie e imprese.')+
    '<section class="drivers-panel" id="liquidity-studio"><div class="drivers-head"><div><h2>Seleziona un’economia</h2>'+
-   '<p>La mappa mostra la direzione nelle serie di riferimento. Apri una scheda per leggere il periodo del dato e le osservazioni ufficiali disponibili.</p></div></div>'+
+   '</div></div>'+
    '<div class="drivers-country-grid">'+cards+'</div></section>'+
-   '<section class="drivers-panel drivers-selection" aria-label="Scheda liquidità e credito '+selected+'">'+
+   '<section class="drivers-panel drivers-selection" id="liquidity-dossier" aria-label="Scheda liquidità e credito '+selected+'">'+
    '<div class="drivers-head"><div><span class="mini-overline">'+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
    '<h2>'+esc(headline)+'</h2></div></div>'+
    '<p class="drivers-lead drivers-liquidity-opening">'+esc(opening)+'</p>'+
+   (official?.html||'')+sloos+
    '<div class="drivers-story"><div><span>PERCHÉ CONTA PER IL CAMBIO</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div>'+
    '<div><span>COSA CONTROLLARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
-   liquidityRead+(official?.html||'')+sloos+
+   liquidityRead+
    (root.FXQuantDriverMarketAudit?.render?.({get,esc,dayNow},selected)||'')+
    '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
    '<details class="drivers-source-provenance-fold"><summary>Fonti e storico</summary>'+
