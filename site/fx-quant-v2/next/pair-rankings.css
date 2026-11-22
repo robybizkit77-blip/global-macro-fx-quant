@@ -1,14 +1,16 @@
 /* FX Quant Next: pair/currency research ranking. Extends DARK DESK, no restyle. */
 .fx-ranking-desk{display:grid;gap:16px;margin-bottom:17px}
-.fx-rank-intro{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:4px 0 0}
-.fx-rank-intro h2{font:760 clamp(20px,2.6vw,29px)/1.22 Manrope,'DM Sans',sans-serif;letter-spacing:-.035em;margin:7px 0 8px}
-.fx-rank-intro h2 em{color:var(--green);font-style:normal}
-.fx-rank-intro p{font-size:12px;line-height:1.7;color:var(--soft);max-width:950px;margin:0}
+.pairs-overview-heading{margin:0 0 16px}
+.pairs-overview-heading h1{font:400 clamp(28px,3.2vw,44px)/1.15 Georgia,serif;letter-spacing:-.035em;margin:0 0 6px}
+.pairs-overview-heading p{color:var(--soft);font-size:13px;line-height:1.55;margin:0}
+.fx-ranking-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px 16px}
+.fx-rank-jumps .pill{min-height:44px;padding-inline:13px;font-size:12px;color:#d5e7f8}
+.fx-rank-jumps [data-section-jump="fx-rank-all"]{border-color:#638abb;background:#213a57;color:#edf5ff}
+.fx-rank-jumps [data-section-jump="fx-rank-all"]:hover{border-color:#a4caff;background:#294b6c}
 .fx-rank-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:13px;align-items:start}
 .fx-rank-box{min-width:0;background:var(--layer);border:1px solid var(--line2);border-radius:14px;padding:17px 17px 15px}
 .fx-rank-head{display:flex;justify-content:space-between;align-items:start;gap:10px}
-.fx-rank-head span{display:block;color:var(--green);font-size:10px;font-weight:800;letter-spacing:.10em}
-.fx-rank-head h3{font:760 clamp(17px,1.65vw,21px)/1.25 Manrope,'DM Sans',sans-serif;letter-spacing:-.02em;margin:7px 0}
+.fx-rank-head h2{font:760 clamp(17px,1.65vw,21px)/1.25 Manrope,'DM Sans',sans-serif;letter-spacing:-.02em;margin:0 0 8px}
 .fx-rank-head>small{flex:none;max-width:100px;text-align:right;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.075em}
 .fx-rank-sub{margin:0 0 14px;font-size:11px;line-height:1.6;color:var(--muted)}
 .fx-rank-top-caution{margin:0 0 11px;padding:10px 11px;border:1px solid rgba(190,139,58,.28);border-radius:8px;color:#e6c28a;background:rgba(163,112,46,.11);font-size:10px;line-height:1.55}
@@ -73,17 +75,24 @@
 }
 
 /* Pair UX: keep the selected dossier and its return route visible below the sticky toolbar. */
-#fx-ranking-desk,#fx-selected-thesis{scroll-margin-top:96px}
-#fx-ranking-desk:focus-visible,#fx-selected-thesis:focus-visible{outline:2px solid #8bdccb;outline-offset:4px}
+#fx-ranking-desk,#fx-selected-thesis,#fx-rank-g8,#fx-rank-top,#fx-rank-all{scroll-margin-top:96px}
+.fx-ranking-desk [tabindex="-1"]:focus-visible,#fx-ranking-desk:focus-visible,#fx-selected-thesis:focus-visible{outline:2px solid #8bdccb;outline-offset:4px}
 .fx-rank-pair[aria-pressed="true"]{box-shadow:inset 3px 0 0 #7bdbc0}
 /* Reader-first labels inside the complete 28-pair comparison. */
 .fx-rank-pair-id small{font-size:10.5px}
+.fx-rank-all .fx-rank-pair-id strong{font-size:15px}
+.fx-rank-all .fx-rank-pair-id [data-bias="LONG"]{color:#93e1bd}
+.fx-rank-all .fx-rank-pair-id [data-bias="SHORT"]{color:#f8aaa7}
 .fx-rank-pair-copy strong{font-size:12px;line-height:1.55}
 .fx-rank-pair-copy small{font-size:11px;line-height:1.55}
 .fx-rank-pill{font-size:10px}
 .fx-rank-minor,.fx-rank-risk{font-size:10.5px}
 .fx-rank-open{font-size:11px}
-@media(max-width:840px){#fx-ranking-desk,#fx-selected-thesis{scroll-margin-top:79px}}
+@media(max-width:840px){#fx-ranking-desk,#fx-selected-thesis,#fx-rank-g8,#fx-rank-top,#fx-rank-all{scroll-margin-top:79px}}
+@media(max-width:600px){
+ .fx-rank-jumps{width:100%}
+ .fx-rank-jumps .pill{flex:1;padding-inline:8px}
+}
 @media(max-width:720px){
  .fx-rank-pair-id strong{font-size:14px}
  .fx-rank-pair-copy strong{font-size:12.5px}

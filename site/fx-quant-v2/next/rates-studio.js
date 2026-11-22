@@ -276,7 +276,7 @@ function make(api){
        const estimate=recent?.estimate,spot=recent?.spot;
        const y2=estimate?.estimate2Y??r?.['2Y'];
        const tag=estimate?'2Y stimato':recent?'2Y storico':
-        r?.scenario_only?(r.stale_source?'STIMA STORICA':'STIMA'):freshness(r?.date);
+        '2Y · '+(r?.scenario_only?(r.stale_source?'STIMA STORICA':'STIMA'):freshness(r?.date));
        return '<button class="rates-country '+(k===state.ccy?'selected':'')+'" type="button" data-rate-ccy="'+k+'" aria-pressed="'+String(k===state.ccy)+'">'
         +'<span>'+FLAGS[k]+' '+k+'</span><strong>'+(finite(y2)?fmt(y2,estimate?3:2)+'%':'—')+'</strong>'
         +'<small>'+esc(tag)+' · '+date(estimate?.asof??r?.date)+'</small>'
@@ -404,13 +404,18 @@ function make(api){
    const c=state.ccy,other=FX.includes(state.against)&&state.against!==c?state.against:FX.find(k=>k!==c);
    const r=displayedSovereign(c),o=dataO(c),m=selectedReading(c);
    const spot=c==='CHF'?chfRecent?.spot:null;
-   return '<header class="rates-overview-heading"><h1>Tassi &amp; OIS del G8</h1><p>Rendimenti governativi e aspettative monetarie.</p></header>'
+   return '<header class="rates-overview-heading"><h1>Tassi &amp; OIS del G8</h1></header>'
     +'<div class="rates-status"><span>'+FLAGS[c]+' '+esc(NAMES[c])+'</span><span>'
     +(spot?'SNB 10Y spot '+date(spot.as_of):'GOV '+date(r?.date))
     +' · PRICING '+date(o?.as_of)+' · '+esc(o?.kind||'strumento da verificare')+'</span></div>'
     +countrySelect()
+    +'<div class="rates-jumps pill-controls" role="group" aria-label="Vai ai grafici dei tassi">'
+    +'<button type="button" class="pill" data-section-jump="rates-government">Governativi 2Y / 10Y</button>'
+    +'<button type="button" class="pill" data-section-jump="rates-expected">Attese 3M / 6M / 12M</button></div>'
     +govCard(c)
     +latestGovernmentReading(c)
+    +'<section class="rates-chapter rates-government" id="rates-government" tabindex="-1" aria-label="Storico dei rendimenti governativi">'
+    +'<div class="rates-research-grid"><div class="rates-primary-plot">'+govPlot(c)+'</div>'+historicalSovereign(c)+'</div></section>'
     +(editorial?.()||'')
     +'<section class="rates-hero"><div class="rates-hero-title"><span class="chapter-kicker">01 / '+FLAGS[c]+' '+esc(NAMES[c])+' · FRONT-END VS LONG-END</span>'
     +'<h2>'+esc(m.headline)+'</h2>'
@@ -432,12 +437,11 @@ function make(api){
        research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),
        history:get('oisHistory'),pairs:get('pairs')
      })||'<section class="rates-relative-pricing"><p>Il confronto relativo 6M non è disponibile: fonti da verificare.</p></section>')
+    +'<div id="rates-expected" tabindex="-1" role="region" aria-label="Storico dei tassi attesi">'
     +(root.FXQuantPricingHistory?.render?.({
         history:get('oisHistory'),ccy:c,other,
         window:state.rsHistoryWindow||30
-      })||'<section class="rates-pricing-history"><div class="rates-missing">Storico 3M/6M/12M temporaneamente non disponibile.</div></section>')
-    +'<section class="rates-chapter"><div class="rates-section-head"><div><span class="chapter-kicker">02 / SOVEREIGN CURVE LAB</span><h2>Quali scadenze <em>stanno cambiando?</em></h2></div><p>Ogni grafico nasce dalle osservazioni 2Y e 10Y comuni. Cambia periodo e misura la pendenza, senza confondere la forma con il driver economico.</p></div>'
-    +'<div class="rates-research-grid"><div class="rates-primary-plot">'+govPlot(c)+'</div>'+historicalSovereign(c)+'</div></section>'
+      })||'<section class="rates-pricing-history"><div class="rates-missing">Storico 3M/6M/12M temporaneamente non disponibile.</div></section>')+'</div>'
     +'<section class="rates-chapter"><div class="rates-section-head"><div><span class="chapter-kicker">03 / CENTRAL BANK PRICING</span><h2>Le aspettative non sono <em>il tasso ufficiale.</em></h2></div><p>Confronta i livelli 3M, 6M e 12M senza mescolare OIS e futures. Guarda quali scadenze hanno una variazione 1D/1W verificabile.</p></div>'
     +'<div class="rates-pricing-grid">'+shapeBars(c)+oisAudit(c)+'</div>'+repricing(c)+'</section>'
     +'<section class="rates-chapter"><div class="rates-section-head"><div><span class="chapter-kicker">03B / FX RELATIVE RATES</span><h2>Due economie. <em>Un differenziale da verificare.</em></h2></div><p>Confronta governativi coerenti per data. La direzione dello spread è contesto FX, non la prova di un futuro movimento del cambio.</p></div>'
