@@ -1019,8 +1019,33 @@ async function pairLinkJourney(page,label){
     assert(linked.ok(),'Library link must load: '+report.file);
    }
    assert.equal(await briefing.locator('.rl-card').count(),latest.length,'One card per category');
-   const link=briefing.locator(`.rl-card a[href="./reports/${dailyFile}"]`);
+   assert.equal(await briefing.locator('#library-grid .rl-card').count(),weeklyFiles.length,
+    'Weekly grid must contain exactly the weekly categories');
+   const featured=briefing.locator('#library-featured');
+   const link=featured.locator(`a[href="./reports/${dailyFile}"]`);
    await link.waitFor({state:'visible'});
+   assert.equal(await briefing.locator(`a[href="./reports/${dailyFile}"]`).count(),1,
+    'The Daily must occur once, in the featured panel');
+   for(const width of [360,390,1440]){
+    await briefing.setViewportSize({width,height:844});
+    const box=await link.boundingBox();
+    assert(box&&box.y>=0&&box.y+box.height<=844,'Open Briefing must fit in the first screen at '+width);
+    assert(await briefing.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),
+     'Library horizontal overflow at '+width);
+   }
+   const oisFilter=briefing.locator('[data-library-type="ois"]');
+   await oisFilter.press('Enter');
+   assert.equal(await oisFilter.getAttribute('aria-pressed'),'true');
+   assert(await oisFilter.evaluate(button=>document.activeElement===button),'Library filter must keep keyboard focus');
+   assert.equal(await featured.isVisible(),false);
+   assert.equal(await briefing.locator('#library-grid .rl-card').count(),1);
+   await briefing.locator('#library-search').fill('nessuna edizione corrisponde');
+   assert(await briefing.locator('#library-grid .rl-empty').isVisible(),'Library must show an empty result');
+   await briefing.locator('#library-search').fill('');
+   await briefing.locator('[data-library-type="daily"]').click();
+   assert(await link.isVisible(),'Daily filter must keep the featured Briefing');
+   assert.equal(await briefing.locator('#library-weekly').isVisible(),false);
+   await briefing.locator('[data-library-type="all"]').click();
    const response=await briefing.goto(new URL(await link.getAttribute('href'),BASE).href);
    assert(response?.ok(),'The daily briefing selected by the Library must load');
    const headingDate=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'long',year:'numeric',

@@ -12,8 +12,8 @@ new vm.Script(app,{filename:'app.js'});
 new vm.Script(src,{filename:'research-library.js'});
 const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
-assert.match(index,/research-library\.css\?v=1/);
-assert.match(index,/research-library\.js\?v=16/);
+assert.match(index,/research-library\.css\?v=2/);
+assert.match(index,/research-library\.js\?v=17/);
 assert.match(index,/11 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
@@ -128,18 +128,26 @@ const fixedRows=L.rows(today);
 assert.match(L.rows('2026-11-16'),/Briefing pubblicato per la seduta odierna/);
 assert.match(fixedRows,/Edizione storica · non aggiornata questa settimana/);
 assert.match(fixedRows,/Ultimo COT pubblicato · posizioni al 10\/11\/2026 \(martedì\)/);
-assert.doesNotMatch(L.render(),/REPORT CORRENTI VISIBILI/,
- 'The number of available categories is NOT the count of current editions');
-assert.match(L.render(),/ULTIME EDIZIONI PUBBLICATE/);
-assert.match(L.render(),/produzione e trasferimento dei report sono processi separati/);
+const home=L.render();
+assert.doesNotMatch(home,/rl-stats|REPORT CORRENTI VISIBILI/,
+ 'Library should use its opening for the featured Briefing');
+assert.match(home,/<h1>Research Library<\/h1>/);
+assert.match(home,/<div id="library-featured"><article class="rl-card rl-featured">/);
+assert.match(home,/Apri Briefing <span aria-hidden="true">/);
+assert.equal(home.split(daily.file).length-1,1,
+ 'The featured Briefing must be the only Daily link');
+assert.equal((home.match(/<article class="rl-card">/g)||[]).length,7);
 
 L.setCategory('ois');
 assert.equal(L.filterReports().length,1);
+assert.match(L.render(),/<div id="library-featured" hidden>/);
+assert.equal((L.render().match(/<article class="rl-card">/g)||[]).length,1);
 L.setQuery('GBP');
 assert.equal(L.filterReports().length,0);
 assert.match(L.rows(),/Nessun report/);
-L.setCategory('all');L.setQuery('');
-assert.match(L.render(),/Solo l’ultima edizione/);
+L.setQuery('');L.setCategory('daily');
+assert.match(L.render(),/aria-labelledby="library-weekly-title" hidden/);
+L.setCategory('all');
 assert.match(L.render(),/Curve OIS/);
 assert.match(L.render(),/Una nuova edizione compare solo se è stata realmente pubblicata/);
 assert.match(L.render(),/id="library-grid"/);
@@ -172,6 +180,8 @@ assert.match(L.render(),/data-library-type="ois"/);
   };
   await L.refresh();
   assert.equal(L.filterReports('daily')[0].file,localName,'Same-site briefing works without the GitHub API');
+  assert(L.render().split('id="library-filterbar"')[0].includes(localName),
+   'The featured Daily uses the verified same-site edition');
   assert.equal(L.filterReports('ois')[0].file,weeklyName,'Same-site weekly catalog works without the GitHub API');
   assert.deepEqual(L.filterReports('cross').map(r=>[r.title,r.date,L.url(r)]),[
    ['Global Markets Review','2026-11-14','./reports/'+approvedReview]
