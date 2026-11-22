@@ -898,6 +898,17 @@ async function calendarResearchJourney(page,label){
   label+' macro-event pair link did not open a real FX dossier');
  assert.match(new URL(page.url()).hash,/^#pairs\?pair=[A-Z]{6}$/);
 }
+async function homeCatalystJourney(page,label){
+ await route(page,'overview');
+ const link=locator(page,'[data-home-catalyst="upcoming"] [data-cal-research="rates"]');
+ if(!(await link.count()))return;
+ const currency=await link.getAttribute('data-cal-currency');
+ assert(/^(USD|EUR|GBP|JPY|CHF|CAD|AUD|NZD)$/.test(currency),label+' unknown catalyst currency');
+ await link.click();
+ await page.waitForFunction(code=>
+  document.querySelector('#content')?.dataset.view==='rates'&&
+  document.querySelector('.rates-country[aria-pressed="true"]')?.dataset.rateCcy===code,currency);
+}
 async function pairWatchlistJourney(page,label){
  const calendarRoute='**/CALENDAR_OPERATIONAL_VIEW.json';
  const thesisRoute='**/pair-estimate-history-v1.json';
@@ -1069,6 +1080,7 @@ async function pairLinkJourney(page,label){
     await relative6mJourney(page,label);
     assert.equal(errors.length,0,label+' browser errors: '+errors.slice(0,4).join(' | '));
     await locator(page,'#content').screenshot({path:evidence+'/'+label+'-pair-journey.png'});
+    await homeCatalystJourney(page,label);
     reports.push({label,sourceCount:Number(count[1]),routes:inspected,interaction:'PASS'});
    }finally{await page.close();}
   }
