@@ -110,29 +110,38 @@ function editionStatus(r,today=romeDay()){
   text:days<=8?'Ultimo report settimanale pubblicato':'Edizione storica · non aggiornata questa settimana'};
 }
 function url(r){return r.publicUrl||(r.date>='2026-11-01'?ROOT:BASE)+encodeURIComponent(r.file);}
-function rows(today=romeDay()){
- const list=filterReports();
- return list.length?list.map(r=>'<article class="rl-card"><div class="rl-card-meta"><span class="rl-tag">'+esc(label(r.type))+'</span><time datetime="'+esc(r.date)+'">'+datestr(r.date)+'</time></div>'+
-  '<h3>'+esc(r.title)+'</h3><p>'+esc(r.desc)+'</p>'+
-  '<div class="rl-card-bottom"><span class="rl-status">'+esc(editionStatus(r,today).text)+'</span>'+
-  '<a href="'+esc(url(r))+'" target="_blank" rel="noopener noreferrer" aria-label="Apri '+esc(r.title)+' del '+datestr(r.date)+'">Apri report ↗</a></div></article>').join('')
-  :'<div class="rl-empty">Nessun report corrisponde alla ricerca. Cambia categoria o parola chiave.</div>';
+function card(r,today,featured=false){
+ const status=editionStatus(r,today),heading=featured?'h2':'h3';
+ return '<article class="rl-card'+(featured?' rl-featured':'')+'"><div class="rl-card-copy">'+
+  '<div class="rl-card-meta"><span class="rl-tag">'+(featured?'Ultimo Briefing':esc(label(r.type)))+
+  '</span><time datetime="'+esc(r.date)+'">'+datestr(r.date)+'</time></div>'+
+  '<'+heading+'>'+esc(r.title)+'</'+heading+'><p>'+esc(r.desc)+'</p></div>'+
+  '<div class="rl-card-bottom"><span class="rl-status" data-edition-state="'+esc(status.state)+'">'+esc(status.text)+'</span>'+
+  '<a href="'+esc(url(r))+'" target="_blank" rel="noopener noreferrer" aria-label="Apri '+esc(r.title)+' del '+datestr(r.date)+'">'+
+  (featured?'Apri Briefing':'Apri report')+' <span aria-hidden="true">↗</span></a></div></article>';
+}
+function rows(today=romeDay(),list=filterReports()){
+ return list.length?list.map(r=>card(r,today)).join(''):
+  '<p class="rl-empty">Nessun report corrisponde alla ricerca. Cambia categoria o parola chiave.</p>';
+}
+function libraryView(today=romeDay()){
+ const items=filterReports(),daily=items.find(r=>r.type==='daily');
+ const weekly=items.filter(r=>r.type!=='daily');
+ return {featured:daily?card(daily,today,true):'',weekly:rows(today,weekly),
+  hideWeekly:!!daily&&!weekly.length,count:weekly.length+' report'};
 }
 function filters(){return CATEGORIES.map(([id,name])=>'<button type="button" data-library-type="'+id+'" aria-pressed="'+String(id===category)+'">'+esc(name)+'</button>').join('');}
 function render(){
  if(root.document&&!refreshInFlight&&Date.now()-lastLookupAt>30*60*1000){lastLookupAt=Date.now();Promise.resolve().then(refresh);}
- const latest=currentReports();
- return '<section class="rl-head"><div><span class="rl-eyebrow">FX QUANT / RESEARCH LIBRARY</span>'+
-  '<h1>Solo l’ultima edizione.</h1>'+
-  '<p>Una lettura per ciascun report: Briefing Forex, Macro, banche centrali, curve OIS, posizionamento e selezione delle coppie.</p>'+
-  '<div class="rl-head-note"><strong>Ogni report conserva la propria frequenza.</strong> La pagina segnala se l’ultima edizione pubblicata è ancora recente. Le date sono riferimenti editoriali, non quotazioni intraday: produzione e trasferimento dei report sono processi separati.</div>'+
-  '</div><div class="rl-stats"><div><small>ULTIME EDIZIONI PUBBLICATE</small><strong>'+latest.length+'</strong></div>'+
-  '<div><small>ULTIMA EDIZIONE DISPONIBILE</small><strong id="library-latest-date">'+(latest[0]?datestr(latest[0].date):'—')+'</strong></div>'+
-  '<div><small>TIPOLOGIE</small><strong>'+(CATEGORIES.length-1)+'</strong></div></div></section>'+
+ const view=libraryView();
+ return '<header class="rl-head"><h1>Research Library</h1>'+
+  '<p>Briefing feriale e ultima edizione pubblicata per ogni categoria.</p></header>'+
+  '<div id="library-featured"'+(view.featured?'':' hidden')+'>'+view.featured+'</div>'+
   '<section class="rl-controls" aria-label="Filtri e ricerca"><div id="library-filterbar" class="rl-filters">'+filters()+'</div>'+
   '<label class="rl-search" for="library-search"><span>Cerca fra gli ultimi report</span><input id="library-search" type="search" autocomplete="off" placeholder="Es. OIS, COT, Fed, macro..." value="'+esc(query)+'"></label></section>'+
-  '<section aria-label="Ultimi report pubblicati"><div class="rl-result-head"><h2>Ultime edizioni</h2><span id="library-match-count">'+filterReports().length+' di '+latest.length+' report · uno per categoria</span></div>'+
-  '<div id="library-grid" class="rl-grid">'+rows()+'</div></section>'+
+  '<section id="library-weekly" aria-labelledby="library-weekly-title"'+(view.hideWeekly?' hidden':'')+'>'+
+  '<div class="rl-result-head"><h2 id="library-weekly-title">Report settimanali</h2><span id="library-match-count">'+view.count+'</span></div>'+
+  '<div id="library-grid" class="rl-grid">'+view.weekly+'</div></section>'+
   '<section class="rl-disclaimer"><h2>Come avviene l’aggiornamento</h2>'+
   '<p>La Library consulta gli indici pubblicati sul sito e verifica che ogni file sia raggiungibile. Una nuova edizione compare solo se è stata realmente pubblicata.</p>'+
   '<div class="rl-next"><span>APPROFONDIMENTI</span><a href="#overview">Panoramica FX ↗</a><a href="#news">Calendario macro ↗</a><a href="#pairs">Monitor tesi FX ↗</a></div></section>';
@@ -141,12 +150,17 @@ function setCategory(value){category=CATEGORIES.some(x=>x[0]===value)?value:'all
 function setQuery(value){query=String(value||'').slice(0,120);}
 function sync(){
  if(!root.document)return;
- const grid=root.document.getElementById('library-grid'),count=root.document.getElementById('library-match-count'),bar=root.document.getElementById('library-filterbar');
- if(grid)grid.innerHTML=rows();
- if(count)count.textContent=filterReports().length+' di '+currentReports().length+' report · uno per categoria';
- if(bar)bar.innerHTML=filters();
- const dateEl=root.document.getElementById('library-latest-date');
- if(dateEl){const top=currentReports()[0];dateEl.textContent=top?datestr(top.date):'—';}
+ const node=id=>root.document.getElementById(id);
+ const featured=node('library-featured'),weekly=node('library-weekly'),grid=node('library-grid');
+ if(!featured||!weekly||!grid)return;
+ const view=libraryView();
+ featured.hidden=!view.featured;
+ if(featured.innerHTML!==view.featured)featured.innerHTML=view.featured;
+ weekly.hidden=view.hideWeekly;
+ if(grid.innerHTML!==view.weekly)grid.innerHTML=view.weekly;
+ node('library-match-count').textContent=view.count;
+ node('library-filterbar').querySelectorAll('[data-library-type]').forEach(button=>
+  button.setAttribute('aria-pressed',String(button.dataset.libraryType===category)));
 }
 async function verifyPublished(report){
  try{
