@@ -1003,8 +1003,8 @@ function pairs(){
   '<div class="fx-rank-detail-head" id="fx-selected-thesis" tabindex="-1"><h2>Tesi completa · '+esc(getPairName(state.pair))+
   '</h2><button type="button" class="fx-rank-back" data-pair-close="1">↑ Torna '+(state.pairListView==='watch'?'alla watchlist':'alla classifica')+'</button></div>'+
   chooser+main+monetary+historyDetail+detail:'';
- return pageHero('FX / PAIR EXPLORER','Dal G8 alle <em>coppie da approfondire.</em>',
-  'Prima la classifica visiva delle valute e delle 28 coppie; poi, scegliendo una coppia, trovi il ragionamento completo su macro, pricing, COT e prezzo.')
+ return '<header class="pairs-overview-heading"><h1>Classifica delle coppie FX</h1>'
+  +'<p>Confronta la forza G8 e apri la tesi di una coppia.</p></header>'
   +ranking+drill+
   '<p class="pairs-compact-footer">Classifiche descrittive, non segnali di trading: forza relativa BCE e priorità di ricerca non sono un backtest. Ogni fonte conserva la propria data.</p>';
 }
@@ -1154,7 +1154,7 @@ function render(){
  const sf=$('sidebar-focus');if(sf)sf.textContent=FLAGS[state.ccy]+' '+state.ccy+' · '+getPairName(state.pair);
  document.title='FX Quant Next — '+ROUTES[route];
 }
-function focusPairSection(id){
+function focusSection(id){
  const section=$(id);
  if(!section)return;
  section.focus({preventScroll:true});
@@ -1197,7 +1197,7 @@ function focusCalendarEvent(query){
   .find(card=>card.dataset.calEvent===key);
  const collapsed=event?.closest('details');
  if(collapsed)collapsed.open=true;
- focusPairSection(event?.id||'macro-calendar');
+ focusSection(event?.id||'macro-calendar');
 }
 function navigate({pairFocus}={}){
  const [route,query]=location.hash.slice(1).split('?');
@@ -1211,7 +1211,7 @@ function navigate({pairFocus}={}){
   if(state.route==='news')focusCalendarEvent(query);
   if(state.route==='pairs'&&(state.pairDetailOpen||pairFocus)){
    if(pairFocus==='pair-primary-select')$(pairFocus)?.focus({preventScroll:true});
-   else focusPairSection(pairFocus||'fx-selected-thesis');
+   else focusSection(pairFocus||'fx-selected-thesis');
   }
  }else syncRouteChrome(state.route);
  $('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false');
@@ -1261,6 +1261,8 @@ function refreshPairPriceChart(focusSelector){
  window.scrollTo({top:scrollTop,behavior:'instant'});
 }
 document.addEventListener('click',e=>{
+ const jump=e.target.closest('[data-section-jump]');
+ if(jump&&$('content').contains(jump)){focusSection(jump.dataset.sectionJump);return;}
  const liqCountry=e.target.closest('[data-liq-country]');
  if(liqCountry&&state.route==='liquidity'){
   const c=liqCountry.dataset.liqCountry;
@@ -1340,7 +1342,7 @@ document.addEventListener('click',e=>{
   const details=document.querySelector('details.pairs-optional-chart');
   if(details){
    details.open=true;
-   focusPairSection('fx-pair-price-chart');
+   focusSection('fx-pair-price-chart');
   }
   return;
  }
@@ -1532,7 +1534,7 @@ async function loadAll(){
   firstResearchLoaded=true;
   render();
   if(initial&&state.route==='news')focusCalendarEvent(location.hash.split('?')[1]);
-  if(initial&&state.route==='pairs'&&state.pairDetailOpen)focusPairSection('fx-selected-thesis');
+  if(initial&&state.route==='pairs'&&state.pairDetailOpen)focusSection('fx-selected-thesis');
  }finally{refreshInProgress=false;}
 }
 // Refresh when the reader returns to a long-open tab, and while the site stays
