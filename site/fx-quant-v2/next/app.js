@@ -523,6 +523,19 @@ function fxHomeDesk(){
   last:end.Date,positioning};
 }
 
+function overviewReferences(today){
+ const prices=get('currencyPrices');
+ const fixing=prices?.source==='ECB euro foreign exchange reference rates'?prices.last_as_of:null;
+ const stamps=[
+  ['Fixing BCE',fixing],
+  ['Governativi USA',get('rates')?.USD?.date],
+  ['Prezzi delle 28 coppie',get('pairs')?.price_asof]
+ ];
+ return '<dl class="home-reference-dates" aria-label="Date delle osservazioni">'+stamps.map(([label,day])=>
+  '<div><dt>'+label+'</dt><dd>'+(observationOn(day,today)?
+   '<time datetime="'+day+'">'+date(day)+'</time>':'Data da verificare')+'</dd></div>'
+ ).join('')+'</dl>';
+}
 function overview(){
  // Source-first monetary evidence is a separately dated observation,
  // not part of either the hourly editorial analysis or frozen morning report.
@@ -533,8 +546,11 @@ function overview(){
   })||'');
  const desk=typeof window==='undefined'?null:window.FXQuantHourlyDesk;
  const hourlyFeed=get('hourlyDesk'),morning=get('morningDesk');
+ const today=dayNow(),calendar=get('calendar'),news=get('news');
+ const references=overviewReferences(today);
+ const currentContext=()=> (desk?.renderCatalyst?.({calendar,news,today,esc,date})||'')+references;
  const renderedHourly=desk?.render?.({feed:hourlyFeed,check:get('hourlyCheck'),risk:get('risk'),
-  currencyPrices:get('currencyPrices'),esc,date,dayNow});
+  currencyPrices:get('currencyPrices'),calendar,news,references,esc,date,dayNow});
  const hourly=renderedHourly&&moneyProof?
   renderedHourly.replace('<section class="hourly-decision-section"',
    moneyProof+'<section class="hourly-decision-section"'):renderedHourly;
@@ -544,7 +560,7 @@ function overview(){
   // morning narrative or be mistaken for a pre-release trading signal.
   const estimated=get('estimatedMacro');
   const currentResearch={
-   estimated,rates:get('rates'),calendar:get('calendar'),
+   estimated,rates:get('rates'),calendar,
    selectResearchPairs:window.FXQuantPairRankings?.selectResearchPairs,
    watchForPair:x=>{
     if(!window.FXQuantPairRankings?.pairDecisionWatch)return null;
@@ -554,7 +570,7 @@ function overview(){
    }
   };
   const edition=window.FXQuantMorningDesk.build({
-   feed:morning,plot,esc,date,dayNow,currentResearch
+   feed:morning,plot,esc,date,dayNow,currentResearch,overviewContext:currentContext()
   });
   if(edition){
    const post=window.FXQuantMorningDesk.postRelease?.(morning,get('news'),esc,dayNow)||'';
@@ -842,6 +858,7 @@ function overview(){
  +'<div class="dashboard-title-row dashboard-reading-title"><div><h1>'+esc(fxDesk.headline)+'</h1><div class="letter-opening"><p class="letter-lead">'+esc(fxDesk.opening)+'</p></div></div></div>'
  +(fxDesk.ready&&!fxDesk.recent?'<p class="letter-stale">Fixing FX storici: non rappresentano dati di mercato attuali.</p>':'')
  +'</header>'
+ +currentContext()
  +'<section class="dashboard-reading-story" aria-label="Il racconto del desk"><div class="dashboard-reading-eyebrow">LA LETTURA FX DEL DESK · '+date(fxDesk.asof)+'</div>'
  +'<div class="dashboard-reading-body"><p>'+esc(fxDesk.why)+'</p><p>'+esc(fxDesk.policy)+'</p><p>'+esc(fxDesk.market)+'</p>'
  +'<p class="dashboard-reading-verdict"><strong>Il mio giudizio.</strong> '+esc(fxDesk.verdict)+'</p>'
@@ -1146,8 +1163,9 @@ function render(){
  const ok=requiredSources.filter(key=>Object.hasOwn(state.data,key)).length;
  const missing=requiredSources.length-ok;
  const caseNow=researchCase(),caseOld=!caseNow.latest||!fresh(caseNow.latest,8);
- const dates=[get('rates')?.USD?.date,get('dxy')?.as_of,get('pairs')?.price_asof].filter(validDay);
- $('top-asof').textContent='Riferimenti '+(dates.length?dates.map(date).join(' · '):'da verificare');
+ const priceDay=get('pairs')?.price_asof;
+ $('top-asof').hidden=route==='overview';
+ $('top-asof').textContent=observationOn(priceDay)?'Prezzi coppie · '+date(priceDay):'Data prezzi da verificare';
  $('top-quality').classList.toggle('warn',missing>0||caseOld);
  $('top-quality').innerHTML='<span class="live-dot"></span>'+(missing>0?ok+'/'+requiredSources.length+' FEED':caseOld?'DATI STORICI':'FONTI CARICATE');
  $('sidebar-feed').textContent=ok+'/'+requiredSources.length+' fonti caricate · dati non intraday';

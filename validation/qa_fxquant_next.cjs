@@ -79,6 +79,11 @@ async function inspectRoute(page,label,key){
  assert(!ui.horizontalOverflow,label+' '+key+': horizontal overflow');
  assert(!ui.badTokens,label+' '+key+': broken data interpolations');
  if(key==='overview'){
+  const homeDates=locator(page,'.home-reference-dates');
+  assert.deepEqual(await homeDates.locator('dt').allTextContents(),
+   ['Fixing BCE','Governativi USA','Prezzi delle 28 coppie'],label+' Home dates must name their source');
+  assert.equal(await locator(page,'[data-home-catalyst]').count(),1,
+   label+' Home must show the current calendar separately from the archived analysis');
   assert.equal(await locator(page,'.morning-dashboard').count(),1,'Dated morning desk must stay available');
   assert.equal(await locator(page,'.morning-lead h1').count(),1,'Morning lead missing');
   assert.equal(await locator(page,'.morning-archive-note').count(),1,
@@ -87,6 +92,11 @@ async function inspectRoute(page,label,key){
    'Source-dated G8 and pair research must remain attached to Home');
   const hourly=locator(page,'.hourly-market-desk');
   if(await hourly.count()){
+   const catalyst=locator(page,'[data-home-catalyst]');
+   const box=await catalyst.boundingBox();
+   assert(box&&box.y<page.viewportSize().height,label+' next catalyst must start in the first screen');
+   assert.equal(await hourly.locator('.hourly-edition-time b').innerText(),'Ultima analisi pubblicata');
+   assert.equal(await hourly.locator('.hourly-edition-check b').innerText(),'Ultimo controllo delle fonti');
    const fonts=await hourly.evaluate(root=>{
     const px=selector=>{
      const el=root.querySelector(selector);
