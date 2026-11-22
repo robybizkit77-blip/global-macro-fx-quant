@@ -2,10 +2,9 @@
 /* FX Quant Next / Rates & OIS Research Studio — scoped component styles */
 .rates-overview-heading{margin:0 0 16px}
 .rates-overview-heading h1{font:400 clamp(28px,3.2vw,44px)/1.15 Georgia,serif;letter-spacing:-.035em;margin:0 0 6px}
-.rates-overview-heading p{margin:0;color:#b3cdda;font-size:13px;line-height:1.55}
 .rates-status{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap;padding:12px 15px;margin-bottom:13px;border:1px solid #376275;background:linear-gradient(90deg,#173b4c,#122c3c);border-radius:11px;color:#a5cbd6;font-weight:800;letter-spacing:.09em;font-size:10px}
 .rates-status>span:first-child{color:#9ee4d2}
-.rates-country-strip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;margin:0 0 22px}
+.rates-country-strip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;margin:0 0 12px}
 .rates-country{min-width:0;display:flex;flex-direction:column;gap:6px;padding:13px 11px;color:#e5f2f4;background:#112d40;border:1px solid #31566a;border-radius:10px;text-align:left;transition:transform .17s,background .17s}
 .rates-country:hover{transform:translateY(-2px);background:#1d4355}
 .rates-country.selected{background:#214a56;box-shadow:inset 0 2px 0 #76ddbf;border-color:#73d5c6}
@@ -13,6 +12,14 @@
 .rates-country small{font-size:9px;line-height:1.5;color:#98b8c7}
 .rates-country .rates-country-spot{color:#b6dbd6}
 .rates-country:focus-visible{outline:2px solid #9ee6cc;outline-offset:2px}
+.rates-jumps .pill{min-height:44px;padding-inline:13px;font-size:12px;color:#d5edf6}
+.rates-government.rates-chapter{margin:16px 0 24px}
+#rates-government,#rates-expected{scroll-margin-top:96px}
+#rates-government:focus-visible,#rates-expected:focus-visible{outline:2px solid #9de3ec;outline-offset:4px}
+@media(min-width:1080px){
+ .rates-government .rates-research-grid{grid-template-columns:minmax(0,1fr) minmax(220px,27%);align-items:start}
+}
+@media(max-width:840px){#rates-government,#rates-expected{scroll-margin-top:80px}}
 .rates-hero{display:grid;grid-template-columns:minmax(0,1fr) 240px;background:radial-gradient(circle at 70% 0,rgba(76,152,171,.16),transparent 55%),linear-gradient(120deg,#194050,#102b3c);border:1px solid #3c6976;border-radius:16px;overflow:hidden;min-height:255px}
 .rates-hero-title{padding:29px 34px;display:flex;flex-direction:column;align-items:start}
 .rates-hero-title h2{font:790 clamp(24px,2.8vw,38px)/1.22 Manrope,sans-serif;letter-spacing:-.05em;margin:18px 0 10px}
@@ -284,6 +291,11 @@
 @media(prefers-reduced-motion:reduce){.rr6-action button{transition:none}}
 @media(max-width:600px){
  .rates-overview-heading{margin-bottom:12px}
- .rates-country-strip{margin-bottom:14px}
- .rates-stats{margin-bottom:16px}
+ .rates-status{padding:8px 10px;gap:4px;margin-bottom:9px}
+ .rates-country-strip{margin-bottom:10px}
+ .rates-country{gap:3px;padding:7px 10px}
+ .rates-country strong{font-size:17px}
+ .rates-jumps .pill{flex:1;padding-inline:8px;font-size:11px}
+ .rates-stats{margin:10px 0 12px}
+ .rates-stat{gap:4px;padding:9px 11px}
 }

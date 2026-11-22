@@ -46,6 +46,22 @@ async function route(page,key){
   document.querySelector('#crumb-page')?.textContent?.trim()===title,
   {key,title:routes[key]},{timeout:20000});
 }
+async function firstScreenJumps(page,label,targets){
+ const height=page.viewportSize().height;
+ for(const id of targets){
+  const button=locator(page,'[data-section-jump="'+id+'"]');
+  const bounds=await button.boundingBox();
+  assert(bounds&&bounds.y>=0&&bounds.y+bounds.height<=height+1,
+   label+' access to '+id+' must fit in the first screen');
+ }
+ for(const id of targets){
+  await locator(page,'[data-section-jump="'+id+'"]').press('Enter');
+  await page.waitForFunction(id=>document.activeElement?.id===id,id);
+  const bounds=await locator(page,'#'+id).boundingBox();
+  assert(bounds&&bounds.y>=0&&bounds.y<height,label+' jump did not reveal '+id);
+  await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+ }
+}
 async function inspectRoute(page,label,key){
  await route(page,key);
  const h1=await locator(page,'#content h1').first().innerText();
@@ -117,6 +133,7 @@ async function inspectRoute(page,label,key){
    'Dossier should start collapsed until the user chooses a cross');
   assert.equal(await locator(page,'.decision-desk-story').count(),0,
    'Old permanently expanded pair dossier must not displace the ranking');
+  await firstScreenJumps(page,label,['fx-rank-g8','fx-rank-top','fx-rank-all']);
  }else if(key==='banks'){
   assert.equal(await locator(page,'#central-bank-studio [data-bank-country]').count(),8,
    label+' all eight central-bank country choices required');
@@ -153,15 +170,18 @@ async function inspectRoute(page,label,key){
    const country=document.querySelector('.rates-country-strip');
    const chf=country?.querySelector('[data-rate-ccy="CHF"]');
    const snapshot=document.querySelector('.rates-stats');
+   const government=document.querySelector('#rates-government');
    const editorial=document.querySelector('.research-essay');
    const top=element=>element?element.getBoundingClientRect().top+scrollY:null;
    return {countries:country?.querySelectorAll('button').length,selectorTop:top(country),
     chfTop:top(chf),chfHeight:chf?.getBoundingClientRect().height,
-    snapshotTop:top(snapshot),editorialTop:top(editorial)};
+    snapshotTop:top(snapshot),governmentTop:top(government),editorialTop:top(editorial)};
   });
   assert.equal(ratesFirstRead.countries,8,label+' Rates selector must show all eight currencies');
   assert(ratesFirstRead.selectorTop<ratesFirstRead.snapshotTop&&
    ratesFirstRead.snapshotTop<ratesFirstRead.editorialTop,label+' the Rates snapshot must precede the desk reading');
+  assert(ratesFirstRead.snapshotTop<ratesFirstRead.governmentTop&&
+   ratesFirstRead.governmentTop<ratesFirstRead.editorialTop,label+' the government chart must precede the desk reading');
   assert(ratesFirstRead.chfTop+ratesFirstRead.chfHeight<=page.viewportSize().height,
    label+' CHF in the Rates selector must fit in the first screen');
   const bridge=locator(page,'.rates-fx-handoff');
@@ -187,6 +207,9 @@ async function inspectRoute(page,label,key){
   assert.equal(await oisDesk.getAttribute('data-pricing-window'),'1d',label+' must start with previous session');
   assert((await bridge.innerText()).includes('NON OIS'),
    label+' government yield comparison is incorrectly labeled as OIS');
+  assert((await locator(page,'.rates-country-strip button').allTextContents()).every(text=>text.includes('2Y')),
+   label+' the eight country tiles must identify the quoted maturity');
+  await firstScreenJumps(page,label,['rates-government','rates-expected']);
  }else if(key==='cot'){
   assert.equal(await locator(page,'.cot-desk-overview').count(),1,'COT G8 overview missing');
   assert.equal(await locator(page,'.cot-desk-card').count(),4,'COT evidence cards missing');
