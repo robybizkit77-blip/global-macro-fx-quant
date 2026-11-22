@@ -1335,7 +1335,7 @@ document.addEventListener('click',e=>{
   return;
  }
  const calendarResearch=e.target.closest('[data-cal-research]');
- if(calendarResearch&&state.route==='news'){
+ if(calendarResearch&&(state.route==='news'||state.route==='overview')){
   const mode=calendarResearch.dataset.calResearch;
   const ccy=calendarResearch.dataset.calCurrency;
   if(!FX.includes(ccy)||!['rates','currencies','pairs'].includes(mode))return;
