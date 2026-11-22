@@ -109,8 +109,8 @@
    watch:'Nuove richieste di mutuo, costo dei prestiti e attese sui tassi britannici rispetto a quelli dell’Eurozona.'},
   JPY:{fx:'Se il credito sostiene domanda e inflazione, le attese sui tassi giapponesi possono salire. Il cambio USD/JPY dipende anche da come si muovono i tassi USA.',
    watch:'Domanda interna, prestiti bancari e differenziale tra i rendimenti a breve di Giappone e Stati Uniti.'},
-  CHF:{fx:'Il credito può incidere sul franco se cambia la crescita prevista e il percorso dei tassi svizzeri. La domanda di franco come rifugio resta un altro fattore per EUR/CHF.',
-   watch:'Costo dei prestiti, attese sui tassi svizzeri e rischi per l’economia europea.'},
+  CHF:{fx:'Per capire se il credito sostiene la crescita svizzera e può incidere sul franco, osserva i prestiti a famiglie e imprese in Svizzera. Su EUR/CHF contano anche i tassi relativi e la domanda di franco come rifugio.',
+   watch:'Utilizzo delle linee verso l’estero, prestiti interni e differenziale atteso tra BCE e SNB.'},
   CAD:{fx:'Se i finanziamenti sostengono gli investimenti, può cambiare la traiettoria dei tassi canadesi. Su USD/CAD contano anche il confronto con la Fed e il petrolio.',
    watch:'Domanda delle imprese, criteri di concessione delle banche e tassi attesi in Canada e negli Stati Uniti.'},
   AUD:{fx:'Il credito alle imprese può sostenere gli investimenti. Per il dollaro australiano conta se questo cambia le attese sui tassi, insieme alla domanda cinese e alla propensione al rischio.',
@@ -548,7 +548,7 @@
    {key:'CHF.sight_deposits',id:'BSTA@SNB.MONA_U.BIL.AKT.FMI.GGU{U,T,T,A40}',
     label:'Depositi a vista presso la SNB · statistica bancaria mensile'},
    {key:'CHF.credit',id:'EPB@SNB.bakredinausbm{AV1,A,T1,B}',
-    label:'Credito bancario utilizzato · selezione SNB'}
+    label:'Linee di credito verso l’estero'}
   ];
   const day=observationDate(today);
   const entries=roles.flatMap(({key,id,label})=>{
@@ -565,23 +565,25 @@
   if(!entries.length)return null;
   const read=entries.map(entry=>entry.html).join('');
   const byKey=Object.fromEntries(entries.map(entry=>[entry.key,entry.row]));
-  const deposits=byKey['CHF.sight_deposits'],credit=byKey['CHF.credit'];
-  const sameMonth=deposits&&credit&&deposits.proxy_as_of===credit.proxy_as_of;
+  const deposits=byKey['CHF.sight_deposits'],creditLines=byKey['CHF.credit'];
+  const sameMonth=deposits&&creditLines&&deposits.proxy_as_of===creditLines.proxy_as_of;
   const month=sameMonth?deposits.proxy_as_of:'';
   const monthLabel=month?new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(month+'-01T12:00:00Z')):'';
-  const rateText=(value,label)=>!finite(value)?label+' senza confronto mensile':
-   Math.abs(value)<0.1?label+' quasi ferm'+(label==='Depositi'?'i':'o'):
-   label+(value>0?' in aumento':' in calo');
-  const headline=sameMonth?rateText(deposits.change_1m_pct,'Depositi')+' e '+rateText(credit.change_1m_pct,'credito'):
-   'Depositi e credito secondo le ultime osservazioni disponibili';
-  const creditTrend=credit?.change_3m_pct;
-  const reading=finite(creditTrend)?'Sui tre mesi il credito '+(creditTrend>0?'risulta ancora in crescita':creditTrend<0?'risulta in calo':'è stabile')+'. ':'';
+  const monthlyDirection=value=>!finite(value)?'senza confronto mensile':
+   Math.abs(value)<0.1?'quasi stabili':movement(value,'in aumento','in calo','stabili');
+  const headline=sameMonth?'Depositi '+monthlyDirection(deposits.change_1m_pct)+
+   ' e linee di credito verso l’estero '+monthlyDirection(creditLines.change_1m_pct):
+   'Depositi e linee di credito verso l’estero';
+  const creditTrend=creditLines?.change_3m_pct;
+  const reading=finite(creditTrend)?'Sui tre mesi, le linee di credito verso l’estero '+
+   movement(creditTrend,'sono aumentate','sono diminuite','sono rimaste stabili')+'. ':'';
+  const measurement=creditLines?'<p>'+esc(reading)+'Il dato misura i limiti accordati dalle banche in Svizzera alla clientela estera. La SNB rileva separatamente gli importi utilizzati.</p>':'';
   const observations=entries.map(({key,row})=>{
    const depositsLane=key==='CHF.sight_deposits';
-   const subject=depositsLane?'i depositi delle banche presso la banca centrale sono ':'il credito utilizzato è ';
+   const subject=depositsLane?'i depositi delle banche presso la banca centrale sono ':'le linee di credito verso l’estero sono ';
    const change=row.change_1m_pct;
-   const description=finite(change)?movement(change,'in aumento','in calo',depositsLane?'stabili':'stabile')+
-    ' rispetto al mese precedente':(depositsLane?'disponibili':'disponibile')+' senza un confronto mensile';
+   const description=finite(change)?movement(change,'in aumento','in calo','stabili')+
+    ' rispetto al mese precedente':'disponibili senza un confronto mensile';
    return subject+description;
   });
   const opening=sameMonth?inMonth(month)+' '+observations.join(' e ')+'.':
@@ -590,9 +592,11 @@
    html:'<section class="drivers-cad-official" aria-label="Serie mensili ufficiali SNB">'+
    '<span class="mini-overline">SWISS NATIONAL BANK · SERIE MENSILI</span>'+
    '<h3>'+esc((monthLabel?monthLabel.charAt(0).toUpperCase()+monthLabel.slice(1)+' · ':'')+headline)+'</h3>'+
-   '<p>'+esc(reading)+'Per capire se le condizioni del credito stanno peggiorando, servono più mesi e informazioni sulla facilità di ottenere prestiti.</p>'+
-   read+
-   '<div class="drivers-cad-source"><a href="https://data.snb.ch/en/publishingSet/BSTA" target="_blank" rel="noopener noreferrer">Fonte: SNB · Statistiche bancarie mensili ↗</a></div></section>'};
+   measurement+read+
+   '<div class="drivers-cad-source">'+
+   (deposits?'<a href="https://data.snb.ch/en/publishingSet/BSTA" target="_blank" rel="noopener noreferrer">SNB · Depositi a vista ↗</a>':'')+
+   (creditLines?'<a href="https://data.snb.ch/en/topics/banken/cube/bakredinausbm" target="_blank" rel="noopener noreferrer">SNB · Linee di credito ↗</a>':'')+
+   '</div></section>'};
  }
  function render(api){
   const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,date,dayNow}=api;

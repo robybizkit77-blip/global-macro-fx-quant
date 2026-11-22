@@ -490,6 +490,24 @@ async function macroDriversJourney(page,label){
  const gbpOldCredit=await locator(page,'[data-liq-role="credit"]').textContent();
  assert(gbpOldCredit.includes('31 Jul 2026')&&!gbpOldCredit.includes('Ultimo 2026-09'),
   label+' GBP latest research must not overwrite original old native credit source');
+ await locator(page,'[data-liq-country="CHF"]').click();
+ const chfDossier=locator(page,'.drivers-selection');
+ const chfLines=locator(page,'[data-chf-snb-lane="CHF.credit"]');
+ const chfSource=readSource('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json').lanes['CHF.credit'];
+ const chfAmount=Number(chfSource.proxy_value/1000).toLocaleString('it-IT',{
+  minimumFractionDigits:2,maximumFractionDigits:2
+ });
+ const chfLineText=await chfLines.innerText();
+ assert(chfLineText.includes('Linee di credito verso l’estero')&&
+        chfLineText.includes(chfSource.proxy_as_of)&&chfLineText.includes(chfAmount),
+  label+' CHF credit limits must retain their source scope, date and value');
+ const chfText=await chfDossier.innerText();
+ assert.match(chfText,/limiti accordati.*clientela estera.*separatamente gli importi utilizzati/,
+  label+' CHF dossier must distinguish credit limits from utilisation');
+ assert.doesNotMatch(chfText,/credito (bancario )?utilizzato/i,
+  label+' CHF credit limits must not be described as loans drawn');
+ assert.equal(await chfDossier.locator('a[href="https://data.snb.ch/en/topics/banken/cube/bakredinausbm"]').count(),1,
+  label+' CHF credit-limit source link is missing');
  await locator(page,'[data-liq-country="CAD"]').click();
  assert.equal(await locator(page,'[data-liq-country="CAD"]').getAttribute('aria-pressed'),'true');
  const cadDossier=await locator(page,'.drivers-source-provenance-fold').textContent();
