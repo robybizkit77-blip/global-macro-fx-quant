@@ -98,7 +98,7 @@
  // A successful hourly check is separate from a new market edition.
  // Treat missing/mismatched/future receipts as unverified, never as "fresh".
  function checkReading(feed,check,nowUtc){
-  const absent={status:'unverified',label:'Ultimo controllo delle fonti: orario non verificabile'};
+  const absent={status:'unverified'};
   const iso=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(s);
   if(check?.schema!=='GMFQ_NEXT_HOURLY_CHECK_V1'||check.status!=='VERIFIED'||
    typeof check.edition_changed!=='boolean'||!iso(check.checked_at_utc)||
@@ -109,15 +109,35 @@
   const now=iso(nowUtc)&&Number.isFinite(Date.parse(nowUtc))?Date.parse(nowUtc):Date.now();
   if(!Number.isFinite(when)||!Number.isFinite(edition)||when<edition||when>now+5*60000)return absent;
   const minutes=(now-when)/60000,stale=minutes>180;
-  const stamp=new Intl.DateTimeFormat('it-IT',{
-   timeZone:'Europe/Rome',day:'2-digit',month:'2-digit',year:'numeric',
-   hour:'2-digit',minute:'2-digit',hourCycle:'h23'
-  }).format(new Date(when));
-  return {status:stale?'stale':'verified',
-   label:(stale?'Ultimo controllo registrato':'Controllo fonti completato')+
-   ' · '+stamp+' Europe/Rome · '+
-   (check.edition_changed?'Nuova edizione pubblicata':'Edizione invariata')+
-   (stale?' · Verifica non recente':'')};
+  return {status:stale?'stale':'verified',at:check.checked_at_utc,
+   detail:check.edition_changed?'Nuova edizione pubblicata':'Edizione invariata'};
+ }
+ const romeStamp=new Intl.DateTimeFormat('it-IT',{
+  timeZone:'Europe/Rome',day:'2-digit',month:'2-digit',year:'numeric',
+  hour:'2-digit',minute:'2-digit',hourCycle:'h23'
+ });
+ function renderCatalyst({calendar,news,today,nowMs=Date.now(),esc,date,fxReading}){
+  const agenda=root.FXQuantMacroCalendar?.watchlistAgenda?.(calendar,today,nowMs,news);
+  const next=agenda?.find(e=>e.sourceUrl&&Number.isFinite(e.timestamp)&&e.timestamp>nowMs);
+  const safe=x=>esc(String(x??''));
+  const watch=next?.kind==='Riunione banca centrale'?
+   'Confronta decisione e comunicato con le attese sui tassi. Poi osserva '+next.pairs+'.':
+   next?'Dopo il dato, osserva le attese sui tassi, il 2Y e la reazione di '+next.pairs+'.':'';
+  return '<aside class="hourly-fx-spotlight" data-home-catalyst="'+(next?'upcoming':'unavailable')+
+   '" aria-label="Prossimo catalizzatore Forex">'+
+   '<div class="hourly-spotlight-top"><span class="morning-section-label">PROSSIMO CATALIZZATORE</span>'+
+   (next?'<strong class="hourly-catalyst-currency">'+safe(next.ccy)+'</strong>':'')+'</div>'+
+   (next?'<h2>'+safe(next.label)+'</h2><div class="hourly-catalyst-meta">'+
+    '<time datetime="'+new Date(next.timestamp).toISOString()+'">'+safe(date(next.day))+
+    ' · <strong>'+safe(next.romeTime)+'</strong> ora di Roma</time>'+
+    (next.quality==='OFFICIAL_PROVISIONAL'?'<span class="hourly-catalyst-provisional">Calendario provvisorio</span>':'')+
+    '</div><p class="hourly-catalyst-watch"><strong>Cosa osservare</strong> '+safe(watch)+'</p>':
+    '<h2>Agenda G8</h2><p class="hourly-catalyst-watch">Nessun prossimo evento di rilievo con orario verificato nell’agenda disponibile.</p>')+
+   (fxReading?'<details class="hourly-catalyst-reading"><summary>Lettura Forex dell’edizione</summary><p>'+
+     safe(fxReading)+'</p></details>':'')+
+   '<div class="hourly-spotlight-actions"><a href="#news'+(next?'?event='+encodeURIComponent(next.key):'')+'">'+
+    (next?'Apri l’evento nel calendario':'Apri il calendario')+'</a><a href="#rates"'+
+    (next?' data-cal-research="rates" data-cal-currency="'+safe(next.ccy)+'"':'')+'>Esamina i tassi</a></div></aside>';
  }
 
  // Compare the publication times of the narratives. Checking an old edition
@@ -130,7 +150,7 @@
   return !Number.isFinite(hourlyTime)||hourlyTime>now||morningTime>hourlyTime;
  }
 
- function render({feed,check,risk,currencyPrices,esc,date,dayNow,nowUtc}={}){
+ function render({feed,check,risk,currencyPrices,calendar,news:calendarNews,references='',esc,date,dayNow,nowUtc}={}){
   if(feed?.schema!==SCHEMA||feed.status!=='ACTIVE'||typeof esc!=='function'||
      !goodDay(feed.generated_at_utc?.slice(0,10))||!goodDay(dayNow?.())||
      feed.generated_at_utc.slice(0,10)>dayNow()||
@@ -143,9 +163,11 @@
   const today=dayNow(),asOf=feed.generated_at_utc.slice(0,10);
   const days=Math.floor((Date.parse(today+'T12:00:00Z')-Date.parse(asOf+'T12:00:00Z'))/86400000);
   if(days<0||days>14)return null;
-  const vintage=days>1?'Ultima edizione conservata':
-    'Ultime novità disponibili';
   const receipt=checkReading(feed,check,nowUtc);
+  const nowMs=Number.isFinite(Date.parse(nowUtc))?Date.parse(nowUtc):Date.now();
+  const editionMs=Date.parse(feed.generated_at_utc);
+  if(!Number.isFinite(editionMs)||editionMs>nowMs)return null;
+  const dated=(at,ms)=>'<time datetime="'+safe(at)+'">'+safe(romeStamp.format(new Date(ms)))+'</time>';
   const sources=feed.provenance.web_source_urls;
   const news=feed.news.map((n,i)=>{
    if(!n||typeof n.headline!=='string'||typeof n.analysis!=='string'||
@@ -197,8 +219,12 @@
     '<div class="morning-edition-header hourly-edition-bar">'+
     '<span><span class="hourly-brand-mark" aria-hidden="true"></span> FX QUANT / GLOBAL MACRO DESK</span>'+
     '<div class="hourly-edition-clock">'+
-    '<span class="hourly-edition-time">'+safe(vintage)+' · '+safe(feed.edition_time_rome)+' Europe/Rome</span>'+
-    '<span class="hourly-edition-check" data-hourly-check-status="'+safe(receipt.status)+'">'+safe(receipt.label)+'</span></div></div>'+
+    '<span class="hourly-edition-time"><b>Ultima analisi pubblicata</b> · '+
+    dated(feed.generated_at_utc,editionMs)+(days>1?' · Edizione d’archivio':'')+'</span>'+
+    '<span class="hourly-edition-check" data-hourly-check-status="'+safe(receipt.status)+'"><b>Ultimo controllo delle fonti</b> · '+
+    (receipt.at?dated(receipt.at,Date.parse(receipt.at))+' · '+safe(receipt.detail)+
+     (receipt.status==='stale'?' · Verifica non recente':''):'orario non verificabile')+
+    '</span><span class="hourly-edition-zone">Orari di Roma</span></div></div>'+
     '<div class="hourly-hero-grid">'+
     '<header class="morning-lead hourly-hero" data-hourly-hero-to-sources="true" aria-label="Il quadro generale dei mercati: clicca per aprire notizie e fonti">'+
     '<div class="hourly-hero-upper"><button type="button" class="morning-kicker hourly-kicker-sources" data-hourly-open-sources aria-controls="hourly-desk-news" aria-expanded="false">IL QUADRO GENERALE DEI MERCATI <span aria-hidden="true">↘</span></button>'+
@@ -209,14 +235,8 @@
     '<div class="hourly-hero-actions"><button type="button" class="hourly-hero-sources-button" data-hourly-open-sources aria-controls="hourly-desk-news" aria-expanded="false">Notizie e fonti <span aria-hidden="true">↘</span></button>'+
     '<a href="#currencies">Esplora le valute <span aria-hidden="true">↗</span></a></div></div>'+
     '</header>'+
-    '<aside class="hourly-fx-spotlight" aria-label="Implicazioni Forex">'+
-    '<div class="hourly-spotlight-top"><span class="morning-section-label">LE CONSEGUENZE PER IL FOREX</span>'+
-    '<span class="hourly-spotlight-symbol" aria-hidden="true">⇄</span></div>'+
-    '<h2>Cosa seguire nei cambi</h2>'+
-    '<p>'+safe(feed.fx_implications)+'</p>'+
-    '<div class="hourly-spotlight-actions"><a href="#pairs">Approfondisci le coppie FX <span aria-hidden="true">↗</span></a>'+
-    '<a href="#rates">Esamina i tassi</a></div>'+
-    '</aside></div>'+ 
+    renderCatalyst({calendar,news:calendarNews,today,nowMs,esc,date,fxReading:feed.fx_implications})+
+    '</div>'+references+
     (root.FXQuantHomePulse?.render?.({feed,risk,currencyPrices,esc,date,dayNow})||'')+
     '<section class="hourly-decision-section" aria-label="Le tre verifiche del desk">'+
     '<div class="hourly-section-head"><div><span class="morning-section-label">LETTURA DEL DESK</span>'+
@@ -266,5 +286,5 @@
     'I dati storici non sono movimenti intraday e l’interpretazione non costituisce un segnale di ingresso.</p>'+
     '</footer></article>';
  }
- root.FXQuantHourlyDesk={render,checkReading,preferMorning,SCHEMA,titleItaliano,openSources};
+ root.FXQuantHourlyDesk={render,renderCatalyst,checkReading,preferMorning,SCHEMA,titleItaliano,openSources};
 })(typeof window!=='undefined'?window:globalThis);
