@@ -1006,11 +1006,18 @@ async function pairLinkJourney(page,label){
   const briefing=await browser.newPage();
   try{
    await briefing.route('https://api.github.com/**',request=>request.abort());
+   let releaseVerification;
+   const verificationGate=new Promise(resolve=>{releaseVerification=resolve;});
+   await briefing.route('**/reports/'+dailyFile,async route=>{
+    if(route.request().method()==='HEAD')await verificationGate;
+    await route.continue();
+   });
    const catalog=briefing.waitForResponse(response=>response.url().endsWith('/reports/daily-latest.json')&&response.ok());
-   const verified=briefing.waitForResponse(response=>response.url().endsWith('/reports/'+dailyFile)&&
-    response.request().method()==='HEAD'&&response.ok());
-   await Promise.all([catalog,verified,
-    briefing.goto(new URL('#library',BASE).href,{waitUntil:'domcontentloaded'})]);
+   try{
+    await Promise.all([catalog,briefing.goto(new URL('#library',BASE).href,{waitUntil:'domcontentloaded'})]);
+    assert(await briefing.locator('#library-loading').isVisible(),'Library must show loading while the Daily URL is verified');
+    assert.equal(await briefing.locator('.rl-card a').count(),0,'An archive edition must never flash while loading');
+   }finally{releaseVerification();}
    for(const report of latest){
     const card=briefing.locator('.rl-card').filter({has:briefing.locator(`a[href="./reports/${encodeURIComponent(report.file)}"]`)});
     await card.waitFor({state:'visible'});
@@ -1019,6 +1026,7 @@ async function pairLinkJourney(page,label){
     assert(linked.ok(),'Library link must load: '+report.file);
    }
    assert.equal(await briefing.locator('.rl-card').count(),latest.length,'One card per category');
+   assert.equal(await briefing.locator('#library-loading').isVisible(),false,'Loading status must clear after verification');
    assert.equal(await briefing.locator('#library-grid .rl-card').count(),weeklyFiles.length,
     'Weekly grid must contain exactly the weekly categories');
    const featured=briefing.locator('#library-featured');
