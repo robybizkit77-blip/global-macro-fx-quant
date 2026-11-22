@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-20",
-  "generated_at_utc": "2026-11-21T21:23:34.525007Z",
+  "generated_at_utc": "2026-11-22T06:58:24.653871Z",
   "items": [
     {
       "as_of": "2026-11-20",
@@ -254,7 +254,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-21T21:23:34.525007Z",
+  "last_checked_at_utc": "2026-11-22T06:58:24.653871Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1164,7 +1164,7 @@
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/financial-system-remains-resilient-as-global-risks-increase"
       }
     ],
-    "last_attempt_day_rome": "2026-11-21",
+    "last_attempt_day_rome": "2026-11-22",
     "latest_published_at_utc": "2026-11-20T21:15:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
@@ -1209,9 +1209,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 13,
+        "accepted_items": 9,
         "ccy": "JPY",
-        "entries_rejected": 34,
+        "entries_rejected": 38,
         "feed_entries_seen": 47,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
