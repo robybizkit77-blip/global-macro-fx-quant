@@ -132,3 +132,13 @@
 .drivers-bank-sources>.drivers-lead{margin:14px 0}
 .drivers-bank-sources>summary{padding-inline:0}
 .drivers-bank-sources>.drivers-facts,.drivers-bank-sources>.drivers-source-note{margin-inline:0}
+
+@media(max-width:770px){
+ #liquidity-studio .drivers-head{margin-bottom:10px}
+ #liquidity-studio .drivers-head h2{margin:0}
+ #liquidity-studio .drivers-country-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+ #liquidity-studio .drivers-country{min-height:44px;padding:5px 3px;border-left-width:1px;align-items:center}
+ #liquidity-studio .drivers-country-head b{font-size:12px;white-space:nowrap}
+ #liquidity-studio .drivers-country-head small,
+ #liquidity-studio .drivers-mini-state{display:none}
+}

@@ -164,6 +164,13 @@ async function inspectRoute(page,label,key){
  }else if(key==='liquidity'){
   assert.equal(await locator(page,'#liquidity-studio [data-liq-country]').count(),8,
    label+' all eight G8 liquidity choices required');
+  if(label==='mobile'){
+   for(const button of await locator(page,'#liquidity-studio [data-liq-country]').all()){
+    const box=await button.boundingBox();
+    assert(box&&box.height>=44&&box.y>=0&&box.y+box.height<=page.viewportSize().height,
+     'All G8 liquidity buttons must be reachable on the first screen at mobile size');
+   }
+  }
   assert.equal(await locator(page,'.drivers-facts .drivers-fact').count(),3,
    label+' liquidity, credit and lending conditions must be separate');
   assert.equal(await locator(page,'.drivers-chart-grid .drivers-chart').count(),2,
@@ -173,6 +180,11 @@ async function inspectRoute(page,label,key){
   assert.match(await liquidSources.textContent(),/Copertura storica/);
   assert.equal(await locator(page,'.drivers-us-official').isVisible(),true,
    label+' dated Fed evidence belongs in the first reading');
+  assert(await locator(page,'#liquidity-dossier').evaluate(dossier=>{
+   const evidence=dossier.querySelector('.drivers-us-official');
+   const reading=dossier.querySelector('.drivers-story');
+   return evidence&&reading&&Boolean(evidence.compareDocumentPosition(reading)&Node.DOCUMENT_POSITION_FOLLOWING);
+  }),label+' source-dated evidence must precede the FX interpretation');
   assert.equal(await locator(page,'.drivers-market-audit .drivers-market-item').count(),2,
    label+' liquidity hypothesis must be checked against dated 6M and FX price evidence');
  }else if(key==='rates'){
