@@ -1,8 +1,47 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-21T23:24:15Z",
+  "generated_at_utc": "2026-11-22T06:57:48Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-f1801a0cd55e31e6a9cf",
+      "observed_at_utc": "2026-11-21T05:04:00Z",
+      "headline": "Endurance athlete swims in Strait of Hormuz to highlight the war’s impact on wildlife",
+      "summary": "AP News riporta: Endurance athlete swims in Strait of Hormuz to highlight the war’s impact on wildlife. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOemVhdjA0MEhJdGt4VXQ1Z09NbU9JdDVGYnVINlVCSnktNE42aUpqVWhfQW1qMFZ5LWRWRHV0dm5mYVBjZnd2azFWTkZyRDl0OGFDTFZ3aDZJUWl4UXZ0S1pKeVowNFFRZ3M0REVkdzRXTVZ1WlhfTEdkeVEydlVYRjJOLWc2emg3ZC00SW5ia0R4YzloQTBqcS1BR1BveUp1cHkwVzhMdU5BazRUZzl6YkItbzNxTFROcXQ4eTVCMEhQTlRHWFBHWXN6SEZfUi1qWXVNdkJfSTNOdw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-64a564002bbd3be6f59d",
+      "observed_at_utc": "2026-11-22T04:13:00Z",
+      "headline": "Trump vows to work with Democrats to cap credit card interest rates at 10%",
+      "summary": "AP News riporta: Trump vows to work with Democrats to cap credit card interest rates at 10%. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxObHFuVnp6cHlDTXlRMnZXTHlyWGo3UWdKVHZOb0x0NWFPZmxBWFl1RWNOTVBoX0NNWlozRUxVV0tZZHlJM20td2llbkRlS1MtX29DMzZTUF9qemlJcFoxTXc4cWNsbTdCc29iRGx2ajdwdkp6OUFQU3NsMzJDdzdxVEU2VlF4QmRxVzlNYVdIUU1QU1ZRUTdXSWpiR21Nbl8zSURwbWpUQ09BUQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-3682d792c1a5a66d6d46",
+      "observed_at_utc": "2026-11-21T14:01:00Z",
+      "headline": "A 10% drop for the stock market is unnerving, but it’s not that unusual",
+      "summary": "AP News riporta: A 10% drop for the stock market is unnerving, but it’s not that unusual. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQekJLM2U0dXhaeEo3d2hmNFltdUpLQzF4a2VtY3RNR3otMW44Zld5R0Q3TGpTNWJ5bnA1RG00YXU4NkNpYTBtMVpnUmV4cFZPSF9HWnRjdlRPZ1Bsc0dwOENCQWM4QXc2MjdPRWhPcXZjeXNRbXhUdV9fSDVwcW5kUlJGZTVUbW1Lc0h5YzJCYWtpNDd5dzRJ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-4a70343e715886ad53da",
       "observed_at_utc": "2026-11-21T19:38:00Z",
@@ -1365,49 +1404,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPREdNUGJpdVdzdFc0aWVJQ2dFU21LNTdob0R6QXFwS1I0amswSzdzZC1TbWJrRm95ZFFMU3k2STdocmxMWHJETUpXSU1QeWtwY05mR2p3eFlRTkJUYjloTlN3QlYzWDhCWElxci1rU2FwNldyUG9jSkc3OWtnWjRJUjhyLVR5YTJnNkJROFlQZjZiNG52a0FzdWhMYlE?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-6906b95d6018148ecaf3",
-      "observed_at_utc": "2026-11-12T00:14:00Z",
-      "headline": "Japan wholesale inflation accelerates, keeps alive rate hike view",
-      "summary": "Reuters riporta: Japan wholesale inflation accelerates, keeps alive rate hike view. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxPcS10SkFkNjF0eGRPdkJTYU9aVVR4YzB4ZzNQZ0dfbzVOZ0g3Y2xwQkN2NHF4SmdGdjhIRE02el91WUdSYlFPV0lMcjNQbXdrZVFoWGdVb2RZb0Vwd19HN1V1dWN1MnBzaVJRRzNjU3Z5ZHQ2MTctbmhPZjRXcGVaZVVaZ0szd05xZEoxZEtHOWxkMXZOcm9CMHQtbUl0UEt5aFNNLVUzSDJvQkxibmdMS1VmWTZBUVJYWGVQNEhKR00?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-dd56d187ded8dcb1ee6c",
-      "observed_at_utc": "2026-11-11T03:39:00Z",
-      "headline": "Gold falls as hot inflation figures, higher dollar weigh",
-      "summary": "Reuters riporta: Gold falls as hot inflation figures, higher dollar weigh. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxPUkZNV2RySHI5TXJ4YTBhNlNpTllnVXUyRk9CNzBrLXBLWFc3OTlOM0Y1MUVDcGRhS1pQU1oxR3hveVE5VWRfVGF1aTR4Z0lhcWJjbGV4Ym93cDdqb09JQlpFdC10cW9FUkVBX0NPVFFyOTdxSV81Z0RWUEx4UkdITjNwUnRHUmdDbmg5a0F5QmZXRzdjWGZzeXJsdUNUbDRKM3NvU0VGVGQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-1ce09cdf4eb2556832e6",
-      "observed_at_utc": "2026-11-11T00:18:36Z",
-      "headline": "Wall St ends lower as hot inflation data fuels interest rate worries",
-      "summary": "Reuters riporta: Wall St ends lower as hot inflation data fuels interest rate worries. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE9MZmtLTUlISU03SjJHMGNHSllrSFVla2ZRb09OcGItZnU1RmJ4dGZud05SR3FZV3JGSjhQWnhtZVVYdzV1NzROQ1JXOU9NcFZ3TkphSnEyZmNIY2taV054emJJUG1yZw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
