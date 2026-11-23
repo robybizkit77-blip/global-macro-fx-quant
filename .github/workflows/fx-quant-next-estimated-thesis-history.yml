@@ -49,6 +49,7 @@ jobs:
         with:
           node-version: '22'
       - run: node validation/pair_thesis/test_estimated_history_v1.cjs
+      - run: node validation/pair_thesis/test_estimated_recalc_receipt_v1.cjs
   capture:
     if: >-
       github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
