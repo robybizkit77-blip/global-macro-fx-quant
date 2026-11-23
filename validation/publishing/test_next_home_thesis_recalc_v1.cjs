@@ -49,6 +49,10 @@ if(raw.status==='RECALCULATED_WITH_CHANGES'){
 }else if(raw.status==='NO_MATERIAL_THESIS_CHANGE'){
  assert.match(first,/nessuna delle 28 tesi FX stimate ha cambiato/);
 }else assert.match(first,/Prima fotografia verificata/);
+if(raw.status==='RECALCULATED_WITH_CHANGES'){
+ assert.match(first,/Che cosa ha modificato la stima/);
+ assert.match(first,/Cosa potrebbe smentirla/);
+}
 if(raw.changedRanks===null)
  assert.match(first,/La variazione delle posizioni G8 non è confrontabile/);
 assert.match(first,/Macro (?:al )?\d{2}\/\d{2}\/\d{4}/,
@@ -65,6 +69,8 @@ unchanged.changedRanks=[];
 const unchangedHtml=api.render({...ctx,receipt:unchanged});
 assert.match(unchangedHtml,/data-recalc-state="same"/);
 assert.match(unchangedHtml,/nessuna delle 28 tesi FX stimate ha cambiato/);
+assert.doesNotMatch(unchangedHtml,/Che cosa ha modificato la stima/);
+assert.equal(api.driverReading(unchanged,ctx.estimate),null);
 const initialRankUnknown=structuredClone(unchanged);
 initialRankUnknown.changedRanks=null;
 assert.match(api.render({...ctx,receipt:initialRankUnknown}),
@@ -103,6 +109,7 @@ changed.changedPairs=[{key:'EURUSD',
  current:{favored:'EUR',thesis:'CONTRASTATA',timing:'BASSA ORA'}}];
 changed.changedRanks=[{ccy:'EUR',previous:5,current:4}];
 changed.inputChanges=['observed','prices'];
+changed.factorChanges=null; // Do not invent historical numeric deltas.
 changed.pairs.EURUSD={...changed.changedPairs[0].current};
 const changedEstimate=structuredClone(ctx.estimate);
 Object.assign(changedEstimate.pairs.find(p=>p.key==='EURUSD'),{
@@ -117,6 +124,47 @@ assert.match(displayed,/preferenza USD → EUR/);
 assert.match(displayed,/attrattività DA VALIDARE → BASSA ORA/);
 assert.match(displayed,/Macro G8, Prezzi BCE/);
 assert.match(displayed,/href="#pairs\?pair=EURUSD"/);
+assert.match(displayed,/Che cosa ha modificato la stima/);
+assert.match(displayed,/Sono cambiate più famiglie/);
+assert.match(displayed,/Cosa potrebbe smentirla/);
+// Isolate a same-day government-rate proxy source change from official OIS.
+const ratesEvidence=structuredClone(changed);
+ratesEvidence.inputChanges=['rates'];
+ratesEvidence.methodChanged=false;
+const ratesEstimate=structuredClone(changedEstimate);
+const eurProxy=ratesEstimate.currencies.find(c=>c.ccy==='EUR');
+eurProxy.rate={quality:'PROXY',asof:raw.fixingAsOf,
+ kind:'GOV_2Y_PROXY',changeBp:-4.2};
+const ratesHtml=api.render({...ctx,receipt:ratesEvidence,estimate:ratesEstimate});
+assert.match(ratesHtml,/dataset dei rendimenti governativi/);
+assert.match(ratesHtml,/Per EUR il 2Y settimanale è -4,2 pb/);
+assert.match(ratesHtml,/proxy, NON un OIS/);
+assert.match(ratesHtml,/6M OIS ufficiale confrontabile/);
+assert.match(ratesHtml,/Il 2Y governativo non misura soltanto/);
+// The upcoming producer can include prior and current factor scores.
+// Ensure no historical delta may be fabricated by malformed source metadata.
+const scoredReceipt=structuredClone(ratesEvidence);
+const refEUR=scoredReceipt.currencies.find(c=>c.ccy==='EUR');
+const component=(current,previous)=>({previous,current,
+ delta:Number((current-previous).toFixed(6))});
+scoredReceipt.factorChanges=[{
+ ccy:'EUR',rank:{previous:refEUR.rank===1?2:refEUR.rank-1,current:refEUR.rank},
+ changes:{
+  score:component(refEUR.score,refEUR.score+0.15),
+  macroScore:component(refEUR.macroScore,refEUR.macroScore),
+  policyScore:component(refEUR.policyScore,refEUR.policyScore+0.5),
+  priceScore:component(refEUR.priceScore,refEUR.priceScore)
+ },
+ monetaryQuality:{previous:'PROXY',current:refEUR.monetaryQuality}
+}];
+assert.equal(api.receiptOK(scoredReceipt),true);
+const factorHtml=api.render({...ctx,receipt:scoredReceipt,estimate:ratesEstimate});
+assert.match(factorHtml,/Confronto misurato dei punteggi/);
+assert.match(factorHtml,/monetaria/);
+assert.match(factorHtml,/non cause dimostrate del prezzo/);
+const invalidFactors=structuredClone(scoredReceipt);
+invalidFactors.factorChanges[0].changes.policyScore.delta=999;
+assert.equal(api.receiptOK(invalidFactors),false);
 const malicious=structuredClone(changed);
 malicious.changedPairs[0].previous.thesis='<img src=x onerror=alert(1)>';
 const escaped=api.render({...ctx,receipt:malicious,estimate:changedEstimate});
@@ -126,8 +174,8 @@ const baseline=structuredClone(raw);
 baseline.status='BASELINE_RECALC';baseline.changedPairs=null;baseline.changedRanks=null;
 assert.match(api.render({...ctx,receipt:baseline}),/Prima fotografia verificata/);
 const index=read(next+'index.html'),app=read(next+'app.js'),css=read(next+'home-thesis-recalc-v1.css');
-assert(index.includes('home-thesis-recalc-v1.js?v=2')&&index.includes('home-thesis-recalc-v1.css?v=1'));
-assert(index.indexOf('home-thesis-recalc-v1.js?v=2')<index.indexOf('app.js?v='));
+assert(index.includes('home-thesis-recalc-v1.js?v=3')&&index.includes('home-thesis-recalc-v1.css?v=2'));
+assert(index.indexOf('home-thesis-recalc-v1.js?v=3')<index.indexOf('app.js?v='));
 assert(app.includes("fetch('./pair-estimate-recalc-receipt-v1.json'"));
 assert(app.includes("receipt:get('thesisRecalcReceipt')"));
 assert(app.includes("sourceHashes:get('thesisSourceHashes')"));
@@ -138,5 +186,6 @@ assert(app.includes("recalcProof+moneyProof+'<section"));
 assert(app.includes("post+recalcProof+moneyProof+'<section"));
 assert(app.includes("+recalcProof\n +'<section"));
 assert(css.includes('@media(max-width:640px)'));
+assert(css.includes('.fx-recalc-driver')&&css.includes('.fx-recalc-invalidation'));
 require('./test_next_home_recalc_endtoend_v1.cjs');
 console.log('NEXT_HOME_G8_28_RECALC_PASS: source dates, 28-pair receipt, no-change, changed thesis/rank, future/stale/mismatch, XSS, all Home modes');

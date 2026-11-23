@@ -68,9 +68,18 @@ assert((changed.receipt.changedPairs?.length||0)>0,
 assert((changed.receipt.changedRanks?.length||0)>0,
  'A real G8 currency rank must change in the shock fixture');
 assert.deepEqual(changed.receipt.inputChanges,['observed','ois']);
+const gbpDelta=changed.receipt.factorChanges.find(x=>x.ccy==='GBP');
+assert(gbpDelta,'The real estimator shock must produce a measured GBP factor comparison');
+assert(gbpDelta.changes.macroScore.delta<0,'GDP/labour shock must lower measured GBP macro component');
+assert(gbpDelta.changes.policyScore.delta<=0,'6M official repricing cannot be invented as bullish here');
+assert(gbpDelta.changes.score.delta<0,'The net GBP G8 strength must fall');
 const updated=view(changed.receipt,after,syntheticMacro,updatedSources);
 assert.match(updated,/data-recalc-state="changed"/);
 assert.match(updated,/Cambiamenti da verificare/);
+assert.match(updated,/Che cosa ha modificato la stima/);
+assert.match(updated,/Cosa potrebbe smentirla/);
+assert.match(updated,/Confronto misurato dei punteggi/);
+assert.match(updated,/non cause dimostrate del prezzo/);
 assert.match(updated,/Nuove impronte nei file: Macro G8, OIS \/ futures/);
 assert.match(updated,/Classifica 28 coppie/);
 // Change the policy observation again with the same date and retain the old
