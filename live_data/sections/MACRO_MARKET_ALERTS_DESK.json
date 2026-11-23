@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-23T02:51:02Z",
+  "generated_at_utc": "2026-11-23T12:57:40Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-f0e92fb68ef90644a4c4",
+      "observed_at_utc": "2026-11-22T23:00:00Z",
+      "headline": "COMMENTARY: AI bust hurts Chinese stocks far more than GDP",
+      "summary": "Reuters riporta: COMMENTARY: AI bust hurts Chinese stocks far more than GDP. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxPcUFLdUZQYzFtXzVMTHBnR1lTMnhES0gzd2dKY0p5dlVkWUNiX0hFYUZvdGxSaDI0ak5GZkdQZWtpZU41eGpuWHBKX3ZnbE1abnJzME1Xa3RRcVo2dGVKcWJLZ3JLUkNqMHp3RXBOOGF2VzZWYU5oTHZibUlHX3M5VXRGYldyVDMxNzJ2c052VEdpTHRHZU9ucEM5R1dHYk5qNHp5eW9kTDNyZ0RTTE9HUTNOVU1aN1FnajAtczlZUG5aZnhlbElTVWt3ZDVyaDR4a0E?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-8eda3eb87a84493f3ad4",
+      "observed_at_utc": "2026-11-23T09:01:41Z",
+      "headline": "December rate hike may not be enough but not in a rush to move again: ECB's Simkus",
+      "summary": "Reuters riporta: December rate hike may not be enough but not in a rush to move again: ECB's Simkus. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "EUR"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQRFlkZVZKRk9QVlZVX0hUNXZSMWNqTG1oVXZ2cmw4V1VOMUMxV2NVS0djLTQ1M18wLXp6cE5iWkxSMzNwd0lyVHhETVNQY2Ffd25LVzQ1TUctV3E4YWRLZkNpSEhCZTJwMVBkc2RTZDgwSU9OX0lSOTFwY0xFd2hQVHdwVnhIeHhhWXJRZmtlNllyLUs3ZGJmakNCUTBGWGJ6Wk1za2IxMkIzZXhuUFk3eVIzQUpVVEFM?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-047cafeb7f734921b389",
+      "observed_at_utc": "2026-11-23T04:52:00Z",
+      "headline": "Australia's treasurer warns jobless rate to climb above 5% as rate hikes bite",
+      "summary": "Reuters riporta: Australia's treasurer warns jobless rate to climb above 5% as rate hikes bite. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "AUD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPZHZ6RXNmSkdfLUNld2V3dWh6UWFDOXlMOWNMelVsZ0FaaUJ5eFVmR3dNeUdHTXVyYW1WMGVhY2U4ekdtVG9VU1MtLV9feHhJQ0hVaWR1NFNiZWEtNnJ1bVRxMnRyN0Jtd3duQmRVVElNZURRQVpfYS1LZl9tZE9VWS1fNkV2d1FzaUJjQzI3akhGU0sxSlBTSkR1Z2xQYVZSWGhxOHNaNVd5N1I2UTR3ZmFLUko1YmJiQnNnVjgxRWRmdw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-b4731f5abdbd323fd163",
       "observed_at_utc": "2026-11-23T02:24:00Z",
@@ -1367,47 +1410,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNQVJ6a0pya05jUTVhNXlpbmxpTmRsOEFfM0RuT29icFU3WE4yT0ctazV5bEU0R1hpZGRGZXU3LU9DLXhRQVU2aUYxMHVPSkcwcTRsZVRKN1RFS0FMVWxkZHJDVVgteEdWcFpCUXE5TGt4c1g3R3RRcHhjbDlkSFlDY1F4TnZ6SjVzdXk4MDdFSThUV1BnaTdpd2xOVkpkMFN2WWs4QTJKNmtEWTQyUEZtd09sVlhkX1N2YXRKZDMtLVduUC1wdl81MGpVTQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-4cfc0643456dc5548c75",
-      "observed_at_utc": "2026-11-12T12:46:50Z",
-      "headline": "ECB set for last rate hike in December but inflation risks keep door open for one more: Reuters poll",
-      "summary": "Reuters riporta: ECB set for last rate hike in December but inflation risks keep door open for one more: Reuters poll. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "EUR"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOc1hXaEpuRUhpTnBKTGNYQU9CNnJhRFBYNHdTb2VIOUVyU1VoNmNYcjhNRXdJVTZEQUR4Sm5neEFMOWhwRjF3UW9PLXJuRFNwNG5CSEF5d1hKUTNuQVM0ZXQ5cDBsR04tVDVaT2tGU0VVQWtsZmlNdjROS0ZNdXBUZWF1ZUFTbXZicUE4b0Z0RXo4M3Z6SzFsMXVfZV9QVGMxM1BuMFFZNXktTlloT2dvclB6MA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-4f3fbaf16fb5b8a3f1c1",
-      "observed_at_utc": "2026-11-12T16:45:39Z",
-      "headline": "Oil tanker struck off UAE's Ras Al-Khaimah, all crew reported safe",
-      "summary": "Reuters riporta: Oil tanker struck off UAE's Ras Al-Khaimah, all crew reported safe. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOeDlHRUduYXpITEh6ZXlxdm9Zc3hiVXlhZXhzbzUySkFvNkMyQ1pFYWlxbnZKUmR4T0tieF9rZHhWYnFzUXI2a0J4M2VOLUZPcGt3ckxrUzNrSFFfeXpXNDJjRzVIS2p6OWI5d1BhMHVzVVY4TktOaWJQYTJpenFZOXpISzBiUDZ5ZG5vVGE2U0U5RnFjQmlaRmNnUDk0YV9DRnl6UVRkOEtGR1RJdUF2VmxNRmVpN1lDeXRINVdYQ0xabGJkMTMwazNR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-76297b3ba175d343dfd2",
-      "observed_at_utc": "2026-11-12T16:27:35Z",
-      "headline": "Four tankers struck by explosions in Strait of Hormuz, Iran says",
-      "summary": "Reuters riporta: Four tankers struck by explosions in Strait of Hormuz, Iran says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQcDQ2cWxyeTFpazFaX1ZNM2RoS0t2ZVpEa0JpMElTZVFMUElROEF5c20tMlU0dEszWFlEdkhfR2VOb3hEQmo3MjRtdVlSaEhkZnpKXzExbE5QcXItQ3Z6REoyY1Fpak9IUUplYWp6NTQ2UjBiNVk1WDN0MmJjaFRkOHNLdDYxMU9xOWhuMnVaTlNiVXJNTlhLYV9EZEpnd1oxYmF0cG82b2VkMURkYnkzZkZBX0hhWHM?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
