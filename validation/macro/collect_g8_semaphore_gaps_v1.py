@@ -172,7 +172,7 @@ def candidate(spec,observations,now):
     if age<0:raise ValueError("future period")
     points=contiguous_last_two(observations,spec["frequency"])
     payload={"ccy":spec["ccy"],"area":spec["area"],
-      "id":"SEM_G8_"+spec["ccy"]+"_"+spec["area"],
+      "id":"SEM_G8_"+spec["ccy"]+"_"+spec["area"].upper(),
       "label":spec["name"],"frequency":spec["frequency"],"unit":spec["unit"],
       "dates":[x[0] for x in points],"values":[x[1] for x in points],
       "category":"Semaforo supplementare","source_file":spec["origin"],
