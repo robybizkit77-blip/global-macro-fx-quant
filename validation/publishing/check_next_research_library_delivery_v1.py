@@ -21,6 +21,13 @@ from validation.publishing.verify_pages_http_delivery_v1 import BASE_URL, verify
 ROOT = Path(__file__).resolve().parents[2]
 DIRECTORY = Path("site/fx-quant-v2/next/reports")
 CROSS_ASSET_REVIEW = "Global_Markets_Review_14_Novembre_2026_DARK_SLATE_V13_SOLO_SEZIONI.html"
+MONTHS_IT = {"GENNAIO": 1, "FEBBRAIO": 2, "MARZO": 3, "APRILE": 4,
+             "MAGGIO": 5, "GIUGNO": 6, "LUGLIO": 7, "AGOSTO": 8,
+             "SETTEMBRE": 9, "OTTOBRE": 10, "NOVEMBRE": 11, "DICEMBRE": 12}
+MARKETS_REVIEW_V13 = re.compile(
+    r"Global_Markets_Review_(\d{1,2})_([A-Za-z]+)_(20\d{2})_DARK_SLATE_V13(?:_SOLO_SEZIONI)?\.html",
+    re.I,
+)
 BLOCKED = re.compile(r"(?:^|_)(?:PROVA|TEST|BOZZA|DRAFT|BACKUP|ANTEPRIMA|PREVIEW|LEGACY|OLD|DATI_PARZIALI)(?:_|\.|$)", re.I)
 PREFIXES = {
     "daily": ("Briefing_Forex_Commodities_",),
@@ -39,6 +46,15 @@ MONTHS = {"JAN": 1, "FEB": 2, "MAR": 3, "APR": 4, "MAY": 5, "JUN": 6,
 def parse_date(name: str) -> str | None:
     if name == CROSS_ASSET_REVIEW:
         return "2026-11-14"
+    review = MARKETS_REVIEW_V13.fullmatch(name)
+    if review:
+        month = MONTHS_IT.get(review.group(2).upper())
+        if month is None:
+            return None
+        try:
+            return datetime(int(review.group(3)), month, int(review.group(1))).date().isoformat()
+        except ValueError:
+            return None
     match = re.search(r"(?:^|_)(20\d{2}-\d{2}-\d{2})(?:_|\.|$)", name)
     if match:
         day = match.group(1)
@@ -56,7 +72,7 @@ def parse_date(name: str) -> str | None:
 
 
 def report_type(name: str) -> str | None:
-    if name == CROSS_ASSET_REVIEW:
+    if name == CROSS_ASSET_REVIEW or MARKETS_REVIEW_V13.fullmatch(name):
         return "cross"
     return next((key for key, stems in PREFIXES.items()
                  if any(name.startswith(stem) for stem in stems)), None)

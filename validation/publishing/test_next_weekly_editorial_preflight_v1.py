@@ -117,6 +117,29 @@ class SundayEditorialPreflight(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "WEEKLY_FRIDAY_CUTOFF_MISSING"):
             check_edition(self.root, "cross", bad, date(2026, 11, 14))
 
+    def test_original_21_november_v13_is_recognized_as_saturday_review(self):
+        from validation.publishing.check_next_research_library_delivery_v1 import (
+            parse_date, report_type,
+        )
+        name = "Global_Markets_Review_21_Novembre_2026_DARK_SLATE_V13.html"
+        self.assertEqual(report_type(name), "cross")
+        self.assertEqual(parse_date(name), "2026-11-21")
+        candidate = ROOT / DIRECTORY / name
+        result = check_edition(ROOT, "cross", candidate, date(2026, 11, 23))
+        self.assertEqual(result["status"], "STRUCTURAL_EDITORIAL_PREFLIGHT_PASS")
+        self.assertEqual(result["reference_friday"], "2026-11-20")
+        self.assertEqual(result["edition_date"], "2026-11-21")
+        self.assertTrue(result["canonical_css_identical"])
+        with self.assertRaisesRegex(ValueError, "WEEKLY_DATE_IN_FUTURE"):
+            check_edition(ROOT, "cross", candidate, date(2026, 11, 20))
+
+    def test_review_named_for_sunday_is_not_treated_as_friday_close(self):
+        name = "Global_Markets_Review_22_Novembre_2026_DARK_SLATE_V13.html"
+        candidate = self.root / DIRECTORY / name
+        shutil.copyfile(ROOT / DIRECTORY / "Global_Markets_Review_21_Novembre_2026_DARK_SLATE_V13.html", candidate)
+        with self.assertRaisesRegex(ValueError, "NOT_A_CLOSED_FRIDAY_WEEK"):
+            check_edition(self.root, "cross", candidate, date(2026, 11, 23))
+
     def test_recurring_review_requires_the_correct_title_and_approved_structure(self):
         original = (ROOT / DIRECTORY / CROSS_ASSET_REVIEW).read_text(encoding="utf-8")
         (self.root / DIRECTORY / CROSS_ASSET_REVIEW).write_text(original, encoding="utf-8")
