@@ -53,6 +53,24 @@ function build({previous=null,history,estimate,checked,commit,method,sourceHashe
  const priorRanks=new Map((previous?.currencies||[]).map(x=>[x.ccy,x.rank]));
  const changedRanks=previous?currencies.filter(x=>priorRanks.get(x.ccy)!==x.rank)
   .map(x=>({ccy:x.ccy,previous:priorRanks.get(x.ccy)??null,current:x.rank})):null;
+ // Compare *factor scores*, not unverified market causes. Model weights and
+ // nonlinear category thresholds remain owned exclusively by the estimator.
+ // An unchanged currency score can still gain a relative rank when a peer falls.
+ const round=x=>Number(x.toFixed(6));
+ const previousCurrencies=new Map((previous?.currencies||[]).map(c=>[c.ccy,c]));
+ const factorChanges=previous?currencies.map(current=>{
+  const prior=previousCurrencies.get(current.ccy);
+  if(!prior||!['score','macroScore','policyScore','priceScore'].every(k=>
+   Number.isFinite(prior[k])))throw Error('RECALC_RECEIPT_PRIOR_FACTORS_INVALID');
+  const changes=Object.fromEntries(['score','macroScore','policyScore','priceScore']
+   .map(k=>[k,{previous:prior[k],current:current[k],
+    delta:round(current[k]-prior[k])}]));
+  return {ccy:current.ccy,rank:{previous:prior.rank,current:current.rank},
+   changes,monetaryQuality:{previous:prior.monetaryQuality,
+    current:current.monetaryQuality}};
+ }).filter(x=>x.rank.previous!==x.rank.current||
+  x.monetaryQuality.previous!==x.monetaryQuality.current||
+  Object.values(x.changes).some(v=>v.delta!==0)):null;
  const inputChanges=previous?Object.keys(sourceHashes).filter(k=>
   previous.sourceHashes?.[k]!==sourceHashes[k]):null;
  const methodChanged=previous?previous.method!==method:null;
@@ -76,7 +94,7 @@ function build({previous=null,history,estimate,checked,commit,method,sourceHashe
   legacyMacroAsOf:estimate.legacyMacroAsOf,
   coverage:{currencies:8,pairs:28,official6M:estimate.coverage?.official6M??null,
    withGDPAcceleration:estimate.coverage?.withGDPAcceleration??null},
-  changedPairs,changedRanks,currencies,pairs,
+  changedPairs,changedRanks,factorChanges,currencies,pairs,
   governance:{estimatedNotValidated:true,recomputedCanonicalD:false,
    recomputedStructuralTheses:false,backtestCertified:false,tradeSignal:false}
  };
