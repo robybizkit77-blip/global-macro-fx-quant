@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/><meta content="dark" name="color-scheme"/><meta content="#101922" name="theme-color"/><title>Global Markets Review · 21 novembre 2026 · DARK SLATE V13</title><style>
+:root{
+ --night:#071311;--paper:#0e1b18;--deep:#0a1513;--ink:#f1f0e9;--soft:#d6ded7;--muted:#a4b5aa;
+ --line:#3d5449;--line-faint:rgba(186,206,188,.19);--emerald:#8dc8ad;
+ --gold:#d8b985;--lav:#c5acd9;--minus:#ce97bb;--plus:#96c5a7;
+ --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+ --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{background:var(--night);color-scheme:dark;scroll-behavior:smooth}
+body{margin:0;background:linear-gradient(180deg,#091612,#071311 70%);font:16px/1.58 var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+a{color:var(--emerald);text-underline-offset:3px}
+.page{width:min(100% - 40px,1184px);margin:auto;padding:20px 0 70px}
+p{color:var(--soft);margin:0 0 13px}
+h1,h2,h3,p{overflow-wrap:break-word}
+h1,h2{font-family:var(--serif);letter-spacing:-.03em}
+h1{font-size:clamp(43px,6vw,78px);line-height:1.01;letter-spacing:-.047em;margin:8px 0 18px;max-width:800px;font-weight:700}
+h2{font-size:clamp(28px,3.7vw,43px);line-height:1.12;margin:8px 0 18px;font-weight:700}
+h3{font-size:18px;margin:0 0 6px;line-height:1.24;font-weight:750}
+small{font-size:11px;color:var(--muted)}
+strong,b{color:var(--ink)}
+.rule{border:0;border-top:1px solid var(--line-faint);margin:0}
+.masthead{border-block:3px double var(--line);padding:12px 0 10px}
+.overline{font:750 10px/1.4 var(--sans);letter-spacing:.17em;text-transform:uppercase;color:var(--emerald)}
+.mast-top{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.mast-top .right{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:right}
+.publication{font:700 clamp(30px,5.2vw,63px)/1.08 var(--serif);letter-spacing:-.045em;margin:9px 0 5px}
+.publication em{font-weight:400;font-style:normal;color:var(--emerald)}
+.edition{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 18px;font-size:11px;color:#aabbb0}
+.edition strong{font-weight:700}
+.toc{border-bottom:1px solid var(--line);padding:13px 0;display:flex;gap:10px 22px;flex-wrap:wrap}
+.toc a{font:750 10px/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:#c7d4c9;text-decoration:none}
+.toc a:hover{color:var(--emerald)}
+.cover{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:34px;padding:28px 0 30px;border-bottom:3px double var(--line);align-items:start}
+.kicker{font:800 10px/1.4 var(--sans);color:var(--emerald);letter-spacing:.16em;text-transform:uppercase}
+.dek{font:400 clamp(19px,2.05vw,25px)/1.43 var(--serif);color:#e6e8de;max-width:760px;margin:0 0 21px}
+.byline{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin:0 0 20px}
+.cover-lead{padding-top:17px;border-top:1px solid var(--line-faint);font-size:16px;line-height:1.65;max-width:740px}
+.cover-lead::first-letter{float:left;font:700 67px/.86 var(--serif);color:var(--gold);padding:8px 9px 0 0}
+.cover-lead strong{color:#f6eee0}
+.cover-rail{border-top:3px solid var(--emerald);padding-top:14px}
+.rail-title{font:800 10px/1.4 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--emerald);margin:0 0 13px}
+.quick-item{border-bottom:1px solid var(--line-faint);padding:8px 0 12px}
+.quick-item:last-child{border-bottom:0}
+.quick-item b{display:block;font:700 24px/1.1 var(--serif);margin:0 0 4px}
+.quick-item span{display:block;font-size:12px;line-height:1.46;color:var(--soft)}
+.quick-item .up{color:var(--plus)}.quick-item .down{color:var(--minus)}
+.market-strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:17px 0 16px;gap:0;border-bottom:1px solid var(--line)}
+.ticker{padding:0 13px;border-left:1px solid var(--line-faint);min-width:0}
+.ticker:first-child{padding-left:0;border-left:0}
+.ticker .name{font:750 10px/1.35 var(--sans);letter-spacing:.045em;color:var(--muted)}
+.ticker .value{font:700 21px/1.35 var(--serif);margin:5px 0 2px;white-space:nowrap}
+.ticker .chg{font-size:11px;font-weight:750;color:var(--soft)}
+.up{color:var(--plus)!important}.down{color:var(--minus)!important}.amber{color:var(--gold)!important}
+.story{padding:38px 0;border-bottom:1px solid var(--line)}
+.chapter-head{display:flex;align-items:center;gap:12px;margin-bottom:15px}
+.chapter-head .num{font:700 13px/1 var(--serif);color:var(--gold)}
+.chapter-head .name{font:800 10px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--emerald)}
+.chapter-head::after{content:"";flex:1;border-top:1px solid var(--line-faint)}
+.story-lead{font:400 19px/1.55 var(--serif);color:var(--ink);margin-bottom:18px;max-width:900px}
+.copy-cols{columns:2;column-gap:34px;column-rule:1px solid var(--line-faint);max-width:850px}
+.copy-cols p{break-inside:avoid;margin-bottom:14px}
+.article-grid{display:grid;grid-template-columns:minmax(0,1fr) 280px;column-gap:35px}
+.article-main{min-width:0}
+.article-aside{padding-left:23px;border-left:1px solid var(--line-faint);align-self:start}
+.aside-label{font:800 10px/1.4 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--gold);margin-bottom:9px}
+.article-aside p{font-size:13px;line-height:1.58}
+.aside-call{font:400 19px/1.35 var(--serif);color:var(--ink);border-top:2px solid var(--emerald);padding-top:14px;margin:19px 0}
+.article-aside .linkline{display:block;font-size:11px;margin-top:10px}
+.newsline{padding-top:20px;margin-top:15px;border-top:1px solid var(--line-faint);font-size:13px;color:var(--muted)}
+.newsline b{color:var(--ink)}
+.diagram{margin:23px 0;padding:19px 0 11px;border-top:2px solid var(--line);border-bottom:1px solid var(--line)}
+.diagram h3{font:700 22px/1.23 var(--serif);margin-bottom:4px}
+.diagram .sub{font-size:11px;color:var(--muted);margin-bottom:18px}
+.bar{display:grid;grid-template-columns:120px minmax(0,1fr) 68px;gap:12px;align-items:center;margin:13px 0}
+.bar .label{font-size:13px;color:#e2e7df;font-weight:650}
+.axis{display:grid;grid-template-columns:1fr 1fr;gap:0;position:relative;height:11px}
+.axis::before{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;border-left:1px solid #647b69}
+.axis .left,.axis .right{position:relative;height:11px}
+.axis .left i{position:absolute;right:0;top:1px;height:9px;border-radius:2px 0 0 2px;background:var(--minus)}
+.axis .right i{position:absolute;left:0;top:1px;height:9px;border-radius:0 2px 2px 0;background:var(--plus)}
+.bar .delta{font-size:12px;text-align:right;font-weight:800}
+.diagram-note{font:12px/1.52 var(--sans);color:var(--muted);margin-top:17px}
+.fig-title{color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.04em}
+.factpair{display:grid;grid-template-columns:1fr 1fr;gap:25px;padding:17px 0;border-block:1px solid var(--line-faint);margin:20px 0}
+.factpair .number{font:700 30px/1.12 var(--serif);margin:0 0 3px}
+.factpair p{font-size:12px;line-height:1.5;margin:0;color:var(--muted)}
+.region-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px;margin-top:16px}
+.region{border-top:1px solid var(--line-faint);padding:15px 0}
+.region .r-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:5px}
+.region h3{font:700 20px/1.18 var(--serif);margin:0}
+.region .performance{font:800 16px/1 var(--sans)}
+.region .indices{font-size:11px;color:var(--muted);margin-bottom:6px}
+.region p{font-size:14px;line-height:1.57;margin:0}
+.pair-columns{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:18px}
+.pullquote{font:400 clamp(20px,2.5vw,26px)/1.42 var(--serif);color:#f4eadb;padding:15px 0 15px 21px;border-left:3px solid var(--gold);margin:23px 0}
+.explain{background:rgba(141,200,173,.065);border-left:2px solid var(--emerald);padding:13px 17px;margin:20px 0 0}
+.explain b{font:800 10px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--emerald)}
+.explain p{font-size:13px;line-height:1.57;margin:7px 0 0}
+.lookahead{display:grid;grid-template-columns:repeat(2,1fr);gap:0 26px;margin-top:12px}
+.watch{display:grid;grid-template-columns:30px 1fr;gap:10px;border-top:1px solid var(--line-faint);padding:14px 0}
+.watch .index{font:700 23px/1 var(--serif);color:var(--gold)}
+.watch h3{font-size:15px;margin-bottom:4px}
+.watch p{font-size:13px;margin:0;line-height:1.52}
+.finale{padding:33px 0;border-bottom:3px double var(--line)}
+.finale blockquote{font:400 clamp(24px,3.7vw,37px)/1.3 var(--serif);max-width:900px;color:var(--ink);margin:12px 0 0}
+.sources{padding:22px 0}
+.sources h2{font:750 17px/1.3 var(--sans);margin:0 0 8px;letter-spacing:0}
+.sources p{font-size:12px;color:var(--muted)}
+.source-links{font-size:12px;line-height:1.8;color:var(--muted)}
+.source-links a{margin-right:14px;white-space:normal}
+.footer{margin-top:26px;padding:15px 0;border-top:1px solid var(--line-faint);font-size:10px;color:var(--muted);display:flex;justify-content:space-between;gap:15px;letter-spacing:.08em;text-transform:uppercase}
+@media(max-width:980px){
+ .cover{grid-template-columns:minmax(0,1fr) 230px;gap:24px}
+ .article-grid{grid-template-columns:minmax(0,1fr) 230px;gap:22px}
+ .article-aside{padding-left:18px}
+ .market-strip{grid-template-columns:repeat(5,minmax(0,1fr))}
+ .ticker .value{font-size:18px}
+}
+@media(max-width:760px){
+ .page{width:min(100% - 28px,650px);padding-top:10px}
+ .mast-top .right{display:none}
+ .cover{grid-template-columns:1fr;gap:10px;padding:26px 0}
+ .cover-rail{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 15px}
+ .cover-rail .rail-title{grid-column:1/-1}
+ .quick-item{border-bottom:1px solid var(--line-faint)}
+ .market-strip{grid-template-columns:repeat(3,minmax(0,1fr));gap:17px 0}
+ .ticker:nth-child(4){border-left:0;padding-left:0}
+ .article-grid{grid-template-columns:1fr}
+ .article-aside{padding:13px 0 0;margin-top:20px;border-left:0;border-top:1px solid var(--line-faint)}
+ .copy-cols{columns:1}
+ .story{padding:31px 0}
+}
+@media(max-width:480px){
+ .page{width:calc(100% - 30px)}
+ .publication{font-size:37px}
+ h1{font-size:45px}
+ h2{font-size:31px}
+ .dek{font-size:19px}
+ .market-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ticker:nth-child(odd){border-left:0;padding-left:0}
+ .ticker:nth-child(4){border-left:1px solid var(--line-faint);padding-left:13px}
+ .cover-rail{grid-template-columns:1fr 1fr}
+ .quick-item b{font-size:21px}
+ .bar{grid-template-columns:84px minmax(0,1fr) 59px;gap:8px}
+ .bar .label{font-size:11px}
+ .region-list,.pair-columns,.lookahead{grid-template-columns:1fr}
+ .factpair{gap:12px}
+ .factpair .number{font-size:26px}
+ .story-lead{font-size:18px}
+ .edition{font-size:10px}
+ .footer{display:block;line-height:1.9}
+}
+@media print {
+ :root{--night:#fff;--paper:#fff;--deep:#fff;--ink:#101b15;--soft:#26362d;--muted:#566a5b;--line:#a9b4aa;--line-faint:#d5ded6}
+ html,body{background:white!important;color:black!important}
+ .page{width:100%;padding:0 8mm}
+ .story{break-inside:avoid-page}
+ .toc{display:none}
+ a{color:#183f29}
+}
+
+
+/* Long-form editorial expansions: charts serve the text, no dashboard look */
+.story h3.decksub{font:700 23px/1.23 var(--serif);letter-spacing:-.02em;margin:25px 0 11px}
+.story .narrative{font-size:15px;line-height:1.71;color:#d4dfd5}
+.story .kickerline{font:750 10px/1.45 var(--sans);text-transform:uppercase;letter-spacing:.11em;color:var(--gold);margin-top:21px}
+.story .plain-note{padding:13px 0 11px;border-top:1px solid var(--line-faint);border-bottom:1px solid var(--line-faint);font-size:13px;line-height:1.57;color:var(--soft);margin:19px 0}
+.story .plain-note strong{color:#e8ddc7}
+.story .sidefact{font:400 21px/1.33 var(--serif);color:#e9e4d7;margin:12px 0 17px;padding-left:15px;border-left:2px solid var(--emerald)}
+.story .closeread{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:20px 0 8px;border-top:2px solid var(--line);padding-top:14px}
+.story .closeread div{font-size:12.5px;line-height:1.5;color:var(--soft)}
+.story .closeread b{display:block;color:var(--emerald);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.graph{margin:25px 0;padding:17px 0 19px;border-top:2px solid var(--line);border-bottom:1px solid var(--line-faint)}
+.graph h3{font:700 23px/1.2 var(--serif);margin-bottom:5px}
+.graph .sub{font:11.5px/1.5 var(--sans);color:var(--muted);margin:0 0 20px}
+.graph .caption{font:12px/1.57 var(--sans);margin-top:15px;color:#b1c1b3}
+.graph .caption b{color:#d9ddcd}
+.graph .mark{display:grid;grid-template-columns:110px 1fr 76px;align-items:center;gap:11px;margin:13px 0}
+.graph .mark .m-label{font-size:12px;color:#dde6dd;font-weight:670}
+.graph .mark .m-value{font-size:12px;text-align:right;font-weight:750}
+.graph .zeroaxis{height:13px;display:grid;grid-template-columns:1fr 1fr;position:relative}
+.graph .zeroaxis:before{position:absolute;content:'';left:50%;top:-3px;bottom:-3px;border-left:1px solid #718878}
+.graph .neg-half,.graph .pos-half{height:13px;position:relative}
+.graph .neg-half i{display:block;position:absolute;right:0;top:2px;height:9px;border-radius:2px 0 0 2px;background:#b87da8}
+.graph .pos-half i{display:block;position:absolute;left:0;top:2px;height:9px;border-radius:0 2px 2px 0;background:#8ac2a5}
+.graph .pos-half i.gold{background:var(--gold)}
+.graph svg{max-width:100%;height:auto;display:block;overflow:visible}
+.graph .svg-title{fill:#a9bfb1;font-size:11px;font-family:var(--sans)}
+.graph .svg-value{fill:#f1f0e9;font-size:11px;font-weight:700;font-family:var(--sans)}
+.graph .gridline{stroke:rgba(181,203,187,.14);stroke-width:1;stroke-dasharray:3 4}
+.graph .line-price{stroke:#93c8ae;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.graph .line-vix{stroke:#e0b66b;stroke-width:2.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.graph .line-credit{stroke:#c5acd9;stroke-width:2.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.graph .data-dot{stroke:#0b1714;stroke-width:2}
+.graph .legend-inline{display:flex;flex-wrap:wrap;gap:12px;margin-top:7px;font-size:11px;color:var(--muted)}
+.graph .legend-inline b{font-weight:700;color:var(--ink)}
+.graph .legend-inline i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--emerald);margin-right:6px}
+.graph .legend-inline i.gold{background:var(--gold)}
+.graph .legend-inline i.lav{background:var(--lav)}
+.graph-split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.graph-split>div+div{border-left:1px solid var(--line-faint);padding-left:20px}
+.graph-split h4{font:700 17px/1.2 var(--serif);margin:0 0 11px}
+.article-aside .aside-call{font-family:var(--serif)}
+.article-aside .aside-number{font:700 30px/1.1 var(--serif);color:var(--gold);margin:12px 0 6px}
+.leadline{font:400 20px/1.52 var(--serif);color:var(--ink);margin:0 0 20px}
+.sector-points{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin:21px 0 17px;padding-block:13px;border-block:1px solid var(--line-faint)}
+.sector-points div{font:13px/1.54 var(--sans);color:var(--soft)}
+.sector-points b{display:block;color:var(--gold);font:700 18px/1.27 var(--serif);margin-bottom:6px}
+.data-thin{color:#9bab9d;font-size:11px;line-height:1.55}
+.section-endline{font:700 16px/1.5 var(--serif);color:#e9eadd;padding:15px 0 0;margin:20px 0 0;border-top:1px solid var(--line-faint)}
+@media(max-width:800px){.graph-split{grid-template-columns:1fr}.graph-split>div+div{border-left:none;border-top:1px solid var(--line-faint);padding-left:0;padding-top:16px}}
+@media(max-width:560px){.graph .mark{grid-template-columns:88px 1fr 61px;gap:6px}.graph .mark .m-label{font-size:11px}.graph .mark .m-value{font-size:11px}.story .closeread{grid-template-columns:1fr}.sector-points{grid-template-columns:1fr;gap:11px}.sector-points b{font-size:17px}.graph h3{font-size:21px}}
+
+
+/* === GLOBAL MARKETS REVIEW / NEWSPAPER EDITION V2 — editorial art direction === */
+:root{--night:#08120f;--paper:#0c1713;--deep:#08130f;--ink:#f3f1e9;--soft:#d5ded5;--muted:#a1b0a4;--line:#536454;--line-faint:rgba(194,208,189,.16);--emerald:#9bc9ab;--gold:#d9c39a;--lav:#c2a4d4;--minus:#d4a0c2;--plus:#a3cbb0}
+html{scroll-padding-top:72px} section.story,section.cover{scroll-margin-top:68px}
+body{background:radial-gradient(circle at 30% 0,rgba(66,101,71,.13),transparent 460px),linear-gradient(180deg,#0b1713,#08120f 25%,#07110e);line-height:1.66}
+.page{width:min(100% - 64px,1190px);padding-top:25px}
+.masthead{border-top:3px double #718776;border-bottom:1px solid #718776;padding:16px 0 14px}
+.mast-top{padding-bottom:10px;border-bottom:1px solid var(--line-faint)}
+.mast-top .overline,.mast-top .right{letter-spacing:.16em;font-size:10px}
+.publication{font-size:clamp(41px,5.2vw,70px);margin:14px 0 9px;line-height:1.08;letter-spacing:-.042em;text-align:center}
+.publication em{color:#9ec5ad}
+.edition{font-size:10.5px;justify-content:space-between;align-items:center;gap:8px}
+.edition-folio{display:none}
+.toc{position:sticky;top:0;z-index:40;padding:0 12px;margin:0 -12px;display:flex;gap:0;align-items:center;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid #526c5c;background:rgba(8,20,15,.96);backdrop-filter:blur(14px);box-shadow:0 6px 18px rgba(0,0,0,.16);height:47px}
+.toc::-webkit-scrollbar{display:none}
+.toc-prompt{flex:0 0 auto;display:block;color:var(--gold);font:800 9px/1 var(--sans);letter-spacing:.11em;margin-right:11px}
+.toc a{white-space:nowrap;flex:0 0 auto;font:750 10px/1 var(--sans);padding:18px 12px 16px;letter-spacing:.08em;border-bottom:2px solid transparent}
+.toc a:hover,.toc a:focus-visible{color:var(--emerald);border-bottom-color:var(--emerald);outline:none}
+.frontpage{padding:40px 0 37px;grid-template-columns:minmax(0,1fr) 308px;gap:7%;border-bottom:0;align-items:stretch}
+.frontpage>div:first-child{padding-right:0}
+.frontpage .kicker{display:inline-block;border-top:2px solid var(--emerald);padding-top:9px;font-size:10px}
+.frontpage h1{font-size:clamp(48px,6vw,82px);max-width:850px;letter-spacing:-.048em;line-height:1.012;margin:18px 0 22px}
+.frontpage .dek{font:400 clamp(19px,2.15vw,27px)/1.44 var(--serif);color:#e7e8de;margin-bottom:24px}
+.frontpage .byline{margin-bottom:17px;letter-spacing:.13em}
+.frontpage .cover-lead{font-size:16px;line-height:1.7;padding-top:19px;max-width:760px}
+.frontpage .cover-lead::first-letter{font-size:58px;line-height:.90;padding:4px 9px 0 0}
+.cover-rail{border-top:0;padding:15px 0 0;border-left:1px solid #5d7865;padding-left:24px}
+.cover-rail .rail-title{font-size:9px;letter-spacing:.16em;color:var(--gold);margin-bottom:20px}
+.front-teaser{display:block;text-decoration:none;color:var(--soft);border-bottom:1px solid var(--line-faint);padding:0 0 19px;margin-bottom:20px}
+.front-teaser:last-child{border:0}
+.front-teaser small{font:750 10px/1.45 var(--sans);color:var(--emerald);text-transform:uppercase;letter-spacing:.06em}
+.front-teaser strong{font:700 22px/1.20 var(--serif);letter-spacing:-.015em;display:block;margin:8px 0 8px;color:var(--ink)}
+.front-teaser span{display:block;color:var(--muted);font:13px/1.5 var(--sans)}
+.ticker-kicker{border-top:3px double var(--line);padding:10px 0 0;display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.ticker-kicker span:first-child{font-weight:800;color:var(--gold)}
+.market-strip{grid-template-columns:repeat(5,minmax(0,1fr));border-bottom:1px solid var(--line);padding:17px 0 20px;margin-bottom:0}
+.ticker{padding:0 13px}.ticker .name{font-size:10px;letter-spacing:.06em}.ticker .value{font-size:23px;line-height:1.3}.ticker .chg{line-height:1.4}
+.editor-note{display:grid;grid-template-columns:165px minmax(0,680px);gap:26px;border-bottom:1px solid var(--line);padding:24px 0 25px;align-items:start}
+.editor-note-label{font-size:10px;letter-spacing:.14em;font-weight:800;text-transform:uppercase;color:var(--emerald);padding-top:5px}
+.editor-note p{font:400 16px/1.56 var(--serif);margin:0;color:#e2e7dd}
+.act-break{position:relative;padding:60px 0 20px;scroll-margin-top:60px}
+.act-index{font:850 10px/1.5 var(--sans);letter-spacing:.2em;color:var(--gold);margin:0 0 8px}
+.act-rule{height:2px;background:linear-gradient(90deg,var(--emerald),rgba(155,201,171,.35) 35%,transparent 88%);margin-bottom:18px}
+.act-copy{display:grid;grid-template-columns:minmax(0,520px) minmax(0,1fr);gap:24px;align-items:end}
+.act-copy span{grid-column:1/-1;font:800 9px/1.2 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.act-copy h2{font:700 clamp(30px,3.7vw,49px)/1.1 var(--serif);margin:0;letter-spacing:-.04em}
+.act-copy p{font:14px/1.55 var(--sans);margin:0;color:var(--muted);max-width:390px}
+.story{padding:33px 0 37px;border-bottom:1px solid var(--line-faint)}
+.story > h2{font:700 clamp(29px,3.8vw,48px)/1.13 var(--serif);letter-spacing:-.034em;max-width:990px;margin:9px 0 25px}
+.story#wallstreet > h2,.story#bitcoin >h2{max-width:1050px;font-size:clamp(31px,4.15vw,53px)}
+.chapter-head{gap:12px;margin-bottom:16px}.chapter-head .num{font:750 14px/1.2 var(--serif);color:var(--gold)}
+.chapter-head .name{font-size:10px;letter-spacing:.13em}
+.chapter-head:after{opacity:.7}
+p,.story .narrative{font-size:16px;line-height:1.73;color:#d8dfd6}
+.story-lead,.leadline{font:400 clamp(18px,2vw,22px)/1.6 var(--serif);color:var(--ink);max-width:840px;margin-bottom:20px}
+.article-grid{grid-template-columns:minmax(0,1fr) 248px;gap:clamp(30px,5.4vw,78px);margin-bottom:0}
+.article-main p{max-width:730px}.article-aside{border-left:0;border-top:2px solid var(--gold);padding:15px 0 0;max-width:260px}
+.article-aside .aside-label{font-size:9px;letter-spacing:.15em;color:var(--gold);margin:0 0 10px}
+.article-aside p{font-size:13.3px;line-height:1.58;color:#b7c5b7}
+.article-aside .aside-call,.article-aside .sidefact{border-left:0;border-top:1px solid var(--line-faint);font:400 20px/1.39 var(--serif);color:#e6e6da;padding:16px 0 0;margin:17px 0}
+.story-continued{max-width:840px;margin:16px auto 0;padding:5px 2px 0}
+.story-continued p{max-width:740px}
+.story-continued .decksub{font:750 23px/1.28 var(--serif);margin:16px 0 10px}
+.story .graph{margin:28px 0 30px;padding:23px 0 24px;border-top:2px solid #779780;border-bottom:1px solid var(--line-faint)}
+.story .graph.full-figure{max-width:100%;margin:33px 0 26px}
+.story .graph .fig-title{font-size:10px;letter-spacing:.12em;color:var(--emerald);margin-bottom:8px}
+.story .graph h3{font:700 24px/1.22 var(--serif);margin:0 0 7px}
+.story .graph .sub{font-size:12px;margin:0 0 19px}
+.story .graph .caption{font:12px/1.58 var(--sans);max-width:790px;color:#b4c2b5;margin-top:18px}
+.graph .mark{grid-template-columns:135px 1fr 86px;gap:18px;margin:15px 0;max-width:920px}
+.graph .mark .m-label,.graph .mark .m-value{font-size:13px}
+.story .decksub{margin:27px 0 12px!important;font:700 23px/1.27 var(--serif)!important}
+.story .plain-note,.story .explain{background:transparent;border:0;border-left:2px solid var(--emerald);padding:8px 0 8px 17px;margin:24px 0}
+.story .plain-note{border-top:0;border-bottom:0;color:#bdcabb;font-size:13px}
+.story .section-endline{border-top:1px solid var(--line-faint);margin-top:29px;padding-top:18px;font:400 19px/1.5 var(--serif);color:#e4e7db}
+.story .region-list{gap:0 32px;max-width:100%;margin-top:26px}
+.story .region{padding:18px 0;border-top:1px solid var(--line-faint)}
+.story .region h3{font:700 24px/1.2 var(--serif)}
+.story .region p{font-size:14px;line-height:1.65}
+.story .copy-cols{column-gap:38px;column-rule:1px solid var(--line-faint);max-width:100%}
+.story .pair-columns{gap:45px}
+.story .sector-points{gap:25px}
+.special-edition-tag{display:inline-block;color:var(--gold);letter-spacing:.14em;font-size:10px;font-weight:850;padding:9px 0 11px;border-top:2px solid var(--gold);margin:0 0 16px}
+#bitcoin{margin:22px -26px 0;padding:34px 26px 30px;border:1px solid rgba(207,197,162,.18);background:linear-gradient(145deg,rgba(28,43,34,.34),rgba(7,18,15,.2) 53%,transparent);border-radius:2px}
+#bitcoin .article-aside{border-top-color:#c6b08b}
+#bitcoin .graph{border-color:#b6a382}
+.next-story{display:flex;justify-content:space-between;align-items:center;gap:25px;max-width:100%;border-top:1px solid var(--line-faint);padding-top:15px;margin-top:30px;text-decoration:none}
+.next-story span{font:800 9px/1.3 var(--sans);letter-spacing:.13em;color:var(--muted)}
+.next-story b{font:600 14px/1.3 var(--serif);color:var(--emerald);text-align:right}
+.next-story b span{color:var(--emerald);letter-spacing:0;font:700 16px/1.2 var(--sans)}
+#prossima .lookahead{margin-top:28px;gap:0 36px}
+#prossima .watch{padding:21px 0}
+#prossima .watch h3{font:700 20px/1.22 var(--serif)}
+#prossima .watch .index{font-size:26px}
+.finale{margin-top:20px;padding:38px 0 40px;border-top:2px solid var(--gold)}
+.finale blockquote{font-size:clamp(26px,3.1vw,40px);max-width:1000px}
+.sources{padding-top:30px}.sources p,.source-links{font-size:11.5px;line-height:1.7}.footer{margin-top:18px}
+@media(max-width:950px){
+ .page{width:calc(100% - 38px)}
+ .frontpage{grid-template-columns:minmax(0,1fr) 260px;gap:28px}
+ .article-grid{grid-template-columns:minmax(0,1fr) 215px;gap:26px}
+ .act-copy{grid-template-columns:1fr 1fr}
+ .ticker .value{font-size:20px}
+}
+@media(max-width:720px){
+ .page{width:calc(100% - 34px);padding-top:12px}
+ .masthead{padding:10px 0 12px}.mast-top .right{display:none}
+ .publication{text-align:left;font-size:clamp(37px,7vw,51px);margin:12px 0 7px}
+ .edition-folio{display:none}.edition{font-size:10px;line-height:1.45}
+ .toc{margin:0 -17px;padding:0 5px;height:43px;gap:0}.toc a{padding:15px 12px 13px;font-size:10px}.toc-prompt{display:none}
+ .frontpage{grid-template-columns:1fr;gap:17px;padding:28px 0 20px}
+ .frontpage h1{font-size:clamp(42px,8vw,57px);margin:14px 0 15px}
+ .frontpage .dek{font-size:19px;line-height:1.43;margin:0 0 20px}
+ .frontpage .byline{margin:0 0 11px}
+ .frontpage .cover-lead{font-size:15px;line-height:1.65;padding-top:13px}
+ .frontpage .cover-lead::first-letter{font-size:49px;padding:3px 8px 0 0}
+ .cover-rail{margin-top:4px;padding:16px 0 0;border-left:0;border-top:2px solid #688875;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+ .cover-rail .rail-title{grid-column:1/-1;margin:0 0 2px}
+ .front-teaser{padding-bottom:6px;margin-bottom:0;border-bottom:0}
+ .front-teaser strong{font-size:16px;line-height:1.25;margin:5px 0}.front-teaser small{font-size:9px}.front-teaser span{display:none}
+ .ticker-kicker{margin-top:5px;font-size:9px}.ticker-kicker span:last-child{display:none}
+ .market-strip{grid-template-columns:repeat(3,minmax(0,1fr));gap:15px 0;padding:15px 0 17px}
+ .ticker{padding:0 12px;border-left:1px solid var(--line-faint)}.ticker:nth-child(4){border-left:0;padding-left:0}.ticker .value{font-size:20px}.ticker .chg{font-size:10px}
+ .editor-note{grid-template-columns:1fr;gap:7px;padding:17px 0 19px}.editor-note p{font-size:14px}
+ .act-break{padding:48px 0 14px}.act-copy{display:block}.act-copy span{display:block;margin-bottom:9px}.act-copy h2{font-size:33px;margin-bottom:8px}.act-copy p{font-size:13px;max-width:100%}
+ .story{padding:22px 0 28px}.story>h2{font-size:clamp(30px,5vw,38px);margin:8px 0 20px}
+ .story-lead,.leadline{font-size:18px;line-height:1.54;margin-bottom:16px}
+ .article-grid{grid-template-columns:1fr;gap:0}
+ .article-aside{max-width:none;border-top:1px solid var(--line-faint);display:block;margin:15px 0 0;padding:14px 0 0}
+ .article-aside .aside-label{margin:0 0 7px}
+ .article-aside p{font-size:13.5px}
+ .article-aside .aside-call,.article-aside .sidefact{font-size:18px;margin:13px 0 7px;padding:11px 0 0}
+ .story-continued{margin:12px 0 0;padding:0}
+ .story .graph.full-figure{margin:25px 0 20px}.story .graph h3{font-size:22px}
+ .story .graph .sub,.story .graph .caption{font-size:11px}
+ .story .region-list{grid-template-columns:1fr 1fr;gap:0 16px}
+ .story .pair-columns{gap:20px}
+ #bitcoin{margin:10px -15px 0;padding:25px 15px 26px}
+ .next-story{margin-top:25px;padding-top:15px}
+}
+@media(max-width:480px){
+ .page{width:calc(100% - 30px)}
+ .publication{font-size:36px}
+ .frontpage h1{font-size:43px;line-height:1.04;letter-spacing:-.04em}
+ .frontpage .dek{font-size:18px}
+ .cover-rail{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+ .front-teaser strong{font-size:14px}.front-teaser small{font-size:8px}
+ .market-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ticker:nth-child(odd){border-left:0;padding-left:0}.ticker:nth-child(even){border-left:1px solid var(--line-faint);padding-left:13px}
+ .ticker:nth-child(4){border-left:1px solid var(--line-faint);padding-left:13px}
+ .ticker .value{font-size:19px}
+ .act-copy h2{font-size:31px}
+ .story>h2{font-size:30px;line-height:1.17}
+ .story .graph .mark{grid-template-columns:90px minmax(0,1fr) 62px;gap:8px}
+ .story .graph .mark .m-label,.story .graph .mark .m-value{font-size:11px}
+ .story .region-list,.story .pair-columns,.story .sector-points{grid-template-columns:1fr}
+ .story .copy-cols{columns:1}
+ .story .sector-points{gap:10px}
+ .story .closeread{grid-template-columns:1fr;gap:12px}
+ .story .plain-note{margin:21px 0}
+ #bitcoin{margin:12px -10px 0;padding:22px 10px}
+ .next-story{gap:10px}.next-story span{font-size:8px}.next-story b{font-size:13px;max-width:190px}
+ .next-story b span{font-size:15px}
+ .toc{margin-left:-15px;margin-right:-15px}
+ #prossima .lookahead{grid-template-columns:1fr}
+ .footer{display:block;line-height:1.9}
+}
+@media print{.toc{position:relative;background:transparent;box-shadow:none}.act-break{break-before:page}#bitcoin{margin:0;padding:15px;border-color:#888}}
+
+.read-progress{height:2px;position:fixed;top:0;left:0;width:100%;transform:scaleX(0);transform-origin:0 50%;background:#b3ceab;z-index:60;pointer-events:none}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* V3 · RESEARCH DEPTH DISTRIBUTED ACROSS ALL ARTICLES */
+.editorial-extension{margin-top:19px;padding-top:16px;border-top:1px solid var(--line-faint)}
+.editorial-extension .decksub{margin:9px 0 12px!important;font-size:clamp(21px,2.3vw,26px);line-height:1.28;letter-spacing:-.025em;font-family:var(--serif);font-weight:700}
+.editorial-extension p{font-size:15.1px;line-height:1.68;margin:0 0 15px;max-width:860px}
+.editorial-extension.compact-extension{margin-top:15px}
+.reading-check{margin:24px 0 5px;padding:13px 0 10px;border-top:2px solid var(--emerald);border-bottom:1px solid var(--line-faint);max-width:880px}
+.reading-check .check-title{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.13em;font-weight:850;color:var(--emerald);margin-bottom:7px}
+.reading-check p{font-size:13.5px;line-height:1.6;margin:0 0 7px;color:#d8e3da}
+.fx-lens{margin:15px 0 17px;border-top:1px solid var(--line)}
+.fx-lens-row{display:grid;grid-template-columns:100px 1fr;gap:18px;padding:11px 0;border-bottom:1px solid var(--line-faint)}
+.fx-lens-row b{font-family:var(--serif);font-size:18px;color:#f4e7d4}
+.fx-lens-row span{font-size:13.5px;line-height:1.54;color:var(--soft)}
+.graph-rates{margin:19px 0 21px!important;border-top:2px solid var(--line)!important;border-bottom:1px solid var(--line-faint)!important;padding:17px 0!important;background:transparent!important;box-shadow:none!important}
+.graph-rates h3{margin:6px 0 5px;font:700 23px/1.2 var(--serif)}
+.graph-rates .graph-kicker{font:800 10px/1.2 var(--sans);letter-spacing:.13em;color:var(--emerald)}
+.graph-rates .graph-caption{font-size:11.4px;line-height:1.5;color:var(--muted);margin:7px 0 11px}
+.yield-bars{max-width:720px;margin:12px 0 15px}
+.yield-row{display:grid;grid-template-columns:73px 1fr 65px;gap:10px;align-items:center;margin:11px 0}
+.yield-row span{font-size:12px;font-weight:750}
+.yield-row b{font-size:12px;text-align:right;color:var(--emerald)}
+.yield-line{position:relative;height:10px;border-radius:10px;background:rgba(125,170,146,.10)}
+.yield-line i{height:10px;position:absolute;right:0;border-radius:2px;background:linear-gradient(90deg,#537b6d,#8dc8ad)}
+.scenario-article{margin:20px 0 16px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line-faint)}
+.scenario-article h3{font:700 23px/1.2 var(--serif);margin:6px 0 14px}
+.scenario-lines{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.scenario-lines p{font-size:13.7px;line-height:1.62;border-left:2px solid var(--line);padding:3px 0 3px 13px;margin:0}
+.scenario-lines p strong{color:var(--gold)}
+@media(max-width:760px){
+ .scenario-lines{grid-template-columns:1fr;gap:12px}
+ .editorial-extension p{font-size:15px}
+ .reading-check p{font-size:13.4px}
+}
+@media(max-width:480px){
+ .fx-lens-row{grid-template-columns:88px 1fr;gap:12px}
+ .fx-lens-row b{font-size:16px}
+ .fx-lens-row span{font-size:12.7px}
+ .yield-row{grid-template-columns:55px minmax(0,1fr) 56px;gap:8px}
+ .editorial-extension .decksub{font-size:21px}
+}
+
+
+/* =========================================================
+   DARK SLATE EDITORIAL · COLOR ART DIRECTION ONLY
+   Preserves every section, all data, copy, charts and layout.
+   Neutral ink-black + steel-blue editorial accent.
+   Champagne for emphasis; teal/violet only for data signs.
+   ========================================================= */
+:root{
+  --night:#080b11;
+  --paper:#101621;
+  --deep:#0b1019;
+  --ink:#f0f2f5;
+  --soft:#d0d8e2;
+  --muted:#99a7ba;
+  --line:#334155;
+  --line-faint:rgba(163,181,205,.17);
+  --emerald:#9cb9da;  /* legacy variable name: now editorial steel blue */
+  --gold:#d4ba8d;
+  --lav:#b6a1d3;
+  --minus:#ba9acf;
+  --plus:#83b4ab;
+}
+html{background:var(--night)}
+body{
+  color:var(--ink);
+  background:
+    radial-gradient(ellipse 650px 360px at 50% -200px,rgba(84,111,148,.095),transparent 85%),
+    linear-gradient(180deg,#0b0f17 0%,#080b11 43%,#080b11 100%);
+}
+.masthead{border-top-color:#68788a;border-bottom-color:#526173}
+.mast-top .right,.edition,.byline{color:#a3b0c0}
+.publication em{color:#a9bfd7}
+.toc{
+ background:rgba(11,15,23,.97);
+ border-bottom-color:#34485e;
+ box-shadow:0 8px 24px rgba(0,0,0,.22);
+}
+.toc a{color:#cbd4de}
+.toc a:hover,.toc a:focus-visible{color:var(--emerald);border-bottom-color:var(--emerald)}
+.frontpage .dek,.editor-note p{color:#e2e6ec}
+.cover-rail{border-left-color:#43566c}
+.front-teaser small{color:#a1bfdc}
+.ticker-kicker{border-top-color:#37485c}
+.act-rule{background:linear-gradient(90deg,#7898ba,rgba(120,152,186,.32) 40%,transparent 91%)}
+.chapter-head .name,.overline,.kicker,.rail-title,.editor-note-label,
+.story .closeread b,.reading-check .check-title,.graph-rates .graph-kicker{color:#a0bcdc}
+.frontpage .kicker{border-top-color:#99b9d9}
+.article-aside .aside-call,.story .sidefact,.story .plain-note,
+.story .explain{border-left-color:#8ea9c7}
+.story .section-endline{color:#dbe0e8}
+.story .plain-note{color:#b8c5d5}
+.reading-check{border-top-color:#85a3c2}
+.reading-check p{color:#d0dae4}
+.graph .svg-title,.graph .caption{color:#9eb1c4;fill:#9eb1c4}
+.graph .svg-value{fill:#f0f2f5}
+.graph .gridline{stroke:rgba(161,182,206,.16)}
+.graph .line-price{stroke:#93b4d7}
+.graph .data-dot{stroke:#0a0f17}
+.graph .neg-half i,.axis .left i{background:#b79acb}
+.graph .pos-half i,.axis .right i{background:#83b4ab}
+.graph .zeroaxis::before{border-left-color:#667a92}
+.graph .mark .m-label{color:#dce3ec}
+.graph .caption b{color:#e0e7ed}
+.story .narrative{color:#d2dbe5}
+.graph .caption{color:#a7b5c4}
+.graph .line-credit{stroke:#b6a1d3}
+.graph .line-vix{stroke:#d4ba8d}
+#bitcoin{border-color:rgba(173,187,211,.22);background:linear-gradient(145deg,rgba(34,43,61,.3),rgba(11,16,25,.36) 53%,rgba(9,13,21,.1))}
+#bitcoin .article-aside{border-top-color:#8499ae}
+#bitcoin .graph{border-color:#53657b}
+.next-story b,.next-story b span{color:#a9c0db}
+.story .special-edition-tag{color:var(--gold);border-top-color:var(--gold)}
+.explain{background:rgba(104,132,168,.075);border-left-color:#96afcd}
+.explain b{color:#a4c0df}
+.pullquote{color:#e7e6e7;border-left-color:var(--gold)}
+.yield-line{background:rgba(137,160,192,.11)}
+.yield-line i{background:linear-gradient(90deg,#516989,#9eb6d7)}
+.yield-row b{color:#a1bfdc}
+.up{color:var(--plus)!important}
+.down{color:var(--minus)!important}
+.amber{color:var(--gold)!important}
+.read-progress{background:#9fb9d8}
+@media(max-width:720px){
+ .cover-rail{border-top-color:#586d86;border-left:0}
+ .toc{background:rgba(10,14,22,.97)}
+}
+@media print{
+  html,body{background:#fff!important;color:#111!important}
+  .toc{background:#fff!important}
+}
+
+/* Additions only: details for the refreshed weekly edition. */
+.decision-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin:24px 0;padding:17px 0;border-top:1px solid var(--line-faint);border-bottom:1px solid var(--line-faint)}
+.decision-strip div{min-width:0}
+.decision-strip b{display:block;font:800 10px/1.3 var(--sans);color:var(--emerald);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.decision-strip span{display:block;font-size:13px;color:var(--soft);line-height:1.55}
+.fig-ref{font:11px/1.55 var(--sans);color:var(--muted);margin:8px 0 0}
+.fig-ref a{color:var(--emerald)}
+.pair-headline{font:700 21px/1.38 var(--serif);color:var(--ink);padding:12px 0 9px;border-top:1px solid var(--line-faint);margin:24px 0 8px}
+.source-list{display:grid;grid-template-columns:1fr 1fr;gap:9px 20px;font-size:12px}
+.source-list a{display:block}
+@media(max-width:760px){.decision-strip{grid-template-columns:1fr;gap:12px}.source-list{grid-template-columns:1fr}}
+@media(max-width:480px){.page{max-width:100%;overflow-x:clip}.graph,.graph .mark,.story,.story-continued{min-width:0}.graph .mark{grid-template-columns:80px minmax(0,1fr) 58px;gap:8px}.graph .mark .m-value{font-size:11px}.ticker .value{white-space:normal}.toc{max-width:calc(100% + 30px)}}
+
+
+/* V6 methodological QA — closed by default, no changes to original editorial styling */
+.audit-details{margin-top:19px;border-top:1px solid var(--line-faint);padding-top:12px;font-size:12px;color:var(--muted)}
+.audit-details summary{cursor:pointer;color:var(--emerald);font-size:11px;font-weight:750;letter-spacing:.025em;list-style-position:inside}
+.audit-details p{font-size:12px;line-height:1.58;margin:12px 0 0;max-width:900px}
+.audit-details a{color:var(--emerald)}
+@media print{.audit-details{display:none}}
+
+
+/* V7 research edition: preserve DARK SLATE newspaper hierarchy; improve reading and responsive charts. */
+:root{--minus:#e2848f;--lav:#e2848f;--plus:#81cdb2}
+.down{color:var(--minus)!important}
+.graph .neg-half i,.axis .left i{background:#d97483}
+.graph .line-credit{stroke:#de8395}
+.graph .legend-inline i.lav{background:#de8395}
+.rail-verdict{border-top:2px solid #7f9fbf;padding:13px 0 0;margin:23px 0 12px;font:400 20px/1.48 var(--serif);color:var(--ink)}
+.rail-verdict b{color:#edf1f5}
+.key-answer{margin:17px 0 21px;padding:15px 0 13px 17px;border-left:3px solid #97b8d7;color:#e4edf7;font:400 19px/1.5 var(--serif)}
+.story .text-flow{max-width:860px}.story .text-flow p{max-width:790px}
+.story .text-flow p b{color:#f1f3f6}
+.signal-block{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:22px 0 24px}
+.signal-block>div{border-top:2px solid #50647a;padding:12px 4px 5px}
+.signal-block .cap{font:800 10px/1.35 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:#9dbbd8}
+.signal-block .big{font:700 27px/1.15 var(--serif);color:#f1f4f6;margin:7px 0}
+.signal-block p{font:12px/1.53 var(--sans);color:#b7c5d4;margin:0}
+.signal-block .risk{border-top-color:#d97986}.signal-block .risk .cap{color:#ed9ca5}
+.signal-block .hold{border-top-color:#d8ba89}.signal-block .hold .cap{color:#e5c899}
+.signal-block .ok{border-top-color:#80c5ad}.signal-block .ok .cap{color:#a3d8c3}
+.chartbars{max-width:900px}
+.chartbars .c-row{display:grid;grid-template-columns:142px minmax(0,1fr) 86px;gap:13px;align-items:center;padding:6px 0;margin:8px 0}
+.chartbars .c-label{font-size:12.4px;font-weight:650;color:#e3e8ef}
+.chartbars .c-track{display:grid;grid-template-columns:1fr 1fr;height:14px;position:relative}
+.chartbars .c-track:after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;border-left:1px solid #647689}
+.chartbars .c-neg,.chartbars .c-pos{height:100%;position:relative;min-width:0}
+.chartbars .c-neg i{position:absolute;right:0;top:2px;height:10px;background:#d97e89;border-radius:3px 0 0 3px}
+.chartbars .c-pos i{position:absolute;left:0;top:2px;height:10px;background:#85c8ae;border-radius:0 3px 3px 0}
+.chartbars .c-n{font-variant-numeric:tabular-nums;text-align:right;font:800 12px/1 var(--sans)}
+.chartbars .c-n.loss{color:#e99ba5}.chartbars .c-n.gain{color:#a7dcc8}.chartbars .c-n.zero{color:#a3b7ca}
+.chart-label{font:800 10px/1.2 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:#9ebcda;margin-bottom:10px}
+.chart-note{font:12px/1.55 var(--sans);color:#aebfd0;margin-top:15px;max-width:840px}
+.chart-note b{color:#e2e8ed}
+.chart-line{width:100%;height:auto;max-width:850px;display:block}
+.chart-line text{font-family:Inter,system-ui,sans-serif;font-size:11px;fill:#aabbd1}
+.chart-line .grid{stroke:#31465c;stroke-dasharray:3 5;stroke-width:1}
+.chart-line .trace{fill:none;stroke:#d6bc91;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.chart-line .trace2{fill:none;stroke:#84c8ad;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.chart-line circle{stroke:#101722;stroke-width:2}
+.story .graph .caption{max-width:890px}
+.source-inline{font:11px/1.6 var(--sans);color:#95abc1;margin-top:12px}
+.source-inline a{margin-right:12px;color:#a4c8e9}
+.matrix{border-top:1px solid var(--line);max-width:950px;margin:19px 0 9px}
+.matrix .mrow{display:grid;grid-template-columns:148px 164px minmax(0,1fr);gap:12px;border-bottom:1px solid var(--line-faint);padding:12px 0;font-size:12.7px;line-height:1.53}
+.matrix .mrow b{color:#eaf0f5}.matrix .mrow .value{font-weight:800;color:#e5c796}
+.matrix .mrow span:last-child{color:#bdc9d8}
+.scenarios{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:23px 0}
+.scenarios>div{border-top:3px solid #8095a9;padding:12px 6px 8px}
+.scenarios .base{border-color:#d5ba8d}.scenarios .better{border-color:#84c9ad}.scenarios .worse{border-color:#dd7d8c}
+.scenarios h3{font:700 19px/1.2 var(--serif);margin:0 0 10px}
+.scenarios p{font:12.8px/1.62 var(--sans);margin:0 0 8px}
+.scenarios b{color:#e7edf5}
+.calendar{margin-top:18px;max-width:980px}
+.calendar .event{display:grid;grid-template-columns:143px minmax(0,1fr);gap:18px;border-top:1px solid var(--line-faint);padding:18px 2px}
+.calendar .when{font:800 11px/1.4 var(--sans);letter-spacing:.045em;color:#b4cbe2}
+.calendar .when strong{display:block;color:#d9bd90;font:700 21px/1.4 var(--serif);letter-spacing:0;margin-bottom:3px}
+.calendar .event h3{font:700 21px/1.2 var(--serif);margin:0 0 6px}
+.calendar .event p{font:13.1px/1.57 var(--sans);color:#bdccdc;max-width:750px;margin:0 0 5px}
+.calendar .event p b{color:#e6f0f8}
+.divider-small{width:100%;height:1px;background:var(--line-faint);margin:18px 0 21px}
+.editnote{font:12.5px/1.65 var(--sans);color:#aebdcf;border-top:1px solid var(--line-faint);padding-top:13px;margin-top:22px}
+.sources.details{margin:20px 0 0}.sources.details details{border-top:1px solid var(--line-faint);padding:13px 0}
+.sources.details summary{font:750 11px/1.4 var(--sans);letter-spacing:.07em;text-transform:uppercase;cursor:pointer;color:#a9c4db}
+.sources.details a{color:#adcbe5}
+@media(max-width:760px){.signal-block,.scenarios{grid-template-columns:1fr}.signal-block{gap:5px}.signal-block>div{padding:9px 0 12px}.matrix .mrow{grid-template-columns:100px 115px minmax(0,1fr);gap:9px}.calendar .event{grid-template-columns:1fr;gap:6px;padding:16px 0}}
+@media(max-width:480px){.chartbars .c-row{grid-template-columns:88px minmax(0,1fr) 59px;gap:7px}.chartbars .c-label{font-size:11px}.chartbars .c-n{font-size:11px}.signal-block .big{font-size:24px}.matrix .mrow{display:block}.matrix .mrow>*{display:block;margin:3px 0}.cover-rail{grid-template-columns:1fr 1fr}.story .text-flow p{font-size:14px}.key-answer{font-size:17px;padding-left:11px}}
+
+@media (min-width:681px) and (max-width:900px){#bitcoin{margin-left:-19px;margin-right:-19px;padding-left:19px;padding-right:19px}}
+
+/* V10: layout calibration and high-priority chart readings, without changing DARK SLATE palette. */
+.story figure.graph {box-sizing:border-box;width:100%;max-width:100%;margin:29px 0 32px;padding:22px 0 24px;min-width:0;}
+.graph .chartbars {width:100%;max-width:960px;margin:16px 0 12px;min-width:0;}
+.graph .chartbars .c-row {grid-template-columns: minmax(136px,172px) minmax(0,1fr) 100px;gap:18px;align-items:center;margin:0;padding:10px 0;min-width:0;border-bottom:1px solid rgba(162,185,210,.085);}
+.graph .chartbars .c-label {font-size:13px;line-height:1.35;overflow-wrap:normal;}
+.graph .chartbars .c-track {height:17px;min-width:0;}
+.graph .chartbars .c-neg i,.graph .chartbars .c-pos i {height:12px;top:2px;}
+.graph .chartbars .c-n {font-size:13px;line-height:1.25;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.graph .chart-line {width:100%;max-width:960px;}
+.graph figcaption.caption {box-sizing:border-box;display:grid;grid-template-columns:112px minmax(0,1fr);align-items:start;gap:14px;margin:19px 0 0;padding:16px 19px;background:rgba(99,137,176,.115);border:1px solid rgba(139,172,209,.24);border-left:3px solid #a9c2df;border-radius:9px;max-width:960px;color:#e0e7ef;font:500 15px/1.62 var(--sans);}
+.graph figcaption .read-label {font:850 11px/1.45 var(--sans);letter-spacing:.13em;color:#f0d8a8;padding-top:3px;}
+.graph figcaption .read-text {font-size:15px;line-height:1.62;color:#e5eaf1;max-width:840px;}
+.gold-settlements {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0 7px;max-width:650px;}
+.gold-settlements>div {border:1px solid var(--line-faint);background:rgba(255,255,255,.018);padding:12px 16px;border-radius:7px;}
+.gold-settlements span {display:block;font-size:10px;color:#9eb4c9;font-weight:800;letter-spacing:.09em;margin-bottom:3px;}
+.gold-settlements strong {display:block;color:#edf0f5;font:700 19px/1.4 var(--serif);font-variant-numeric:tabular-nums;}
+.graph .source-inline {margin-top:13px;max-width:960px;}
+@media (max-width:720px){
+ .story figure.graph {padding:18px 0 21px;margin:24px 0 26px;}
+ .graph .chartbars .c-row {grid-template-columns:minmax(98px,117px) minmax(0,1fr) 66px;gap:9px;padding:9px 0;}
+ .graph .chartbars .c-label {font-size:11.5px;line-height:1.35;}
+ .graph .chartbars .c-n {font-size:11.6px;}
+ .graph figcaption.caption {display:block;padding:15px 14px;font-size:14px;}
+ .graph figcaption .read-label {display:block;margin-bottom:6px;font-size:10.5px;}
+ .graph figcaption .read-text {font-size:14.3px;line-height:1.59;}
+ .gold-settlements strong {font-size:16px;}
+}
+@media (max-width:380px){
+ .graph .chartbars .c-row {grid-template-columns:minmax(85px,102px) minmax(0,1fr) 59px;gap:6px;}
+ .graph .chartbars .c-label,.graph .chartbars .c-n {font-size:10.8px;}
+ .gold-settlements {grid-template-columns:1fr;}
+}
+
+/* V11 · Alignment audit: one visual grid for all nine charts; no changes to market data or analytical narrative. */
+@media screen {
+ .story figure.graph {
+   width:min(100%,1080px);
+   max-width:1080px;
+   margin:31px auto 35px;
+   padding:23px 0 26px;
+ }
+ .story figure.graph > .fig-title,
+ .story figure.graph > h3,
+ .story figure.graph > p.sub,
+ .story figure.graph > .chartbars,
+ .story figure.graph > .matrix,
+ .story figure.graph > svg.chart-line,
+ .story figure.graph > .gold-settlements,
+ .story figure.graph > figcaption.caption,
+ .story figure.graph > .source-inline {
+   width:100%;
+   max-width:100%;
+   box-sizing:border-box;
+ }
+ .story figure.graph > h3 {max-width:970px}
+ .story figure.graph > .sub {line-height:1.5;max-width:970px}
+ .story figure.graph > .chartbars .c-row {
+   grid-template-columns:minmax(145px,186px) minmax(0,1fr) 100px;
+   gap:18px;
+   padding:10px 0;
+ }
+ .story figure.graph > .matrix {margin:17px 0 13px;}
+ .story figure.graph > .matrix .mrow {grid-template-columns:155px 174px minmax(0,1fr);gap:15px;align-items:start}
+ .story figure.graph > figcaption.caption {
+   display:grid;
+   grid-template-columns:117px minmax(0,1fr);
+   gap:15px;
+   margin-top:18px;
+   padding:17px 19px;
+ }
+ .story figure.graph .read-label {font-size:11.5px;line-height:1.5;}
+ .story figure.graph .read-text {font-size:15px;line-height:1.62;}
+ .story figure.graph > .source-inline {line-height:1.62;}
+ .story figure.graph > .gold-settlements {
+   grid-template-columns:repeat(2,minmax(0,1fr));
+   margin:17px 0 12px;
+ }
+ .story figure.graph > .gold-settlements >div {min-height:76px;display:flex;flex-direction:column;justify-content:center;}
+ .story .key-answer {max-width:900px;}
+ .story .key-answer b {color:#c4ddf3;}
+ .finale .overline {font-weight:800;letter-spacing:.12em;}
+}
+@media screen and (max-width:900px){
+ .story figure.graph > .matrix .mrow {grid-template-columns:120px 146px minmax(0,1fr);gap:12px}
+}
+@media screen and (max-width:720px){
+ .story figure.graph {width:100%;max-width:100%;margin:24px 0 28px;padding:18px 0 22px;}
+ .story figure.graph > .chartbars .c-row {grid-template-columns:minmax(101px,117px) minmax(0,1fr) 67px;gap:8px;padding:9px 0;}
+ .story figure.graph > .chartbars .c-label {font-size:11.5px;line-height:1.35;}
+ .story figure.graph > .chartbars .c-n {font-size:11.4px;}
+ .story figure.graph > .matrix .mrow {display:block;padding:12px 0;}
+ .story figure.graph > .matrix .mrow > * {display:block;margin:3px 0;}
+ .story figure.graph > figcaption.caption {display:block;padding:15px 14px;}
+ .story figure.graph .read-label {display:block;font-size:11px;margin-bottom:7px;}
+ .story figure.graph .read-text {font-size:14.3px;line-height:1.6;}
+ .story figure.graph > .gold-settlements >div {min-height:74px;padding:11px 13px}
+ .story figure.graph > .gold-settlements strong {font-size:15.5px;}
+}
+@media screen and (max-width:380px){
+ .story figure.graph > .chartbars .c-row {grid-template-columns:minmax(86px,102px) minmax(0,1fr) 59px;gap:6px;}
+ .story figure.graph > .chartbars .c-label,.story figure.graph > .chartbars .c-n {font-size:10.8px;}
+ .story figure.graph > .gold-settlements {grid-template-columns:1fr}
+}
+
+/* V12 — Aperure di parte: lettura verticale coerente, nessun testo modificato. */
+.act-break{padding:54px 0 26px}
+.act-break .act-index{font-size:11px;letter-spacing:.17em;margin:0 0 9px}
+.act-break .act-rule{margin-bottom:19px}
+.act-break .act-copy{display:block;max-width:990px}
+.act-break .act-copy span{display:block;margin:0 0 12px;font:800 10px/1.4 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:#a9c6e5}
+.act-break .act-copy h2{display:block;max-width:920px;margin:0 0 16px;font:700 clamp(34px,3.7vw,48px)/1.13 var(--serif);letter-spacing:-.038em;text-wrap:balance}
+.act-break .act-copy p{display:block;max-width:760px;margin:0;color:var(--muted);font:15px/1.67 var(--sans);text-wrap:pretty}
+@media(max-width:720px){
+  .act-break{padding:42px 0 20px}
+  .act-break .act-rule{margin-bottom:17px}
+  .act-break .act-copy span{margin-bottom:9px;font-size:9.5px}
+  .act-break .act-copy h2{font-size:clamp(29px,6vw,37px);line-height:1.15;letter-spacing:-.034em;margin-bottom:12px}
+  .act-break .act-copy p{font-size:13.5px;line-height:1.65;max-width:100%}
+}
+@media(max-width:380px){.act-break .act-copy h2{font-size:29px}}
+
+/* V13: one and only one numbered hierarchy (seven research sections). */
+.chapter-head{gap:13px;align-items:center;margin-top:2px;margin-bottom:17px}
+.chapter-head .num{font:800 11px/1.25 var(--sans);letter-spacing:.105em;white-space:nowrap;color:var(--gold);background:rgba(222,187,115,.085);border:1px solid rgba(222,187,115,.24);padding:8px 10px;border-radius:5px}
+.chapter-head .name{font:800 11px/1.4 var(--sans);letter-spacing:.10em}
+.story{scroll-margin-top:22px}
+.story>h2{margin-top:12px}
+.fig-title{font-size:10.5px;letter-spacing:.12em;color:var(--gold);font-weight:800}
+@media(max-width:540px){.chapter-head{gap:9px;flex-wrap:wrap}.chapter-head::after{min-width:15px}.chapter-head .num{font-size:10.5px;padding:7px 9px}.chapter-head .name{font-size:10px;letter-spacing:.08em}.story{padding-top:28px}}
+</style></head>
+<body><main class="page">
+<header class="masthead"><div class="mast-top"><div class="overline">FX Report Hub · Mercati e investimenti</div><div class="right">Azionario · Rates · Credito · Commodities · FX · Bitcoin</div></div><div class="publication">Global <em>Markets</em> Review</div><div class="edition"><span><strong>Edizione settimanale · Sabato 21 novembre 2026</strong></span><span>Settimana 16–20 novembre · chiusure e ritardi indicati per fonte</span></div></header>
+<nav aria-label="Indice del giornale" class="toc"><span class="toc-prompt">NEL NUMERO</span><a href="#apertura">Prima pagina</a><a href="#wallstreet">I · Wall Street</a><a href="#mondo">II · Borse mondiali</a><a href="#obbligazioni">III · Rates e credito</a><a href="#materie">IV · Materie prime</a><a href="#valute">V · Forex G8</a><a href="#bitcoin">VI · Bitcoin e liquidità</a><a href="#prossima">VII · La settimana prossima</a></nav>
+<section class="cover frontpage" id="apertura"><div><div class="kicker">La storia della settimana</div>
+<h1>I rendimenti scendono. Le borse cadono lo stesso.</h1>
+<p class="dek">Nella settimana l’S&amp;P 500 perde l’8,6% e il Nasdaq il 10%. Venerdì la vendita accelera e i Treasury fanno da rifugio.</p>
+<div class="byline">Osservatorio mercati · Analisi della settimana chiusa venerdì 20 novembre 2026</div>
+<p class="cover-lead"><b>La settimana scorsa le borse recuperavano con tassi più alti. Questa settimana cadono anche con tassi più bassi.</b> Per me il cambiamento è che gli investitori sono diventati più prudenti su quanto pagare oggi per gli utili futuri. La tecnologia è il punto in cui la vendita si vede di più, ma il calo delle piccole società mostra che è andata oltre. Al primo rimbalzo guarderò chi torna a comprare fuori dai grandi titoli tecnologici.</p>
+<div class="source-inline"><a href="https://apnews.com/article/wall-street-stocks-dow-nasdaq-c10b797a17c2acf37924d834efebe135" rel="noopener noreferrer" target="_blank">AP · chiusure USA 20/11 ↗</a> · <a href="https://www.reuters.com/world/china/global-markets-global-markets-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · mercati globali 20/11 ↗</a> · <a href="https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-third-quarter-fiscal-2027" rel="noopener noreferrer" target="_blank">Nvidia · risultati 17/11 ↗</a> · <a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve&amp;field_tdr_date_value=2026" rel="noopener noreferrer" target="_blank">US Treasury · curva nominale ↗</a> · <a href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" rel="noopener noreferrer" target="_blank">FRED · credito high yield ↗</a></div></div>
+<aside class="cover-rail"><div class="rail-title">In questa edizione</div>
+<a class="front-teaser" href="#wallstreet"><small>Azionario e volatilità</small><strong>S&amp;P −8,6% · VIX 35,89</strong><span>La vendita va oltre le grandi società tecnologiche.</span></a>
+<a class="front-teaser" href="#obbligazioni"><small>Tassi e credito</small><strong>2Y −25 pb · HY +29 pb</strong><span>Il credito rischioso perde terreno al 19 novembre.</span></a>
+<a class="front-teaser" href="#bitcoin"><small>Bitcoin e liquidità</small><strong>Sotto 60.000 $ · liquidazioni</strong><span>In crypto la leva cede. Il finanziamento overnight in dollari resta regolare all’ultima lettura.</span></a>
+</aside></section>
+<div class="ticker-kicker"><span>IL MERCATO IN CIFRE</span><span>Chiusura del 20 novembre, salvo data indicata</span></div>
+<div class="market-strip"><div class="ticker"><div class="name">S&amp;P 500</div><div class="value">6.910,39</div><div class="chg down">−8,6% · settimana</div></div><div class="ticker"><div class="name">Nasdaq Composite</div><div class="value">22.617,73</div><div class="chg down">−10,0% · settimana</div></div><div class="ticker"><div class="name">VIX</div><div class="value">35,89</div><div class="chg down">+16,59 pt · settimana</div></div><div class="ticker"><div class="name">Treasury 2Y</div><div class="value">4,63%</div><div class="chg up">−25 pb · settimana</div></div><div class="ticker"><div class="name">HY USA</div><div class="value">3,52%</div><div class="chg down">+29 pb · al 19/11</div></div></div>
+<div class="editor-note"><div class="editor-note-label">La chiave di lettura</div><p><strong>Il credito aggiunge un’informazione.</strong> Già giovedì era salito il premio richiesto per detenere debito delle aziende più fragili. Il finanziamento in dollari da un giorno all’altro era ancora stabile all’ultima lettura. La prudenza si vede già nei prezzi delle obbligazioni societarie. Per capire se il problema diventa più ampio, guardo se si tende anche il finanziamento quotidiano.</p></div>
+<div class="decision-strip"><div><b>Il catalizzatore</b><span>I forti ricavi di Nvidia non hanno fermato la vendita. La notizia sull’indagine ha accentuato la pressione su un titolo già in calo.</span></div><div><b>La trasmissione</b><span>La vendita raggiunge piccole società e listini esteri. Venerdì la ricerca di protezione spinge al rialzo i prezzi dei Treasury.</span></div><div><b>Il prossimo test</b><span>Prima conta chi partecipa al rimbalzo. Mercoledì conta come reagiscono tassi e borse al dato sui prezzi USA.</span></div></div>
+<section class="story" id="wallstreet">
+<div class="chapter-head"><span class="num">SEZIONE I</span><span class="name">Wall Street / Una vendita che si allarga</span></div>
+<h2>La tecnologia guida la caduta. Il Russell mostra che la vendita è più ampia.</h2><p class="story-lead">Sette chiusure consecutive in calo per l’S&amp;P 500, Nasdaq Composite a −10% nella settimana e VIX quasi raddoppiato. La sequenza conta più del solo rosso di venerdì.</p>
+<div class="article-grid"><div class="article-main text-flow"><p><b>Martedì 17</b> Nvidia annuncia ricavi trimestrali di 115,8 miliardi di dollari, +103% annuo, e indica circa 130 miliardi per il trimestre successivo. Il mercato chiude la settimana con Nvidia a circa −23%. A mio avviso la distanza fra risultati e prezzo dice quanto si siano alzati i dubbi su valutazioni, qualità delle vendite e ritorno atteso degli investimenti AI.</p><p><b>Giovedì 19 e venerdì 20</b> l’IPO di Anthropic non restituisce slancio al settore. Il titolo chiude venerdì a 88,30 dollari, −9,1% nella seduta, sopra il prezzo di offerta di 83. Nella stessa giornata Reuters riferisce che l’indagine SEC su Nvidia riguarda anche la contabilità. Le perdite del titolo erano già in corso e si sono ampliate dopo la notizia. L’esito dell’indagine resta aperto.</p><p><b>Il ribasso coinvolge molte più società di quelle legate all’AI.</b> Il Russell perde il 7,5% nella settimana. Venerdì solo i beni di prima necessità chiudono in rialzo fra gli undici settori dell’S&amp;P 500. Nel campione di Quantisnow scendono 371 società su 496. Le grandi società tecnologiche hanno pesato molto sull’indice. Il Russell e il numero di titoli in calo mostrano che la pressione ha raggiunto anche il resto del listino.</p><p><b>I gestori devono fare i conti con una copertura più cara.</b> Il future VIX di dicembre chiude a 28,46 contro 26,25 di gennaio. Il 13 novembre il contratto di dicembre quotava 0,75 punti sotto quello di gennaio. Questa inversione dei due contratti segnala che il mercato paga di più il rischio più vicino. Può indurre i portafogli più sensibili alla volatilità a ridurre esposizione. I dati sui prezzi da soli lasciano aperto quanto abbiano effettivamente venduto.</p>
+<div class="key-answer"><b>La mia lettura.</b> La cosa che mi colpisce è che la guidance di Nvidia e i rendimenti più bassi non sono bastati a sostenere i prezzi. Il mercato sembra chiedere un margine di sicurezza maggiore su quanto le aziende spenderanno per l’AI e quanto ne ricaveranno. Anche il Russell scende: la prudenza raggiunge società che dipendono meno dalla stessa storia. Un recupero di Nvidia può partire da chi chiude posizioni ribassiste. Per parlare di domanda nuova vorrei vedere il rialzo diffondersi mentre cala il prezzo della protezione a breve.</div></div>
+<aside class="article-aside"><div class="aside-label">La domanda da fare sul rimbalzo</div><p><b>Chi può muoversi?</b> Chi si protegge dal rischio di ulteriori ribassi, chi riduce le posizioni per rispettare i limiti di rischio e chi chiude scommesse al ribasso dopo una discesa ampia. La sequenza dei prezzi rende queste mosse plausibili.</p><div class="aside-call">Ricomprare dopo il ribasso può sostenere un titolo. La prova di fiducia è vedere se tornano compratori anche altrove.</div>
+<p><b>Confermerebbe.</b> Rimbalzi concentrati sulle mega-cap, Russell debole e protezione di dicembre ancora cara.</p><p><b>Mi farebbe cambiare lettura.</b> Russell che partecipa, più titoli in rialzo e differenza dicembre–gennaio in calo.</p></aside></div>
+<figure class="graph"><div class="fig-title">EQUITY USA</div><h3>Il Nasdaq perde di più, il Russell partecipa al ribasso</h3><p class="sub">Chiusure cash · rendimento del prezzo tra 13 e 20 novembre</p><div aria-label="Barre confrontate sulla stessa scala" class="chartbars " role="group"><div class="c-row"><div class="c-label">S&amp;P 500</div><div class="c-track"><div class="c-neg"><i style="width:76.79%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−8,6%</span></div><div class="c-row"><div class="c-label">Nasdaq Composite</div><div class="c-track"><div class="c-neg"><i style="width:89.29%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−10,0%</span></div><div class="c-row"><div class="c-label">Dow Jones</div><div class="c-track"><div class="c-neg"><i style="width:71.43%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−8,0%</span></div><div class="c-row"><div class="c-label">Russell 2000</div><div class="c-track"><div class="c-neg"><i style="width:66.96%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−7,5%</span></div></div><figcaption class="caption"><span class="read-label">LETTURA</span><span class="read-text">Il Nasdaq indica dove la vendita ha colpito di più. Il Russell mostra quanto si sia estesa verso società più sensibili al costo del credito e alla domanda interna.</span></figcaption><div class="source-inline"><a href="https://apnews.com/article/wall-street-stocks-dow-nasdaq-c10b797a17c2acf37924d834efebe135" rel="noopener noreferrer" target="_blank">AP · chiusure USA 20/11 ↗</a> · <a href="https://www.reuters.com/business/view-nasdaq-plunges-5-day-after-anthropic-debut-investors-still-believe-ai-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · equity e Nvidia 20/11 ↗</a> · <a href="https://www.quantisnow.com/sector-performance" rel="noopener noreferrer" target="_blank">Quantisnow · campione e settori 20/11 ↗</a> · <a href="https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-third-quarter-fiscal-2027" rel="noopener noreferrer" target="_blank">Nvidia · risultati 17/11 ↗</a> · <a href="https://live.euronext.com/en/financial-news/nvidias-accounting-focus-us-sec-investigation-sources-say" rel="noopener noreferrer" target="_blank">Reuters · dettagli dell’indagine 20/11 ↗</a> · <a href="https://www.schwab.com/learn/story/market-volatility" rel="noopener noreferrer" target="_blank">Schwab · chiusura di venerdì ↗</a></div></figure><figure class="graph"><div class="fig-title">VIX SPOT E FUTURES</div><h3>La protezione a breve diventa più cara</h3><p class="sub">VIX spot · chiusure del 13 e del 16–20 novembre</p><svg class="chart-line" viewBox="0 0 850 232" role="img" aria-label="13/11 19,30, 16/11 22,91, 17/11 25,46, 18/11 24,56, 19/11 28,44, 20/11 35,89"><path class="trace" d="M53.0,168.0 L206.6,142.9 L360.2,125.2 L513.8,131.4 L667.4,104.4 L821.0,52.6"></path><line class="grid" x1="53" x2="821" y1="191.0" y2="191.0"></line><text text-anchor="end" x="45" y="195.0">16</text><line class="grid" x1="53" x2="821" y1="135.3" y2="135.3"></line><text text-anchor="end" x="45" y="139.3">24</text><line class="grid" x1="53" x2="821" y1="79.7" y2="79.7"></line><text text-anchor="end" x="45" y="83.7">32</text><line class="grid" x1="53" x2="821" y1="24.0" y2="24.0"></line><text text-anchor="end" x="45" y="28.0">40</text><text text-anchor="middle" x="53.0" y="218">13/11</text><circle cx="53.0" cy="168.0" fill="#d5ba8d" r="4.7"><title>13/11 · 19,30</title></circle><text text-anchor="middle" x="206.6" y="218">16/11</text><circle cx="206.6" cy="142.9" fill="#d5ba8d" r="4.7"><title>16/11 · 22,91</title></circle><text text-anchor="middle" x="360.2" y="218">17/11</text><circle cx="360.2" cy="125.2" fill="#d5ba8d" r="4.7"><title>17/11 · 25,46</title></circle><text text-anchor="middle" x="513.8" y="218">18/11</text><circle cx="513.8" cy="131.4" fill="#d5ba8d" r="4.7"><title>18/11 · 24,56</title></circle><text text-anchor="middle" x="667.4" y="218">19/11</text><circle cx="667.4" cy="104.4" fill="#d5ba8d" r="4.7"><title>19/11 · 28,44</title></circle><text text-anchor="middle" x="821.0" y="218">20/11</text><circle cx="821.0" cy="52.6" fill="#d5ba8d" r="4.7"><title>20/11 · 35,89</title></circle></svg><div class="matrix"><div class="mrow"><b>Dicembre / gennaio · 13 nov</b><span class="value">19,44 / 20,19</span><span>Dicembre −0,75 punti rispetto a gennaio.</span></div><div class="mrow"><b>Dicembre / gennaio · 20 nov</b><span class="value">28,46 / 26,25</span><span>Dicembre +2,21 punti rispetto a gennaio.</span></div></div><figcaption class="caption"><span class="read-label">LETTURA</span><span class="read-text">Con il contratto di dicembre sopra gennaio, gli operatori pagano di più per coprire il rischio immediato. Se le azioni risalgono e dicembre rimane caro, la paura è ancora lì.</span></figcaption><div class="source-inline"><a href="https://www.cboe.com/tradable-products/vix/" rel="noopener noreferrer" target="_blank">Cboe · VIX spot ↗</a> · <a href="https://www.investing.com/indices/volatility-s-p-500-historical-data" rel="noopener noreferrer" target="_blank">Investing.com · storico VIX ↗</a> · <a href="https://www.cboe.com/tradable-products/vix/vix-futures" rel="noopener noreferrer" target="_blank">Cboe · futures VIX ↗</a> · <a href="https://squawkflow.com/vix-term-structure" rel="noopener noreferrer" target="_blank">SquawkFlow · settlement dei futures 13 e 20/11 ↗</a></div></figure>
+<div class="section-endline">La prossima guidance va letta insieme alla risposta del mercato. Dati buoni con prezzi che continuano a scendere indicano che gli investitori chiedono ancora di più.</div></section>
+<section class="story" id="mondo">
+<div class="chapter-head"><span class="num">SEZIONE II</span><span class="name">Borse mondiali / Trasmissione e flussi</span></div>
+<h2>L’Europa perde meno degli USA. La vendita resta globale.</h2><p class="story-lead">MSCI globale −8,1% nella settimana. Seul, Tokyo e Toronto scendono molto, mentre l’Europa contiene solo in parte la pressione. I dati sui fondi raccontano il mercato prima di giovedì e venerdì.</p>
+<div class="article-grid"><div class="article-main text-flow"><p><b>L’Europa contiene il danno rispetto a Wall Street.</b> Lo STOXX 600 chiude a 625,65 punti, con una settimana in calo di oltre il 5,7%. Venerdì perde il 2% e completa cinque sedute negative. Per me è tenuta relativa. Per parlare di una vera rotazione verso l’Europa vorrei vedere che la forza relativa sopravvive anche quando il mercato americano prova a rimbalzare.</p><p><b>In Asia Seul e Tokyo pagano più di Shanghai.</b> Il KOSPI perde l’8,0% nella settimana, con un calo del 5,2% venerdì. Il Nikkei perde il 7,7% nella settimana, Hong Kong il 5,2% e lo Shanghai Composite il 2,8%. In Canada il TSX perde l’8,1%, con un contributo negativo dei titoli legati alle materie prime e alla tecnologia. Il ribasso passa quindi per più mercati e prende forme diverse.</p><p><b>Gli afflussi nei fondi arrivano prima della fase più violenta.</b> Fino a mercoledì 18, LSEG Lipper rileva 59,23 miliardi di dollari di afflussi azionari globali, di cui 45,71 nei fondi USA e 15 in Europa, mentre l’Asia registra deflussi. Nei soli fondi USA la tecnologia riceve 10,3 miliardi e le small cap perdono circa 535 milioni. È un dato diretto su una parte degli operatori, con una finestra diversa dal ribasso di venerdì.</p>
+<div class="key-answer"><b>La mia lettura.</b> La settimana scorsa Seul e Tokyo guidavano il recupero. Stavolta entrambe scendono molto più di Shanghai. La distanza è coerente con una correzione che colpisce di più i listini esposti alla tecnologia, mentre il calo canadese mostra che la pressione raggiunge anche i mercati delle materie prime. L’Europa perde meno, ma chiude in calo per cinque sedute. Voglio vedere se quel vantaggio resta quando Wall Street rimbalza e se i flussi successivi a mercoledì raccontano ancora la stessa preferenza.</div></div>
+<aside class="article-aside"><div class="aside-label">Cosa possono raccontare i flussi</div><p><b>Operazioni osservate.</b> Sottoscrizioni e riscatti nei fondi fino al 18 novembre. La reazione successiva si legge nei prezzi di giovedì e venerdì.</p><div class="aside-call">Fino a mercoledì entrava denaro nei fondi tecnologici USA e usciva da quelli sulle piccole società. La disponibilità a comprare era selettiva già prima di venerdì.</div>
+<p><b>Confermerebbe.</b> Europa che tiene meglio in un nuovo ribasso e dati sui fondi che mostrano afflussi persistenti.</p><p><b>Mi farebbe cambiare lettura.</b> Europa che perde anche il vantaggio relativo o flussi che cambiano segno.</p></aside></div>
+<figure class="graph"><div class="fig-title">BORSE MONDIALI</div><h3>Calo globale, forza relativa diversa</h3><p class="sub">Chiusure del 13 e del 20 novembre · prezzi in valuta locale · STOXX approssimato</p><div aria-label="Barre confrontate sulla stessa scala" class="chartbars " role="group"><div class="c-row"><div class="c-label">S&amp;P 500</div><div class="c-track"><div class="c-neg"><i style="width:89.29%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−8,6%</span></div><div class="c-row"><div class="c-label">TSX · Canada</div><div class="c-track"><div class="c-neg"><i style="width:84.09%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−8,1%</span></div><div class="c-row"><div class="c-label">KOSPI · Corea del Sud</div><div class="c-track"><div class="c-neg"><i style="width:83.06%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−8,0%</span></div><div class="c-row"><div class="c-label">Nikkei 225 · Giappone</div><div class="c-track"><div class="c-neg"><i style="width:79.94%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−7,7%</span></div><div class="c-row"><div class="c-label">STOXX 600 · Europa</div><div class="c-track"><div class="c-neg"><i style="width:59.18%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−5,7%</span></div><div class="c-row"><div class="c-label">Hang Seng · Hong Kong</div><div class="c-track"><div class="c-neg"><i style="width:53.99%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−5,2%</span></div><div class="c-row"><div class="c-label">Shanghai · Cina</div><div class="c-track"><div class="c-neg"><i style="width:29.07%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−2,8%</span></div></div><figcaption class="caption"><span class="read-label">LETTURA</span><span class="read-text">Nikkei e KOSPI erano saliti con forza la settimana scorsa e ora sono fra i listini più colpiti. Shanghai tiene meglio. Il confronto mostra quanto sia cambiata la leadership in Asia.</span></figcaption><div class="source-inline"><a href="https://apnews.com/article/wall-street-stocks-dow-nasdaq-c10b797a17c2acf37924d834efebe135" rel="noopener noreferrer" target="_blank">AP · chiusure USA 20/11 ↗</a> · <a href="https://www.reuters.com/markets/europe/european-shares-head-steepest-weekly-drop-since-march-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · STOXX 600 20/11 ↗</a> · <a href="https://www.marketscreener.com/news/asian-shares-head-for-worst-week-since-2020-as-ai-trade-gloom-fails-to-abate-ce785ed2de8ef627" rel="noopener noreferrer" target="_blank">Reuters · Nikkei e Asia 20/11 ↗</a> · <a href="https://news.rthk.hk/rthk/en/component/k2/1878603-20261120.htm?spTabChangeable=0" rel="noopener noreferrer" target="_blank">RTHK · Shanghai 20/11 ↗</a> · <a href="https://activestwm.com/activest-weekly-2026-11-20/" rel="noopener noreferrer" target="_blank">Activest · chiusure Asia 20/11 ↗</a> · <a href="https://www.reuters.com/markets/europe/tsx-futures-slip-lower-oil-gold-prices-weigh-retail-sales-data-eyed-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · TSX 20/11 ↗</a></div></figure><figure class="graph"><div class="fig-title">FLUSSI DEI FONDI AZIONARI</div><h3>I flussi raccontano la settimana fino al 18</h3><p class="sub">Afflussi e deflussi netti · miliardi USD · settimana terminata mercoledì 18 novembre</p><div aria-label="Barre confrontate sulla stessa scala" class="chartbars " role="group"><div class="c-row"><div class="c-label">USA</div><div class="c-track"><div class="c-neg"></div><div class="c-pos"><i style="width:89.29%"></i></div></div><span class="c-n gain">+45,7 mld</span></div><div class="c-row"><div class="c-label">Europa</div><div class="c-track"><div class="c-neg"></div><div class="c-pos"><i style="width:29.30%"></i></div></div><span class="c-n gain">+15,0 mld</span></div><div class="c-row"><div class="c-label">Asia</div><div class="c-track"><div class="c-neg"><i style="width:5.43%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−2,8 mld</span></div></div><figcaption class="caption"><span class="read-label">LETTURA</span><span class="read-text">Gli afflussi USA privilegiano le grandi società. Le small cap registravano già riscatti, un indizio coerente con un mercato poco disposto ad allargare il rischio prima di venerdì.</span></figcaption><div class="source-inline"><a href="https://www.reuters.com/world/china/global-markets-flows-graphic-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters / LSEG Lipper · fondi globali al 18/11 ↗</a> · <a href="https://www.investing.com/news/stock-market-news/us-equity-funds-draw-inflows-for-a-third-straight-week-5041601" rel="noopener noreferrer" target="_blank">Reuters / LSEG Lipper · fondi USA al 18/11 ↗</a></div></figure>
+<div class="section-endline">Per misurare una rotazione credibile verso l’Europa servono anche guadagni sul listino europeo e flussi raccolti dopo la fase più acuta della vendita.</div></section>
+<section class="story" id="obbligazioni">
+<div class="chapter-head"><span class="num">SEZIONE III</span><span class="name">Rates e credito / Dove arriva lo stress</span></div>
+<h2>Venerdì i Treasury fanno da rifugio. Il biennale riflette anche meno rialzi Fed.</h2><p class="story-lead">Venerdì da solo spiega oltre metà del calo settimanale dei rendimenti a due e dieci anni. Il premio sul debito societario più rischioso era già salito di 29 punti base al 19 novembre.</p>
+<div class="article-grid"><div class="article-main text-flow"><p><b>La ricerca di protezione si vede nella sequenza di venerdì.</b> I futures sul Nasdaq 100 e i rendimenti USA scendevano già prima del dato sulla fiducia dei consumatori. L’S&amp;P 500 ha chiuso a −3,7% e il VIX è salito da 28,44 a 35,89. Nella rilevazione ufficiale tra giovedì e venerdì il biennale è sceso dal 4,76% al 4,63% e il decennale dal 5,04% al 4,92%. Per me questa è la prova più convincente del ruolo di rifugio dei Treasury nella seduta.</p><p><b>Il biennale dice anche qualcosa sul 2027.</b> Per dicembre restava ampiamente atteso un rialzo di 25 punti base. CIBC rilevava che si era ridotta la possibilità di un passo da 50. Bloomberg riportava che il mercato dei tassi aveva smesso di incorporare pienamente tre rialzi da 25 punti base entro fine 2027. Il calo del biennale è quindi coerente anche con attese di meno rialzi dopo dicembre. Dai prezzi resta incerto quanto abbia pesato ciascun fattore.</p><p><b>Sul decennale venerdì è sceso soprattutto il rendimento reale.</b> Dei 12 punti base di calo in giornata, 11 vengono dal rendimento dei titoli indicizzati all’inflazione. Il compenso implicito per l’inflazione è sceso di circa un punto base. Sull’intera settimana le due componenti spiegano rispettivamente 14 e 9 punti dei 23 di calo. Per capire quanto dura la ricerca di protezione, guarderei se il decennale risale al primo rimbalzo delle borse e se, nello stesso tempo, le attese Fed per il 2027 restano più basse.</p><p><b>Il credito più fragile si indebolisce più di quello di qualità.</b> Al 19 novembre il premio HY passa dal 3,23% al 3,52%, quello investment grade dallo 0,89% allo 0,94%. Il mercato chiede più premio per detenere le obbligazioni delle società più vulnerabili. Venerdì i listini hanno accelerato al ribasso. Per capire se il credito ha seguito serve il suo dato di venerdì.</p><p><b>Il finanziamento overnight in dollari mostra una dinamica diversa.</b> Al 19 il SOFR è 3,91% e il tasso effettivo Fed funds è 3,88%, un divario di 3 pb contro 2 il 13. Le riserve bancarie medie riportate dalla Fed salgono di circa 19 miliardi nella settimana al 18. Per ora vedo più evidenza di tensione sul rischio societario che sul finanziamento overnight.</p>
+<div class="key-answer"><b>La mia lettura.</b> Per me qui cambia la natura della pressione. Il 14 novembre i titoli governativi rendevano di più mentre il credito teneva. Stavolta gli investitori accettano un rendimento minore sui Treasury e chiedono di più per detenere debito societario rischioso. Il fatto che il premio salga molto più nell’HY che nell’IG suggerisce una selezione per qualità. Il finanziamento overnight è ancora ordinato al 19. Se si tendesse anche quello, prenderei più sul serio la possibilità che la difficoltà si allarghi oltre i portafogli più esposti.</div></div>
+<aside class="article-aside"><div class="aside-label">Tre orologi da tenere separati</div><p><b>Treasury 20/11, credito 19/11, riserve al 18/11.</b> La differenza di data cambia ciò che ciascuna serie può dire sul venerdì.</p><div class="aside-call">Il rendimento dei Treasury scende. Sui bond delle aziende più fragili sale il premio rispetto ai titoli di Stato.</div>
+<p><b>Confermerebbe.</b> Premio HY che sale ancora più dell’IG e rimbalzi azionari che restano stretti.</p><p><b>Mi farebbe cambiare lettura.</b> HY che si restringe, IG stabile e maggiore partecipazione delle piccole società.</p></aside></div>
+<figure class="graph"><div class="fig-title">TREASURY · TASSI NOMINALI E REALI</div><h3>I Treasury tornano a offrire protezione</h3><p class="sub">US Treasury · confronto 13 → 20 novembre</p><div class="matrix"><div class="mrow"><b>Treasury 2Y</b><span class="value">4,88 → 4,63%</span><span>−25 pb · tratto più sensibile alle attese Fed.</span></div><div class="mrow"><b>Treasury 10Y</b><span class="value">5,15 → 4,92%</span><span>−23 pb · domanda di duration e variazione dei premi.</span></div><div class="mrow"><b>10Y reale</b><span class="value">2,91 → 2,77%</span><span>−14 pb · rendimento dei titoli indicizzati.</span></div><div class="mrow"><b>Breakeven a 10 anni</b><span class="value">2,24 → 2,15%</span><span>−9 pb · differenza fra nominale e reale.</span></div><div class="mrow"><b>Curva 10Y − 2Y</b><span class="value">+27 → +29 pb</span><span>+2 pb · il biennale scende appena più del decennale.</span></div></div><figcaption class="caption"><span class="read-label">LETTURA</span><span class="read-text">I rendimenti a due e dieci anni sono scesi insieme. Venerdì la ricerca di protezione si è vista su entrambi, mentre le attese di una stretta Fed prolungata si sono ridimensionate.</span></figcaption><div class="source-inline"><a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve&amp;field_tdr_date_value=2026" rel="noopener noreferrer" target="_blank">US Treasury · curva nominale ↗</a> · <a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_real_yield_curve&amp;field_tdr_date_value=2026" rel="noopener noreferrer" target="_blank">US Treasury · curva reale ↗</a> · <a href="https://www.federalreserve.gov/monetarypolicy/fomcminutes20261028.htm" rel="noopener noreferrer" target="_blank">Fed · verbali pubblicati il 18/11 ↗</a> · <a href="https://www.vantrycapital.com/resources/daily-market-commentary/2026-11-20" rel="noopener noreferrer" target="_blank">Vantry / CIBC · prezzi monetari 20/11 ↗</a> · <a href="https://www.advisorperspectives.com/articles/2026/11/20/treasuries-add-steep-weekly-gain-investors-flee-stocks?firm=bloomberg-news" rel="noopener noreferrer" target="_blank">Bloomberg · attese Fed sul 2027 e Treasury 20/11 ↗</a> · <a href="https://www.almfirst.com/resources/beyond-the-headlines/november-20-2026-headlines" rel="noopener noreferrer" target="_blank">ALM First · mercato prima della fiducia dei consumatori 20/11 ↗</a> · <a href="https://live.euronext.com/en/financial-news/tech-leads-global-stocks-rout-treasury-yields-fall" rel="noopener noreferrer" target="_blank">Reuters · borse e domanda di protezione 20/11 ↗</a></div></figure><figure class="graph"><div class="fig-title">CREDITO USA E FINANZIAMENTO</div><h3>Il premio sale soprattutto sulle aziende più fragili</h3><p class="sub">Credito ICE BofA e tassi overnight · 13 → 19 novembre</p><div class="matrix"><div class="mrow"><b>High yield USA</b><span class="value">3,23 → 3,52%</span><span>+29 pb · premio sulle obbligazioni più rischiose.</span></div><div class="mrow"><b>Investment grade USA</b><span class="value">0,89 → 0,94%</span><span>+5 pb · premio sulle obbligazioni di qualità superiore.</span></div><div class="mrow"><b>SOFR − Fed funds</b><span class="value">+2 → +3 pb</span><span>Differenza fra due tassi overnight con mercati distinti.</span></div></div><figcaption class="caption"><span class="read-label">LETTURA</span><span class="read-text">Se la differenza nel credito resta concentrata nell’HY, il mercato sta pagando soprattutto il rischio delle aziende più fragili. Una risalita anche dei costi overnight allargherebbe la diagnosi.</span></figcaption><div class="source-inline"><a href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" rel="noopener noreferrer" target="_blank">FRED · credito high yield ↗</a> · <a href="https://fred.stlouisfed.org/series/BAMLC0A0CM" rel="noopener noreferrer" target="_blank">FRED · credito investment grade ↗</a> · <a href="https://fred.stlouisfed.org/series/SOFR" rel="noopener noreferrer" target="_blank">FRED / NY Fed · SOFR ↗</a> · <a href="https://fred.stlouisfed.org/series/EFFR" rel="noopener noreferrer" target="_blank">FRED / NY Fed · effective Fed funds ↗</a> · <a href="https://www.federalreserve.gov/releases/h41/20261119/h41.pdf" rel="noopener noreferrer" target="_blank">Fed · bilancio H.4.1 al 18/11 ↗</a></div></figure>
+<div class="section-endline">Quando esce lo spread che include venerdì, conta anche la distanza fra il debito più rischioso e quello di qualità superiore. È lì che si vede chi paga la prudenza.</div></section>
+<section class="story" id="materie">
+<div class="chapter-head"><span class="num">SEZIONE IV</span><span class="name">Materie prime / Due letture diverse</span></div>
+<h2>Il petrolio rimbalza venerdì. L’oro continua a cedere quando i tassi reali scendono.</h2><p class="story-lead">Il greggio chiude la settimana in calo anche dopo il rimbalzo finale. L’oro fa emergere la divergenza più importante rispetto alla settimana precedente.</p>
+<div class="article-grid"><div class="article-main text-flow"><p><b>Il petrolio continua a scontare un’offerta più abbondante.</b> Reuters collega la debolezza settimanale al ritorno delle spedizioni attraverso Hormuz verso livelli precedenti al conflitto. Venerdì Brent e WTI recuperano, con il mercato di nuovo sensibile al rischio che le forniture vengano interrotte. Questo contrasto spiega perché un rialzo di seduta può convivere con un ribasso settimanale.</p><p><b>Per i mercati conta il motivo del ribasso del greggio.</b> Con più offerta, il costo dell’energia più basso può aiutare famiglie e imprese. Se la correzione si allarga a rame e altri metalli industriali insieme a ordini deboli e spread più larghi, la lettura si sposta verso un problema di domanda. Il PCE misura i prezzi di ottobre e i movimenti di questa settimana avranno effetto sulle letture successive.</p><p><b>L’oro è il test più chiaro.</b> Il future di dicembre scende del 9,54% mentre il 10Y reale scende di 14 pb. La settimana precedente erano saliti i tassi reali. Questa volta il metallo resta sotto pressione anche quando quel fattore si allenta. Reuters riporta l’ipotesi che alcuni operatori abbiano venduto oro per coprire perdite altrove. I prezzi rendono questa ipotesi plausibile, mentre l’entità delle vendite forzate resta incerta.</p>
+<div class="key-answer"><b>La mia lettura.</b> Il greggio più basso alleggerisce parte della pressione sui prezzi se il movimento viene da più offerta. Se cominciano a cedere anche ordini e metalli industriali, assumerei che una parte più grande venga dalla debolezza della domanda. Sull’oro il confronto con il 14 è ancora più utile. Allora il rialzo dei tassi reali spiegava una parte del calo. Questa settimana quel vento sembra girare e l’oro continua a perdere. Per me va considerata anche la vendita per fare cassa, restando aperta la misura di quel contributo.</div></div>
+<aside class="article-aside"><div class="aside-label">Il test incrociato</div><p><b>Due interessi diversi.</b> Nel greggio conta la protezione contro sorprese fisiche. Nell’oro conta anche la disponibilità degli investitori a conservare una posizione quando altri asset scendono.</p><div class="aside-call">Le notizie sulle spedizioni spiegano meglio il petrolio. Per leggere l’oro serve vedere come si comporta quando gli altri asset sono sotto pressione.</div>
+<p><b>Confermerebbe.</b> Per l’oro, debolezza mentre i rendimenti reali restano sotto i livelli del 13 e la volatilità è alta. Per il greggio, prezzi ancora sotto pressione con spedizioni regolari.</p><p><b>Mi farebbe cambiare lettura.</b> Sull’oro, un recupero mentre i rendimenti reali restano giù. Sul petrolio, un rialzo accompagnato da nuove interruzioni delle forniture.</p></aside></div>
+<figure class="graph"><div class="fig-title">ENERGIA</div><h3>Terza settimana di calo, rimbalzo nel finale</h3><p class="sub">Variazioni settimanali approssimate da Reuters · futures</p><div aria-label="Barre confrontate sulla stessa scala" class="chartbars " role="group"><div class="c-row"><div class="c-label">Brent</div><div class="c-track"><div class="c-neg"><i style="width:71.43%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−4%</span></div><div class="c-row"><div class="c-label">WTI dicembre</div><div class="c-track"><div class="c-neg"><i style="width:89.29%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−5%</span></div></div><div class="matrix"><div class="mrow"><b>Brent</b><span class="value">92,57 $/bbl</span><span>Settlement del 20/11 · +0,64% in giornata.</span></div><div class="mrow"><b>WTI dicembre</b><span class="value">83,98 $/bbl</span><span>Settlement del 20/11 · +0,93% in giornata.</span></div></div><figcaption class="caption"><span class="read-label">LETTURA</span><span class="read-text">Il rimbalzo di venerdì misura la sensibilità alle possibili interruzioni. Il saldo della settimana mostra che la maggiore disponibilità di greggio ha continuato a pesare.</span></figcaption><div class="source-inline"><a href="https://www.reuters.com/business/energy/oil-prices-edge-higher-houthi-attacks-riyadh-raise-supply-concerns-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · Brent e WTI 20/11 ↗</a></div></figure><figure class="graph"><div class="fig-title">ORO</div><h3>L’oro scende anche con rendimenti reali più bassi</h3><p class="sub">COMEX dicembre · settlement 13 → 20 novembre · USD per oncia</p><div aria-label="Barre confrontate sulla stessa scala" class="chartbars gold-chart" role="group"><div class="c-row"><div class="c-label">Oro · COMEX</div><div class="c-track"><div class="c-neg"><i style="width:89.29%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−9,54%</span></div></div><div class="gold-settlements"><div><span>13 NOV · SETTLEMENT</span><strong>3.886,30 $/oz</strong></div><div><span>20 NOV · SETTLEMENT</span><strong>3.515,40 $/oz</strong></div></div><figcaption class="caption"><span class="read-label">LETTURA</span><span class="read-text">Se il rendimento reale scende e l’oro perde comunque terreno, bisogna dare spazio ad altre spiegazioni. La riduzione delle posizioni durante la vendita globale è una di queste.</span></figcaption><div class="source-inline"><a href="https://www.reuters.com/world/india/gold-set-worst-week-eight-months-firm-dollar-fed-hike-bets-weigh-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · oro 20/11 ↗</a> · <a href="https://www.xauusdglobal.com/gold-price-history/2026/11/" rel="noopener noreferrer" target="_blank">Storico settlement COMEX novembre ↗</a> · <a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_real_yield_curve&amp;field_tdr_date_value=2026" rel="noopener noreferrer" target="_blank">US Treasury · curva reale ↗</a></div></figure>
+<div class="section-endline">Un oro più stabile con rendimenti reali ancora bassi darebbe un primo riscontro all’idea che la pressione straordinaria della vendita si stia attenuando.</div></section>
+<section class="story" id="valute">
+<div class="chapter-head"><span class="num">SEZIONE V</span><span class="name">Forex G8 / Il costo della protezione</span></div>
+<h2>Lo yen guida. L’australiano paga la vendita globale e il lavoro domestico.</h2><p class="story-lead">Il dollaro sale contro sei valute su sette, ma perde contro lo yen. L’australiano arretra anche contro il dollaro neozelandese.</p>
+<div class="article-grid"><div class="article-main text-flow"><p><b>Sullo yen vedo due sostegni.</b> Guadagna lo 0,85% contro USD tra i fixing. Ueda ha tenuto aperta la strada ad altri rialzi in Giappone. Nella settimana darei più peso al calo del biennale USA e alla ricerca di protezione. Il franco, quasi piatto contro USD alla rilevazione settimanale (−0,10%), batte euro e sterlina e guadagna contro il dollaro nella seduta USA di venerdì. Se lo yen si rafforza anche dopo il CPI di Tokyo con i rendimenti USA fermi, la parte giapponese della spiegazione guadagna peso.</p><p><b>Sull’AUD/NZD darei più peso al lato australiano.</b> L’Australia perde 44 mila occupati e il mercato ridimensiona le attese di rialzo. In Nuova Zelanda, secondo BNZ, il rialzo di dicembre era già in larga parte nei prezzi e il biennale locale era sceso in parte sulla scia di quello australiano. Questo rende più plausibile che la sorpresa australiana abbia contato di più nel −1,26% di AUD/NZD. Il −2,59% di AUD/JPY combina invece la debolezza australiana con la forza dello yen.</p><p><b>Userei i prossimi dati per capire quale lato si muove.</b> Dopo il CPI australiano guardo AUD/NZD e i tassi dei due Paesi. Dopo il PCE USA guardo il biennale americano e USD/JPY. Il CPI di Tokyo offre poi una verifica separata sulla forza dello yen.</p>
+<div class="key-answer"><b>La mia lettura.</b> Sull’AUD/JPY vedo due spinte che si sommano. Lo yen beneficia del ritorno della protezione e di rendimenti americani più bassi. Il lavoro australiano fa dubitare di nuovi rialzi RBA. Dopo un movimento già ampio, la mia convinzione riguarda soprattutto questa differenza tra le due valute. La prossima informazione arriva separando le coppie. Se AUD/NZD resta debole con USD/JPY in recupero, la fragilità australiana tiene anche quando la domanda di yen si riduce.</div></div>
+<aside class="article-aside"><div class="aside-label">Quale valuta sta guidando?</div><p><b>Domanda di protezione.</b> Nel cambio si vede soprattutto nella forza relativa dello yen e del franco sui cross europei. Il contributo dei singoli flussi rimane da verificare.</p><div class="aside-call">Se AUD/NZD segue i tassi australiani e quelli neozelandesi si muovono poco, il segnale sul lato australiano è più convincente.</div>
+<p><b>Confermerebbe.</b> JPY ancora forte contro USD e debolezza AUD visibile anche contro NZD.</p><p><b>Mi farebbe cambiare lettura.</b> AUD/NZD in recupero con tassi australiani in salita rispetto a quelli neozelandesi. Sullo yen, CPI di Tokyo debole e USD/JPY in recupero.</p></aside></div>
+<figure class="graph"><div class="fig-title">FORZA RELATIVA G8</div><h3>Yen davanti, australiano in coda</h3><p class="sub">Rendimento di ogni valuta in USD · fixing BCE 13 → 20 novembre · USD è il riferimento</p><div aria-label="Barre confrontate sulla stessa scala" class="chartbars " role="group"><div class="c-row"><div class="c-label">JPY</div><div class="c-track"><div class="c-neg"></div><div class="c-pos"><i style="width:43.27%"></i></div></div><span class="c-n gain">+0,85%</span></div><div class="c-row"><div class="c-label">USD</div><div class="c-track"><div class="c-neg"></div><div class="c-pos"></div></div><span class="c-n zero">0,00%</span></div><div class="c-row"><div class="c-label">CHF</div><div class="c-track"><div class="c-neg"><i style="width:4.94%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−0,10%</span></div><div class="c-row"><div class="c-label">CAD</div><div class="c-track"><div class="c-neg"><i style="width:17.22%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−0,34%</span></div><div class="c-row"><div class="c-label">NZD</div><div class="c-track"><div class="c-neg"><i style="width:25.91%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−0,51%</span></div><div class="c-row"><div class="c-label">EUR</div><div class="c-track"><div class="c-neg"><i style="width:28.44%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−0,56%</span></div><div class="c-row"><div class="c-label">GBP</div><div class="c-track"><div class="c-neg"><i style="width:39.03%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−0,77%</span></div><div class="c-row"><div class="c-label">AUD</div><div class="c-track"><div class="c-neg"><i style="width:89.29%"></i></div><div class="c-pos"></div></div><span class="c-n loss">−1,76%</span></div></div><figcaption class="caption"><span class="read-label">LETTURA</span><span class="read-text">AUD/JPY riunisce i due estremi della settimana. AUD/NZD aiuta a capire quanto la debolezza australiana si estenda oltre i cambi contro dollaro e yen.</span></figcaption><div class="source-inline"><a href="https://www.ecb.europa.eu/stats/exchange/eurofxref/shared/pdf/2026/11/20261113.pdf" rel="noopener noreferrer" target="_blank">BCE · fixing 13/11 ↗</a> · <a href="https://www.ecb.europa.eu/stats/shared/pdf/eurofxref.pdf?f64eb1456a8d9f511c8d0ac3373cf438=" rel="noopener noreferrer" target="_blank">BCE · fixing 20/11 ↗</a> · <a href="https://www.reuters.com/business/dollar-near-19-month-peak-ai-jitters-sap-risk-appetite-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · Forex seduta USA 20/11 ↗</a> · <a href="https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026" rel="noopener noreferrer" target="_blank">ABS · lavoro australiano 19/11 ↗</a> · <a href="https://www.reuters.com/world/asia-pacific/australias-jobless-rate-hits-5-year-high-markets-ramp-up-rate-cut-bets-2027-2026-11-19/" rel="noopener noreferrer" target="_blank">Reuters · attese RBA dopo il lavoro ↗</a> · <a href="https://www.bnz.co.nz/assets/markets/research/BNZ-Markets-Today-20-November-2026.pdf?40d89d912c3ba100aa2a7599780e08b09e5ab97b=" rel="noopener noreferrer" target="_blank">BNZ · tassi NZ e attese RBNZ 20/11 ↗</a> · <a href="https://www.boj.or.jp/en/mopo/diet/d_state/data/dst261119a.pdf" rel="noopener noreferrer" target="_blank">BoJ · intervento di Ueda 19/11 ↗</a></div></figure>
+<div class="section-endline">Mercoledì conta l’ordine degli eventi. Prima puoi vedere la reazione australiana al suo CPI, poi quella del dollaro al PCE USA.</div></section>
+<section class="story" id="bitcoin">
+<div class="chapter-head"><span class="num">SEZIONE VI</span><span class="name">Bitcoin / Derivati e liquidità</span></div>
+<h2>Bitcoin perde quota 60.000. Qui la leva ha un riscontro nei dati.</h2><p class="story-lead">Vendite su crypto e riscatti dagli ETF spot si aggiungono alla correzione degli asset rischiosi. Il finanziamento in dollari a brevissimo termine racconta una tensione diversa.</p>
+<div class="article-grid"><div class="article-main text-flow"><p><b>Il prezzo scende insieme al resto del rischio.</b> Reuters riporta Bitcoin sotto 60.000 dollari venerdì. CoinDesk, citando CoinGlass, riporta circa 1,5 miliardi di dollari di liquidazioni su derivati crypto nelle 24 ore considerate. In quel perimetro gli intermediari hanno chiuso automaticamente posizioni quando il margine non era più sufficiente.</p><p><b>Un altro canale sono i fondi.</b> The Block riporta 582,2 milioni di dollari di deflussi dagli ETF spot Bitcoin USA nella seduta di giovedì 19. Sono riscatti netti dai fondi. Le liquidazioni dei derivati si misurano su altri strumenti e in una finestra diversa, quindi i due importi vanno letti separatamente.</p><p><b>Qui la vendita forzata è osservabile.</b> Le posizioni chiuse automaticamente mostrano come la leva abbia potuto accelerare il ribasso in crypto. Altrove questa dinamica è più difficile da isolare. Nella sezione sui tassi, il finanziamento giornaliero in dollari resta stabile all’ultima lettura disponibile.</p>
+<div class="key-answer"><b>La mia lettura.</b> Qui vedo più evidenza di vendite forzate perché le liquidazioni sono registrate nei derivati. I riscatti dagli ETF segnalano che è mancato sostegno anche su un altro canale. Se il prezzo tiene mentre i riscatti continuano, significa che qualcuno sta assorbendo quella pressione. Se i minimi arrivano insieme a nuove liquidazioni, il deleveraging resta la lettura più coerente. Per estenderla al sistema finanziario in dollari cercherei una conferma nei costi di finanziamento, oltre al peggioramento già visibile nel credito.</div></div>
+<aside class="article-aside"><div class="aside-label">Leva, fondi e cassa</div><p><b>Operatori osservabili.</b> Posizioni chiuse sui derivati nelle rilevazioni CoinGlass e sottoscrizioni nette degli ETF. Altri flussi restano fuori da queste misure.</p><div class="aside-call">Le liquidazioni misurano posizioni chiuse nei derivati. I riscatti misurano l’uscita dai fondi spot.</div>
+<p><b>Confermerebbe.</b> Altri minimi Bitcoin insieme a liquidazioni e riscatti ancora elevati.</p><p><b>Mi farebbe cambiare lettura.</b> Rallentamento dei riscatti e tenuta del prezzo con volumi di liquidazione più bassi.</p></aside></div>
+<div class="signal-block"><div class="risk"><span class="cap">Bitcoin · venerdì 20</span><div class="big">&lt; 60.000 $</div><p>Prezzo osservato da Reuters nella seduta USA.</p></div><div class="risk"><span class="cap">Derivati crypto · 24 ore</span><div class="big">≈ 1,5 mld $</div><p>Liquidazioni CoinGlass riportate da CoinDesk il 20/11.</p></div><div class="hold"><span class="cap">ETF spot USA · giovedì 19</span><div class="big">−582,2 mln $</div><p>Deflussi netti del giorno, secondo The Block.</p></div></div><div class="source-inline"><a href="https://www.reuters.com/technology/bitcoin-falls-below-60000-level-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · Bitcoin 20/11 ↗</a> · <a href="https://www.coindesk.com/markets/2026/11/20/bitcoin-plunges-below-usd59-000-as-rush-to-cash-puts-new-bear-market-lows-back-in-play" rel="noopener noreferrer" target="_blank">CoinDesk / CoinGlass · derivati crypto 20/11 ↗</a> · <a href="https://www.theblock.co/news/markets/2026-11-20-us-spot-bitcoin-etfs-see-582-million-in-daily-net-outflows-as-november-total-nears-3-5-billion-444217" rel="noopener noreferrer" target="_blank">The Block · ETF spot USA al 19/11 ↗</a> · <a href="https://fred.stlouisfed.org/series/SOFR" rel="noopener noreferrer" target="_blank">FRED / NY Fed · SOFR ↗</a> · <a href="https://fred.stlouisfed.org/series/EFFR" rel="noopener noreferrer" target="_blank">FRED / NY Fed · effective Fed funds ↗</a></div>
+<div class="section-endline">Per capire se la leva smette di amplificare il ribasso, conta come si comporta il prezzo quando torna a presentarsi un flusso di vendita.</div></section>
+<section class="story" id="prossima">
+<div class="chapter-head"><span class="num">SEZIONE VII</span><span class="name">La bussola / 23–27 novembre</span></div>
+<h2>Il primo rimbalzo e il PCE rispondono a due domande diverse.</h2>
+<p class="story-lead">Il primo rimbalzo mette alla prova la fiducia fuori dalla tecnologia. Mercoledì il dato sui prezzi USA aiuta a capire se tassi più bassi sono un sollievo o se domina la prudenza sulla crescita.</p>
+<div class="article-grid"><div class="article-main text-flow">
+<p><b>Audit della settimana precedente.</b> Il 14 novembre vedevo un recupero selettivo e mettevo fra i rischi un peggioramento del credito legato a rendimenti più alti. Il recupero non ha retto. Il credito è effettivamente peggiorato, ma i rendimenti sono scesi. Venerdì la vendita si è estesa oltre la tecnologia mentre i Treasury salivano. Il biennale ha riflesso anche attese di meno rialzi Fed dopo dicembre.</p>
+<p><b>La mia base di lavoro.</b> Dopo una discesa così rapida mi aspetto che la tecnologia possa rimbalzare anche solo perché rientra una parte delle vendite. Per capire se torna la fiducia guardo chi si aggiunge. Se partecipano le piccole società e si riduce il premio richiesto alle aziende più fragili, il recupero ha qualcosa in più. Se si muovono solo i titoli legati all’AI, la domanda resta concentrata lì.</p>
+<p><b>Mercoledì guardo come reagisce il mercato al PCE, il dato sui prezzi dei consumi USA.</b> Il consenso pubblicato da Newsquawk vede il PCE di fondo a +0,3% nel mese e 3,2% nell’anno. Se esce sopra le attese e salgono sia il biennale sia il dollaro contro yen, torna a pesare la prospettiva di una Fed più restrittiva. Se esce sotto le attese e il biennale scende, guardo Russell e credito. Se le piccole società risalgono e il premio sul debito rischioso si riduce, il mercato legge il dato come sollievo sui tassi. Se le piccole società restano deboli e quel premio aumenta, darei più peso ai timori per la crescita. Per il credito uso la prima rilevazione che comprende la reazione al dato.</p>
+<div class="key-answer"><b>La priorità della settimana.</b> Al primo rimbalzo guarda chi partecipa. Usa il prossimo dato sul credito che include venerdì per capire se la tensione ha superato la fotografia di giovedì. Dopo il PCE leggi insieme azioni, 2Y e USD/JPY. Se il 2Y scende e le azioni salgono, intravedo sollievo sui tassi. Se scendono entrambi e il credito cede, vedo ancora ricerca di protezione.</div>
+</div><aside class="article-aside"><div class="aside-label">La lettura per te</div>
+<p><b>Primo confronto.</b> Nasdaq e Russell insieme allo spread HY.</p><div class="aside-call">Un rimbalzo dei grandi titoli AI può partire anche dalla chiusura di scommesse ribassiste. Se partecipano le piccole società, la ripresa è più ampia.</div>
+<p><b>Mercoledì.</b> CPI australiano nella notte e PCE nel pomeriggio. L’AUD e lo yen permettono di vedere quale delle due notizie sta pesando.</p>
+<p><b>Giovedì e venerdì.</b> Thanksgiving e seduta USA abbreviata. La conferma su più mercati conta di più quando circolano meno ordini.</p></aside></div>
+<div class="scenarios">
+<div class="better"><h3>Scenario costruttivo · si allarga il recupero</h3><p><b>Che cosa succede.</b> La tecnologia risale e l’acquisto raggiunge le piccole società. Il credito riprende a chiedere meno premio.</p><p><b>Come lo riconosco.</b> Russell e Nasdaq salgono insieme, HY si restringe e il divario tra i future VIX di dicembre e gennaio si riduce.</p></div>
+<div class="base"><h3>Scenario centrale · rimbalzi selettivi</h3><p><b>Che cosa succede.</b> I titoli più venduti possono recuperare, con investitori ancora prudenti su credito e utili futuri.</p><p><b>Come lo riconosco.</b> Recupero concentrato, Russell che fatica e HY ancora sopra il livello del 13 novembre.</p></div>
+<div class="worse"><h3>Scenario di rischio · la tensione nel credito si allarga</h3><p><b>Che cosa succede.</b> Le borse fanno nuovi minimi e il mercato chiede un premio maggiore anche sulle obbligazioni delle aziende di qualità. La reazione dei Treasury dipende da crescita e inflazione.</p><p><b>Come lo riconosco.</b> HY e IG in allargamento, Russell debole e protezione a breve più cara. Se anche il finanziamento overnight si tende, aumenta la portata del problema.</p></div>
+</div>
+<h3 class="decksub">Calendario 23–27 novembre · orari italiani</h3>
+<div class="calendar">
+<div class="event"><div class="when"><strong>Lun 23 nov</strong>10:00 / 10:30 / 15:45</div><div><h3>PMI flash area euro, Regno Unito e USA</h3><p>Quanto tengono gli ordini e i servizi? Se rallentano con l’HY ancora in allargamento, la preoccupazione per la domanda prende più peso.</p><div class="source-inline"><a href="https://www.newsquawk.com/daily/5871-week-in-focus-november-23rd-27th-highlights-include-us-pce-flash-pmis-aussie-cpi-and-ecb-minutes" rel="noopener noreferrer" target="_blank">Newsquawk · stime PCE e calendario ↗</a></div></div></div>
+<div class="event"><div class="when"><strong>Mar 24 nov</strong>22:30</div><div><h3>Dell · risultati e conference call</h3><p>Test sulle ordinazioni per server AI, i margini e la capacità di trasformare la domanda in cassa. Utile per capire come il mercato valuta la filiera dopo Nvidia.</p><div class="source-inline"><a href="https://investors.delltechnologies.com/news-events/press-releases/detail/1661/dell-technologies-to-hold-conference-call-nov-24-to-discuss-third-quarter-fiscal-2027-financial-results" rel="noopener noreferrer" target="_blank">Dell · calendario risultati ↗</a></div></div></div>
+<div class="event"><div class="when"><strong>Mer 25 nov</strong>01:30 / 14:30</div><div><h3>CPI Australia, poi PCE USA e seconda stima del PIL</h3><p>Nel primo caso guarda AUD/NZD con i tassi australiani. Nel secondo, 2Y USA e USD/JPY insieme a Russell e credito.</p><div class="source-inline"><a href="https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia" rel="noopener noreferrer" target="_blank">ABS · CPI Australia, calendario ↗</a> · <a href="https://www.bea.gov/news/schedule/" rel="noopener noreferrer" target="_blank">BEA · calendario PCE e PIL ↗</a> · <a href="https://www.newsquawk.com/daily/5871-week-in-focus-november-23rd-27th-highlights-include-us-pce-flash-pmis-aussie-cpi-and-ecb-minutes" rel="noopener noreferrer" target="_blank">Newsquawk · stime PCE e calendario ↗</a></div></div></div>
+<div class="event"><div class="when"><strong>Gio 26 nov</strong>NYSE chiusa</div><div><h3>Thanksgiving USA</h3><p>La chiusura riduce l’attività sui mercati USA. In Europa escono i verbali BCE alle 13:30.</p><div class="source-inline"><a href="https://www.nyse.com/markets/hours-calendars" rel="noopener noreferrer" target="_blank">NYSE · orari Thanksgiving ↗</a> · <a href="https://www.newsquawk.com/daily/5871-week-in-focus-november-23rd-27th-highlights-include-us-pce-flash-pmis-aussie-cpi-and-ecb-minutes" rel="noopener noreferrer" target="_blank">Newsquawk · stime PCE e calendario ↗</a></div></div></div>
+<div class="event"><div class="when"><strong>Ven 27 nov</strong>00:30 / 19:00</div><div><h3>CPI di Tokyo e chiusura anticipata NYSE</h3><p>L’inflazione locale mette alla prova la forza dello yen. Black Friday sposta l’attenzione sul ritmo della spesa USA, con Wall Street in seduta abbreviata.</p><div class="source-inline"><a href="https://econfeed.io/releases/jp-stat-tokyo-cpi/" rel="noopener noreferrer" target="_blank">Econfeed · orario CPI Tokyo ↗</a> · <a href="https://www.nyse.com/markets/hours-calendars" rel="noopener noreferrer" target="_blank">NYSE · orari Thanksgiving ↗</a> · <a href="https://www.reuters.com/business/wall-st-week-ahead-black-friday-brings-consumer-spending-into-focus-ai-rocked-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · settimana di Black Friday ↗</a></div></div></div>
+</div>
+<div class="next-story"><span>FINE DEL NUMERO · PROSSIMA REVISIONE A DATI CHIUSI</span><strong>Macro → Aspettative → Operatori → Prezzo → Audit</strong></div>
+</section>
+<section class="finale"><div class="overline">La mia conclusione</div><blockquote>«Per me il primo segnale credibile di recupero è vedere compratori anche fuori dai grandi titoli AI. Il Russell mi dice se la ripresa si allarga in borsa. Il premio sul credito mi dice se la fiducia torna anche verso le aziende più fragili. Se migliorano insieme, cambia il mio giudizio sul rimbalzo.»</blockquote></section>
+<section class="sources details"><details><summary>Fonti, audit e metodologia · apri dettagli</summary>
+<p><b>Periodo.</b> Settimana 16–20 novembre, pubblicazione sabato 21. Indici cash confrontati fra chiusure locali. VIX spot dalla serie storica e da Cboe. Futures di dicembre e gennaio confrontati sugli stessi due contratti.</p>
+<p><b>Tassi e credito.</b> Treasury nominali e reali ufficiali fino al 20. Breakeven indicativo = nominale meno reale. Credito e finanziamento overnight osservati fino al 19. Le riserve H.4.1 sono una media della settimana fino al 18.</p>
+<p><b>Flussi.</b> LSEG Lipper fino al 18. Stime delle liquidazioni crypto sulla finestra mobile di CoinGlass riportata il 20. Riscatti ETF spot alla seduta del 19. L’attribuzione a singoli tipi di investitori resta ipotetica salvo dove il dato identifica il flusso.</p>
+<p><b>Valute e commodity.</b> Rendimenti FX dai fixing BCE di due venerdì. Le quotazioni Reuters nella seduta USA sono riportate separatamente. Oro sullo stesso future COMEX dicembre. Brent e WTI con settlement e variazioni settimanali approssimate attribuite a Reuters.</p>
+<div class="source-inline"><a href="https://apnews.com/article/wall-street-stocks-dow-nasdaq-c10b797a17c2acf37924d834efebe135" rel="noopener noreferrer" target="_blank">AP · chiusure USA 20/11 ↗</a> · <a href="https://www.reuters.com/world/china/global-markets-global-markets-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · mercati globali 20/11 ↗</a> · <a href="https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-third-quarter-fiscal-2027" rel="noopener noreferrer" target="_blank">Nvidia · risultati 17/11 ↗</a> · <a href="https://live.euronext.com/en/financial-news/nvidias-accounting-focus-us-sec-investigation-sources-say" rel="noopener noreferrer" target="_blank">Reuters · dettagli dell’indagine 20/11 ↗</a> · <a href="https://www.cboe.com/tradable-products/vix/" rel="noopener noreferrer" target="_blank">Cboe · VIX spot ↗</a> · <a href="https://www.investing.com/indices/volatility-s-p-500-historical-data" rel="noopener noreferrer" target="_blank">Investing.com · storico VIX ↗</a> · <a href="https://squawkflow.com/vix-term-structure" rel="noopener noreferrer" target="_blank">SquawkFlow · settlement dei futures 13 e 20/11 ↗</a> · <a href="https://www.reuters.com/markets/europe/european-shares-head-steepest-weekly-drop-since-march-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · STOXX 600 20/11 ↗</a> · <a href="https://www.reuters.com/world/china/global-markets-flows-graphic-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters / LSEG Lipper · fondi globali al 18/11 ↗</a> · <a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve&amp;field_tdr_date_value=2026" rel="noopener noreferrer" target="_blank">US Treasury · curva nominale ↗</a> · <a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_real_yield_curve&amp;field_tdr_date_value=2026" rel="noopener noreferrer" target="_blank">US Treasury · curva reale ↗</a> · <a href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" rel="noopener noreferrer" target="_blank">FRED · credito high yield ↗</a> · <a href="https://fred.stlouisfed.org/series/BAMLC0A0CM" rel="noopener noreferrer" target="_blank">FRED · credito investment grade ↗</a> · <a href="https://fred.stlouisfed.org/series/SOFR" rel="noopener noreferrer" target="_blank">FRED / NY Fed · SOFR ↗</a> · <a href="https://fred.stlouisfed.org/series/EFFR" rel="noopener noreferrer" target="_blank">FRED / NY Fed · effective Fed funds ↗</a> · <a href="https://www.federalreserve.gov/releases/h41/20261119/h41.pdf" rel="noopener noreferrer" target="_blank">Fed · bilancio H.4.1 al 18/11 ↗</a> · <a href="https://www.reuters.com/world/india/gold-set-worst-week-eight-months-firm-dollar-fed-hike-bets-weigh-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · oro 20/11 ↗</a> · <a href="https://www.xauusdglobal.com/gold-price-history/2026/11/" rel="noopener noreferrer" target="_blank">Storico settlement COMEX novembre ↗</a> · <a href="https://www.reuters.com/business/energy/oil-prices-edge-higher-houthi-attacks-riyadh-raise-supply-concerns-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · Brent e WTI 20/11 ↗</a> · <a href="https://www.ecb.europa.eu/stats/exchange/eurofxref/shared/pdf/2026/11/20261113.pdf" rel="noopener noreferrer" target="_blank">BCE · fixing 13/11 ↗</a> · <a href="https://www.ecb.europa.eu/stats/shared/pdf/eurofxref.pdf?f64eb1456a8d9f511c8d0ac3373cf438=" rel="noopener noreferrer" target="_blank">BCE · fixing 20/11 ↗</a> · <a href="https://www.reuters.com/technology/bitcoin-falls-below-60000-level-2026-11-20/" rel="noopener noreferrer" target="_blank">Reuters · Bitcoin 20/11 ↗</a> · <a href="https://www.coindesk.com/markets/2026/11/20/bitcoin-plunges-below-usd59-000-as-rush-to-cash-puts-new-bear-market-lows-back-in-play" rel="noopener noreferrer" target="_blank">CoinDesk / CoinGlass · derivati crypto 20/11 ↗</a> · <a href="https://www.theblock.co/news/markets/2026-11-20-us-spot-bitcoin-etfs-see-582-million-in-daily-net-outflows-as-november-total-nears-3-5-billion-444217" rel="noopener noreferrer" target="_blank">The Block · ETF spot USA al 19/11 ↗</a> · <a href="https://www.bea.gov/news/schedule/" rel="noopener noreferrer" target="_blank">BEA · calendario PCE e PIL ↗</a> · <a href="https://www.nyse.com/markets/hours-calendars" rel="noopener noreferrer" target="_blank">NYSE · orari Thanksgiving ↗</a></div>
+</details></section>
+<footer class="footer">Global Markets Review · DARK SLATE · V13 · 21 NOV 2026<br>Analisi indipendente · Dati e orari indicati per fonte</footer>
+</main></body></html>
