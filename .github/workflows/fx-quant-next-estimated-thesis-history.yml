@@ -28,7 +28,11 @@ on:
       - 'Rates Persistent Daily V1'
     types: [completed]
   schedule:
+    # Independent reconciliation in case completed producer events or push
+    # fan-out are delayed. A no-change check never creates a source commit.
+    # Morning/evening anchors stay intact; afternoon catches official closes.
     - cron: '35 8,17 * * 1-5'
+    - cron: '5 12-16 * * 1-5'
   workflow_dispatch:
 
 permissions:
@@ -50,6 +54,9 @@ jobs:
           node-version: '22'
       - run: node validation/pair_thesis/test_estimated_history_v1.cjs
       - run: node validation/pair_thesis/test_estimated_recalc_receipt_v1.cjs
+      - run: node validation/pair_thesis/test_estimated_recalc_readiness_v1.cjs
+      - name: Show whether sources already outran the last confirmed G8/28 receipt
+        run: node validation/pair_thesis/audit_estimated_recalc_readiness_v1.cjs
   capture:
     if: >-
       github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
@@ -102,3 +109,10 @@ jobs:
             sleep "$((2 * attempt))"
           done
           exit 1
+      - name: Re-audit live main G8/28 source parity after reconciliation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          git checkout --detach FETCH_HEAD
+          node validation/pair_thesis/audit_estimated_recalc_readiness_v1.cjs
