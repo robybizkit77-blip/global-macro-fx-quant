@@ -1,25 +1,25 @@
 {
   "schema": "GMFQ_NEXT_ESTIMATED_FX_RECALC_RECEIPT_V1",
-  "status": "NO_MATERIAL_THESIS_CHANGE",
-  "checkedAtUtc": "2026-11-23T14:31:45.089Z",
+  "status": "RECALCULATED_WITH_CHANGES",
+  "checkedAtUtc": "2026-11-23T16:01:36.569Z",
   "checkedDay": "2026-11-23",
-  "sourceCommit": "f6eb68b1ff4c382c435f4e2c720abaac1af6c9be",
+  "sourceCommit": "b2545078b944395c88115666e2be7abd8476e8ff",
   "method": "c54bb6f6a2fa76470e8c616c72b478e70735166b10c36cd32f35dddcf8cd0379",
   "sourceHashes": {
     "observed": "c767134251917677e24da3c830d0ef1dff5b481be9bf115d5f74eec9c0303015",
-    "prices": "76788b7529e016a98b6edaf79e230c5acce3ac2b5f39e54c2a836d14e891a930",
+    "prices": "6fe9c2fd8c9d1f70f40e901eb5cae5071aa7886df643d48447a043662ac235ec",
     "ois": "afe3e522e7a0b47233438e3ae74a3223869f037e8862913ab62ec37ddf2d73f3",
     "rates": "ac6256af4dd9c623e5fc7fbbefbebf9e7e3f68c19954396cbeac0be4114183fc",
     "model": "de44a4471976abcce6699790ed51412d1666d9708c8617defa0e46d0bb55a737"
   },
   "inputChanges": [
-    "model"
+    "prices"
   ],
   "methodChanged": false,
   "comparisonBasis": "PREVIOUS_RECEIPT",
   "previousFixingAsOf": "2026-11-20",
   "previousMacroAsOf": "2026-11-23",
-  "fixingAsOf": "2026-11-20",
+  "fixingAsOf": "2026-11-23",
   "macroAsOf": "2026-11-23",
   "legacyMacroAsOf": "2026-09-25",
   "coverage": {
@@ -28,8 +28,90 @@
     "official6M": 4,
     "withGDPAcceleration": 5
   },
-  "changedPairs": [],
+  "changedPairs": [
+    {
+      "key": "GBPNZD",
+      "previous": {
+        "favored": "GBP",
+        "thesis": "PARZIALE",
+        "timing": "BASSA ORA"
+      },
+      "current": {
+        "favored": "GBP",
+        "thesis": "PARZIALE",
+        "timing": "DA VALIDARE"
+      }
+    }
+  ],
   "changedRanks": [],
+  "factorChanges": [
+    {
+      "ccy": "EUR",
+      "rank": {
+        "previous": 5,
+        "current": 5
+      },
+      "changes": {
+        "score": {
+          "previous": -0.271429,
+          "current": -0.328571,
+          "delta": -0.057142
+        },
+        "macroScore": {
+          "previous": -0.6,
+          "current": -0.6,
+          "delta": 0
+        },
+        "policyScore": {
+          "previous": 0,
+          "current": 0,
+          "delta": 0
+        },
+        "priceScore": {
+          "previous": 0.142857,
+          "current": -0.142857,
+          "delta": -0.285714
+        }
+      },
+      "monetaryQuality": {
+        "previous": "PROXY",
+        "current": "PROXY"
+      }
+    },
+    {
+      "ccy": "GBP",
+      "rank": {
+        "previous": 1,
+        "current": 1
+      },
+      "changes": {
+        "score": {
+          "previous": 0.471429,
+          "current": 0.528571,
+          "delta": 0.057142
+        },
+        "macroScore": {
+          "previous": 1,
+          "current": 1,
+          "delta": 0
+        },
+        "policyScore": {
+          "previous": 0,
+          "current": 0,
+          "delta": 0
+        },
+        "priceScore": {
+          "previous": -0.142857,
+          "current": 0.142857,
+          "delta": 0.285714
+        }
+      },
+      "monetaryQuality": {
+        "previous": "UFFICIALE",
+        "current": "UFFICIALE"
+      }
+    }
+  ],
   "currencies": [
     {
       "ccy": "AUD",
@@ -67,10 +149,10 @@
     {
       "ccy": "EUR",
       "rank": 5,
-      "score": -0.271429,
+      "score": -0.328571,
       "macroScore": -0.6,
       "policyScore": 0,
-      "priceScore": 0.142857,
+      "priceScore": -0.142857,
       "monetaryQuality": "PROXY",
       "monetaryAsOf": "2026-11-20",
       "partial": true
@@ -78,10 +160,10 @@
     {
       "ccy": "GBP",
       "rank": 1,
-      "score": 0.471429,
+      "score": 0.528571,
       "macroScore": 1,
       "policyScore": 0,
-      "priceScore": -0.142857,
+      "priceScore": 0.142857,
       "monetaryQuality": "UFFICIALE",
       "monetaryAsOf": "2026-11-19",
       "partial": false
@@ -219,7 +301,7 @@
     "GBPNZD": {
       "favored": "GBP",
       "thesis": "PARZIALE",
-      "timing": "BASSA ORA"
+      "timing": "DA VALIDARE"
     },
     "GBPUSD": {
       "favored": "GBP",
