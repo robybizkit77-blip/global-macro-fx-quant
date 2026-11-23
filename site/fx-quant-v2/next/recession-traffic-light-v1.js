@@ -59,7 +59,7 @@ const MAP={
   jobs:[M('JP_UNEMP_RATE_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
         M('JP_EMPLOYED_history_value','Occupati',true,{unit:'decine di migliaia persone'})],
   industry:[M('JP_IIP_history_value','Produzione industriale',true,{unit:'indice 2020=100'})],
-  leading:[M('JP_BOJ_TANKAN_LEAD_INDICATORS_history_Large_Manufacturing_Forecast','Tankan manifattura: prospettive',true,{kind:'points',minimum:1,unit:'saldo sondaggio',pointUnit:'punti'})],
+  leading:[M('JP_BOJ_TANKAN_LEAD_INDICATORS_history_Large_Manufacturing_Forecast','Tankan manifattura: prospettive',true,{kind:'points',minimum:1,unit:'saldo sondaggio',pointUnit:'punti',freq:'Q'})],
   demand:[M('JP_RETAIL_history_value','Vendite al dettaglio',true,{unit:'indice 2020=100'})],
   credit:[M('JP_BANK_CREDIT_DOMESTIC_BANKS_history_value','Credito banche domestiche',true,{unit:'100 mln JPY'})]
  },
@@ -68,7 +68,7 @@ const MAP={
   jobs:[M('CH_UNEMP_RATE_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
         M('CH_EMPLOYMENT_history_value','Occupati',true,{unit:'persone'})],
   industry:[M('CH_PRODUCTION_history_value','Produzione industriale',true,{unit:'indice'})],
-  leading:[M('CH_SECO_CONSUMER_SENTIMENT_LEAD_history_SECO_Consumer_Sentiment','SECO: fiducia consumatori',true,{kind:'points',minimum:.2,unit:'saldo sondaggio',pointUnit:'punti'})],
+  leading:[M('CH_SECO_CONSUMER_SENTIMENT_LEAD_history_SECO_Consumer_Sentiment','SECO: fiducia consumatori',true,{kind:'points',minimum:.2,unit:'saldo sondaggio',pointUnit:'punti',freq:'Q'})],
   demand:[M('CH_RETAIL_REAL_history_value','Vendite reali al dettaglio',true,{unit:'indice'})],
   credit:[M('CH_BANK_CREDIT_CUSTOMERS_history_value','Credito bancario ai clienti',true,{unit:'mln CHF'})]
  },
@@ -89,7 +89,7 @@ const MAP={
   house:[M('CA_MORTGAGE_OUTSTANDING_UNINSURED_history_value','Mutui non assicurati (stock)',true,{unit:'mln CAD'})],
   jobs:[M('CA_UNEMP_RATE_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
         M('CA_EMPLOYMENT_history_value','Occupati',true,{unit:'mila persone'})],
-  leading:[M('CA_BOC_BOS_LEAD_INDICATORS_history_BOS_Activity_Indicator','BoC BOS: attività attesa',true,{kind:'points',minimum:.1,unit:'saldo sondaggio',pointUnit:'punti'})],
+  leading:[M('CA_BOC_BOS_LEAD_INDICATORS_history_BOS_Activity_Indicator','BoC BOS: attività attesa',true,{kind:'points',minimum:.1,unit:'saldo sondaggio',pointUnit:'punti',freq:'Q'})],
   demand:[M('CA_RETAIL_VOLUME_history_value','Volumi vendita al dettaglio',true,{unit:'mln CAD reali'})],
   credit:[M('CA_BUSINESS_LOANS_OUTSTANDING_history_value','Prestiti alle imprese',true,{unit:'mln CAD'})]
  }
@@ -121,13 +121,14 @@ function parsePeriod(s){
 function recentTwo(series,today){
  if(!series||!Array.isArray(series.dates)||!Array.isArray(series.values)||
      series.dates.length!==series.values.length)return null;
- const a=series.dates.map((period,i)=>({period,date:parsePeriod(period),value:series.values[i]}))
-   .filter(x=>x.date&&x.date<=today&&finite(x.value))
-   .sort((x,y)=>x.date.localeCompare(y.date));
+ const distinct=new Map();
+ series.dates.forEach((period,i)=>{
+  const date=parsePeriod(period),value=series.values[i];
+  if(date&&date<=today&&finite(value))distinct.set(date,{period,date,value});
+ });
+ const a=[...distinct.values()].sort((x,y)=>x.date.localeCompare(y.date));
  if(a.length<2)return null;
- const cur=a.at(-1),pre=a.at(-2);
- if(cur.date===pre.date)return null;
- return {cur,pre};
+ return {cur:a.at(-1),pre:a.at(-2)};
 }
 function inspect(metric,source,today){
  const pair=recentTwo(source,today);
@@ -139,7 +140,7 @@ function inspect(metric,source,today){
  const threshold=metric.minimum===undefined?.15:metric.minimum;
  const age=(Date.parse(today+'T12:00:00Z')-Date.parse(pair.cur.date+'T12:00:00Z'))/864e5;
  const gap=(Date.parse(pair.cur.date+'T12:00:00Z')-Date.parse(pair.pre.date+'T12:00:00Z'))/864e5;
- const freq=source.frequency||(/^(\d{4})-?Q[1-4]$/.test(pair.cur.period)?'Q':'M');
+ const freq=metric.freq||source.frequency||(/^(\d{4})-?Q[1-4]$/.test(pair.cur.period)?'Q':'M');
  const stale=age>(freq==='Q'?175:freq==='W'?42:85);
  const invalid=age>(freq==='Q'?300:freq==='W'?100:210)||
    gap>(freq==='Q'?200:freq==='W'?25:78);
