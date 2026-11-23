@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const {createHash}=require('node:crypto');
 const {evaluate}=require('../../site/fx-quant-v2/next/macro-strength-estimated-v1.js');
 const {currencyRanking}=require('../../site/fx-quant-v2/next/pair-rankings.js');
+const {build:buildReceipt}=require('./build_estimated_recalc_receipt_v1.cjs');
 const schema='GMFQ_NEXT_ESTIMATED_FX_THESIS_HISTORY_V1';
 const version='GMFQ_MACRO_STRENGTH_ESTIMATED_V1';
 const sources={
@@ -49,8 +50,9 @@ function update(history,estimate,{checked,commit,method,sourceHashes}){
  return {history:{schema,snapshots:[...history.snapshots,snapshot].slice(-35)},status:'RECORDED',fixing,changedPairs};
 }
 if(require.main===module){
- const [archive,output,commit]=process.argv.slice(2);
- if(!archive||!output||!commit)throw Error('Usage: updater archive.json output.json sourceCommit');
+ const [archive,output,commit,receiptPath,receiptOutput]=process.argv.slice(2);
+ if(!archive||!output||!commit||!receiptPath||!receiptOutput)
+  throw Error('Usage: updater archive.json output.json sourceCommit receipt.json receipt-output.json');
  const now=new Date();
  const checked={utc:now.toISOString(),day:new Intl.DateTimeFormat('sv-SE',{
   timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'
@@ -61,10 +63,20 @@ if(require.main===module){
  const method=hash(fs.readFileSync(engine,'utf8')+'\n'+currencyRanking.toString());
  const sourceHashes=Object.fromEntries(Object.entries(inputs).map(([key,body])=>[key,hash(body)]));
  const estimate=evaluate({...modelInputs,now:checked.day,rankingFn:currencyRanking});
- const result=update(read(archive),estimate,{checked,commit,method,sourceHashes});
+ const history=read(archive);
+ const result=update(history,estimate,{checked,commit,method,sourceHashes});
  if(result.status==='RECORDED')fs.writeFileSync(output,JSON.stringify(result.history,null,2)+'\n');
+ let audit=null;
  if(result.status==='ESTIMATE_SUSPENDED'||result.status==='OLDER_INPUTS')process.exitCode=1;
+ else{
+  const previous=fs.existsSync(receiptPath)?read(receiptPath):null;
+  audit=buildReceipt({previous,history,estimate,checked,commit,method,sourceHashes});
+  if(audit.write)fs.writeFileSync(receiptOutput,JSON.stringify(audit.receipt,null,2)+'\n');
+ }
  console.log(JSON.stringify({status:result.status,fixing:result.fixing,macroAsOf:estimate.asof,
-  changedPairs:result.changedPairs,reason:result.reason,count:result.history.snapshots.length}));
+  changedPairs:result.changedPairs,reason:result.reason,count:result.history.snapshots.length,
+  receiptStatus:audit?.status||null,receiptWritten:audit?.write||false,
+  changedSourceFamilies:audit?.receipt?.inputChanges||null,
+  changedCurrencyRanks:audit?.receipt?.changedRanks?.length??null}));
 }
 module.exports={schema,version,update};

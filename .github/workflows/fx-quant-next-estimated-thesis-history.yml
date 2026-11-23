@@ -49,6 +49,7 @@ jobs:
         with:
           node-version: '22'
       - run: node validation/pair_thesis/test_estimated_history_v1.cjs
+      - run: node validation/pair_thesis/test_estimated_recalc_receipt_v1.cjs
   capture:
     if: >-
       github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
@@ -68,23 +69,35 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Recalculate all 28 Next estimates and archive material thesis changes
+      - name: Recalculate G8 and 28 FX theses; persist inputs, changes and no-change proof
         shell: bash
         run: |
           set -euo pipefail
           archive=site/fx-quant-v2/next/pair-estimate-history-v1.json
+          receipt=site/fx-quant-v2/next/pair-estimate-recalc-receipt-v1.json
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           for attempt in 1 2 3 4 5; do
             git fetch --no-tags origin main
             git checkout --detach FETCH_HEAD
-            rm -f "$RUNNER_TEMP/next-estimated-thesis.json"
+            rm -f "$RUNNER_TEMP/next-estimated-thesis.json" "$RUNNER_TEMP/next-estimated-recalc-receipt.json"
             node validation/pair_thesis/update_estimated_history_v1.cjs \
-              "$archive" "$RUNNER_TEMP/next-estimated-thesis.json" "$(git rev-parse HEAD)" | tee -a "$GITHUB_STEP_SUMMARY"
-            if [[ ! -f "$RUNNER_TEMP/next-estimated-thesis.json" ]]; then exit 0; fi
-            cp "$RUNNER_TEMP/next-estimated-thesis.json" "$archive"
-            git add -- "$archive"
-            git commit -m 'Record dated Next estimated FX theses'
+              "$archive" "$RUNNER_TEMP/next-estimated-thesis.json" "$(git rev-parse HEAD)" \
+              "$receipt" "$RUNNER_TEMP/next-estimated-recalc-receipt.json" | tee -a "$GITHUB_STEP_SUMMARY"
+            if [[ ! -f "$RUNNER_TEMP/next-estimated-thesis.json" &&
+                  ! -f "$RUNNER_TEMP/next-estimated-recalc-receipt.json" ]]; then
+              echo 'RECALC_RECEIPT_ALREADY_CURRENT' >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            if [[ -f "$RUNNER_TEMP/next-estimated-thesis.json" ]]; then
+              cp "$RUNNER_TEMP/next-estimated-thesis.json" "$archive"
+            fi
+            if [[ -f "$RUNNER_TEMP/next-estimated-recalc-receipt.json" ]]; then
+              cp "$RUNNER_TEMP/next-estimated-recalc-receipt.json" "$receipt"
+            fi
+            git add -- "$archive" "$receipt"
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m 'Record verified G8/28 estimated FX recalculation receipt'
             if git push origin HEAD:main; then exit 0; fi
             sleep "$((2 * attempt))"
           done
