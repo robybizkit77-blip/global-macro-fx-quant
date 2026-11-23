@@ -51,7 +51,8 @@ if(raw.status==='RECALCULATED_WITH_CHANGES'){
 }else assert.match(first,/Prima fotografia verificata/);
 if(raw.changedRanks===null)
  assert.match(first,/La variazione delle posizioni G8 non è confrontabile/);
-assert.match(first,/Macro [\d/]+/);
+assert.match(first,/Macro (?:al )?\d{2}\/\d{2}\/\d{4}/,
+ 'The macro observation date must be visible for both same-period and updated receipts');
 assert.match(first,/FX [\d/]+/);
 assert.match(first,/verifica la ricevuta originale/i);
 assert.match(first,/un backtest/);
