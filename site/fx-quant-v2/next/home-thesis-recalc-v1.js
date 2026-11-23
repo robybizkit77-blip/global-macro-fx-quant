@@ -51,12 +51,42 @@
    return false;
   return true;
  };
+ // Content proof: even if dates agree, a new same-day macro/OIS/FX input
+ // must invalidate the previous receipt until the producer has recalculated.
+ const sourceMatches=(receipt,sourceHashes)=>Boolean(sourceHashes&&
+  Object.keys(SOURCES).every(k=>typeof sourceHashes[k]==='string'&&
+   sourceHashes[k]===receipt.sourceHashes[k]));
+ const score=n=>finite(n)?Number(n.toFixed(6)):null;
+ const outputMatches=(receipt,estimate)=>{
+  if(estimate?.schema!=='GMFQ_MACRO_STRENGTH_ESTIMATED_V1'||
+   !Array.isArray(estimate.pairs)||estimate.pairs.length!==28||
+   !Array.isArray(estimate.currencies)||estimate.currencies.length!==8||
+   estimate.coverage?.official6M!==receipt.coverage.official6M||
+   estimate.coverage?.withGDPAcceleration!==receipt.coverage.withGDPAcceleration)
+   return false;
+  const pairs=new Map(estimate.pairs.map(p=>[p.key,p]));
+  if(pairs.size!==28||Object.entries(receipt.pairs).some(([k,v])=>{
+   const current=pairs.get(k);
+   return !current||v.favored!==current.favored||
+    v.thesis!==current.thesisStrength||v.timing!==current.tradeAttractiveness;
+  }))return false;
+  const currencies=new Map(estimate.currencies.map(c=>[c.ccy,c]));
+  return currencies.size===8&&receipt.currencies.every(stored=>{
+   const c=currencies.get(stored.ccy);
+   return c&&stored.rank===c.rank&&stored.score===score(c.score)&&
+    stored.macroScore===score(c.macroScore)&&
+    stored.policyScore===score(c.policyScore)&&
+    stored.priceScore===score(c.priceScore)&&
+    stored.monetaryQuality===c.rate?.quality&&
+    stored.monetaryAsOf===(c.rate?.asof??null)&&stored.partial===c.partial;
+  });
+ };
  const fallback=(reason,d)=>'<section class="fx-recalc-pulse fx-recalc-unverified" id="fx-recalc-pulse" data-recalc-state="UNVERIFIED" aria-label="Verifica ricalcolo FX">'+
    '<div class="fx-recalc-head"><span class="fx-recalc-overline">MONITOR TESI · G8 / 28 COPPIE</span>'+
    '<span class="fx-recalc-state">VERIFICA SOSPESA</span></div>'+
    '<p>Il ricalcolo delle tesi FX non è attestato sulla fotografia corrente. '+safeEscape(reason)+
    '</p><small>'+safeEscape(d||'Non confondere un indice rimasto invariato con un controllo eseguito.')+'</small></section>';
- function render({receipt,observed,prices,estimate,today}={}){
+ function render({receipt,observed,prices,estimate,sourceHashes,today}={}){
   if(!receiptOK(receipt))return fallback('Ricevuta assente o non valida.');
   if(!iso(today)||receipt.checkedDay>today||
     (Date.parse(today+'T12:00:00Z')-Date.parse(receipt.checkedDay+'T12:00:00Z'))/864e5>7)
@@ -69,6 +99,12 @@
     estimate?.coverage?.currencies!==8||estimate?.coverage?.pairs!==28)
    return fallback('La ricevuta non coincide con le date o con la copertura delle fonti attualmente caricate.',
     'Ricevuta: Macro '+safeDate(macro)+' · FX '+safeDate(fixing)+'.');
+  if(!sourceMatches(receipt,sourceHashes))
+   return fallback('Uno o più file sorgente sono cambiati, oppure non sono stati verificati byte per byte. Serve una nuova ricevuta di ricalcolo.',
+    'Il semplice allineamento delle date non certifica che le tesi FX siano invariate.');
+  if(!outputMatches(receipt,estimate))
+   return fallback('La classifica G8 o i giudizi delle 28 coppie non coincidono con il ricalcolo corrente.',
+    'Il confronto usa il motore stimato di base, prima dei proxy aggiuntivi di ricerca.');
   const cp=receipt.changedPairs,cr=receipt.changedRanks;
   const pairCount=Array.isArray(cp)?cp.length:null;
   const rankCount=Array.isArray(cr)?cr.length:null;
@@ -135,7 +171,7 @@
    'target="_blank" rel="noopener noreferrer">Verifica la ricevuta originale su GitHub</a>'+
    '</div></details></section>';
  }
- const api={render,receiptOK};
+ const api={render,receiptOK,sourceMatches,outputMatches};
  root.FXQuantHomeThesisRecalc=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

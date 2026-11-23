@@ -544,11 +544,19 @@ function overview(){
    today:dayNow(),prices:get('currencyPrices'),pairs:get('pairs'),
    history:get('oisHistory')
   })||'');
- // This source-dated evidence is independent of the approved editorial lead.
+ // The receipt refers to the unadjusted G8/28 estimated engine; the CHF
+ // supplemental research overlay is explicitly outside this audit.
+ const auditEstimate=state?.data?.thesisRecalcReceipt?
+  window.FXQuantMacroEstimated?.evaluate?.({
+   observed:get('macroObserved'),prices:get('currencyPrices'),
+   ois:get('ois'),rates:get('rates'),model:get('pairs'),now:dayNow(),
+   rankingFn:window.FXQuantPairRankings?.currencyRanking
+  }):null;
  const recalcProof=typeof window==='undefined'?'':(
   window.FXQuantHomeThesisRecalc?.render?.({
    receipt:get('thesisRecalcReceipt'),observed:get('macroObserved'),
-   prices:get('currencyPrices'),estimate:get('estimatedMacro'),today:dayNow()
+   prices:get('currencyPrices'),estimate:auditEstimate,
+   sourceHashes:get('thesisSourceHashes'),today:dayNow()
   })||'');
  const desk=typeof window==='undefined'?null:window.FXQuantHourlyDesk;
  const hourlyFeed=get('hourlyDesk'),morning=get('morningDesk');
@@ -1501,18 +1509,35 @@ async function loadAll(){
  if(refreshInProgress)return;
  refreshInProgress=true;
  const nextData={},nextErrors={};
+ // Fingerprint the five canonical source files before JSON parsing.
+ // Missing WebCrypto leaves their original data usable but suspends audit proof.
+ const receiptFileKeys={rates:'rates',currencyPrices:'prices',
+  pairs:'model',macroObserved:'observed',ois:'ois'};
+ const receiptHashes={};
  const jobs=Object.entries(SOURCES).map(async([key,path])=>{
   const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),10000);
   try{
    const r=await fetch(path,{cache:'no-store',signal:ctl.signal});
    if(!r.ok)throw Error('HTTP '+r.status);
-   const d=await r.json();
+   const auditKey=receiptFileKeys[key];
+   const raw=auditKey?await r.text():null;
+   const d=auditKey?JSON.parse(raw):await r.json();
    if(d===null||typeof d!=='object')throw Error('JSON non valido');
    if(key==='pairs'&&d.pair_count!==28)throw Error('28 coppie non validate');
    if(key==='risk'&&!d.streams)throw Error('Stream cross-asset mancanti');
    if(key==='ois'&&!d.currencies)throw Error('Pricing assente');
    if(key==='dxy'&&d.not_official_ice!==true)throw Error('DXY non classificato');
    nextData[key]=d;
+   if(auditKey){
+    try{
+     const bytes=new TextEncoder().encode(raw);
+     const digest=await window.crypto.subtle.digest('SHA-256',bytes);
+     receiptHashes[auditKey]=Array.from(new Uint8Array(digest),
+      b=>b.toString(16).padStart(2,'0')).join('');
+    }catch(e){
+     // Never turn digest availability into false "no change" evidence.
+    }
+   }
   }catch(e){nextErrors[key]=String(e.message||e);}
   finally{clearTimeout(timer)}
  });
@@ -1566,6 +1591,7 @@ async function loadAll(){
  try{
   await Promise.allSettled(jobs);
   // Rebuild from the same fetch cycle. A failed source is never reused as current.
+  nextData.thesisSourceHashes=receiptHashes;
   state.data=nextData;
   state.errors=nextErrors;
   lastResearchRefresh=Date.now();
