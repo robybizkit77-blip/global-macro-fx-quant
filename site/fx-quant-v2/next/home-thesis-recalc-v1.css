@@ -17,6 +17,11 @@
 .fx-recalc-core h2{font-size:clamp(14px,1.6vw,18px);line-height:1.4;
  margin:0 0 5px;color:#f3fbfc;font-weight:790;letter-spacing:-.015em}
 .fx-recalc-core p,.fx-recalc-unverified>p{margin:0;color:#c5dee3;font-size:12px;line-height:1.65}
+.fx-recalc-driver,.fx-recalc-invalidation{font-size:11px!important;line-height:1.65!important;
+ margin-top:8px!important;padding-left:9px;border-left:2px solid rgba(121,209,184,.5);
+ color:#c1dee1!important}
+.fx-recalc-invalidation{color:#e6d0ac!important;border-left-color:rgba(225,179,110,.63)}
+.fx-recalc-driver strong,.fx-recalc-invalidation strong{font-weight:800;color:#eaf5f3}
 .fx-recalc-date{display:flex;flex-direction:column;gap:3px;text-align:right;font-size:10px;color:#a9c7d1}
 .fx-recalc-date strong{color:#a6e1ca;font-size:11px}
 .fx-recalc-links{justify-content:flex-start;margin-top:11px;gap:7px 16px}
