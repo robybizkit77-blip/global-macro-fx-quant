@@ -1,19 +1,19 @@
 {
   "schema": "GMFQ_NEXT_ESTIMATED_FX_RECALC_RECEIPT_V1",
   "status": "NO_MATERIAL_THESIS_CHANGE",
-  "checkedAtUtc": "2026-11-23T16:07:23.063Z",
+  "checkedAtUtc": "2026-11-23T16:25:05.115Z",
   "checkedDay": "2026-11-23",
-  "sourceCommit": "e3ea59dc519e95335e340464089150fa312377c9",
+  "sourceCommit": "9af4217c3727dbb1c406f335ec335b76ecb44b38",
   "method": "c54bb6f6a2fa76470e8c616c72b478e70735166b10c36cd32f35dddcf8cd0379",
   "sourceHashes": {
     "observed": "c767134251917677e24da3c830d0ef1dff5b481be9bf115d5f74eec9c0303015",
     "prices": "6fe9c2fd8c9d1f70f40e901eb5cae5071aa7886df643d48447a043662ac235ec",
     "ois": "25cd69f72485ac24934fd7059af2c3c2b00dd83ee67718402470fc7847de8e4b",
     "rates": "ac6256af4dd9c623e5fc7fbbefbebf9e7e3f68c19954396cbeac0be4114183fc",
-    "model": "de44a4471976abcce6699790ed51412d1666d9708c8617defa0e46d0bb55a737"
+    "model": "5cdfd8b686bffe30fbc768ea6e1fe8db4bf5ca5bff4ec1fc4ccb76f617ef1135"
   },
   "inputChanges": [
-    "ois"
+    "model"
   ],
   "methodChanged": false,
   "comparisonBasis": "PREVIOUS_RECEIPT",
