@@ -95,8 +95,14 @@
   if(r.status!=='RECALCULATED_WITH_CHANGES')return null;
   const changed=r.inputChanges||[];
   const unique=changed.length===1&&!r.methodChanged?changed[0]:null;
-  const shared=(r.changedPairs||[]).length?
-   [...FXS].find(ccy=>r.changedPairs.every(p=>p.key.includes(ccy))):null;
+  const common=[...FXS].filter(ccy=>
+   (r.changedPairs||[]).length>0&&r.changedPairs.every(p=>p.key.includes(ccy)));
+  // One changed pair has two currencies: infer neither unless exactly one
+  // has the relevant government 2Y proxy used by this rates-only calculation.
+  const proxyCommon=common.filter(ccy=>
+   estimate?.currencies?.find(c=>c.ccy===ccy)?.rate?.kind==='GOV_2Y_PROXY');
+  const shared=common.length===1?common[0]:
+   unique==='rates'&&proxyCommon.length===1?proxyCommon[0]:null;
   const raw=estimate?.currencies?.find(c=>c.ccy===shared);
   let reason='';
   if(r.methodChanged)reason='È cambiata anche la metodologia: non è possibile attribuire le revisioni a una sola fonte di mercato.';
