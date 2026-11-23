@@ -253,8 +253,15 @@ jobs:
           nzd=json.loads((root/paths[2]).read_text(encoding='utf-8'))
           expected=research['NZD']
           latest=nzd['daily_observations'][-1]
-          assert expected['latest_date']==latest['date']
-          assert expected['latest_2Y']==latest['2Y'] and expected['latest_10Y']==latest['10Y']
+          # The benchmark and post-roll files are independent research snapshots.
+          # Equal observation dates must agree exactly; a later benchmark capture
+          # is valid only when its disclosed source release is also later.
+          if expected['latest_date'] == latest['date']:
+              assert expected['latest_2Y'] == latest['2Y']
+              assert expected['latest_10Y'] == latest['10Y']
+          else:
+              assert expected['latest_date'] > latest['date']
+              assert expected['source_release_date'] > nzd['source_release_date']
           assert research['CHF']['paired_date']==chf['last_observation_date']
           assert research['eligible_for_fx_pair_engine'] is False
           assert nzd['eligible_for_core'] is False and nzd['eligible_for_fx_pair_engine'] is False

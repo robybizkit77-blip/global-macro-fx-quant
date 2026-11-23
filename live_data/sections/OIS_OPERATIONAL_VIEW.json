@@ -445,31 +445,30 @@
       "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
     },
     "USD": {
-      "as_of": "2026-11-20",
+      "as_of": "2026-11-23",
       "backtest_eligible_as_official": false,
       "change_1d_available": false,
       "change_1w_available": false,
-      "confidence": "C",
-      "conflicted_source_eligible_for_repricing": false,
-      "direction_vs_policy": null,
+      "confidence": "B",
+      "direction_vs_policy": "WITHHELD",
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQX2027",
           "contract_description": "Nov 2027",
           "expiration": "2027-12-01",
-          "futures_price": 95.51,
+          "futures_price": 95.47,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-20T21:58:56Z",
-          "quote_as_of": "2026-11-20",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
-          "rate": null,
+          "price_valid_until": "2026-11-23T21:03:31Z",
+          "quote_as_of": "2026-11-23",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": 4.53,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_minus_spot_policy_bp": 65.5,
           "symbol": "CBOT:ZQX2027"
         },
         "3m": {
@@ -486,9 +485,9 @@
           "quote_as_of": "2026-11-23",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": null,
+          "rate": 4.285,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_minus_spot_policy_bp": 41.0,
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
@@ -505,18 +504,17 @@
           "quote_as_of": "2026-11-23",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": null,
+          "rate": 4.485,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_minus_spot_policy_bp": 61.0,
           "symbol": "CBOT:ZQK2027"
         }
       },
-      "input_mode": "LIVE_SECONDARY_CONFLICT_INDICATIVE",
+      "input_mode": "LIVE_SECONDARY_OVERLAY",
       "market_direction_proxy": null,
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
-      "note": "Indicative secondary futures quotes have unresolved same-contract/same-day source disagreement; first and later prints are preserved separately. Levels may be displayed as provisional estimates only. No official OIS, policy delta or 1D/1W repricing is certified.",
       "official_status": "WITHHELD",
-      "operational_status": "WITHHELD",
+      "operational_status": "GREEN_ESTIMATED",
       "policy_rate": 3.875,
       "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
@@ -530,18 +528,7 @@
         "weekly_min_age_days": 5,
         "weekly_reference_captured_at_utc": null
       },
-      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "source_conflict_keys": [
-        {
-          "contract": "ZQX2027",
-          "event_id": "782b785a0c81f4cfc3ea0640198551d9b66668070960c4e49f07d7ac8fb817d9",
-          "horizon": "12m",
-          "observation_date": "2026-11-20"
-        }
-      ],
-      "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
-      "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS",
-      "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
+      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
     }
   },
   "official_runtime_untouched": true,
@@ -549,9 +536,9 @@
   "status": "PARTIAL_WITHHELD",
   "summary": {
     "g8_total": 8,
-    "green_estimated": 1,
+    "green_estimated": 2,
     "green_official": 4,
-    "operational_green": 5,
-    "operational_withheld": 3
+    "operational_green": 6,
+    "operational_withheld": 2
   }
 }
