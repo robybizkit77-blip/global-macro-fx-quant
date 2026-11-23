@@ -1,115 +1,234 @@
 'use strict';
-/* Semaforo economico USA: ricerca descrittiva, non un modello di probabilita' di recessione.
-   Legge esclusivamente MACRO_SERIES, non riscrive la fonte, il Core FX o il pricing. */
+/*
+ * FX Quant NEXT — G8 Economic Traffic Light.
+ * Per-economy descriptive changes only, NEVER an NBER/recession forecast,
+ * cross-country economic score, FX signal, or point-in-time release surprise.
+ * Source: read-only live_data/sections/MACRO_SERIES.json.
+ */
 (function(root){
-  const GROUPS=[
-    {key:'house',name:'Immobiliare',why:'Nuove costruzioni e permessi anticipano una parte della domanda ciclica.',metrics:[
-      {id:'US_PERMIT_history_PERMIT',name:'Permessi edilizi',upGood:true,unit:'mila annualizzati'},
-      {id:'US_HOUST_history_HOUST',name:'Nuovi cantieri',upGood:true,unit:'mila annualizzati'}]},
-    {key:'jobs',name:'Lavoro',why:'Assunzioni nette e sussidi misurano lati diversi del mercato del lavoro.',metrics:[
-      {id:'US_PAYEMS_history_value',name:'Payrolls',upGood:true,unit:'mila occupati'},
-      {id:'US_CCSA_history_CCSA',name:'Sussidi continuativi',upGood:false,scale:1000000,unit:'mln persone'}]},
-    {key:'industry',name:'Manifattura',why:'Produzione e ordini non sono la stessa cosa: le divergenze contano.',metrics:[
-      {id:'US_INDPRO_history_value',name:'Produzione industriale',upGood:true,unit:'indice'},
-      {id:'US_NEWORDER_history_NEWORDER',name:'Nuovi ordini core',upGood:true,hideValue:true,unit:'unità originali non specificate'}]},
-    {key:'leading',name:'Indicatore anticipatore',why:'Il CFNAI è un indicatore composito della Fed di Chicago, non il LEI del Conference Board.',metrics:[
-      {id:'US_CFNAI_LEAD_INDICATOR_history_CFNAI',name:'CFNAI',upGood:true,kind:'points',minimum:0.05,unit:'indice'}]},
-    {key:'demand',name:'Consumi e domanda',why:'I volumi reali aiutano a capire se il consumatore continua a sostenere la crescita.',metrics:[
-      {id:'US_PCEC96_history_value',name:'Consumi reali',upGood:true,unit:'mld USD reali SAAR'},
-      {id:'US_RRSFS_history_value',name:'Vendite reali al dettaglio',upGood:true,unit:'mln USD reali'}]},
-    {key:'credit',name:'Credito',why:'Standard sui prestiti e quantità di credito possono muoversi in direzioni diverse.',metrics:[
-      {id:'US_SLOOS_CI_LARGE_MIDDLE_history_value',name:'SLOOS: restrizione standard imprese',upGood:false,kind:'points',minimum:1,unit:'saldo percentuale'},
-      {id:'US_TOTBKCR_history_value',name:'Credito bancario totale',upGood:true,unit:'mld USD'}]}
-  ];
-  const isNum=v=>typeof v==='number'&&Number.isFinite(v);
-  function canonicalDate(x){
-    if(typeof x!=='string')return null;
-    const q=x.match(/^(\d{4})-?Q([1-4])$/);
-    if(q)return q[1]+'-'+String(Number(q[2])*3).padStart(2,'0')+'-01';
-    const d=x.match(/^(\d{4})-(\d{2})(?:-(\d{2}))?/);
-    if(!d)return null;
-    return d[1]+'-'+d[2]+'-'+(d[3]||'01');
-  }
-  function latest(series,today){
-    if(!series||!Array.isArray(series.dates)||!Array.isArray(series.values)||series.dates.length!==series.values.length)return null;
-    const pairs=series.dates.map((d,i)=>({date:canonicalDate(d),period:d,value:series.values[i]}))
-      .filter(x=>x.date&&x.date<=today&&isNum(x.value))
-      .sort((a,b)=>a.date.localeCompare(b.date));
-    if(pairs.length<2)return null;
-    return {current:pairs.at(-1),previous:pairs.at(-2)};
-  }
-  function inspect(metric,series,today){
-    const last=latest(series,today);
-    if(!last)return null;
-    const c=last.current.value,p=last.previous.value;
-    const diff=c-p,pct=p!==0?100*diff/Math.abs(p):null;
-    const kind=metric.kind||'percent';
-    const min=metric.minimum===undefined?.15:metric.minimum;
-    const movement=kind==='points'?diff:pct;
-    const verdict=!isNum(movement)||Math.abs(movement)<min?0:Math.sign(movement)*(metric.upGood?1:-1);
-    const age=Math.round((Date.parse(today+'T12:00:00Z')-Date.parse(last.current.date+'T12:00:00Z'))/86400000);
-    const f=String(series.frequency||'M').toUpperCase();
-    const stale=age>(f==='W'?42:f==='Q'?180:80);
-    const invalid=age>(f==='W'?90:f==='Q'?300:180);
-    return {metric,current:c,diff,pct,kind,verdict:invalid?null:verdict,period:last.current.period,
-      source:String(series.source_file||'MACRO_SERIES'),stale,invalid,age,frequency:f};
-  }
-  function classify(items,needed){
-    const a=items.filter(Boolean).filter(x=>x.verdict!==null);
-    if(a.length<needed)return {tone:'neutral',label:'Non classificabile'};
-    if(a.every(x=>x.verdict===1))return {tone:'green',label:'Verde'};
-    if(a.every(x=>x.verdict===-1))return {tone:'red',label:'Rosso'};
-    return {tone:'amber',label:'Giallo'};
-  }
-  function model(catalog,today){
-    const a=Array.isArray(catalog?.USD)?catalog.USD:[];
-    const source=new Map(a.map(s=>[s.id,s]));
-    return GROUPS.map(group=>{
-      const items=group.metrics.map(m=>inspect(m,source.get(m.id),today));
-      return {...group,items,signal:classify(items,group.metrics.length)};
-    });
-  }
-  function render(args){
-    const catalog=args?.catalog||{},today=args?.dayNow?.()||'';
-    const esc=args?.esc||((x)=>String(x??''));
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(today))return '';
-    const rows=model(catalog,today);
-    const num=(x,n=1)=>isNum(x)?x.toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n}):'—';
-    const delta=(x,unit)=>!isNum(x)?'—':(x>0?'+':x<0?'−':'')+num(Math.abs(x),unit==='p.p.'?1:2)+(unit==='p.p.'?' p.p.':'%');
-    const itemLine=x=>{
-      if(!x)return '<span class="sem-missing">Serie non presente nel feed</span>';
-      const scaled=x.metric.scale?x.current/x.metric.scale:x.current;
-      const n=x.metric.scale?2:(x.metric.kind==='points'?2:Math.abs(scaled)>100?0:1);
-      const reading=x.metric.hideValue?'variazione vs periodo precedente':num(scaled,n)+' '+esc(x.metric.unit);
-      const change=x.kind==='points'?delta(x.diff,'p.p.'):delta(x.pct,'%');
-      const isPoints=x.kind==='points';
-      const diffUnit=x.metric.id==='US_SLOOS_CI_LARGE_MIDDLE_history_value'?' p.p.':' punti';
-      return '<div class="sem-measure"><div><strong>'+esc(x.metric.name)+'</strong> <span>'+esc(reading)+'</span> <b>'+esc(isPoints?((x.diff>0?'+':x.diff<0?'−':'')+num(Math.abs(x.diff),2)+diffUnit):change)+'</b></div>'+
-        '<small>Periodo '+esc(x.period)+' · '+esc(x.source)+(x.stale?' · osservazione datata':'')+'</small></div>';
-    };
-    const dated=rows.some(r=>r.items.some(x=>x&&x.stale));
-    const reds=rows.filter(r=>r.signal.tone==='red').map(r=>r.name.toLowerCase());
-    const greens=rows.filter(r=>r.signal.tone==='green').map(r=>r.name.toLowerCase());
-    const intro=reds.length?'Negli ultimi due periodi presenti nel feed, il segnale direzionale negativo riguarda '+reds.join(' e ')+'.':
-      'Le ultime osservazioni non mostrano due deterioramenti concordi nei gruppi verificabili.';
-    const counter=greens.length?' Il quadro è sostenuto, sullo stesso criterio, da '+greens.join(' e ')+'.':'';
-    return '<section class="recession-light" aria-labelledby="recession-light-title">'+
-      '<header class="sem-head"><div><span class="sem-kicker">GLOBAL MACRO / USA / LETTURA CICLICA</span>'+
-      '<h2 id="recession-light-title">Il semaforo economico</h2>'+
-      '<p>'+esc(intro+counter)+' Sono segnali descrittivi, non una diagnosi di recessione.</p></div>'+
-      '<span class="sem-date">Consultazione '+esc(today)+' · periodi nelle righe</span></header>'+
-      '<div class="sem-table" role="table" aria-label="Semaforo economico USA">'+
-      '<div class="sem-columns" role="row"><span role="columnheader">Area</span><span role="columnheader">Ultima evidenza disponibile</span><span role="columnheader">Segnale</span></div>'+
-      rows.map(r=>'<div class="sem-row" role="row"><div class="sem-area" role="cell"><strong>'+esc(r.name)+'</strong><small>'+esc(r.why)+'</small></div>'+
-        '<div class="sem-evidence" role="cell">'+r.items.map(itemLine).join('')+'</div>'+
-        '<div class="sem-signal" role="cell"><span class="sem-pill '+r.signal.tone+'"><i aria-hidden="true"></i>'+esc(r.signal.label)+'</span>'+
-        (r.items.some(x=>x&&x.stale)?'<small>Presenza di dati datati</small>':'')+'</div></div>').join('')+'</div>'+
-      '<div class="sem-policy"><div><span>POLITICA MONETARIA · LETTURA SEPARATA</span>'+
-      '<p>La Fed e le aspettative sui tassi possono amplificare o mitigare i rischi ciclici, ma non sono un indicatore diretto di recessione.</p></div>'+
-      '<a href="#rates">Verifica Fed, Treasury e OIS ↗</a></div>'+
-      '<p class="sem-foot">Metodo: verde = tutti i sottoindicatori disponibili migliorano rispetto alla rilevazione precedente; rosso = tutti peggiorano; giallo = quadro misto o sostanzialmente stabile. Soglie anti-rumore descrittive: 0,15% sulle variazioni relative, 0,05 punti CFNAI e 1 punto SLOOS. Dati troppo vecchi o incompleti restano non classificabili. '+(dated?'Sono presenti osservazioni datate: non interpretare il semaforo come fotografia intraday. ':'')+'I periodi mostrati NON equivalgono alle date di pubblicazione. La fonte è il feed storico MACRO_SERIES (revisionabile); nessun modello NBER o probabilità di recessione è implicato.</p>'+
-      '</section>';
-  }
-  root.FXQuantRecessionLight={render,model};
-  if(typeof module!=='undefined'&&module.exports)module.exports={render,model};
+const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+const NAMES={USD:'Stati Uniti',EUR:'Area euro',GBP:'Regno Unito',JPY:'Giappone',
+ CHF:'Svizzera',AUD:'Australia',NZD:'Nuova Zelanda',CAD:'Canada'};
+const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',AUD:'🇦🇺',NZD:'🇳🇿',CAD:'🇨🇦'};
+const AREAS=[
+ {key:'house',name:'Immobiliare',short:'Case',why:'Domanda di abitazioni, costruzioni e credito casa. Gli stock di mutui non misurano da soli le nuove compravendite.'},
+ {key:'jobs',name:'Lavoro',short:'Lavoro',why:'Occupazione e disoccupazione descrivono parti diverse del ciclo; livelli e assunzioni non sono sinonimi.'},
+ {key:'industry',name:'Manifattura',short:'Industria',why:'Produzione industriale e ordini possono anticipare cambiamenti nella domanda, ma non sono il PIL.'},
+ {key:'leading',name:'Indicatore anticipatore',short:'Anticipatori',why:'Indici compositi e sondaggi misurano aspettative o condizioni, non il PIL realizzato.'},
+ {key:'demand',name:'Consumi e domanda',short:'Consumi',why:'La domanda effettiva sostiene il ciclo. Se la serie è nominale, l’inflazione non è stata sottratta.'},
+ {key:'credit',name:'Credito',short:'Credito',why:'Stock, condizioni e domanda di prestiti sono fenomeni differenti. Più stock non prova maggiore disponibilità di nuovo credito.'}
+];
+const M=(id,name,upGood,extra={})=>({id,name,upGood,...extra});
+/* Whitelist explicit: no inferred signs or invented substitutes across G8.
+ * kind=points for rates, surveys or GDP growth rates; default is level
+ * with an absolute percentage change (not percent points).
+ */
+const MAP={
+ USD:{
+  house:[M('US_PERMIT_history_PERMIT','Permessi edilizi',true,{unit:'mila annualizzati'}),
+         M('US_HOUST_history_HOUST','Nuovi cantieri',true,{unit:'mila annualizzati'})],
+  jobs:[M('US_PAYEMS_history_value','Payrolls',true,{unit:'mila occupati'}),
+        M('US_CCSA_history_CCSA','Sussidi continuativi',false,{scale:1000000,unit:'mln persone'})],
+  industry:[M('US_INDPRO_history_value','Produzione industriale',true,{unit:'indice'}),
+            M('US_NEWORDER_history_NEWORDER','Nuovi ordini core',true,{hideValue:true})],
+  leading:[M('US_CFNAI_LEAD_INDICATOR_history_CFNAI','CFNAI',true,{kind:'points',minimum:.05,unit:'indice',pointUnit:'punti'})],
+  demand:[M('US_PCEC96_history_value','Consumi reali',true,{unit:'mld USD reali SAAR'}),
+          M('US_RRSFS_history_value','Vendite reali al dettaglio',true,{unit:'mln USD reali'})],
+  credit:[M('US_SLOOS_CI_LARGE_MIDDLE_history_value','SLOOS: standard restrittivi',false,{kind:'points',minimum:1,unit:'saldo percentuale',pointUnit:'p.p.'}),
+          M('US_TOTBKCR_history_value','Credito bancario totale',true,{unit:'mld USD'})]
+ },
+ EUR:{
+  jobs:[M('EA_UNEMP_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
+        M('EA_EMPLOYMENT_history_value','Occupati',true,{unit:'mila persone'})],
+  industry:[M('EA_IP_history_value','Produzione industriale',true,{unit:'indice 2021=100'}),
+            M('EA_ECFIN_BCS_LEAD_INDICATORS_history_Industry','Fiducia industria',true,{kind:'points',minimum:.2,hideValue:true,pointUnit:'punti'})],
+  leading:[M('EA_ECFIN_BCS_LEAD_INDICATORS_history_ESI','Economic Sentiment Indicator',true,{kind:'points',minimum:.2,unit:'indice',pointUnit:'punti'})],
+  demand:[M('EA_RETAIL_VOL_history_value','Vendite reali al dettaglio',true,{unit:'indice'})],
+  credit:[M('EA_BLS_CREDIT_STANDARDS_ENTERPRISES_history_value','BLS: restrizione standard imprese',false,{kind:'points',minimum:1,unit:'saldo netto',pointUnit:'p.p.'})]
+ },
+ GBP:{
+  house:[M('UK_MORTGAGE_APPROVALS_HOUSE_PURCHASE_SA_history_value','Mutui approvati per acquisto',true,{unit:'numero'})],
+  jobs:[M('UK_UNEMP_RATE_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
+        M('UK_PAYE_PAYROLLED_EMPLOYEES_SA_history_value','Occupati in payroll PAYE',true,{unit:'persone'})],
+  industry:[M('UK_PRODUCTION_history_value','Produzione industriale',true,{unit:'indice'})],
+  leading:[M('UK_BOE_DMP_LEAD_INDICATORS_history_SalesExpected','DMP: vendite attese',true,{kind:'points',minimum:.2,hideValue:true,pointUnit:'punti'})],
+  demand:[M('UK_RETAIL_VOL_history_value','Volumi vendite al dettaglio',true,{unit:'indice'})],
+  credit:[M('UK_CCS_CORPORATE_CREDIT_AVAILABILITY_history_value','Disponibilità credito corporate',true,{kind:'points',minimum:1,unit:'saldo netto',pointUnit:'p.p.'})]
+ },
+ JPY:{
+  jobs:[M('JP_UNEMP_RATE_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
+        M('JP_EMPLOYED_history_value','Occupati',true,{unit:'decine di migliaia persone'})],
+  industry:[M('JP_IIP_history_value','Produzione industriale',true,{unit:'indice 2020=100'})],
+  leading:[M('JP_BOJ_TANKAN_LEAD_INDICATORS_history_Large_Manufacturing_Forecast','Tankan manifattura: prospettive',true,{kind:'points',minimum:1,unit:'saldo sondaggio',pointUnit:'punti'})],
+  demand:[M('JP_RETAIL_history_value','Vendite al dettaglio',true,{unit:'indice 2020=100'})],
+  credit:[M('JP_BANK_CREDIT_DOMESTIC_BANKS_history_value','Credito banche domestiche',true,{unit:'100 mln JPY'})]
+ },
+ CHF:{
+  house:[M('CH_MORTGAGE_CREDIT_DOMESTIC_history_value','Credito ipotecario domestico',true,{unit:'mln CHF'})],
+  jobs:[M('CH_UNEMP_RATE_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
+        M('CH_EMPLOYMENT_history_value','Occupati',true,{unit:'persone'})],
+  industry:[M('CH_PRODUCTION_history_value','Produzione industriale',true,{unit:'indice'})],
+  leading:[M('CH_SECO_CONSUMER_SENTIMENT_LEAD_history_SECO_Consumer_Sentiment','SECO: fiducia consumatori',true,{kind:'points',minimum:.2,unit:'saldo sondaggio',pointUnit:'punti'})],
+  demand:[M('CH_RETAIL_REAL_history_value','Vendite reali al dettaglio',true,{unit:'indice'})],
+  credit:[M('CH_BANK_CREDIT_CUSTOMERS_history_value','Credito bancario ai clienti',true,{unit:'mln CHF'})]
+ },
+ AUD:{
+  house:[M('AU_CREDIT_OWNER_OCC_HOUSING_SA_history_value','Credito mutui proprietari',true,{unit:'mld AUD'})],
+  jobs:[M('AU_UNEMP_RATE_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
+        M('AU_EMPLOYMENT_history_value','Occupati',true,{unit:'mila persone'})],
+  leading:[M('AU_OECD_CLI_LEAD_INDICATOR_history_OECD_CLI_AUS','OECD Composite Leading Indicator',true,{kind:'points',minimum:.05,unit:'indice',pointUnit:'punti'})],
+  demand:[M('AU_HOUSEHOLD_SPENDING_history_value','Spesa famiglie nominale',true,{unit:'mln AUD nominali'})],
+  credit:[M('AU_CREDIT_BUSINESS_CURRENT_SA_history_value','Credito alle imprese',true,{unit:'mld AUD'})]
+ },
+ NZD:{
+  jobs:[M('NZ_UNEMP_RATE_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
+        M('NZ_EMPLOYED_history_value','Occupati',true,{unit:'mila persone'})],
+  demand:[M('NZ_RETAIL_VOLUME_Q_history_value','Volumi vendita al dettaglio',true,{unit:'mln NZD reali'})]
+ },
+ CAD:{
+  house:[M('CA_MORTGAGE_OUTSTANDING_UNINSURED_history_value','Mutui non assicurati (stock)',true,{unit:'mln CAD'})],
+  jobs:[M('CA_UNEMP_RATE_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
+        M('CA_EMPLOYMENT_history_value','Occupati',true,{unit:'mila persone'})],
+  leading:[M('CA_BOC_BOS_LEAD_INDICATORS_history_BOS_Activity_Indicator','BoC BOS: attività attesa',true,{kind:'points',minimum:.1,unit:'saldo sondaggio',pointUnit:'punti'})],
+  demand:[M('CA_RETAIL_VOLUME_history_value','Volumi vendita al dettaglio',true,{unit:'mln CAD reali'})],
+  credit:[M('CA_BUSINESS_LOANS_OUTSTANDING_history_value','Prestiti alle imprese',true,{unit:'mln CAD'})]
+ }
+};
+const finite=x=>typeof x==='number'&&Number.isFinite(x);
+const fmt=(x,n=1)=>finite(x)?x.toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n}):'—';
+function parsePeriod(s){
+ if(typeof s!=='string')return null;
+ let m,y,month,day;
+ const trim=s.trim();
+ if((m=trim.match(/^(\d{4})-?Q([1-4])$/i))){
+   y=Number(m[1]);month=Number(m[2])*3;day=new Date(Date.UTC(y,month,0)).getUTCDate();
+ }else if((m=trim.match(/^(\d{4})[-/](\d{2})(?:-(\d{2}))?(?:T.*|\s.*)?$/))){
+   y=Number(m[1]);month=Number(m[2]);day=m[3]?Number(m[3]):new Date(Date.UTC(y,month,0)).getUTCDate();
+ }else if((m=trim.match(/^(\d{2})\/(\d{2})\/(\d{4})$/))){
+   day=Number(m[1]);month=Number(m[2]);y=Number(m[3]);
+ }else if((m=trim.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/))){
+   const mon=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(m[2].toLowerCase());
+   if(mon<0)return null;day=Number(m[1]);month=mon+1;y=Number(m[3]);
+ }else if((m=trim.match(/^([A-Za-z]{3})[- ](\d{2})$/))){
+   const mon=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(m[1].toLowerCase());
+   if(mon<0)return null;month=mon+1;y=2000+Number(m[2]);day=new Date(Date.UTC(y,month,0)).getUTCDate();
+ }else return null;
+ if(y<2000||month<1||month>12||day<1)return null;
+ const dt=new Date(Date.UTC(y,month-1,day));
+ if(dt.getUTCFullYear()!==y||dt.getUTCMonth()!==month-1||dt.getUTCDate()!==day)return null;
+ return dt.toISOString().slice(0,10);
+}
+function recentTwo(series,today){
+ if(!series||!Array.isArray(series.dates)||!Array.isArray(series.values)||
+     series.dates.length!==series.values.length)return null;
+ const a=series.dates.map((period,i)=>({period,date:parsePeriod(period),value:series.values[i]}))
+   .filter(x=>x.date&&x.date<=today&&finite(x.value))
+   .sort((x,y)=>x.date.localeCompare(y.date));
+ if(a.length<2)return null;
+ const cur=a.at(-1),pre=a.at(-2);
+ if(cur.date===pre.date)return null;
+ return {cur,pre};
+}
+function inspect(metric,source,today){
+ const pair=recentTwo(source,today);
+ if(!pair)return null;
+ const c=pair.cur.value,p=pair.pre.value;
+ const kind=metric.kind||'percent';
+ const diff=c-p,pct=p===0?null:100*diff/Math.abs(p);
+ const move=kind==='points'?diff:pct;
+ const threshold=metric.minimum===undefined?.15:metric.minimum;
+ const age=(Date.parse(today+'T12:00:00Z')-Date.parse(pair.cur.date+'T12:00:00Z'))/864e5;
+ const gap=(Date.parse(pair.cur.date+'T12:00:00Z')-Date.parse(pair.pre.date+'T12:00:00Z'))/864e5;
+ const freq=source.frequency||(/^(\d{4})-?Q[1-4]$/.test(pair.cur.period)?'Q':'M');
+ const stale=age>(freq==='Q'?175:freq==='W'?42:85);
+ const invalid=age>(freq==='Q'?300:freq==='W'?100:210)||
+   gap>(freq==='Q'?200:freq==='W'?25:78);
+ const verdict=invalid||!finite(move)?null:Math.abs(move)<threshold?0:Math.sign(move)*(metric.upGood?1:-1);
+ return {metric,period:pair.cur.period,prior:pair.pre.period,date:pair.cur.date,source:source.source_file||'MACRO_SERIES',
+  current:c,previous:p,diff,pct,kind,verdict,stale,invalid,age:Math.round(age),freq};
+}
+function classify(items,needed){
+ if(!needed)return {tone:'neutral',label:'Non classificabile',coverage:0};
+ const valid=items.filter(x=>x&&x.verdict!==null);
+ if(valid.length<needed)return {tone:'neutral',label:'Non classificabile',coverage:valid.length};
+ const span=Math.max(...valid.map(x=>Date.parse(x.date)))-Math.min(...valid.map(x=>Date.parse(x.date)));
+ if(span>120*86400000)return {tone:'neutral',label:'Non allineato',coverage:valid.length};
+ const signs=valid.map(x=>x.verdict);
+ const tone=signs.every(v=>v===1)?'green':signs.every(v=>v===-1)?'red':'amber';
+ return {tone,label:{green:'Verde',red:'Rosso',amber:'Giallo'}[tone],coverage:valid.length};
+}
+function model(catalog,today,country='USD'){
+ const c=FX.includes(country)?country:'USD';
+ const rows=Array.isArray(catalog?.[c])?catalog[c]:[];
+ const sources=new Map(rows.map(s=>[s.id,s]));
+ return AREAS.map(area=>{
+   const metrics=MAP[c]?.[area.key]||[];
+   const items=metrics.map(metric=>inspect(metric,sources.get(metric.id),today));
+   return {...area,items,expected:metrics.length,signal:classify(items,metrics.length)};
+ });
+}
+function render({catalog={},dayNow,country='USD',esc=(x)=>String(x??'')}={}){
+ const today=dayNow?.()||'';
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(today))return '';
+ const selected=FX.includes(country)?country:'USD';
+ const universe=Object.fromEntries(FX.map(ccy=>[ccy,model(catalog,today,ccy)]));
+ const rows=universe[selected];
+ const d=(v,suffix='')=>finite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),2)+suffix:'—';
+ const measure=x=>{
+  if(!x)return '<span class="sem-missing">Serie assente oppure periodi non confrontabili</span>';
+  const scaled=x.metric.scale?x.current/x.metric.scale:x.current;
+  const digits=x.metric.scale?2:x.kind==='points'?2:Math.abs(scaled)>=100?0:1;
+  const reading=x.metric.hideValue?'variazione della serie':fmt(scaled,digits)+' '+esc(x.metric.unit||'unità della fonte');
+  const diff=x.kind==='points'?d(x.diff,' '+(x.metric.pointUnit||'punti')):d(x.pct,'%');
+  return '<div class="sem-measure"><div><strong>'+esc(x.metric.name)+'</strong> <span>'+reading+
+   '</span> <b>'+diff+'</b></div><small>Periodo '+esc(x.period)+' (precedente '+esc(x.prior)+') · '+
+   esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small></div>';
+ };
+ const noData=rows.every(x=>x.signal.tone==='neutral');
+ const red=rows.filter(x=>x.signal.tone==='red').map(x=>x.name.toLowerCase());
+ const green=rows.filter(x=>x.signal.tone==='green').map(x=>x.name.toLowerCase());
+ const unavailable=rows.filter(x=>x.signal.tone==='neutral').length;
+ const intro=noData?'Nelle osservazioni disponibili non emerge un quadro ciclico sufficientemente classificabile.':
+   (red.length?'Le ultime variazioni mostrano deterioramento in '+red.join(' e ')+'. ':'')+
+   (green.length?'Si osserva un miglioramento in '+green.join(' e ')+'. ':'')+
+   (unavailable?'Alcune aree restano senza segnale affidabile.':'Nelle altre aree il quadro è misto o stabile.');
+ const bank={USD:'Fed',EUR:'BCE',GBP:'BoE',JPY:'BoJ',CHF:'SNB',AUD:'RBA',NZD:'RBNZ',CAD:'BoC'}[selected];
+ const dots=area=>{
+   const q=area.signal;
+   return '<span class="sem-mini '+q.tone+'" title="'+esc(q.label)+'" aria-label="'+esc(q.label)+'"><i aria-hidden="true"></i></span>';
+ };
+ const hasStale=rows.some(x=>x.items.some(z=>z?.stale));
+ return '<section class="recession-light" aria-labelledby="recession-light-title">'+
+  '<header class="sem-head"><div><span class="sem-kicker">GLOBAL MACRO / G8 / LETTURA CICLICA</span>'+
+  '<h2 id="recession-light-title">Il semaforo economico</h2>'+
+  '<p>'+esc(NAMES[selected]+': '+intro)+' Segnali direzionali descrittivi, non probabilità di recessione.</p></div>'+
+  '<span class="sem-date">Consultazione '+esc(today)+' · periodi originali in tabella</span></header>'+
+  '<div class="sem-g8-title"><strong>Otto economie, sei aree</strong><span>Seleziona un Paese. I colori non sono un ranking di forza FX.</span></div>'+
+  '<div class="sem-g8-scroll"><table class="sem-g8-table"><thead><tr><th scope="col">Paese</th>'+
+  AREAS.map(a=>'<th scope="col">'+esc(a.short)+'</th>').join('')+'</tr></thead><tbody>'+
+  FX.map(c=>'<tr'+(c===selected?' class="selected"':'')+'><th scope="row"><button type="button" class="sem-g8-pick" data-ms-country="'+c+'" aria-pressed="'+String(c===selected)+'">'+
+   FLAGS[c]+' '+c+'</button></th>'+universe[c].map(a=>'<td>'+dots(a)+'</td>').join('')+'</tr>').join('')+
+  '</tbody></table></div>'+
+  '<p class="sem-legend"><span class="sem-mini green"><i></i></span> Migliora <span class="sem-mini red"><i></i></span> Peggiora'+
+  ' <span class="sem-mini amber"><i></i></span> Misto / stabile <span class="sem-mini neutral"><i></i></span> Non classificabile</p>'+
+  '<div class="sem-country-caption">'+FLAGS[selected]+' <strong>'+esc(NAMES[selected])+'</strong> · dettaglio per indicatore</div>'+
+  '<div class="sem-table" role="table" aria-label="Semaforo economico '+esc(NAMES[selected])+'">'+
+  '<div class="sem-columns" role="row"><span role="columnheader">Area</span><span role="columnheader">Ultima evidenza disponibile</span><span role="columnheader">Segnale</span></div>'+
+  rows.map(r=>'<div class="sem-row" role="row"><div role="cell" class="sem-area"><strong>'+esc(r.name)+'</strong><small>'+esc(r.why)+'</small></div>'+
+    '<div class="sem-evidence" role="cell">'+(r.items.length?r.items.map(measure).join(''):'<span class="sem-missing">Nessuna serie idonea nel feed attuale</span>')+'</div>'+
+    '<div class="sem-signal" role="cell"><span class="sem-pill '+r.signal.tone+'"><i aria-hidden="true"></i>'+esc(r.signal.label)+'</span>'+
+    (r.items.length===1?'<small>Un solo indicatore</small>':'')+
+    (r.items.some(x=>x?.stale)?'<small>Osservazioni datate</small>':'')+'</div></div>').join('')+'</div>'+
+  '<div class="sem-policy"><div><span>POLITICA MONETARIA · DA LEGGERE A PARTE</span>'+
+  '<p>'+bank+' e aspettative sui tassi possono amplificare o attenuare le pressioni cicliche: non sono però un indicatore diretto di recessione né una prova di movimento del cambio.</p></div>'+
+  '<a href="#rates">Apri tassi & OIS ↗</a></div>'+
+  '<p class="sem-foot">Metodo: ogni indicatore confronta le sue ultime due osservazioni disponibili; verde indica miglioramento direzionale, rosso peggioramento, giallo quadro misto o quasi invariato, azzurro dati mancanti, troppo vecchi, non consecutivi o non sufficientemente allineati. '+
+  'Le soglie descrittive evitano piccoli movimenti: ±0,15% per i livelli e soglie in punti esplicite per tassi, sondaggi e indicatori compositi. '+
+  (hasStale?'Sono presenti osservazioni datate: non interpretare i colori come fotografia intraday. ':'')+
+  'La matrice confronta direzioni, NON livelli omogenei o cicli sincronizzati. Prezzi nominali, saldi di survey, stock di credito e PIL sono strumenti diversi. '+
+  'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonte: MACRO_SERIES.json, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p>'+
+  '</section>';
+}
+root.FXQuantRecessionLight={render,model,parsePeriod,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
