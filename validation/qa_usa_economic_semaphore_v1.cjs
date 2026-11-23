@@ -32,7 +32,7 @@ for(const currency of coverage){
 }
 // Specific gaps must remain neutral, not model-generated or backfilled.
 const nz=model(catalog,asof,'NZD');
-for(const key of ['house','industry','leading','credit']){
+for(const key of ['house','industry','credit']){
  assert.equal(nz.find(r=>r.key===key).signal.tone,'neutral');
 }
 assert.match(render({catalog,esc,dayNow,country:'USD'}),/SLOOS/);
@@ -40,6 +40,7 @@ assert.match(render({catalog,esc,dayNow,country:'USD'}),/osservazioni datate/i);
 assert.match(render({catalog,esc,dayNow,country:'GBP'}),/Regno Unito/);
 assert.match(render({catalog,esc,dayNow,country:'JPY'}),/BoJ/);
 assert.match(render({catalog,esc,dayNow,country:'NZD'}),/Nessuna serie idonea nel feed attuale/);
+assert.equal(nz.find(r=>r.key==='leading').signal.tone,'green','RBNZ one-year unemployment expectations cover NZD leading surveys');
 // Underlying data may not be available after a severe lag: no false green/red.
 for(const currency of coverage){
  assert.ok(model({},asof,currency).every(x=>x.signal.tone==='neutral'));
@@ -65,4 +66,32 @@ assert.equal(one.items[0].current,127);
 assert.equal(one.items[0].previous,120);
 assert.equal(one.items[0].period,'2026-08');
 assert.equal(one.signal.tone,'neutral','Missing second housing metric cannot be silently ignored');
+// Supplemental observations are allowed only for a missing category, and
+// must carry an exact schema, source identity, freshness and revised-data label.
+const overlay={
+ schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',
+ series:[{
+  ccy:'AUD',area:'industry',id:'SEM_G8_AUD_INDUSTRY',
+  label:'Manufacturing growth QoQ',unit:'% QoQ',frequency:'Q',
+  metric_kind:'points',quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',
+  dates:['2026-Q1','2026-Q2'],values:[1.40122,-1.93794],
+  source_file:'OECD tramite FRED',source_page:'https://fred.stlouisfed.org/series/PRMNTO01AUQ657S',
+  observation_as_of:'2026-Q2'
+ }]
+};
+const aud=model(catalog,asof,'AUD',overlay);
+const manufacturing=aud.find(x=>x.key==='industry');
+assert.equal(manufacturing.signal.tone,'red');
+assert.equal(manufacturing.items[0].period,'2026-Q2');
+assert.equal(model(catalog,asof,'USD',overlay).find(x=>x.key==='industry').expected,2,
+ 'Supplement must not replace canonical USD industry metrics');
+assert.equal(model(catalog,asof,'NZD',overlay).find(x=>x.key==='industry').signal.tone,'neutral',
+ 'Supplement for AUD must not leak to NZD');
+assert.match(render({catalog,esc,dayNow,country:'AUD',overlay}),/Fonte e metodologia/);
+const tampered=structuredClone(overlay);
+tampered.series[0].quality='NOT_VERIFIED';
+assert.equal(model(catalog,asof,'AUD',tampered).find(x=>x.key==='industry').signal.tone,'neutral');
+const tooOld=model(catalog,'2028-11-23','AUD',overlay);
+assert.equal(tooOld.find(x=>x.key==='industry').signal.tone,'neutral');
+
 console.log('OK: G8 economic semaphore — 8 economies, 6 areas, data age, dates, source gaps, HTML');

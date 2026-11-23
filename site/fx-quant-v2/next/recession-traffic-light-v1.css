@@ -19,6 +19,7 @@
 .sem-measure span{color:#c0d4db;margin-left:5px}
 .sem-measure b{white-space:nowrap;color:#d3e3e7;margin-left:6px;font-weight:750}
 .sem-measure small{display:block;color:#94b7c3;font-size:10px;line-height:1.5;margin-top:2px;overflow-wrap:anywhere}
+.sem-src-link{display:inline-block;margin-top:5px;font-size:10px;color:#81d6be;text-decoration:underline;text-underline-offset:2px}
 .sem-missing{color:#e0c88f;font-size:12px}
 .sem-signal{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px}
 .sem-signal small{color:#b7cbd0;font-size:10px;line-height:1.4}

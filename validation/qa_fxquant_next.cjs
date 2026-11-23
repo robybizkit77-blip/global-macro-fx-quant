@@ -951,7 +951,13 @@ async function pairWatchlistJourney(page,label){
  }}));
  await page.route(calendarRoute,async route=>{
   const now=Date.now();
-  const futureDay=offset=>new Date(now+offset*864e5).toISOString().slice(0,10);
+  // The operational calendar is Europe/Rome-local: UTC date +1 is still today
+  // after Italian midnight but before UTC midnight, collapsing the 5th event.
+  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{
+   timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(new Date(now)).map(({type,value})=>[type,value]));
+  const romeDay=parts.year+'-'+parts.month+'-'+parts.day;
+  const futureDay=offset=>new Date(Date.parse(romeDay+'T12:00:00Z')+offset*864e5).toISOString().slice(0,10);
   const event={event_type:'CENTRAL_BANK_DECISION',importance:'HIGH',quality:'OFFICIAL_CALENDAR',status:'UPCOMING'};
   const events=['AUD','NZD','CAD','USD'].map((ccy,i)=>({...event,ccy,date:futureDay(i+1),title:'Riunione '+ccy}));
   events.push({...event,ccy:'CHF',date:futureDay(5),title:'Riunione SNB',time_local:'09:30',timezone:'Europe/Zurich'});

@@ -1,0 +1,8 @@
+{
+  "schema": "GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1",
+  "as_of": null,
+  "source_count": 8,
+  "series": [],
+  "audit": {},
+  "notes": "Supplemental observations gated by source freshness, not historical PIT or FX signals."
+}
