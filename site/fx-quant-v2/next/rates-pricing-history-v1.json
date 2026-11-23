@@ -3231,15 +3231,8 @@
       "tenors": {
         "3m": [
           {
-            "date": "2026-11-13",
-            "rate": 3.58,
-            "contract": "Mar 2027",
-            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
-            "derived": true
-          },
-          {
-            "date": "2026-11-19",
-            "rate": 3.53,
+            "date": "2026-11-16",
+            "rate": 3.59,
             "contract": "Mar 2027",
             "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
             "derived": true
@@ -3248,21 +3241,21 @@
             "date": "2026-11-20",
             "rate": 3.52,
             "contract": "Mar 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-23",
+            "rate": 3.49,
+            "contract": "Mar 2027",
             "source_class": "BANK_BILL_PROXY",
             "derived": false
           }
         ],
         "6m": [
           {
-            "date": "2026-11-13",
-            "rate": 3.79,
-            "contract": "Jun 2027",
-            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
-            "derived": true
-          },
-          {
-            "date": "2026-11-19",
-            "rate": 3.73,
+            "date": "2026-11-16",
+            "rate": 3.82,
             "contract": "Jun 2027",
             "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
             "derived": true
@@ -3271,21 +3264,21 @@
             "date": "2026-11-20",
             "rate": 3.72,
             "contract": "Jun 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-23",
+            "rate": 3.7,
+            "contract": "Jun 2027",
             "source_class": "BANK_BILL_PROXY",
             "derived": false
           }
         ],
         "12m": [
           {
-            "date": "2026-11-13",
-            "rate": 3.98,
-            "contract": "Dec 2027",
-            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
-            "derived": true
-          },
-          {
-            "date": "2026-11-19",
-            "rate": 3.91,
+            "date": "2026-11-16",
+            "rate": 4.02,
             "contract": "Dec 2027",
             "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
             "derived": true
@@ -3294,12 +3287,19 @@
             "date": "2026-11-20",
             "rate": 3.88,
             "contract": "Dec 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-23",
+            "rate": 3.86,
+            "contract": "Dec 2027",
             "source_class": "BANK_BILL_PROXY",
             "derived": false
           }
         ]
       },
-      "latest_date": "2026-11-20",
+      "latest_date": "2026-11-23",
       "observed_dates": 1,
       "derived_reference_points": 6
     },
