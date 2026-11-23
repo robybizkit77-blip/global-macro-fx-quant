@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-23T02:51:59.089468Z",
-  "edition_time_rome": "2026-11-23 03:51",
-  "material_digest": "813b2744f960b22d97d8454c25136c0940443f0959653684d0ef6b7c6c5160d7",
+  "generated_at_utc": "2026-11-23T09:29:17.805698Z",
+  "edition_time_rome": "2026-11-23 10:29",
+  "material_digest": "262463e834654c1694f49fd7b795fe1e62a0cb70e5e44e49559b609e82d428ec",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Volatilità in rialzo, dollaro misto",
@@ -11,7 +11,7 @@
   "news": [
     {
       "headline": "Dollaro misto",
-      "analysis": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Il 23 novembre alle 10:00 italiane è in programma PMI flash Eurozona (EUR). Da verificare la risposta dei tassi e di EUR.",
+      "analysis": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. La prossima verifica è capire se il movimento si estende agli altri cambi.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-20",
       "event_date": "2026-11-20",
@@ -84,7 +84,7 @@
     }
   ],
   "desk_judgment": "La volatilità azionaria è salita alla chiusura del 20 novembre. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen.",
-  "fx_implications": "Il 23 novembre alle 10:00 italiane è in programma PMI flash Eurozona (EUR). Da verificare la risposta dei tassi e di EUR.",
+  "fx_implications": "Il 23 novembre alle 10:30 italiane è in programma PMI flash Regno Unito (GBP). Da verificare la risposta dei tassi e di GBP.",
   "what_changed": "Nei proxy futures del 20 novembre l’oro scende e il WTI sale.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
@@ -101,7 +101,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-23T02:51:59.089468Z",
+      "rss_checked_at_utc": "2026-11-23T09:29:17.805698Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-23T02:51:59.089468Z",
+      "headline": "Volatilità in rialzo, dollaro misto",
+      "material_digest": "813b2744f960b22d97d8454c25136c0940443f0959653684d0ef6b7c6c5160d7"
+    },
     {
       "generated_at_utc": "2026-11-21T21:23:59.803112Z",
       "headline": "Volatilità in rialzo, dollaro misto",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-19T17:29:10.677565Z",
       "headline": "Dollaro misto al fixing BCE",
       "material_digest": "43aac5d4245f1292c8415fb1e3c6d4bb529921a2a920cb525116ac895334b52d"
-    },
-    {
-      "generated_at_utc": "2026-11-19T17:13:27.912730Z",
-      "headline": "Aspettative monetarie, qualità del rischio e forza relativa delle valute",
-      "material_digest": "75210ff3aaaf57f422ed0707ada31125f7015aa3b40bd70187062f116eb6ba4c"
     }
   ]
 }
