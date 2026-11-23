@@ -92,6 +92,31 @@ class TwoResidualEstimatedResearchSeries(unittest.TestCase):
         with self.assertRaises(ValueError):
             profile(source=source)
 
+    def test_newer_chf_live_month_does_not_shift_september_research(self):
+        source=json.loads((DATA/"MACRO_SERIES.json").read_text())
+        heat=json.loads((DATA/"MACRO_THERMOMETER_DATA.json").read_text())
+        row=next(x for x in source["CHF"] if x["id"]=="CH_UNEMP_RATE_history_value")
+        if not any(d.startswith("2026-10") for d in row["dates"]):
+            row["dates"].append("2026-10-01")
+            row["values"].append(3.09)
+            heat["currencies"]["CHF"]["labour"]["as_of"]="2026-10"
+            heat["currencies"]["CHF"]["labour"]["latest_value"]=3.09
+        result=profile(source=source, thermo=heat)
+        self.assertEqual(
+            result["two_explicitly_estimated_missing_source_windows"]
+            ["CHF.labour"]["latest_economic_period"],"2026-09")
+        self.assertFalse(result["safe_to_change_28_pairs"])
+
+    def test_missing_september_chf_revised_reference_fails_closed(self):
+        source=json.loads((DATA/"MACRO_SERIES.json").read_text())
+        row=next(x for x in source["CHF"] if x["id"]=="CH_UNEMP_RATE_history_value")
+        indices=[i for i,d in enumerate(row["dates"]) if d.startswith("2026-09")]
+        for i in reversed(indices):
+            del row["dates"][i]
+            del row["values"][i]
+        with self.assertRaises(ValueError):
+            profile(source=source)
+
     def test_first_release_audit_remains_22_not_inflated_24(self):
         base=evidence()
         s=base["summary"]
