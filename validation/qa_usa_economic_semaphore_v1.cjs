@@ -70,7 +70,7 @@ assert.equal(one.signal.tone,'neutral','Missing second housing metric cannot be 
 const overlay={
  schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',
  series:[{
-  ccy:'AUD',area:'industry',id:'SEM_G8_AUD_industry',
+  ccy:'AUD',area:'industry',id:'SEM_G8_AUD_INDUSTRY',
   label:'Manufacturing growth QoQ',unit:'% QoQ',frequency:'Q',
   metric_kind:'points',quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',
   dates:['2026-Q1','2026-Q2'],values:[1.40122,-1.93794],
