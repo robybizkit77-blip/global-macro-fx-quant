@@ -220,7 +220,8 @@ assert(index.indexOf('pair-monetary-bridge-v1.js?v=2')<
 assert(index.includes('home-pricing-proof-v1.css?v=4'));
 assert(source.includes("window.FXQuantHomePricingProof?.render?.("));
 assert(source.includes(`moneyProof+'<section class="hourly-decision-section"'`));
-assert(source.includes("post+moneyProof+'<section class=\"morning-prose\"'"));
+assert(source.includes("post+recalcProof+moneyProof+'<section class=\"morning-prose\"'"),
+ 'The independent thesis receipt cannot remove the original 6M-FX comparison from the Morning Home');
 assert(source.includes(' +moneyProof\n +\'<section class="dashboard-main dashboard-reading-chart">'),
  'Legacy fallback Home also needs the same source-first monetary comparison');
 const css=read(site+'home-pricing-proof-v1.css');
