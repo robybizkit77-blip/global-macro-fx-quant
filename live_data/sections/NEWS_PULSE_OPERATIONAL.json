@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-20",
-  "generated_at_utc": "2026-11-23T08:47:47.427916Z",
+  "generated_at_utc": "2026-11-23T09:28:36.725884Z",
   "items": [
     {
       "as_of": "2026-11-20",
@@ -254,7 +254,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-23T08:47:47.427916Z",
+  "last_checked_at_utc": "2026-11-23T09:28:36.725884Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1199,9 +1199,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 3,
+        "accepted_items": 2,
         "ccy": "GBP",
-        "entries_rejected": 47,
+        "entries_rejected": 48,
         "feed_entries_seen": 50,
         "feed_url": "https://www.bankofengland.co.uk/rss/news",
         "source": "Bank of England",
