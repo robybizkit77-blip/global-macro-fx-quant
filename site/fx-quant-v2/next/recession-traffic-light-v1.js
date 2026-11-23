@@ -81,6 +81,7 @@ const MAP={
   credit:[M('AU_CREDIT_BUSINESS_CURRENT_SA_history_value','Credito alle imprese',true,{unit:'mld AUD'})]
  },
  NZD:{
+  leading:[M('NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_1Y','RBNZ: disoccupazione attesa a 1 anno',false,{kind:'points',minimum:.1,unit:'%',pointUnit:'p.p.',freq:'Q'})],
   jobs:[M('NZ_UNEMP_RATE_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
         M('NZ_EMPLOYED_history_value','Occupati',true,{unit:'mila persone'})],
   demand:[M('NZ_RETAIL_VOLUME_Q_history_value','Volumi vendita al dettaglio',true,{unit:'mln NZD reali'})]
@@ -94,6 +95,19 @@ const MAP={
   credit:[M('CA_BUSINESS_LOANS_OUTSTANDING_history_value','Prestiti alle imprese',true,{unit:'mln CAD'})]
  }
 };
+const SUPPLEMENT_SCHEMA='GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1';
+function supplementary(overlay,country,key){
+ if(overlay?.schema!==SUPPLEMENT_SCHEMA||!Array.isArray(overlay.series))return null;
+ const matches=overlay.series.filter(x=>x?.ccy===country&&x?.area===key&&
+   x?.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
+   /^[A-Z0-9_]+$/.test(x.id||'')&&
+   ['M','Q'].includes(x.frequency)&&
+   ['percent','points'].includes(x.metric_kind)&&
+   Array.isArray(x.dates)&&Array.isArray(x.values)&&
+   x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca)\//.test(x.source_page));
+ return matches.length===1?matches[0]:null;
+}
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
 const fmt=(x,n=1)=>finite(x)?x.toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n}):'—';
 function parsePeriod(s){
@@ -158,21 +172,30 @@ function classify(items,needed){
  const tone=signs.every(v=>v===1)?'green':signs.every(v=>v===-1)?'red':'amber';
  return {tone,label:{green:'Verde',red:'Rosso',amber:'Giallo'}[tone],coverage:valid.length};
 }
-function model(catalog,today,country='USD'){
+function model(catalog,today,country='USD',overlay=null){
  const c=FX.includes(country)?country:'USD';
  const rows=Array.isArray(catalog?.[c])?catalog[c]:[];
  const sources=new Map(rows.map(s=>[s.id,s]));
  return AREAS.map(area=>{
-   const metrics=MAP[c]?.[area.key]||[];
+   let metrics=MAP[c]?.[area.key]||[];
+   if(metrics.length===0){
+     const extra=supplementary(overlay,c,area.key);
+     if(extra){
+       sources.set(extra.id,{...extra,source_file:extra.source_file+' · aggiornamento dal feed supplementare'});
+       metrics=[M(extra.id,extra.label,true,{unit:extra.unit,kind:extra.metric_kind,
+        minimum:extra.metric_kind==='points'?.2:.15,
+        pointUnit:extra.unit==='% QoQ'?'p.p.':'punti',freq:extra.frequency,source_page:extra.source_page})];
+     }
+   }
    const items=metrics.map(metric=>inspect(metric,sources.get(metric.id),today));
    return {...area,items,expected:metrics.length,signal:classify(items,metrics.length)};
  });
 }
-function render({catalog={},dayNow,country='USD',esc=(x)=>String(x??'')}={}){
+function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x??'')}={}){
  const today=dayNow?.()||'';
  if(!/^\d{4}-\d{2}-\d{2}$/.test(today))return '';
  const selected=FX.includes(country)?country:'USD';
- const universe=Object.fromEntries(FX.map(ccy=>[ccy,model(catalog,today,ccy)]));
+ const universe=Object.fromEntries(FX.map(ccy=>[ccy,model(catalog,today,ccy,overlay)]));
  const rows=universe[selected];
  const d=(v,suffix='')=>finite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),2)+suffix:'—';
  const measure=x=>{
@@ -183,7 +206,7 @@ function render({catalog={},dayNow,country='USD',esc=(x)=>String(x??'')}={}){
   const diff=x.kind==='points'?d(x.diff,' '+(x.metric.pointUnit||'punti')):d(x.pct,'%');
   return '<div class="sem-measure"><div><strong>'+esc(x.metric.name)+'</strong> <span>'+reading+
    '</span> <b>'+diff+'</b></div><small>Periodo '+esc(x.period)+' (precedente '+esc(x.prior)+') · '+
-   esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small></div>';
+   esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small>'+  (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
  };
  const noData=rows.every(x=>x.signal.tone==='neutral');
  const red=rows.filter(x=>x.signal.tone==='red').map(x=>x.name.toLowerCase());
