@@ -11,7 +11,7 @@
       {id:'US_CCSA_history_CCSA',name:'Sussidi continuativi',upGood:false,scale:1000000,unit:'mln persone'}]},
     {key:'industry',name:'Manifattura',why:'Produzione e ordini non sono la stessa cosa: le divergenze contano.',metrics:[
       {id:'US_INDPRO_history_value',name:'Produzione industriale',upGood:true,unit:'indice'},
-      {id:'US_NEWORDER_history_NEWORDER',name:'Nuovi ordini core',upGood:true,unit:'unità fonte non specificate'}]},
+      {id:'US_NEWORDER_history_NEWORDER',name:'Nuovi ordini core',upGood:true,hideValue:true,unit:'unità originali non specificate'}]},
     {key:'leading',name:'Indicatore anticipatore',why:'Il CFNAI è un indicatore composito della Fed di Chicago, non il LEI del Conference Board.',metrics:[
       {id:'US_CFNAI_LEAD_INDICATOR_history_CFNAI',name:'CFNAI',upGood:true,kind:'points',minimum:0.05,unit:'indice'}]},
     {key:'demand',name:'Consumi e domanda',why:'I volumi reali aiutano a capire se il consumatore continua a sostenere la crescita.',metrics:[
@@ -80,23 +80,24 @@
       if(!x)return '<span class="sem-missing">Serie non presente nel feed</span>';
       const scaled=x.metric.scale?x.current/x.metric.scale:x.current;
       const n=x.metric.scale?2:(x.metric.kind==='points'?2:Math.abs(scaled)>100?0:1);
-      const reading=num(scaled,n)+' '+esc(x.metric.unit);
+      const reading=x.metric.hideValue?'variazione vs periodo precedente':num(scaled,n)+' '+esc(x.metric.unit);
       const change=x.kind==='points'?delta(x.diff,'p.p.'):delta(x.pct,'%');
       const isPoints=x.kind==='points';
-      return '<div class="sem-measure"><div><strong>'+esc(x.metric.name)+'</strong> <span>'+esc(reading)+'</span> <b>'+esc(isPoints?((x.diff>0?'+':x.diff<0?'−':'')+num(Math.abs(x.diff),2)+' punti'):change)+'</b></div>'+
+      const diffUnit=x.metric.id==='US_SLOOS_CI_LARGE_MIDDLE_history_value'?' p.p.':' punti';
+      return '<div class="sem-measure"><div><strong>'+esc(x.metric.name)+'</strong> <span>'+esc(reading)+'</span> <b>'+esc(isPoints?((x.diff>0?'+':x.diff<0?'−':'')+num(Math.abs(x.diff),2)+diffUnit):change)+'</b></div>'+
         '<small>Periodo '+esc(x.period)+' · '+esc(x.source)+(x.stale?' · osservazione datata':'')+'</small></div>';
     };
     const dated=rows.some(r=>r.items.some(x=>x&&x.stale));
     const reds=rows.filter(r=>r.signal.tone==='red').map(r=>r.name.toLowerCase());
     const greens=rows.filter(r=>r.signal.tone==='green').map(r=>r.name.toLowerCase());
-    const intro=reds.length?'Fra le ultime osservazioni disponibili, il deterioramento più uniforme riguarda '+reds.join(' e ')+'.':
+    const intro=reds.length?'Negli ultimi due periodi presenti nel feed, il segnale direzionale negativo riguarda '+reds.join(' e ')+'.':
       'Le ultime osservazioni non mostrano due deterioramenti concordi nei gruppi verificabili.';
     const counter=greens.length?' Il quadro è sostenuto, sullo stesso criterio, da '+greens.join(' e ')+'.':'';
     return '<section class="recession-light" aria-labelledby="recession-light-title">'+
       '<header class="sem-head"><div><span class="sem-kicker">GLOBAL MACRO / USA / LETTURA CICLICA</span>'+
       '<h2 id="recession-light-title">Il semaforo economico</h2>'+
       '<p>'+esc(intro+counter)+' Sono segnali descrittivi, non una diagnosi di recessione.</p></div>'+
-      '<span class="sem-date">Serie per periodo originale · '+esc(today)+'</span></header>'+
+      '<span class="sem-date">Consultazione '+esc(today)+' · periodi nelle righe</span></header>'+
       '<div class="sem-table" role="table" aria-label="Semaforo economico USA">'+
       '<div class="sem-columns" role="row"><span role="columnheader">Area</span><span role="columnheader">Ultima evidenza disponibile</span><span role="columnheader">Segnale</span></div>'+
       rows.map(r=>'<div class="sem-row" role="row"><div class="sem-area" role="cell"><strong>'+esc(r.name)+'</strong><small>'+esc(r.why)+'</small></div>'+
