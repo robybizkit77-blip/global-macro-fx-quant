@@ -546,7 +546,7 @@ function overview(){
   })||'');
  // The receipt refers to the unadjusted G8/28 estimated engine; the CHF
  // supplemental research overlay is explicitly outside this audit.
- const auditEstimate=state.data.thesisRecalcReceipt?
+ const auditEstimate=state?.data?.thesisRecalcReceipt?
   window.FXQuantMacroEstimated?.evaluate?.({
    observed:get('macroObserved'),prices:get('currencyPrices'),
    ois:get('ois'),rates:get('rates'),model:get('pairs'),now:dayNow(),
