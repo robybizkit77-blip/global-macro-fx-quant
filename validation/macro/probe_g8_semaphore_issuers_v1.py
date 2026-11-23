@@ -9,10 +9,32 @@ from openpyxl import load_workbook
 URLS={
  "EUROSTAT_EA21":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001&s_adj=SCA&unit=I21&lang=EN",
  "EUROSTAT_EA20":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA20&indic_bt=BPRM_DW&cpa2_1=CPA_F41001&s_adj=SCA&unit=I21&lang=EN",
+ "EUROSTAT_EA21_ALL_RESIDENTIAL_CODES":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA21&indic_bt=BPRM_DW&s_adj=SCA&unit=I21&lang=EN",
  "RBNZ_HOUSING":"https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m10/hm10.xlsx",
  "RBNZ_EXPECTATIONS":"https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m15/hm15.xlsx",
  "STATCAN_MANUFACTURING":"https://www150.statcan.gc.ca/n1/tbl/csv/16100047-eng.zip",
 }
+def _coverage(doc):
+    ids=doc.get("id",[])
+    if "cpa2_1" not in ids:return {}
+    cats=doc.get("dimension",{}).get("cpa2_1",{}).get("category",{}).get("index",{})
+    sizes=doc.get("size",[])
+    out={}
+    values=doc.get("value",{})
+    for code,index in cats.items():
+        sample=[]
+        for num,v in values.items():
+            ordinal=int(num)
+            coordinates={}
+            for dim,size in zip(ids[::-1],sizes[::-1]):
+                coordinates[dim]=ordinal%size;ordinal//=size
+            if coordinates.get("cpa2_1")==index:
+                time_keys=list(doc["dimension"]["time"]["category"]["index"])
+                ix=coordinates["time"]
+                if 0<=ix<len(time_keys):sample.append((time_keys[ix],v))
+        out[code]={"count":len(sample),"last":sorted(sample)[-4:]}
+    return out
+
 def call(name,url):
  try:
   r=urllib.request.Request(url,headers={"User-Agent":"FX-Quant-Macro-Research/1.0"})
@@ -21,7 +43,7 @@ def call(name,url):
    if len(data)>28_000_000: return {"error":"file above 28MB budget"}
    if name.startswith("EUROSTAT"):
     doc=json.loads(data)
-    return {"status":x.status,"id":doc.get("id"),"size":doc.get("size"),
+    return {"status":x.status,"value_count":len(doc.get("value",{})),"code_coverage":_coverage(doc), "id":doc.get("id"),"size":doc.get("size"),
       "dims":{k:list(v.get("category",{}).get("index",{}).keys())[:25]
               for k,v in doc.get("dimension",{}).items()},
       "message":str(doc.get("error",""))[:500],"last_periods":list(doc.get("dimension",{}).get("time",{}).get("category",{}).get("index",{}))[-8:],"last_values":list(doc.get("value",{}).items())[-8:]}
