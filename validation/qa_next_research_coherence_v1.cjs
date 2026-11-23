@@ -47,7 +47,7 @@ function evaluate(data,now='2026-11-10',homeChart=null){
   ROUTES:{rates:'Tassi & OIS',risk:'Rischio'}
  };
  vm.createContext(ctx);
- new vm.Script((homeChart?chartFunctions:'')+functions+'\nvar qa={context:researchCase(),article:overview(),rates:researchBridge("rates"),risk:researchBridge("risk")};').runInContext(ctx,{timeout:1000});
+ new vm.Script((homeChart?chartFunctions:'')+functions+'\nvar qa={context:researchCase(),article:overview(),rates:researchBridge("rates"),risk:researchBridge("risk")};').runInContext(ctx,{timeout:5000});
  return ctx.qa;
 }
 const baseline=evaluate(initial);

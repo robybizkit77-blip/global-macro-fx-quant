@@ -135,6 +135,11 @@ const ratesEstimate=structuredClone(changedEstimate);
 const eurProxy=ratesEstimate.currencies.find(c=>c.ccy==='EUR');
 eurProxy.rate={quality:'PROXY',asof:raw.fixingAsOf,
  kind:'GOV_2Y_PROXY',changeBp:-4.2};
+// Keep the synthetic audit receipt consistent with the changed proxy metadata.
+// The production guard must still reject mismatched receipt/output sources.
+const eurReceipt=ratesEvidence.currencies.find(c=>c.ccy==='EUR');
+eurReceipt.monetaryQuality='PROXY';
+eurReceipt.monetaryAsOf=raw.fixingAsOf;
 const ratesHtml=api.render({...ctx,receipt:ratesEvidence,estimate:ratesEstimate});
 assert.match(ratesHtml,/dataset dei rendimenti governativi/);
 assert.match(ratesHtml,/Per EUR il 2Y settimanale è -4,2 pb/);
