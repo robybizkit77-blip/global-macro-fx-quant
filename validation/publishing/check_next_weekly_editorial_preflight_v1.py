@@ -18,7 +18,8 @@ from pathlib import Path
 import re
 
 from validation.publishing.check_next_research_library_delivery_v1 import (
-    ROOT, DIRECTORY, BLOCKED, CROSS_ASSET_REVIEW, parse_date, report_type,
+    ROOT, DIRECTORY, BLOCKED, CROSS_ASSET_REVIEW, MARKETS_REVIEW_V13,
+    parse_date, report_type,
 )
 
 MIN_DATE = date(2026, 11, 13)
@@ -70,8 +71,11 @@ def check_edition(root: Path, category: str, candidate: Path,
         raise ValueError(f"UNEXPECTED_WEEKLY_FILENAME:{name}")
     if BLOCKED.search(name):
         raise ValueError(f"UNAPPROVED_WEEKLY_FILENAME:{name}")
-    recurring_review = CROSS_ASSET_V13.fullmatch(name) is not None
-    is_review = name == CROSS_ASSET_REVIEW or recurring_review
+    dated_review = MARKETS_REVIEW_V13.fullmatch(name) is not None
+    saturday_review = name == CROSS_ASSET_REVIEW or dated_review
+    recurring_review = (CROSS_ASSET_V13.fullmatch(name) is not None or
+                        (dated_review and name != CROSS_ASSET_REVIEW))
+    is_review = saturday_review or recurring_review
     if recurring_review:
         template_name = CROSS_ASSET_REVIEW
     day_str = parse_date(name)
@@ -79,7 +83,7 @@ def check_edition(root: Path, category: str, candidate: Path,
         raise ValueError(f"WEEKLY_DATE_INVALID:{name}")
     edition_day = date.fromisoformat(day_str)
     # The approved Saturday edition explicitly covers the Friday close.
-    reference_friday = edition_day - timedelta(days=1) if name == CROSS_ASSET_REVIEW else edition_day
+    reference_friday = edition_day - timedelta(days=1) if saturday_review else edition_day
     if reference_friday < MIN_DATE or reference_friday.weekday() != 4:
         raise ValueError(f"NOT_A_CLOSED_FRIDAY_WEEK:{name}")
     if latest_allowed and edition_day > latest_allowed:
