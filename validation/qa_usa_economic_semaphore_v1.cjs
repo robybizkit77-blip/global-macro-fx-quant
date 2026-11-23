@@ -32,7 +32,7 @@ for(const currency of coverage){
 }
 // Specific gaps must remain neutral, not model-generated or backfilled.
 const nz=model(catalog,asof,'NZD');
-for(const key of ['house','industry','leading','credit']){
+for(const key of ['house','industry','credit']){
  assert.equal(nz.find(r=>r.key===key).signal.tone,'neutral');
 }
 assert.match(render({catalog,esc,dayNow,country:'USD'}),/SLOOS/);
@@ -40,6 +40,7 @@ assert.match(render({catalog,esc,dayNow,country:'USD'}),/osservazioni datate/i);
 assert.match(render({catalog,esc,dayNow,country:'GBP'}),/Regno Unito/);
 assert.match(render({catalog,esc,dayNow,country:'JPY'}),/BoJ/);
 assert.match(render({catalog,esc,dayNow,country:'NZD'}),/Nessuna serie idonea nel feed attuale/);
+assert.equal(nz.find(r=>r.key==='leading').signal.tone,'green','RBNZ one-year unemployment expectations cover NZD leading surveys');
 // Underlying data may not be available after a severe lag: no false green/red.
 for(const currency of coverage){
  assert.ok(model({},asof,currency).every(x=>x.signal.tone==='neutral'));
