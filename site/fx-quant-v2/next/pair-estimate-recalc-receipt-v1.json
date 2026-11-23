@@ -1,0 +1,270 @@
+{
+  "schema": "GMFQ_NEXT_ESTIMATED_FX_RECALC_RECEIPT_V1",
+  "status": "NO_MATERIAL_THESIS_CHANGE",
+  "checkedAtUtc": "2026-11-23T12:50:38.579Z",
+  "checkedDay": "2026-11-23",
+  "sourceCommit": "4ef29aef56626c80bad0a798aa0603e4c1f97573",
+  "method": "c54bb6f6a2fa76470e8c616c72b478e70735166b10c36cd32f35dddcf8cd0379",
+  "sourceHashes": {
+    "observed": "c767134251917677e24da3c830d0ef1dff5b481be9bf115d5f74eec9c0303015",
+    "prices": "76788b7529e016a98b6edaf79e230c5acce3ac2b5f39e54c2a836d14e891a930",
+    "ois": "afe3e522e7a0b47233438e3ae74a3223869f037e8862913ab62ec37ddf2d73f3",
+    "rates": "1cb6e92c770588029fcb6ec645ec6818384311274d6e144239767f414c378966",
+    "model": "6e92f75783ff8da8aec9cc986d758df7dd727a758b160e6e81dfef83ba8be3ce"
+  },
+  "inputChanges": null,
+  "methodChanged": null,
+  "comparisonBasis": "PREVIOUS_HISTORY",
+  "previousFixingAsOf": "2026-11-20",
+  "previousMacroAsOf": "2026-11-21",
+  "fixingAsOf": "2026-11-20",
+  "macroAsOf": "2026-11-23",
+  "legacyMacroAsOf": "2026-09-25",
+  "coverage": {
+    "currencies": 8,
+    "pairs": 28,
+    "official6M": 4,
+    "withGDPAcceleration": 5
+  },
+  "changedPairs": [],
+  "changedRanks": null,
+  "currencies": [
+    {
+      "ccy": "AUD",
+      "rank": 8,
+      "score": -0.575,
+      "macroScore": -0.15,
+      "policyScore": -1,
+      "priceScore": -1,
+      "monetaryQuality": "UFFICIALE",
+      "monetaryAsOf": "2026-11-20",
+      "partial": true
+    },
+    {
+      "ccy": "CAD",
+      "rank": 7,
+      "score": -0.460714,
+      "macroScore": -0.15,
+      "policyScore": -1,
+      "priceScore": -0.428571,
+      "monetaryQuality": "UFFICIALE",
+      "monetaryAsOf": "2026-11-20",
+      "partial": true
+    },
+    {
+      "ccy": "CHF",
+      "rank": 5,
+      "score": -0.139286,
+      "macroScore": -0.45,
+      "policyScore": 0,
+      "priceScore": 0.428571,
+      "monetaryQuality": "ASSENTE",
+      "monetaryAsOf": null,
+      "partial": true
+    },
+    {
+      "ccy": "EUR",
+      "rank": 4,
+      "score": -0.121429,
+      "macroScore": -0.6,
+      "policyScore": 0.5,
+      "priceScore": 0.142857,
+      "monetaryQuality": "PROXY",
+      "monetaryAsOf": "2026-11-19",
+      "partial": true
+    },
+    {
+      "ccy": "GBP",
+      "rank": 1,
+      "score": 0.471429,
+      "macroScore": 1,
+      "policyScore": 0,
+      "priceScore": -0.142857,
+      "monetaryQuality": "UFFICIALE",
+      "monetaryAsOf": "2026-11-19",
+      "partial": false
+    },
+    {
+      "ccy": "JPY",
+      "rank": 3,
+      "score": 0.092857,
+      "macroScore": -0.1,
+      "policyScore": 0,
+      "priceScore": 0.714286,
+      "monetaryQuality": "UFFICIALE",
+      "monetaryAsOf": "2026-11-20",
+      "partial": false
+    },
+    {
+      "ccy": "NZD",
+      "rank": 6,
+      "score": -0.422857,
+      "macroScore": -0.35,
+      "policyScore": -0.35,
+      "priceScore": -0.714286,
+      "monetaryQuality": "PROXY",
+      "monetaryAsOf": "2026-11-20",
+      "partial": true
+    },
+    {
+      "ccy": "USD",
+      "rank": 2,
+      "score": 0.375,
+      "macroScore": 0.65,
+      "policyScore": -0.5,
+      "priceScore": 1,
+      "monetaryQuality": "PROXY",
+      "monetaryAsOf": "2026-11-20",
+      "partial": true
+    }
+  ],
+  "pairs": {
+    "AUDCAD": {
+      "favored": null,
+      "thesis": "NON DISTINTA",
+      "timing": "NON VALUTABILE"
+    },
+    "AUDCHF": {
+      "favored": null,
+      "thesis": "NON DISTINTA",
+      "timing": "NON VALUTABILE"
+    },
+    "AUDJPY": {
+      "favored": "JPY",
+      "thesis": "PARZIALE",
+      "timing": "DA VALIDARE"
+    },
+    "AUDNZD": {
+      "favored": null,
+      "thesis": "NON DISTINTA",
+      "timing": "NON VALUTABILE"
+    },
+    "AUDUSD": {
+      "favored": "USD",
+      "thesis": "PARZIALE",
+      "timing": "DA VALIDARE"
+    },
+    "CADCHF": {
+      "favored": null,
+      "thesis": "NON DISTINTA",
+      "timing": "NON VALUTABILE"
+    },
+    "CADJPY": {
+      "favored": "JPY",
+      "thesis": "PARZIALE",
+      "timing": "DA VALIDARE"
+    },
+    "CHFJPY": {
+      "favored": null,
+      "thesis": "NON DISTINTA",
+      "timing": "NON VALUTABILE"
+    },
+    "EURAUD": {
+      "favored": "EUR",
+      "thesis": "CONTRASTATA",
+      "timing": "NON SUPPORTATA"
+    },
+    "EURCAD": {
+      "favored": "EUR",
+      "thesis": "CONTRASTATA",
+      "timing": "NON SUPPORTATA"
+    },
+    "EURCHF": {
+      "favored": null,
+      "thesis": "NON DISTINTA",
+      "timing": "NON VALUTABILE"
+    },
+    "EURGBP": {
+      "favored": "GBP",
+      "thesis": "CONTRASTATA",
+      "timing": "NON SUPPORTATA"
+    },
+    "EURJPY": {
+      "favored": null,
+      "thesis": "NON DISTINTA",
+      "timing": "NON VALUTABILE"
+    },
+    "EURNZD": {
+      "favored": null,
+      "thesis": "NON DISTINTA",
+      "timing": "NON VALUTABILE"
+    },
+    "EURUSD": {
+      "favored": "USD",
+      "thesis": "CONTRASTATA",
+      "timing": "NON SUPPORTATA"
+    },
+    "GBPAUD": {
+      "favored": "GBP",
+      "thesis": "PARZIALE",
+      "timing": "DA VALIDARE"
+    },
+    "GBPCAD": {
+      "favored": "GBP",
+      "thesis": "PARZIALE",
+      "timing": "BASSA ORA"
+    },
+    "GBPCHF": {
+      "favored": "GBP",
+      "thesis": "PARZIALE",
+      "timing": "BASSA ORA"
+    },
+    "GBPJPY": {
+      "favored": "GBP",
+      "thesis": "PARZIALE",
+      "timing": "BASSA ORA"
+    },
+    "GBPNZD": {
+      "favored": "GBP",
+      "thesis": "PARZIALE",
+      "timing": "BASSA ORA"
+    },
+    "GBPUSD": {
+      "favored": "GBP",
+      "thesis": "PARZIALE",
+      "timing": "BASSA ORA"
+    },
+    "NZDCAD": {
+      "favored": null,
+      "thesis": "NON DISTINTA",
+      "timing": "NON VALUTABILE"
+    },
+    "NZDCHF": {
+      "favored": null,
+      "thesis": "NON DISTINTA",
+      "timing": "NON VALUTABILE"
+    },
+    "NZDJPY": {
+      "favored": "JPY",
+      "thesis": "PARZIALE",
+      "timing": "DA VALIDARE"
+    },
+    "NZDUSD": {
+      "favored": "USD",
+      "thesis": "CONTRASTATA",
+      "timing": "NON SUPPORTATA"
+    },
+    "USDCAD": {
+      "favored": "USD",
+      "thesis": "PARZIALE",
+      "timing": "DA VALIDARE"
+    },
+    "USDCHF": {
+      "favored": "USD",
+      "thesis": "PARZIALE",
+      "timing": "DA VALIDARE"
+    },
+    "USDJPY": {
+      "favored": "USD",
+      "thesis": "CONTRASTATA",
+      "timing": "NON SUPPORTATA"
+    }
+  },
+  "governance": {
+    "estimatedNotValidated": true,
+    "recomputedCanonicalD": false,
+    "recomputedStructuralTheses": false,
+    "backtestCertified": false,
+    "tradeSignal": false
+  }
+}
