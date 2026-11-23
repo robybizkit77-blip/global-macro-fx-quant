@@ -449,7 +449,7 @@
       "change_1w_available": false,
       "confidence": "C",
       "conflicted_source_eligible_for_repricing": false,
-      "direction_vs_policy": "WITHHELD",
+      "direction_vs_policy": null,
       "horizons": {
         "12m": {
           "business_day_lag": 1,
@@ -465,45 +465,45 @@
           "quote_as_of": "2026-11-20",
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
-          "rate": 4.49,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQX2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQG2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-03-01",
-          "futures_price": 95.735,
+          "futures_price": 95.715,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-20T21:59:59Z",
-          "quote_as_of": "2026-11-20",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
-          "rate": 4.265,
+          "price_valid_until": "2026-11-23T09:44:51Z",
+          "quote_as_of": "2026-11-23",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQK2027",
           "contract_description": "May 2027",
           "expiration": "2027-06-01",
-          "futures_price": 95.565,
+          "futures_price": 95.515,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-20T21:59:55Z",
-          "quote_as_of": "2026-11-20",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
-          "rate": 4.435,
+          "price_valid_until": "2026-11-23T10:25:58Z",
+          "quote_as_of": "2026-11-23",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQK2027"
@@ -514,7 +514,7 @@
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
       "note": "Indicative secondary futures quotes have unresolved same-contract/same-day source disagreement; first and later prints are preserved separately. Levels may be displayed as provisional estimates only. No official OIS, policy delta or 1D/1W repricing is certified.",
       "official_status": "WITHHELD",
-      "operational_status": "GREEN_ESTIMATED",
+      "operational_status": "WITHHELD",
       "policy_rate": 3.875,
       "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
@@ -531,18 +531,6 @@
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
       "source_conflict_keys": [
         {
-          "contract": "ZQG2027",
-          "event_id": "c6f31e42515ab681d2b6bb2d537fcc63af42d8f083f0584b3c357a666bbcf6e3",
-          "horizon": "3m",
-          "observation_date": "2026-11-20"
-        },
-        {
-          "contract": "ZQK2027",
-          "event_id": "97ff9d0cbfd6bd74680cc25edb00c15a1039dbc3c43651e133e2618832e5a836",
-          "horizon": "6m",
-          "observation_date": "2026-11-20"
-        },
-        {
           "contract": "ZQX2027",
           "event_id": "782b785a0c81f4cfc3ea0640198551d9b66668070960c4e49f07d7ac8fb817d9",
           "horizon": "12m",
@@ -550,7 +538,8 @@
         }
       ],
       "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
-      "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS"
+      "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS",
+      "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
     }
   },
   "official_runtime_untouched": true,
@@ -558,9 +547,9 @@
   "status": "PARTIAL_WITHHELD",
   "summary": {
     "g8_total": 8,
-    "green_estimated": 3,
+    "green_estimated": 2,
     "green_official": 4,
-    "operational_green": 7,
-    "operational_withheld": 1
+    "operational_green": 6,
+    "operational_withheld": 2
   }
 }
