@@ -35,6 +35,14 @@
     r.inputChanges.some(k=>!Object.hasOwn(SOURCES,k))))||
    (r.changedPairs!==null&&!Array.isArray(r.changedPairs))||
    (r.changedRanks!==null&&!Array.isArray(r.changedRanks))||
+   (r.factorChanges!==undefined&&r.factorChanges!==null&&
+    (!Array.isArray(r.factorChanges)||r.factorChanges.some(x=>
+     !FXS.has(x.ccy)||!r.currencies.some(c=>c.ccy===x.ccy&&c.rank===x.rank?.current)||
+     !['score','macroScore','policyScore','priceScore'].every(k=>
+      finite(x.changes?.[k]?.previous)&&
+      finite(x.changes?.[k]?.current)&&finite(x.changes?.[k]?.delta)&&
+      score(x.changes[k].current-x.changes[k].previous)===x.changes[k].delta)
+    )))||
    (r.status==='NO_MATERIAL_THESIS_CHANGE'&&
      (r.changedPairs?.length>0||r.changedRanks?.length>0))||
    (r.status==='RECALCULATED_WITH_CHANGES'&&
@@ -81,6 +89,61 @@
     stored.monetaryAsOf===(c.rate?.asof??null)&&stored.partial===c.partial;
   });
  };
+ // An estimated-model factor is not proof of economic causation of spot FX.
+ const signed=x=>(x>0?'+':'')+String(Number(x.toFixed(2))).replace('.',',');
+ function driverReading(r,estimate){
+  if(r.status!=='RECALCULATED_WITH_CHANGES')return null;
+  const changed=r.inputChanges||[];
+  const unique=changed.length===1&&!r.methodChanged?changed[0]:null;
+  const shared=(r.changedPairs||[]).length?
+   [...FXS].find(ccy=>r.changedPairs.every(p=>p.key.includes(ccy))):null;
+  const raw=estimate?.currencies?.find(c=>c.ccy===shared);
+  let reason='';
+  if(r.methodChanged)reason='È cambiata anche la metodologia: non è possibile attribuire le revisioni a una sola fonte di mercato.';
+  else if(unique==='rates'){
+   reason='È cambiato soltanto il dataset dei rendimenti governativi; macro, pricing OIS/futures a 6 mesi e fixing BCE sono rimasti invariati. Nel modello i governativi 2Y contano solo dove sostituiscono un riferimento monetario ufficiale.';
+   if(raw?.rate?.kind==='GOV_2Y_PROXY'&&finite(raw.rate.changeBp)&&finite(raw.policyScore)&&shared)
+    reason+=' Per '+shared+' il 2Y settimanale è '+signed(raw.rate.changeBp)+
+     ' pb, con contributo monetario '+signed(raw.policyScore)+
+     ' (soglia direzionale ±5 pb): è un proxy, NON un OIS.';
+  }else if(unique==='ois')reason='È cambiata la fonte OIS/futures 6M. Il modello usa variazioni settimanali dello stesso strumento, non confronti di livelli nominali tra paesi; i proxy rimangono distinti dalle fonti ufficiali.';
+  else if(unique==='observed')reason='Sono cambiate le osservazioni macro G8. Il modello ricalcola il momentum relativo; revisioni delle serie non equivalgono necessariamente a nuove sorprese pubblicate oggi.';
+  else if(unique==='prices')reason='Sono cambiati i fixing BCE: possono spostare forza relativa e timing, ma non dimostrano perché si sia mosso il prezzo.';
+  else if(unique==='model')reason='È cambiato il catalogo dei modelli/coppie: la revisione non è attribuibile a una nuova sorpresa di mercato.';
+  else reason='Sono cambiate più famiglie di dati, oppure manca un confronto univoco: la ricevuta identifica gli input senza dimostrare una singola causa di mercato.';
+  // The first real receipt predates detailed factor-delta capture: do not
+  // invent scores from an unrecorded previous period.
+  const factors=(r.factorChanges||[]).filter(x=>
+   x&&['macroScore','policyScore','priceScore'].some(k=>x.changes?.[k]?.delta!==0));
+  const details=factors.slice(0,3).map(x=>{
+   const labels={macroScore:'macro',policyScore:'monetaria',priceScore:'prezzo'};
+   const deltas=['macroScore','policyScore','priceScore'].filter(k=>
+    x.changes[k].delta!==0).map(k=>labels[k]+' '+signed(x.changes[k].previous)+
+     ' → '+signed(x.changes[k].current)+' (Δ '+signed(x.changes[k].delta)+')');
+   return x.ccy+': '+deltas.join('; ');
+  });
+  if(details.length&&!r.methodChanged)
+   reason+=' Confronto misurato dei punteggi: '+details.join(' · ')+
+    '. Questi sono contributi interni al modello, non cause dimostrate del prezzo.';
+  const rankOnly=(r.factorChanges||[]).filter(x=>
+   x.rank.previous!==x.rank.current&&
+   ['score','macroScore','policyScore','priceScore'].every(k=>x.changes[k].delta===0));
+  if(rankOnly.length)reason+=' '+rankOnly.map(x=>x.ccy).join(', ')+
+   ' cambia posizione per effetto relativo, senza incremento del proprio punteggio.';
+  else if(!r.factorChanges&&(r.changedRanks||[]).length)
+   reason+=' Un cambio di posizione non prova da solo un rafforzamento autonomo della valuta.';
+  const challenge=unique==='rates'?
+   'Controlla il prossimo fixing FX e il 6M OIS ufficiale confrontabile: se divergono dal nuovo vantaggio relativo, la tesi resta fragile. Il 2Y governativo non misura soltanto le attese della banca centrale.':
+   unique==='ois'?
+   'Verifica strumento e contratto comparabili, poi valuta reazione del cambio e differenziali relativi: il repricing OIS non è automaticamente un trade.':
+   unique==='prices'?
+   'Servono conferme da macro e tassi comparabili: il trend dei fixing non dimostra una tesi fondamentale.':
+   'Servono evidenze successive coerenti, differenziali comparabili e conferma del cambio: un nuovo punteggio non è un segnale d’ingresso.';
+  const restricted=(r.changedPairs||[]).filter(p=>
+   ['NON VALUTABILE','BASSA ORA','NON SUPPORTATA'].includes(p.current?.timing)).length;
+  return {reason,challenge:challenge+(restricted?
+   ' '+restricted+' tesi riviste hanno ancora attrattività bassa, non valutabile o non supportata.':'')};
+ }
  const fallback=(reason,d)=>'<section class="fx-recalc-pulse fx-recalc-unverified" id="fx-recalc-pulse" data-recalc-state="UNVERIFIED" aria-label="Verifica ricalcolo FX">'+
    '<div class="fx-recalc-head"><span class="fx-recalc-overline">MONITOR TESI · G8 / 28 COPPIE</span>'+
    '<span class="fx-recalc-state">VERIFICA SOSPESA</span></div>'+
@@ -106,6 +169,7 @@
    return fallback('La classifica G8 o i giudizi delle 28 coppie non coincidono con il ricalcolo corrente.',
     'Il confronto usa il motore stimato di base, prima dei proxy aggiuntivi di ricerca.');
   const cp=receipt.changedPairs,cr=receipt.changedRanks;
+  const interpretation=driverReading(receipt,estimate);
   const pairCount=Array.isArray(cp)?cp.length:null;
   const rankCount=Array.isArray(cr)?cr.length:null;
   const isBaseline=receipt.status==='BASELINE_RECALC';
@@ -155,7 +219,12 @@
    '<div class="fx-recalc-head"><span class="fx-recalc-overline">MONITOR TESI · G8 / 28 COPPIE</span>'+
    '<span class="fx-recalc-state">'+(unchanged?'TESI INVARIATE':isBaseline?'PRIMA RICEVUTA':'TESI RIVISTE')+'</span></div>'+
    '<div class="fx-recalc-core"><div><h2>Che cosa cambia nelle nostre tesi FX?</h2>'+
-   '<p>'+safeEscape(message)+'</p></div><div class="fx-recalc-date">'+
+   '<p>'+safeEscape(message)+'</p>'+
+   (interpretation?'<p class="fx-recalc-driver"><strong>Che cosa ha modificato la stima:</strong> '+
+    safeEscape(interpretation.reason)+'</p>'+
+    '<p class="fx-recalc-invalidation"><strong>Cosa potrebbe smentirla:</strong> '+
+    safeEscape(interpretation.challenge)+'</p>':'')+
+   '</div><div class="fx-recalc-date">'+
    '<span>Controllo '+safeDate(checkedDay)+'</span><strong>FX '+safeDate(fixing)+'</strong>'+
    '</div></div>'+
    '<div class="fx-recalc-links"><a href="#currencies">Valute G8</a>'+
@@ -171,7 +240,7 @@
    'target="_blank" rel="noopener noreferrer">Verifica la ricevuta originale su GitHub</a>'+
    '</div></details></section>';
  }
- const api={render,receiptOK,sourceMatches,outputMatches};
+ const api={render,receiptOK,sourceMatches,outputMatches,driverReading};
  root.FXQuantHomeThesisRecalc=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
