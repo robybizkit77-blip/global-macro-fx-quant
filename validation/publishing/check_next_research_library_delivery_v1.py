@@ -25,7 +25,7 @@ MONTHS_IT = {"GENNAIO": 1, "FEBBRAIO": 2, "MARZO": 3, "APRILE": 4,
              "MAGGIO": 5, "GIUGNO": 6, "LUGLIO": 7, "AGOSTO": 8,
              "SETTEMBRE": 9, "OTTOBRE": 10, "NOVEMBRE": 11, "DICEMBRE": 12}
 MARKETS_REVIEW_V13 = re.compile(
-    r"Global_Markets_Review_(\\d{1,2})_([A-Za-z]+)_(20\\d{2})_DARK_SLATE_V13(?:_SOLO_SEZIONI)?\\.html",
+    r"Global_Markets_Review_(\d{1,2})_([A-Za-z]+)_(20\d{2})_DARK_SLATE_V13(?:_SOLO_SEZIONI)?\.html",
     re.I,
 )
 BLOCKED = re.compile(r"(?:^|_)(?:PROVA|TEST|BOZZA|DRAFT|BACKUP|ANTEPRIMA|PREVIEW|LEGACY|OLD|DATI_PARZIALI)(?:_|\.|$)", re.I)
