@@ -8,6 +8,7 @@ const ROOT='./reports/';
 const PUBLIC_API='https://api.github.com/repos/robybizkit77-blip/global-macro-fx-quant/contents/site/fx-quant-v2/next/reports?ref=main';
 const CROSS_ASSET_REVIEW='Global_Markets_Review_14_Novembre_2026_DARK_SLATE_V13_SOLO_SEZIONI.html';
 const CROSS_ASSET_V13=/^Weekly_Global_Macro_Strength_Cross_Asset_20\d{2}-\d{2}-\d{2}_DARK_SLATE_V13\.html$/;
+const DATED_GLOBAL_MARKETS_V13=/^Global_Markets_Review_(\d{1,2})_([A-Za-z]+)_(20\d{2})_DARK_SLATE_V13(?:_SOLO_SEZIONI)?\.html$/i;
 const REPORTS=Object.freeze([
  {type:'daily',date:'2026-11-16',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-16_V3_METODO_INTEGRATO_DEFINITIVO.html',desc:'Scenario Forex, catalizzatori macro e lettura di oro e petrolio.'},
  {type:'macro',date:'2026-11-06',title:'Weekly Global Macro Report',file:'Weekly_Global_Macro_Report_2026-11-06_COUNTRY_BOOK_NARRATIVO_V4_CORRETTA.html',desc:'Country Book: crescita, inflazione, lavoro, tassi, rischio e forza relativa delle valute.'},
@@ -20,6 +21,8 @@ const REPORTS=Object.freeze([
 ]);
 const CATEGORIES=Object.freeze([['all','Tutti'],['daily','Daily Forex'],['macro','Global Macro'],['bank','Banche FX'],['cb','Banche centrali'],['ois','Curve OIS'],['cot','COT'],['cross','Cross-Asset'],['pairs','Coppie FX']]);
 const MONTHS=Object.freeze({GEN:1,FEB:2,MAR:3,APR:4,MAG:5,GIU:6,LUG:7,AGO:8,SET:9,OTT:10,NOV:11,DIC:12});
+const MONTHS_IT=Object.freeze({GENNAIO:1,FEBBRAIO:2,MARZO:3,APRILE:4,MAGGIO:5,GIUGNO:6,
+ LUGLIO:7,AGOSTO:8,SETTEMBRE:9,OTTOBRE:10,NOVEMBRE:11,DICEMBRE:12});
 const BLOCKED=/(_PROVA|_TEST|_BOZZA|_DRAFT|_BACKUP|_ANTEPRIMA|_PREVIEW|_LEGACY|_OLD|_DATI_PARZIALI)(_|\.|$)/i;
 let category='all',query='',remoteReports=[],localReports=[],lastLookupAt=0,refreshInFlight=false,catalogReady=false;
 const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
@@ -33,12 +36,20 @@ function reportType(file){
  if(file.startsWith('Weekly_CB_Sentiment_Report_'))return 'cb';
  if(file.startsWith('Weekly_CB_Pricing_G8_')||file.startsWith('Weekly_Central_Bank_Pricing_G8_'))return 'ois';
  if(file.startsWith('COT_FX_G8_'))return 'cot';
- if(file===CROSS_ASSET_REVIEW||file.startsWith('Weekly_Global_Macro_Strength_Cross_Asset_'))return 'cross';
+ if(file===CROSS_ASSET_REVIEW||DATED_GLOBAL_MARKETS_V13.test(file)||file.startsWith('Weekly_Global_Macro_Strength_Cross_Asset_'))return 'cross';
  if(file.startsWith('Weekly_FX_Pair_Selection_'))return 'pairs';
  return null;
 }
 function reportDate(file){
  if(file===CROSS_ASSET_REVIEW)return '2026-11-14';
+ const review=file.match(DATED_GLOBAL_MARKETS_V13);
+ if(review){
+  const day=Number(review[1]),month=MONTHS_IT[review[2].toUpperCase()],year=Number(review[3]);
+  if(!month)return null;
+  const observed=new Date(Date.UTC(year,month-1,day));
+  if(observed.getUTCFullYear()!==year||observed.getUTCMonth()!==month-1||observed.getUTCDate()!==day)return null;
+  return year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+ }
  const iso=file.match(/(?:^|_)(20\d{2}-\d{2}-\d{2})(?:_|\.|$)/);
  if(iso)return iso[1];
  const cot=file.match(/^COT_FX_G8_(\d{2})_([A-Z]{3})_(20\d{2})_/i);
@@ -58,7 +69,7 @@ function remoteReport(file){
  const desc=type==='cot'&&file!==canonical.file
   ?'Posizioni CFTC, flussi dei fondi e confronto con il cambio.'
   :canonical.desc;
- const title=file===CROSS_ASSET_REVIEW||CROSS_ASSET_V13.test(file)?'Global Markets Review':canonical.title;
+ const title=file===CROSS_ASSET_REVIEW||DATED_GLOBAL_MARKETS_V13.test(file)||CROSS_ASSET_V13.test(file)?'Global Markets Review':canonical.title;
  return {...canonical,title,desc,date,file,publicUrl:ROOT+encodeURIComponent(file)};
 }
 function latestPerType(items){
