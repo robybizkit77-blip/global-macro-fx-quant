@@ -28,6 +28,7 @@ const SOURCES={
  macro:'../../../live_data/sections/MACRO_THERMOMETER_DATA.json',
  macroObserved:'../../control-room-preview/macro-v3-current-evidence.json',
  macroSeries:'../../../live_data/sections/MACRO_SERIES.json',
+ semaphoreExtra:'./semaphore-supplement-v1.json',
  cbEstimated:'../../../live_data/sections/CB_PRICING_ESTIMATED.json',
  cb:'../../../live_data/sections/NATIVE_CB_DATA.json',
  liquidity:'../../../live_data/sections/NATIVE_LIQ_DATA.json',
