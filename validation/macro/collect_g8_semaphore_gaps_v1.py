@@ -7,6 +7,8 @@ All data are current revised vintages, not point-in-time historical releases.
 from __future__ import annotations
 import argparse
 import csv
+import io
+from zipfile import ZipFile
 from datetime import date, datetime, timezone
 from io import StringIO
 import json
@@ -25,8 +27,8 @@ MAX_BYTES=3_000_000
 # Several historical OECD/BIS feeds have stopped updating: retain status WITHHELD;
 # never use today's fetch time to make an old observation look current.
 REGISTRY=[
- dict(ccy="EUR",area="house",key="EA20_STS_COBP_M",method="eurostat",
-      name="Permessi edilizi area euro (abitazioni)",unit="indice 2021=100",
+ dict(ccy="EUR",area="house",key="EA21_STS_COBP_M",method="eurostat",
+      name="Permessi edilizi residenziali area euro EA21",unit="indice 2021=100",
       frequency="M",kind="percent",max_age_days=115,
       source_page="https://ec.europa.eu/eurostat/databrowser/view/sts_cobp_m/default/table?lang=en",
       origin="Eurostat / sts_cobp_m"),
@@ -54,10 +56,10 @@ REGISTRY=[
       name="Credito bancario settore privato, corretto per rotture",unit="mld NZD NSA",frequency="Q",
       kind="percent",max_age_days=250,origin="BIS tramite FRED",
       source_page="https://fred.stlouisfed.org/series/QNZPBMXDCA"),
- dict(ccy="CAD",area="industry",key="CANSLMNTO02MLSAM",method="fred",
-      name="Vendite manifatturiere SA",unit="CAD SA",frequency="M",
-      kind="percent",max_age_days=110,origin="OECD tramite FRED",
-      source_page="https://fred.stlouisfed.org/series/CANSLMNTO02MLSAM"),
+ dict(ccy="CAD",area="industry",key="16100047_MANUFACTURING_SA",method="statcan",
+      name="Vendite manifatturiere (nominali, destagionalizzate)",unit="migliaia CAD nominali SA",frequency="M",
+      kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
+      source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
 assert len(REGISTRY)==8 and len({(s["ccy"],s["area"]) for s in REGISTRY})==8
 
@@ -75,6 +77,52 @@ def fetch(url:str)->bytes:
         if not data or len(data)>MAX_BYTES:
             raise ValueError("oversized/empty source")
     return data
+
+STATCAN_CSV="https://www150.statcan.gc.ca/n1/tbl/csv/16100047-eng.zip"
+def fetch_statcan(url):
+    if url!=STATCAN_CSV:raise ValueError("StatCan source URL not on allowlist")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0",
+                             "Accept":"application/zip"})
+    with urlopen(req,timeout=35) as response:
+        if not response.geturl().startswith("https://www150.statcan.gc.ca/"):
+            raise ValueError("StatCan source redirect outside allowlist")
+        compressed=response.read(35_000_001)
+        if not compressed or len(compressed)>35_000_000:
+            raise ValueError("empty or oversized StatCan archive")
+    return compressed
+
+def parse_statcan(raw,now):
+    """Extract the unique monthly Canada SA manufacturing total, not a subindustry."""
+    with ZipFile(io.BytesIO(raw)) as z:
+        names=[n for n in z.namelist() if n=="16100047.csv"]
+        if len(names)!=1:raise ValueError("StatCan CSV identity changed")
+        if z.getinfo(names[0]).file_size>400_000_000:
+            raise ValueError("StatCan uncompressed archive exceeds budget")
+        with z.open(names[0]) as f:
+            rdr=csv.DictReader(io.TextIOWrapper(f,encoding="utf-8-sig"))
+            required={"REF_DATE","GEO","Principal statistics","Seasonal adjustment",
+                      "North American Industry Classification System (NAICS)","VALUE",
+                      "UOM","SCALAR_FACTOR"}
+            if not required.issubset(set(rdr.fieldnames or [])):
+                raise ValueError("StatCan columns changed")
+            values={}
+            for row in rdr:
+                if row["GEO"]!="Canada" or row["Principal statistics"]!="Sales of goods manufactured (shipments)" or \
+                  row["Seasonal adjustment"]!="Seasonally adjusted" or \
+                  row["North American Industry Classification System (NAICS)"]!="Manufacturing [31-33]":
+                    continue
+                if row["UOM"]!="Dollars" or row["SCALAR_FACTOR"]!="thousands":
+                    raise ValueError("StatCan manufacturing unit changed")
+                p=row["REF_DATE"]
+                if not re.fullmatch(r"\d{4}-\d{2}",p):
+                    raise ValueError("StatCan period format changed")
+                if period_end(p)>now:continue
+                value=float(row["VALUE"])
+                if not math.isfinite(value) or value<=0:raise ValueError("bad StatCan value")
+                if p in values:raise ValueError("ambiguous duplicate StatCan total")
+                values[p]=value
+    if len(values)<12:raise ValueError("insufficient StatCan history")
+    return sorted(values.items())
 
 def period(date_string, frequency):
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}",date_string):
@@ -123,8 +171,8 @@ def parse_eurostat(raw:bytes,now:date):
     sizes=payload.get("size",[])
     if len(ids)!=len(sizes) or not ids or "time" not in ids:
         raise ValueError("invalid Eurostat shape")
-    allowed={"freq":{"M"},"geo":{"EA20","EA21"},"indic_bt":{"BPRM_DW"},
-             "s_adj":{"SCA"},"unit":{"I21"}}
+    allowed={"freq":{"M"},"geo":{"EA21"},"indic_bt":{"BPRM_DW"},
+             "s_adj":{"SCA"},"unit":{"I21"},"cpa2_1":{"CPA_F41001"}}
     selected={}
     for k in ids:
         index=dims.get(k,{}).get("category",{}).get("index",{})
@@ -187,13 +235,15 @@ def collect(now=None,fetcher=fetch):
       "series":[],"audit":{},"notes":"Latest revised observations, not PIT, no FX score."}
     for spec in REGISTRY:
         code=spec["ccy"]+"_"+spec["area"]
-        url=(FRED+spec["key"]) if spec["method"]=="fred" else (
+        url=FRED+spec["key"] if spec["method"]=="fred" else (
+          STATCAN_CSV if spec["method"]=="statcan" else
           "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?"
-          "geo=EA20&indic_bt=BPRM_DW&s_adj=SCA&unit=I21&lang=EN")
+          "geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001&s_adj=SCA&unit=I21&lang=EN")
         try:
-            raw=fetcher(url)
+            raw=fetch_statcan(url) if spec["method"]=="statcan" and fetcher is fetch else fetcher(url)
             observations=(parse_fred(raw,spec["key"],spec["frequency"],now)
-                          if spec["method"]=="fred" else parse_eurostat(raw,now))
+                          if spec["method"]=="fred" else
+                          parse_statcan(raw,now) if spec["method"]=="statcan" else parse_eurostat(raw,now))
             item,status=candidate(spec,observations,now)
             if item is not None:out["series"].append(item)
             out["audit"][code]={"...":None,**status,"source_page":spec["source_page"],
