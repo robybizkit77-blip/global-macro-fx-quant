@@ -227,4 +227,5 @@ assert.match(app,/visibilitychange/);
 const page=read('site/fx-quant-v2/next/index.html');
 assert.match(page,/editorial-v4\.css\?v=18/);
 assert.match(page,/app\.js\?v=18/);
+require('./publishing/test_next_home_thesis_recalc_v1.cjs');
 console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');

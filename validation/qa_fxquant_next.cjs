@@ -114,6 +114,25 @@ async function inspectRoute(page,label,key){
      label+' premium Home '+key+' copy became too small: '+fonts[key]+'px');
    }
   }
+  const recalc=locator(page,'#fx-recalc-pulse');
+  assert.equal(await recalc.count(),1,label+' Home must show one G8/28 recalculation receipt');
+  const recalculationState=await recalc.getAttribute('data-recalc-state');
+  assert(['same','changed','baseline','UNVERIFIED'].includes(recalculationState),
+   label+' Home receipt must have a supported dated-evidence status');
+  if(recalculationState==='UNVERIFIED'){
+   assert.match(await recalc.innerText(),/non è attestato|ricevuta.*non valida/i,
+    label+' missing or misdated proof must not be reported as a verified recalculation');
+  }else{
+   assert.match(await recalc.innerText(),/G8 \/ 28 COPPIE/i,
+    label+' research scope must be explicit');
+   const audit=recalc.locator('details.fx-recalc-details');
+   assert.equal(await audit.count(),1,label+' detailed provenance must be collapsible');
+   assert.equal(await audit.getAttribute('open'),null,label+' detailed audit starts collapsed');
+   await audit.locator('summary').click();
+   assert.equal(await audit.locator('a.fx-recalc-proof').count(),1,
+    label+' original audit proof must be available');
+   await audit.locator('summary').click();
+  }
   const monetaryHome=locator(page,'#home-pricing-proof');
   assert.equal(await monetaryHome.count(),1,label+' Home monetary-to-FX chart missing');
   const homeCardCount=await monetaryHome.locator('.home-pricing-proof-card').count();

@@ -544,6 +544,12 @@ function overview(){
    today:dayNow(),prices:get('currencyPrices'),pairs:get('pairs'),
    history:get('oisHistory')
   })||'');
+ // This source-dated evidence is independent of the approved editorial lead.
+ const recalcProof=typeof window==='undefined'?'':(
+  window.FXQuantHomeThesisRecalc?.render?.({
+   receipt:get('thesisRecalcReceipt'),observed:get('macroObserved'),
+   prices:get('currencyPrices'),estimate:get('estimatedMacro'),today:dayNow()
+  })||'');
  const desk=typeof window==='undefined'?null:window.FXQuantHourlyDesk;
  const hourlyFeed=get('hourlyDesk'),morning=get('morningDesk');
  const today=dayNow(),calendar=get('calendar'),news=get('news');
@@ -551,9 +557,9 @@ function overview(){
  const currentContext=()=> (desk?.renderCatalyst?.({calendar,news,today,esc,date})||'')+references;
  const renderedHourly=desk?.render?.({feed:hourlyFeed,check:get('hourlyCheck'),risk:get('risk'),
   currencyPrices:get('currencyPrices'),calendar,news,references,esc,date,dayNow});
- const hourly=renderedHourly&&moneyProof?
+ const hourly=renderedHourly&&(moneyProof||recalcProof)?
   renderedHourly.replace('<section class="hourly-decision-section"',
-   moneyProof+'<section class="hourly-decision-section"'):renderedHourly;
+   recalcProof+moneyProof+'<section class="hourly-decision-section"'):renderedHourly;
  if(hourly&&!desk.preferMorning?.(morning,hourlyFeed,dayNow()))return hourly;
  if(typeof window!=='undefined' && window.FXQuantMorningDesk?.build && morning){
   // A new, independently dated FX snapshot must never rewrite the archived
@@ -574,9 +580,9 @@ function overview(){
   });
   if(edition){
    const post=window.FXQuantMorningDesk.postRelease?.(morning,get('news'),esc,dayNow)||'';
-   return post||moneyProof?
+   return post||moneyProof||recalcProof?
     edition.replace('<section class="morning-prose"',
-     post+moneyProof+'<section class="morning-prose"'):edition;
+     post+recalcProof+moneyProof+'<section class="morning-prose"'):edition;
   }
  }
  if(hourly)return hourly;
@@ -859,6 +865,7 @@ function overview(){
  +(fxDesk.ready&&!fxDesk.recent?'<p class="letter-stale">Fixing FX storici: non rappresentano dati di mercato attuali.</p>':'')
  +'</header>'
  +currentContext()
+ +recalcProof
  +'<section class="dashboard-reading-story" aria-label="Il racconto del desk"><div class="dashboard-reading-eyebrow">LA LETTURA FX DEL DESK · '+date(fxDesk.asof)+'</div>'
  +'<div class="dashboard-reading-body"><p>'+esc(fxDesk.why)+'</p><p>'+esc(fxDesk.policy)+'</p><p>'+esc(fxDesk.market)+'</p>'
  +'<p class="dashboard-reading-verdict"><strong>Il mio giudizio.</strong> '+esc(fxDesk.verdict)+'</p>'
@@ -1524,6 +1531,21 @@ async function loadAll(){
       d.generated_at_utc.slice(0,10)<=dayNow())nextData.hourlyDesk=d;
   }catch(e){
    // The independent editorial feed is not a required operational source.
+  }finally{clearTimeout(timer)}
+ })());
+ // Optional, read-only G8/28 research recalculation receipt. Not a required
+ // operational source: missing evidence is shown as unverified, not a signal.
+ jobs.push((async()=>{
+  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),10000);
+  try{
+   const r=await fetch('./pair-estimate-recalc-receipt-v1.json',
+    {cache:'no-store',signal:ctl.signal});
+   if(!r.ok)return;
+   const d=await r.json();
+   if(d?.schema==='GMFQ_NEXT_ESTIMATED_FX_RECALC_RECEIPT_V1')
+    nextData.thesisRecalcReceipt=d;
+  }catch(e){
+   // No receipt is not a successful recalculation.
   }finally{clearTimeout(timer)}
  })());
  // The separate check receipt confirms successful automation execution, NOT
