@@ -1,7 +1,7 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-11-20",
+      "as_of": "2026-11-23",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
@@ -22,17 +22,17 @@
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3H2027",
           "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
           "expiration": "2027-06-15",
-          "futures_price": 99.88,
+          "futures_price": 99.83,
           "mapping": "nearest ICE SARON accrual start to today+90d; no interpolation",
-          "price_valid_until": "2026-11-20T17:59:33Z",
-          "quote_as_of": "2026-11-20",
+          "price_valid_until": "2026-11-23T17:50:04Z",
+          "quote_as_of": "2026-11-23",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.12,
+          "rate": 0.17,
           "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
           "symbol": "ICEEUR:SA3H2027"
         },
@@ -179,7 +179,7 @@
       "status": "LIVE_SECONDARY_CONFLICT_QUARANTINED"
     }
   },
-  "generated_at_utc": "2026-11-23T18:29:38.841427Z",
+  "generated_at_utc": "2026-11-23T18:30:09.734047Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
