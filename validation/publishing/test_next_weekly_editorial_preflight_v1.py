@@ -50,14 +50,26 @@ class SundayEditorialPreflight(unittest.TestCase):
         path.write_text(src, encoding="utf-8")
         return path
 
-    def test_current_repo_is_not_mistaken_for_four_generated_weekly_reports(self):
-        result = scan(ROOT, date(2026, 11, 14))
+    def test_historical_snapshot_is_not_mistaken_for_four_generated_weekly_reports(self):
+        # Freeze the 14 November fixture: scanning ROOT makes this historical
+        # assertion fail when legitimate later editions arrive in the repository.
+        # Keep the date/future guard in check_edition unchanged.
+        shutil.copyfile(ROOT / DIRECTORY / CROSS_ASSET_REVIEW,
+                        self.root / DIRECTORY / CROSS_ASSET_REVIEW)
+        result = scan(self.root, date(2026, 11, 14))
         self.assertEqual(result["status"], "WEEKLY_STRUCTURAL_PREFLIGHT_ONLY")
         self.assertEqual(result["expected_new_types"], 4)
-        self.assertEqual(result["new_files_validated"] +
-                         result["new_types_not_yet_produced"], 4)
+        self.assertEqual(result["new_files_validated"], 1)
+        self.assertEqual(result["new_types_not_yet_produced"], 3)
         self.assertFalse(result["report_generation_certified"])
         self.assertFalse(result["transfer_from_chatgpt_certified"])
+
+    def test_historical_cutoff_still_rejects_future_editions(self):
+        candidate = self.candidate("bank")
+        future = candidate.with_name(candidate.name.replace("2026-11-13", "2026-11-20"))
+        candidate.rename(future)
+        with self.assertRaisesRegex(ValueError, "WEEKLY_DATE_IN_FUTURE"):
+            scan(self.root, date(2026, 11, 14))
 
     def test_new_sunday_reports_can_pass_structural_source_preflight(self):
         for category in TEMPLATES:
