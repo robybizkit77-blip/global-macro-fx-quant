@@ -62,7 +62,7 @@ class G8SemaphoreSources(unittest.TestCase):
 
     def test_eurostat_unique_json_stat_cell(self):
         ids=["freq","geo","indic_bt","cpa2_1","s_adj","unit","time"]
-        allowed=["M","EA21","BPRM_DW","CPA_F41001","SCA","I21"]
+        allowed=["M","EA21","BPRM_DW","CPA_F41001_X_410014","SCA","I21"]
         time=[f"2025-{m:02d}" for m in range(1,13)]+[f"2026-{m:02d}" for m in range(1,10)]
         dims={key:{"category":{"index":{value:0}}} for key,value in zip(ids,allowed)}
         dims["time"]={"category":{"index":{name:i for i,name in enumerate(time)}}}
