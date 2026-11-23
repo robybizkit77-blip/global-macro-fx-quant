@@ -9,14 +9,27 @@ const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
 const json=p=>JSON.parse(read(p));
 const api=require(path.join(ROOT,next,'home-thesis-recalc-v1.js'));
 const raw=json(next+'pair-estimate-recalc-receipt-v1.json');
+const snapshotEstimate={
+ status:'STIMA_OPERATIVA_NON_VALIDATA',
+ schema:'GMFQ_MACRO_STRENGTH_ESTIMATED_V1',
+ asof:raw.macroAsOf,priceAsOf:raw.fixingAsOf,
+ coverage:raw.coverage,
+ currencies:raw.currencies.map(c=>({...c,rate:{
+  quality:c.monetaryQuality,asof:c.monetaryAsOf
+ }})),
+ pairs:Object.entries(raw.pairs).map(([key,p])=>({
+  key,favored:p.favored,thesisStrength:p.thesis,tradeAttractiveness:p.timing
+ }))
+};
 const ctx={
  receipt:raw,
  observed:{generated_europe_rome_day:raw.macroAsOf},
  prices:{last_as_of:raw.fixingAsOf},
- estimate:{status:'STIMA_OPERATIVA_NON_VALIDATA',asof:raw.macroAsOf,
-  priceAsOf:raw.fixingAsOf,coverage:{currencies:8,pairs:28}},
+ estimate:snapshotEstimate,sourceHashes:{...raw.sourceHashes},
  today:raw.checkedDay
 };
+assert.equal(api.sourceMatches(raw,ctx.sourceHashes),true);
+assert.equal(api.outputMatches(raw,ctx.estimate),true);
 assert.equal(api.receiptOK(raw),true,'Real produced audit receipt must validate');
 const first=api.render(ctx);
 assert.match(first,/id="fx-recalc-pulse"/);
@@ -28,6 +41,16 @@ assert.match(first,/FX [\d/]+/);
 assert.match(first,/verifica la ricevuta originale/i);
 assert.match(first,/un backtest/);
 assert.doesNotMatch(first,/data-recalc-state="changed"/);
+const sameDateNewInputs=api.render({...ctx,sourceHashes:{...raw.sourceHashes,ois:'0'.repeat(64)}});
+assert.match(sameDateNewInputs,/data-recalc-state="UNVERIFIED"/);
+assert.match(sameDateNewInputs,/file sorgente sono cambiati/);
+const sameDateChangedThesis=structuredClone(ctx.estimate);
+sameDateChangedThesis.pairs.find(p=>p.key==='EURUSD').favored='CHF';
+assert.match(api.render({...ctx,estimate:sameDateChangedThesis}),/data-recalc-state="UNVERIFIED"/);
+const sameDateChangedRank=structuredClone(ctx.estimate);
+const two=sameDateChangedRank.currencies.slice(0,2);
+[two[0].rank,two[1].rank]=[two[1].rank,two[0].rank];
+assert.match(api.render({...ctx,estimate:sameDateChangedRank}),/data-recalc-state="UNVERIFIED"/);
 const oldPrice=api.render({...ctx,prices:{last_as_of:'2026-11-21'}});
 assert.match(oldPrice,/data-recalc-state="UNVERIFIED"/);
 assert.doesNotMatch(oldPrice,/nessuna delle 28 tesi FX stimate/);
@@ -52,8 +75,13 @@ changed.changedPairs=[{key:'EURUSD',
  current:{favored:'EUR',thesis:'CONTRASTATA',timing:'BASSA ORA'}}];
 changed.changedRanks=[{ccy:'EUR',previous:5,current:4}];
 changed.inputChanges=['observed','prices'];
+changed.pairs.EURUSD={...changed.changedPairs[0].current};
+const changedEstimate=structuredClone(ctx.estimate);
+Object.assign(changedEstimate.pairs.find(p=>p.key==='EURUSD'),{
+ favored:'EUR',thesisStrength:'CONTRASTATA',tradeAttractiveness:'BASSA ORA'
+});
 assert.equal(api.receiptOK(changed),true);
-const displayed=api.render({...ctx,receipt:changed});
+const displayed=api.render({...ctx,receipt:changed,estimate:changedEstimate});
 assert.match(displayed,/data-recalc-state="changed"/);
 assert.match(displayed,/1 tesi FX e 1 posizioni/);
 assert.match(displayed,/EUR\/USD/);
@@ -63,19 +91,24 @@ assert.match(displayed,/Macro G8, Prezzi BCE/);
 assert.match(displayed,/href="#pairs\?pair=EURUSD"/);
 const malicious=structuredClone(changed);
 malicious.changedPairs[0].previous.thesis='<img src=x onerror=alert(1)>';
-const escaped=api.render({...ctx,receipt:malicious});
+const escaped=api.render({...ctx,receipt:malicious,estimate:changedEstimate});
 assert(escaped.includes('&lt;img'));
 assert(!escaped.includes('<img'));
 const baseline=structuredClone(raw);
 baseline.status='BASELINE_RECALC';baseline.changedPairs=null;baseline.changedRanks=null;
 assert.match(api.render({...ctx,receipt:baseline}),/Prima fotografia verificata/);
 const index=read(next+'index.html'),app=read(next+'app.js'),css=read(next+'home-thesis-recalc-v1.css');
-assert(index.includes('home-thesis-recalc-v1.js?v=1')&&index.includes('home-thesis-recalc-v1.css?v=1'));
-assert(index.indexOf('home-thesis-recalc-v1.js?v=1')<index.indexOf('app.js?v='));
+assert(index.includes('home-thesis-recalc-v1.js?v=2')&&index.includes('home-thesis-recalc-v1.css?v=1'));
+assert(index.indexOf('home-thesis-recalc-v1.js?v=2')<index.indexOf('app.js?v='));
 assert(app.includes("fetch('./pair-estimate-recalc-receipt-v1.json'"));
 assert(app.includes("receipt:get('thesisRecalcReceipt')"));
+assert(app.includes("sourceHashes:get('thesisSourceHashes')"));
+assert(app.includes('crypto.subtle.digest(\'SHA-256\''));
+assert(app.includes("const auditEstimate=state?.data?.thesisRecalcReceipt?"));
+assert(app.includes('estimate:auditEstimate'));
 assert(app.includes("recalcProof+moneyProof+'<section"));
 assert(app.includes("post+recalcProof+moneyProof+'<section"));
 assert(app.includes("+recalcProof\n +'<section"));
 assert(css.includes('@media(max-width:640px)'));
+require('./test_next_home_recalc_endtoend_v1.cjs');
 console.log('NEXT_HOME_G8_28_RECALC_PASS: source dates, 28-pair receipt, no-change, changed thesis/rank, future/stale/mismatch, XSS, all Home modes');
