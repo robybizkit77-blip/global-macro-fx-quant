@@ -7,7 +7,7 @@
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3Z2027",
           "contract_description": "Dec 2027",
           "expiration": "2028-03-14",
@@ -22,7 +22,7 @@
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3H2027",
           "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
           "expiration": "2027-06-15",
@@ -38,7 +38,7 @@
         },
         "6m": {
           "accrual_start": "2027-06-16",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-14",
@@ -80,7 +80,7 @@
       "freshness_status": "SOURCE_CONFLICT_NOT_CERTIFIED",
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "FST3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-15",
@@ -94,7 +94,7 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "FST3X2026",
           "contract_description": "Nov 2026",
           "expiration": "2027-02-17",
@@ -108,7 +108,7 @@
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
@@ -144,7 +144,7 @@
       "freshness_status": "SOURCE_CONFLICT_NOT_CERTIFIED",
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQX2027",
           "contract_description": "Nov 2027",
           "expiration": "2027-12-01",
@@ -158,7 +158,7 @@
           "symbol": "CBOT:ZQX2027"
         },
         "3m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQG2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-03-01",
@@ -172,7 +172,7 @@
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQK2027",
           "contract_description": "May 2027",
           "expiration": "2027-06-01",
@@ -215,7 +215,7 @@
       "status": "LIVE_SECONDARY_CONFLICT_QUARANTINED"
     }
   },
-  "generated_at_utc": "2026-11-22T22:51:59.843788Z",
+  "generated_at_utc": "2026-11-23T00:13:15.345804Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
