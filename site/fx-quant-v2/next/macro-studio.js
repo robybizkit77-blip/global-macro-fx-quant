@@ -343,7 +343,7 @@ function build(api){
  }
  function render(){
    return pageHero('GLOBAL MACRO','Scenario macro','Scegli un’economia per vedere cosa sta cambiando e cosa può muovere la sua valuta.')
-    +countryStrip()+countryHero()+(root.FXQuantRecessionLight?.render?root.FXQuantRecessionLight.render({catalog,esc,dayNow,country}):'')+macroResearch()
+    +countryStrip()+countryHero()+(root.FXQuantRecessionLight?.render?root.FXQuantRecessionLight.render({catalog,esc,dayNow,country,overlay:get('semaphoreExtra')}):'')+macroResearch()
     +'<details class="macro-advanced" '+(state.msAdvanced?'open':'')+'><summary><span><strong>Vuoi andare più a fondo?</strong><small>Tabella storica, heatmap G8, confronto tra economie e definizioni: disponibili quando ti servono.</small></span><b>Apri gli approfondimenti ↗</b></summary><div class="macro-advanced-content">'
     +datedAudit()+heatUniverse()+relativePanel()+glossary()+'</div></details>'
     +'<section class="macro-endnote"><div><span class="chapter-kicker">DAL DATO AL MERCATO</span><h2>Macro → Pricing → Posizionamento → Prezzo.</h2><p>La narrativa macro è un’ipotesi. Diventa una tesi più solida soltanto quando cambiamento dei dati, aspettative monetarie e risposta del mercato sono coerenti.</p></div><a class="action-primary" href="#rates">Apri Rates & OIS <span>↗</span></a></section>'
