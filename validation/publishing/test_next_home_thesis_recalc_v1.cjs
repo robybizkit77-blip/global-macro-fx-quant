@@ -104,7 +104,7 @@ assert(app.includes("fetch('./pair-estimate-recalc-receipt-v1.json'"));
 assert(app.includes("receipt:get('thesisRecalcReceipt')"));
 assert(app.includes("sourceHashes:get('thesisSourceHashes')"));
 assert(app.includes('crypto.subtle.digest(\'SHA-256\''));
-assert(app.includes("const auditEstimate=state.data.thesisRecalcReceipt?"));
+assert(app.includes("const auditEstimate=state?.data?.thesisRecalcReceipt?"));
 assert(app.includes('estimate:auditEstimate'));
 assert(app.includes("recalcProof+moneyProof+'<section"));
 assert(app.includes("post+recalcProof+moneyProof+'<section"));
