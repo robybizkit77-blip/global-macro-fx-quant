@@ -63,7 +63,7 @@ function build({previous=null,history,estimate,checked,commit,method,sourceHashe
   same(previous.currencies,currencies);
  if(noChange)return {write:false,status:'INPUTS_UNCHANGED',receipt:previous};
  const changed=(changedPairs?.length||0)+(changedRanks?.length||0);
- const status=changed?'RECALCULATED_WITH_CHANGES':
+ const status=!priorPairs?'BASELINE_RECALC':changed?'RECALCULATED_WITH_CHANGES':
   'NO_MATERIAL_THESIS_CHANGE';
  const receipt={
   schema:SCHEMA,status,checkedAtUtc:checked.utc,checkedDay:checked.day,
