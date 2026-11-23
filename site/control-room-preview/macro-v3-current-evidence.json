@@ -137,15 +137,15 @@
       },
       "inflation": {
         "change_direction": "UP",
-        "change_over_three_observation_intervals_pp": 0.5,
+        "change_over_three_observation_intervals_pp": 1.1,
         "normalization_not_required_for_observed_value": true,
         "observation_intervals_not_fixed_calendar_months": true,
-        "observation_period": "2026-09",
+        "observation_period": "2026-10",
         "observation_period_is_not_release_instant": true,
-        "observation_value": 1.0,
+        "observation_value": 1.5,
         "observed_history_revised_not_historic_PIT": true,
         "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
-        "research_z_only_when_available": 2.3607176581680833,
+        "research_z_only_when_available": 3.0,
         "research_z_was_not_imputed": false,
         "series_id": "CH_CPI_HEADLINE_YOY",
         "source": "Swiss National Bank data portal / SFSO"
@@ -154,15 +154,15 @@
       "inflation_decelerating_yoy": false,
       "labour": {
         "change_direction": "FLAT",
-        "change_over_three_observation_intervals_pp": 0.009022,
+        "change_over_three_observation_intervals_pp": -0.041807,
         "normalization_not_required_for_observed_value": true,
         "observation_intervals_not_fixed_calendar_months": true,
-        "observation_period": "2026-09",
+        "observation_period": "2026-10",
         "observation_period_is_not_release_instant": true,
-        "observation_value": 3.1249882357461,
+        "observation_value": 3.09398862381848,
         "observed_history_revised_not_historic_PIT": true,
         "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
-        "research_z_only_when_available": 0.9570251359326951,
+        "research_z_only_when_available": 0.7341396608785147,
         "research_z_was_not_imputed": false,
         "series_id": "CH_UNEMP_RATE",
         "source": "Swiss National Bank data portal / SECO"
@@ -543,21 +543,21 @@
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
         "AUD": "2026Q3",
-        "CHF": "2026-09"
+        "CHF": "2026-10"
       },
       "inflation_yoy_changes_pp": {
         "AUD": 0.3,
-        "CHF": 0.5
+        "CHF": 1.1
       },
       "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
         "AUD": 0.4,
-        "CHF": 0.009022
+        "CHF": -0.041807
       },
       "labour_periods": {
         "AUD": "2026-10",
-        "CHF": "2026-09"
+        "CHF": "2026-10"
       },
       "pair_trade_bias": null,
       "quote": "CHF",
@@ -683,21 +683,21 @@
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
         "CAD": "2026-10",
-        "CHF": "2026-09"
+        "CHF": "2026-10"
       },
       "inflation_yoy_changes_pp": {
         "CAD": 0.053159,
-        "CHF": 0.5
+        "CHF": 1.1
       },
       "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
         "CAD": 0.3,
-        "CHF": 0.009022
+        "CHF": -0.041807
       },
       "labour_periods": {
         "CAD": "2026-10",
-        "CHF": "2026-09"
+        "CHF": "2026-10"
       },
       "pair_trade_bias": null,
       "quote": "CHF",
@@ -752,21 +752,21 @@
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
-        "CHF": "2026-09",
+        "CHF": "2026-10",
         "JPY": "2026-10"
       },
       "inflation_yoy_changes_pp": {
-        "CHF": 0.5,
+        "CHF": 1.1,
         "JPY": 0.4
       },
       "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
-        "CHF": 0.009022,
+        "CHF": -0.041807,
         "JPY": -0.1
       },
       "labour_periods": {
-        "CHF": "2026-09",
+        "CHF": "2026-10",
         "JPY": "2026-09"
       },
       "pair_trade_bias": null,
@@ -857,21 +857,21 @@
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
-        "CHF": "2026-09",
+        "CHF": "2026-10",
         "EUR": "2026-10"
       },
       "inflation_yoy_changes_pp": {
-        "CHF": 0.5,
+        "CHF": 1.1,
         "EUR": 1.0
       },
       "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
-        "CHF": 0.009022,
+        "CHF": -0.041807,
         "EUR": 0.1
       },
       "labour_periods": {
-        "CHF": "2026-09",
+        "CHF": "2026-10",
         "EUR": "2026-09"
       },
       "pair_trade_bias": null,
@@ -1102,21 +1102,21 @@
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
-        "CHF": "2026-09",
+        "CHF": "2026-10",
         "GBP": "2026-10"
       },
       "inflation_yoy_changes_pp": {
-        "CHF": 0.5,
+        "CHF": 1.1,
         "GBP": 0.7
       },
       "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
-        "CHF": 0.009022,
+        "CHF": -0.041807,
         "GBP": -0.3
       },
       "labour_periods": {
-        "CHF": "2026-09",
+        "CHF": "2026-10",
         "GBP": "2026-09"
       },
       "pair_trade_bias": null,
@@ -1277,21 +1277,21 @@
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
-        "CHF": "2026-09",
+        "CHF": "2026-10",
         "NZD": "2026Q3"
       },
       "inflation_yoy_changes_pp": {
-        "CHF": 0.5,
+        "CHF": 1.1,
         "NZD": 0.6
       },
       "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
-        "CHF": 0.009022,
+        "CHF": -0.041807,
         "NZD": 0.3
       },
       "labour_periods": {
-        "CHF": "2026-09",
+        "CHF": "2026-10",
         "NZD": "2026Q3"
       },
       "pair_trade_bias": null,
@@ -1417,21 +1417,21 @@
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
-        "CHF": "2026-09",
+        "CHF": "2026-10",
         "USD": "2026-09"
       },
       "inflation_yoy_changes_pp": {
-        "CHF": 0.5,
+        "CHF": 1.1,
         "USD": 0.25372
       },
       "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
-        "CHF": 0.009022,
+        "CHF": -0.041807,
         "USD": 0.0
       },
       "labour_periods": {
-        "CHF": "2026-09",
+        "CHF": "2026-10",
         "USD": "2026-10"
       },
       "pair_trade_bias": null,
@@ -1477,9 +1477,9 @@
   "safe_to_recompute_structural_pair_theses": false,
   "safe_to_republish_D": false,
   "schema": "GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1",
-  "snapshot_content_sha256": "8ce9be35b7a0ae3d0e5fb6dfe9a225812228c4baad455d9d2cc6137eaabf8455",
+  "snapshot_content_sha256": "4b66c975b26173b6ff7a51b9f75aa3fc6ced8862f8ad6bcfe1be8bca91d89ba4",
   "source_observation_periods_not_release_days": true,
-  "source_receipt_sha256": "ea05b49e193964a65a1f9423642fc96e5c76b6aff8a1cd390da153302195b26f",
+  "source_receipt_sha256": "b0a3232ae635e68cdeee4b1f17aabaf85fac2e18d87d6ff44ee594629be72f48",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
   "status": "OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL",
   "summary": {
