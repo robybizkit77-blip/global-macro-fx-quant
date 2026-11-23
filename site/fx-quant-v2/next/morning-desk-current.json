@@ -1,295 +1,295 @@
 {
   "schema": "GMFQ_MORNING_MACRO_FX_V1",
-  "edition_date": "2026-11-20",
-  "created_at_utc": "2026-11-20T04:52:44.698085Z",
+  "edition_date": "2026-11-23",
+  "created_at_utc": "2026-11-23T04:44:25.295043Z",
   "edition_status": "MORNING_SNAPSHOT",
   "event_status": "EVENT_TODAY",
   "editorial_quality": "DATED_RULED_NARRATIVE_NOT_HUMAN_REVIEWED",
-  "observation_cutoff_exclusive": "2026-11-20",
+  "observation_cutoff_exclusive": "2026-11-23",
   "sources": {
-    "fx_fixing": "2026-11-19",
+    "fx_fixing": "2026-11-20",
     "rates": "2026-11-19",
-    "pair_setup": "2026-11-19",
+    "pair_setup": "2026-11-20",
     "calendar": "OFFICIAL_SEED"
   },
-  "headline": "Giappone: Japan Consumer Price Index misura se la lettura macro per JPY regge alla prossima prova.",
-  "lead": "Arriviamo a Japan Consumer Price Index con un differenziale di tasso USD–JPY di +291 pb e un prezzo USD/JPY da confrontare con il percorso della banca centrale. Non basta sapere che l'evento è importante: il punto è quale parte delle aspettative possa ancora essere sorpresa.",
+  "headline": "Stati Uniti: PMI flash Stati Uniti misura se la lettura macro per USD regge alla prossima prova.",
+  "lead": "Arriviamo a PMI flash Stati Uniti con un differenziale di tasso USD–EUR di +163 pb e un prezzo EUR/USD da confrontare con il percorso della banca centrale. Non basta sapere che l'evento è importante: il punto è quale parte delle aspettative possa ancora essere sorpresa.",
   "paragraphs": [
-    "La BoJ arriva alla seduta dopo la decisione del 30/10/2026, con tasso di riferimento 1.25%. Il punto economico è se crescita e inflazione consentano a quella banca di mantenere il percorso atteso, non il semplice livello del tasso.",
-    "Il differenziale governativo a due anni USD–JPY è +291 punti base al 19/11/2026; rispetto al 12/11/2026 è cambiato di −9,6 pb. Il fixing BCE di USD/JPY è 159,9709 al 19/11/2026, +0,35% sul fixing precedente. Confrontando invece rigorosamente le stesse date (12/11/2026–19/11/2026), lo spread si è mosso di −9,6 pb e il cambio di +0,17%. Nell'intervallo sulle stesse date, il prezzo non segue la direzione suggerita dal differenziale: divergenza da indagare, non automaticamente un'opportunità. Il livello del governativo 2Y non sostituisce un confronto delle variazioni OIS/futures.",
-    "Alle 00:30 italiane è previsto Japan Consumer Price Index (October 2026). Non è disponibile un confronto completo con un consenso da survey certificato. Una sorpresa va giudicata per composizione, revisioni, aspettative pre-evento e confronto dei tassi relativi. Se pricing e prezzo non concordano, la tesi resta aperta anche in presenza di un dato economico chiaro.",
-    "Il banco di prova FX è USD/JPY. Nel modello delle coppie del 19/11/2026, USD ha il vantaggio relativo; il quadro resta con rischi. Nel modello il prezzo diverge dalla struttura, non è una conferma operativa. Nel medesimo fixing EUR/JPY si muove di +0,57% dal giorno precedente. Una sola controparte non dimostra forza generalizzata della valuta. La tesi economica non è un segnale d'ingresso finché pricing relativo e prezzo non convergono."
+    "Il contesto viene dalla Fed del 28 ottobre: tassi invariati al 3,75–4,00%, con due membri favorevoli a un rialzo. La crescita continua a essere descritta come resistente, ma l'inflazione rimane il vincolo per un eventuale allentamento. Per il dollaro la domanda è quanto di questa prudenza sia già incorporato nei tassi e quanto possa ancora sorprendere il mercato.",
+    "Il differenziale governativo a due anni USD–EUR è +163 punti base al 19/11/2026; rispetto al 12/11/2026 è cambiato di −15,0 pb. Il fixing BCE di EUR/USD è 1,0990 al 20/11/2026, −0,02% sul fixing precedente. Confrontando invece rigorosamente le stesse date (12/11/2026–19/11/2026), lo spread si è mosso di −15,0 pb e il cambio di −0,80%. Nell'intervallo sulle stesse date, il prezzo non segue la direzione suggerita dal differenziale: divergenza da indagare, non automaticamente un'opportunità. Il livello del governativo 2Y non sostituisce un confronto delle variazioni OIS/futures.",
+    "Alle 15:45 italiane è previsto PMI flash Stati Uniti (November 2026). Non è disponibile un confronto completo con un consenso da survey certificato. Una sorpresa va giudicata per composizione, revisioni, aspettative pre-evento e confronto dei tassi relativi. Se pricing e prezzo non concordano, la tesi resta aperta anche in presenza di un dato economico chiaro.",
+    "Il banco di prova FX è EUR/USD. Nel modello delle coppie del 20/11/2026, USD ha il vantaggio relativo; il quadro resta con rischi. Il prezzo è coerente nell'orizzonte del modello, non necessariamente nell'ultimo fixing. Nel medesimo fixing USD/JPY si muove di −0,83% dal giorno precedente. Una sola controparte non dimostra forza generalizzata della valuta. La tesi economica non è un segnale d'ingresso finché pricing relativo e prezzo non convergono."
   ],
   "catalyst": {
-    "title": "Oggi · Japan Consumer Price Index · 00:30",
-    "text": "Alle 00:30 italiane è previsto Japan Consumer Price Index (October 2026). Non è disponibile un confronto completo con un consenso da survey certificato. Una sorpresa va giudicata per composizione, revisioni, aspettative pre-evento e confronto dei tassi relativi. Se pricing e prezzo non concordano, la tesi resta aperta anche in presenza di un dato economico chiaro.",
-    "date": "2026-11-20",
-    "currency": "JPY",
-    "time_rome": "00:30"
+    "title": "Oggi · PMI flash Stati Uniti · 15:45",
+    "text": "Alle 15:45 italiane è previsto PMI flash Stati Uniti (November 2026). Non è disponibile un confronto completo con un consenso da survey certificato. Una sorpresa va giudicata per composizione, revisioni, aspettative pre-evento e confronto dei tassi relativi. Se pricing e prezzo non concordano, la tesi resta aperta anche in presenza di un dato economico chiaro.",
+    "date": "2026-11-23",
+    "currency": "USD",
+    "time_rome": "15:45"
   },
   "scenarios": [
     {
       "title": "Sorpresa restrittiva per la banca centrale",
-      "text": "Il segnale su JPY sarebbe più solido con aumento del differenziale relativo e conferma su USD/JPY."
+      "text": "Il segnale su USD sarebbe più solido con aumento del differenziale relativo e conferma su EUR/USD."
     },
     {
       "title": "Sorpresa più accomodante",
-      "text": "Attese monetarie meno rigide potrebbero pesare su JPY; il cambio deve confermarlo senza che il rischio globale domini il movimento."
+      "text": "Attese monetarie meno rigide potrebbero pesare su USD; il cambio deve confermarlo senza che il rischio globale domini il movimento."
     }
   ],
-  "verdict": "Al 19/11/2026 lo spread 2Y USD–JPY è +291 pb; il confronto allineato col cambio è divergente. Il dato di oggi può modificare le attese monetarie, ma USD/JPY richiede una conferma specifica. Questa lettura non produce un segnale di ingresso.",
-  "watch": "Seguire USD/JPY e EUR/JPY, aggiornamenti dello spread USD–JPY su date omogenee, eventuali OIS/futures comparabili e pubblicazioni ufficiali rispetto ad attese documentate. Il COT è settimanale, non misura flussi intraday.",
+  "verdict": "Al 19/11/2026 lo spread 2Y USD–EUR è +163 pb; il confronto allineato col cambio è divergente. Il dato di oggi può modificare le attese monetarie, ma EUR/USD richiede una conferma specifica. Questa lettura non produce un segnale di ingresso.",
+  "watch": "Seguire EUR/USD e USD/JPY, aggiornamenti dello spread USD–EUR su date omogenee, eventuali OIS/futures comparabili e pubblicazioni ufficiali rispetto ad attese documentate. Il COT è settimanale, non misura flussi intraday.",
   "relative_evidence": {
     "aligned_from": "2026-11-12",
     "aligned_to": "2026-11-19",
-    "two_year_spread_bp": 290.7,
-    "spread_change_aligned_bp": -9.6,
-    "pair_change_aligned_pct": 0.1716,
+    "two_year_spread_bp": 163.494,
+    "spread_change_aligned_bp": -14.992,
+    "pair_change_aligned_pct": -0.8032,
     "alignment": "DIVERGENTE",
-    "companion_pair": "EURJPY",
+    "companion_pair": "USDJPY",
     "pair_model_quality": "CON RISCHI"
   },
-  "pair": "USDJPY",
+  "pair": "EURUSD",
   "charts": [
     {
-      "label": "Differenziale 2Y USD–JPY",
+      "label": "Differenziale 2Y USD–EUR",
       "unit": "pb",
       "precision": 0,
       "as_of": "2026-11-19",
-      "last_value": 290.7,
+      "last_value": 163.494,
       "points": [
         {
-          "date": "2026-09-28",
-          "value": 297.0
-        },
-        {
           "date": "2026-10-02",
-          "value": 291.1
+          "value": 183.8104
         },
         {
           "date": "2026-10-06",
-          "value": 286.0
+          "value": 173.7703
         },
         {
           "date": "2026-10-13",
-          "value": 286.2
+          "value": 170.8484
         },
         {
           "date": "2026-10-15",
-          "value": 285.7
+          "value": 177.7259
         },
         {
           "date": "2026-10-16",
-          "value": 282.2
+          "value": 171.0027
         },
         {
           "date": "2026-10-19",
-          "value": 286.6
+          "value": 171.6675
         },
         {
           "date": "2026-10-20",
-          "value": 288.1
+          "value": 176.1925
         },
         {
           "date": "2026-10-21",
-          "value": 289.6
+          "value": 178.1813
         },
         {
           "date": "2026-10-22",
-          "value": 273.6
+          "value": 164.2505
         },
         {
           "date": "2026-10-23",
-          "value": 281.8
+          "value": 170.6539
         },
         {
           "date": "2026-10-26",
-          "value": 279.2
+          "value": 165.462
         },
         {
           "date": "2026-10-27",
-          "value": 281.2
+          "value": 168.4968
         },
         {
           "date": "2026-10-28",
-          "value": 275.5
+          "value": 161.0198
         },
         {
           "date": "2026-10-29",
-          "value": 270.9
+          "value": 160.1999
         },
         {
           "date": "2026-10-30",
-          "value": 268.5
+          "value": 155.4892
         },
         {
           "date": "2026-11-02",
-          "value": 271.0
+          "value": 159.6494
+        },
+        {
+          "date": "2026-11-03",
+          "value": 162.3188
         },
         {
           "date": "2026-11-04",
-          "value": 268.9
+          "value": 158.1742
         },
         {
           "date": "2026-11-05",
-          "value": 260.0
+          "value": 150.1598
         },
         {
           "date": "2026-11-06",
-          "value": 277.8
+          "value": 157.9504
         },
         {
           "date": "2026-11-09",
-          "value": 278.2
+          "value": 162.0874
         },
         {
           "date": "2026-11-10",
-          "value": 294.6
+          "value": 171.1406
         },
         {
           "date": "2026-11-12",
-          "value": 300.3
+          "value": 178.4858
         },
         {
           "date": "2026-11-13",
-          "value": 299.8
+          "value": 180.8195
         },
         {
           "date": "2026-11-16",
-          "value": 295.2
+          "value": 172.0925
         },
         {
           "date": "2026-11-17",
-          "value": 292.2
+          "value": 170.7442
         },
         {
           "date": "2026-11-18",
-          "value": 292.8
+          "value": 171.4092
         },
         {
           "date": "2026-11-19",
-          "value": 290.7
+          "value": 163.4936
         }
       ]
     },
     {
-      "label": "USD/JPY · fixing BCE",
+      "label": "EUR/USD · fixing BCE",
       "unit": "",
       "precision": 4,
-      "as_of": "2026-11-19",
-      "last_value": 159.970888,
+      "as_of": "2026-11-20",
+      "last_value": 1.099,
       "points": [
         {
-          "date": "2026-10-13",
-          "value": 158.124777
-        },
-        {
           "date": "2026-10-14",
-          "value": 158.454667
+          "value": 1.1195
         },
         {
           "date": "2026-10-15",
-          "value": 157.976445
+          "value": 1.1208
         },
         {
           "date": "2026-10-16",
-          "value": 158.020084
+          "value": 1.1253
         },
         {
           "date": "2026-10-19",
-          "value": 158.244989
+          "value": 1.1225
         },
         {
           "date": "2026-10-20",
-          "value": 158.127508
+          "value": 1.1215
         },
         {
           "date": "2026-10-21",
-          "value": 157.877871
+          "value": 1.1234
         },
         {
           "date": "2026-10-22",
-          "value": 157.045962
+          "value": 1.1205
         },
         {
           "date": "2026-10-23",
-          "value": 156.803359
+          "value": 1.1193
         },
         {
           "date": "2026-10-26",
-          "value": 157.445477
+          "value": 1.1188
         },
         {
           "date": "2026-10-27",
-          "value": 157.820628
+          "value": 1.115
         },
         {
           "date": "2026-10-28",
-          "value": 157.962813
+          "value": 1.1133
         },
         {
           "date": "2026-10-29",
-          "value": 158.059299
+          "value": 1.113
         },
         {
           "date": "2026-10-30",
-          "value": 157.250269
+          "value": 1.1172
         },
         {
           "date": "2026-11-02",
-          "value": 157.899429
+          "value": 1.1216
         },
         {
           "date": "2026-11-03",
-          "value": 158.287861
+          "value": 1.1179
         },
         {
           "date": "2026-11-04",
-          "value": 158.249756
+          "value": 1.1267
         },
         {
           "date": "2026-11-05",
-          "value": 158.455096
+          "value": 1.1224
         },
         {
           "date": "2026-11-06",
-          "value": 158.325123
+          "value": 1.1165
         },
         {
           "date": "2026-11-09",
-          "value": 157.946931
+          "value": 1.1193
         },
         {
           "date": "2026-11-10",
-          "value": 158.177278
+          "value": 1.1214
         },
         {
           "date": "2026-11-11",
-          "value": 159.234295
+          "value": 1.1127
         },
         {
           "date": "2026-11-12",
-          "value": 159.696778
+          "value": 1.1081
         },
         {
           "date": "2026-11-13",
-          "value": 159.99819
+          "value": 1.1052
         },
         {
           "date": "2026-11-16",
-          "value": 159.596877
+          "value": 1.1014
         },
         {
           "date": "2026-11-17",
-          "value": 159.295659
+          "value": 1.0989
         },
         {
           "date": "2026-11-18",
-          "value": 159.418308
+          "value": 1.0968
         },
         {
           "date": "2026-11-19",
-          "value": 159.970888
+          "value": 1.0992
+        },
+        {
+          "date": "2026-11-20",
+          "value": 1.099
         }
       ]
     }
