@@ -25,6 +25,7 @@ assert.equal(baseline.receipt.schema,SCHEMA);
 assert.equal(Object.keys(baseline.receipt.pairs).length,28);
 assert.equal(baseline.receipt.currencies.length,8);
 assert.equal(baseline.receipt.legacyMacroAsOf,'2026-09-25');
+assert.equal(baseline.receipt.factorChanges,null,'Initial receipt cannot invent previous component scores');
 assert.deepEqual(baseline.receipt.governance,{estimatedNotValidated:true,
  recomputedCanonicalD:false,recomputedStructuralTheses:false,
  backtestCertified:false,tradeSignal:false});
@@ -40,6 +41,8 @@ assert.equal(refreshed.status,'NO_MATERIAL_THESIS_CHANGE',
 assert.deepEqual(refreshed.receipt.inputChanges,['observed']);
 assert.deepEqual(refreshed.receipt.changedPairs,[]);
 assert.deepEqual(refreshed.receipt.changedRanks,[]);
+assert.deepEqual(refreshed.receipt.factorChanges,[],
+ 'New data with unchanged model outputs must record zero factor deltas');
 assert.equal(refreshed.receipt.comparisonBasis,'PREVIOUS_RECEIPT');
 const dayHeartbeat=build({...args,previous:baseline.receipt,
  checked:{day:'2026-11-24',utc:'2026-11-24T07:30:00Z'}});
@@ -51,6 +54,8 @@ revised.pairs[0].favored=revised.pairs[0].key.slice(3);
 const usd=revised.currencies.find(x=>x.ccy==='USD');
 const eur=revised.currencies.find(x=>x.ccy==='EUR');
 [usd.rank,eur.rank]=[eur.rank,usd.rank];
+eur.policyScore-=0.5;
+eur.score-=0.15;
 const changed=build({...args,previous:refreshed.receipt,estimate:revised,
  checked:{day:'2026-11-23',utc:'2026-11-23T12:20:00Z'},
  sourceHashes:{...sourceHashes,observed:'fresh-observed',prices:'new-fixing'}});
@@ -61,6 +66,19 @@ assert.equal(changed.receipt.changedPairs.length,1);
 assert.equal(changed.receipt.changedRanks.length,2);
 assert.equal(changed.receipt.changedPairs[0].key,revised.pairs[0].key);
 assert.equal(changed.receipt.changedPairs[0].current.favored,revised.pairs[0].favored);
+const eurFactors=changed.receipt.factorChanges.find(x=>x.ccy==='EUR');
+assert(eurFactors,'EUR changed its monetary factor and must get a comparison receipt');
+assert.equal(eurFactors.changes.policyScore.delta,-0.5);
+assert.equal(eurFactors.changes.score.delta,-0.15);
+assert.equal(eurFactors.changes.macroScore.delta,0);
+assert.equal(eurFactors.changes.priceScore.delta,0);
+assert.deepEqual(eurFactors.rank,{previous:FX.indexOf('EUR')+1,
+ current:FX.indexOf('USD')+1});
+const usdFactors=changed.receipt.factorChanges.find(x=>x.ccy==='USD');
+assert(usdFactors,'A pure relative rank move also needs a trace');
+assert.equal(usdFactors.changes.score.delta,0);
+assert.equal(usdFactors.changes.policyScore.delta,0);
+assert.notEqual(usdFactors.rank.previous,usdFactors.rank.current);
 const methodChanged=build({...args,previous:baseline.receipt,method:'method-v2'});
 assert.equal(methodChanged.write,true);
 assert.equal(methodChanged.receipt.methodChanged,true);
