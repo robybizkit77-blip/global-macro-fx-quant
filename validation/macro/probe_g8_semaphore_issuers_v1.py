@@ -7,7 +7,8 @@ from zipfile import ZipFile
 from openpyxl import load_workbook
 
 URLS={
- "EUROSTAT":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA20&indic_bt=BPRM_DW&s_adj=SCA&unit=I21&lang=EN",
+ "EUROSTAT_EA21":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001&s_adj=SCA&unit=I21&lang=EN",
+ "EUROSTAT_EA20":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA20&indic_bt=BPRM_DW&cpa2_1=CPA_F41001&s_adj=SCA&unit=I21&lang=EN",
  "RBNZ_HOUSING":"https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m10/hm10.xlsx",
  "RBNZ_EXPECTATIONS":"https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m15/hm15.xlsx",
  "STATCAN_MANUFACTURING":"https://www150.statcan.gc.ca/n1/tbl/csv/16100047-eng.zip",
@@ -18,12 +19,12 @@ def call(name,url):
   with urllib.request.urlopen(r,timeout=18) as x:
    data=x.read(28_000_000+1)
    if len(data)>28_000_000: return {"error":"file above 28MB budget"}
-   if name=="EUROSTAT":
+   if name.startswith("EUROSTAT"):
     doc=json.loads(data)
     return {"status":x.status,"id":doc.get("id"),"size":doc.get("size"),
       "dims":{k:list(v.get("category",{}).get("index",{}).keys())[:25]
               for k,v in doc.get("dimension",{}).items()},
-      "message":str(doc.get("error",""))[:500]}
+      "message":str(doc.get("error",""))[:500],"last_periods":list(doc.get("dimension",{}).get("time",{}).get("category",{}).get("index",{}))[-8:],"last_values":list(doc.get("value",{}).items())[-8:]}
    if name.startswith("RBNZ_"):
     book=load_workbook(io.BytesIO(data),read_only=True,data_only=True)
     ret={"bytes":len(data),"sheets":[]}
