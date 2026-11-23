@@ -35,3 +35,32 @@
 .sem-policy a:hover{text-decoration:underline}
 .sem-foot{font-size:10px;color:#90b0bc;line-height:1.7;margin:15px 1px 0}
 @media(max-width:830px){.recession-light{padding:16px}.sem-head,.sem-policy{flex-direction:column;align-items:flex-start}.sem-date{white-space:normal}.sem-columns{display:none}.sem-row{grid-template-columns:1fr;gap:0;padding:12px;border-top:1px solid #355262}.sem-row:first-of-type{border-top:none}.sem-area,.sem-evidence,.sem-signal{padding:5px 3px}.sem-signal{margin-top:6px}.sem-area small{margin-top:4px}.sem-evidence{margin-top:8px}.sem-policy a{flex-shrink:1}}
+
+/* G8 desk matrix: descriptive per-country indicators, never an FX strength ranking. */
+.sem-g8-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:19px 0 10px}
+.sem-g8-title strong{font-size:14px;color:#edf9f5;letter-spacing:.01em}
+.sem-g8-title span{font-size:11px;color:#a6c3cd;line-height:1.5}
+.sem-g8-scroll{max-width:100%;overflow-x:auto;border:1px solid #355969;border-radius:11px;margin:0;scrollbar-color:#386777 #102b3a}
+.sem-g8-table{border-collapse:collapse;table-layout:fixed;width:100%;min-width:625px;text-align:center;font-size:12px}
+.sem-g8-table th,.sem-g8-table td{border-bottom:1px solid #2b4c5b;padding:9px 8px}
+.sem-g8-table tr:last-child th,.sem-g8-table tr:last-child td{border-bottom:0}
+.sem-g8-table th:first-child{text-align:left;width:96px}
+.sem-g8-table thead th{background:#244350;color:#b7d6df;font-size:10px;font-weight:750;letter-spacing:.02em}
+.sem-g8-table tbody tr:nth-child(2n){background:#12303e}
+.sem-g8-table tbody tr.selected{background:#1e493f}
+.sem-g8-table tbody tr:hover{background:#254753}
+.sem-g8-pick{padding:7px 9px;border:1px solid transparent;background:transparent;color:#e4f4f3;border-radius:7px;cursor:pointer;font-size:12px;font-weight:800;white-space:nowrap}
+.sem-g8-pick:hover,.sem-g8-pick:focus-visible{border-color:#5ebba7;outline:2px solid transparent;background:#235247}
+.sem-g8-pick[aria-pressed=true]{border-color:#57af99;background:#1a544a}
+.sem-mini{display:inline-flex;align-items:center;justify-content:center;color:#a5c6d5;vertical-align:middle;height:19px;min-width:19px}
+.sem-mini i{display:inline-block;width:10px;height:10px;border-radius:50%;background:currentColor;box-shadow:0 0 7px currentColor}
+.sem-mini.green{color:#79d7ae}.sem-mini.red{color:#f38e88}
+.sem-mini.amber{color:#e9c679}.sem-mini.neutral{color:#91b2c6}
+.sem-legend{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10px;color:#b3cad2;margin:11px 0 17px}
+.sem-country-caption{border-top:1px solid #355667;padding:16px 0 11px;font-size:14px;color:#a2cad1}
+.sem-country-caption strong{color:#e6f8f2}
+@media(max-width:830px){
+ .sem-g8-title{align-items:flex-start;flex-direction:column;gap:4px}
+ .sem-g8-table{min-width:620px}
+ .sem-g8-table th,.sem-g8-table td{padding:8px 5px}
+}
