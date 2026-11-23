@@ -1,8 +1,181 @@
 {
   "schema": "GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1",
-  "as_of": null,
+  "as_of": "2026-11-23",
   "source_count": 8,
-  "series": [],
-  "audit": {},
-  "notes": "Supplemental observations gated by source freshness, not historical PIT or FX signals."
+  "series": [
+    {
+      "ccy": "EUR",
+      "area": "house",
+      "id": "SEM_G8_EUR_HOUSE",
+      "label": "Permessi per nuove abitazioni EA21 (escluse residenze collettive)",
+      "frequency": "M",
+      "unit": "indice 2021=100",
+      "dates": [
+        "2026-06",
+        "2026-07"
+      ],
+      "values": [
+        103.1,
+        87.9
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Eurostat / sts_cobp_m",
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/sts_cobp_m/default/table?lang=en",
+      "source_series_id": "EA21_STS_COBP_M",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-07",
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "AUD",
+      "area": "industry",
+      "id": "SEM_G8_AUD_INDUSTRY",
+      "label": "Manifattura: crescita trimestrale SA",
+      "frequency": "Q",
+      "unit": "% QoQ",
+      "dates": [
+        "2026-Q1",
+        "2026-Q2"
+      ],
+      "values": [
+        1.40122360370967,
+        -1.93794138908947
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/PRMNTO01AUQ657S",
+      "source_series_id": "PRMNTO01AUQ657S",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q2",
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "NZD",
+      "area": "industry",
+      "id": "SEM_G8_NZD_INDUSTRY",
+      "label": "Manifattura: crescita trimestrale SA",
+      "frequency": "Q",
+      "unit": "% QoQ",
+      "dates": [
+        "2026-Q1",
+        "2026-Q2"
+      ],
+      "values": [
+        1.94981043509697,
+        0.442712944925927
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/PRMNTO01NZQ657S",
+      "source_series_id": "PRMNTO01NZQ657S",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q2",
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "NZD",
+      "area": "credit",
+      "id": "SEM_G8_NZD_CREDIT",
+      "label": "Credito bancario settore privato, corretto per rotture",
+      "frequency": "Q",
+      "unit": "mld NZD NSA",
+      "dates": [
+        "2025-Q4",
+        "2026-Q1"
+      ],
+      "values": [
+        590.612,
+        595.74
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "BIS tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/QNZPBMXDCA",
+      "source_series_id": "QNZPBMXDCA",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-Q1",
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "CAD",
+      "area": "industry",
+      "id": "SEM_G8_CAD_INDUSTRY",
+      "label": "Vendite manifatturiere (nominali, destagionalizzate)",
+      "frequency": "M",
+      "unit": "migliaia CAD nominali SA",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        80259630.0,
+        80246996.0
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Statistics Canada table 16-10-0047-01",
+      "source_page": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701",
+      "source_series_id": "16100047_MANUFACTURING_SA",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-09",
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    }
+  ],
+  "audit": {
+    "EUR_house": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-07",
+      "days_since_period_end": 115,
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/sts_cobp_m/default/table?lang=en",
+      "origin": "Eurostat / sts_cobp_m"
+    },
+    "JPY_house": {
+      "status": "WITHHELD_STALE",
+      "last_observation": "2023-11",
+      "days_since_period_end": 1089,
+      "source_page": "https://fred.stlouisfed.org/series/JPNWSCNDW01MLSAM",
+      "origin": "OECD tramite FRED"
+    },
+    "AUD_industry": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q2",
+      "days_since_period_end": 146,
+      "source_page": "https://fred.stlouisfed.org/series/PRMNTO01AUQ657S",
+      "origin": "OECD tramite FRED"
+    },
+    "NZD_house": {
+      "status": "WITHHELD_STALE",
+      "last_observation": "2023-12",
+      "days_since_period_end": 1058,
+      "source_page": "https://fred.stlouisfed.org/series/NZLPERMITMISMEI",
+      "origin": "OECD tramite FRED"
+    },
+    "NZD_industry": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q2",
+      "days_since_period_end": 146,
+      "source_page": "https://fred.stlouisfed.org/series/PRMNTO01NZQ657S",
+      "origin": "OECD tramite FRED"
+    },
+    "NZD_leading": {
+      "status": "WITHHELD_STALE",
+      "last_observation": "2019-11",
+      "days_since_period_end": 2550,
+      "source_page": "https://fred.stlouisfed.org/series/NZLLOLITOAASTSAM",
+      "origin": "OECD tramite FRED"
+    },
+    "NZD_credit": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q1",
+      "days_since_period_end": 237,
+      "source_page": "https://fred.stlouisfed.org/series/QNZPBMXDCA",
+      "origin": "BIS tramite FRED"
+    },
+    "CAD_industry": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 54,
+      "source_page": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701",
+      "origin": "Statistics Canada table 16-10-0047-01"
+    }
+  },
+  "notes": "Latest revised observations, not PIT, no FX score."
 }
