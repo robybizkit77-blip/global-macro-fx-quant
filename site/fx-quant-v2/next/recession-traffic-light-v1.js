@@ -104,7 +104,7 @@ function supplementary(overlay,country,key){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu)\//.test(x.source_page));
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca)\//.test(x.source_page));
  return matches.length===1?matches[0]:null;
 }
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
