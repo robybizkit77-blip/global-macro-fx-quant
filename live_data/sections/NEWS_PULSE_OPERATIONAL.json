@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-20",
-  "generated_at_utc": "2026-11-23T07:58:20.647382Z",
+  "generated_at_utc": "2026-11-23T08:47:47.427916Z",
   "items": [
     {
       "as_of": "2026-11-20",
@@ -254,7 +254,7 @@
       "title": "Canada · CPI complessivo, anno su anno: +3,1%"
     }
   ],
-  "last_checked_at_utc": "2026-11-23T07:58:20.647382Z",
+  "last_checked_at_utc": "2026-11-23T08:47:47.427916Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1211,8 +1211,8 @@
       {
         "accepted_items": 7,
         "ccy": "JPY",
-        "entries_rejected": 37,
-        "feed_entries_seen": 44,
+        "entries_rejected": 36,
+        "feed_entries_seen": 43,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
