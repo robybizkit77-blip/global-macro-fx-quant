@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_HOURLY_CHECK_V1",
   "status": "VERIFIED",
-  "checked_at_utc": "2026-11-23T18:07:15.554770Z",
+  "checked_at_utc": "2026-11-23T19:30:53.807102Z",
   "edition_generated_at_utc": "2026-11-23T18:07:15.554770Z",
   "material_digest": "3c16c691120b1a56d348b1f872f2e0c26b3c602dc89e3799b9228e1a03625558",
-  "edition_changed": true,
+  "edition_changed": false,
   "meaning": "Successful source-build verification; not a claim that every source published new data"
 }
