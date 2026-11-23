@@ -57,6 +57,42 @@ def _row(rows, wanted):
     return hits[0]
 
 
+def _september_comparator(row, heat, currency):
+    """Bound the revised-history comparator by economic period, not by today's latest row.
+
+    This is still a current-revised diagnostic, NOT an archived as-of/PIT vintage.
+    The live macro history can advance to October and later without altering
+    the fixed September 2026 research window.
+    """
+    dates, values = row.get("dates"), row.get("values")
+    require(isinstance(dates, list) and isinstance(values, list)
+            and len(dates) == len(values), "dated revised history required")
+    kept = [(d, v) for d, v in zip(dates, values)
+            if isinstance(d, str) and d[:7] <= "2026-09"]
+    require(kept and any(d[:7] == "2026-09" for d, _ in kept),
+            "September 2026 current-revised observation required")
+    comparator = dict(row)
+    comparator["dates"] = [d for d, _ in kept]
+    comparator["values"] = [v for _, v in kept]
+    samples, _ = normalized_source(comparator, "M")
+    newest = max(samples)
+    require(index_to_period(newest, "M") == "2026-09",
+            "revised comparator must end in September 2026")
+    if currency == "USD":
+        require(newest - 12 in samples and samples[newest - 12][1] > 0,
+                "USD CPI 12-month index denominator missing")
+        value = 100.0 * (samples[newest][1] / samples[newest - 12][1] - 1.0)
+    else:
+        value = samples[newest][1]
+    comparator_heat = dict(heat)
+    if heat.get("as_of") == "2026-09":
+        require(math.isclose(value, heat.get("latest_value"), rel_tol=0, abs_tol=1e-7),
+                "September revised value contradicts original thermometer")
+    comparator_heat["as_of"] = "2026-09"
+    comparator_heat["latest_value"] = value
+    return comparator, comparator_heat
+
+
 def profile(*, as_of=ASOF, source=None, thermo=None, registry=None):
     # This is NOT a replay at other historical dates: it uses current
     # revised values, which can have been updated AFTER previous cutoffs.
@@ -81,6 +117,7 @@ def profile(*, as_of=ASOF, source=None, thermo=None, registry=None):
         thermo_dim=temperature["currencies"][ccy][dim]
         source_id=canonical["historical_replay_evidence"]["macro_series_id"]
         row=_row(snapshot[ccy],source_id)
+        row, thermo_dim = _september_comparator(row, thermo_dim, ccy)
         original = pillar_feature(ccy,dim,canonical,row,thermo_dim,cutoff.date())
         require(original["observation_period"]=="2026-09"
                 and original["source_observation_is_current_revised_history_not_historic_pit"],
