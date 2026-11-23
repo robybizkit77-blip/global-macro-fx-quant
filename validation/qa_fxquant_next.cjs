@@ -123,7 +123,7 @@ async function inspectRoute(page,label,key){
    assert.match(await recalc.innerText(),/non è attestato|ricevuta.*non valida/i,
     label+' missing or misdated proof must not be reported as a verified recalculation');
   }else{
-   assert.match(await recalc.innerText(),/8 VALUTE \/ 28 COPPIE/i,
+   assert.match(await recalc.innerText(),/G8 \/ 28 COPPIE/i,
     label+' research scope must be explicit');
    const audit=recalc.locator('details.fx-recalc-details');
    assert.equal(await audit.count(),1,label+' detailed provenance must be collapsible');
