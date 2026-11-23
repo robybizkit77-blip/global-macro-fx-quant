@@ -28,7 +28,7 @@ MAX_BYTES=3_000_000
 # never use today's fetch time to make an old observation look current.
 REGISTRY=[
  dict(ccy="EUR",area="house",key="EA21_STS_COBP_M",method="eurostat",
-      name="Permessi edilizi residenziali area euro EA21",unit="indice 2021=100",
+      name="Permessi per nuove abitazioni EA21 (escluse residenze collettive)",unit="indice 2021=100",
       frequency="M",kind="percent",max_age_days=115,
       source_page="https://ec.europa.eu/eurostat/databrowser/view/sts_cobp_m/default/table?lang=en",
       origin="Eurostat / sts_cobp_m"),
@@ -172,7 +172,7 @@ def parse_eurostat(raw:bytes,now:date):
     if len(ids)!=len(sizes) or not ids or "time" not in ids:
         raise ValueError("invalid Eurostat shape")
     allowed={"freq":{"M"},"geo":{"EA21"},"indic_bt":{"BPRM_DW"},
-             "s_adj":{"SCA"},"unit":{"I21"},"cpa2_1":{"CPA_F41001"}}
+             "s_adj":{"SCA"},"unit":{"I21"},"cpa2_1":{"CPA_F41001_X_410014"}}
     selected={}
     for k in ids:
         index=dims.get(k,{}).get("category",{}).get("index",{})
@@ -238,7 +238,7 @@ def collect(now=None,fetcher=fetch):
         url=FRED+spec["key"] if spec["method"]=="fred" else (
           STATCAN_CSV if spec["method"]=="statcan" else
           "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?"
-          "geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001&s_adj=SCA&unit=I21&lang=EN")
+          "geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001_X_410014&s_adj=SCA&unit=I21&lang=EN")
         try:
             raw=fetch_statcan(url) if spec["method"]=="statcan" and fetcher is fetch else fetcher(url)
             observations=(parse_fred(raw,spec["key"],spec["frequency"],now)
