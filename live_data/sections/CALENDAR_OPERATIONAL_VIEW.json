@@ -1081,8 +1081,8 @@
       "title": "Swiss Consumer Price Index"
     }
   ],
-  "generated_at_utc": "2026-11-23T23:55:47.160843Z",
-  "last_checked_at_utc": "2026-11-23T23:55:47.160843Z",
+  "generated_at_utc": "2026-11-23T23:57:08.117288Z",
+  "last_checked_at_utc": "2026-11-23T23:57:08.117288Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
