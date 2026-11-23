@@ -3,6 +3,8 @@ import csv
 from datetime import date
 from io import StringIO
 import json
+import io
+from zipfile import ZipFile
 import unittest
 from validation.macro import collect_g8_semaphore_gaps_v1 as mod
 
@@ -59,19 +61,47 @@ class G8SemaphoreSources(unittest.TestCase):
             mod.parse_fred(b"DATE,PRMNTO01NZQ657S\nbogus,100",key,"Q",NOW)
 
     def test_eurostat_unique_json_stat_cell(self):
-        ids=["freq","geo","indic_bt","s_adj","unit","time"]
-        allowed=["M","EA20","BPRM_DW","SCA","I21"]
+        ids=["freq","geo","indic_bt","cpa2_1","s_adj","unit","time"]
+        allowed=["M","EA21","BPRM_DW","CPA_F41001","SCA","I21"]
         time=[f"2025-{m:02d}" for m in range(1,13)]+[f"2026-{m:02d}" for m in range(1,10)]
         dims={key:{"category":{"index":{value:0}}} for key,value in zip(ids,allowed)}
         dims["time"]={"category":{"index":{name:i for i,name in enumerate(time)}}}
-        raw=json.dumps({"class":"dataset","id":ids,"size":[1]*5+[len(time)],
+        raw=json.dumps({"class":"dataset","id":ids,"size":[1]*6+[len(time)],
                         "dimension":dims,"value":{str(i):100+i for i in range(len(time))}}).encode()
         obs=mod.parse_eurostat(raw,NOW)
         self.assertEqual(obs[-1],("2026-09",120.0))
         dims["unit"]["category"]["index"]={"EUR":0}
         with self.assertRaisesRegex(ValueError,"missing/ambiguous"):
-            mod.parse_eurostat(json.dumps({"class":"dataset","id":ids,"size":[1]*5+[len(time)],
+            mod.parse_eurostat(json.dumps({"class":"dataset","id":ids,"size":[1]*6+[len(time)],
               "dimension":dims,"value":{str(i):100+i for i in range(len(time))}}).encode(),NOW)
+
+    def test_statcan_exact_manufacturing_sa_total(self):
+        bio=io.BytesIO()
+        header=["REF_DATE","GEO","Principal statistics","Seasonal adjustment",
+                "North American Industry Classification System (NAICS)","UOM",
+                "SCALAR_FACTOR","VALUE"]
+        rows=[]
+        for mm in range(1,13):
+            rows.append([f"2025-{mm:02d}","Canada",
+                "Sales of goods manufactured (shipments)","Seasonally adjusted",
+                "Manufacturing [31-33]","Dollars","thousands",100000+mm])
+        for mm in range(1,10):
+            rows.append([f"2026-{mm:02d}","Canada",
+                "Sales of goods manufactured (shipments)","Seasonally adjusted",
+                "Manufacturing [31-33]","Dollars","thousands",102000+mm])
+        rows.append(["2026-09","Canada",
+          "Sales of goods manufactured (shipments)","Unadjusted",
+          "Manufacturing [31-33]","Dollars","thousands",999999999])
+        with ZipFile(bio,"w") as z:
+            buf=StringIO();writer=csv.writer(buf);writer.writerow(header);writer.writerows(rows)
+            z.writestr("16100047.csv",buf.getvalue())
+        observations=mod.parse_statcan(bio.getvalue(),NOW)
+        self.assertEqual(observations[-1],("2026-09",102009))
+        self.assertEqual(len(observations),21)
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="CAD")
+        item,stat=mod.candidate(spec,observations,NOW)
+        self.assertEqual(stat["status"],"READY_DESCRIPTIVE_REVISED")
+        self.assertEqual(item["dates"],["2026-08","2026-09"])
 
     def test_collect_transparently_withholds_failed_sources(self):
         def fail(_):raise OSError("issuer blocked")
