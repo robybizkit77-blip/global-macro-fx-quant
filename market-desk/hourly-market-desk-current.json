@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-23T09:30:44.181125Z",
-  "edition_time_rome": "2026-11-23 10:30",
-  "material_digest": "214b9b3d4b1620ef781ce949bda3b492c5f6de8c10fafce379f1d50342379c76",
+  "generated_at_utc": "2026-11-23T14:49:22.640462Z",
+  "edition_time_rome": "2026-11-23 15:49",
+  "material_digest": "fd26c05bd8b21433476c31d4c2053ec1d93a416b3075f18062273d1c3ad338d1",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Volatilità in rialzo, dollaro misto",
@@ -11,7 +11,7 @@
   "news": [
     {
       "headline": "Dollaro misto",
-      "analysis": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Il 23 novembre alle 15:45 italiane è in programma PMI flash Stati Uniti (USD). Da verificare la risposta dei tassi e di USD.",
+      "analysis": "Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Il 24 novembre alle 01:30 italiane è in programma PMI flash Giappone (JPY). Da verificare la risposta dei tassi e di JPY.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-20",
       "event_date": "2026-11-20",
@@ -83,9 +83,9 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "La volatilità azionaria è salita alla chiusura del 20 novembre. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen.",
-  "fx_implications": "Il 23 novembre alle 15:45 italiane è in programma PMI flash Stati Uniti (USD). Da verificare la risposta dei tassi e di USD.",
-  "what_changed": "Nei proxy futures del 20 novembre l’oro scende e il WTI sale.",
+  "desk_judgment": "La volatilità azionaria è salita alla chiusura del 20 novembre. Il 20 novembre il dollaro ha guadagnato contro l’euro e ceduto contro lo yen. Nella seduta del 20 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
+  "fx_implications": "Il 24 novembre alle 01:30 italiane è in programma PMI flash Giappone (JPY). Da verificare la risposta dei tassi e di JPY.",
+  "what_changed": "Nei proxy futures del 20 novembre l’oro scende e il WTI sale. Nella seduta del 20 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore dell’area euro.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
@@ -101,7 +101,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-20",
-      "rss_checked_at_utc": "2026-11-23T09:30:44.181125Z",
+      "rss_checked_at_utc": "2026-11-23T14:49:22.640462Z",
       "commodities": "2026-11-20"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-23T09:30:44.181125Z",
+      "headline": "Volatilità in rialzo, dollaro misto",
+      "material_digest": "214b9b3d4b1620ef781ce949bda3b492c5f6de8c10fafce379f1d50342379c76"
+    },
     {
       "generated_at_utc": "2026-11-23T09:29:17.805698Z",
       "headline": "Volatilità in rialzo, dollaro misto",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-19T17:43:53.371843Z",
       "headline": "Dollaro misto",
       "material_digest": "7dc937726630ffc743dfbc153acb7b15b32383728b1131c776d275aef186fadc"
-    },
-    {
-      "generated_at_utc": "2026-11-19T17:36:24.594487Z",
-      "headline": "Dollaro misto al fixing BCE",
-      "material_digest": "cc060a74d3efb34e0395f5c75284a8d7fc44a59916a0fb32bb95aea93f582838"
     }
   ]
 }
