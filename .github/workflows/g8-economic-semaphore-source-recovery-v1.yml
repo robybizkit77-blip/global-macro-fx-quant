@@ -49,6 +49,9 @@ jobs:
         run: |
           node --check site/fx-quant-v2/next/recession-traffic-light-v1.js
           node validation/qa_usa_economic_semaphore_v1.cjs
+      - name: Probe eight publishers and record which series are actually fresh (PR only)
+        if: github.event_name == 'pull_request'
+        run: python validation/macro/collect_g8_semaphore_gaps_v1.py --dry-run | tee /tmp/g8-semaphore-source-probe.txt
       - name: Collect revised observations without editing Macro Core
         if: github.event_name != 'pull_request'
         run: |
