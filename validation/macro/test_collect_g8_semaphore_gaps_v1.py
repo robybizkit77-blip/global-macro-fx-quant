@@ -28,7 +28,7 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(len(mod.REGISTRY),8)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),8)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
