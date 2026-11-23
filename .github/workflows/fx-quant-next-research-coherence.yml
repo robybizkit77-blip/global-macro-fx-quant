@@ -9,6 +9,8 @@ on:
       - 'live_data/sections/**'
       - 'validation/qa_next_*.cjs'
       - 'validation/publishing/test_next_rates_pricing_moves_v1.cjs'
+      - 'validation/publishing/test_next_home_thesis_recalc_v1.cjs'
+      - 'validation/publishing/test_next_home_recalc_endtoend_v1.cjs'
       - 'validation/pair_thesis/**'
       - '.github/workflows/fx-quant-next-research-coherence.yml'
   push:
@@ -35,6 +37,8 @@ on:
       - 'validation/publishing/test_next_pair_monetary_bridge_v1.cjs'
       - 'validation/publishing/test_next_g8_pricing_evidence_v1.cjs'
       - 'validation/publishing/test_next_home_pricing_proof_v1.cjs'
+      - 'validation/publishing/test_next_home_thesis_recalc_v1.cjs'
+      - 'validation/publishing/test_next_home_recalc_endtoend_v1.cjs'
       - 'validation/publishing/test_next_fx_driver_market_audit_v1.cjs'
       - 'validation/publishing/test_next_liquidity_source_policy_v1.cjs'
       - 'validation/publishing/test_next_cad_official_credit_source_v1.cjs'

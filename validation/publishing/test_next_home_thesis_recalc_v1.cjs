@@ -33,14 +33,42 @@ assert.equal(api.outputMatches(raw,ctx.estimate),true);
 assert.equal(api.receiptOK(raw),true,'Real produced audit receipt must validate');
 const first=api.render(ctx);
 assert.match(first,/id="fx-recalc-pulse"/);
-assert.match(first,/data-recalc-state="same"/);
-assert.match(first,/nessuna delle 28 tesi FX stimate ha cambiato/);
-assert.match(first,/La variazione delle posizioni G8 non è confrontabile/);
-assert.match(first,/Macro [\d/]+/);
+const statusToUi={
+ BASELINE_RECALC:'baseline',
+ NO_MATERIAL_THESIS_CHANGE:'same',
+ RECALCULATED_WITH_CHANGES:'changed'
+};
+const expectedUi=statusToUi[raw.status];
+assert(expectedUi,'The current production receipt has an unsupported audit status');
+assert(first.includes('data-recalc-state="'+expectedUi+'"'),
+ 'Home must represent the actual new/recomputed production receipt, not yesterday\'s status');
+if(raw.status==='RECALCULATED_WITH_CHANGES'){
+ assert.match(first,/Cambiamenti da verificare/);
+ assert.match(first,/tesi FX e/);
+ assert.equal(raw.changedPairs.length>0||raw.changedRanks.length>0,true);
+}else if(raw.status==='NO_MATERIAL_THESIS_CHANGE'){
+ assert.match(first,/nessuna delle 28 tesi FX stimate ha cambiato/);
+}else assert.match(first,/Prima fotografia verificata/);
+if(raw.changedRanks===null)
+ assert.match(first,/La variazione delle posizioni G8 non è confrontabile/);
+assert.match(first,/Macro (?:al )?\d{2}\/\d{2}\/\d{4}/,
+ 'The macro observation date must be visible for both same-period and updated receipts');
 assert.match(first,/FX [\d/]+/);
 assert.match(first,/verifica la ricevuta originale/i);
 assert.match(first,/un backtest/);
-assert.doesNotMatch(first,/data-recalc-state="changed"/);
+// Independently exercise the NO CHANGE branch regardless of the day's real
+// market inputs. Do not rewrite the real receipt or turn it into a signal.
+const unchanged=structuredClone(raw);
+unchanged.status='NO_MATERIAL_THESIS_CHANGE';
+unchanged.changedPairs=[];
+unchanged.changedRanks=[];
+const unchangedHtml=api.render({...ctx,receipt:unchanged});
+assert.match(unchangedHtml,/data-recalc-state="same"/);
+assert.match(unchangedHtml,/nessuna delle 28 tesi FX stimate ha cambiato/);
+const initialRankUnknown=structuredClone(unchanged);
+initialRankUnknown.changedRanks=null;
+assert.match(api.render({...ctx,receipt:initialRankUnknown}),
+ /La variazione delle posizioni G8 non è confrontabile/);
 const sameDateNewInputs=api.render({...ctx,sourceHashes:{...raw.sourceHashes,ois:'0'.repeat(64)}});
 assert.match(sameDateNewInputs,/data-recalc-state="UNVERIFIED"/);
 assert.match(sameDateNewInputs,/file sorgente sono cambiati/);
