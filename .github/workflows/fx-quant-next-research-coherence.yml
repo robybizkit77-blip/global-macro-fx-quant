@@ -102,7 +102,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify dated USA economic traffic light, stale and missing data
+      - name: Verify G8 economic traffic light, source dates and missing-series guards
         run: node validation/qa_usa_economic_semaphore_v1.cjs
       - name: Check changing story, matched evidence, source dates and missing data
         run: node validation/qa_next_research_coherence_v1.cjs
