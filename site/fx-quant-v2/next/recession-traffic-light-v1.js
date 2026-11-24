@@ -437,9 +437,9 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   const cycle=x.cycle;
   const cycleLabel=cycle?.phase?{expansion:'Espansione',slowdown:'Rallentamento',contraction:'Contrazione',recovery:'Recupero'}[cycle.phase]:null;
   const cycleText=cycle?.direction!==null&&cycle?.direction!==undefined?
-    '<small class="sem-source-note"><strong>Lettura ciclica · </strong>'+esc(cycleLabel||'Solo direzione, livello non determinato')+
+    '<small class="sem-source-note"><strong>Lettura ciclica · </strong>'+esc(cycleLabel||(cycle.level===null?'Solo direzione, livello non determinato':cycle.level===0?'Livello sulla soglia':cycle.direction===0?'Livello '+(cycle.level>0?'sopra':'sotto')+' soglia, momentum stabile':'Livello determinato'))+
     (cycle.basis==='REAL_ACTIVITY_YOY_GROWTH'?' · crescita a/a '+d(cycle.levelValue,'%'):cycle.basis==='REAL_ACTIVITY_REPORTED_GROWTH'?' · crescita reale della serie':cycle.basis==='DIFFUSION_50'?' · soglia 50':' · variazione descrittiva')+
-    (cycle.persistence?' · '+cycle.persistence+' confronti consecutivi nella stessa direzione':'')+
+    (cycle.persistence>1?' · '+cycle.persistence+' confronti consecutivi nella stessa direzione':cycle.persistence===1?' · un solo confronto nella direzione attuale':'')+
     (cycle.acceleration!==null?' · '+({1:'momentum in aumento',0:'momentum stabile','-1':'momentum in diminuzione'}[cycle.acceleration]):'')+
     '</small>':'';
   const value=(v,p,label)=>'<div class="sem-value"><small>'+label+' · '+esc(p)+'</small><strong>'+fmt(v,digits)+'</strong><span>'+unit+'</span></div>';
