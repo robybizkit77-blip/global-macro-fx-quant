@@ -12,8 +12,8 @@ on:
       - '.github/workflows/fx-next-rbnz-liquidity.yml'
       - 'validation/publishing/collect_next_rbnz_liquidity.py'
   schedule:
-    # Several daily checks around month end cover weekends and delayed releases.
-    - cron: '23 2 28-31,1-5 * *'
+    # Check daily: C60 is released mid-month, D10/C50 at month end.
+    - cron: '23 2 * * *'
   workflow_dispatch:
 
 permissions:
@@ -28,8 +28,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Read and validate both live source tables
-        run: python3 validation/publishing/collect_next_rbnz_liquidity.py "$RUNNER_TEMP/nzd.js"
+      - name: Read and validate all three live source tables
+        run: python3 validation/publishing/collect_next_rbnz_liquidity.py "$RUNNER_TEMP/nzd.js" --require-c60
 
   refresh:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Refresh official D10 and C50 data
+      - name: Refresh official D10, C50 and C60 data
         env:
           TARGET: site/fx-quant-v2/next/nzd-rbnz-liquidity-research-v1.js
         run: |
@@ -57,7 +57,7 @@ jobs:
           fi
           git -c user.name='github-actions[bot]' \
               -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
-              commit -m 'Refresh official NZD D10/C50 monthly research'
+              commit -m 'Refresh official NZD D10/C50/C60 research'
           for attempt in 1 2 3; do
             if git push origin HEAD:main; then
               exit 0
