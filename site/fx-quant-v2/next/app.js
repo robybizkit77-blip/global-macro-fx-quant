@@ -1255,6 +1255,21 @@ function focusCalendarEvent(query){
  if(collapsed)collapsed.open=true;
  focusSection(event?.id||'macro-calendar');
 }
+// The navigation drawer is scrollable, keyboard reachable, and never traps
+// focus in an off-screen mobile menu.
+const mobileNav=window.matchMedia('(max-width:1050px)');
+function setMobileMenu(open,restoreFocus=false){
+ const drawer=$('sidebar'),toggle=$('menu-toggle');
+ const expanded=mobileNav.matches&&Boolean(open);
+ $('app').classList.toggle('menu-open',expanded);
+ toggle.setAttribute('aria-expanded',String(expanded));
+ toggle.setAttribute('aria-label',expanded?'Chiudi menu':'Apri menu');
+ drawer.inert=mobileNav.matches&&!expanded;
+ if(expanded)drawer.querySelector('a[aria-current="page"],a')?.focus({preventScroll:true});
+ else if(restoreFocus&&mobileNav.matches)toggle.focus({preventScroll:true});
+}
+mobileNav.addEventListener('change',()=>setMobileMenu(false));
+setMobileMenu(false);
 function navigate({pairFocus}={}){
  const [route,query]=location.hash.slice(1).split('?');
  state.route=ROUTES[route]?route:'overview';
@@ -1270,7 +1285,7 @@ function navigate({pairFocus}={}){
    else focusSection(pairFocus||'fx-selected-thesis');
   }
  }else syncRouteChrome(state.route);
- $('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false');
+ setMobileMenu(false);
 }
 window.addEventListener('hashchange',navigate);
 $('quicklaunch').addEventListener('click',()=>setQuick(true));
@@ -1282,8 +1297,8 @@ window.addEventListener('keydown',e=>{
  if(e.key==='/'&&!/INPUT|TEXTAREA/.test(e.target?.tagName||'')){e.preventDefault();setQuick(true);}
  if(e.key==='Escape'&&$('quick-layer').classList.contains('open')){e.preventDefault();setQuick(false);}
 });
-$('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.contains('menu-open');$('app').classList.toggle('menu-open',open);$('menu-toggle').setAttribute('aria-expanded',String(open))});
-$('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
+$('menu-toggle').addEventListener('click',()=>setMobileMenu(!$('app').classList.contains('menu-open'),true));
+$('mobile-overlay').addEventListener('click',()=>setMobileMenu(false,true));
 // Keep the pair's open analysis panel mounted when its own chart controls change.
 // Replacing #content would recreate <details> closed and jump back to the rankings.
 function selectG8Country(trigger){
@@ -1525,7 +1540,7 @@ document.addEventListener('change',e=>{
 });
 document.addEventListener('pointermove',chartEvents);
 document.addEventListener('pointerout',e=>{if(e.target.closest('.chart')&&!e.relatedTarget?.closest?.('.chart'))chartHide(e)});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('app').classList.contains('menu-open'))setMobileMenu(false,true)});
 let refreshInProgress=false;
 let lastResearchRefresh=0;
 async function loadAll(){
