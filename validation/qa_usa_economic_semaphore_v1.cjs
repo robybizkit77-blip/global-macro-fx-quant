@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -260,3 +260,43 @@ assert.match(heatmap,/Precedente · 2026-09/);
 assert.match(heatmap,/class="sem-value sem-change"/);
 assert.match(heatmap,/class="sem-history"/);
 console.log('OK: G8 economic semaphore — 8 economies, 7 areas, data age, dates, source gaps, HTML');
+
+ // Phase 1 cycle engine: separate the regime from the last change and
+ // require exact contiguous history for persistence/acceleration.
+ const psiMetric={id:'psi',kind:'points',diffusionThreshold:50,minimum:.2,upGood:true};
+ const sample=(id,values,dates=['2026-07','2026-08','2026-09','2026-10'])=>({source_series_id:id,dates,values});
+ for(const [values,phase,level,dir,persist] of [
+   [[40,42,43,46],'recovery',-1,1,3],
+   [[62,60,58,55],'slowdown',1,-1,3],
+   [[45,46,51,55],'expansion',1,1,3],
+   [[52,48,46,43],'contraction',-1,-1,3]
+ ]){
+   const z=cycleMetric(psiMetric,sample('psi',values),'2026-11-24','M');
+   assert.equal(z.phase,phase);assert.equal(z.level,level);assert.equal(z.direction,dir);
+   assert.equal(z.persistence,persist);assert.equal(z.historySufficient,true);
+ }
+ const two=cycleMetric(psiMetric,sample('psi',[43,46],['2026-09','2026-10']),'2026-11-24','M');
+ assert.equal(two.phase,'recovery');assert.equal(two.persistence,1);assert.equal(two.acceleration,null);assert.equal(two.historySufficient,false);
+ const flat=cycleMetric(psiMetric,sample('psi',[55,55,55,55]),'2026-11-24','M');
+ assert.equal(flat.phase,null);assert.equal(flat.level,1);assert.equal(flat.direction,0);
+ const gap=cycleMetric(psiMetric,sample('psi',[45,46,48],['2026-06','2026-07','2026-10']),'2026-11-24','M');
+ assert.equal(gap.direction,null);assert.equal(gap.observations,1);
+ assert.equal(cycleMetric(psiMetric,sample('psi',[40,42,43,46]),'2026-11-24','M',true).phase,null);
+ const nominal=cycleMetric({id:'RBA_BUSINESS_CREDIT_GROWTH_MM',kind:'points',upGood:true},
+   sample('RBA_BUSINESS_CREDIT_GROWTH_MM',[.4,.6,.8,1]),'2026-11-24','M');
+ assert.equal(nominal.phase,null);assert.equal(nominal.direction,1);
+ const nominalStock=cycleMetric({id:'CA_MORTGAGE_OUTSTANDING_UNINSURED_history_value',upGood:true},
+   sample('nominal',[100,102,105,109]),'2026-11-24','M');
+ assert.equal(nominalStock.phase,null);assert.equal(nominalStock.level,null);
+ const realGrowth=cycleMetric({id:'JPNPRMNTO01GPSAM',kind:'points',upGood:true},
+   sample('JPNPRMNTO01GPSAM',[-3,-2,-1,-.5]),'2026-11-24','M');
+ assert.equal(realGrowth.phase,'recovery');assert.equal(realGrowth.acceleration,-1);
+ const monthlyDates=Array.from({length:14},(_,i)=>new Date(Date.UTC(2025,8+i,1)).toISOString().slice(0,7));
+ const realLevels=cycleMetric({id:'INDPRO',upGood:true},sample('INDPRO',
+   [100,101,102,103,104,105,106,107,108,109,110,111,104,106],monthlyDates),'2026-11-24','M');
+ assert.equal(realLevels.basis,'REAL_ACTIVITY_YOY_GROWTH');assert.equal(realLevels.phase,'expansion');
+ assert.equal(realLevels.acceleration,null);assert.equal(realLevels.historySufficient,false);
+ const shortReal=cycleMetric({id:'INDPRO',upGood:true},sample('INDPRO',[100,101,102,103]),'2026-11-24','M');
+ assert.equal(shortReal.phase,null);assert.equal(shortReal.direction,null);
+ assert.match(nzHTML,/Lettura ciclica/);
+ console.log('ECONOMIC_CYCLE_PHASE1_PASS');
