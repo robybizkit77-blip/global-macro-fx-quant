@@ -8,7 +8,7 @@ import unittest
 from datetime import date
 from pathlib import Path
 from validation.liquidity.refresh_boe_gbp_secured_credit_v1 import (
-    parse,rows_from_csv,emit_js,run,existing_values,KNOWN,SERIES
+    parse,rows_from_csv,emit_js,run,existing_values,existing_payload,parse_ccs,ccs_latest_url,KNOWN,SERIES
 )
 DAY=date(2026,11,14)
 
@@ -99,5 +99,32 @@ class GBPBoESecuredCreditTest(unittest.TestCase):
             second=run(destination=sidecar,fixture=source,today=DAY,apply=True)
             self.assertEqual(second["status"],"NO_CHANGE")
             self.assertEqual(second["write_state"],"NO_MUTATION")
+
+
+    def test_ccs_actual_quarters_and_independent_retention(self):
+        url="https://www.bankofengland.co.uk/credit-conditions-survey/2026/2026-q3"
+        html="<table><tr><th>2025</th><th>2026</th></tr><tr><th></th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q1</th><th>Q2</th><th>Q3</th></tr><tr><td rowspan='2'>How has the availability of credit provided to the corporate sector overall changed?</td><td>Past three months</td><td>7.9</td><td>7.7</td><td>3.5</td><td>3.0</td><td>0.0</td><td>-0.1</td></tr><tr><td>Next three months</td><td>9.1</td><td>7.1</td><td>2.7</td><td>2.3</td><td>-2.0</td><td>1.9</td></tr></table>"
+        x=parse_ccs(html,url,today=DAY)
+        self.assertEqual(x["dates"][-2:],["2026-Q2","2026-Q3"])
+        self.assertEqual(x["values"][-2:],[0,-.1])
+        self.assertEqual(ccs_latest_url('<a href="/credit-conditions-survey/2026/2026-q3">Q3</a>',DAY),url)
+        for bad in (html.replace("Past three months","Next three months"),html.replace("0.0</td>","10.0</td>"),html.replace("corporate sector overall","small businesses")):
+            with self.assertRaises(ValueError):parse_ccs(bad,url,today=DAY)
+        with tempfile.TemporaryDirectory() as temp:
+            f=Path(temp)/"mortgage.csv";s=Path(temp)/"survey.html";dest=Path(temp)/"out.js"
+            f.write_text(fixture());s.write_text(html)
+            args={"destination":dest,"fixture":f,"today":DAY,"apply":True}
+            run(**args)
+            before=existing_payload(dest.read_text())
+            f.write_text("invalid mortgage")
+            result=run(**args,ccs_fixture=s,ccs_url=url)
+            self.assertEqual(result["ccs"]["status"],"VERIFIED")
+            self.assertTrue(result["credit"]["status"].startswith("WITHHELD"))
+            self.assertEqual(existing_payload(dest.read_text())["values"],before["values"])
+            self.assertEqual(existing_payload(dest.read_text())["lending_conditions"],x)
+            f.write_text(fixture())
+            self.assertEqual(run(**args,ccs_fixture=s,ccs_url=url)["status"],"NO_CHANGE")
+            s.write_text("invalid CCS")
+            self.assertEqual(run(**args,ccs_fixture=s,ccs_url=url)["ccs"]["retained_observation"],"2026-Q3")
 
 if __name__=="__main__":unittest.main()
