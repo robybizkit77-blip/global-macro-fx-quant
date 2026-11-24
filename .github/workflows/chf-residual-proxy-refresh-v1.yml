@@ -110,7 +110,7 @@ jobs:
           PY
 
       - name: Persist changed CHF proxies on main only
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.ref == 'refs/heads/main' && github.ref_name == 'main' && github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           changed="$(git diff --name-only -- live_data/sections/ESTIMATED_RESIDUAL_GAPS.json)"
