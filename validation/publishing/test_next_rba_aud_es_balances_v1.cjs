@@ -69,3 +69,34 @@ console.log('RBA_ES_BALANCES_NEXT_SOURCE_ONLY_PASS',JSON.stringify({
  canonicalAsOf:native.AUD.liquidity.last_date,
  sourceOnly:true,notAnFXSignal:true
 }));
+
+ // Recent weekly charts preserve the two valid dates and source semantics;
+ // old native history stays separately visible and is never interpolated.
+ const boe=require(path.join(root,'site/fx-quant-v2/next/gbp-boe-reserves-research-v1.js'));
+ const before=JSON.stringify(native);
+ for(const ccy of ['GBP','AUD']){
+  const plots=[];
+  const rendered=studio.render({...api(ccy),plot:x=>{plots.push(x);return '<svg></svg>';}});
+  const recent=plots.find(x=>x.label==='Liquidità · ultima settimana '+ccy);
+  const historical=plots.find(x=>x.label==='Liquidità · storico originario '+ccy);
+  assert(recent&&historical,ccy+' needs separate recent and historical charts');
+  const pts=recent.lines[0].values;
+  assert.equal(pts.length,2);
+  const expected=ccy==='GBP'?boe:source;
+  assert.equal(pts[1].label,expected.source_period);
+  assert.equal(pts[1].value,ccy==='GBP'?boe.latest_balance_million_gbp:source.latest_balance_million_aud);
+  assert.equal(pts[0].value,ccy==='GBP'?boe.previous_balance_million_gbp:source.previous_implied_million_aud);
+  assert.equal(Date.parse(pts[1].label)-Date.parse(pts[0].label),7*86400000);
+  assert.equal(historical.lines[0].values.at(-1).label,native[ccy].liquidity.last_date);
+  assert.match(rendered,/nessuna interpolazione fra periodi mancanti/);
+  if(ccy==='AUD')assert.match(recent.lines[0].name,/precedente implicito/);
+ }
+ assert.equal(JSON.stringify(native),before);
+ const original=globalThis.FXQuantAUDESBalancesResearch;
+ try{
+  globalThis.FXQuantAUDESBalancesResearch={...original,previous_implied_million_aud:1};
+  const plots=[];
+  studio.render({...api('AUD'),plot:x=>{plots.push(x);return '<svg></svg>';}});
+  assert(!plots.some(x=>x.label==='Liquidità · ultima settimana AUD'));
+ }finally{globalThis.FXQuantAUDESBalancesResearch=original;}
+ console.log('NEXT_WEEKLY_RESERVES_CHARTS_PASS GBP AUD');
