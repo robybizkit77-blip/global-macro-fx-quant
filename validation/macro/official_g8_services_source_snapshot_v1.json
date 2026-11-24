@@ -1,0 +1,22 @@
+{
+  "schema": "GMFQ_OFFICIAL_SERVICES_FALLBACK_V1",
+  "note": "Curated release values from official BusinessNZ page checked on 2026-11-24; non-PIT and not an automated download. Only used when issuer fetch is blocked, with expiry guard.",
+  "verified_on": "2026-11-24",
+  "country": "NZD",
+  "area": "services",
+  "official_release_date": "2026-11-16",
+  "source_url": "https://businessnz.org.nz/psi/pre-election-drinks",
+  "source_issuer": "BusinessNZ",
+  "series_id": "BNZ_BUSINESSNZ_PSI",
+  "frequency": "M",
+  "seasonal_adjustment": "Seasonally adjusted",
+  "dates": [
+    "2026-09",
+    "2026-10"
+  ],
+  "values": [
+    50.9,
+    51.7
+  ],
+  "baseline": 50
+}
