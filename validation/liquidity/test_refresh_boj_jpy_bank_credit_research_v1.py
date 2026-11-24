@@ -7,7 +7,7 @@ import unittest
 from datetime import date
 from pathlib import Path
 from validation.liquidity.refresh_boj_jpy_bank_credit_research_v1 import (
-    parse,run,emit_js,existing,CANON,ORIGINAL_PERIOD,ORIGINAL_VALUE
+    parse,run,emit_js,existing,existing_payload,parse_tankan,tankan_latest_url,CANON,ORIGINAL_PERIOD,ORIGINAL_VALUE
 )
 DAY=date(2026,11,14)
 CANONICAL=json.loads(CANON.read_text(encoding="utf-8"))
@@ -116,5 +116,33 @@ class JPYOfficialBankCreditResearchTest(unittest.TestCase):
                       today=DAY,canonical=CANONICAL)
             self.assertEqual(again["status"],"NO_CHANGE")
             self.assertEqual(again["write_state"],"NO_MUTATION")
+
+
+    def test_tankan_actual_rows_and_retention(self):
+        url="https://www.boj.or.jp/en/statistics/tk/yoshi/tk2609.htm"
+        def table(label,sign,a,b,delta,extra=""):
+            return f'<table><caption>{label} (All industries)</caption><tr><th>DI ({sign}), % points</th><th>June 2026 Survey</th><th>Sept. 2026 Survey</th><th>Change</th></tr><tr><td>All Enterprises</td><td>{a}</td><td>{b}</td><td>{delta}</td>{extra}</tr></table>'
+        html=table("Lending Attitude of Financial institutions","accommodative - severe",13,13,0)+table("Financial Position","easy - tight",11,11,0)+table("Change in Interest Rate on Loans","rise - fall",61,68,7,"<td>71</td><td>3</td>")
+        x=parse_tankan(html,url,today=DAY)
+        self.assertEqual(x["dates"],["2026-Q2","2026-Q3"])
+        self.assertEqual(x["lending_attitude"],[13,13])
+        self.assertEqual(x["loan_rate_change"],[61,68])
+        self.assertEqual(tankan_latest_url('<a href="tk2606.htm">June</a><a href="tk2609.htm">Sept</a><a href="tk2612.htm">Dec</a>',DAY),url)
+        for bad in (html.replace("accommodative","other"),html.replace("<td>68</td>","<td>69</td>"),html.replace("All Enterprises","Large Enterprises")):
+            with self.assertRaises(ValueError):parse_tankan(bad,url,today=DAY)
+        with tempfile.TemporaryDirectory() as root:
+            source=Path(root)/"candidate.json";dest=Path(root)/"research.js";survey=Path(root)/"survey.html"
+            source.write_text(json.dumps(candidate()));survey.write_text(html)
+            args={"candidate_file":source,"destination":dest,"apply":True,"today":DAY,"canonical":CANONICAL}
+            run(**args)
+            old=existing_payload(dest.read_text())
+            out=run(**args,tankan_fixture=survey,tankan_url=url)
+            self.assertEqual(out["tankan"]["status"],"VERIFIED")
+            self.assertEqual(existing_payload(dest.read_text())["values"],old["values"])
+            self.assertEqual(existing_payload(dest.read_text())["tankan"],x)
+            self.assertEqual(run(**args,tankan_fixture=survey,tankan_url=url)["status"],"NO_CHANGE")
+            survey.write_text("bad")
+            out=run(**args,tankan_fixture=survey,tankan_url=url)
+            self.assertEqual(out["tankan"]["retained_observation"],"2026-Q3")
 
 if __name__=="__main__":unittest.main()
