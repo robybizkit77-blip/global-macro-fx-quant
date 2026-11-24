@@ -148,6 +148,20 @@
    const unavailable=reason=>({days,from,to,bp:null,reason});
    if(!from||last.derived)return unavailable('Ultimo livello non osservato');
    const a=arr.find(p=>p.date===from);
+   // Recover an exact fixed-contract observation even if that contract was
+   // previously mapped to another representative horizon. This measures
+   // today's 6M contract, NOT a constant-maturity 6M curve move.
+   if(r.kind==='FUTURES SECONDARI'&&!last.derived&&last.contract&&
+      last.source_class==='SECONDARY_SAME_CONTRACT'&&(!a||a.contract!==last.contract)){
+    const matches=TENORS.flatMap(t=>(r.tenors[t]||[]).filter(p=>
+     p.date===from&&p.contract===last.contract&&!p.derived&&num(p.rate)&&
+     p.source_class===last.source_class).map(p=>({p,t})));
+    if(matches.length&&matches.every(x=>Math.abs(x.p.rate-matches[0].p.rate)<.000001)){
+     const ref=matches[0];
+     return {days,from,to,bp:Math.round((last.rate-ref.p.rate)*10000)/100,
+      basis:'Contratto attuale '+last.contract+' · prima '+ref.t.toUpperCase()+' (non 6M costante)',derived:false};
+    }
+   }
    if(!a)return unavailable('Riferimento esatto assente');
    let basis;
    if(r.kind==='OIS'&&!a.derived&&a.source_class==='OFFICIAL_TENOR'&&last.source_class===a.source_class){
@@ -189,7 +203,7 @@
    '<h3>Chi sta repricing? 1 / 5 / 20 giorni feriali</h3>'+
    '<div style="overflow-x:auto"><table class="rates-universe-table"><thead><tr><th>Valuta / fonte</th><th>Ultimo 6M</th>'+
    '<th>1 giorno</th><th>5 giorni</th><th>20 giorni</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-   '<small>Variazioni in punti base rispetto alla data iniziale indicata, non conteggi di sedute di borsa: festività e dati mancanti possono lasciare vuoti. OIS, tenori futures rappresentativi (rollover possibile), contratti secondari e proxy non sono equivalenti. Nessuna interpolazione, nessun ranking FX.</small></div>';
+   '<small>Variazioni in punti base rispetto alla data iniziale indicata, non conteggi di sedute di borsa: festività e dati mancanti possono lasciare vuoti. OIS, tenori futures rappresentativi (rollover possibile), contratti secondari e proxy non sono equivalenti. Le variazioni del contratto oggi associato al 6M, già archiviato sotto un altro tenore, sono indicate separatamente: non sono variazioni di un 6M a scadenza costante. Nessuna interpolazione, nessun ranking FX.</small></div>';
  }
  function sparkline(row){
   const pts=row?.tenors?.['6m']||[];
