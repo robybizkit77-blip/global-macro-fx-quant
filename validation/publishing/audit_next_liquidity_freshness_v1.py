@@ -117,7 +117,11 @@ def separate_source_inventory(root, today, runtime):
     add("USD","conditions",sl_date,"DRTSCILM","Q","OFFICIAL_SURVEY",sl.get("series_id")=="DRTSCILM")
     series("EUR","liquidity",eu.get("excess_liquidity",{}),"ILM.D.U2.C.EXLIQ.U2.EUR","D")
     series("EUR","credit",eu,"BSI.M.U2.N.A.A20.A.1.U2.2240.Z01.E","M")
-    add("EUR","conditions",runtime["EUR"].get("conditions",{}).get("last_date"),"Native BLS (exact variant not certified)","Q","NATIVE_VARIANT_UNVERIFIED",False)
+    bls=eu.get("lending_conditions",{})
+    if bls.get("positive_means")=="tightening" and bls.get("reference_period_is_previous_quarter") is True:
+        series("EUR","conditions",bls,"BLS.Q.U2.ALL.O.E.Z.B3.ST.S.WFNET","Q","OFFICIAL_SURVEY")
+    else:
+        add("EUR","conditions",runtime["EUR"].get("conditions",{}).get("last_date"),"Native BLS (reference period not aligned)","Q","NATIVE_VARIANT_UNVERIFIED",False)
     series("GBP","liquidity",gb,"RPWB56A","W",period_key="source_period")
     series("GBP","credit",gc,"LPMVTYI","M",period_key="last_observation")
     series("GBP","conditions",gc.get("lending_conditions",{}),"BOE_CCS_CORPORATE_AVAILABILITY_ACTUAL","Q","OFFICIAL_SURVEY")
@@ -255,7 +259,8 @@ def selftest():
     inventory=data["separate_source_inventory"]
     assert len(inventory["records"])==24
     assert not any(x["scheduled_execution_certified"] for x in inventory["records"])
-    assert next(x for x in inventory["records"] if x["ccy"]=="EUR" and x["role"]=="conditions")["status"]=="MISSING_OR_UNVERIFIED"
+    eur=next(x for x in inventory["records"] if x["ccy"]=="EUR" and x["role"]=="conditions")
+    assert (eur["status"],eur["kind"]) in (("MISSING_OR_UNVERIFIED","NATIVE_VARIANT_UNVERIFIED"),("OBSERVED","OFFICIAL_SURVEY"))
     print("NEXT_LIQUIDITY_FRESHNESS_AUDIT_SELFTEST_PASS")
 
 def main():
