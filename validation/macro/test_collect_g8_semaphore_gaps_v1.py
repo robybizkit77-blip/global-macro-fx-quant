@@ -187,6 +187,26 @@ class G8SemaphoreSources(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"unique services chart"):
             mod.parse_abs_services(html.replace(title,"Different chart").encode(),date(2026,11,24))
 
+    def test_businessnz_manual_official_snapshot_is_dated_and_cannot_be_current_forever(self):
+        spec=next(s for s in mod.REGISTRY if s["ccy"]=="NZD" and s["area"]=="services")
+        item,status=mod.curated_official_businessnz(spec,date(2026,11,24))
+        self.assertEqual(item["values"],[50.9,51.7])
+        self.assertEqual(item["quality"],"SOURCE_VERIFIED_MANUAL_NONPIT")
+        self.assertEqual(status["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
+        self.assertEqual(item["source_page"],"https://businessnz.org.nz/psi/pre-election-drinks")
+        self.assertIsNone(mod.curated_official_businessnz(spec,date(2027,4,1))[0])
+        with self.assertRaisesRegex(ValueError,"verification time"):
+            mod.curated_official_businessnz(spec,date(2026,11,23))
+
+    def test_issuer_unavailable_keeps_only_expiring_verified_manual_snapshot(self):
+        def fail(_):raise OSError("http 403 issuer blocked")
+        out=mod.collect(date(2026,11,24),fetcher=fail)
+        self.assertEqual(len(out["series"]),1)
+        self.assertEqual(out["series"][0]["ccy"],"NZD")
+        self.assertEqual(out["series"][0]["area"],"services")
+        self.assertEqual(out["audit"]["NZD_services"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
+        self.assertEqual(out["audit"]["NZD_services"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
+
     def test_collect_transparently_withholds_failed_sources(self):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
