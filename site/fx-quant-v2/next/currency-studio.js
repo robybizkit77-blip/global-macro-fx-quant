@@ -182,6 +182,8 @@ function build(api){
    (indicative?'. È una lettura indicativa.':'.');
  }
  function strengthBoard(result){
+  const momentum=root.FXQuantCurrencyStrength?.momentum?.(FXDATA,dayNow());
+  const momentumMap=new Map((momentum?.items||[]).map(x=>[x.ccy,x]));
   const estimate=get('estimatedMacro');
   const estimated=estimate?.status==='STIMA_OPERATIVA_NON_VALIDATA';
   const rankDate=estimated?
@@ -194,6 +196,7 @@ function build(api){
    const desk=root.FXQuantG8Transmission?.one?.({row:x,ois:OIS[x.ccy],
     growth:G8MACROGAP?.currencies?.[x.ccy],
     labour:G8INFLAB?.currencies?.[x.ccy],now:dayNow()})||null;
+   const impulse=momentumMap.get(x.ccy);
    const rank=current?'#'+current.rank:(x.price.position?'P#'+x.price.position:'—');
    const m=desk?.macro||{},p=desk?.market||{},comparison=desk?.comparison||{};
    const sixProof=pricingProof(x.ccy);
@@ -236,16 +239,18 @@ function build(api){
      esc(chfRate?sign(chfRate.changeBp,1,' pb')+' · '+date(chfRate.asof)+' · '+(chfRate.score?'peso ridotto':'contributo neutro'):
       sixProof?.short||marketDetail)+'</small></span>'+
     '<span class="strength-price-brief '+tone+'"><strong>'+esc(x.price.label)+
-    '</strong><small>Forza FX · 20 fixing</small></span>'+
+    '</strong><small>Forza FX · 20 fixing</small>'+
+    (impulse?'<span class="strength-impulse '+impulse.tone+'"><b>'+esc(impulse.label)+'</b><small>Ultime 5: '+esc(sign(impulse.recent,2,'%'))+' · prima: '+esc(sign(impulse.prior,2,'%'))+'</small><small>Variazione slancio '+esc(sign(impulse.delta,2,' p.p.'))+'</small></span>':'<small>Slancio non confrontabile</small>')+'</span>'+
     '<span class="strength-reading"><strong>'+ (x.ccy===country?'Selezionata':'Seleziona')+
     ' ›</strong></span></button>';
   }).join('');
   return '<section class="strength-board" id="orient-strength-board" aria-label="Classifica valutaria G8 e lettura macro sintetica">'+
    '<div class="strength-board-head"><div><span class="chapter-kicker">01 / CHI SI MUOVE E PERCHÉ</span>'+
-   '<h2>Otto valute. <em>La lettura in un colpo d’occhio.</em></h2>'+
+   '<h2>Otto valute. <em>Chi guadagna o perde slancio?</em></h2>'+
    '<p>'+(estimated?'Ordine stimato da <strong>economia, movimento dei tassi e prezzo</strong>. Fonti mancanti riducono la copertura, non diventano dati inventati.':'Stima non disponibile: la graduatoria visibile resta soltanto il prezzo, non un nuovo modello.')+'</p></div>'+
    '<small>'+esc(rankDate)+'</small></div>'+
-   '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>MOMENTUM ECONOMICO</span><span>POLICY / PROXY</span><span>PREZZO</span><span></span></div>'+
+   '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>MOMENTUM ECONOMICO</span><span>POLICY / PROXY</span><span>PREZZO E SLANCIO</span><span></span></div>'+
+   '<div class="strength-momentum-note"><strong>Forza e slancio sono due cose diverse.</strong> La posizione in classifica descrive la stima attuale; lo slancio confronta il rendimento FX delle ultime 5 sedute con le 5 precedenti. Verde: miglioramento; rosso: peggioramento; ambra: variazione contenuta.'+(momentum?' <small>Fixing BCE '+esc(date(momentum.from))+' → '+esc(date(momentum.mid))+' → '+esc(date(momentum.asof))+'. Soglia descrittiva: 0,10 punti percentuali.</small>':'')+'</div>'+
    '<div class="strength-rows">'+rows+'</div>'+
    '<div class="strength-analysis-next">'+
    '<span>Valuta selezionata · <strong>'+esc(FLAGS[country]||'')+' '+country+'</strong></span>'+

@@ -98,6 +98,30 @@
   }
   return {tone,label,text:base+' '+macroNote+' '+spreadNote};
  }
+ // Compare two NON-overlapping five-fixing returns, same G8 basket and dates.
+ // This is observed price momentum, not a change in the estimated macro rank.
+ function momentum(prices,now){
+  if(prices?.schema!=='GMFQ_ECB_G8_PRICE_HISTORY_V1'||
+     prices.status!=='CURRENT_OFFICIAL_HISTORY'||prices.base!=='EUR'||
+     prices.source_url!=='https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml'||
+     !Array.isArray(prices.rows)||!day(now))return null;
+  const rows=prices.rows.filter(r=>day(r?.Date)&&r.Date<=now&&FX.every(c=>num(r[c])&&r[c]>0))
+   .sort((a,b)=>a.Date.localeCompare(b.Date));
+  const end=rows.at(-1),mid=rows.at(-6),start=rows.at(-11);
+  if(!start||end.Date!==prices.last_as_of||!goodAge(end.Date,now,7)||
+     new Set(rows.slice(-11).map(r=>r.Date)).size!==11||
+     age(start.Date,end.Date)>21)return null;
+  const move=(a,b,c)=>(Math.exp(FX.filter(k=>k!==c).reduce((sum,k)=>
+    sum+Math.log((b[k]/b[c])/(a[k]/a[c])),0)/7)-1)*100;
+  const items=FX.map(ccy=>{
+   const recent=move(mid,end,ccy),prior=move(start,mid,ccy),delta=recent-prior;
+   const tone=delta>=.10?'positive':delta<=-.10?'negative':'neutral';
+   const label=tone==='positive'?(recent<0?'Calo in attenuazione':prior<0?'Passa in positivo':'Acquisisce slancio'):
+    tone==='negative'?(recent>0?'Rialzo in rallentamento':prior>0?'Passa in negativo':'Perde slancio'):'Slancio quasi invariato';
+   return {ccy,recent,prior,delta,tone,label};
+  });
+  return {from:start.Date,mid:mid.Date,asof:end.Date,items};
+ }
  function analyze({prices,macro,rates,ois,cot,now,rankingFn,fallback}){
   if(!day(now))return {rows:[],priceRanking:null,asof:null,limitations:['Data della seduta non valida']};
   const rank=typeof rankingFn==='function'?rankingFn(prices,now,FX):null;
@@ -125,7 +149,7 @@
     'Le quotazioni futures secondarie e gli indicatori storici di crescita sono solo un contesto, mai promossi a OIS o nowcast ufficiali.'
   ]};
  }
- const api={analyze,macroAxis,ratesAxis,pricingAxis,priceAxis,reading};
+ const api={analyze,macroAxis,ratesAxis,pricingAxis,priceAxis,reading,momentum};
  root.FXQuantCurrencyStrength=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
