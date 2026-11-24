@@ -10,6 +10,7 @@ bank-bill settlements and separately labeled derived prior references.
 from __future__ import annotations
 import argparse
 import json
+import re
 from collections import defaultdict
 from datetime import date, timedelta
 from pathlib import Path
@@ -49,6 +50,43 @@ def prev_weekday(day: str) -> str:
     while d.weekday() >= 5:
         d -= timedelta(days=1)
     return d.isoformat()
+
+
+def nzd_monthly_reference(feed, observed, prices):
+    """Separate fixed-contract evidence; never insert into rolling tenor history."""
+    m=feed.get("monthly_reference")
+    if not isinstance(m,dict) or m.get("schema")!="GMFQ_NZD_ASX_EXACT_20_WEEKDAY_REFERENCE_V1" or m.get("status")!="REFERENCE_PARSED" or m.get("official_ois_created") is not False or m.get("fx_engine_effect")!="NONE":
+        return None
+    d=feed.get("as_of")
+    if not good_day(d,"2099-12-31") or m.get("as_of")!=d:
+        return None
+    ref=d
+    for _ in range(20):
+        ref=prev_weekday(ref)
+    if m.get("reference_date")!=ref or m.get("current_source_url")!=feed.get("source_url") or m.get("reference_url")!="https://www.asx.com.au/data/futures/reports/EODWebMarketSummary"+date.fromisoformat(ref).strftime("%y%m%d")+"ZFT.htm":
+        return None
+    if not re.fullmatch(r"[a-f0-9]{64}",str(m.get("decoded_source_sha256",""))):
+        return None
+    h=m.get("horizons",{}).get("6m",{})
+    current=feed.get("horizons",{}).get("6m",{})
+    point=observed.get("6m",{}).get(d)
+    if not point or not h or h.get("basis")!="EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS":
+        return None
+    if not (h.get("contract")==current.get("expiry_label")==point["contract"] and h.get("expiration")==current.get("expiration")==point["expiration"]):
+        return None
+    vals=[h.get(k) for k in ("reference_price","reference_implied_pct","current_price","current_implied_pct","change_bp")]
+    if not all(number(v) for v in vals):
+        return None
+    rp,rr,cp,cr,bp=vals
+    if not (80<rp<105 and 80<cp<105 and abs(100-rp-rr)<.0002 and abs(100-cp-cr)<.0002 and cp==current.get("settlement_price") and cr==point["rate"] and abs(bp-(cr-rr)*100)<.011):
+        return None
+    existing=prices.get((ref,h["contract"],h["expiration"]),set())
+    if existing and existing!={rp}:
+        return None
+    return {"from":ref,"to":d,"contract":h["contract"],"expiration":h["expiration"],
+            "reference_rate":rr,"current_rate":cr,"change_bp":bp,
+            "source_url":m["reference_url"],"source_sha256":m["decoded_source_sha256"],
+            "basis":"EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"}
 
 
 def build(snapshot: dict, archive: list[dict], quotes: list[dict],
@@ -214,6 +252,9 @@ def build(snapshot: dict, archive: list[dict], quotes: list[dict],
             "observed_dates": len({p["date"] for t in TENORS for p in tenors[t] if not p["derived"]}),
             "derived_reference_points": sum(p["derived"] for t in TENORS for p in tenors[t]),
         }
+    monthly=nzd_monthly_reference(nzd,nzd_observed,nzd_contract_prices)
+    if monthly:
+        lines["NZD"]["fixed_contract_20d"]=monthly
     # Build date is the upper bound for accepting observations, not a market date.
     latest_observation = max(
         (row["latest_date"] for row in lines.values() if row["latest_date"]),
