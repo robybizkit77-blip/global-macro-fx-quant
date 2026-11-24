@@ -19,16 +19,12 @@
   "source_errors": {},
   "streams": {
     "SP500": {
-      "date": "2026-11-20",
-      "previous_date": "2026-11-19",
-      "value": 6910.39,
-      "previous": 7175.83,
-      "change_1d_pct": -3.6991,
+      "date": "2026-11-23",
+      "previous_date": "2026-11-20",
+      "value": 7237.17,
+      "previous": 6910.39,
+      "change_1d_pct": 4.7288,
       "history": [
-        [
-          "2026-07-02",
-          7483.24
-        ],
         [
           "2026-07-06",
           7537.43
@@ -424,6 +420,10 @@
         [
           "2026-11-20",
           6910.39
+        ],
+        [
+          "2026-11-23",
+          7237.17
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -432,7 +432,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 4,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -855,16 +855,12 @@
       "no_core_or_backtest_effect": true
     },
     "IG_OAS": {
-      "date": "2026-11-20",
-      "previous_date": "2026-11-19",
-      "value": 0.98,
-      "previous": 0.94,
-      "change_1d_pct": 4.2553,
+      "date": "2026-11-23",
+      "previous_date": "2026-11-20",
+      "value": 0.97,
+      "previous": 0.98,
+      "change_1d_pct": -1.0204,
       "history": [
-        [
-          "2026-07-06",
-          0.75
-        ],
         [
           "2026-07-07",
           0.76
@@ -1260,6 +1256,10 @@
         [
           "2026-11-20",
           0.98
+        ],
+        [
+          "2026-11-23",
+          0.97
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -1268,21 +1268,17 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 4,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "HY_OAS": {
-      "date": "2026-11-20",
-      "previous_date": "2026-11-19",
-      "value": 3.76,
-      "previous": 3.52,
-      "change_1d_pct": 6.8182,
+      "date": "2026-11-23",
+      "previous_date": "2026-11-20",
+      "value": 3.63,
+      "previous": 3.76,
+      "change_1d_pct": -3.4574,
       "history": [
-        [
-          "2026-07-06",
-          2.72
-        ],
         [
           "2026-07-07",
           2.67
@@ -1678,6 +1674,10 @@
         [
           "2026-11-20",
           3.76
+        ],
+        [
+          "2026-11-23",
+          3.63
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -1686,7 +1686,7 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 4,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
