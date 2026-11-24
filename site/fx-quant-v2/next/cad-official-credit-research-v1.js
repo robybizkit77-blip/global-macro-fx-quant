@@ -18,7 +18,7 @@
  "eligible_for_fx_core": false,
  "eligible_for_backtest": false,
  "observation_is_not_publication_date": true,
- "last_checked_rome": "2026-11-18",
+ "last_checked_rome": "2026-11-24",
  "latest_observation": "2026-09",
  "dates": [
   "2024-10",
@@ -72,7 +72,30 @@
   944614.0,
   949456.0
  ],
- "inference": "Stock bancario, non nuove erogazioni, domanda di prestiti o standard. Serie separata da NATIVE_LIQ_DATA.CAD.credit."
+ "inference": "Stock bancario, non nuove erogazioni, domanda di prestiti o standard. Serie separata da NATIVE_LIQ_DATA.CAD.credit.",
+ "settlement_balances": {
+  "source_url": "https://www.bankofcanada.ca/rates/indicators/market-operations-indicators/",
+  "series_id": "BOC_LYNX_ACTUAL_DAILY",
+  "frequency": "D",
+  "unit": "milioni CAD",
+  "dates": [
+   "2026-11-18",
+   "2026-11-19",
+   "2026-11-20",
+   "2026-11-23"
+  ],
+  "values": [
+   70898.0,
+   75273.0,
+   76970.0,
+   77485.0
+  ],
+  "latest_observation": "2026-11-23",
+  "preliminary_may_be_revised": true,
+  "canonical_monthly_equivalence_verified": false,
+  "eligible_for_fx_core": false,
+  "eligible_for_backtest": false
+ }
 };
  root.FXQuantCADCreditResearch=Object.freeze(data);
  if(typeof module!=='undefined'&&module.exports)module.exports=data;
