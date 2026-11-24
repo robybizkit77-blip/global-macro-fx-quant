@@ -269,5 +269,21 @@ assert.deepEqual(spreadRead.map(x=>x.bp),[4,24]);
 assert(spreadRead.every(x=>x.tone==='down'));
 assert(creditMarket(fixtureCredit,'2026-12-20').every(x=>!x.ok));
 assert(creditMarket(fixtureCredit,'2026-11-19').every(x=>!x.ok));
+const pricingMoves=require('../site/fx-quant-v2/next/rates-pricing-moves-v1.js');
+const pricingInputs={snapshot:initial.ois,operational:json('live_data/sections/OIS_OPERATIONAL_VIEW.json'),
+ research:json('site/fx-quant-v2/ois-same-contract-repricing-research.json'),
+ nzd:json('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),today:initial.currencyPrices.last_as_of};
+const firstRead=pricingMoves.overviewModel(pricingInputs);
+assert.equal(firstRead.rows.length,8);
+assert(firstRead.official.every(r=>r.source==='official'&&finite(r.week)));
+assert.equal(firstRead.weekly,firstRead.rows.filter(r=>finite(r.week)).length);
+const ratesHtml=pricingMoves.renderOverview(pricingInputs);
+assert.equal((ratesHtml.match(/class="rates-first-row"/g)||[]).length,8);
+assert.match(ratesHtml,/Perché conta per il Forex/);
+assert.match(ratesHtml,/non OIS ufficiali/);
+const blankRates=pricingMoves.overviewModel({today:pricingInputs.today});
+assert.equal(blankRates.weekly,0);
+assert.equal(blankRates.daily,0);
+assert(blankRates.rows.every(r=>r.tone==='neutral'));
 require('./publishing/test_next_home_thesis_recalc_v1.cjs');
 console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
