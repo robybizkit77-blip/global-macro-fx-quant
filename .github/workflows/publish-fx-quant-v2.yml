@@ -75,7 +75,15 @@ on:
     # GITHUB_TOKEN commits do NOT emit a new push workflow. Use the producer's
     # completed run as an independent publication signal after its main write.
     workflows:
+      - 'G8 Economic Semaphore Source Recovery V1'
       - 'FX Quant Next RBNZ Monthly Liquidity Research'
+      - 'BoE GBP Weekly Reserves Research Refresh V1'
+      - 'US Fed H8 Bank Credit Research Refresh V1'
+      - 'CAD Official Business Credit Research Refresh V1'
+      - 'ECB EUR NFC Credit Research Refresh V1'
+      - 'RBA AUD Business Credit Growth Research Refresh V1'
+      - 'BoE GBP Secured Credit Growth Research Refresh V1'
+      - 'BoJ JPY Bank Credit Research Refresh V1'
       - 'FX Quant V2 AUD Official RBA F2 Research Refresh'
       - 'FX Quant V2 CHF NZD Same-Basis Research Refresh'
       - 'CHF SNB 10Y Informational Context V1'
@@ -299,7 +307,16 @@ jobs:
           (github.event.workflow_run.name == 'FX Quant Next Estimated Thesis History' ||
            github.event.workflow_run.name == 'FX Quant V2 AUD Official RBA F2 Research Refresh' ||
            github.event.workflow_run.name == 'CHF SNB 10Y Informational Context V1' ||
-           github.event.workflow_run.name == 'FX Quant V2 CHF NZD Same-Basis Research Refresh')
+           github.event.workflow_run.name == 'FX Quant V2 CHF NZD Same-Basis Research Refresh' ||
+           github.event.workflow_run.name == 'G8 Economic Semaphore Source Recovery V1' ||
+           github.event.workflow_run.name == 'FX Quant Next RBNZ Monthly Liquidity Research' ||
+           github.event.workflow_run.name == 'BoE GBP Weekly Reserves Research Refresh V1' ||
+           github.event.workflow_run.name == 'US Fed H8 Bank Credit Research Refresh V1' ||
+           github.event.workflow_run.name == 'CAD Official Business Credit Research Refresh V1' ||
+           github.event.workflow_run.name == 'ECB EUR NFC Credit Research Refresh V1' ||
+           github.event.workflow_run.name == 'RBA AUD Business Credit Growth Research Refresh V1' ||
+           github.event.workflow_run.name == 'BoE GBP Secured Credit Growth Research Refresh V1' ||
+           github.event.workflow_run.name == 'BoJ JPY Bank Credit Research Refresh V1')
         env:
           GH_TOKEN: ${{ github.token }}
           PUBLISH_NEEDED: ${{ steps.v2-tree.outputs.publish_needed }}
@@ -321,7 +338,34 @@ jobs:
           from pathlib import Path
           from validation.publishing.verify_pages_http_delivery_v1 import BASE_URL, verify
 
-          if os.environ["SOURCE_WORKFLOW"] == "FX Quant V2 AUD Official RBA F2 Research Refresh":
+          research_sources = {
+              "G8 Economic Semaphore Source Recovery V1": "semaphore-supplement-v1.json",
+              "FX Quant Next RBNZ Monthly Liquidity Research": "nzd-rbnz-liquidity-research-v1.js",
+              "BoE GBP Weekly Reserves Research Refresh V1": "gbp-boe-reserves-research-v1.js",
+              "US Fed H8 Bank Credit Research Refresh V1": "us-h8-bank-credit-research-v1.js",
+              "CAD Official Business Credit Research Refresh V1": "cad-official-credit-research-v1.js",
+              "ECB EUR NFC Credit Research Refresh V1": "eur-ecb-nfc-credit-research-v1.js",
+              "RBA AUD Business Credit Growth Research Refresh V1": "aud-rba-business-credit-growth-research-v1.js",
+              "BoE GBP Secured Credit Growth Research Refresh V1": "gbp-boe-secured-credit-research-v1.js",
+              "BoJ JPY Bank Credit Research Refresh V1": "jpy-boj-bank-credit-research-v1.js",
+          }
+          source_workflow = os.environ["SOURCE_WORKFLOW"]
+          if source_workflow in research_sources:
+              label = "NEXT_MACRO_LIQUIDITY_PUBLIC_HTTP"
+              base = "site/fx-quant-v2/next/"
+              paths = (
+                  base + research_sources[source_workflow],
+                  base + "index.html",
+                  base + "app.js",
+              )
+              if source_workflow == "G8 Economic Semaphore Source Recovery V1":
+                  paths += (base + "recession-traffic-light-v1.js", base + "macro-studio.js",
+                            "live_data/sections/MACRO_SERIES.json")
+              else:
+                  paths += (base + "liquidity-credit-studio.js",
+                            base + "liquidity-source-policy-gate-v1.js",
+                            "live_data/sections/NATIVE_LIQ_DATA.json")
+          elif os.environ["SOURCE_WORKFLOW"] == "FX Quant V2 AUD Official RBA F2 Research Refresh":
               label = "AUD_F2_PUBLIC_HTTP"
               paths = (
                   "site/fx-quant-v2/aud-rba-f2-history-research.json",
