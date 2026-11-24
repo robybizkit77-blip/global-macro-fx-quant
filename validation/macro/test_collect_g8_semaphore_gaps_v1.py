@@ -28,7 +28,7 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(len(mod.REGISTRY),14)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),14)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan","ons","statcan_services","biznz"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan","ons","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -156,7 +156,7 @@ class G8SemaphoreSources(unittest.TestCase):
             mod.parse_businessnz_psi(fake.replace("51.7","127.0").encode(),date(2026,11,24))
 
     def test_services_proxies_require_fresh_quarterly_dates(self):
-        for ccy in ("CHF","AUD"):
+        for ccy in ("CHF",):
             spec=next(x for x in mod.REGISTRY if x["ccy"]==ccy and x["area"]=="services")
             self.assertEqual(spec["frequency"],"Q")
             self.assertIn("proxy",spec["name"])
@@ -165,6 +165,27 @@ class G8SemaphoreSources(unittest.TestCase):
             item,status=mod.candidate(spec,obs,NOW)
             self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
             self.assertEqual(item["dates"],["2026-Q1","2026-Q2"])
+
+    def test_abs_household_services_spending_nominal_monthly_proxy(self):
+        title="Household spending on services, current price, seasonally adjusted estimate"
+        html='<html><button aria-label="'+title+'.csv"></button><table><thead><tr><th>Month</th><th>Monthly (%)</th><th>Through the year (%)</th></tr></thead>'
+        for year in (2025,2026):
+            for month in range(1,13 if year==2025 else 11):
+                name=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][month-1]
+                value=-0.5 if year==2026 and month==9 else 1.1 if year==2026 and month==10 else 0.4
+                html+=f'<tr><td>{name}-{year}</td><td>{value}</td><td>6.4</td></tr>'
+        html+='</table></html>'
+        obs=mod.parse_abs_services(html.encode(),date(2026,11,24))
+        self.assertEqual(obs[-2:],[("2026-09",-0.5),("2026-10",1.1)])
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="AUD" and x["area"]=="services")
+        self.assertIn("proxy",spec["name"])
+        self.assertIn("nominale",spec["name"])
+        item,status=mod.candidate(spec,obs,date(2026,11,24))
+        self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+        self.assertEqual(item["metric_kind"],"points")
+        self.assertEqual(item["dates"],["2026-09","2026-10"])
+        with self.assertRaisesRegex(ValueError,"unique services chart"):
+            mod.parse_abs_services(html.replace(title,"Different chart").encode(),date(2026,11,24))
 
     def test_collect_transparently_withholds_failed_sources(self):
         def fail(_):raise OSError("issuer blocked")
