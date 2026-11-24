@@ -1,7 +1,7 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
@@ -22,17 +22,17 @@
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3H2027",
           "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
           "expiration": "2027-06-15",
-          "futures_price": 99.83,
+          "futures_price": 99.815,
           "mapping": "nearest ICE SARON accrual start to today+90d; no interpolation",
-          "price_valid_until": "2026-11-23T17:50:04Z",
-          "quote_as_of": "2026-11-23",
+          "price_valid_until": "2026-11-24T17:48:06Z",
+          "quote_as_of": "2026-11-24",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.17,
+          "rate": 0.185,
           "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
           "symbol": "ICEEUR:SA3H2027"
         },
@@ -60,7 +60,7 @@
       "status": "LIVE_SECONDARY_READY"
     },
     "EUR": {
-      "as_of": "2026-11-20",
+      "as_of": "2026-11-23",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
@@ -79,17 +79,17 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "contract": "FST3X2026",
           "contract_description": "Nov 2026",
           "expiration": "2027-02-17",
-          "futures_price": 97.405,
+          "futures_price": 97.4,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-11-20T22:13:39Z",
-          "quote_as_of": "2026-11-20",
+          "price_valid_until": "2026-11-23T22:29:02Z",
+          "quote_as_of": "2026-11-23",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.595,
+          "rate": 2.6,
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
@@ -170,7 +170,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-11-24T18:10:24.287518Z",
+  "generated_at_utc": "2026-11-24T18:37:10.392102Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
