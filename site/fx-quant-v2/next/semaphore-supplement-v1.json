@@ -1,8 +1,285 @@
 {
   "schema": "GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1",
   "as_of": "2026-11-24",
-  "source_count": 15,
+  "source_count": 25,
   "series": [
+    {
+      "ccy": "GBP",
+      "area": "industry",
+      "id": "SEM_G8_GBP_INDUSTRY",
+      "label": "Indice della produzione industriale UK (volumi reali SA)",
+      "frequency": "M",
+      "unit": "indice CVMSA",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        101.1,
+        101.4
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "ONS Index of Production",
+      "source_page": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop",
+      "source_series_id": "ONS_K222_DIOP",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "GBP",
+      "area": "house",
+      "id": "SEM_G8_GBP_HOUSE",
+      "label": "Mutui approvati per acquisto casa (BoE, SA)",
+      "frequency": "M",
+      "unit": "numero autorizzazioni SA",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        54814.0,
+        53443.0
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Bank of England IADB / LPMVTVX",
+      "source_page": "https://www.bankofengland.co.uk/boeapps/database/BankStats.asp",
+      "source_series_id": "BOE_LPMVTVX",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "NZD",
+      "area": "house",
+      "id": "SEM_G8_NZD_HOUSE",
+      "label": "Nuove abitazioni autorizzate (Stats NZ, SA)",
+      "frequency": "M",
+      "unit": "numero abitazioni SA",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        3495,
+        3218
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Stats NZ · verifica manuale 2026-11-24 (accesso automatico bloccato)",
+      "source_page": "https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/",
+      "source_series_id": "STATSNZ_NEWDWELLINGS_SA",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
+      "manual_verified_on": "2026-11-24",
+      "official_release_date": "2026-11-03"
+    },
+    {
+      "ccy": "USD",
+      "area": "house",
+      "id": "SEM_G8_USD_HOUSE",
+      "label": "Permessi edilizi residenziali USA (SA)",
+      "frequency": "M",
+      "unit": "migliaia unità SA",
+      "dates": [
+        "2026-09",
+        "2026-10"
+      ],
+      "values": [
+        1398.0,
+        1295.0
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "US Census Bureau via FRED",
+      "source_page": "https://fred.stlouisfed.org/series/PERMIT",
+      "source_series_id": "PERMIT",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-10",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "USD",
+      "area": "industry",
+      "id": "SEM_G8_USD_INDUSTRY",
+      "label": "Produzione industriale Fed (indice reale SA)",
+      "frequency": "M",
+      "unit": "indice 2017=100",
+      "dates": [
+        "2026-09",
+        "2026-10"
+      ],
+      "values": [
+        103.8458,
+        103.3954
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Federal Reserve via FRED",
+      "source_page": "https://fred.stlouisfed.org/series/INDPRO",
+      "source_series_id": "INDPRO",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-10",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "USD",
+      "area": "leading",
+      "id": "SEM_G8_USD_LEADING",
+      "label": "Fiducia consumatori University of Michigan (survey, proxy)",
+      "frequency": "M",
+      "unit": "indice NSA",
+      "dates": [
+        "2026-09",
+        "2026-10"
+      ],
+      "values": [
+        48.1,
+        48.0
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "University of Michigan via FRED",
+      "source_page": "https://fred.stlouisfed.org/series/UMCSENT",
+      "source_series_id": "UMCSENT",
+      "metric_kind": "points",
+      "observation_as_of": "2026-10",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "USD",
+      "area": "demand",
+      "id": "SEM_G8_USD_DEMAND",
+      "label": "Spesa consumi personali reali (PCE, SAAR)",
+      "frequency": "M",
+      "unit": "mld USD concatenati SAAR",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        16975.0,
+        16977.6
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "US BEA via FRED",
+      "source_page": "https://fred.stlouisfed.org/series/PCEC96",
+      "source_series_id": "PCEC96",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "USD",
+      "area": "credit",
+      "id": "SEM_G8_USD_CREDIT",
+      "label": "SLOOS: quota banche che irrigidisce prestiti C&I",
+      "frequency": "Q",
+      "unit": "saldo netto punti percentuali",
+      "dates": [
+        "2026-Q2",
+        "2026-Q3"
+      ],
+      "values": [
+        8.1,
+        0.0
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Federal Reserve SLOOS via FRED",
+      "source_page": "https://fred.stlouisfed.org/series/DRTSCILM",
+      "source_series_id": "DRTSCILM",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q3",
+      "diffusion_threshold": null,
+      "up_good": false,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "EUR",
+      "area": "industry",
+      "id": "SEM_G8_EUR_INDUSTRY",
+      "label": "Produzione industriale reale EA21 (SCA)",
+      "frequency": "M",
+      "unit": "indice 2021=100 SCA",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        97.3,
+        97.5
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Eurostat / sts_inpr_m",
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/sts_inpr_m/default/table?lang=en",
+      "source_series_id": "STS_INPR_M_EA21_PRD_B-D_SCA_I21",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "EUR",
+      "area": "leading",
+      "id": "SEM_G8_EUR_LEADING",
+      "label": "Economic Sentiment Indicator — Eurozona EA21",
+      "frequency": "M",
+      "unit": "indice ESI SA",
+      "dates": [
+        "2026-09",
+        "2026-10"
+      ],
+      "values": [
+        97.5,
+        96.9
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Eurostat / DG ECFIN teibs010",
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/teibs010/default/table?lang=en",
+      "source_series_id": "TEIBS010_EA21_BS-ESI-I_SA",
+      "metric_kind": "points",
+      "observation_as_of": "2026-10",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "EUR",
+      "area": "demand",
+      "id": "SEM_G8_EUR_DEMAND",
+      "label": "Volume vendite reali al dettaglio EA21 (SCA)",
+      "frequency": "M",
+      "unit": "indice 2021=100 SCA",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        104.6,
+        103.9
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Eurostat / sts_trtu_m",
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/sts_trtu_m/default/table?lang=en",
+      "source_series_id": "STS_TRTU_M_EA21_VOL_SLS_G47_SCA_I21",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
     {
       "ccy": "EUR",
       "area": "services",
@@ -25,6 +302,7 @@
       "metric_kind": "points",
       "observation_as_of": "2026-10",
       "diffusion_threshold": null,
+      "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -49,6 +327,7 @@
       "metric_kind": "percent",
       "observation_as_of": "2026-Q2",
       "diffusion_threshold": null,
+      "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -73,6 +352,7 @@
       "metric_kind": "points",
       "observation_as_of": "2026-09",
       "diffusion_threshold": null,
+      "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -97,6 +377,7 @@
       "metric_kind": "points",
       "observation_as_of": "2026-10",
       "diffusion_threshold": 50,
+      "up_good": true,
       "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
       "manual_verified_on": "2026-11-24",
       "official_release_date": "2026-11-16"
@@ -123,6 +404,7 @@
       "metric_kind": "percent",
       "observation_as_of": "2026-10",
       "diffusion_threshold": null,
+      "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -147,6 +429,7 @@
       "metric_kind": "percent",
       "observation_as_of": "2026-09",
       "diffusion_threshold": null,
+      "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -171,6 +454,7 @@
       "metric_kind": "percent",
       "observation_as_of": "2026-08",
       "diffusion_threshold": null,
+      "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -195,6 +479,7 @@
       "metric_kind": "points",
       "observation_as_of": "2026-Q2",
       "diffusion_threshold": null,
+      "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -219,6 +504,7 @@
       "metric_kind": "points",
       "observation_as_of": "2026-Q2",
       "diffusion_threshold": null,
+      "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -243,6 +529,7 @@
       "metric_kind": "percent",
       "observation_as_of": "2026-Q1",
       "diffusion_threshold": null,
+      "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -267,10 +554,89 @@
       "metric_kind": "percent",
       "observation_as_of": "2026-09",
       "diffusion_threshold": null,
+      "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     }
   ],
   "audit": {
+    "GBP_industry": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 55,
+      "source_page": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop",
+      "origin": "ONS Index of Production"
+    },
+    "GBP_house": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 55,
+      "source_page": "https://www.bankofengland.co.uk/boeapps/database/BankStats.asp",
+      "origin": "Bank of England IADB / LPMVTVX"
+    },
+    "NZD_house": {
+      "status": "READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+      "last_observation": "2026-09",
+      "verified_on": "2026-11-24",
+      "source_page": "https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/",
+      "automatic_fetch": "BLOCKED_OR_UNVALIDATED",
+      "automatic_error": "No verified recent official Stats NZ building-consent release; building-consents-issued-september-2026:Stats NZ new dwellings SA table missing/ambiguous; building-consents-issued-august-2026:Stats NZ new dwellings SA tab"
+    },
+    "USD_house": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-10",
+      "days_since_period_end": 24,
+      "source_page": "https://fred.stlouisfed.org/series/PERMIT",
+      "origin": "US Census Bureau via FRED"
+    },
+    "USD_industry": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-10",
+      "days_since_period_end": 24,
+      "source_page": "https://fred.stlouisfed.org/series/INDPRO",
+      "origin": "Federal Reserve via FRED"
+    },
+    "USD_leading": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-10",
+      "days_since_period_end": 24,
+      "source_page": "https://fred.stlouisfed.org/series/UMCSENT",
+      "origin": "University of Michigan via FRED"
+    },
+    "USD_demand": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 55,
+      "source_page": "https://fred.stlouisfed.org/series/PCEC96",
+      "origin": "US BEA via FRED"
+    },
+    "USD_credit": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q3",
+      "days_since_period_end": 55,
+      "source_page": "https://fred.stlouisfed.org/series/DRTSCILM",
+      "origin": "Federal Reserve SLOOS via FRED"
+    },
+    "EUR_industry": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 55,
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/sts_inpr_m/default/table?lang=en",
+      "origin": "Eurostat / sts_inpr_m"
+    },
+    "EUR_leading": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-10",
+      "days_since_period_end": 24,
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/teibs010/default/table?lang=en",
+      "origin": "Eurostat / DG ECFIN teibs010"
+    },
+    "EUR_demand": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 55,
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/sts_trtu_m/default/table?lang=en",
+      "origin": "Eurostat / sts_trtu_m"
+    },
     "EUR_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
@@ -340,13 +706,6 @@
       "last_observation": "2026-Q2",
       "days_since_period_end": 147,
       "source_page": "https://fred.stlouisfed.org/series/PRMNTO01AUQ657S",
-      "origin": "OECD tramite FRED"
-    },
-    "NZD_house": {
-      "status": "WITHHELD_STALE",
-      "last_observation": "2023-12",
-      "days_since_period_end": 1059,
-      "source_page": "https://fred.stlouisfed.org/series/NZLPERMITMISMEI",
       "origin": "OECD tramite FRED"
     },
     "NZD_industry": {
