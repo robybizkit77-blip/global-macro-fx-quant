@@ -562,5 +562,5 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '</section>';
 }
 root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
