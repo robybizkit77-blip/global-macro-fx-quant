@@ -151,7 +151,7 @@ function card(r,today,featured=false){
  const archived=catalogReady&&![...localReports,...remoteReports].some(report=>report.file===r.file);
  const status=archived?{state:'unverified',text:'Collegamento non confermato · riferimento precedente'}:editionStatus(r,today);
  const heading=featured?'h2':'h3';
- const tag=featured?(archived?'Riferimento Briefing':'Ultimo Briefing'):label(r.type);
+ const tag=featured?(archived?'Briefing d’archivio':'Ultimo Briefing'):label(r.type);
  return '<article class="rl-card'+(featured?' rl-featured':'')+'"><div class="rl-card-copy">'+
   '<div class="rl-card-meta"><span class="rl-tag">'+esc(tag)+
   '</span><time datetime="'+esc(r.date)+'">'+datestr(r.date)+'</time></div>'+
