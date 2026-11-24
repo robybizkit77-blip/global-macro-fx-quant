@@ -25,10 +25,10 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),23)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),23)
+        self.assertEqual(len(mod.REGISTRY),26)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),26)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -132,6 +132,45 @@ class G8SemaphoreSources(unittest.TestCase):
         for a,r in records.items():
             self.assertTrue(r["source_page"].endswith("/"+r["key"]))
             self.assertGreaterEqual(r["max_age_days"],100)
+
+    def test_stats_nz_new_dwellings_sa_series_and_release_identity(self):
+        html='<html><h2>New dwellings consented, monthly</h2><table><tr><th>Category</th><th>Actual</th><th>Seasonally adjusted</th><th>Trend</th></tr>'
+        for i in range(1,11):
+            html+=f'<tr><td>2026-{i:02d}-01</td><td>3500</td><td>{3000+i*20}</td><td>3100</td></tr>'
+        html+='</table></html>'
+        out=mod.parse_statsnz_house(html.encode(),date(2026,11,24))
+        self.assertEqual(out[-2:],[("2026-09",3180.0),("2026-10",3200.0)])
+        self.assertTrue(mod.statsnz_house_url(date(2026,11,24),2).endswith("september-2026/"))
+        with self.assertRaisesRegex(ValueError,"identity"):
+            mod.parse_statsnz_house(html.replace("New dwellings consented","Other").encode(),NOW)
+        with self.assertRaisesRegex(ValueError,"table"):
+            mod.parse_statsnz_house(html.replace("Seasonally adjusted","not adjusted").encode(),NOW)
+
+    def test_boe_mortgage_exact_official_identifier(self):
+        html="<html><h1>Monthly number of total sterling approvals for house purchase</h1><p>LPMVTVX</p>"
+        html+="<table><tr><th>Date</th><th>LPMVTVX</th></tr>"
+        for year in (2025,2026):
+            for month in range(1,13 if year==2025 else 10):
+                name=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][month-1]
+                html+=f"<tr><td>28 {name} {str(year)[-2:]}</td><td>{55000+month*120}</td></tr>"
+        html+="</table></html>"
+        out=mod.parse_boe_mortgage(html.encode(),NOW)
+        self.assertEqual(out[-1],("2026-09",56080))
+        with self.assertRaisesRegex(ValueError,"identity"):
+            mod.parse_boe_mortgage(html.replace("LPMVTVX","WRONG").encode(),NOW)
+        self.assertIn("SeriesCodes=LPMVTVX",mod.boe_mortgage_url(NOW))
+
+    def test_ons_industry_k222_monthly_only(self):
+        html='<html><h1>IOP: B-E: PRODUCTION: CVMSA</h1><p>Series ID: K222</p><table>'
+        for year in (2025,2026):
+            for month in range(1,13 if year==2025 else 10):
+                key=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][month-1]
+                html+=f"<tr><td>{year} {key}</td><td>{100+month/10:.1f}</td></tr>"
+        html+='</table></html>'
+        out=mod.parse_ons_industry(html.encode(),NOW)
+        self.assertEqual(out[-1],("2026-09",100.9))
+        with self.assertRaisesRegex(ValueError,"identity"):
+            mod.parse_ons_industry(html.replace("K222","NOTK222").encode(),NOW)
 
     def test_statcan_exact_manufacturing_sa_total(self):
         bio=io.BytesIO()
@@ -269,7 +308,7 @@ class G8SemaphoreSources(unittest.TestCase):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),23)
+        self.assertEqual(len(out["audit"]),26)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
