@@ -559,6 +559,29 @@
    '<a href="'+NZD_SOURCES.d10+'" target="_blank" rel="noopener noreferrer">RBNZ · D10 ↗</a>'+
    '<a href="'+NZD_SOURCES.c50+'" target="_blank" rel="noopener noreferrer">RBNZ · C50 ↗</a></div></section>'};
  }
+ function jpyReserveResearch(feed,today,esc,fmt){
+  const x=feed?.lanes?.['JPY.reserve_balances'];
+  const period=observationDate(x?.proxy_as_of),day=observationDate(today);
+  if(feed?.schema!=='GMFQ_ESTIMATED_RESIDUAL_GAPS_V1'||feed.official_lanes_untouched!==true||
+     x?.status!=='ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY'||x.official_canonical_untouched!==true||
+     x.source_endpoint!=='https://www.boj.or.jp/en/statistics/boj/other/mb/mblong.xlsx'||
+     x.original_runtime_validation?.original_runtime_vintage_equivalence_claimed!==false||
+     x.continuity_anchor?.matched!==true||x.continuity_anchor?.period!=='2026-09'||
+     x.continuity_anchor?.expected_official_value!==3849859||
+     !/^20\\d{2}-(0[1-9]|1[0-2])$/.test(x.proxy_as_of)||!period||!day||period>day||
+     !finite(x.proxy_value)||x.proxy_value<1000000||x.proxy_value>8000000)return null;
+  const age=(dateMs(day)-dateMs(period))/864e5;
+  const change=finite(x.change_1m_pct)&&Math.abs(x.change_1m_pct)<100?x.change_1m_pct:null;
+  const change3=finite(x.change_3m_pct)&&Math.abs(x.change_3m_pct)<100?x.change_3m_pct:null;
+  const pct=v=>v===null?'non verificato':(v>0?'+':'')+fmt(v,2)+'%';
+  const trend=change===null?'variazione mensile non verificata':Math.abs(change)<0.1?'riserve quasi stabili':movement(change,'riserve in aumento','riserve in calo','riserve stabili');
+  const opening=inMonth(x.proxy_as_of)+' '+trend+' presso la BoJ'+(age>75?' (periodo storico)':'')+'.';
+  return {headline:'Riserve delle banche presso la BoJ',opening,
+   html:'<section class="drivers-cad-official" aria-label="Riserve BoJ fonte ufficiale alternativa"><span class="mini-overline">BANK OF JAPAN · RISERVE DI FINE MESE</span><h3>'+esc(opening)+'</h3>'+
+   '<p>Saldo '+esc(fmt(x.proxy_value/10,2))+' miliardi JPY.</p>'+
+   '<p>Variazione mensile '+esc(pct(change))+' · tre mesi '+esc(pct(change3))+'. Si tratta di riserve presso la banca centrale, non di nuovi prestiti o di flussi valutari.</p>'+
+   '<div class="drivers-cad-source"><span>'+esc(x.proxy_as_of)+' · '+(age>75?'periodo storico':'osservazione datata')+' · fonte ufficiale alternativa; equivalenza con la vintage storica non certificata</span><a href="'+esc(x.source_endpoint)+'" target="_blank" rel="noopener noreferrer">BoJ · Monetary Base ↗</a></div></section>'};
+ }
  function chfSNBResearch(feed,today,esc,fmt){
   const roles=[
    {key:'CHF.sight_deposits',id:'BSTA@SNB.MONA_U.BIL.AKT.FMI.GGU{U,T,T,A40}',
@@ -668,9 +691,15 @@
      '<div class="drivers-empty">Storico numerico insufficiente: nessuna curva inventata.</div>')+'</article>';
   };
   // Reuse the source-specific dossier validators instead of presenting stale feed directions as current.
+  const jpyReading=()=>{
+   const credit=jpyBOJCreditResearch(esc,fmt,today),reserves=jpyReserveResearch(get('residualResearch'),today,esc,fmt);
+   if(!credit)return reserves;
+   if(!reserves)return credit;
+   return {...credit,opening:credit.opening+' '+reserves.opening,html:credit.html+reserves.html};
+  };
   const issuerFor=ccy=>ccy==='CHF'?chfSNBResearch(get('residualResearch'),today,esc,fmt):
    ccy==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):
-   ccy==='JPY'?jpyBOJCreditResearch(esc,fmt,today):
+   ccy==='JPY'?jpyReading():
    ccy==='GBP'?gbpBoEReservesResearch(esc,fmt,today):
    ccy==='AUD'?audRBAAdjustedCredit(esc,fmt,today):
    ccy==='EUR'?eurECBLoanResearch(esc,fmt,today):
@@ -687,7 +716,7 @@
    cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>';
   const official=chf||
    (selected==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):null)||
-   (selected==='JPY'?jpyBOJCreditResearch(esc,fmt,today):null)||
+   (selected==='JPY'?jpyReading():null)||
    (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):null)||
    (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):null)||
    (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):null)||
