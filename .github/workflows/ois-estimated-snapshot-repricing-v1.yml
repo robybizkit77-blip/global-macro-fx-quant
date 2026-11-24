@@ -149,11 +149,11 @@ jobs:
           python validation/cb_pricing/test_archive_nzd_asx_proxy_v1.py
           python validation/cb_pricing/archive_nzd_asx_proxy_v1.py ${{ github.event_name != 'pull_request' && '--write' || '' }}
 
-      - name: Test and probe exact NZD 20-weekday historical settlement
+      - name: Test exact NZD 20-weekday source parser
+        run: python validation/cb_pricing/test_probe_nzd_asx_20d_reference_v1.py
+      - name: Probe exact NZD 20-weekday historical settlement
         continue-on-error: true
-        run: |
-          python validation/cb_pricing/test_probe_nzd_asx_20d_reference_v1.py
-          python validation/cb_pricing/probe_nzd_asx_20d_reference_v1.py
+        run: python validation/cb_pricing/probe_nzd_asx_20d_reference_v1.py
       - name: Retain historical ASX reference evidence
         if: always()
         uses: actions/upload-artifact@v4
