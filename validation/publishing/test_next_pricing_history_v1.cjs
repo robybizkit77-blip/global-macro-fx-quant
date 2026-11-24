@@ -77,7 +77,7 @@ assert(!safe.includes('<img')&&safe.includes('&lt;img'));
 assert(!render({history:{...data,official_ois_created:true},ccy:'GBP'}).includes('<svg'),
  'Official OIS promotion breaks data-readiness gate');
 const page=file('site/fx-quant-v2/next/index.html');
-assert(page.indexOf('rates-pricing-history-v1.js?v=5')<page.indexOf('rates-studio.js?v='));
+assert(page.indexOf('rates-pricing-history-v1.js?v=6')<page.indexOf('rates-studio.js?v='));
 assert.match(page,/rates-studio\.css\?v=\d+/);
 const app=file('site/fx-quant-v2/next/app.js');
 assert(app.includes("oisHistory:'./rates-pricing-history-v1.json'"));
@@ -152,3 +152,18 @@ differentContract.tenors['6m'][1].contract='NEW';
 assert.equal(horizonMoves(differentContract)[2].bp,null);
 assert.equal(horizonMoves({...approx20,kind:'FUTURES SECONDARI'})[2].bp,null);
 console.log('NEXT_20D_OBSERVED_REFERENCE_APPROXIMATION_PASS');
+
+const nzdMonthly={kind:'PROXY FUTURES',tenors:{'6m':[
+ {...mk('2026-10-26',3.8,'Mar 2027',false,'BANK_BILL_PROXY'),expiration:'2027-03-10'},
+ {...mk('2026-11-23',3.7,'Jun 2027',false,'BANK_BILL_PROXY'),expiration:'2027-06-16'}]},
+ fixedContract20d:{from:'2026-10-26',to:'2026-11-23',contract:'Jun 2027',expiration:'2027-06-16',
+ reference_rate:4.06,current_rate:3.7,change_bp:-36,basis:'EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS',
+ source_sha256:'a'.repeat(64),source_url:'https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261026ZFT.htm'}};
+assert.equal(horizonMoves(nzdMonthly)[2].bp,-36);
+const staleMonthly=structuredClone(nzdMonthly);staleMonthly.fixedContract20d.to='2026-11-20';
+assert.equal(horizonMoves(staleMonthly)[2].bp,null);
+const wrongExpiry=structuredClone(nzdMonthly);wrongExpiry.fixedContract20d.expiration='2027-03-10';
+assert.equal(horizonMoves(wrongExpiry)[2].bp,null);
+const wrongDelta=structuredClone(nzdMonthly);wrongDelta.fixedContract20d.change_bp=-99;
+assert.equal(horizonMoves(wrongDelta)[2].bp,null);
+console.log('NEXT_NZD_ASX_MONTHLY_REFERENCE_PASS');

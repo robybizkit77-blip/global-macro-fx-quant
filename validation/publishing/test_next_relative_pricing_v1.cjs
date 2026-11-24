@@ -95,8 +95,8 @@ assert(future.includes('data-rr6-status="NOT_ALIGNED"'),
 const invalid=read({...inputs,ccy:'EUR',other:'EUR'});
 assert.equal(invalid,null,'Same-currency relative spread is meaningless');
 const page=get(base+'index.html'),studio=get(base+'rates-studio.js');
-assert(page.indexOf('rates-pricing-history-v1.js?v=5')>=0&&
- page.indexOf('rates-pricing-history-v1.js?v=5')<
+assert(page.indexOf('rates-pricing-history-v1.js?v=6')>=0&&
+ page.indexOf('rates-pricing-history-v1.js?v=6')<
  page.indexOf('rates-relative-pricing-v1.js?v=1')&&
  page.indexOf('rates-relative-pricing-v1.js?v=1')<
  page.indexOf('rates-studio.js?v='),
