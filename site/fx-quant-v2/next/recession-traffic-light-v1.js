@@ -111,8 +111,8 @@ const WAVE3_FRED_FALLBACK={
       "https://fred.stlouisfed.org/series/LRUNTTTTJPM156S"
     ],
     "industry": [
-      "JPNPROINDQISMEI",
-      "https://fred.stlouisfed.org/series/JPNPROINDQISMEI"
+      "JPNPRMNTO01GPSAM",
+      "https://fred.stlouisfed.org/series/JPNPRMNTO01GPSAM"
     ],
     "demand": [
       "SLRTTO01JPQ657S",
@@ -155,6 +155,8 @@ const WAVE3_FRED_FALLBACK={
   }
 };
 const VERIFIED_FRESH_FALLBACK={
+ JPY:{credit:['BOJ_MD13_FAAPOBAL1_YOY','https://www.stat-search.boj.or.jp/ssi/mtshtml/md13_m_1_en.html']},
+ NZD:{credit:['RBNZ_C5_BUSINESS_YOY','https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/Registered-banks-and-non-bank-lending-institutions-sector-lending']},
  CAD:{
   house:['CAN_HOUSEHOLD_MORTGAGES_SA','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610063901'],
   demand:['CAN_RETAIL_REAL_LASPEYRES','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=2010006701'],
@@ -214,7 +216,7 @@ function supplementary(overlay,country,key,today){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au)\//.test(x.source_page)&&
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz)\//.test(x.source_page)&&
    (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
     x.metric_kind==='points'&&/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page))));
  return matches.length===1?matches[0]:null;
