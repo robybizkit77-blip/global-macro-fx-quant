@@ -23,6 +23,7 @@ from urllib.parse import urlsplit
 ROOT=Path(__file__).resolve().parents[2]
 TARGET=ROOT/"site/fx-quant-v2/next/semaphore-supplement-v1.json"
 MANUAL_PSI=ROOT/"validation/macro/official_g8_services_source_snapshot_v1.json"
+MANUAL_NZ_CREDIT=ROOT/"validation/macro/official_nzd_credit_snapshot_v1.json"
 MANUAL_NZ_HOUSE=ROOT/"validation/macro/official_nzd_house_snapshot_v1.json"
 SCHEMA="GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1"
 FRED="https://fred.stlouisfed.org/graph/fredgraph.csv?id="
@@ -1042,6 +1043,31 @@ def curated_statsnz_house(spec,now):
       "last_observation":item["observation_as_of"],
       "verified_on":d["verified_on"],"source_page":page}
 
+def curated_rbnz_credit(spec,now):
+    if spec["key"]!="RBNZ_C5_BUSINESS_YOY":raise ValueError("RBNZ snapshot identity")
+    d=json.loads(MANUAL_NZ_CREDIT.read_text(encoding="utf-8"))
+    expected={"schema":"GMFQ_RBNZ_C5_OFFICIAL_SNAPSHOT_V1","series_id":spec["key"],
+      "source_url":"https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/registered-banks-and-non-bank-lending-institutions-sector-lending",
+      "unit":"% a/a","adjustment":"Break-adjusted",
+      "scope":"Registered banks and non-bank lending institutions; business loans excluding agriculture"}
+    if any(d.get(k)!=v for k,v in expected.items()):raise ValueError("RBNZ snapshot provenance mismatch")
+    release=date.fromisoformat(d["official_release_date"]);verified=date.fromisoformat(d["verified_on"])
+    if not release<=verified<=now:raise ValueError("RBNZ snapshot verification date invalid")
+    periods=d["dates"];values=d["values"]
+    if len(periods)!=2 or len(values)!=2 or period_end(periods[-1])>release:
+        raise ValueError("RBNZ snapshot periods invalid")
+    if any(not isinstance(x,(int,float)) or not math.isfinite(x) or abs(x)>100 for x in values):
+        raise ValueError("RBNZ snapshot rate invalid")
+    # Never present an old manual observation as current after the next monthly release + grace.
+    if (now-release).days>38:return None,{"status":"WITHHELD_STALE","reason":"RBNZ verified release expired"}
+    item,status=candidate(spec,list(zip(periods,values)),now)
+    if item is None:return None,status
+    item.update({"quality":"SOURCE_VERIFIED_MANUAL_NONPIT","source_page":d["source_url"],
+        "source_file":"RBNZ C5 · verifica manuale "+d["verified_on"]+" (download automatico bloccato)",
+        "manual_verified_on":d["verified_on"],"official_release_date":d["official_release_date"]})
+    return item,{"status":"READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+        "last_observation":item["observation_as_of"],"verified_on":d["verified_on"]}
+
 def collect(now=None,fetcher=fetch):
     now=now or datetime.now(timezone.utc).date()
     out={"schema":SCHEMA,"as_of":now.isoformat(),"source_count":len(REGISTRY),
@@ -1101,6 +1127,14 @@ def collect(now=None,fetcher=fetch):
                                  "origin":spec["origin"]}
             out["audit"][code].pop("...")
         except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+            if spec["method"]=="rbnz_credit":
+                try:
+                    item,status=curated_rbnz_credit(spec,now)
+                    if item:out["series"].append(item)
+                    out["audit"][code]={**status,"automatic_fetch":"BLOCKED_OR_UNVALIDATED","automatic_error":str(exc)[:180]}
+                    continue
+                except (ValueError,KeyError,IndexError,UnicodeError,OSError):
+                    pass
             if spec["method"]=="statsnz_house":
                 try:
                     item,status=curated_statsnz_house(spec,now)
