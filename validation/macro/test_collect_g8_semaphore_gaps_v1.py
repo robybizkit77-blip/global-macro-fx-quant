@@ -354,11 +354,11 @@ class G8SemaphoreSources(unittest.TestCase):
         for key,payload in mod.STATCAN_DETAIL.items():
             dates=[f"2025-{m:02d}" for m in range(1,13)]+[f"2026-{m:02d}" for m in range(1,11)]
             header=["REF_DATE","GEO",payload["category"],payload["other"],
-                    "UOM","SCALAR_FACTOR","VALUE"]
+                    "UOM","SCALAR_FACTOR","VECTOR","VALUE"]
             rows=[[dt,"Canada",payload["value"],payload["selection"],
-                   payload["unit"],payload["scale"],100+i] for i,dt in enumerate(dates)]
+                   payload["unit"],payload["scale"],payload.get("vector","vTEST"),100+i] for i,dt in enumerate(dates)]
             rows.append(["2026-10","Canada",payload["value"],"Other category",
-                         payload["unit"],payload["scale"],999999])
+                         payload["unit"],payload["scale"],payload.get("vector","vTEST"),999999])
             bio=io.BytesIO()
             with ZipFile(bio,"w") as z:
                 out=StringIO();writer=csv.writer(out);writer.writerow(header);writer.writerows(rows)
@@ -375,7 +375,7 @@ class G8SemaphoreSources(unittest.TestCase):
             with ZipFile(z2,"w") as z:
                 out=StringIO();w=csv.writer(out);w.writerow(header)
                 w.writerows([[d,"Canada",payload["value"],payload["selection"],
-                           payload["unit"],"thousands",100+i] for i,d in enumerate(dates)])
+                           payload["unit"],"thousands",payload.get("vector","vTEST"),100+i] for i,d in enumerate(dates)])
                 z.writestr(payload["file"],out.getvalue())
             with self.assertRaisesRegex(ValueError,"unit/scale"):
                 mod.parse_statcan_detail(z2.getvalue(),date(2026,11,24),key)
