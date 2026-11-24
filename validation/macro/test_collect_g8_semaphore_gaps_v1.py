@@ -281,7 +281,7 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
         self.assertEqual(item["metric_kind"],"points")
         self.assertEqual(item["dates"],["2026-09","2026-10"])
-        with self.assertRaisesRegex(ValueError,"unique services chart"):
+        with self.assertRaisesRegex(ValueError,"unique exact chart"):
             mod.parse_abs_services(html.replace(title,"Different chart").encode(),date(2026,11,24))
 
     def test_businessnz_manual_official_snapshot_is_dated_and_cannot_be_current_forever(self):
