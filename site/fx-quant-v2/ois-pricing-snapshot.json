@@ -67,27 +67,27 @@
       "kind": "OIS",
       "quality": "FONTE UFFICIALE",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "as_of": "2026-11-20",
+      "as_of": "2026-11-23",
       "horizons": {
         "3m": {
-          "rate": 4.3176,
-          "as_of": "2026-11-20",
-          "change_1d_bp": -1.6,
-          "change_1w_bp": 0.3,
+          "rate": 4.3473,
+          "as_of": "2026-11-23",
+          "change_1d_bp": 3.0,
+          "change_1w_bp": 0.4,
           "contract": null
         },
         "6m": {
-          "rate": 4.5759,
-          "as_of": "2026-11-20",
-          "change_1d_bp": -5.6,
-          "change_1w_bp": -4.5,
+          "rate": 4.6261,
+          "as_of": "2026-11-23",
+          "change_1d_bp": 5.0,
+          "change_1w_bp": -2.9,
           "contract": null
         },
         "12m": {
-          "rate": 4.8213,
-          "as_of": "2026-11-20",
-          "change_1d_bp": -10.7,
-          "change_1w_bp": -12.3,
+          "rate": 4.8588,
+          "as_of": "2026-11-23",
+          "change_1d_bp": 3.7,
+          "change_1w_bp": -9.2,
           "contract": null
         }
       }
@@ -96,27 +96,27 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "as_of": "2026-11-20",
+      "as_of": "2026-11-24",
       "horizons": {
         "3m": {
           "rate": 1.454,
-          "as_of": "2026-11-20",
+          "as_of": "2026-11-24",
           "change_1d_bp": 0.0,
-          "change_1w_bp": 1.4,
+          "change_1w_bp": 0.0,
           "contract": null
         },
         "6m": {
           "rate": 1.648,
-          "as_of": "2026-11-20",
+          "as_of": "2026-11-24",
           "change_1d_bp": 0.0,
-          "change_1w_bp": 0.6,
+          "change_1w_bp": 0.0,
           "contract": null
         },
         "12m": {
           "rate": 1.885,
-          "as_of": "2026-11-20",
+          "as_of": "2026-11-24",
           "change_1d_bp": 0.0,
-          "change_1w_bp": 0.3,
+          "change_1w_bp": 0.0,
           "contract": null
         }
       }
