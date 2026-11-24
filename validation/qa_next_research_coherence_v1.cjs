@@ -332,5 +332,25 @@ assert.deepEqual(newsFocus.focusPulse([
  {id:'old',importance:'HIGH',asof:'2026-11-01'},
  {id:'future',importance:'HIGH',asof:'2026-11-25'}
 ],'2026-11-24').map(x=>x.id),['recent']);
+
+const cotCtx={window:{}};
+vm.createContext(cotCtx);
+for(const file of ['cot-evidence-reading.js','cot-report-reading-v26.js','cot-studio.js']){
+ new vm.Script(read('site/fx-quant-v2/next/'+file)).runInContext(cotCtx);
+}
+const cotData={cotHistory:json('live_data/sections/V250_COT_CHART_DATA.json'),
+ cotPriorReference:json('site/fx-quant-v2/design-studio-cot-v1-data.json'),currencyPrices:initial.currencyPrices};
+const cotFX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+const cotHtml=cotCtx.window.FXQuantCOT.render({get:k=>cotData[k],FX:cotFX,
+ FLAGS:Object.fromEntries(cotFX.map(c=>[c,c])),state:{ccy:'USD',cotMetric:'net',cotWindow:52},
+ plot:()=>'',pageHero:()=>'',esc,fmt,sign,date,finite,validDay,
+ dayNow:()=>initial.currencyPrices.last_as_of,qBadge:()=>''});
+const cotPanel=cotHtml.split('<section class="cot-flow-overview"')[1]?.split('</section>')[0];
+assert(cotPanel,'G8 gross flow overview required');
+assert.equal((cotPanel.match(/class="cot-flow-row /g)||[]).length,8);
+assert.equal((cotPanel.match(/class="cot-flow-axis /g)||[]).length,16);
+assert.doesNotMatch(cotPanel,/undefined|NaN/);
+assert.match(cotPanel,/OI stimato/);
+assert.match(cotPanel,/non ordini o identità/);
 require('./publishing/test_next_home_thesis_recalc_v1.cjs');
 console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
