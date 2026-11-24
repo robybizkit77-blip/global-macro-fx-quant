@@ -3601,6 +3601,47 @@
     },
     {
       "ccy": "NZD",
+      "area": "leading",
+      "id": "SEM_G8_NZD_LEADING",
+      "label": "ANZ attese attività propria (proxy anticipatore; saldi arrotondati da comunicati)",
+      "frequency": "M",
+      "unit": "saldo netto %",
+      "dates": [
+        "2026-09",
+        "2026-10"
+      ],
+      "values": [
+        48.0,
+        46.0
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "ANZ Business Outlook / release summaries",
+      "source_page": "https://www.anz.co.nz/about-us/economic-markets-research/business-outlook/",
+      "source_series_id": "ANZ_NZD_OWN_ACTIVITY_OUTLOOK_ROUNDED",
+      "metric_kind": "points",
+      "observation_as_of": "2026-10",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+      "history": {
+        "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+        "frequency": "M",
+        "dates": [
+          "2026-09",
+          "2026-10"
+        ],
+        "values": [
+          48.0,
+          46.0
+        ],
+        "observations": 2,
+        "max_observations": 36,
+        "quality": "ROUNDED_RELEASE_SUMMARIES_NOT_SINGLE_VINTAGE",
+        "source_series_id": "ANZ_NZD_OWN_ACTIVITY_OUTLOOK_ROUNDED"
+      }
+    },
+    {
+      "ccy": "NZD",
       "area": "credit",
       "id": "SEM_G8_NZD_CREDIT",
       "label": "Credito privato totale, stock nominale (proxy del credito; RBNZ via Trading Economics)",
@@ -4073,11 +4114,16 @@
       "origin": "OECD tramite FRED"
     },
     "NZD_leading": {
-      "status": "WITHHELD_STALE",
-      "last_observation": "2019-11",
-      "days_since_period_end": 2551,
-      "source_page": "https://fred.stlouisfed.org/series/NZLLOLITOAASTSAM",
-      "origin": "OECD tramite FRED"
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-10",
+      "days_since_period_end": 24,
+      "history_observations": 2,
+      "history_quality": "ROUNDED_RELEASE_SUMMARIES_NOT_SINGLE_VINTAGE",
+      "proxy": true,
+      "source_page": "https://www.anz.co.nz/about-us/economic-markets-research/business-outlook/",
+      "origin": "ANZ Business Outlook / release summaries",
+      "primary_status": "WITHHELD_STALE",
+      "primary_last_observation": "2019-11"
     },
     "NZD_credit": {
       "status": "READY_DESCRIPTIVE_REVISED",
