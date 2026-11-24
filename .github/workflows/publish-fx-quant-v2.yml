@@ -349,9 +349,20 @@ jobs:
               )
           else:
               label = "NEXT_THESIS_HISTORY_PUBLIC_HTTP"
+              # Verify the exact public bytes of the receipt, its five inputs
+              # and the readers rather than the history archive alone.
               paths = (
                   "site/fx-quant-v2/next/pair-estimate-history-v1.json",
+                  "site/fx-quant-v2/next/pair-estimate-recalc-receipt-v1.json",
+                  "site/control-room-preview/macro-v3-current-evidence.json",
+                  "live_data/sections/ECB_G8_PRICE_HISTORY.json",
+                  "site/fx-quant-v2/ois-pricing-snapshot.json",
+                  "live_data/sections/NATIVE_RATES_DATA.json",
+                  "live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json",
+                  "site/fx-quant-v2/next/macro-strength-estimated-v1.js",
+                  "site/fx-quant-v2/next/home-thesis-recalc-v1.js",
                   "site/fx-quant-v2/next/pair-rankings.js",
+                  "site/fx-quant-v2/next/app.js",
                   "site/fx-quant-v2/next/index.html",
               )
           proof = verify(Path("."), BASE_URL, paths, budget_seconds=240, interval_seconds=10)
