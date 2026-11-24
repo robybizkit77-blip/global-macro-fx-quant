@@ -98,6 +98,62 @@ const MAP={
   credit:[M('CA_BUSINESS_LOANS_OUTSTANDING_history_value','Prestiti alle imprese',true,{unit:'mln CAD'})]
  }
 };
+const WAVE3_FRED_FALLBACK={
+  "GBP": {
+    "leading": [
+      "GBRLOLITOAASTSAM",
+      "https://fred.stlouisfed.org/series/GBRLOLITOAASTSAM"
+    ]
+  },
+  "JPY": {
+    "jobs": [
+      "LRUNTTTTJPM156S",
+      "https://fred.stlouisfed.org/series/LRUNTTTTJPM156S"
+    ],
+    "industry": [
+      "JPNPROINDQISMEI",
+      "https://fred.stlouisfed.org/series/JPNPROINDQISMEI"
+    ],
+    "demand": [
+      "SLRTTO01JPQ657S",
+      "https://fred.stlouisfed.org/series/SLRTTO01JPQ657S"
+    ],
+    "house": [
+      "JPNRGDPPRI",
+      "https://fred.stlouisfed.org/series/JPNRGDPPRI"
+    ]
+  },
+  "CHF": {
+    "house": [
+      "QCHR368BIS",
+      "https://fred.stlouisfed.org/series/QCHR368BIS"
+    ],
+    "industry": [
+      "PRMNTO01CHQ657S",
+      "https://fred.stlouisfed.org/series/PRMNTO01CHQ657S"
+    ],
+    "demand": [
+      "SLRTTO01CHQ657S",
+      "https://fred.stlouisfed.org/series/SLRTTO01CHQ657S"
+    ]
+  },
+  "AUD": {
+    "jobs": [
+      "LRUNTTTTAUM156S",
+      "https://fred.stlouisfed.org/series/LRUNTTTTAUM156S"
+    ],
+    "leading": [
+      "AUSLOLITOAASTSAM",
+      "https://fred.stlouisfed.org/series/AUSLOLITOAASTSAM"
+    ]
+  },
+  "NZD": {
+    "demand": [
+      "SLRTTO01NZQ657S",
+      "https://fred.stlouisfed.org/series/SLRTTO01NZQ657S"
+    ]
+  }
+};
 const VERIFIED_FRESH_FALLBACK={
  CAD:{
   house:['CAN_HOUSEHOLD_MORTGAGES_SA','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610063901'],
@@ -136,7 +192,7 @@ function verifiedFreshAlternative(x,c,key){
      ['SOURCE_REVISED_RESEARCH_NOT_PIT','SOURCE_VERIFIED_MANUAL_NONPIT'].includes(x.quality)&&
      /^https:\/\/www\.stats\.govt\.nz\/information-releases\/building-consents-issued-(?:january|february|march|april|may|june|july|august|september|october|november|december)-20\d{2}\/$/.test(x.source_page);
  }
- const expected=VERIFIED_FRESH_FALLBACK[c]?.[key];
+ const expected=VERIFIED_FRESH_FALLBACK[c]?.[key]||WAVE3_FRED_FALLBACK[c]?.[key];
  return !!expected&&x?.source_series_id===expected[0]&&x?.source_page===expected[1]&&
    x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&x.up_good!==null;
 }
@@ -248,7 +304,7 @@ function model(catalog,today,country='USD',overlay=null){
        (extra.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'?' · dato verificato manualmente, non aggiornato automaticamente':
          ' · aggiornamento dal feed supplementare')};
      const metric=M(extra.id,extra.label,extra.up_good!==false,{unit:extra.unit,
-       kind:extra.metric_kind,minimum:extra.metric_kind==='points'?.2:.15,
+       kind:extra.metric_kind,minimum:extra.metric_kind==='points'?(area.key==='jobs'||area.key==='leading'?.05:.2):.15,
        pointUnit:extra.unit.startsWith('%')?'p.p.':'punti',
        freq:extra.frequency,source_page:extra.source_page,
        diffusionThreshold:extra.diffusion_threshold===50?50:null});
