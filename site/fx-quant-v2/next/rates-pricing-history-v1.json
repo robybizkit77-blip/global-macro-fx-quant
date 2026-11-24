@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_NEXT_G8_PRICING_HISTORY_V1",
-  "as_of": "2026-11-23",
+  "as_of": "2026-11-24",
   "eligible_for_fx_engine": false,
   "eligible_for_backtests_as_official_ois": false,
   "official_ois_created": false,
@@ -189,6 +189,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-23T11:33:21.717050Z"
+          },
+          {
+            "date": "2026-11-24",
+            "rate": 4.3,
+            "contract": "ZQG2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-24T10:44:10.472061Z"
           }
         ],
         "6m": [
@@ -351,6 +359,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-23T11:33:21.717050Z"
+          },
+          {
+            "date": "2026-11-24",
+            "rate": 4.475,
+            "contract": "ZQK2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-24T10:44:10.472061Z"
           }
         ],
         "12m": [
@@ -540,8 +556,8 @@
           }
         ]
       },
-      "latest_date": "2026-11-23",
-      "observed_dates": 23,
+      "latest_date": "2026-11-24",
+      "observed_dates": 24,
       "derived_reference_points": 0
     },
     "EUR": {
@@ -935,6 +951,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-21T09:38:25.225143Z"
+          },
+          {
+            "date": "2026-11-23",
+            "rate": 2.8375,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-24T10:44:10.472061Z"
           }
         ],
         "12m": [
