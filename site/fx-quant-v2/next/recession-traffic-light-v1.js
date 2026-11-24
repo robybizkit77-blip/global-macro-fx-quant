@@ -108,7 +108,7 @@ function supplementary(overlay,country,key){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz)\//.test(x.source_page)&&
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au)\//.test(x.source_page)&&
    (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
     x.metric_kind==='points'&&x.source_page==='https://businessnz.org.nz/psi')));
  return matches.length===1?matches[0]:null;
@@ -189,7 +189,7 @@ function model(catalog,today,country='USD',overlay=null){
        sources.set(extra.id,{...extra,source_file:extra.source_file+' · aggiornamento dal feed supplementare'});
        metrics=[M(extra.id,extra.label,true,{unit:extra.unit,kind:extra.metric_kind,
         minimum:extra.metric_kind==='points'?.2:.15,
-        pointUnit:extra.unit==='% QoQ'?'p.p.':'punti',freq:extra.frequency,source_page:extra.source_page,
+        pointUnit:extra.unit.startsWith('%')?'p.p.':'punti',freq:extra.frequency,source_page:extra.source_page,
         diffusionThreshold:extra.diffusion_threshold===50?50:null})];
      }
    }
