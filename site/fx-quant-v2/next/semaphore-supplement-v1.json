@@ -1941,44 +1941,62 @@
       "ccy": "NZD",
       "area": "house",
       "id": "SEM_G8_NZD_HOUSE",
-      "label": "Nuove abitazioni autorizzate (Stats NZ, SA)",
-      "frequency": "M",
-      "unit": "numero abitazioni SA",
+      "label": "Prezzi immobiliari residenziali reali NZ (proxy immobiliare BIS, variazione annua)",
+      "frequency": "Q",
+      "unit": "% a/a reale",
       "dates": [
-        "2026-08",
-        "2026-09"
+        "2026-Q1",
+        "2026-Q2"
       ],
       "values": [
-        3495,
-        3218
+        -3.5902,
+        -4.5677
       ],
       "category": "Semaforo supplementare",
-      "source_file": "Stats NZ · verifica manuale 2026-11-24 (accesso automatico bloccato)",
-      "source_page": "https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/",
-      "source_series_id": "STATSNZ_NEWDWELLINGS_SA",
-      "metric_kind": "percent",
-      "observation_as_of": "2026-09",
+      "source_file": "Fonti nazionali / BIS Residential Property Price database tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/QNZR368BIS",
+      "source_series_id": "QNZR368BIS",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q2",
       "diffusion_threshold": null,
       "up_good": true,
-      "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
       "history": {
         "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
-        "frequency": "M",
+        "frequency": "Q",
         "dates": [
-          "2026-08",
-          "2026-09"
+          "2023-Q3",
+          "2023-Q4",
+          "2024-Q1",
+          "2024-Q2",
+          "2024-Q3",
+          "2024-Q4",
+          "2025-Q1",
+          "2025-Q2",
+          "2025-Q3",
+          "2025-Q4",
+          "2026-Q1",
+          "2026-Q2"
         ],
         "values": [
-          3495,
-          3218
+          -9.1918,
+          -5.0357,
+          -1.8667,
+          -2.0607,
+          -3.0816,
+          -3.7319,
+          -4.3211,
+          -3.6784,
+          -3.4711,
+          -4.1708,
+          -3.5902,
+          -4.5677
         ],
-        "observations": 2,
-        "max_observations": 36,
-        "quality": "MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT",
-        "source_series_id": "STATSNZ_NEWDWELLINGS_SA"
-      },
-      "manual_verified_on": "2026-11-24",
-      "official_release_date": "2026-11-03"
+        "observations": 12,
+        "max_observations": 12,
+        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+        "source_series_id": "QNZR368BIS"
+      }
     },
     {
       "ccy": "USD",
@@ -3953,12 +3971,15 @@
       "origin": "Bank of England IADB / LPMVTVX"
     },
     "NZD_house": {
-      "status": "READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
-      "last_observation": "2026-09",
-      "verified_on": "2026-11-24",
-      "source_page": "https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/",
-      "automatic_fetch": "BLOCKED_OR_UNVALIDATED",
-      "automatic_error": "No verified recent official Stats NZ building-consent release; building-consents-issued-september-2026:Stats NZ new dwellings SA table missing/ambiguous; building-consents-issued-august-2026:Stats NZ new dwellings SA tab"
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q2",
+      "days_since_period_end": 147,
+      "history_observations": 12,
+      "source_page": "https://fred.stlouisfed.org/series/QNZR368BIS",
+      "origin": "Fonti nazionali / BIS Residential Property Price database tramite FRED",
+      "primary_error": "No verified recent official Stats NZ building-consent release; building-consents-issued-september-2026:Stats NZ new dwellings SA table missing/ambiguous; buildi",
+      "proxy": true,
+      "proxy_scope": "real residential prices, not permits"
     },
     "USD_house": {
       "status": "READY_DESCRIPTIVE_REVISED",
