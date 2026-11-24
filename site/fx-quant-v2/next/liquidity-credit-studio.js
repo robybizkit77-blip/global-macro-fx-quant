@@ -338,6 +338,23 @@
    ' · ora esatta del rilascio non verificata · valore precedente implicito · nessuna modifica al ranking FX · '+
    '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: bilancio settimanale RBA ↗</a></small></div>'};
  }
+ function audF7Research(esc,fmt,now){
+  const parent=root.FXQuantAUDBusinessCreditGrowthResearch,x=parent?.lending_rate_proxy;
+  if(parent?.schema!=='GMFQ_NEXT_AUD_RBA_BUSINESS_CREDIT_GROWTH_V1'||parent.publisher!=='Reserve Bank of Australia'||
+     x?.series_id!=='RBA_F7_BUSINESS_LENDING_RATES_SUMMARY'||x.source_url!=='https://www.rba.gov.au/statistics/interest-rates/'||
+     x.frequency!=='M'||x.unit!=='percent_per_annum'||x.proxy_kind!=='loan_price_not_lending_standards'||
+     x.first_release_pit_verified!==false||x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     !x.history||typeof x.history!=='object')return null;
+  const dates=Object.keys(x.history).sort(),keys=['small','medium','large'];
+  if(!dates.length||dates.at(-1)!==x.latest_observation||!dates.every(d=>/^20[0-9]{2}-(0[1-9]|1[0-2])$/.test(d)&&observationDate(d)<=observationDate(now)&&keys.every(k=>['new','outstanding'].every(t=>finite(x.history[d]?.[k]?.[t])&&x.history[d][k][t]>=0&&x.history[d][k][t]<=30))))return null;
+  const latest=x.history[x.latest_observation],prior=dates.length>1?x.history[dates.at(-2)]:null;
+  const rate=v=>fmt(v,2)+'%';
+  const opening=inMonth(x.latest_observation)+' i nuovi prestiti alle piccole imprese costano il '+rate(latest.small.new)+', contro il '+rate(latest.large.new)+' per le grandi imprese.'+(prior?' Rispetto a '+dates.at(-2)+' il costo per le piccole imprese '+movement(latest.small.new-prior.small.new,'è salito','è sceso','è rimasto stabile')+'.':'');
+  const s=dates.length>=2?researchCreditSeries({dates,values:dates.map(d=>x.history[d].small.new)},'RBA F7 · Nuovi prestiti piccole imprese','% annua',now,true):null;
+  return {opening,conditionsSeries:s,conditionsChartLabel:'Costo del credito · proxy ufficiale',html:'<section class="drivers-cad-official" aria-label="Costo credito imprese Australia F7"><span class="mini-overline">RBA / APRA · COSTO DEL CREDITO F7</span><h3>'+esc(opening)+'</h3>'+
+   '<p>Nuovi prestiti: piccole '+esc(rate(latest.small.new))+', medie '+esc(rate(latest.medium.new))+', grandi '+esc(rate(latest.large.new))+'. Prestiti in essere: piccole '+esc(rate(latest.small.outstanding))+', medie '+esc(rate(latest.medium.outstanding))+', grandi '+esc(rate(latest.large.outstanding))+'.</p>'+
+   '<p>Proxy del costo dei finanziamenti, non degli standard di concessione. '+(dates.length<2?'Una sola osservazione mensile acquisita: nessuna curva storica inventata.':'')+'</p><div class="drivers-cad-source"><span>'+esc(x.latest_observation)+' · tassi annui osservati</span><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">RBA · F7 ↗</a></div></section>'};
+ }
  function audRBAAdjustedCredit(esc,fmt,now){
   const x=root.FXQuantAUDBusinessCreditGrowthResearch;
   if(!x||x.schema!=='GMFQ_NEXT_AUD_RBA_BUSINESS_CREDIT_GROWTH_V1'||
@@ -651,6 +668,32 @@
   return {...row,...updated,liquidity_dir:direction(updated.liquidity),credit_dir:direction(updated.credit),
    as_of:release.period+' · pubblicato il '+release.released,current_note:null,rbnzRelease:release};
  }
+ function nzdCreditConditions(esc,fmt,now){
+  const x=root.FXQuantNZDRBNZLiquidity?.credit_conditions;
+  if(x?.series_id!=='RBNZ_C60_ACTUAL_CREDIT_AVAILABILITY'||
+     x.source_url!=='https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/credit-conditions'||
+     x.frequency!=='H'||x.unit!=='index_points'||x.positive_means!=='easing'||
+     x.first_release_pit_verified!==false||x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     !Array.isArray(x.dates)||x.dates.length<4||x.latest_observation!==x.dates.at(-1)||
+     !x.dates.every(d=>/^20[0-9]{2}-(03|09)$/.test(d))||
+     !/^20[0-9]{2}-[0-9]{2}-[0-9]{2}$/.test(x.released)||!/^20[0-9]{2}-[0-9]{2}-[0-9]{2}$/.test(x.next)||
+     x.released>observationDate(now)||x.next<=x.released)return null;
+  const keys=['availability_corporate','availability_sme','demand_corporate','demand_sme'];
+  if(!keys.every(k=>Array.isArray(x[k])&&x[k].length===x.dates.length&&x[k].every(v=>finite(v)&&Math.abs(v)<=100)))return null;
+  const serial=d=>Number(d.slice(0,4))*12+Number(d.slice(5));
+  if(!x.dates.every((d,i)=>i===0||serial(d)-serial(x.dates[i-1])===6))return null;
+  const conditionsSeries=researchCreditSeries({dates:x.dates,values:x.availability_corporate},'RBNZ C60 · Disponibilità credito grandi imprese','punti indice',now,true);
+  const additionalConditionsSeries=researchCreditSeries({dates:x.dates,values:x.availability_sme},'RBNZ C60 · Disponibilità credito PMI','punti indice',now,true);
+  if(!conditionsSeries||!additionalConditionsSeries)return null;
+  const [corp,sme,dc,ds]=keys.map(k=>x[k].at(-1));
+  const trend=v=>v>0?'in aumento':v<0?'in calo':'invariata';
+  const signed=v=>(v>0?'+':'')+fmt(v,1);
+  const opening=inMonth(x.latest_observation)+' la disponibilità di credito per le grandi imprese è '+trend(corp)+', per le PMI è '+trend(sme)+'. La domanda di credito delle PMI è '+trend(ds)+'.';
+  return {opening,conditionsSeries,additionalConditionsSeries,
+   html:'<section class="drivers-cad-official" aria-label="Indagine C60 Nuova Zelanda"><span class="mini-overline">RBNZ · CREDIT CONDITIONS SURVEY C60</span><h3>'+esc(opening)+'</h3>'+
+   '<p>Disponibilità grandi imprese: '+esc(signed(corp))+' punti; PMI: '+esc(signed(sme))+'. Domanda grandi imprese: '+esc(signed(dc))+'; PMI: '+esc(signed(ds))+'. Le risposte riguardano i sei mesi trascorsi; disponibilità e domanda sono misure distinte. Positivo indica un aumento, negativo una diminuzione.</p>'+
+   '<div class="drivers-cad-source"><span>'+esc(x.latest_observation)+' · pubblicato '+esc(x.released)+' · '+(observationDate(now)<x.next?'prossimo rilascio '+esc(x.next):'nuovo rilascio da verificare')+'</span><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">RBNZ · C60 ↗</a></div></section>'};
+ }
  function nzdReleaseContext(row,today,esc,fmt){
   const release=row.rbnzRelease;
   const delta=(s,offset=1)=>(s.values.at(-offset)/s.values.at(-offset-1)-1)*100;
@@ -862,11 +905,21 @@
    if(!available.length)return null;
    return {...available[0],conditionsSeries:survey?.conditionsSeries,opening:available.map(x=>x.opening).join(' '),html:available.map(x=>x.html).join('')};
   };
+  const nzdReading=()=>{
+   const monthly=nzd?nzdReleaseContext(nzd,today,esc,fmt):null,survey=nzdCreditConditions(esc,fmt,today);
+   const available=[monthly,survey].filter(Boolean);if(!available.length)return null;
+   return {...available[0],conditionsSeries:survey?.conditionsSeries,additionalConditionsSeries:survey?.additionalConditionsSeries,opening:available.map(x=>x.opening).join(' '),html:available.map(x=>x.html).join('')};
+  };
+  const audReading=()=>{
+   const credit=audRBAAdjustedCredit(esc,fmt,today),cost=audF7Research(esc,fmt,today);
+   const available=[credit,cost].filter(Boolean);if(!available.length)return null;
+   return {...available[0],conditionsSeries:cost?.conditionsSeries,conditionsChartLabel:cost?.conditionsChartLabel,opening:available.map(x=>x.opening).join(' '),html:available.map(x=>x.html).join('')};
+  };
   const issuerFor=ccy=>ccy==='CHF'?chfSNBResearch(get('residualResearch'),today,esc,fmt):
-   ccy==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):
+   ccy==='NZD'?nzdReading():
    ccy==='JPY'?jpyReading():
    ccy==='GBP'?gbpReading():
-   ccy==='AUD'?audRBAAdjustedCredit(esc,fmt,today):
+   ccy==='AUD'?audReading():
    ccy==='EUR'?eurReading():
    ccy==='USD'?usReading():
    ccy==='CAD'?cadReading():null;
@@ -880,10 +933,10 @@
   const facts='<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+
    cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>';
   const official=chf||
-   (selected==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):null)||
+   (selected==='NZD'?nzdReading():null)||
    (selected==='JPY'?jpyReading():null)||
    (selected==='GBP'?gbpReading():null)||
-   (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):null)||
+   (selected==='AUD'?audReading():null)||
    (selected==='EUR'?eurReading():null)||
    (selected==='USD'?usReading():null)||
    (selected==='CAD'?cadReading():null);
@@ -927,7 +980,8 @@
    '<div class="drivers-chart-grid">'+chart(official?.liquidityRecent||official?.liquiditySeries||row?.liquidity,official?.liquidityRecent?'Liquidità · ultima settimana':official?.liquiditySeries?'Liquidità · fonte ufficiale separata':'Liquidità','#69d5ad')+chart(official?.creditSeries||row?.credit,official?.creditSeries?'Credito · fonte ufficiale separata':'Credito','#95c6e9')+'</div>'+
    (official?.liquidityRecent?'<p class="drivers-source-note">Confronto delle ultime due settimane dalla fonte ufficiale separata. '+(selected==='AUD'?'Il saldo precedente è ricavato dal movimento settimanale pubblicato. ':'Entrambi i saldi sono pubblicati dalla BoE. ')+'Lo storico precedente rimane distinto: nessuna interpolazione fra periodi mancanti.</p><div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità · storico originario','#69d5ad')+'</div>':'')+
    (official?.keepOriginalLiquidity?'<p class="drivers-source-note">Saldi Lynx giornalieri e storico mensile originario rimangono separati: nessuna equivalenza o interpolazione presunta.</p><div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità · storico originario','#69d5ad')+'</div>':'')+
-   (official?.conditionsSeries?'<div class="drivers-chart-grid">'+chart(official.conditionsSeries,'Condizioni di credito · fonte ufficiale separata','#95c6e9')+'</div>':'')+
+   (official?.conditionsSeries?'<div class="drivers-chart-grid">'+chart(official.conditionsSeries,official.conditionsChartLabel||'Condizioni di credito · fonte ufficiale separata','#95c6e9')+'</div>':'')+
+   (official?.additionalConditionsSeries?'<div class="drivers-chart-grid">'+chart(official.additionalConditionsSeries,'Condizioni di credito PMI · fonte ufficiale separata','#95c6e9')+'</div>':'')+
    '<p class="drivers-source-note">I grafici conservano i valori originali nelle rispettive unità (livelli o tassi di crescita esplicitamente indicati); non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>');
  }
  const api={series,direction,interpret,observationDate,sourceEvidence,creditMarket,marketFirstRead,render};
