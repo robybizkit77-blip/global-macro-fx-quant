@@ -746,8 +746,8 @@ def parse_snb_credit(raw,now):
 
 def fetch_issuer(url):
     if url not in {ONS_URL,ONS_INDUSTRY,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
-    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0",
-      "Accept":"text/html,application/zip"})
+    accept=("application/json" if url==SNB_CREDIT_META else "text/csv" if url==SNB_CREDIT_URL else "text/html,application/zip")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":accept})
     with urlopen(req,timeout=35) as response:
         final=response.geturl()
         if not final.startswith("https://") or urlsplit(final).hostname!=urlsplit(url).hostname:
