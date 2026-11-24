@@ -194,6 +194,33 @@ def test_noop_scope():
             assert "REFUSED_OUT_OF_SCOPE" in str(exc), exc
 
 
+
+def test_fetch_clock_only_noop():
+    for mode in ("estimated", "g8"):
+        with tempfile.TemporaryDirectory() as td:
+            origin, writer, _ = fixture(Path(td))
+            first, second = ESTIMATED_PATHS[:2]
+            original = {"generated_at_utc": "2026-11-24T12:00:00Z",
+                        "source_as_of": "2026-11-23", "rate": 4.5,
+                        "quality": "SECONDARY"}
+            for path in (first, second):
+                write(writer, path, json.dumps(original))
+            git("add", first, second, cwd=writer)
+            git("commit", "-m", "baseline source quote", cwd=writer)
+            git("push", "origin", "HEAD:main", cwd=writer)
+            base = git("rev-parse", "HEAD", cwd=writer)
+            same = dict(original, generated_at_utc="2026-11-24T12:30:00Z")
+            for path in (first, second):
+                write(writer, path, json.dumps(same))
+            result = persist(base, mode, cwd=writer)
+            assert result["status"] == "NO_CHANGE" and result["reason"] == "FETCH_CLOCK_ONLY", result
+            assert git("--git-dir", str(origin), "rev-parse", "main") == base
+            # A new source observation must still be published, even at the same rate.
+            write(writer, second, json.dumps(dict(same, source_as_of="2026-11-24")))
+            result = persist(base, mode, cwd=writer)
+            assert result["status"] == "PUSHED", result
+            assert json.loads(git("--git-dir", str(origin), "show", "main:" + second))["source_as_of"] == "2026-11-24"
+
 if __name__ == "__main__":
     test_unrelated_change()
     test_unrelated_change_without_repository_identity()
@@ -205,4 +232,5 @@ if __name__ == "__main__":
     test_estimated_history_rejects_rewrite()
     test_estimated_history_requires_certified_official_append()
     test_noop_scope()
+    test_fetch_clock_only_noop()
     print("OIS_SAFE_PUSH_LEASE_V1: PASS (unrelated rebase, protected refusal, no-change, scope)")

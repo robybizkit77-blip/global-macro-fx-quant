@@ -88,6 +88,31 @@ def verify_official_history_append(base_sha: str, cwd: Path | None) -> None:
             raise LeaseError("REFUSED_NON_OFFICIAL_G8_HISTORY_APPEND")
 
 
+# These two source collectors record the time of the fetch, even when every
+# quote and quality field is unchanged. Do not turn that timestamp alone into
+# a persistent market-data refresh. No other paths or fields are exempt.
+FETCH_CLOCK_ONLY_PATHS = frozenset(ESTIMATED_PATHS[:2])
+
+
+def only_fetch_clock_changed(base_sha: str, changed: set[str], cwd: Path | None) -> bool:
+    if not changed or not changed.issubset(FETCH_CLOCK_ONLY_PATHS):
+        return False
+    root = cwd if cwd is not None else Path.cwd()
+    for path in changed:
+        try:
+            before = json.loads(git("show", f"{base_sha}:{path}", cwd=cwd).stdout)
+            after = json.loads((root / path).read_text(encoding="utf-8"))
+        except (OSError, ValueError, LeaseError):
+            return False
+        if not isinstance(before, dict) or not isinstance(after, dict):
+            return False
+        old = before.pop("generated_at_utc", None)
+        new = after.pop("generated_at_utc", None)
+        if not isinstance(old, str) or not isinstance(new, str) or before != after:
+            return False
+    return True
+
+
 def persist(base_sha: str, mode: str, *, cwd: Path | None = None, attempts: int = 4) -> dict:
     if mode not in COMMITS:
         raise LeaseError("Invalid writer mode")
@@ -103,6 +128,9 @@ def persist(base_sha: str, mode: str, *, cwd: Path | None = None, attempts: int 
         raise LeaseError("REFUSED_OUT_OF_SCOPE: " + json.dumps(sorted(set(unstaged + staged) - set(paths))))
     if mode == "estimated" and G8_HISTORY in unstaged + staged:
         verify_official_history_append(base_sha, cwd)
+    if not staged and only_fetch_clock_changed(base_sha, set(unstaged), cwd):
+        return {"status": "NO_CHANGE", "mode": mode, "attempts": 0,
+                "reason": "FETCH_CLOCK_ONLY"}
     git("add", "--", *paths, cwd=cwd)
     pending = git("diff", "--cached", "--quiet", cwd=cwd, check=False)
     if pending.returncode == 0:
