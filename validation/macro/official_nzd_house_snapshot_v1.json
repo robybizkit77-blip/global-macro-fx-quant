@@ -1,0 +1,24 @@
+{
+  "schema": "GMFQ_NZD_HOUSING_OFFICIAL_SNAPSHOT_V1",
+  "ccy": "NZD",
+  "area": "house",
+  "source_series_id": "STATSNZ_NEWDWELLINGS_SA",
+  "source_issuer": "Stats NZ",
+  "name": "Seasonally adjusted new dwellings consented",
+  "official_release": "Building consents issued: September 2026",
+  "source_url": "https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/",
+  "official_release_date": "2026-11-03",
+  "verified_on": "2026-11-24",
+  "freq": "M",
+  "dates": [
+    "2026-08",
+    "2026-09"
+  ],
+  "values": [
+    3495,
+    3218
+  ],
+  "unit": "number SA",
+  "status": "MANUAL_OFFICIAL_RELEASE_NOT_LIVE",
+  "notes": "Official September 2026 Stats NZ release, SA levels; values may be revised in later releases."
+}
