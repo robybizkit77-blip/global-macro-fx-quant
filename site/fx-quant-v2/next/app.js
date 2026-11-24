@@ -1092,12 +1092,10 @@ function risk(){
  +sectionTitle('Grafici del rischio','Ogni serie mostra la propria data di chiusura')
  +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><h2>'+esc(streamOpts.find(v=>v[0]===state.riskStream)?.[1]||state.riskStream)+'</h2><p>'+esc(a?.publisher||'Fonte da verificare')+' · '+date(a?.date)+'</p></div></div><div class="filters"><div class="pill-controls">'+streamOpts.map(v=>'<button class="pill '+(v[0]===state.riskStream?'active':'')+'" data-risk="'+v[0]+'" type="button" aria-pressed="'+String(v[0]===state.riskStream)+'">'+v[1]+'</button>').join('')+'</div><div class="pill-controls">'+choose('',[{label:'5 sedute',value:5},{label:'20 sedute',value:20},{label:'Tutto',value:9999}],state.riskWindow,'data-risk-window')+'</div></div>'
  +plot({lines:[{name:streamOpts.find(v=>v[0]===state.riskStream)?.[1],color:state.riskStream==='VIX'||state.riskStream.includes('OAS')?'#ed6679':'#83cdec',values:pts}],unit:state.riskStream.includes('OAS')?'%':'',label:'Grafico '+state.riskStream})+'<div class="chart-summary" style="margin-top:11px">Ultima rilevazione: '+fmt(a?.value)+' · '+(state.riskStream.includes('OAS')?'Variazione dello spread '+sign(finite(a?.value)&&finite(a?.previous)?(a.value-a.previous)*100:null,1,' pb'):'Variazione percentuale '+sign(a?.change_1d_pct,2,'%'))+'. '+esc(a?.not_intraday?'Dato di chiusura, non intraday.':'Verificare orario di rilevazione.')+'</div></section>'
- +'<section class="panel glow risk-research-reading" data-risk-asof="'+esc(x.asof||'')+'"><div class="panel-head"><div><h2>Cosa conta per il cambio</h2></div></div>'
- +'<p class="focus-subtitle">'+esc(x.fx)+'</p>'
- +'<p class="focus-subtitle"><strong>Cosa seguire.</strong> '+esc(x.monitor)+'</p>'
- +'<details class="drivers-fold"><summary>Dati del confronto</summary><p class="focus-subtitle">'+esc(x.observation)+'</p>'
- +(x.judgement?'<p class="focus-subtitle">'+esc(x.judgement)+'</p>':'')
- +'<p class="notice '+(x.stale||!x.ready?'warn':'')+'">'+esc(x.quality+' · Ultime rilevazioni per serie · '+x.sourceDates)+'</p></details></section></div>';
+ +'<section class="panel risk-research-reading" data-risk-asof="'+esc(x.asof||'')+'"><div class="panel-head"><div><h2>Qualità del confronto</h2></div></div>'
+ +'<p class="notice '+(x.stale||!x.ready?'warn':'')+'">'+esc(x.quality+(x.asof?' · '+date(x.asof):''))+'</p>'
+ +'<details class="drivers-fold"><summary>Date delle fonti e variazioni allineate</summary><p class="focus-subtitle">'+esc(x.observation)+'</p>'
+ +'<p class="source-caption">'+esc('Ultime rilevazioni per serie · '+x.sourceDates)+'</p></details></section></div>';
 }
 function news(){
  const n=get('news');
@@ -1255,6 +1253,21 @@ function focusCalendarEvent(query){
  if(collapsed)collapsed.open=true;
  focusSection(event?.id||'macro-calendar');
 }
+// The navigation drawer is scrollable, keyboard reachable, and never traps
+// focus in an off-screen mobile menu.
+const mobileNav=typeof window.matchMedia==='function'?window.matchMedia('(max-width:1050px)'):{matches:false,addEventListener(){}};
+function setMobileMenu(open,restoreFocus=false){
+ const drawer=$('sidebar'),toggle=$('menu-toggle');
+ const expanded=mobileNav.matches&&Boolean(open);
+ if(expanded)$('app').classList.add('menu-open');else $('app').classList.remove('menu-open');
+ toggle.setAttribute('aria-expanded',String(expanded));
+ toggle.setAttribute('aria-label',expanded?'Chiudi menu':'Apri menu');
+ if(drawer)drawer.inert=mobileNav.matches&&!expanded;
+ if(expanded)drawer.querySelector('a[aria-current="page"],a')?.focus({preventScroll:true});
+ else if(restoreFocus&&mobileNav.matches)toggle.focus({preventScroll:true});
+}
+mobileNav.addEventListener('change',()=>setMobileMenu(false));
+setMobileMenu(false);
 function navigate({pairFocus}={}){
  const [route,query]=location.hash.slice(1).split('?');
  state.route=ROUTES[route]?route:'overview';
@@ -1270,7 +1283,7 @@ function navigate({pairFocus}={}){
    else focusSection(pairFocus||'fx-selected-thesis');
   }
  }else syncRouteChrome(state.route);
- $('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false');
+ setMobileMenu(false);
 }
 window.addEventListener('hashchange',navigate);
 $('quicklaunch').addEventListener('click',()=>setQuick(true));
@@ -1282,8 +1295,8 @@ window.addEventListener('keydown',e=>{
  if(e.key==='/'&&!/INPUT|TEXTAREA/.test(e.target?.tagName||'')){e.preventDefault();setQuick(true);}
  if(e.key==='Escape'&&$('quick-layer').classList.contains('open')){e.preventDefault();setQuick(false);}
 });
-$('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.contains('menu-open');$('app').classList.toggle('menu-open',open);$('menu-toggle').setAttribute('aria-expanded',String(open))});
-$('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
+$('menu-toggle').addEventListener('click',()=>setMobileMenu(!$('app').classList.contains('menu-open'),true));
+$('mobile-overlay').addEventListener('click',()=>setMobileMenu(false,true));
 // Keep the pair's open analysis panel mounted when its own chart controls change.
 // Replacing #content would recreate <details> closed and jump back to the rankings.
 function selectG8Country(trigger){
@@ -1525,7 +1538,7 @@ document.addEventListener('change',e=>{
 });
 document.addEventListener('pointermove',chartEvents);
 document.addEventListener('pointerout',e=>{if(e.target.closest('.chart')&&!e.relatedTarget?.closest?.('.chart'))chartHide(e)});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('app').classList.contains('menu-open'))setMobileMenu(false,true)});
 let refreshInProgress=false;
 let lastResearchRefresh=0;
 async function loadAll(){
