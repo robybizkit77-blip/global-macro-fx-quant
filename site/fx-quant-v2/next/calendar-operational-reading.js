@@ -209,7 +209,14 @@
   const titles={'Consumer Price Index, Australia':'Australia · inflazione CPI',
    'GDP (Second Estimate) and Corporate Profits':'USA · seconda stima del PIL e utili',
    'Personal Income and Outlays':'USA · redditi e spesa personale (PCE)'};
-  const rows=list.map(e=>'<div class="cal-focus-event"><div><span>'+esc(e.ccy)+' · '+esc(fmtDay(e.day))+' · '+esc(e.romeTime?e.romeTime+' IT':'Orario da verificare')+'</span><strong>'+esc(titles[e.title]||displayTitle(e))+'</strong></div><p>'+esc(e.why)+'</p><small>Valute/coppie da monitorare: '+esc(e.pairs)+' · consenso '+(e.consensus===null?'non certificato':esc(e.consensus))+'</small></div>').join('');
+  const watch=e=>{
+   if(e.title==='Consumer Price Index, Australia')return 'Inflazione persistente o in rallentamento? Verifica il percorso atteso della RBA.';
+   if(e.title==='GDP (Second Estimate) and Corporate Profits')return 'Revisioni della crescita e composizione della domanda, poi attese Fed.';
+   if(e.title==='Personal Income and Outlays')return 'Consumi, redditi reali e dinamica del PCE core: cosa cambia per la Fed?';
+   if(e.kind==='Riunione banca centrale')return 'Decisione e comunicazione rispetto alle attese sui tassi.';
+   return 'Dato, revisioni e risposta dei tassi attesi.';
+  };
+  const rows=list.map(e=>'<div class="cal-focus-event"><div><span>'+esc(e.ccy)+' · '+esc(fmtDay(e.day))+' · '+esc(e.romeTime?e.romeTime+' IT':'Orario da verificare')+'</span><strong>'+esc(titles[e.title]||displayTitle(e))+'</strong></div><p>'+esc(watch(e))+'</p><small>'+esc(e.pairs)+' · consenso '+(e.consensus===null?'non certificato':esc(e.consensus))+'</small></div>').join('');
   return '<section class="cal-focus" aria-label="Catalizzatori di priorità alta nei prossimi tre giorni"><div class="cal-focus-head"><div><span class="mini-overline">PRIMA LETTURA · EVENTI AD ALTO IMPATTO ATTESO</span><h3>I prossimi catalizzatori</h3></div><small>'+list.length+' eventi · oggi e due giorni successivi</small></div><div class="cal-focus-list">'+rows+'</div><p class="cal-focus-note">Priorità del calendario, non previsione dell’impatto effettivo. Il giudizio dipenderà da dato, attese, revisioni e risposta dei tassi/cambi.</p></section>';
  }
  function render(feed,today=romeNow(),nowMs=Date.now(),news=null){
