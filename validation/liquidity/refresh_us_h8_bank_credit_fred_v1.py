@@ -27,6 +27,9 @@ SERIES="TOTBKCR"
 ANCHOR_DATE="2026-09-09"
 ANCHOR_VALUE=19866.6568
 SCHEMA="GMFQ_NEXT_US_H8_CREDIT_RESEARCH_V1"
+M2_SERIES="M2SL"
+M2_API="https://fred.stlouisfed.org/graph/fredgraph.csv?id=M2SL&cosd=2024-01-01"
+M2_PUBLIC="https://fred.stlouisfed.org/series/M2SL"
 SLOOS_SERIES="DRTSCILM"
 SLOOS_API="https://fred.stlouisfed.org/graph/fredgraph.csv?id=DRTSCILM&cosd=2024-01-01"
 SLOOS_PUBLIC="https://fred.stlouisfed.org/series/DRTSCILM"
@@ -126,6 +129,36 @@ def parse_sloos(text,*,today):
     return {"series_id":SLOOS_SERIES,"source_url":SLOOS_PUBLIC,"frequency":"Q",
             "observations":observations[-12:]}
 
+def parse_m2(text,*,today):
+    reader=csv.DictReader(io.StringIO(text))
+    date_key="observation_date" if "observation_date" in (reader.fieldnames or []) else "DATE"
+    require(reader.fieldnames==[date_key,M2_SERIES],"M2 exact series/CSV key mismatch")
+    values={}
+    for row in reader:
+        d=date.fromisoformat(row[date_key])
+        raw=(row[M2_SERIES] or "").strip()
+        if raw in ("","."):continue
+        require(d.day==1 and (d.year,d.month)<(today.year,today.month),"M2 invalid or unfinished month")
+        v=float(raw)
+        require(math.isfinite(v) and 15000<v<40000,"M2 stock outside USD billions range")
+        month=d.isoformat()[:7]
+        require(month not in values,"M2 duplicate month")
+        values[month]=v
+    months=sorted(values)
+    require(len(months)>=12 and list(values) in (months,list(reversed(months))),"M2 insufficient or unordered history")
+    require("2026-08" in values and abs(values["2026-08"]/23342.8-1)<.02,"M2 August canonical overlap mismatch")
+    for prior,current in zip(months,months[1:]):
+        py,pm=map(int,prior.split("-"));y,m=map(int,current.split("-"))
+        require(y*12+m-py*12-pm==1,"M2 nonconsecutive months")
+        require(abs(values[current]/values[prior]-1)<.10,"M2 unexpected monthly jump")
+    y,m=map(int,months[-1].split("-"))
+    require((today.year-y)*12+today.month-m<=3,"M2 stale source")
+    months=months[-36:]
+    return {"series_id":M2_SERIES,"source_url":M2_PUBLIC,"frequency":"M",
+            "unit":"miliardi USD","seasonally_adjusted":True,"dates":months,
+            "values":[values[m] for m in months],"latest_observation":months[-1],
+            "first_release_pit_verified":False,"eligible_for_fx_core":False}
+
 def existing_payload(text):
     json_start=text.find("const data=")
     if json_start!=-1:
@@ -135,7 +168,7 @@ def existing_payload(text):
             pass
     return {}
 
-def emit_js(data,checked,lending_standards=None):
+def emit_js(data,checked,lending_standards=None,money_stock=None):
     obj={
       "schema":SCHEMA,
       "status":"VERIFIED_FED_H8_FRED_MIRROR_RESEARCH_ONLY",
@@ -157,13 +190,15 @@ def emit_js(data,checked,lending_standards=None):
     }
     if lending_standards is not None:
         obj["lending_standards"]=lending_standards
+    if money_stock is not None:
+        obj["money_stock"]=money_stock
     return ("'use strict';\n/* Validated Fed H.8 and SLOOS via FRED; research-only. */\n"
         "(function(root){\n const data="+json.dumps(obj,ensure_ascii=False,indent=1)
         +";\n root.FXQuantUSBanksCreditResearch=Object.freeze(data);\n"
         " if(typeof module!=='undefined'&&module.exports)module.exports=data;\n"
         "})(typeof window!=='undefined'?window:globalThis);\n")
 
-def run(destination=DEST,*,apply=False,fixture=None,sloos_fixture=None,today=None):
+def run(destination=DEST,*,apply=False,fixture=None,sloos_fixture=None,m2_fixture=None,today=None):
     today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
     text=destination.read_text(encoding="utf-8") if destination.exists() else ""
     previous=existing_payload(text)
@@ -184,28 +219,41 @@ def run(destination=DEST,*,apply=False,fixture=None,sloos_fixture=None,today=Non
             sloos_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:320]}
             if prior_sloos:
                 sloos_status["retained_survey_period"]=prior_sloos["observations"][-1][0]
+    prior_m2=previous.get("money_stock")
+    money_stock=prior_m2
+    m2_status={"status":"SKIPPED_FIXTURE"}
+    if m2_fixture or not fixture:
+        try:
+            candidate=parse_m2(Path(m2_fixture).read_text(encoding="utf-8") if m2_fixture else fetch(M2_API),today=today)
+            if prior_m2 and candidate["latest_observation"]<prior_m2["latest_observation"]:
+                raise ValueError("M2 source rolled back")
+            money_stock=candidate
+            m2_status={"status":"VERIFIED","latest_observation":candidate["latest_observation"]}
+        except (OSError,ValueError,UnicodeError) as error:
+            m2_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:320]}
+            if prior_m2:m2_status["retained_observation"]=prior_m2["latest_observation"]
     h8_status={"status":"VERIFIED"}
     try:
         parsed=parse(Path(fixture).read_text(encoding="utf-8") if fixture else fetch(),today=today)
     except (OSError,ValueError,UnicodeError) as error:
-        if not (before and previous.get("schema")==SCHEMA and sloos!=prior_sloos):
+        if not (before and previous.get("schema")==SCHEMA and (sloos!=prior_sloos or money_stock!=prior_m2)):
             raise
         parsed=previous
         h8_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:320]}
-    changed=before!=(parsed["dates"],parsed["values"]) or sloos!=prior_sloos
+    changed=before!=(parsed["dates"],parsed["values"]) or sloos!=prior_sloos or money_stock!=prior_m2
     state="UPDATE_AVAILABLE" if changed else "NO_CHANGE"
     receipt={
       "schema":"GMFQ_US_H8_FRED_CREDIT_SOURCE_RECEIPT_V1","status":state,
       "series":SERIES,"source":PUBLIC,"latest_observation":parsed["latest_observation"],
       "series_count":len(parsed["dates"]),"canonical_reference_revision_pct":parsed["reference_week_revision_pct"],
       "retrieved_on_rome":today.isoformat(),"first_release_verified":False,
-      "h8":h8_status,"sloos":sloos_status,
+      "h8":h8_status,"sloos":sloos_status,"m2":m2_status,
       "canonical_liquidity_unchanged":True,"fx_rank_effect":"NONE",
       "write_state":"NO_MUTATION"}
     if apply and state=="UPDATE_AVAILABLE":
         destination.parent.mkdir(parents=True,exist_ok=True)
         checked=today.isoformat() if h8_status["status"]=="VERIFIED" else previous["last_checked_rome"]
-        destination.write_text(emit_js(parsed,checked,sloos),encoding="utf-8")
+        destination.write_text(emit_js(parsed,checked,sloos,money_stock),encoding="utf-8")
         receipt["write_state"]="RESEARCH_SIDECAR_ONLY"
     return receipt
 
@@ -214,11 +262,12 @@ def main():
     p.add_argument("--apply",action="store_true")
     p.add_argument("--fixture",type=Path)
     p.add_argument("--sloos-fixture",type=Path)
+    p.add_argument("--m2-fixture",type=Path)
     p.add_argument("--destination",type=Path,default=DEST)
     p.add_argument("--receipt",type=Path)
     args=p.parse_args()
     try:
-        receipt=run(args.destination,apply=args.apply,fixture=args.fixture,sloos_fixture=args.sloos_fixture)
+        receipt=run(args.destination,apply=args.apply,fixture=args.fixture,sloos_fixture=args.sloos_fixture,m2_fixture=args.m2_fixture)
     except (OSError,TimeoutError,ValueError,UnicodeError) as error:
         receipt={"schema":"GMFQ_US_H8_FRED_CREDIT_SOURCE_RECEIPT_V1",
                  "status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE",
