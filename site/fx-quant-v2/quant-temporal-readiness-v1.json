@@ -5,7 +5,7 @@
   "first_fx_reference_fixing": "2024-09-16",
   "source_hashes_sha256": {
     "ecb_fx_history": "d00e44d8ae12c2ffb3669b35685da4611a673c9dd6a17bd69d57a6fb14d55821",
-    "same_contract_futures_history": "2d9c6573634e505789261ae86f1dd2a8bbc010ed41fadb074583bb58abd60942",
+    "same_contract_futures_history": "5388d759fb220f8796dc2ec14708ac4f78d68f2665ae33e3f39d2908ec18b83c",
     "macro_candidate_pair_universe": "91253d838e0e94d7d4db2ed07abcdf27c4525cb17372161b2bfaea1bddebf2b2"
   },
   "method": "SAME_LISTED_FUTURES_CONTRACT_TWO_CONSECUTIVE_ECB_SESSIONS",
@@ -29,16 +29,16 @@
   "summary": {
     "fx_reference_rows": 560,
     "fx_pairs": 28,
-    "archived_same_contract_quotes": 246,
+    "archived_same_contract_quotes": 247,
     "contract_currencies": 3,
-    "strict_currency_rate_moves": 218,
-    "strict_relative_pair_moves": 197,
+    "strict_currency_rate_moves": 219,
+    "strict_relative_pair_moves": 199,
     "distinct_relative_market_days": 27,
     "pairs_with_any_relative_history": 3,
     "pairs_without_relative_history": 25,
     "excluded_roll_or_ambiguous_instrument_groups": 4,
     "relative_events_with_future_ecb_t0": 190,
-    "relative_events_without_future_ecb_t0": 7,
+    "relative_events_without_future_ecb_t0": 9,
     "out_of_sample_predictions": 0,
     "generated_fx_signals": 0
   },
@@ -312,7 +312,7 @@
     "EUR/USD": {
       "base": "EUR",
       "quote": "USD",
-      "matched_changes": 64,
+      "matched_changes": 65,
       "market_days": [
         "2026-10-19",
         "2026-10-20",
@@ -339,16 +339,17 @@
         "2026-11-18",
         "2026-11-19",
         "2026-11-20",
-        "2026-11-23"
+        "2026-11-23",
+        "2026-11-24"
       ],
       "horizons": {
         "3m": 21,
         "6m": 23,
-        "12m": 20
+        "12m": 21
       },
       "fx_signal": null,
       "expected_return": null,
-      "distinct_market_days": 26,
+      "distinct_market_days": 27,
       "status": "DESCRIPTIVE_ONLY_INSUFFICIENT_PIT_OOS",
       "eligible_for_predictive_backtest": false,
       "eligible_for_fx_engine": false
@@ -543,7 +544,7 @@
     "USD/CHF": {
       "base": "USD",
       "quote": "CHF",
-      "matched_changes": 69,
+      "matched_changes": 70,
       "market_days": [
         "2026-10-19",
         "2026-10-20",
@@ -576,7 +577,7 @@
       "horizons": {
         "3m": 22,
         "6m": 26,
-        "12m": 21
+        "12m": 22
       },
       "fx_signal": null,
       "expected_return": null,
@@ -3293,6 +3294,27 @@
       "fx_signal": null
     },
     {
+      "pair": "EUR/USD",
+      "tenor": "12m",
+      "previous_market_date": "2026-11-23",
+      "market_date": "2026-11-24",
+      "base_contract": "FST3U2027",
+      "quote_contract": "ZQX2027",
+      "base_rate_change_bp": -3.25,
+      "quote_rate_change_bp": 2.0,
+      "relative_rate_change_bp": -5.25,
+      "source_usable_at_utc": "2026-11-24T21:21:44.564779Z",
+      "first_strictly_post_capture_ecb_date": null,
+      "following_ecb_date": null,
+      "same_day_fx_return": null,
+      "future_fx_return": null,
+      "outcome_used_in_model": false,
+      "is_out_of_sample_prediction": false,
+      "rate_instrument_quality": "SECONDARY_FUTURES_NOT_OIS",
+      "policy_repricing_bp": null,
+      "fx_signal": null
+    },
+    {
       "pair": "USD/CHF",
       "tenor": "3m",
       "previous_market_date": "2026-10-16",
@@ -4731,6 +4753,27 @@
       "quote_rate_change_bp": 2.0,
       "relative_rate_change_bp": -3.0,
       "source_usable_at_utc": "2026-11-24T16:10:00.374287Z",
+      "first_strictly_post_capture_ecb_date": null,
+      "following_ecb_date": null,
+      "same_day_fx_return": null,
+      "future_fx_return": null,
+      "outcome_used_in_model": false,
+      "is_out_of_sample_prediction": false,
+      "rate_instrument_quality": "SECONDARY_FUTURES_NOT_OIS",
+      "policy_repricing_bp": null,
+      "fx_signal": null
+    },
+    {
+      "pair": "USD/CHF",
+      "tenor": "12m",
+      "previous_market_date": "2026-11-23",
+      "market_date": "2026-11-24",
+      "base_contract": "ZQX2027",
+      "quote_contract": "SA3Z2027",
+      "base_rate_change_bp": 2.0,
+      "quote_rate_change_bp": -0.5,
+      "relative_rate_change_bp": 2.5,
+      "source_usable_at_utc": "2026-11-24T21:21:44.564779Z",
       "first_strictly_post_capture_ecb_date": null,
       "following_ecb_date": null,
       "same_day_fx_return": null,
