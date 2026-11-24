@@ -272,6 +272,7 @@ def statsnz_house_url(now,months_back):
 
 def statsnz_fetch(url,now):
     # Before the new monthly release, walk the official monthly release archive.
+    errors=[]
     for back in range(1,6):
         dest=statsnz_house_url(now,back)
         req=Request(dest,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
@@ -284,9 +285,10 @@ def statsnz_fetch(url,now):
                     raise ValueError("Stats NZ release HTML empty or oversized")
             parse_statsnz_house(data,now) # fail closed on revisions/page format
             return data,dest
-        except (OSError,ValueError,TimeoutError):
+        except (OSError,ValueError,TimeoutError) as exc:
+            errors.append(dest.split("/")[-2]+":"+str(exc)[:80])
             continue
-    raise ValueError("No verified recent official Stats NZ building-consent release")
+    raise ValueError("No verified recent official Stats NZ building-consent release; "+"; ".join(errors[-4:]))
 
 def parse_statsnz_house(raw,now):
     txt=raw.decode("utf-8","replace")
@@ -444,7 +446,7 @@ def parse_businessnz_psi(raw,now):
     return result[0]
 
 def fetch_issuer(url):
-    if url not in {ONS_URL,STATCAN_GDP_ZIP}:raise ValueError("unregistered official services URL")
+    if url not in {ONS_URL,ONS_INDUSTRY,STATCAN_GDP_ZIP}:raise ValueError("unregistered official services URL")
     req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0",
       "Accept":"text/html,application/zip"})
     with urlopen(req,timeout=35) as response:
