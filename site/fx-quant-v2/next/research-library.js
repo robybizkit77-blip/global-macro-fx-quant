@@ -120,12 +120,38 @@ function editionStatus(r,today=romeDay()){
  return {state:days<=8?'weekly':'previous',
   text:days<=8?'Ultimo report settimanale pubblicato':'Edizione storica · non aggiornata questa settimana'};
 }
+// Coverage refers to this browser's successful link checks, not to report production.
+function catalogSummary(items,verified,today=romeDay()){
+ const names=new Set(verified.map(r=>r.file));
+ const rows=items.map(r=>({type:r.type,title:r.title,date:r.date,verified:names.has(r.file),status:editionStatus(r,today)}));
+ const confirmed=rows.filter(r=>r.verified);
+ const overdue=confirmed.filter(r=>r.status.state==='previous');
+ return {rows,total:rows.length,confirmed:confirmed.length,overdue:overdue.length,
+  current:confirmed.filter(r=>['today','latest-business','weekly'].includes(r.status.state)).length,
+  unverified:rows.length-confirmed.length,daily:rows.find(r=>r.type==='daily')||null};
+}
+function summaryView(today=romeDay()){
+ if(root.document&&!catalogReady)return '';
+ const d=catalogSummary(currentReports(),[...localReports,...remoteReports],today);
+ const brief=d.daily;
+ const reading=brief?.verified?(brief.status.state==='previous'?
+  'Il briefing più recente verificato è del '+datestr(brief.date)+'. Non copre l’ultima seduta feriale.':
+  brief.status.text+'.'): 'Il collegamento al briefing non è stato confermato da questo controllo.';
+ const item=(value,title,note,tone)=>'<div class="rl-summary-item '+tone+'"><small>'+title+'</small><strong>'+value+'</strong><span>'+note+'</span></div>';
+ return '<section class="rl-summary" aria-label="Stato delle ultime edizioni"><div class="rl-summary-head"><div><span class="rl-summary-kicker">RESEARCH DESK / ULTIME EDIZIONI</span><h2>La ricerca disponibile oggi</h2></div><small>'+esc(datestr(today))+'</small></div>'+
+  '<p class="rl-summary-reading">'+esc(reading)+'</p><div class="rl-summary-grid">'+
+  item(d.confirmed+'/'+d.total,'Collegamenti verificati','File raggiungibili','neutral')+
+  item(d.current,'Edizioni in linea','Finestra temporale indicativa','up')+
+  item(d.overdue,'Edizioni precedenti','Da aggiornare',d.overdue?'warn':'neutral')+
+  item(d.unverified,'Collegamenti da verificare','Riferimenti non confermati',d.unverified?'warn':'neutral')+
+  '</div><p class="rl-summary-note">Un collegamento raggiungibile non certifica il contenuto del report. Le finestre sono indicative: COT alla data delle posizioni, non della pubblicazione.</p></section>';
+}
 function url(r){return r.publicUrl||(r.date>='2026-11-01'?ROOT:BASE)+encodeURIComponent(r.file);}
 function card(r,today,featured=false){
- const archived=featured&&catalogReady&&![...localReports,...remoteReports].some(report=>report.file===r.file);
- const status=archived?{state:'unverified',text:'Indice del Briefing non verificato'}:editionStatus(r,today);
+ const archived=catalogReady&&![...localReports,...remoteReports].some(report=>report.file===r.file);
+ const status=archived?{state:'unverified',text:'Collegamento non confermato · riferimento precedente'}:editionStatus(r,today);
  const heading=featured?'h2':'h3';
- const tag=featured?(archived?'Briefing d’archivio':'Ultimo Briefing'):label(r.type);
+ const tag=featured?(archived?'Riferimento Briefing':'Ultimo Briefing'):label(r.type);
  return '<article class="rl-card'+(featured?' rl-featured':'')+'"><div class="rl-card-copy">'+
   '<div class="rl-card-meta"><span class="rl-tag">'+esc(tag)+
   '</span><time datetime="'+esc(r.date)+'">'+datestr(r.date)+'</time></div>'+
@@ -152,6 +178,7 @@ function render(){
  return '<header class="rl-head"><h1>Research Library</h1>'+
   '<p>Briefing feriale e ultima edizione pubblicata per ogni categoria.</p></header>'+
   '<p id="library-loading" class="rl-loading" role="status"'+(view.loading?'':' hidden')+'>Verifica delle edizioni pubblicate in corso…</p>'+
+  '<div id="library-summary">'+summaryView()+'</div>'+
   '<div id="library-featured"'+(view.featured?'':' hidden')+'>'+view.featured+'</div>'+
   '<section class="rl-controls" aria-label="Filtri e ricerca"><div id="library-filterbar" class="rl-filters">'+filters()+'</div>'+
   '<label class="rl-search" for="library-search"><span>Cerca fra gli ultimi report</span><input id="library-search" type="search" autocomplete="off" placeholder="Es. OIS, COT, Fed, macro..." value="'+esc(query)+'"></label></section>'+
@@ -171,6 +198,7 @@ function sync(){
  if(!featured||!weekly||!grid)return;
  const view=libraryView();
  node('library-loading').hidden=!view.loading;
+ const summary=node('library-summary');if(summary){const content=summaryView();if(summary.innerHTML!==content)summary.innerHTML=content;}
  featured.hidden=!view.featured;
  if(featured.innerHTML!==view.featured)featured.innerHTML=view.featured;
  weekly.hidden=view.hideWeekly;
@@ -226,7 +254,7 @@ async function refresh(){
   sync();
  }
 }
-const api={REPORTS,CATEGORIES,filterReports,reportType,reportDate,remoteReport,latestPerType,editionStatus,render,rows,setCategory,setQuery,sync,url,refresh};
+const api={REPORTS,CATEGORIES,filterReports,reportType,reportDate,remoteReport,latestPerType,editionStatus,catalogSummary,render,rows,setCategory,setQuery,sync,url,refresh};
 root.FXQuantResearchLibrary=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
