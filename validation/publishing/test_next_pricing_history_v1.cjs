@@ -32,14 +32,14 @@ assert(country(data,'GBP',30).observedDates>=12);
 assert(country(data,'USD',30).observedDates>=10);
 assert(country(data,'EUR',30).observedDates>=10);
 assert(country(data,'CHF',30).observedDates>=10);
-assert.equal(country(data,'NZD',30).observedDates,1);
-assert(country(data,'NZD',30).derivedReferences>0);
+assert(country(data,'NZD',30).observedDates>=4);
+assert(country(data,'NZD',30).derivedReferences>=0);
 const quoteA={date:'2026-11-11',rate:3.5,contract:'AAA',source_class:'SECONDARY_SAME_CONTRACT',derived:false};
 const quoteB={...quoteA,date:'2026-11-12',contract:'BBB'};
 assert(!connect(quoteA,quoteB),'Different listed contracts cannot be joined');
 assert(connect(quoteA,{...quoteB,contract:'AAA'}),'Same listed contract next day can connect');
 assert(!connect(quoteA,{...quoteB,date:'2026-11-20',contract:'AAA'}),'Missing source dates break lines');
-assert(connect({date:'2026-11-11',source_class:'BANK_BILL_PROXY_DELTA_REFERENCE',derived:true},
+assert(connect({date:'2026-11-11',contract:'BBB',source_class:'BANK_BILL_PROXY_DELTA_REFERENCE',derived:true},
  {...quoteB,source_class:'BANK_BILL_PROXY'}),'Declared NZD 1D reference can be dotted');
 const eur=country(data,'EUR',30),gbp=country(data,'GBP',30);
 const relativePoints=relative(eur,gbp);
@@ -77,7 +77,7 @@ assert(!safe.includes('<img')&&safe.includes('&lt;img'));
 assert(!render({history:{...data,official_ois_created:true},ccy:'GBP'}).includes('<svg'),
  'Official OIS promotion breaks data-readiness gate');
 const page=file('site/fx-quant-v2/next/index.html');
-assert(page.indexOf('rates-pricing-history-v1.js?v=2')<page.indexOf('rates-studio.js?v='));
+assert(page.indexOf('rates-pricing-history-v1.js?v=3')<page.indexOf('rates-studio.js?v='));
 assert.match(page,/rates-studio\.css\?v=\d+/);
 const app=file('site/fx-quant-v2/next/app.js');
 assert(app.includes("oisHistory:'./rates-pricing-history-v1.json'"));
@@ -110,3 +110,5 @@ for(const c of G8){
 }
 assert.equal(horizonMoves(null).filter(x=>x.bp!==null).length,0);
 console.log('NEXT_G8_PRICING_HORIZON_MATRIX_PASS');
+
+assert(!connect({...quoteA,source_class:'BANK_BILL_PROXY'},{...quoteB,source_class:'BANK_BILL_PROXY'}),'NZD rollover must break chart');

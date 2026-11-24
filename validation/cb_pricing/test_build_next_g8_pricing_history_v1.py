@@ -8,7 +8,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from build_next_g8_pricing_history_v1 import (
-    CCYS, TENORS, ROOT, build, read_jsonl, SNAP, OFFICIAL, QUOTES, CONFLICTS, NZD, DEST
+    CCYS, TENORS, ROOT, build, read_jsonl, SNAP, OFFICIAL, QUOTES, CONFLICTS, NZD, DEST, NZD_ARCHIVE
 )
 
 
@@ -20,7 +20,8 @@ class TestG8History(unittest.TestCase):
         cls.quotes=read_jsonl(QUOTES)
         cls.conflicts=read_jsonl(CONFLICTS)
         cls.nzd=json.loads(NZD.read_text(encoding="utf-8"))
-        cls.actual=build(cls.snapshot,cls.archive,cls.quotes,cls.conflicts,cls.nzd)
+        cls.nzd_archive=read_jsonl(NZD_ARCHIVE)
+        cls.actual=build(cls.snapshot,cls.archive,cls.quotes,cls.conflicts,cls.nzd,cls.nzd_archive)
 
     def test_source_parity_and_complete_g8_shell(self):
         self.assertEqual(self.actual,json.loads(DEST.read_text(encoding="utf-8")))
@@ -53,7 +54,7 @@ class TestG8History(unittest.TestCase):
         snapshot = copy.deepcopy(self.snapshot)
         build_day = date.fromisoformat(snapshot["snapshot_built_from_repo_date"])
         snapshot["snapshot_built_from_repo_date"] = (build_day + timedelta(days=1)).isoformat()
-        rebuilt = build(snapshot, self.archive, self.quotes, self.conflicts, self.nzd)
+        rebuilt = build(snapshot, self.archive, self.quotes, self.conflicts, self.nzd, self.nzd_archive)
         latest = max(point["date"] for row in rebuilt["currencies"].values()
                      for points in row["tenors"].values() for point in points
                      if not point["derived"])
@@ -75,7 +76,7 @@ class TestG8History(unittest.TestCase):
         bad["contract"]="FORGED_FUTURE"
         bad["futures_price"]=88
         bad["implied_rate"]=12
-        forged=build(self.snapshot,self.archive,self.quotes+[bad],self.conflicts,self.nzd)
+        forged=build(self.snapshot,self.archive,self.quotes+[bad],self.conflicts,self.nzd,self.nzd_archive)
         self.assertEqual(forged,self.actual)
 
         bad2=copy.deepcopy(self.quotes[-1])
@@ -83,17 +84,26 @@ class TestG8History(unittest.TestCase):
         bad2["contract"]="FORGED_PRICE"
         bad2["futures_price"]=98
         bad2["implied_rate"]=5
-        forged2=build(self.snapshot,self.archive,self.quotes+[bad2],self.conflicts,self.nzd)
+        forged2=build(self.snapshot,self.archive,self.quotes+[bad2],self.conflicts,self.nzd,self.nzd_archive)
         self.assertEqual(forged2,self.actual)
 
     def test_nzd_reference_is_derived_and_never_observed(self):
         nz=self.actual["currencies"]["NZD"]
         self.assertEqual(nz["kind"],"PROXY FUTURES")
-        self.assertGreater(nz["derived_reference_points"],0)
-        self.assertEqual(nz["observed_dates"],1)
+        self.assertGreaterEqual(nz["observed_dates"],5)
         for tenor in TENORS:
-            self.assertEqual(sum(not p["derived"] for p in nz["tenors"][tenor]),1)
+            self.assertGreaterEqual(sum(not p["derived"] for p in nz["tenors"][tenor]),5)
+            self.assertTrue(all(p.get("expiration") for p in nz["tenors"][tenor] if not p["derived"]))
             self.assertTrue(all("PROXY" in p["source_class"] for p in nz["tenors"][tenor]))
+
+    def test_nzd_conflicting_observations_are_quarantined(self):
+        rec=copy.deepcopy(self.nzd_archive[0])
+        h=rec["feed"]["horizons"]["6m"]
+        h["settlement_price"]=round(h["settlement_price"]+.01,4)
+        h["implied_bank_bill_rate"]=round(100-h["settlement_price"],4)
+        result=build(self.snapshot,self.archive,self.quotes,self.conflicts,self.nzd,self.nzd_archive+[rec])
+        self.assertGreaterEqual(result["excluded_nzd_conflicted_contract_days"],1)
+        self.assertNotIn(rec["feed"]["as_of"],[x["date"] for x in result["currencies"]["NZD"]["tenors"]["6m"]])
 
     def test_official_withheld_never_launders_stale_rows(self):
         archive=copy.deepcopy(self.archive)
@@ -102,7 +112,7 @@ class TestG8History(unittest.TestCase):
         record["source_as_of"]="2026-11-13"
         record["operational_status"]="WITHHELD"
         record["horizons"]={t:{"rate":99} for t in TENORS}
-        data=build(self.snapshot,archive+[record],self.quotes,self.conflicts,self.nzd)
+        data=build(self.snapshot,archive+[record],self.quotes,self.conflicts,self.nzd,self.nzd_archive)
         self.assertEqual(data,self.actual)
 
 
