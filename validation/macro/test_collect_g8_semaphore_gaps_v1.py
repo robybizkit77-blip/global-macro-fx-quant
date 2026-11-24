@@ -51,6 +51,26 @@ class G8SemaphoreSources(unittest.TestCase):
             mod.parse_rba_d1(raw.replace(b"DGFACBNFM",b"UNKNOWN"),NOW,
                 "RBA_BUSINESS_CREDIT_GROWTH_MM",[("2026-08",0.9),("2026-09",0.9)])
 
+    def test_nzd_bis_housing_proxy_identity_depth_freshness(self):
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="NZD" and x["area"]=="house")
+        # Use bounded realistic annual changes with a separate exact series ID.
+        out=StringIO()
+        writer=csv.writer(out);writer.writerow(["observation_date","QNZR368BIS"])
+        for i in range(16):
+            y,q=divmod(2026*4+1-15+i,4)
+            writer.writerow([f"{y}-{q*3+1:02d}-01",-5+i*.25])
+        raw=out.getvalue().encode()
+        def exact(url):
+            self.assertEqual(url,mod.FRED+"QNZR368BIS");return raw
+        item,status=mod.collect_nzd_bis_housing(spec,NOW,exact)
+        self.assertEqual(item["frequency"],"Q")
+        self.assertEqual(item["source_series_id"],"QNZR368BIS")
+        self.assertEqual(item["history"]["observations"],12)
+        self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+        self.assertIsNone(mod.collect_nzd_bis_housing(spec,date(2027,3,1),exact)[0])
+        with self.assertRaises(ValueError):
+            mod.collect_nzd_bis_housing(spec,NOW,lambda _:raw.replace(b"QNZR368BIS",b"WRONG"))
+
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
