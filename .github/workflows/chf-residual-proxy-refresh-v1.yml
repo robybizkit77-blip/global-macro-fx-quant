@@ -42,26 +42,31 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Inspect official SNB new-loan rates series definitions
+      - name: Verify exact SNB investment loan rate and count from live issuer
         if: github.event_name == 'pull_request'
         run: |
           python - <<'PY'
-          import json
-          from datetime import datetime, timezone
-          from validation.estimated.refresh_chf_residual_proxies_v1 import get_json
-          base='https://data.snb.ch/api/cube/zikredlauf/'
-          dimensions,_=get_json(base+'dimensions/en')
-          print('CHF_NEW_LOAN_DIMENSIONS',json.dumps(dimensions,ensure_ascii=False)[:28000])
+          from datetime import datetime,timezone
+          from validation.estimated.refresh_chf_residual_proxies_v1 import fetch_new_loan_rates,parse_new_loan_rates,get_json,RATE_DIMENSIONS,RATE_URL,RATE_KEY
           today=datetime.now(timezone.utc)
-          payload,_=get_json(base+'data/json/en',{'fromDate':f'{today.year-1}-01','toDate':today.strftime('%Y-%m')})
-          series=payload.get('timeseries',[])
-          assert series,'No new loan rate series'
-          for s in series:
-              m=s.get('metadata',{})
-              vals=[v for v in s.get('values',[]) if v.get('value') not in (None,'','.')]
-              if vals:
-                  print('CHF_NEW_LOAN_CANDIDATE',json.dumps({'metadata':m,'last':vals[-2:]},ensure_ascii=False))
-          print('CHF_NEW_LOAN_DISCOVERY_PASS',len(series))
+          d,_=get_json(RATE_DIMENSIONS)
+          p,_=get_json(RATE_URL,{'dimSel':'D0(FI),D1(L16M),D2(MP0,AK)','fromDate':'2023-01','toDate':today.strftime('%Y-%m')})
+          x=parse_new_loan_rates(d,p,today)
+          assert x['series_id']==RATE_KEY and len(x['dates'])>=6
+          assert x['eligible_for_fx_core'] is False and x['eligible_for_backtest'] is False
+          import copy
+          bad=copy.deepcopy(d)
+          for dim in bad['dimensions']:
+              if dim['id']=='D2':
+                  for item in dim['dimensionItems']:
+                      if item['id']=='MP0':item['name']='Number of loan agreements'
+          try:
+              parse_new_loan_rates(bad,p,today)
+          except RuntimeError:
+              pass
+          else:
+              raise AssertionError('Wrong rate units accepted')
+          print('CHF_LOAN_RATE_LIVE_SOURCE_PASS',x['latest_observation'],x['values'][-1],x['contract_counts'][-1],len(x['dates']))
           PY
 
       - name: Refresh CHF official residual proxies
@@ -85,6 +90,11 @@ jobs:
               assert lane['official_canonical_untouched'] is True
               assert 'SNB official API' in lane['source']
               assert lane['timeseries_key']
+          rate=d['lanes']['CHF.credit'].get('lending_rate_proxy')
+          if rate is not None:
+              assert rate['eligible_for_fx_core'] is False and rate['eligible_for_backtest'] is False
+              assert rate['proxy_kind']=='loan_price_not_lending_standards'
+              assert rate['latest_observation']==rate['dates'][-1]
           assert d['lanes']['CHF.credit']['confidence']=='B/C'
           assert d['lanes']['CHF.sight_deposits']['confidence']=='C'
           gov=d['governance']
