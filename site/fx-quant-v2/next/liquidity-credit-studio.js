@@ -11,22 +11,22 @@
  function series(s){
   if(!Array.isArray(s?.dates)||!Array.isArray(s?.values))return [];
   const rows=s.dates.map((label,i)=>({label:short(label),value:s.values[i]}))
-   .filter(x=>x.label&&finite(x.value)&&x.value>0);
+   .filter(x=>x.label&&finite(x.value)&&(s.signedGrowth===true||x.value>0));
   return rows.slice(-80);
  }
  // Keep the approved research series distinct from the legacy native feed.
  // Only use complete, finite, ordered, non-future observations; never splice
  // two definitions or fabricate a continuous history.
- function researchCreditSeries(x,label,unit,now){
+ function researchCreditSeries(x,label,unit,now,signedGrowth=false){
   if(!Array.isArray(x?.dates)||!Array.isArray(x?.values)||
      x.dates.length<2||x.dates.length!==x.values.length)return null;
   const today=observationDate(now);
   if(!today||!x.dates.every((d,i)=>{
    const period=observationDate(d);
-   return period&&period<=today&&(!i||d>x.dates[i-1])&&finite(x.values[i])&&x.values[i]>0;
+   return period&&period<=today&&(!i||d>x.dates[i-1])&&finite(x.values[i])&&(signedGrowth||x.values[i]>0);
   }))return null;
   return {label:label+' · '+unit,dates:x.dates.slice(),values:x.values.slice(),
-   last_date:x.dates.at(-1),last_value:x.values.at(-1),researchOnly:true};
+   last_date:x.dates.at(-1),last_value:x.values.at(-1),researchOnly:true,signedGrowth};
  }
  function direction(raw,exists){
   if(!exists)return {label:'NON DISPONIBILE',tone:'unknown'};
@@ -222,7 +222,7 @@
   const state=age>75?'PERIODO STORICO · NON CORRENTE':'SERIE MENSILE UFFICIALE DATATA';
   const matchedRelease=x.last_observation==='2026-09'&&x.official_september_release_date==='2026-10-29';
   const opening=inMonth(x.last_observation)+' il credito legato ai mutui '+yoyState+', con un ritmo '+pace+' rispetto al mese precedente.';
-  return {opening,
+  return {creditSeries:researchCreditSeries(x,'BoE LPMVTYI · Crescita annua mutui','% annua',now,true),opening,
    html:'<div class="drivers-gbp-credit-bridge" aria-label="Credito garantito BoE crescita annuale corretta per stagionalità">'+
     '<b>SECONDO CANALE · CREDITO ALLE FAMIGLIE, NON RISERVE</b>'+
     '<p>Il credito garantito alle famiglie '+esc(yoyState)+': <strong>'+esc(fmt(last,1))+
@@ -265,7 +265,7 @@
   const headline=credit?'Riserve bancarie e mutui, due letture per la sterlina':'Le riserve bancarie '+direction;
   const opening='Al '+dated(x.source_period)+' le riserve delle banche '+direction+' rispetto alla settimana prima.';
   return {liquidityRecent:{label:'BoE RPWB56A · milioni GBP',dates:[x.previous_period,x.source_period],values:[earlier,latest],last_date:x.source_period,last_value:latest},
-   headline,opening:opening+(credit?' '+credit.opening:''),
+   creditSeries:credit?.creditSeries||null,headline,opening:opening+(credit?' '+credit.opening:''),
    html:'<section class="drivers-cad-official drivers-gbp-official" aria-label="BoE riserve bancarie fonte ufficiale separata">'+
    '<span class="mini-overline">BANK OF ENGLAND · RISERVE BANCARIE UFFICIALI</span>'+
    '<h3>Riserve bancarie '+(delta>0?'in aumento':delta<0?'in calo':'stabili')+' nella settimana</h3>'+
@@ -340,7 +340,10 @@
   const headline=movement(current,'Il credito alle imprese è cresciuto','Il credito alle imprese è diminuito','Il credito alle imprese è rimasto stabile');
   const opening=inMonth(x.observation_period)+' il credito alle imprese è '+movement(current,'cresciuto','diminuito','rimasto stabile')+
    '. La variazione mensile è '+diff+'.';
-  return {liquidityRecent:reserves?.liquidityRecent||null,headline,opening:opening+(reserves?' '+reserves.opening:''),
+  const [year,month]=x.observation_period.split('-').map(Number);
+  const priorMonth=new Date(Date.UTC(year,month-2,1)).toISOString().slice(0,7);
+  const creditSeries=researchCreditSeries({dates:[priorMonth,x.observation_period],values:[prior,current]},'RBA · Crescita credito imprese (ultimi due mesi)','% mensile',now,true);
+  return {liquidityRecent:reserves?.liquidityRecent||null,creditSeries,headline,opening:opening+(reserves?' '+reserves.opening:''),
    html:'<section class="drivers-cad-official drivers-aud-official" aria-label="RBA credito imprese crescita corretta">'+
    '<span class="mini-overline">RBA · CRESCITA UFFICIALE CORRETTA PER DISCONTINUITÀ</span>'+
    '<h3>Australia: il credito alle imprese '+esc(current>0?'cresce':current<0?'si riduce':'è invariato')+'; il ritmo mensile è '+esc(Math.abs(change)<0.05?'stabile':change>0?'in accelerazione':'in decelerazione')+'.</h3>'+
@@ -818,7 +821,7 @@
    (selected==='CHF'?'':'<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
    '<div class="drivers-chart-grid">'+chart(official?.liquidityRecent||official?.liquiditySeries||row?.liquidity,official?.liquidityRecent?'Liquidità · ultima settimana':official?.liquiditySeries?'Liquidità · fonte ufficiale separata':'Liquidità','#69d5ad')+chart(official?.creditSeries||row?.credit,official?.creditSeries?'Credito · fonte ufficiale separata':'Credito','#95c6e9')+'</div>'+
    (official?.liquidityRecent?'<p class="drivers-source-note">Confronto delle ultime due settimane dalla fonte ufficiale separata. '+(selected==='AUD'?'Il saldo precedente è ricavato dal movimento settimanale pubblicato. ':'Entrambi i saldi sono pubblicati dalla BoE. ')+'Lo storico precedente rimane distinto: nessuna interpolazione fra periodi mancanti.</p><div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità · storico originario','#69d5ad')+'</div>':'')+
-   '<p class="drivers-source-note">I grafici conservano i livelli originali nelle rispettive unità; non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>');
+   '<p class="drivers-source-note">I grafici conservano i valori originali nelle rispettive unità (livelli o tassi di crescita esplicitamente indicati); non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>');
  }
  const api={series,direction,interpret,observationDate,sourceEvidence,creditMarket,marketFirstRead,render};
  root.FXQuantLiquidityCredit=api;
