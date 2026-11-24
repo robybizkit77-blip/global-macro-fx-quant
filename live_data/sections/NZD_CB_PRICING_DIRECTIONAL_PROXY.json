@@ -3,7 +3,7 @@
   "basis_warning": "Bank-bill/FRA rates contain bank-credit and term/basis components. Do not treat these levels as OCR OIS and do not compute OCR policy deltas from them.",
   "confidence_grade": "B_FOR_DIRECTION_C_FOR_POLICY_LEVEL",
   "currency": "NZD",
-  "generated_at_utc": "2026-11-24T16:20:44.999679Z",
+  "generated_at_utc": "2026-11-24T16:41:46.113792Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
@@ -51,6 +51,49 @@
   },
   "instrument": "ASX New Zealand 90 Day Bank Accepted Bill Futures (BB)",
   "mapping_policy": "Directional market-rates proxy only; 3M/6M/12M use nearest listed expiry with no interpolation. 1W compares the same contract expiry only.",
+  "monthly_reference": {
+    "as_of": "2026-11-23",
+    "current_source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261123ZFT.htm",
+    "decoded_source_sha256": "6994bb4f80d880b2db226108819c273b7656e84e7aa97208aee16d3a15ca1012",
+    "fx_engine_effect": "NONE",
+    "horizons": {
+      "12m": {
+        "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS",
+        "change_bp": -37.0,
+        "contract": "Dec 2027",
+        "current_implied_pct": 3.86,
+        "current_price": 96.14,
+        "expiration": "2027-12-15",
+        "reference_implied_pct": 4.23,
+        "reference_price": 95.77
+      },
+      "3m": {
+        "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS",
+        "change_bp": -31.0,
+        "contract": "Mar 2027",
+        "current_implied_pct": 3.49,
+        "current_price": 96.51,
+        "expiration": "2027-03-10",
+        "reference_implied_pct": 3.8,
+        "reference_price": 96.2
+      },
+      "6m": {
+        "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS",
+        "change_bp": -36.0,
+        "contract": "Jun 2027",
+        "current_implied_pct": 3.7,
+        "current_price": 96.3,
+        "expiration": "2027-06-16",
+        "reference_implied_pct": 4.06,
+        "reference_price": 95.94
+      }
+    },
+    "official_ois_created": false,
+    "reference_date": "2026-10-26",
+    "reference_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261026ZFT.htm",
+    "schema": "GMFQ_NZD_ASX_EXACT_20_WEEKDAY_REFERENCE_V1",
+    "status": "REFERENCE_PARSED"
+  },
   "schema": "GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1",
   "source": "ASX official NZ futures end-of-day total traded report",
   "source_quality": "OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY",
