@@ -144,7 +144,7 @@ def read_c60(html, today):
             "first_release_pit_verified": False, "eligible_for_fx_core": False, "eligible_for_backtest": False}
 
 
-def main(output, today):
+def main(output, today, *, require_c60=False):
     previous = json.loads(output.read_text().removeprefix(PREFIX).strip().removesuffix(";")) if output.exists() else {}
     old_survey = previous.get("credit_conditions")
     survey = old_survey
@@ -156,7 +156,7 @@ def main(output, today):
         print("NZD_C60_LIVE_SOURCE_PASS", survey["latest_observation"], survey["availability_corporate"][-1], survey["availability_sme"][-1], len(survey["dates"]))
     except (OSError, ValueError, TypeError) as error:
         print("NZD_C60_WITHHELD", str(error)[:250])
-        if not old_survey:
+        if require_c60:
             raise
     try:
         payload = collect_monthly(previous, today)
@@ -165,7 +165,8 @@ def main(output, today):
             raise
         payload = {k:previous[k] for k in ("period", "released", "next", "history")}
         print("NZD_MONTHLY_RETAINED", str(error)[:250])
-    payload["credit_conditions"] = survey
+    if survey is not None:
+        payload["credit_conditions"] = survey
     if payload != previous:
         pending = output.with_suffix(".tmp")
         pending.write_text(PREFIX + json.dumps(payload, indent=2) + ";\n")
@@ -213,5 +214,6 @@ def collect_monthly(previous, today):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--require-c60", action="store_true")
     args = parser.parse_args()
-    main(args.output, date.today().isoformat())
+    main(args.output, date.today().isoformat(), require_c60=args.require_c60)
