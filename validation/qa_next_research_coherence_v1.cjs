@@ -285,5 +285,21 @@ const blankRates=pricingMoves.overviewModel({today:pricingInputs.today});
 assert.equal(blankRates.weekly,0);
 assert.equal(blankRates.daily,0);
 assert(blankRates.rows.every(r=>r.tone==='neutral'));
+
+const cbStudio=require('../site/fx-quant-v2/next/central-bank-studio.js');
+const cbToday=initial.currencyPrices.last_as_of;
+const cbFixture={...initial,oisOperational:json('live_data/sections/OIS_OPERATIONAL_VIEW.json'),
+ oisSameContract:json('site/fx-quant-v2/ois-same-contract-repricing-research.json'),
+ nzdDirectionalProxy:json('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json')};
+const cbFx=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+for(const ccy of cbFx){
+ const html=cbStudio.render({get:k=>cbFixture[k],FX:cbFx,FLAGS:{},NAMES:{},state:{cbCcy:ccy},
+ pageHero:()=>'',esc,fmt,date,dayNow:()=>cbToday});
+ assert.equal((html.match(/class="bank-first-axis/g)||[]).length,3);
+ assert.equal((html.match(/data-bank-country=/g)||[]).length,8);
+ assert.match(html,/01 · WANT/);assert.match(html,/02 · CAN/);assert.match(html,/03 · PRICING/);
+ assert.match(html,/Cosa seguire/);
+ assert.doesNotMatch(html,/undefined|NaN/);
+}
 require('./publishing/test_next_home_thesis_recalc_v1.cjs');
 console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
