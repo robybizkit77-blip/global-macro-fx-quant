@@ -31,6 +31,22 @@ MAX_BYTES=3_000_000
 # Several historical OECD/BIS feeds have stopped updating: retain status WITHHELD;
 # never use today's fetch time to make an old observation look current.
 REGISTRY=[
+ dict(ccy="CAD",area="demand",key="CAN_RETAIL_VOLUME_CHAINED",method="statcan_detail",
+      name="Indice Fisher del volume reale retail Canada (SA)",unit="indice 2017=100",
+      frequency="M",kind="percent",max_age_days=115,
+      origin="Statistics Canada / 20-10-0067-01",
+      source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=2010006701"),
+ dict(ccy="CAD",area="house",key="CAN_HOUSEHOLD_MORTGAGES_SA",method="statcan_detail",
+      name="Stock mutui residenziali famiglie Canada (SA; proxy immobiliare)",
+      unit="mln CAD SA",frequency="M",kind="percent",max_age_days=115,
+      origin="Statistics Canada / 36-10-0639-01",
+      source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610063901"),
+ dict(ccy="CAD",area="credit",key="CAN_NFC_NONMORTGAGE_LOANS_SA",method="statcan_detail",
+      name="Prestiti non ipotecari società non finanziarie Canada (SA)",
+      unit="mln CAD SA",frequency="M",kind="percent",max_age_days=115,
+      origin="Statistics Canada / 36-10-0640-01",
+      source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610064001"),
+
  dict(ccy="AUD",area="house",key="RBA_HOUSING_CREDIT_GROWTH_MM",method="rba_credit",
       name="Crescita credito abitativo RBA (proxy immobiliare, SA, corretta rotture)",
       unit="% m/m SA",frequency="M",kind="points",max_age_days=120,
@@ -152,7 +168,7 @@ REGISTRY=[
       kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
-assert len(REGISTRY)==28 and len({(s["ccy"],s["area"]) for s in REGISTRY})==28
+assert len(REGISTRY)==31 and len({(s["ccy"],s["area"]) for s in REGISTRY})==31
 
 def fetch(url:str)->bytes:
     host=urlsplit(url).hostname
@@ -168,6 +184,68 @@ def fetch(url:str)->bytes:
         if not data or len(data)>MAX_BYTES:
             raise ValueError("oversized/empty source")
     return data
+
+STATCAN_DETAIL={
+ "CAN_RETAIL_VOLUME_CHAINED":{
+  "url":"https://www150.statcan.gc.ca/n1/tbl/csv/20100067-eng.zip",
+  "file":"20100067.csv","category":"North American Industry Classification System (NAICS)",
+  "value":"Retail trade [44-45]","other":"Sales, price and volume",
+  "selection":"Retail sales Chained Fisher volume index (scaled to equal 100 in 2017)",
+  "unit":"Index","scale":"units"},
+ "CAN_HOUSEHOLD_MORTGAGES_SA":{
+  "url":"https://www150.statcan.gc.ca/n1/tbl/csv/36100639-eng.zip",
+  "file":"36100639.csv","category":"Credit liabilities of households",
+  "value":"Residential mortgages","other":"Seasonality",
+  "selection":"Seasonally adjusted data","unit":"Dollars","scale":"millions"},
+ "CAN_NFC_NONMORTGAGE_LOANS_SA":{
+  "url":"https://www150.statcan.gc.ca/n1/tbl/csv/36100640-eng.zip",
+  "file":"36100640.csv","category":"Credit liabilities of private non-financial corporations",
+  "value":"Non-mortgage loans","other":"Seasonality",
+  "selection":"Seasonally adjusted data","unit":"Dollars","scale":"millions"}
+}
+def fetch_statcan_detail(url):
+    if url not in {d["url"] for d in STATCAN_DETAIL.values()}:
+        raise ValueError("Unexpected StatCan detail endpoint")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"application/zip"})
+    with urlopen(req,timeout=25) as r:
+        if r.geturl()!=url:raise ValueError("StatCan redirected outside pinned dataset")
+        payload=r.read(35_000_001)
+        if len(payload)>35_000_000 or not payload:
+            raise ValueError("StatCan archive too large or empty")
+    return payload
+
+def parse_statcan_detail(raw,now,identifier):
+    spec=STATCAN_DETAIL.get(identifier)
+    if not spec:raise ValueError("Unknown StatCan series identifier")
+    with ZipFile(io.BytesIO(raw)) as archive:
+        if spec["file"] not in archive.namelist():
+            raise ValueError("StatCan exact dataset filename changed")
+        if archive.getinfo(spec["file"]).file_size>100_000_000:
+            raise ValueError("StatCan uncompressed archive exceeds budget")
+        values={}
+        with archive.open(spec["file"]) as src:
+            reader=csv.DictReader(io.TextIOWrapper(src,encoding="utf-8-sig"))
+            fields={"REF_DATE","GEO","VALUE","UOM","SCALAR_FACTOR",spec["category"],spec["other"]}
+            if not fields.issubset(set(reader.fieldnames or [])):
+                raise ValueError("StatCan required dimensions absent")
+            for row in reader:
+                if row["GEO"]!="Canada" or row[spec["category"]]!=spec["value"] or row[spec["other"]]!=spec["selection"]:
+                    continue
+                if row["UOM"]!=spec["unit"] or row["SCALAR_FACTOR"]!=spec["scale"]:
+                    raise ValueError("StatCan selected unit/scale mismatch")
+                p=row["REF_DATE"]
+                if not re.fullmatch(r"\d{4}-(?:0[1-9]|1[0-2])",p):
+                    raise ValueError("StatCan selected month code invalid")
+                if period_end(p)>now:continue
+                raw_value=row["VALUE"]
+                if raw_value in ("", "..", "."):continue
+                v=float(raw_value)
+                if not math.isfinite(v) or v<=0 or v>1e12:
+                    raise ValueError("StatCan selected value implausible")
+                if p in values:raise ValueError("StatCan selected duplicate month")
+                values[p]=v
+    if len(values)<12:raise ValueError("StatCan selected series lacks 12 observations")
+    return sorted(values.items())
 
 STATCAN_CSV="https://www150.statcan.gc.ca/n1/tbl/csv/16100047-eng.zip"
 def fetch_statcan(url):
@@ -866,6 +944,7 @@ def collect(now=None,fetcher=fetch):
     for spec in REGISTRY:
         code=spec["ccy"]+"_"+spec["area"]
         url=FRED+spec["key"] if spec["method"]=="fred" else (
+          STATCAN_DETAIL[spec["key"]]["url"] if spec["method"]=="statcan_detail" else
           RBA_BASE if spec["method"]=="rba_credit" else
           boe_mortgage_url(now) if spec["method"]=="boe_mortgage" else
           statsnz_house_url(now,2) if spec["method"]=="statsnz_house" else
@@ -885,10 +964,12 @@ def collect(now=None,fetcher=fetch):
             raw=(fetched[0] if fetched is not None else
                  fetch_boe(url) if spec["method"]=="boe_mortgage" and fetcher is fetch else
                  biznz_fetch(url) if spec["method"]=="biznz" else
+                 fetch_statcan_detail(url) if spec["method"]=="statcan_detail" else
                  abs_services_fetch(url) if spec["method"] in {"abs_services","abs_demand"} else
                  fetch_statcan(url) if spec["method"]=="statcan" else
-                 fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","abs_demand","rba_credit","statcan","ons","ons_industry","statcan_services","boe_mortgage","statsnz_house"} and fetcher is fetch else fetcher(url)
-            observations=(parse_rba_aggregates(raw,now,spec["key"],fetched[1] if fetched else rba_release_url(now,2))
+                 fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","abs_demand","rba_credit","statcan_detail","statcan","ons","ons_industry","statcan_services","boe_mortgage","statsnz_house"} and fetcher is fetch else fetcher(url)
+            observations=(parse_statcan_detail(raw,now,spec["key"]) if spec["method"]=="statcan_detail" else
+                          parse_rba_aggregates(raw,now,spec["key"],fetched[1] if fetched else rba_release_url(now,2))
                           if spec["method"]=="rba_credit" else
                           parse_statsnz_house(raw,now) if spec["method"]=="statsnz_house" else
                           parse_boe_mortgage(raw,now) if spec["method"]=="boe_mortgage" else
