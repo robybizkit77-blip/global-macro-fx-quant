@@ -281,7 +281,10 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
         "estimated": sorted(c for c in G8 if op[c] == "GREEN_ESTIMATED"),
         "withheld": sorted(c for c in G8 if op[c] not in {"GREEN_OFFICIAL", "GREEN_ESTIMATED"}),
     }
-    evidence["NEXT_RATES_RESEARCH"] = research_rates_evidence(feeds, today, expected)
+    try:
+        evidence["NEXT_RATES_RESEARCH"] = research_rates_evidence(feeds, today, expected)
+    except (AttributeError, KeyError, TypeError, ValueError) as exc:
+        evidence["NEXT_RATES_RESEARCH"] = {"status": "RESEARCH_EVIDENCE_INVALID", "canonical_effect": "NONE", "error": type(exc).__name__}
     # A delivery can meet the 08:00 SLA while some research sources remain
     # lagging or unavailable. Surface those gaps in the same compact receipt
     # used by Pages and the orchestrator, without inventing estimates or
