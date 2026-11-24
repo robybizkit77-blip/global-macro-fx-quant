@@ -24,6 +24,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 ROOT=Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
 DEST=ROOT/"site/fx-quant-v2/next/eur-ecb-nfc-credit-research-v1.js"
 SERIES="BSI.M.U2.N.A.A20.A.1.U2.2240.Z01.E"
 API="https://data-api.ecb.europa.eu/service/data/BSI/M.U2.N.A.A20.A.1.U2.2240.Z01.E?format=csvdata&startPeriod=2024-01"
@@ -158,7 +159,7 @@ def existing_observations(text):
         except (SyntaxError,ValueError):return None
     return tuple(keys)
 
-def emit_js(parsed,checked,excess_liquidity=None):
+def emit_js(parsed,checked,excess_liquidity=None,lending_conditions=None):
     x={
       "schema":SCHEMA,
       "status":"VERIFIED_ECB_BSI_NFC_STOCK_RESEARCH_ONLY",
@@ -184,6 +185,7 @@ def emit_js(parsed,checked,excess_liquidity=None):
       "inference":"Stock prestiti MFI alle imprese non finanziarie, non nuove erogazioni, non credit impulse corretto per cessioni; ricerca separata."
     }
     if excess_liquidity is not None:x['excess_liquidity']=excess_liquidity
+    if lending_conditions is not None:x['lending_conditions']=lending_conditions
     return ("'use strict';\n"
             "/* Official ECB BSI NFC stock: research only, revision aware. */\n"
             "(function(root){\n const data="+json.dumps(x,ensure_ascii=False,indent=1)+";\n"
@@ -191,7 +193,20 @@ def emit_js(parsed,checked,excess_liquidity=None):
             " if(typeof module!=='undefined'&&module.exports)module.exports=data;\n"
             "})(typeof window!=='undefined'?window:globalThis);\n")
 
-def run(destination=DEST,*,apply=False,fixture=None,exliq_fixture=None,today=None):
+def parse_bls(content, *, today):
+    from validation.liquidity.probe_ecb_eur_bls_actual_v1 import parse, quarter_label, KEY, API
+    records=parse(content,today)
+    quarters=sorted(records)[-36:]
+    return {"series_id":KEY,"source_url":"https://data.ecb.europa.eu/data/datasets/BLS/"+KEY,
+            "api_url":API,"frequency":"Q","unit":"net_percentage_balance",
+            "positive_means":"tightening","reference_period_is_previous_quarter":True,
+            "publication_quarters":[quarter_label(q) for q in quarters],
+            "dates":[quarter_label(q-1) for q in quarters],
+            "values":[records[q] for q in quarters],
+            "latest_observation":quarter_label(quarters[-1]-1),
+            "first_release_pit_verified":False,"eligible_for_fx_core":False,"eligible_for_backtest":False}
+
+def run(destination=DEST,*,apply=False,fixture=None,exliq_fixture=None,bls_fixture=None,today=None):
     today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
     old=destination.read_text(encoding="utf-8") if destination.exists() else ""
     prior=existing_payload(old)
@@ -209,14 +224,28 @@ def run(destination=DEST,*,apply=False,fixture=None,exliq_fixture=None,today=Non
         except (OSError,ValueError,UnicodeError) as error:
             exliq_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:320]}
             if prior_exliq:exliq_status["retained_observation"]=prior_exliq["latest_observation"]
+    prior_bls=prior.get("lending_conditions")
+    bls=prior_bls
+    bls_status={"status":"SKIPPED_FIXTURE"}
+    if bls_fixture or not fixture:
+        try:
+            from validation.liquidity.probe_ecb_eur_bls_actual_v1 import API as BLS_API
+            candidate=parse_bls(Path(bls_fixture).read_text(encoding="utf-8") if bls_fixture else fetch(BLS_API),today=today)
+            if prior_bls and candidate["latest_observation"]<prior_bls["latest_observation"]:
+                raise ValueError("ECB BLS source rolled back")
+            bls=candidate
+            bls_status={"status":"VERIFIED","latest_observation":bls["latest_observation"]}
+        except (OSError,ValueError,UnicodeError) as error:
+            bls_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:320]}
+            if prior_bls:bls_status["retained_observation"]=prior_bls["latest_observation"]
     nfc_status={"status":"VERIFIED"}
     try:
         data=parse(Path(fixture).read_text(encoding="utf-8") if fixture else fetch(),today=today)
     except (OSError,ValueError,UnicodeError) as error:
-        if not (previous and prior.get("schema")==SCHEMA and exliq!=prior_exliq):raise
+        if not (previous and prior.get("schema")==SCHEMA and (exliq!=prior_exliq or bls!=prior_bls)):raise
         data=prior
         nfc_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:320]}
-    changed=previous!=(data["dates"],data["values"]) or exliq!=prior_exliq
+    changed=previous!=(data["dates"],data["values"]) or exliq!=prior_exliq or bls!=prior_bls
     receipt={
       "schema":"GMFQ_ECB_NFC_CREDIT_SOURCE_RECEIPT_V1",
       "status":"UPDATE_AVAILABLE" if changed else "NO_CHANGE",
@@ -229,14 +258,14 @@ def run(destination=DEST,*,apply=False,fixture=None,exliq_fixture=None,today=Non
       "overlap_revision_pct":data["anchor_revision_pct"],
       "verified_on_rome":today.isoformat(),
       "first_release_pit_verified":False,
-      "nfc":nfc_status,"excess_liquidity":exliq_status,
+      "nfc":nfc_status,"excess_liquidity":exliq_status,"lending_conditions":bls_status,
       "canonical_runtime_unchanged":True,
       "fx_rank_effect":"NONE",
       "write_state":"NO_MUTATION"
     }
     if apply and changed:
         destination.parent.mkdir(parents=True,exist_ok=True)
-        destination.write_text(emit_js(data,today.isoformat() if nfc_status["status"]=="VERIFIED" else prior["last_checked_rome"],exliq),encoding="utf-8")
+        destination.write_text(emit_js(data,today.isoformat() if nfc_status["status"]=="VERIFIED" else prior["last_checked_rome"],exliq,bls),encoding="utf-8")
         receipt["write_state"]="RESEARCH_SIDECAR_ONLY"
     return receipt
 
@@ -245,11 +274,12 @@ def main():
     p.add_argument("--apply",action="store_true")
     p.add_argument("--fixture",type=Path)
     p.add_argument("--exliq-fixture",type=Path)
+    p.add_argument("--bls-fixture",type=Path)
     p.add_argument("--destination",type=Path,default=DEST)
     p.add_argument("--receipt",type=Path)
     args=p.parse_args()
     try:
-        out=run(args.destination,apply=args.apply,fixture=args.fixture,exliq_fixture=args.exliq_fixture)
+        out=run(args.destination,apply=args.apply,fixture=args.fixture,exliq_fixture=args.exliq_fixture,bls_fixture=args.bls_fixture)
     except (OSError,TimeoutError,ValueError,UnicodeError) as exc:
         out={"schema":"GMFQ_ECB_NFC_CREDIT_SOURCE_RECEIPT_V1",
              "status":"WITHHELD_SOURCE_INACCESSIBLE_OR_UNVERIFIED",
