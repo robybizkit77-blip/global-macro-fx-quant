@@ -1,19 +1,19 @@
 {
   "schema": "GMFQ_NEXT_ESTIMATED_FX_RECALC_RECEIPT_V1",
-  "status": "RECALCULATED_WITH_CHANGES",
-  "checkedAtUtc": "2026-11-24T14:35:59.110Z",
+  "status": "NO_MATERIAL_THESIS_CHANGE",
+  "checkedAtUtc": "2026-11-24T14:36:55.063Z",
   "checkedDay": "2026-11-24",
-  "sourceCommit": "b6fd0df42498900fb06e6e96071ec1e739b4b168",
+  "sourceCommit": "684fd16ebb0247dfa7aa28f8ea50fa49def1c0a9",
   "method": "c54bb6f6a2fa76470e8c616c72b478e70735166b10c36cd32f35dddcf8cd0379",
   "sourceHashes": {
     "observed": "2af9fe424553f65994e0d0064493155350fcbb519c480b406997745a33f7c5e1",
     "prices": "6fe9c2fd8c9d1f70f40e901eb5cae5071aa7886df643d48447a043662ac235ec",
     "ois": "15416ee6f0678a4b279581afb25c70491d5341e654a5037d1821331248b6e39d",
     "rates": "3d86a65864c6b558eeb1ad76f803a02f77411361db4a021fa8826199029e71cf",
-    "model": "790d5f4624aa73d2c2c61ede7a13adb79f47a693bff9336f398a327a7515ae7d"
+    "model": "b3826374e720926f8915bb47cd72c36ebe3bcc93cec3af0a69d0411035b44f65"
   },
   "inputChanges": [
-    "rates"
+    "model"
   ],
   "methodChanged": false,
   "comparisonBasis": "PREVIOUS_RECEIPT",
@@ -28,101 +28,9 @@
     "official6M": 4,
     "withGDPAcceleration": 5
   },
-  "changedPairs": [
-    {
-      "key": "EURUSD",
-      "previous": {
-        "favored": "USD",
-        "thesis": "CONTRASTATA",
-        "timing": "NON SUPPORTATA"
-      },
-      "current": {
-        "favored": "USD",
-        "thesis": "PARZIALE",
-        "timing": "DA VALIDARE"
-      }
-    }
-  ],
-  "changedRanks": [
-    {
-      "ccy": "EUR",
-      "previous": 6,
-      "current": 7
-    },
-    {
-      "ccy": "NZD",
-      "previous": 7,
-      "current": 6
-    }
-  ],
-  "factorChanges": [
-    {
-      "ccy": "EUR",
-      "rank": {
-        "previous": 6,
-        "current": 7
-      },
-      "changes": {
-        "score": {
-          "previous": -0.328571,
-          "current": -0.478571,
-          "delta": -0.15
-        },
-        "macroScore": {
-          "previous": -0.6,
-          "current": -0.6,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": 0,
-          "current": -0.5,
-          "delta": -0.5
-        },
-        "priceScore": {
-          "previous": -0.142857,
-          "current": -0.142857,
-          "delta": 0
-        }
-      },
-      "monetaryQuality": {
-        "previous": "PROXY",
-        "current": "PROXY"
-      }
-    },
-    {
-      "ccy": "NZD",
-      "rank": {
-        "previous": 7,
-        "current": 6
-      },
-      "changes": {
-        "score": {
-          "previous": -0.422857,
-          "current": -0.422857,
-          "delta": 0
-        },
-        "macroScore": {
-          "previous": -0.35,
-          "current": -0.35,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": -0.35,
-          "current": -0.35,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": -0.714286,
-          "current": -0.714286,
-          "delta": 0
-        }
-      },
-      "monetaryQuality": {
-        "previous": "PROXY",
-        "current": "PROXY"
-      }
-    }
-  ],
+  "changedPairs": [],
+  "changedRanks": [],
+  "factorChanges": [],
   "currencies": [
     {
       "ccy": "AUD",
