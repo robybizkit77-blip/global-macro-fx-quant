@@ -17,6 +17,7 @@ import math
 import re
 import sys
 import urllib.request
+from html.parser import HTMLParser
 from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -29,6 +30,7 @@ API_URL=f"https://www.bankofcanada.ca/valet/observations/{SOURCE_ID}/json?recent
 INITIAL_OBSERVED={"2026-04":922171,"2026-05":927358,"2026-06":937138,
                   "2026-07":941686,"2026-08":944614}
 SCHEMA="GMFQ_NEXT_CAD_BUSINESS_CREDIT_OFFICIAL_RESEARCH_V1"
+LYNX_URL="https://www.bankofcanada.ca/rates/indicators/market-operations-indicators/"
 
 def require(flag,why):
     if not flag:
@@ -88,6 +90,75 @@ def parse(data,*,today=None):
     return {"dates":months,"values":[selected[m] for m in months],
             "latest_observation":months[-1],"revised_august_2026":abs(overlap)>.0000001}
 
+class SettlementTable(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.rows=[];self.row=None;self.cell=None
+    def handle_starttag(self,tag,attrs):
+        if tag=="tr":self.row=[]
+        if tag in ("th","td") and self.row is not None:self.cell=[]
+    def handle_data(self,data):
+        if self.cell is not None:self.cell.append(data)
+    def handle_endtag(self,tag):
+        if tag in ("th","td") and self.cell is not None:
+            self.row.append(" ".join("".join(self.cell).split()))
+            self.cell=None
+        if tag=="tr" and self.row is not None:
+            self.rows.append(self.row);self.row=None
+
+def fetch_lynx():
+    req=urllib.request.Request(LYNX_URL,headers={"User-Agent":"FX-Quant-Research-Sources/1.0","Accept":"text/html"})
+    with urllib.request.urlopen(req,timeout=30) as response:
+        require(response.geturl().startswith(LYNX_URL),"unexpected Lynx source redirect")
+        raw=response.read(3000001)
+    require(len(raw)<3000001,"Lynx source too large")
+    return raw.decode("utf-8-sig")
+
+def parse_lynx(html,*,today=None):
+    today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
+    page=SettlementTable();page.feed(html);page.close()
+    rows=page.rows
+    selected=[i for i,r in enumerate(rows) if r and r[0].strip().lower()=="amount in lynx"]
+    require(len(selected)==1,"Lynx actual row absent or ambiguous")
+    idx=selected[0];lynx=rows[idx]
+    total=next((r for r in rows[max(0,idx-3):idx] if r and r[0].lower().startswith("total settlement balances")),None)
+    rtr=next((r for r in rows[idx+1:idx+4] if r and r[0].lower().startswith("amount in real-time rail")),None)
+    require(total is not None and rtr is not None,"Lynx/RTR breakdown absent")
+    def normal(s):return s.translate(str.maketrans({"‑":"-","–":"-","−":"-","\u00a0":" "}))
+    header=None
+    for r in reversed(rows[max(0,idx-5):idx]):
+        if len(r)==len(lynx) and "millions of dollars" in r[0].lower() and all(re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}",normal(d)) for d in r[1:]):
+            header=r;break
+    require(header is not None,"Lynx date header or millions units missing")
+    require(len(total)==len(rtr)==len(lynx),"Lynx row length mismatch")
+    def val(token):
+        s=normal(token).replace(",","").replace(" ","")
+        if s in ("","-","—"):return None
+        require(re.fullmatch(r"[0-9]+(?:\.[0-9]+)?",s) is not None,"invalid settlement balance")
+        return float(s)
+    records={}
+    for i,token in enumerate(header[1:],1):
+        d=date.fromisoformat(normal(token))
+        a,t,z=val(lynx[i]),val(total[i]),val(rtr[i])
+        if a is None:continue
+        require(d<=today and d not in records and d.weekday()<5,"invalid Lynx observation date")
+        require(t is not None and z is not None and 0<=a<=1000000 and abs(t-a-z)<=1,"Lynx/RTR total does not reconcile")
+        records[d]=a
+    days=sorted(records)
+    require(len(days)>=2 and (today-days[-1]).days<=7,"Lynx insufficient or stale source")
+    require(list(records)==days or list(records)==list(reversed(days)),"Lynx chronology")
+    return {"source_url":LYNX_URL,"series_id":"BOC_LYNX_ACTUAL_DAILY","frequency":"D","unit":"milioni CAD",
+            "dates":[d.isoformat() for d in days],"values":[records[d] for d in days],
+            "latest_observation":days[-1].isoformat(),"preliminary_may_be_revised":True,
+            "canonical_monthly_equivalence_verified":False,"eligible_for_fx_core":False,"eligible_for_backtest":False}
+
+def existing_payload(text):
+    start=text.find("const data=")
+    if start!=-1:
+        try:return json.JSONDecoder().raw_decode(text[start+len("const data="):])[0]
+        except ValueError:pass
+    return {}
+
 def existing_observations(text):
     # Accept both initial literal JS keys and JSON-quoted generated keys.
     d=re.search(r"['\"]?dates['\"]?\s*:\s*(\[[^\]]*\])",text)
@@ -99,7 +170,7 @@ def existing_observations(text):
     except (SyntaxError, ValueError):
         return None
 
-def emit_js(candidate,verified_on):
+def emit_js(candidate,verified_on,settlement_balances=None):
     data={
       "schema":SCHEMA,"status":"VERIFIED_BOCA_VALET_MONTHLY_STOCK_RESEARCH_ONLY",
       "country":"CAD","publisher":"Bank of Canada",
@@ -115,6 +186,7 @@ def emit_js(candidate,verified_on):
       "dates":candidate["dates"],"values":candidate["values"],
       "inference":"Stock bancario, non nuove erogazioni, domanda di prestiti o standard. Serie separata da NATIVE_LIQ_DATA.CAD.credit."
     }
+    if settlement_balances is not None:data['settlement_balances']=settlement_balances
     return ("'use strict';\n"
       "/* Source: Bank of Canada Valet V122667770; research only, NOT FX Core. */\n"
       "(function(root){\n const data="+json.dumps(data,ensure_ascii=False,indent=1)
@@ -122,23 +194,47 @@ def emit_js(candidate,verified_on):
       " if(typeof module!=='undefined'&&module.exports)module.exports=data;\n"
       "})(typeof window!=='undefined'?window:globalThis);\n")
 
-def run(destination=DEST,*,apply=False,fixture=None,today=None):
+def run(destination=DEST,*,apply=False,fixture=None,lynx_fixture=None,today=None):
     today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
-    parsed=parse(json.loads(Path(fixture).read_text(encoding="utf-8")) if fixture else fetch(),
-                 today=today)
-    prior=existing_observations(destination.read_text(encoding="utf-8")) if destination.exists() else None
+    old=destination.read_text(encoding="utf-8") if destination.exists() else ""
+    prior_payload=existing_payload(old)
+    prior=existing_observations(old) if old else None
+    prior_lynx=prior_payload.get("settlement_balances")
+    lynx=prior_lynx
+    lynx_status={"status":"SKIPPED_FIXTURE"}
+    if lynx_fixture or not fixture:
+        try:
+            candidate=parse_lynx(Path(lynx_fixture).read_text(encoding="utf-8") if lynx_fixture else fetch_lynx(),today=today)
+            if prior_lynx and candidate["latest_observation"]<prior_lynx["latest_observation"]:
+                raise ValueError("Lynx source rolled back")
+            # Retain only issuer-observed dates; never interpolate missing days.
+            merged=dict(zip(prior_lynx["dates"],prior_lynx["values"])) if prior_lynx else {}
+            merged.update(zip(candidate["dates"],candidate["values"]))
+            dates=sorted(merged)[-80:]
+            lynx={**candidate,"dates":dates,"values":[merged[d] for d in dates]}
+            lynx_status={"status":"VERIFIED","latest_observation":candidate["latest_observation"]}
+        except (OSError,ValueError,UnicodeError) as error:
+            lynx_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:300]}
+            if prior_lynx:lynx_status["retained_observation"]=prior_lynx["latest_observation"]
+    credit_status={"status":"VERIFIED"}
+    try:
+        parsed=parse(json.loads(Path(fixture).read_text(encoding="utf-8")) if fixture else fetch(),today=today)
+    except (OSError,ValueError,UnicodeError) as error:
+        if not (prior and prior_payload.get("schema")==SCHEMA and lynx!=prior_lynx):raise
+        parsed={**prior_payload,"revised_august_2026":False}
+        credit_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:300]}
     now=(parsed["dates"],parsed["values"])
-    status="NO_CHANGE" if prior and prior==now else "UPDATE_AVAILABLE"
+    status="NO_CHANGE" if prior and prior==now and lynx==prior_lynx else "UPDATE_AVAILABLE"
     receipt={"schema":"GMFQ_BOC_CAD_CREDIT_COLLECTOR_V1",
         "status":status,"last_observation":parsed["latest_observation"],
         "observation_count":len(parsed["dates"]),
         "revised_august_2026":parsed["revised_august_2026"],
         "source":SOURCE_URL,"series":SOURCE_ID,"verified_on_rome":today.isoformat(),
         "canonical_runtime_unchanged":True,"fx_ranking_effect":"NONE",
-        "release_date_certified":False}
+        "release_date_certified":False,"credit":credit_status,"lynx":lynx_status}
     if apply and status=="UPDATE_AVAILABLE":
         destination.parent.mkdir(parents=True,exist_ok=True)
-        destination.write_text(emit_js(parsed,today.isoformat()),encoding="utf-8")
+        destination.write_text(emit_js(parsed,today.isoformat() if credit_status["status"]=="VERIFIED" else prior_payload["last_checked_rome"],lynx),encoding="utf-8")
         receipt["write_state"]="RESEARCH_SIDECAR_ONLY"
     else:
         receipt["write_state"]="NO_MUTATION"
@@ -148,11 +244,12 @@ def main():
     parser=argparse.ArgumentParser()
     parser.add_argument("--apply",action="store_true")
     parser.add_argument("--fixture",type=Path)
+    parser.add_argument("--lynx-fixture",type=Path)
     parser.add_argument("--destination",type=Path,default=DEST)
     parser.add_argument("--receipt",type=Path)
     args=parser.parse_args()
     try:
-        receipt=run(args.destination,apply=args.apply,fixture=args.fixture)
+        receipt=run(args.destination,apply=args.apply,fixture=args.fixture,lynx_fixture=args.lynx_fixture)
     except (OSError,TimeoutError,ValueError,json.JSONDecodeError) as error:
         receipt={"schema":"GMFQ_BOC_CAD_CREDIT_COLLECTOR_V1","status":"WITHHELD_SOURCE_UNAVAILABLE_OR_UNVERIFIED",
                  "reason":str(error)[:300],"canonical_runtime_unchanged":True,
