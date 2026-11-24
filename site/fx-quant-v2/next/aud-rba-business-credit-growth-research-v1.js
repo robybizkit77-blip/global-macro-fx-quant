@@ -20,14 +20,41 @@
  "first_release_pit_verified": false,
  "eligible_for_fx_core": false,
  "eligible_for_backtest": false,
- "last_checked_rome": "2026-11-14",
+ "last_checked_rome": "2026-11-24",
  "observation_period": "2026-09",
  "release_date": "2026-10-30",
  "monthly_growth_pct": 0.9,
  "prior_month_growth_pct": 0.9,
  "annual_growth_pct": 11.3,
  "prior_year_growth_pct": 9.4,
- "inference": "Official adjusted monthly and year-ended business credit growth (D1 economic meaning); never infer this from D2 stocks, and no causal FX claim."
+ "inference": "Official adjusted monthly and year-ended business credit growth (D1 economic meaning); never infer this from D2 stocks, and no causal FX claim.",
+ "lending_rate_proxy": {
+  "series_id": "RBA_F7_BUSINESS_LENDING_RATES_SUMMARY",
+  "source_url": "https://www.rba.gov.au/statistics/interest-rates/",
+  "frequency": "M",
+  "unit": "percent_per_annum",
+  "proxy_kind": "loan_price_not_lending_standards",
+  "latest_observation": "2026-09",
+  "history": {
+   "2026-09": {
+    "small": {
+     "outstanding": 7.48,
+     "new": 7.38
+    },
+    "medium": {
+     "outstanding": 6.3,
+     "new": 6.27
+    },
+    "large": {
+     "outstanding": 5.85,
+     "new": 5.71
+    }
+   }
+  },
+  "first_release_pit_verified": false,
+  "eligible_for_fx_core": false,
+  "eligible_for_backtest": false
+ }
 };
  root.FXQuantAUDBusinessCreditGrowthResearch=Object.freeze(data);
  if(typeof module!=='undefined'&&module.exports)module.exports=data;
