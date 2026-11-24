@@ -85,6 +85,18 @@ class G8SemaphoreSources(unittest.TestCase):
         with self.assertRaises(ValueError):
             mod.collect_nzd_bis_housing(spec,NOW,lambda _:raw.replace(b"QNZR368BIS",b"WRONG"))
 
+    def test_prefer_current_psi_rejects_older_automatic_observation(self):
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="NZD" and x["area"]=="services")
+        now=date(2026,11,24)
+        old,old_status=mod.candidate(spec,[("2026-08",51.0),("2026-09",50.9)],now)
+        item,status=mod.prefer_current_psi(spec,now,old,old_status)
+        self.assertEqual(item["dates"],["2026-09","2026-10"])
+        self.assertEqual(item["values"],[50.9,51.7])
+        self.assertEqual(status["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
+        self.assertEqual(status["automatic_last_observation"],"2026-09")
+        same,same_status=mod.candidate(spec,[("2026-09",50.9),("2026-10",51.7)],now)
+        self.assertEqual(mod.prefer_current_psi(spec,now,same,same_status),(same,same_status))
+
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
@@ -466,6 +478,7 @@ class G8SemaphoreSources(unittest.TestCase):
         <p>Performance of Services Index (PSI). The PSI for September was 50.8.
         This was down from 51.0 in August.</p>"""
         self.assertEqual(mod.parse_bnz_psi(html.encode(),date(2026,11,24)),[("2026-09",50.9),("2026-10",51.7)])
+        self.assertEqual(mod.parse_bnz_psi(html.replace("BNZ Research - BusinessNZ - 16.11.2026","NZ Research - BusinessNZ - 16.11.2026").encode(),date(2026,11,24)),[("2026-09",50.9),("2026-10",51.7)])
         self.assertEqual(mod.parse_bnz_psi(html.encode(),date(2026,11,1)),[("2026-08",51.0),("2026-09",50.8)])
         with self.assertRaises(ValueError):mod.parse_bnz_psi(html.replace("Performance of Services Index (PSI)","Manufacturing Index (PMI)").encode(),date(2026,11,24))
 
