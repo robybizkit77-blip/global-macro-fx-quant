@@ -1,6 +1,12 @@
 name: BoE GBP Secured Credit Growth Research Refresh V1
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/liquidity/refresh_boe_gbp_secured_credit_v1.py'
+      - 'validation/liquidity/test_refresh_boe_gbp_secured_credit_v1.py'
+      - '.github/workflows/boe-gbp-secured-credit-research-refresh-v1.yml'
   workflow_dispatch:
   schedule:
     # Monthly IADB source; probe every weekday after normal UK statistical releases.
@@ -21,7 +27,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test both BoE sources and probe live corporate credit survey
+        run: |
+          python -m unittest validation.liquidity.test_refresh_boe_gbp_secured_credit_v1 -v
+          python - <<'PY'
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          from validation.liquidity.refresh_boe_gbp_secured_credit_v1 import ccs_fetch,ccs_latest_url,parse_ccs,CCS_INDEX
+          today=datetime.now(ZoneInfo("Europe/Rome")).date()
+          url=ccs_latest_url(ccs_fetch(CCS_INDEX),today)
+          x=parse_ccs(ccs_fetch(url),url,today=today)
+          print('GBP_CCS_LIVE_SOURCE_PASS',x['latest_observation'],x['values'][-1],len(x['dates']))
+          PY
   source-only:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
@@ -38,7 +69,7 @@ jobs:
         run: |
           sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/boe-secured-runtime.before
           sha256sum live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json > /tmp/boe-secured-fx.before
-      - name: Fetch exact monthly BoE IADB secured credit and validate against historic source
+      - name: Fetch exact BoE secured credit and corporate credit availability survey
         run: |
           python validation/liquidity/refresh_boe_gbp_secured_credit_v1.py \
             --apply --receipt /tmp/boe-gbp-secured-credit-receipt.json

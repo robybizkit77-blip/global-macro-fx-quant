@@ -27,6 +27,7 @@ import re
 import sys
 import urllib.parse
 import urllib.request
+from html.parser import HTMLParser
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -41,6 +42,8 @@ API=(SOURCE+"_iadb-fromshowcolumns.asp?"
 PUBLIC=(SOURCE+"fromshowcolumns.asp?SeriesCodes=LPMVTYI&UsingCodes=Y")
 RELEASE="https://www.bankofengland.co.uk/statistics/money-and-credit/2026/september-2026"
 SCHEMA="GMFQ_NEXT_GBP_BOE_SECURED_CREDIT_GROWTH_V1"
+CCS_ROOT="https://www.bankofengland.co.uk/credit-conditions-survey/"
+CCS_INDEX="https://www.bankofengland.co.uk/sitemap/credit-conditions-survey"
 KNOWN={"2026-07":3.6,"2026-08":3.6,"2026-09":3.4}
 MONTHS={s.lower():i for i,s in enumerate(
     ("","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")) if i}
@@ -155,6 +158,92 @@ def parse(content,*,today=None):
        "official_september_overlap_revision_pp":round(records["2026-09"]-3.4,4)
     }
 
+class CCSRows(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.tables=[];self.stack=[]
+    def handle_starttag(self,tag,attrs):
+        if tag=="table":self.stack.append({"rows":[],"row":None,"cell":None})
+        if not self.stack:return
+        t=self.stack[-1]
+        if tag=="tr":t["row"]=[]
+        if tag in ("td","th") and t["row"] is not None:t["cell"]=[]
+    def handle_data(self,data):
+        if self.stack and self.stack[-1]["cell"] is not None:self.stack[-1]["cell"].append(data)
+    def handle_endtag(self,tag):
+        if not self.stack:return
+        t=self.stack[-1]
+        if tag in ("td","th") and t["cell"] is not None and t["row"] is not None:
+            t["row"].append(" ".join("".join(t["cell"]).split()));t["cell"]=None
+        if tag=="tr" and t["row"] is not None:
+            t["rows"].append(t["row"]);t["row"]=None
+        if tag=="table":self.tables.append(self.stack.pop()["rows"])
+
+def ccs_fetch(url):
+    req=urllib.request.Request(url,headers={"User-Agent":"FXQuant-Official-Macro-Research/1.0","Accept":"text/html"})
+    with urllib.request.urlopen(req,timeout=30) as response:
+        require(response.geturl().startswith(CCS_ROOT) or response.geturl()==CCS_INDEX,"unexpected CCS redirect")
+        raw=response.read(4000001)
+    require(len(raw)<4000001,"CCS page too large")
+    return raw.decode("utf-8-sig")
+
+def ccs_latest_url(index,today):
+    candidates=set(re.findall(r"/credit-conditions-survey/(20[0-9]{2})/20[0-9]{2}-q([1-4])(?=[\"'/?#<])",index,re.I))
+    valid=[(int(y),int(q)) for y,q in candidates if (int(y),int(q))<(today.year,(today.month-1)//3+1)]
+    require(bool(valid),"official CCS links missing")
+    year,q=max(valid)
+    return f"{CCS_ROOT}{year}/{year}-q{q}"
+
+def parse_ccs(html,url,*,today):
+    m=re.fullmatch(re.escape(CCS_ROOT)+r"(20[0-9]{2})/\1-q([1-4])",url)
+    require(m is not None,"CCS report URL mismatch")
+    year,q=map(int,m.groups())
+    require((year,q)<=(today.year,(today.month-1)//3+1),"future CCS period")
+    require((today-date(year,q*3-2,1)).days<=230,"stale CCS report")
+    parser=CCSRows();parser.feed(html);parser.close()
+    question="availability of credit provided to the corporate sector overall"
+    matches=[]
+    for table in parser.tables:
+        for i,row in enumerate(table):
+            # The issuer may place a footnote, the question, and the actual
+            # observation label in separate cells or consecutive rows.
+            text=" ".join(row).lower()
+            if question not in text:continue
+            for j in range(i,min(i+3,len(table))):
+                candidate=table[j]
+                actual=next((k for k,v in enumerate(candidate) if v.strip().lower()=="past three months"),None)
+                if actual is not None:
+                    matches.append((table,j,candidate[actual+1:]))
+                    break
+    require(len(matches)==1,"CCS corporate actual row absent or ambiguous at "+url+" tables="+str(len(parser.tables))+" bytes="+str(len(html))+": "+str([r[:3] for t in parser.tables for r in t if "corporate sector" in " ".join(r).lower()][:8])[:700])
+    table,i,values=matches[0]
+    require(4<=len(values)<=12,"CCS unexpected observation columns")
+    require(i+1<len(table) and any(v.strip().lower()=="next three months" for v in table[i+1]),"CCS forecast separation not verified")
+    quarter_row=next((r for r in reversed(table[:i]) if len(r)>=len(values) and all(re.fullmatch(r"Q[1-4]",x) for x in r[-len(values):])),None)
+    require(quarter_row is not None,"CCS quarter header missing")
+    dates=[]
+    for offset in range(len(values)-1,-1,-1):
+        n=year*4+q-1-offset
+        dates.append(f"{n//4}-Q{n%4+1}")
+    require(quarter_row[-len(values):]==[d[-2:] for d in dates],"CCS quarter chronology mismatch")
+    numbers=[]
+    for v in values:
+        n=float(v.replace("−","-"))
+        require(math.isfinite(n) and -100<=n<=100,"CCS invalid balance")
+        numbers.append(n)
+    if "2026-Q2" in dates:require(abs(numbers[dates.index("2026-Q2")])<.11,"CCS canonical overlap mismatch")
+    return {"source_url":url,"series_id":"BOE_CCS_CORPORATE_AVAILABILITY_ACTUAL","frequency":"Q","unit":"net_percentage_balance",
+            "positive_means":"increased_availability","negative_means":"decreased_availability",
+            "dates":dates,"values":numbers,"latest_observation":dates[-1],
+            "first_release_pit_verified":False,"eligible_for_fx_core":False,"eligible_for_backtest":False}
+
+def existing_payload(text):
+    start=text.find("const data=")
+    if start!=-1:
+        try:return json.JSONDecoder().raw_decode(text[start+len("const data="):])[0]
+        except ValueError:pass
+    return {}
+
 def existing_values(text):
     result=[]
     for field in ("dates","values"):
@@ -164,7 +253,7 @@ def existing_values(text):
         except (ValueError,SyntaxError):return None
     return tuple(result)
 
-def emit_js(parsed,checked):
+def emit_js(parsed,checked,conditions=None):
     data={
       "schema":SCHEMA,
       "status":"VERIFIED_BOE_LPMVTYI_SECURED_GROWTH_RESEARCH_ONLY",
@@ -183,6 +272,7 @@ def emit_js(parsed,checked):
       **parsed,
       "inference":"Tasso annuo crescita prestiti garantiti alle famiglie; variazioni = punti percentuali. Non nuovi prestiti, riserve BoE, credito alle imprese né trade GBP."
     }
+    if conditions is not None:data['lending_conditions']=conditions
     return ("'use strict';\n"
        "/* Official BoE IADB LPMVTYI growth, not sterling reserve stock. */\n"
        "(function(root){\n const data="+json.dumps(data,ensure_ascii=False,indent=1)+";\n"
@@ -190,14 +280,38 @@ def emit_js(parsed,checked):
        " if(typeof module!=='undefined'&&module.exports)module.exports=data;\n"
        "})(typeof window!=='undefined'?window:globalThis);\n")
 
-def run(*,destination=DEST,fixture=None,today=None,apply=False):
+def run(*,destination=DEST,fixture=None,today=None,apply=False,ccs_fixture=None,ccs_url=None):
     today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
-    parsed=parse(Path(fixture).read_text(encoding="utf-8") if fixture else fetch(),
-                 today=today)
-    old=existing_values(destination.read_text(encoding="utf-8")) if destination.exists() else None
+    text=destination.read_text(encoding="utf-8") if destination.exists() else ""
+    old=existing_values(text) if text else None
+    prior=existing_payload(text)
+    prior_ccs=prior.get("lending_conditions")
+    conditions=prior_ccs
+    ccs_status={"status":"SKIPPED_FIXTURE"}
+    if ccs_fixture or not fixture:
+        try:
+            url=ccs_url if ccs_fixture else ccs_latest_url(ccs_fetch(CCS_INDEX),today)
+            data=parse_ccs(Path(ccs_fixture).read_text(encoding="utf-8") if ccs_fixture else ccs_fetch(url),url,today=today)
+            if prior_ccs and data["latest_observation"]<prior_ccs["latest_observation"]:
+                raise ValueError("CCS source rolled back")
+            merged=dict(zip(prior_ccs["dates"],prior_ccs["values"])) if prior_ccs else {}
+            merged.update(zip(data["dates"],data["values"]))
+            dates=sorted(merged)[-20:]
+            conditions={**data,"dates":dates,"values":[merged[d] for d in dates]}
+            ccs_status={"status":"VERIFIED","latest_observation":data["latest_observation"]}
+        except (OSError,ValueError,UnicodeError,TypeError,KeyError) as error:
+            ccs_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:300]}
+            if prior_ccs:ccs_status["retained_observation"]=prior_ccs["latest_observation"]
+    credit_status={"status":"VERIFIED"}
+    try:
+        parsed=parse(Path(fixture).read_text(encoding="utf-8") if fixture else fetch(),today=today)
+    except (OSError,ValueError,UnicodeError) as error:
+        if not (old and prior.get("schema")==SCHEMA and conditions!=prior_ccs):raise
+        parsed={k:prior[k] for k in ("dates","values","last_observation","official_july_overlap_revision_pp","official_september_overlap_revision_pp")}
+        credit_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:300]}
     require(old is None or not old[0] or parsed["last_observation"]>=old[0][-1],
             "IADB source unexpectedly rolled back latest release")
-    modified=old!=(parsed["dates"],parsed["values"])
+    modified=old!=(parsed["dates"],parsed["values"]) or conditions!=prior_ccs
     receipt={
       "schema":"GMFQ_BOE_GBP_SECURED_CREDIT_SOURCE_RECEIPT_V1",
       "status":"UPDATE_AVAILABLE" if modified else "NO_CHANGE",
@@ -212,12 +326,12 @@ def run(*,destination=DEST,fixture=None,today=None,apply=False):
       "observed_period_is_not_release_date":True,
       "first_release_pit_verified":False,
       "canonical_liquidity_unchanged":True,
-      "fx_rank_effect":"NONE",
+      "fx_rank_effect":"NONE","ccs":ccs_status,"credit":credit_status,
       "write_state":"NO_MUTATION"
     }
     if apply and modified:
         destination.parent.mkdir(parents=True,exist_ok=True)
-        destination.write_text(emit_js(parsed,today.isoformat()),encoding="utf-8")
+        destination.write_text(emit_js(parsed,today.isoformat() if credit_status["status"]=="VERIFIED" else prior["last_checked_rome"],conditions),encoding="utf-8")
         receipt["write_state"]="RESEARCH_SIDECAR_ONLY"
     return receipt
 
