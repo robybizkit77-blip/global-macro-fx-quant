@@ -6,6 +6,8 @@ on:
       - 'validation/cb_pricing/OIS_ESTIMATED_REPRICING_CONTRACT_V1_2026-10-15.json'
       - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
       - 'validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py'
+      - 'validation/cb_pricing/probe_nzd_asx_20d_reference_v1.py'
+      - 'validation/cb_pricing/test_probe_nzd_asx_20d_reference_v1.py'
       - 'validation/cb_pricing/archive_nzd_asx_proxy_v1.py'
       - 'validation/cb_pricing/test_archive_nzd_asx_proxy_v1.py'
       - 'validation/cb_pricing/history/NZD_ASX_PROXY_CAPTURES_V1.jsonl'
@@ -53,6 +55,8 @@ on:
       - 'validation/cb_pricing/OIS_ESTIMATED_REPRICING_CONTRACT_V1_2026-10-15.json'
       - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
       - 'validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py'
+      - 'validation/cb_pricing/probe_nzd_asx_20d_reference_v1.py'
+      - 'validation/cb_pricing/test_probe_nzd_asx_20d_reference_v1.py'
       - 'validation/cb_pricing/archive_nzd_asx_proxy_v1.py'
       - 'validation/cb_pricing/test_archive_nzd_asx_proxy_v1.py'
       - 'validation/cb_pricing/history/NZD_ASX_PROXY_CAPTURES_V1.jsonl'
@@ -144,6 +148,20 @@ jobs:
         run: |
           python validation/cb_pricing/test_archive_nzd_asx_proxy_v1.py
           python validation/cb_pricing/archive_nzd_asx_proxy_v1.py ${{ github.event_name != 'pull_request' && '--write' || '' }}
+
+      - name: Test and probe exact NZD 20-weekday historical settlement
+        continue-on-error: true
+        run: |
+          python validation/cb_pricing/test_probe_nzd_asx_20d_reference_v1.py
+          python validation/cb_pricing/probe_nzd_asx_20d_reference_v1.py
+      - name: Retain historical ASX reference evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nzd-asx-exact-20d-reference
+          path: /tmp/nzd-asx-20d-reference.json
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Test NZD ASX bank-bill scenario source and frozen research calibration
         run: python validation/cb_pricing/test_nzd_asx_scenario_sensitivity_v2.py
