@@ -26,7 +26,6 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 concurrency:
   group: g8-economic-semaphore-source-recovery-v1
@@ -92,5 +91,5 @@ jobs:
           git rebase origin/main
           git push origin HEAD:main
           echo "SEM_G8_SUPPLEMENT_PERSISTED_TO_MAIN" >> "$GITHUB_STEP_SUMMARY"
-          # A GITHUB_TOKEN push does not trigger downstream push workflows.
-          gh workflow run publish-fx-quant-v2.yml --ref main
+          # The existing V2 publisher listens for successful completion,
+          # including no-change runs, so a missed delivery can recover.
