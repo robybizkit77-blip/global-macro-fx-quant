@@ -1,25 +1,25 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-24T14:57:54.883164Z",
-  "edition_time_rome": "2026-11-24 15:57",
-  "material_digest": "befe9bb1cfd8bdbe0573f2b73a0882aa49d358f353b99632a1e7e0515be22d11",
+  "generated_at_utc": "2026-11-24T17:42:35.716053Z",
+  "edition_time_rome": "2026-11-24 18:42",
+  "material_digest": "38d745c1e0ee8dd85b3574b74521b0e8f791a23ab4556c1aa0bb302cf79c7028",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
-  "headline": "Volatilità in calo, dollaro in rialzo",
-  "lead": "La volatilità azionaria è scesa alla chiusura del 23 novembre. Il 23 novembre il dollaro ha guadagnato contro euro e yen.",
+  "headline": "Dollaro misto",
+  "lead": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. Alla chiusura del 23 novembre, Wall Street ha guadagnato terreno e il premio sul debito più rischioso si è ridotto.",
   "news": [
     {
-      "headline": "Dollaro in rialzo",
-      "analysis": "Il 23 novembre il dollaro ha guadagnato contro euro e yen. La prossima verifica è capire se il movimento si estende agli altri cambi.",
+      "headline": "Dollaro misto",
+      "analysis": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. La prossima verifica è capire se il movimento si estende agli altri cambi.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-23",
-      "event_date": "2026-11-23",
+      "published_date": "2026-11-24",
+      "event_date": "2026-11-24",
       "market_area": "FOREX",
       "sources": [
         "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
       ],
-      "evidence": "Al fixing BCE del 23 novembre, EUR/USD ha segnato −0,46% e USD/JPY +0,27%."
+      "evidence": "Al fixing BCE del 24 novembre, EUR/USD ha segnato +0,22% e USD/JPY −0,00%."
     },
     {
       "headline": "Sono usciti i dati sui prezzi in Giappone",
@@ -34,16 +34,18 @@
       "evidence": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     },
     {
-      "headline": "Il quadro del rischio",
-      "analysis": "La volatilità azionaria è scesa alla chiusura del 23 novembre. Da seguire se il movimento prosegue anche alla prossima chiusura.",
+      "headline": "Si riduce il premio sul debito più rischioso",
+      "analysis": "Alla chiusura del 23 novembre, Wall Street ha guadagnato terreno e il premio sul debito più rischioso si è ridotto. Da seguire se il movimento prosegue anche alla prossima chiusura.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-23",
       "event_date": "2026-11-23",
       "market_area": "RISCHIO",
       "sources": [
-        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
       ],
-      "evidence": "Alla chiusura del 23 novembre, VIX −9,27 punti."
+      "evidence": "Alla chiusura del 23 novembre, S&P 500 +4,73%, VIX −9,27 punti e spread high yield −13 pb."
     },
     {
       "headline": "Oro e petrolio in calo",
@@ -61,7 +63,7 @@
     {
       "headline": "How does EIA compare different types of energy?",
       "analysis": "Questo approfondimento aiuta a leggere come cambia l’offerta di energia.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-24",
       "event_date": "2026-11-24",
       "market_area": "ENERGIA",
@@ -83,14 +85,16 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "La volatilità azionaria è scesa alla chiusura del 23 novembre. Il 23 novembre il dollaro ha guadagnato contro euro e yen. Nella seduta del 23 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "desk_judgment": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. Alla chiusura del 23 novembre, Wall Street ha guadagnato terreno e il premio sul debito più rischioso si è ridotto. Nella seduta del 23 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
   "fx_implications": "Il 25 novembre alle 01:30 italiane escono i prezzi al consumo in Australia. Per AUD conta come il dato modifica le attese sui tassi.",
   "what_changed": "Nei proxy futures del 24 novembre l’oro scende e il WTI scende. Nella seduta del 23 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
-  "contrary_evidence": "La tenuta del movimento dipende anche dal sostegno dei tassi a breve.",
+  "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bankofcanada.ca/2026/11/speech-tiff-macklem-governor-bank-canada-2026-11-24/",
@@ -100,8 +104,8 @@
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
-      "news": "2026-11-23",
-      "rss_checked_at_utc": "2026-11-24T14:57:54.883164Z",
+      "news": "2026-11-24",
+      "rss_checked_at_utc": "2026-11-24T17:42:35.716053Z",
       "commodities": "2026-11-24"
     },
     "no_paid_api": true,
@@ -109,6 +113,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-24T14:57:54.883164Z",
+      "headline": "Volatilità in calo, dollaro in rialzo",
+      "material_digest": "befe9bb1cfd8bdbe0573f2b73a0882aa49d358f353b99632a1e7e0515be22d11"
+    },
     {
       "generated_at_utc": "2026-11-24T12:40:43.793223Z",
       "headline": "Volatilità in calo, dollaro in rialzo",
@@ -223,11 +232,6 @@
       "generated_at_utc": "2026-11-20T17:02:58.948641Z",
       "headline": "Dollaro misto",
       "material_digest": "4d6cf2bf4778264701f9bb211290fd1d8ea95555fe827f725540daabfaf49af4"
-    },
-    {
-      "generated_at_utc": "2026-11-20T15:31:27.267356Z",
-      "headline": "Sono usciti i dati sui prezzi in Giappone",
-      "material_digest": "962d03b4260f801ead76f4148730eee6765dcca62f0992c4fd32306c54df56db"
     }
   ]
 }
