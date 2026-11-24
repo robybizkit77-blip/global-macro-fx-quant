@@ -9,10 +9,10 @@ const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACR
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 assert.deepEqual(coverage,['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD']);
-const expected=['Immobiliare','Lavoro','Manifattura','Indicatore anticipatore','Consumi e domanda','Credito'];
+const expected=['Immobiliare','Lavoro','Manifattura','Servizi','Indicatore anticipatore','Consumi e domanda','Credito'];
 for(const currency of coverage){
  const rows=model(catalog,asof,currency);
- assert.equal(rows.length,6,'All G8 economies need the same six named areas');
+ assert.equal(rows.length,7,'All G8 economies need the same seven named areas');
  assert.deepEqual(rows.map(r=>r.name),expected);
  for(const row of rows){
   assert.ok(['red','amber','green','neutral'].includes(row.signal.tone));
@@ -30,6 +30,17 @@ for(const currency of coverage){
  assert.match(html,/non sono un ranking di forza FX/i);
  assert.ok(!/(?:NaN|undefined)/.test(html),'No broken JS placeholders in rendered HTML');
 }
+// Services signals are descriptive activity/survey momentum, not service CPI.
+for(const c of coverage){
+ const services=model(catalog,asof,c).find(x=>x.key==='services');
+ assert.ok(services,'Services must be present for '+c);
+}
+assert.equal(model(catalog,asof,'EUR').find(x=>x.key==='services').expected,1);
+assert.equal(model(catalog,asof,'JPY').find(x=>x.key==='services').expected,1);
+assert.equal(model(catalog,asof,'USD').find(x=>x.key==='services').signal.tone,'neutral');
+assert.match(render({catalog,esc,dayNow,country:'EUR'}),/Inflazione servizi \(contesto, fuori dal semaforo\)/);
+assert.match(render({catalog,esc,dayNow,country:'JPY'}),/Tankan grandi imprese non manifatturiere/);
+assert.match(render({catalog,esc,dayNow,country:'USD'}),/sette aree/);
 // Specific gaps must remain neutral, not model-generated or backfilled.
 const nz=model(catalog,asof,'NZD');
 for(const key of ['house','industry','credit']){
@@ -94,4 +105,4 @@ assert.equal(model(catalog,asof,'AUD',tampered).find(x=>x.key==='industry').sign
 const tooOld=model(catalog,'2028-11-23','AUD',overlay);
 assert.equal(tooOld.find(x=>x.key==='industry').signal.tone,'neutral');
 
-console.log('OK: G8 economic semaphore — 8 economies, 6 areas, data age, dates, source gaps, HTML');
+console.log('OK: G8 economic semaphore — 8 economies, 7 areas, data age, dates, source gaps, HTML');
