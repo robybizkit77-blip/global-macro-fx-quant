@@ -344,16 +344,22 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
  const measure=x=>{
   if(!x)return '<span class="sem-missing">Serie assente oppure periodi non confrontabili</span>';
   const scaled=x.metric.scale?x.current/x.metric.scale:x.current;
+  const prior=x.metric.scale?x.previous/x.metric.scale:x.previous;
   const digits=x.metric.scale?2:x.kind==='points'?2:Math.abs(scaled)>=100?0:1;
-  const reading=x.metric.hideValue?'variazione della serie':fmt(scaled,digits)+' '+esc(x.metric.unit||'unità della fonte');
+  const unit=esc(x.metric.unit||'unità della fonte');
   const diff=x.kind==='points'?d(x.diff,' '+(x.metric.pointUnit||'punti')):d(x.pct,'%');
+  const tone=x.verdict===null?'neutral':x.verdict>0?'green':x.verdict<0?'red':'amber';
   const diffusion=x.metric.diffusionThreshold===50?
    '<span class="sem-psi-regime">'+(x.current>50?'Livello: espansione (PSI sopra 50)':x.current<50?'Livello: contrazione (PSI sotto 50)':'Livello: soglia neutrale 50')+
    ' · Direzione: '+(x.verdict===null?'non classificabile':x.diff>.2?'indice in accelerazione':x.diff<-.2?'indice in rallentamento':'indice stabile')+
    '</span>':'';
-  return '<div class="sem-measure"><div><strong>'+esc(x.metric.name)+'</strong> <span>'+reading+
-   '</span> <b>'+diff+'</b></div><small>Periodo '+esc(x.period)+' (precedente '+esc(x.prior)+') · '+
-   esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small>'+diffusion+  (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
+  const value=(v,p,label)=>'<div class="sem-value"><small>'+label+' · '+esc(p)+'</small><strong>'+fmt(v,digits)+'</strong><span>'+unit+'</span></div>';
+  return '<div class="sem-measure '+tone+'"><div class="sem-measure-title"><strong>'+esc(x.metric.name)+'</strong></div>'+
+   '<div class="sem-value-grid'+(x.metric.hideValue?' sem-value-hidden':'')+'">'+
+   (x.metric.hideValue?'<div class="sem-value"><small>Confronto</small><strong class="sem-period-pair">'+esc(x.prior)+' → '+esc(x.period)+'</strong></div>':value(scaled,x.period,'Attuale')+value(prior,x.prior,'Precedente'))+
+   '<div class="sem-value sem-change"><small>Variazione</small><strong class="'+tone+'">'+esc(diff)+'</strong><span>'+({green:'Favorevole',red:'Sfavorevole',amber:'Quasi stabile',neutral:'Non classificabile'}[tone])+'</span></div></div>'+
+   '<small class="sem-source-note">'+esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small>'+diffusion+
+   (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
  };
  const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
  const svcPrices=servicePriceContext?recentTwo(servicePriceContext,today):null;
@@ -376,10 +382,26 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   return '<div class="sem-sector-compare-item"><strong>'+esc(label)+'</strong><span class="'+tone+'">'+esc(wording)+
    '</span><small>'+esc(item?.period||'senza periodo valido')+esc(level)+'</small></div>';
  };
+ const readingFor=r=>{
+   if(r.signal.tone==='neutral')return 'Le osservazioni disponibili non consentono un giudizio direzionale affidabile.';
+   const active=(r.signalSource==='original'?r.items:r.items.slice(0,1)).filter(x=>x&&x.verdict!==null);
+   if(!active.length)return 'Nessun confronto valido.';
+   const clauses=active.map(x=>{
+     const m=x.kind==='points'?x.diff:x.pct;
+     return x.metric.name+': '+(m>0?'aumenta':m<0?'diminuisce':'resta invariato')+(m!==0?' ('+d(m,x.kind==='points'?' '+(x.metric.pointUnit||'punti'):'%')+')':'');
+   });
+   const judgment={green:'Segnale di miglioramento rispetto alle osservazioni precedenti.',red:'Segnale di deterioramento rispetto alle osservazioni precedenti.',amber:'Il quadro è misto o le variazioni sono contenute.'}[r.signal.tone];
+   return clauses.join('; ')+'. '+judgment;
+ };
  const bank={USD:'Fed',EUR:'BCE',GBP:'BoE',JPY:'BoJ',CHF:'SNB',AUD:'RBA',NZD:'RBNZ',CAD:'BoC'}[selected];
+ const tones={green:'Migliora',red:'Peggiora',amber:'Stabile / misto',neutral:'Non classificabile'};
+ const symbols={green:'↗',red:'↘',amber:'→',neutral:'—'};
+ const allRows=Object.values(universe).flat();
+ const covered=allRows.filter(a=>a.signal.tone!=='neutral').length;
+ const tally=(items,tone)=>items.filter(a=>a.signal.tone===tone).length;
  const dots=area=>{
    const q=area.signal;
-   return '<span class="sem-mini '+q.tone+'" title="'+esc(q.label)+'" aria-label="'+esc(q.label)+'"><i aria-hidden="true"></i></span>';
+   return '<span class="sem-mini sem-cell '+q.tone+'" title="'+esc(area.name+' · '+tones[q.tone])+'" aria-label="'+esc(tones[q.tone])+'"><span aria-hidden="true">'+symbols[q.tone]+'</span></span>';
  };
  const hasStale=rows.some(x=>x.items.some(z=>z?.stale));
  const hasManual=rows.some(x=>x.items.some(z=>z?.source?.includes('verificato manualmente')));
@@ -388,23 +410,23 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<h2 id="recession-light-title">Il semaforo economico</h2>'+
   '<p>'+esc(NAMES[selected]+': '+intro)+' Segnali direzionali descrittivi, non probabilità di recessione.</p></div>'+
   '<span class="sem-date">Consultazione '+esc(today)+' · periodi originali in tabella</span></header>'+
+  '<div class="sem-overview"><div class="sem-overview-coverage"><span>Copertura dati G8</span><strong>'+covered+'<small>/56</small></strong><div class="sem-coverage-track" role="progressbar" aria-label="Copertura G8" aria-valuenow="'+covered+'" aria-valuemin="0" aria-valuemax="56"><i style="width:'+(covered/56*100)+'%"></i></div></div>'+['green','amber','red','neutral'].map(t=>'<div class="sem-overview-kpi '+t+'"><span>'+tones[t]+'</span><strong>'+tally(allRows,t)+'</strong></div>').join('')+'</div>'+
   '<div class="sem-g8-title"><strong>Otto economie, sette aree</strong><span>Seleziona un Paese. I colori non sono un ranking di forza FX.</span></div>'+
   '<div class="sem-g8-scroll"><table class="sem-g8-table"><thead><tr><th scope="col">Paese</th>'+
   AREAS.map(a=>'<th scope="col">'+esc(a.short)+'</th>').join('')+'</tr></thead><tbody>'+
   FX.map(c=>'<tr'+(c===selected?' class="selected"':'')+'><th scope="row"><button type="button" class="sem-g8-pick" data-ms-country="'+c+'" aria-pressed="'+String(c===selected)+'">'+
    FLAGS[c]+' '+c+'</button></th>'+universe[c].map(a=>'<td>'+dots(a)+'</td>').join('')+'</tr>').join('')+
   '</tbody></table></div>'+
-  '<p class="sem-legend"><span class="sem-mini green"><i></i></span> Migliora <span class="sem-mini red"><i></i></span> Peggiora'+
-  ' <span class="sem-mini amber"><i></i></span> Misto / stabile <span class="sem-mini neutral"><i></i></span> Non classificabile</p>'+
+  '<div class="sem-legend">'+['green','amber','red','neutral'].map(t=>'<span class="sem-legend-item"><span class="sem-mini sem-cell '+t+'" aria-hidden="true">'+symbols[t]+'</span>'+tones[t]+'</span>').join('')+'</div>'+
   '<div class="sem-sector-compare" aria-label="Industria e servizi a confronto"><p>Industria e servizi · direzione del ciclo</p><div class="sem-sector-compare-grid">'+
     sectorSummary('industry','Manifattura')+sectorSummary('services','Servizi')+'</div>'+
     '<small>La direzione non è il livello: un PSI sopra 50 può rallentare pur restando in espansione. Non confrontare i livelli di serie differenti.</small></div>'+
-  '<div class="sem-country-caption">'+FLAGS[selected]+' <strong>'+esc(NAMES[selected])+'</strong> · dettaglio per indicatore</div>'+
+  '<div class="sem-country-caption"><div>'+FLAGS[selected]+' <strong>'+esc(NAMES[selected])+'</strong><small>Dettaglio per indicatore</small></div><div class="sem-country-counts">'+['green','amber','red','neutral'].map(t=>'<span class="sem-country-count '+t+'" title="'+tones[t]+'">'+symbols[t]+' '+tally(rows,t)+'</span>').join('')+'</div></div>'+
   '<div class="sem-table" role="table" aria-label="Semaforo economico '+esc(NAMES[selected])+'">'+
   '<div class="sem-columns" role="row"><span role="columnheader">Area</span><span role="columnheader">Ultima evidenza disponibile</span><span role="columnheader">Segnale</span></div>'+
-  rows.map(r=>'<div class="sem-row" role="row"><div role="cell" class="sem-area"><strong>'+esc(r.name)+'</strong><small>'+esc(r.why)+'</small></div>'+
-    '<div class="sem-evidence" role="cell">'+(r.items.length?r.items.map(measure).join(''):'<span class="sem-missing">Nessuna serie idonea nel feed attuale</span>')+(r.key==='services'?svcPriceNote:'')+'</div>'+
-    '<div class="sem-signal" role="cell"><span class="sem-pill '+r.signal.tone+'"><i aria-hidden="true"></i>'+esc(r.signal.label)+'</span>'+
+  rows.map(r=>'<div class="sem-row '+r.signal.tone+'" role="row"><div role="cell" class="sem-area"><strong>'+esc(r.name)+'</strong><span class="sem-area-reading">'+esc(tones[r.signal.tone])+'</span><small>'+esc(r.why)+'</small></div>'+
+    '<div class="sem-evidence" role="cell"><div class="sem-area-judgment"><span>Cosa sta cambiando</span><p>'+esc(readingFor(r))+'</p></div>'+(r.items.length?(r.signalSource==='fallback'?measure(r.items[0])+'<details class="sem-history"><summary>Altre serie di contesto ('+(r.items.length-1)+')</summary>'+r.items.slice(1).map(measure).join('')+'</details>':r.items.map(measure).join('')):'<span class="sem-missing">Nessuna serie idonea nel feed attuale</span>')+(r.key==='services'?svcPriceNote:'')+'</div>'+
+    '<div class="sem-signal" role="cell"><span class="sem-pill '+r.signal.tone+'"><i aria-hidden="true"></i>'+esc(tones[r.signal.tone])+'</span>'+
     (r.items.length===1?'<small>Un solo indicatore</small>':'')+
     (r.signalSource==='fallback'?'<small>Segnale da fonte supplementare aggiornata; serie precedenti nel dettaglio</small>':'')+
     (r.proxy?'<small>Proxy/sondaggio, non misura esaustiva del ciclo</small>':'')+
@@ -412,12 +434,12 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<div class="sem-policy"><div><span>POLITICA MONETARIA · DA LEGGERE A PARTE</span>'+
   '<p>'+bank+' e aspettative sui tassi possono amplificare o attenuare le pressioni cicliche: non sono però un indicatore diretto di recessione né una prova di movimento del cambio.</p></div>'+
   '<a href="#rates">Apri tassi & OIS ↗</a></div>'+
-  '<p class="sem-foot">Metodo: ogni indicatore confronta le sue ultime due osservazioni disponibili; verde indica miglioramento direzionale, rosso peggioramento, giallo quadro misto o quasi invariato, azzurro dati mancanti, troppo vecchi, non consecutivi o non sufficientemente allineati. '+
+  '<details class="sem-method"><summary>Metodo, soglie e fonti</summary><p class="sem-foot">Metodo: ogni indicatore confronta le sue ultime due osservazioni disponibili; verde indica miglioramento direzionale, rosso peggioramento, giallo quadro misto o quasi invariato, azzurro dati mancanti, troppo vecchi, non consecutivi o non sufficientemente allineati. '+
   'Le soglie descrittive evitano piccoli movimenti: ±0,15% per i livelli e soglie in punti esplicite per tassi, sondaggi e indicatori compositi. Le osservazioni oltre la soglia di anzianità sono visibili ma non producono semafori direzionali. '+
   (hasStale?'Sono presenti osservazioni datate: non interpretare i colori come fotografia intraday. ':'')+
-  (hasManual?'È presente una rilevazione PSI BusinessNZ da fonte ufficiale verificata manualmente: il download automatico è bloccato; la data del dato è esplicita e il segnale scade se non viene aggiornata. ':'')+
-  'La matrice confronta direzioni, NON livelli omogenei o cicli sincronizzati. La colonna Servizi misura il momentum dell’attività o dei suoi proxy e distingue il livello di espansione/contractione SOLO per un indice di diffusione con soglia documentata a 50 (es. PSI BusinessNZ). Non misura l’inflazione dei servizi. Prezzi nominali, saldi di survey, stock di credito e PIL sono strumenti diversi. '+
-  'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p>'+
+  (hasManual?'Sono presenti rilevazioni ufficiali verificate manualmente: la data del dato è esplicita e i segnali scadono se non vengono aggiornati. ':'')+
+  'La matrice confronta direzioni, NON livelli omogenei o cicli sincronizzati. La colonna Servizi misura il momentum dell’attività o dei suoi proxy e distingue il livello di espansione/contrazione SOLO per un indice di diffusione con soglia documentata a 50 (es. PSI BusinessNZ). Non misura l’inflazione dei servizi. Prezzi nominali, saldi di survey, stock di credito e PIL sono strumenti diversi. '+
+  'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
 root.FXQuantRecessionLight={render,model,parsePeriod,coverage:FX};
