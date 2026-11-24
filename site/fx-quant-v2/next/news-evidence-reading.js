@@ -117,7 +117,7 @@
     c==='MARKET_GOVERNMENT_RATES'?'Verificare OIS/futures della stessa seduta, componenti del 10Y e reazione FX: un governativo non isola lo shock monetario.':
     'Verificare fonte, consenso, eventuali revisioni e risposta del mercato con tempi comparabili.';
    return [{id:'pulse-'+i,title:String(x.title),source:String(x.source),ccy:String(x.ccy||''),
-    kind:type,asof:x.as_of,time:null,body:String(x.detail||''),why,verify,
+    kind:type,importance:['HIGH','MEDIUM','LOW'].includes(x.importance)?x.importance:null,asof:x.as_of,time:null,body:String(x.detail||''),why,verify,
     impact:officialActual?
      'Dato macro ufficiale osservato; reazione FX/OIS intraday NON misurata né attribuita causalmente.':
      money?'Variazione dello strumento monetario indicato; NON reazione provata a un evento.':
@@ -152,6 +152,12 @@
   return {pulse,official,pulseAsOf,officialAsOf:official[0]?.asof||null,latest,gap,
    quality:pulse.length||official.length?'FATTI DATATI; IMPATTO DA VERIFICARE':'NON VALIDATO'};
  }
- root.FXQuantNewsEvidence={parse,romeDate,link};
- if(typeof module!=='undefined'&&module.exports)module.exports={parse,romeDate,link};
+ // A dated shortlist of source-labelled high-priority observations, never a causal ranking.
+ function focusPulse(pulse,now){
+  if(!day(now)||!Array.isArray(pulse))return [];
+  return pulse.filter(x=>x.importance==='HIGH'&&day(x.asof)&&x.asof<=now&&
+   Date.parse(now)-Date.parse(x.asof)<=4*864e5).slice(0,5);
+ }
+ root.FXQuantNewsEvidence={parse,romeDate,link,focusPulse};
+ if(typeof module!=='undefined'&&module.exports)module.exports={parse,romeDate,link,focusPulse};
 })(typeof window!=='undefined'?window:{});
