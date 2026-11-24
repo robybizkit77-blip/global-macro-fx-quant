@@ -106,3 +106,20 @@ try{
  if(modified.values.length<=80)assert.deepEqual(v.slice(0,2).map(p=>p.value),[-0.2,0]);
 }finally{globalThis.FXQuantGBPBoESecuredCreditResearch=oldMortgage;}
 console.log('NEXT_GBP_SECURED_GROWTH_CHART_PASS',mortgage.last_observation);
+
+const ccs=mortgage.lending_conditions;
+assert(ccs,'Expected verified production CCS sidecar');
+const ccsPlots=[];
+const ccsHtml=studio.render({...api('GBP'),plot:x=>{ccsPlots.push(x);return '<svg></svg>';}});
+assert.match(ccsHtml,/BANK OF ENGLAND · CREDIT CONDITIONS SURVEY/);
+assert.match(ccsHtml,/Positivo = maggiore disponibilità, negativo = minore disponibilità/);
+const ccsChart=ccsPlots.find(x=>x.label==='Condizioni di credito · fonte ufficiale separata GBP');
+assert(ccsChart);
+assert.deepEqual(ccsChart.lines[0].values,ccs.dates.map((label,i)=>({label,value:ccs.values[i]})));
+assert(!studio.render(api('USD')).includes('BANK OF ENGLAND · CREDIT CONDITIONS SURVEY'));
+const priorCCS=globalThis.FXQuantGBPBoESecuredCreditResearch;
+try{
+ globalThis.FXQuantGBPBoESecuredCreditResearch={...mortgage,lending_conditions:{...ccs,positive_means:'tightening'}};
+ assert(!studio.render(api('GBP')).includes('BANK OF ENGLAND · CREDIT CONDITIONS SURVEY'));
+}finally{globalThis.FXQuantGBPBoESecuredCreditResearch=priorCCS;}
+console.log('NEXT_GBP_CCS_CHART_PASS',ccs.latest_observation,ccs.values.at(-1));
