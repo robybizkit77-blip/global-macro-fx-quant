@@ -311,7 +311,7 @@ assert(out.includes('href="#currencies"')&&out.includes('href="#pairs"')&&
  out.includes('href="#risk"')&&out.includes('href="#news"'),
  'Research navigation must target real existing FX Quant routes');
 
-assert(out.includes('La lettura alternativa.'));
+assert(out.includes('Cosa potrebbe smentirci'));
 assert(out.includes('<details class="morning-deep-reading hourly-desk-news" id="hourly-desk-news">'),
  'News are available on request, not stacked on Home');
 assert(out.includes('https://www.bls.gov/news.release/ppi.htm'),'Cited source must be clickable');
