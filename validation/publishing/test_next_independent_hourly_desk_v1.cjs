@@ -116,9 +116,9 @@ assert.match(catalyst({...agenda,last_checked_at_utc:'2026-11-06T14:00:00Z'}),/d
 assert.match(catalyst({...agenda,events:[{...nextEvent,source_url:null}]}),/data-home-catalyst="unavailable"/);
 
 assert(out.includes('data-standalone-market-desk="active"'));
-assert(out.indexOf('IL QUADRO GENERALE DEI MERCATI')<out.indexOf('Notizie e fonti di questa edizione'),
+assert(out.includes('IL TEMA CHE CONTA ORA')&&out.indexOf('IL TEMA CHE CONTA ORA')<out.indexOf('Notizie e fonti di questa edizione'),
  'Overall narrative must come before article drilldown');
-assert(out.includes('PROSSIMO CATALIZZATORE')&&out.includes('Lettura Forex dell’edizione'));
+assert(out.includes('PROSSIMO CATALIZZATORE')&&out.includes('PERCHÉ CONTA PER IL FOREX')&&out.includes('class="home-fx-meaning"'));
 assert(out.includes('data-hourly-hero-to-sources="true"'),
  'The market-picture hero must lead to source evidence');
 assert(out.includes('data-hourly-open-sources'),
@@ -311,7 +311,7 @@ assert(out.includes('href="#currencies"')&&out.includes('href="#pairs"')&&
  out.includes('href="#risk"')&&out.includes('href="#news"'),
  'Research navigation must target real existing FX Quant routes');
 
-assert(out.includes('La lettura alternativa.'));
+assert(out.includes('Cosa potrebbe smentirci'));
 assert(out.includes('<details class="morning-deep-reading hourly-desk-news" id="hourly-desk-news">'),
  'News are available on request, not stacked on Home');
 assert(out.includes('https://www.bls.gov/news.release/ppi.htm'),'Cited source must be clickable');
@@ -335,6 +335,27 @@ assert.equal(win.FXQuantHourlyDesk.titleItaliano({
 }),'Più petrolio in transito nei passaggi chiave del Medio Oriente');
 const app=fs.readFileSync(path.join(ROOT,next,'app.js'),'utf8');
 const index=fs.readFileSync(path.join(ROOT,next,'index.html'),'utf8');
+const rankStart=app.indexOf('function homeFxRankStrip(){');
+const rankEnd=app.indexOf('function overview(){',rankStart);
+assert(rankStart>=0&&rankEnd>rankStart);
+const currencies=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+const ranked={status:'STIMA_OPERATIVA_NON_VALIDATA',asof:'2026-11-24',priceAsOf:'2026-11-23',
+ currencies:currencies.map((ccy,i)=>({ccy,rank:i+1,score:(7-i*2)/7,label:i<4?'Forte':'Debole'})),
+ pairs:currencies.flatMap((base,i)=>currencies.slice(i+1).map(quote=>({key:base+quote,name:base+'/'+quote,base,quote,favored:base,thesisStrength:'COERENTE',tradeAttractiveness:'DA VALIDARE',tier:1})))};
+let model=ranked;
+const rankCtx={get:()=>model,dayNow:()=>'2026-11-24',validDay:d=>/^\d{4}-\d{2}-\d{2}$/.test(d),fresh:(d,n)=>(Date.parse('2026-11-24')-Date.parse(d))/86400000<=n,
+ FX:currencies,finite:Number.isFinite,FLAGS:Object.fromEntries(currencies.map(c=>[c,''])),esc,date,
+ window:{FXQuantPairRankings:{selectResearchPairs:(items,n)=>items.filter(p=>p.tier===1).slice(0,n)}}};
+vm.runInNewContext(app.slice(rankStart,rankEnd),rankCtx);
+const rankedHtml=rankCtx.homeFxRankStrip();
+assert.equal((rankedHtml.match(/class="home-fx-rank-row"/g)||[]).length,8);
+assert.equal((rankedHtml.match(/class="home-fx-pair-row"/g)||[]).length,5);
+assert.match(rankedHtml,/Classifica completa delle 28 coppie/);
+model={...ranked,asof:'2026-11-01'};
+assert.equal(rankCtx.homeFxRankStrip(),'');
+model={...ranked,pairs:ranked.pairs.map(p=>({...p,tier:4}))};
+assert.match(rankCtx.homeFxRankStrip(),/Nessuna coppia supera il filtro attuale/);
+
 assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent free research');
 assert(app.includes("fetch('../../../market-desk/hourly-market-desk-check.json'"),
  'Hourly receipt fetch must be independent of the substantive edition');

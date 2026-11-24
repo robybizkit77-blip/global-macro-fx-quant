@@ -227,7 +227,7 @@
     '</span><span class="hourly-edition-zone">Orari di Roma</span></div></div>'+
     '<div class="hourly-hero-grid">'+
     '<header class="morning-lead hourly-hero" data-hourly-hero-to-sources="true" aria-label="Il quadro generale dei mercati: clicca per aprire notizie e fonti">'+
-    '<div class="hourly-hero-upper"><button type="button" class="morning-kicker hourly-kicker-sources" data-hourly-open-sources aria-controls="hourly-desk-news" aria-expanded="false">IL QUADRO GENERALE DEI MERCATI <span aria-hidden="true">↘</span></button>'+
+    '<div class="hourly-hero-upper"><button type="button" class="morning-kicker hourly-kicker-sources" data-hourly-open-sources aria-controls="hourly-desk-news" aria-expanded="false">IL TEMA CHE CONTA ORA <span aria-hidden="true">↘</span></button>'+
     '</div>'+
     '<h1>'+safe(feed.headline)+'</h1>'+
     '<p class="morning-deck">'+safe(feed.lead)+'</p>'+
@@ -235,13 +235,14 @@
     '<div class="hourly-hero-actions"><button type="button" class="hourly-hero-sources-button" data-hourly-open-sources aria-controls="hourly-desk-news" aria-expanded="false">Notizie e fonti <span aria-hidden="true">↘</span></button>'+
     '<a href="#currencies">Esplora le valute <span aria-hidden="true">↗</span></a></div></div>'+
     '</header>'+
-    renderCatalyst({calendar,news:calendarNews,today,nowMs,esc,date,fxReading:feed.fx_implications})+
+    renderCatalyst({calendar,news:calendarNews,today,nowMs,esc,date})+
     '</div>'+references+
+    '<section class="home-fx-meaning" aria-label="Implicazioni per il Forex"><span class="morning-section-label">PERCHÉ CONTA PER IL FOREX</span><p>'+safe(feed.fx_implications)+'</p><a href="#currencies">Verifica sulle valute ↗</a></section>'+
     (root.FXQuantHomePulse?.render?.({feed,risk,currencyPrices,esc,date,dayNow})||'')+
     '<section class="hourly-decision-section" aria-label="Le tre verifiche del desk">'+
     '<div class="hourly-section-head"><div><span class="morning-section-label">LETTURA DEL DESK</span>'+
-    '<h2>La mappa dei driver</h2></div>'+
-    '<p>Novità, evidenze contrarie e conferme da seguire. Nessun segnale automatico.</p></div>'+
+    '<h2>Cosa cambia e cosa monitorare</h2></div>'+
+    '<p>Cambiamenti, rischi e prossime conferme.</p></div>'+
     '<div class="hourly-decision-grid">'+
     '<article class="hourly-decision-card hourly-decision-change">'+
     '<span class="hourly-decision-overline">CAMBIAMENTO</span>'+
@@ -250,7 +251,7 @@
     '</article>'+
     '<article class="hourly-decision-card hourly-decision-contrary">'+
     '<span class="hourly-decision-overline">PROVA CONTRARIA</span>'+
-    '<h3>La lettura alternativa.</h3><p>'+safe(feed.contrary_evidence)+'</p>'+
+    '<h3>Cosa potrebbe smentirci</h3><p>'+safe(feed.contrary_evidence)+'</p>'+
     '<a class="hourly-driver-action" href="#currencies">Confronta le valute <span aria-hidden="true">↗</span></a>'+
     '</article>'+
     '<article class="hourly-decision-card hourly-decision-watch">'+
