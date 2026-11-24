@@ -307,7 +307,7 @@
       "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
     },
     "GBP": {
-      "as_of": "2026-11-20",
+      "as_of": "2026-11-23",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -315,25 +315,25 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -10.7,
-          "change_1w_bp": -12.3,
+          "change_1d_bp": 3.7,
+          "change_1w_bp": -9.2,
           "policy_comparison_temporally_aligned": true,
-          "policy_delta_bp": 82.1,
-          "rate": 4.8213
+          "policy_delta_bp": 85.9,
+          "rate": 4.8588
         },
         "3m": {
-          "change_1d_bp": -1.6,
-          "change_1w_bp": 0.3,
+          "change_1d_bp": 3.0,
+          "change_1w_bp": 0.4,
           "policy_comparison_temporally_aligned": true,
-          "policy_delta_bp": 31.8,
-          "rate": 4.3176
+          "policy_delta_bp": 34.7,
+          "rate": 4.3473
         },
         "6m": {
-          "change_1d_bp": -5.6,
-          "change_1w_bp": -4.5,
+          "change_1d_bp": 5.0,
+          "change_1w_bp": -2.9,
           "policy_comparison_temporally_aligned": true,
-          "policy_delta_bp": 57.6,
-          "rate": 4.5759
+          "policy_delta_bp": 62.6,
+          "rate": 4.6261
         }
       },
       "official_status": "ACTIVE",
@@ -343,7 +343,7 @@
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive"
     },
     "JPY": {
-      "as_of": "2026-11-20",
+      "as_of": "2026-11-24",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -352,19 +352,19 @@
       "horizons": {
         "12m": {
           "change_1d_bp": 0.0,
-          "change_1w_bp": 0.3,
+          "change_1w_bp": 0.0,
           "policy_delta_bp": 63.5,
           "rate": 1.885
         },
         "3m": {
           "change_1d_bp": 0.0,
-          "change_1w_bp": 1.4,
+          "change_1w_bp": 0.0,
           "policy_delta_bp": 20.4,
           "rate": 1.454
         },
         "6m": {
           "change_1d_bp": 0.0,
-          "change_1w_bp": 0.6,
+          "change_1w_bp": 0.0,
           "policy_delta_bp": 39.8,
           "rate": 1.648
         }
