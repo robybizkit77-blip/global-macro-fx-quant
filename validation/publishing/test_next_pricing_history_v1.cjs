@@ -77,7 +77,7 @@ assert(!safe.includes('<img')&&safe.includes('&lt;img'));
 assert(!render({history:{...data,official_ois_created:true},ccy:'GBP'}).includes('<svg'),
  'Official OIS promotion breaks data-readiness gate');
 const page=file('site/fx-quant-v2/next/index.html');
-assert(page.indexOf('rates-pricing-history-v1.js?v=4')<page.indexOf('rates-studio.js?v='));
+assert(page.indexOf('rates-pricing-history-v1.js?v=5')<page.indexOf('rates-studio.js?v='));
 assert.match(page,/rates-studio\.css\?v=\d+/);
 const app=file('site/fx-quant-v2/next/app.js');
 assert(app.includes("oisHistory:'./rates-pricing-history-v1.json'"));
@@ -127,3 +127,28 @@ derivedCross.tenors['12m'][0].derived=true;
 assert.equal(horizonMoves(derivedCross)[2].bp,null);
 assert.equal(horizonMoves({...crossTenor,kind:'FUTURES'})[2].bp,null);
 console.log('NEXT_FIXED_CONTRACT_CROSS_TENOR_MOMENTUM_PASS');
+
+const approx20={kind:'FUTURES',tenors:{'6m':[
+ mk('2026-10-23',4.845,null,false,'OFFICIAL_TENOR'),
+ mk('2026-11-23',4.81,null,false,'OFFICIAL_TENOR')]}};
+const approxMove=horizonMoves(approx20)[2];
+assert.equal(approxMove.bp,-3.5);
+assert.equal(approxMove.from,'2026-10-23');
+assert.equal(approxMove.referenceTarget,'2026-10-26');
+assert.equal(approxMove.approximateWindow,true);
+assert.match(approxMove.basis,/21 giorni feriali/);
+assert.equal(horizonMoves(approx20)[1].bp,null);
+assert.equal(horizonMoves(approx20)[0].bp,null);
+const tooOld=structuredClone(approx20);
+tooOld.tenors['6m'][0].date='2026-10-22';
+assert.equal(horizonMoves(tooOld)[2].bp,null);
+const exact20=structuredClone(approx20);
+exact20.tenors['6m'].splice(1,0,mk('2026-10-26',4.85,null,false,'OFFICIAL_TENOR'));
+assert.equal(horizonMoves(exact20)[2].bp,-4);
+assert(!horizonMoves(exact20)[2].approximateWindow);
+const differentContract=structuredClone(approx20);
+differentContract.tenors['6m'][0].contract='OLD';
+differentContract.tenors['6m'][1].contract='NEW';
+assert.equal(horizonMoves(differentContract)[2].bp,null);
+assert.equal(horizonMoves({...approx20,kind:'FUTURES SECONDARI'})[2].bp,null);
+console.log('NEXT_20D_OBSERVED_REFERENCE_APPROXIMATION_PASS');
