@@ -216,11 +216,39 @@ jobs:
           ref: main
           fetch-depth: 1
 
+      - name: Check independently delivered late scheduled morning phase
+        id: late_morning
+        if: ${{ github.event_name == 'schedule' && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/orchestration/check_morning_delivery_sla_v1.py \
+            --phase "${{ steps.phase.outputs.phase }}" --event schedule \
+            --late-scheduled-guard --output /tmp/late-scheduled-morning-guard.json
+          python3 - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/late-scheduled-morning-guard.json',encoding='utf-8'))
+          skip=d['skip_obsolete_phase'] is True
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as out:
+              out.write('superseded='+str(skip).lower()+'\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('\n## Scheduled morning admission\n')
+              out.write('- Status: **'+d['status']+'**\n')
+              out.write('- Checked: '+d['evaluated_at_rome']+'\n')
+              out.write('- Independent Pages delivery: '+d['pages_public_delivery']['status']+'\n')
+              if skip:
+                  pages=d['pages_public_delivery']
+                  out.write('- Prior HTTP proof: run #'+str(pages['publisher_run_id'])+' at '+pages['public_verified_at_rome']+'\n')
+                  out.write('- No new acquisition, source audit or publication claimed; phase missed its own deadline.\n')
+          PY
+
       - name: Snapshot G8 source dates and hashes before child collectors
+        if: ${{ steps.late_morning.outputs.superseded != 'true' }}
         run: python3 validation/orchestration/audit_g8_source_coverage_v1.py --output /tmp/g8-source-before.json
 
       - name: Run serialized refresh sequence
         id: refresh
+        if: ${{ steps.late_morning.outputs.superseded != 'true' }}
         shell: bash
         env:
           PHASE: ${{ steps.phase.outputs.phase }}
@@ -547,7 +575,7 @@ jobs:
           esac
 
       - name: Retain exact child-step proof for all orchestration phases
-        if: ${{ always() && steps.phase.outcome == 'success' }}
+        if: ${{ always() && steps.phase.outcome == 'success' && steps.late_morning.outputs.superseded != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: orchestrator-child-step-proof-${{ github.run_id }}
@@ -560,14 +588,14 @@ jobs:
       # Re-check the LATEST main commit after the dispatched child workflows
       # have updated it; the orchestration runner itself did not mutate data.
       - name: Checkout refreshed production sources for G8 audit and 08:00 readiness
-        if: ${{ always() && steps.phase.outcome == 'success' }}
+        if: ${{ always() && steps.phase.outcome == 'success' && steps.late_morning.outputs.superseded != 'true' }}
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 1
 
       - name: Compare G8 source hashes after child collectors
-        if: ${{ always() && steps.phase.outcome == 'success' }}
+        if: ${{ always() && steps.phase.outcome == 'success' && steps.late_morning.outputs.superseded != 'true' }}
         run: |
           python3 validation/orchestration/audit_g8_source_coverage_v1.py \
             --before /tmp/g8-source-before.json \
@@ -575,7 +603,7 @@ jobs:
             --summary
 
       - name: Retain G8 before/after source-change receipts
-        if: ${{ always() && steps.phase.outcome == 'success' }}
+        if: ${{ always() && steps.phase.outcome == 'success' && steps.late_morning.outputs.superseded != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: g8-source-changes-${{ github.run_id }}
@@ -586,7 +614,7 @@ jobs:
           retention-days: 21
 
       - name: Audit true source dates for the morning study
-        if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
+        if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') && steps.late_morning.outputs.superseded != 'true' }}
         shell: bash
         env:
           REFRESH_OUTCOME: ${{ steps.refresh.outcome }}
@@ -645,7 +673,7 @@ jobs:
       # Record phase timing alongside any independent, already-observed Pages
       # delivery. A delay in this phase remains a workflow failure.
       - name: Certify 08:00 morning delivery deadline
-        if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
+        if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') && steps.late_morning.outputs.superseded != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -678,6 +706,14 @@ jobs:
           PY
           exit "$outcome"
 
+      - name: Record missed deadline of independently superseded scheduled phase
+        if: ${{ always() && steps.late_morning.outputs.superseded == 'true' }}
+        shell: bash
+        run: |
+          echo "MORNING_0800_SLA_RESULT PHASE_SUPERSEDED_AFTER_MORNING_WINDOW PHASE_ON_TIME False PUBLIC_PAGES PASS_PUBLIC_HTTP_BY_0800"
+          echo "::error::Scheduled phase arrived after the morning window; its own deadline was missed. Independent on-time public delivery is already proven. No new source audit or publication was attempted."
+          exit 1
+
       - name: Retain morning source readiness evidence
         if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
         uses: actions/upload-artifact@v4
@@ -686,5 +722,6 @@ jobs:
           path: |
             /tmp/morning-readiness*.json
             /tmp/morning-delivery-sla-v1.json
+            /tmp/late-scheduled-morning-guard.json
           if-no-files-found: warn
           retention-days: 21
