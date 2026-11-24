@@ -1182,6 +1182,42 @@ def curated_statsnz_house(spec,now):
       "last_observation":item["observation_as_of"],
       "verified_on":d["verified_on"],"source_page":page}
 
+NZD_CREDIT_PROXY_URL="https://tradingeconomics.com/new-zealand/private-sector-credit"
+
+def parse_nzd_credit_proxy(raw,now):
+    """Publicly reported RBNZ private credit stock, NOT C5 business growth."""
+    p=_PlainText();p.feed(raw.decode("utf-8","replace"))
+    txt=" ".join(" ".join(p.parts).split())
+    months={date(2000,m,1).strftime("%B").lower():m for m in range(1,13)}
+    pat="|".join(months)
+    m=re.search(r"Private Sector Credit in New Zealand (?:increased|decreased|rose|fell) to ([\d,.]+) NZD Million in ("+pat+r") from ([\d,.]+) NZD Million in ("+pat+r") of (20\d{2})\.",txt,re.I)
+    if not m:raise ValueError("NZD private credit exact published pair missing")
+    if not re.search(r"source:\s*Reserve Bank of New Zealand",txt,re.I):
+        raise ValueError("NZD credit issuer attribution missing")
+    cur,prev=months[m[2].lower()],months[m[4].lower()]
+    if prev!=(cur-2)%12+1:raise ValueError("NZD credit nonadjacent months")
+    year=int(m[5])+(cur==1)
+    period=f"{year}-{cur:02d}";prior=f"{int(m[5])}-{prev:02d}"
+    if period_end(period)>now:raise ValueError("NZD credit future period")
+    current=float(m[1].replace(",",""));previous=float(m[3].replace(",",""))
+    if not all(math.isfinite(x) and 10000<x<2000000 for x in (current,previous)):
+        raise ValueError("NZD credit stock invalid")
+    return [(prior,previous),(period,current)]
+
+def collect_nzd_credit_proxy(spec,now):
+    req=Request(NZD_CREDIT_PROXY_URL,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
+    with urlopen(req,timeout=20) as r:
+        if r.geturl().rstrip("/")!=NZD_CREDIT_PROXY_URL:raise ValueError("NZD credit proxy redirect")
+        raw=r.read(2_000_001)
+        if not raw or len(raw)>2_000_000:raise ValueError("NZD credit proxy size")
+    obs=parse_nzd_credit_proxy(raw,now)
+    # Never replace newer verified C5 data with older proxy observations.
+    manual=json.loads(MANUAL_NZ_CREDIT.read_text(encoding="utf-8"))
+    if obs[-1][0]<manual["dates"][-1]:raise ValueError("NZD credit proxy older than C5")
+    alt={**spec,"key":"RBNZ_PRIVATE_CREDIT_STOCK_TE","name":"Credito privato totale, stock nominale (proxy del credito; RBNZ via Trading Economics)",
+         "unit":"mln NZD nominali","kind":"percent","origin":"RBNZ / Trading Economics","source_page":NZD_CREDIT_PROXY_URL}
+    return candidate(alt,obs,now)
+
 def curated_rbnz_credit(spec,now):
     if spec["key"]!="RBNZ_C5_BUSINESS_YOY":raise ValueError("RBNZ snapshot identity")
     d=json.loads(MANUAL_NZ_CREDIT.read_text(encoding="utf-8"))
@@ -1271,6 +1307,15 @@ def collect(now=None,fetcher=fetch):
             out["audit"][code].pop("...")
         except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
             if spec["method"]=="rbnz_credit":
+                if fetcher is fetch:
+                    try:
+                        item,status=collect_nzd_credit_proxy(spec,now)
+                        if item:
+                            out["series"].append(item)
+                            out["audit"][code]={**status,"source_page":item["source_page"],"origin":item["source_file"],"primary_error":str(exc)[:160],"proxy":True}
+                            continue
+                    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
+                        pass
                 try:
                     item,status=curated_rbnz_credit(spec,now)
                     if item:out["series"].append(item)
