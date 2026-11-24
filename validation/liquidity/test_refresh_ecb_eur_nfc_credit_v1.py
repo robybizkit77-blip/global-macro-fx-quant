@@ -4,10 +4,10 @@ import csv
 import io
 import tempfile
 import unittest
-from datetime import date
+from datetime import date,timedelta
 from pathlib import Path
 from validation.liquidity.refresh_ecb_eur_nfc_credit_v1 import (
-    parse, emit_js, run, SERIES, ANCHOR_DATE, ANCHOR_VALUE, existing_observations
+    parse, parse_excess_liquidity, existing_payload, EXLIQ_SERIES, emit_js, run, SERIES, ANCHOR_DATE, ANCHOR_VALUE, existing_observations
 )
 TODAY=date(2026,11,14)
 
@@ -79,5 +79,36 @@ class ECBNFCSourceTest(unittest.TestCase):
             repeated=run(dest,apply=True,fixture=sample,today=TODAY)
             self.assertEqual(repeated["status"],"NO_CHANGE")
             self.assertEqual(repeated["write_state"],"NO_MUTATION")
+
+
+    def test_daily_liquidity_isolation_and_retention(self):
+        start=date(2026,9,1)
+        days=[start+timedelta(days=i) for i in range(74)]
+        rows=["KEY,TIME_PERIOD,OBS_VALUE,UNIT_MULT"]+[f"{EXLIQ_SERIES},{d.isoformat()},{2123137+(i-20)*1000},6" for i,d in enumerate(days)]
+        raw="\n".join(rows)+"\n"
+        x=parse_excess_liquidity(raw,today=TODAY)
+        self.assertEqual(x["latest_observation"],"2026-11-13")
+        self.assertEqual(x["values"][-1],2176137)
+        for bad in (raw.replace(EXLIQ_SERIES,"ILM.D.U2.C.OTHER.U2.EUR"),
+                    raw.replace(",6\n",",3\n"),raw+rows[-1]+"\n",
+                    raw.replace("2026-09-21,2123137","2026-09-21,3000000")):
+            with self.assertRaises(ValueError):parse_excess_liquidity(bad,today=TODAY)
+        with tempfile.TemporaryDirectory() as root:
+            f=Path(root)/"nfc.csv";e=Path(root)/"exliq.csv";dest=Path(root)/"research.js"
+            f.write_text(fixture());e.write_text(raw)
+            run(dest,apply=True,fixture=f,today=TODAY)
+            before=existing_payload(dest.read_text())
+            f.write_text("invalid NFC")
+            args={"apply":True,"fixture":f,"exliq_fixture":e,"today":TODAY}
+            result=run(dest,**args)
+            self.assertEqual(result["excess_liquidity"]["status"],"VERIFIED")
+            self.assertTrue(result["nfc"]["status"].startswith("WITHHELD"))
+            after=existing_payload(dest.read_text())
+            self.assertEqual(after["values"],before["values"])
+            self.assertEqual(after["excess_liquidity"],x)
+            f.write_text(fixture())
+            self.assertEqual(run(dest,**args)["status"],"NO_CHANGE")
+            e.write_text("invalid daily liquidity")
+            self.assertEqual(run(dest,**args)["excess_liquidity"]["retained_observation"],"2026-11-13")
 
 if __name__=="__main__":unittest.main()
