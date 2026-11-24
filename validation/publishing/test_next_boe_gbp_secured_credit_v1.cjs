@@ -90,3 +90,19 @@ console.log('BOE_GBP_SECURED_CREDIT_NEXT_PASS',JSON.stringify({
  monthlyObservations:mortgage.dates.length,
  sourceOnly:true,pitVerified:false,fxSignal:false
 }));
+
+const growthPlots=[];
+studio.render({...api('GBP'),plot:x=>{growthPlots.push(x);return '<svg></svg>';}});
+const growth=growthPlots.find(x=>x.label==='Credito · fonte ufficiale separata GBP');
+assert(growth,'GBP secured credit chart missing');
+assert.deepEqual(growth.lines[0].values,mortgage.dates.map((d,i)=>({label:d,value:mortgage.values[i]})).slice(-80));
+assert.match(growth.lines[0].name,/% annua/);
+const oldMortgage=globalThis.FXQuantGBPBoESecuredCreditResearch;
+try{
+ const modified=structuredClone(mortgage);modified.values[0]=-0.2;modified.values[1]=0;
+ globalThis.FXQuantGBPBoESecuredCreditResearch=modified;
+ const plots=[];studio.render({...api('GBP'),plot:x=>{plots.push(x);return '<svg></svg>';}});
+ const v=plots.find(x=>x.label==='Credito · fonte ufficiale separata GBP').lines[0].values;
+ if(modified.values.length<=80)assert.deepEqual(v.slice(0,2).map(p=>p.value),[-0.2,0]);
+}finally{globalThis.FXQuantGBPBoESecuredCreditResearch=oldMortgage;}
+console.log('NEXT_GBP_SECURED_GROWTH_CHART_PASS',mortgage.last_observation);
