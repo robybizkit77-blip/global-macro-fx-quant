@@ -343,7 +343,7 @@ const ranked={status:'STIMA_OPERATIVA_NON_VALIDATA',asof:'2026-11-24',priceAsOf:
  currencies:currencies.map((ccy,i)=>({ccy,rank:i+1,score:(7-i*2)/7,label:i<4?'Forte':'Debole'})),
  pairs:currencies.flatMap((base,i)=>currencies.slice(i+1).map(quote=>({key:base+quote,name:base+'/'+quote,base,quote,favored:base,thesisStrength:'COERENTE',tradeAttractiveness:'DA VALIDARE',tier:1})))};
 let model=ranked;
-const rankCtx={get:()=>model,dayNow:()=>'2026-11-24',validDay:d=>/^\\d{4}-\\d{2}-\\d{2}$/.test(d),fresh:(d,n)=>(Date.parse('2026-11-24')-Date.parse(d))/86400000<=n,
+const rankCtx={get:()=>model,dayNow:()=>'2026-11-24',validDay:d=>/^\d{4}-\d{2}-\d{2}$/.test(d),fresh:(d,n)=>(Date.parse('2026-11-24')-Date.parse(d))/86400000<=n,
  FX:currencies,finite:Number.isFinite,FLAGS:Object.fromEntries(currencies.map(c=>[c,''])),esc,date,
  window:{FXQuantPairRankings:{selectResearchPairs:(items,n)=>items.filter(p=>p.tier===1).slice(0,n)}}};
 vm.runInNewContext(app.slice(rankStart,rankEnd),rankCtx);
