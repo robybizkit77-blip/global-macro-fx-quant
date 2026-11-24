@@ -128,3 +128,24 @@ a.fx-watch-event:hover,a.fx-watch-event:focus-visible{border-color:var(--blue)}
 
 .fx-watch-thesis{margin:0 12px 10px;padding-top:8px;border-top:1px solid var(--line2);color:var(--soft);font-size:12px;line-height:1.45}
 .fx-watch-thesis small{display:block;margin-top:3px;color:var(--muted);font-size:11px}
+
+/* Separate evidence axes: colors refer to the specific axis, never an entry signal. */
+.fx-ranking-desk .fx-rank-stage-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 16px}
+.fx-ranking-desk .fx-rank-stage{display:flex;flex-direction:column;gap:5px;min-width:0;padding:11px 13px;border:1px solid #365063;border-top:2px solid #8baec7;border-radius:8px;background:#152b3d;color:#e5f0f7}
+.fx-ranking-desk .fx-rank-stage small{font-size:11px;font-weight:750;line-height:1.4;color:#c1d5e3}
+.fx-ranking-desk .fx-rank-stage strong{font-size:24px;line-height:1;font-variant-numeric:tabular-nums}
+.fx-ranking-desk .fx-rank-stage>span{font-size:10px;line-height:1.4;color:#adc4d4}
+.fx-ranking-desk .fx-rank-stage.amber{border-top-color:#d7b16d}.fx-ranking-desk .fx-rank-stage.amber strong{color:#f4d092}
+.fx-ranking-desk .fx-rank-stage.red{border-top-color:#e47b87}.fx-ranking-desk .fx-rank-stage.red strong{color:#ff9ba6}
+.fx-ranking-desk .fx-rank-pair{grid-template-columns:20px 80px minmax(130px,1fr) minmax(235px,1.25fr) 56px}
+.fx-ranking-desk .fx-rank-featured .fx-rank-pair{grid-template-columns:17px 75px minmax(0,1fr)}
+.fx-ranking-desk .fx-rank-featured .fx-rank-evidence-grid{grid-column:2/-1}
+.fx-ranking-desk .fx-rank-evidence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;min-width:0;align-items:stretch}
+.fx-ranking-desk .fx-rank-axis{display:flex;flex-direction:column;gap:3px;min-width:0;padding:6px 8px;border:1px solid #385164;border-left:2px solid #8baec7;border-radius:5px;background:#152c3e}
+.fx-ranking-desk .fx-rank-axis small{font-size:9.5px;line-height:1.35;color:#b5cbd9;overflow-wrap:anywhere}
+.fx-ranking-desk .fx-rank-axis strong{font-size:11px;line-height:1.3;color:#c5d9e8;overflow-wrap:anywhere}
+.fx-ranking-desk .fx-rank-axis.green{background:#163a32;border-left-color:#62cfa0}.fx-ranking-desk .fx-rank-axis.green strong{color:#a0eac0}
+.fx-ranking-desk .fx-rank-axis.amber{background:#3c3426;border-left-color:#d6ad63}.fx-ranking-desk .fx-rank-axis.amber strong{color:#f2d198}
+.fx-ranking-desk .fx-rank-axis.red{background:#3e2935;border-left-color:#de7b87}.fx-ranking-desk .fx-rank-axis.red strong{color:#ffabb4}
+@media(max-width:980px){.fx-ranking-desk .fx-rank-pair{grid-template-columns:20px 78px minmax(0,1fr)}.fx-ranking-desk .fx-rank-evidence-grid{grid-column:2/-1}.fx-ranking-desk .fx-rank-open{display:none}}
+@media(max-width:720px){.fx-ranking-desk .fx-rank-stage-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.fx-ranking-desk .fx-rank-stage{padding:10px}.fx-ranking-desk .fx-rank-pair-copy{grid-column:2/-1}.fx-ranking-desk .fx-rank-evidence-grid{grid-column:2/-1}.fx-ranking-desk .fx-rank-axis{padding:6px}.fx-ranking-desk .fx-rank-pair,.fx-ranking-desk .fx-rank-featured .fx-rank-pair{grid-template-columns:18px 73px minmax(0,1fr)}}
