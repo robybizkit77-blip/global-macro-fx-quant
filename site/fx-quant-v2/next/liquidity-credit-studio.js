@@ -598,6 +598,27 @@
    (creditLines?'<a href="https://data.snb.ch/en/topics/banken/cube/bakredinausbm" target="_blank" rel="noopener noreferrer">SNB · Linee di credito ↗</a>':'')+
    '</div></section>'};
  }
+ // Market credit spread observations, separate from national lending and reserves.
+ function creditMarket(risk,today){
+  const cutoff=dateMs(observationDate(today));
+  return [['IG_OAS','IG','Obbligazioni di qualità investment grade'],['HY_OAS','HY','Obbligazioni a maggior rischio']].map(([key,label,description])=>{
+   const x=risk?.streams?.[key],d=observationDate(x?.date),age=(cutoff-dateMs(d))/864e5;
+   const expected=key==='IG_OAS'?'BAMLC0A0CM':'BAMLH0A0HYM2';
+   const ok=x?.quality==='PUBLISHED_SOURCE_RESEARCH_ONLY'&&x.not_intraday===true&&
+    x.source_url==='https://fred.stlouisfed.org/graph/fredgraph.csv?id='+expected&&finite(x.value)&&finite(x.previous)&&x.value>=0&&x.previous>=0&&age>=0&&age<=7;
+   const bp=ok?Math.round((x.value-x.previous)*100):null;
+   return {key,label,description,ok,date:ok?d:null,level:ok?x.value:null,bp,
+    tone:!ok?'unknown':bp>0?'down':bp<0?'up':'flat',source:ok?x.source_url:null};
+  });
+ }
+ function marketFirstRead(risk,today,esc,fmt){
+  const rows=creditMarket(risk,today),[ig,hy]=rows;
+  const same=ig.ok&&hy.ok&&ig.date===hy.date;
+  const reading=same?(ig.bp>0&&hy.bp>0?'Gli spread di entrambe le categorie si allargano: il mercato chiede più compenso per il rischio di credito.':ig.bp<0&&hy.bp<0?'Gli spread di entrambe le categorie si restringono: diminuisce il compenso richiesto per il rischio di credito.':'I due spread non si muovono nella stessa direzione: il segnale del credito di mercato è misto.'):'Le osservazioni non sono entrambe recenti e allineate: nessun giudizio congiunto.';
+  const relative=same&&hy.bp>0&&hy.bp>ig.bp?' L’aumento è più marcato sul credito rischioso HY.':'';
+  const cards=rows.map(x=>'<article class="liq-first-spread '+x.tone+'"><small>'+esc(x.description)+'</small><strong>'+x.label+' · '+(x.ok?esc(fmt(x.level,2))+'%':'—')+'</strong><b>'+(x.ok?esc((x.bp>0?'+':'')+x.bp+' pb')+' · '+(x.bp>0?'Si allarga':x.bp<0?'Si restringe':'Invariato'):'Confronto da verificare')+'</b><small>'+(x.ok?esc(x.date)+' · <a href="'+esc(x.source)+'" target="_blank" rel="noopener noreferrer">ICE BofA / FRED ↗</a>':'Dato recente non verificato')+'</small></article>').join('');
+  return '<section class="drivers-panel liq-first-read" aria-label="Condizioni del credito di mercato"><div class="drivers-head"><div><span class="mini-overline">01 / RISCHIO DI CREDITO · USA</span><h2>Il credito di mercato si sta stringendo?</h2></div></div><p class="liq-first-judgment"><strong>Cosa vedo davvero.</strong> '+esc(reading+relative)+'</p><div class="liq-first-spreads">'+cards+'</div><p class="liq-first-note">Gli spread misurano il premio rispetto ai titoli governativi, non il rendimento totale né la quantità di prestiti. Per il Forex, un allargamento persistente può favorire la domanda di rifugio, ma va verificato con tassi, volatilità e cambi.</p><a href="#risk">Approfondisci rischio e spread ↗</a></section>';
+ }
  function render(api){
   const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,date,dayNow}=api;
   const all=get('liquidity')||{},today=dayNow();
@@ -630,14 +651,21 @@
     (pts.length>=2?plot({lines:[{name:s.label,color,values:pts}],label:label+' '+selected}):
      '<div class="drivers-empty">Storico numerico insufficiente: nessuna curva inventata.</div>')+'</article>';
   };
+  // Reuse the source-specific dossier validators instead of presenting stale feed directions as current.
+  const issuerFor=ccy=>ccy==='CHF'?chfSNBResearch(get('residualResearch'),today,esc,fmt):
+   ccy==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):
+   ccy==='JPY'?jpyBOJCreditResearch(esc,fmt,today):
+   ccy==='GBP'?gbpBoEReservesResearch(esc,fmt,today):
+   ccy==='AUD'?audRBAAdjustedCredit(esc,fmt,today):
+   ccy==='EUR'?eurECBLoanResearch(esc,fmt,today):
+   ccy==='USD'?usFedCreditResearch(esc,fmt,today):
+   ccy==='CAD'?cadIssuerResearch(esc,fmt,today):null;
   const cards=FX.map(ccy=>{
-    const item=ccy==='NZD'&&nzd?nzd:all[ccy],reading=interpret(item),active=ccy===selected;
+    const issuer=issuerFor(ccy),active=ccy===selected;
     return '<button class="drivers-country" type="button" data-liq-country="'+ccy+'" aria-controls="liquidity-dossier" aria-label="'+
      esc(ccy+' · '+(NAMES[ccy]||ccy))+'" aria-pressed="'+String(active)+'">'+
      '<span class="drivers-country-head"><b>'+esc(FLAGS[ccy]||'')+' '+ccy+'</b><small>'+esc(NAMES[ccy]||ccy)+'</small></span>'+
-     (ccy==='CHF'?'<span class="drivers-mini-state" data-tone="neutral">Apri scheda CHF</span>':
-      '<span class="drivers-mini-state" data-tone="'+reading.liquidity.tone+'">Liquidità · '+esc(reading.liquidity.label)+'</span>'+
-      '<span class="drivers-mini-state" data-tone="'+reading.credit.tone+'">Credito · '+esc(reading.credit.label)+'</span>')+'</button>';
+     '<span class="liq-country-reading">'+esc(issuer?.opening||'Apri il dossier per verificare le osservazioni e le fonti disponibili.')+'</span><span class="liq-country-open">Apri scheda ›</span>'+'</button>';
   }).join('');
   const facts='<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+
    cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>';
@@ -663,9 +691,10 @@
    ' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica.</p>';
   return pageHero('CONDIZIONI FINANZIARIE G8','Liquidità & Credito',
    'Come si muovono le riserve delle banche e il credito a famiglie e imprese.')+
-   '<section class="drivers-panel" id="liquidity-studio"><div class="drivers-head"><div><h2>Seleziona un’economia</h2>'+
+   '<section class="drivers-panel" id="liquidity-studio"><div class="drivers-head"><div><h2>Liquidità e prestiti nelle otto economie</h2><p class="liq-first-note">Ultime osservazioni delle fonti di ricerca già verificate, con il periodo nella lettura. Non sono una graduatoria delle condizioni finanziarie.</p>'+
    '</div></div>'+
    '<div class="drivers-country-grid">'+cards+'</div></section>'+
+   marketFirstRead(get('risk'),today,esc,fmt)+
    '<section class="drivers-panel drivers-selection" id="liquidity-dossier" aria-label="Scheda liquidità e credito '+selected+'">'+
    '<div class="drivers-head"><div><span class="mini-overline">'+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
    '<h2>'+esc(headline)+'</h2></div></div>'+
@@ -688,7 +717,7 @@
    '<div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità','#69d5ad')+chart(row?.credit,'Credito','#95c6e9')+'</div>'+
    '<p class="drivers-source-note">I grafici conservano i livelli originali nelle rispettive unità; non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>');
  }
- const api={series,direction,interpret,observationDate,sourceEvidence,render};
+ const api={series,direction,interpret,observationDate,sourceEvidence,creditMarket,marketFirstRead,render};
  root.FXQuantLiquidityCredit=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

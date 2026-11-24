@@ -412,6 +412,7 @@ function make(api){
     +'<div class="rates-jumps pill-controls" role="group" aria-label="Vai ai grafici dei tassi">'
     +'<button type="button" class="pill" data-section-jump="rates-government">Governativi 2Y / 10Y</button>'
     +'<button type="button" class="pill" data-section-jump="rates-expected">Attese 3M / 6M / 12M</button></div>'
+    +(root.FXQuantPricingMoves?.renderOverview?.({snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),today:dayNow()})||'')
     +govCard(c)
     +latestGovernmentReading(c)
     +'<section class="rates-chapter rates-government" id="rates-government" tabindex="-1" aria-label="Storico dei rendimenti governativi">'

@@ -177,8 +177,15 @@
   const context=localized?.text||b?.context;
   const story=policyOpening(selected,stance,last,b,localized);
   const bank=b?.full_name||b?.bank||NAMES[selected]||selected;
-  const cards=FX.map(k=>'<button class="drivers-country" type="button" data-bank-country="'+k+'" aria-pressed="'+String(k===selected)+'">'+
-    '<span class="drivers-country-head"><b>'+esc(FLAGS[k]||'')+' '+k+'</b><small>'+esc(banks[k]?.bank||NAMES[k]||k)+'</small></span></button>').join('');
+  const cards=FX.map(k=>{
+   const entry=banks[k],validDate=day(entry?.last_date)&&entry.last_date<=today;
+   const action=classifyAction(validDate?entry:null);
+   const rateText=validDate?(entry.rate_text||(finite(entry.rate)?fmt(entry.rate,2)+'%':'—')):'—';
+   return '<button class="drivers-country" type="button" data-bank-country="'+k+'" aria-pressed="'+String(k===selected)+'">'+
+    '<span class="drivers-country-head"><b>'+esc(FLAGS[k]||'')+' '+k+'</b><small>'+esc(entry?.bank||NAMES[k]||k)+'</small></span>'+
+    '<span class="bank-first-rate">'+esc(rateText)+'</span><span class="bank-first-action '+action.tone+'">'+esc(action.label.replace('ULTIMA DECISIONE · ',''))+'</span>'+
+    '<small class="bank-first-date">'+esc(validDate?date(entry.last_date):'Data da verificare')+'</small></button>';
+  }).join('');
   const evidence=macroEvidence(can,fmt,date);
   const source=[b?.policy_decision_source,b?.official_source_url].find(x=>typeof x==='string'&&/^https:\/\//i.test(x));
   return pageHero('POLITICA MONETARIA','Banche centrali',
@@ -189,9 +196,11 @@
    '<div class="drivers-head"><div><span class="mini-overline">'+esc(FLAGS[selected]||'')+' '+esc(bank)+'</span>'+
    '<h2>'+esc(story.title)+'</h2></div></div>'+
    '<div class="drivers-bank-story">'+
-   (story.lead?'<p class="drivers-lead">'+esc(story.lead)+'</p>':'')+
-   '<p class="drivers-lead">'+esc(can.text)+'</p>'+
-   (market.plain?'<p class="drivers-lead">'+esc(market.plain)+'</p>':'')+
+   '<div class="bank-first-grid">'+
+   '<article class="bank-first-axis '+stance.tone+'"><span>01 · WANT</span><h3>Cosa vuole fare</h3><strong>'+esc(stanceReading(last?b:null))+'</strong><p>'+esc(story.lead||'Comunicazione ufficiale da verificare.')+'</p></article>'+
+   '<article class="bank-first-axis"><span>02 · CAN</span><h3>Cosa può fare</h3><strong>'+esc(can.title)+'</strong><p>'+esc(can.text)+'</p></article>'+
+   '<article class="bank-first-axis"><span>03 · PRICING</span><h3>Cosa sconta il mercato</h3><strong>'+esc(market.title)+'</strong><p>'+esc(market.plain||market.text)+'</p></article>'+
+   '</div>'+
    '<p class="drivers-lead"><strong>Cosa seguire.</strong> '+esc(FX_TESTS[selected])+'</p></div>'+
    '<div class="drivers-links"><button type="button" data-bank-open="rates" data-bank-target="'+selected+'">Vedi i tassi attesi ↗</button>'+
    '<button type="button" data-bank-open="currencies" data-bank-target="'+selected+'">Valuta '+selected+' ↗</button><a href="#macro">Scenario macro ↗</a><a href="#news">Calendario e Notizie ↗</a></div>'+
