@@ -3499,7 +3499,19 @@
       },
       "latest_date": "2026-11-23",
       "observed_dates": 5,
-      "derived_reference_points": 3
+      "derived_reference_points": 3,
+      "fixed_contract_20d": {
+        "from": "2026-10-26",
+        "to": "2026-11-23",
+        "contract": "Jun 2027",
+        "expiration": "2027-06-16",
+        "reference_rate": 4.06,
+        "current_rate": 3.7,
+        "change_bp": -36.0,
+        "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261026ZFT.htm",
+        "source_sha256": "335e5533e2c14cddf29bf3e931b900abacc73b7ab992c4cb2da424e373a5bd04",
+        "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"
+      }
     },
     "CAD": {
       "kind": "FUTURES",
