@@ -130,6 +130,66 @@
   }
   return out.slice(-7);
  }
+ // Exact weekday offsets, NOT exchange-session counts: holidays or missing
+ // observations remain explicit gaps. Never bridge secondary contract rolls.
+ function weekdayReference(day,n){
+  if(!dateOK(day)||![1,5,20].includes(n))return null;
+  let t=new Date(day+'T12:00:00Z');
+  for(let i=0;i<n;){
+   t.setUTCDate(t.getUTCDate()-1);
+   if(t.getUTCDay()!==0&&t.getUTCDay()!==6)i++;
+  }
+  return t.toISOString().slice(0,10);
+ }
+ function horizonMoves(r){
+  const arr=r?.tenors?.['6m']||[],last=arr.at(-1);
+  return [1,5,20].map(days=>{
+   const from=weekdayReference(last?.date,days),to=last?.date||null;
+   const unavailable=reason=>({days,from,to,bp:null,reason});
+   if(!from||last.derived)return unavailable('Ultimo livello non osservato');
+   const a=arr.find(p=>p.date===from);
+   if(!a)return unavailable('Riferimento esatto assente');
+   let basis;
+   if(r.kind==='OIS'&&!a.derived&&a.source_class==='OFFICIAL_TENOR'&&last.source_class===a.source_class){
+    basis='OIS 6M';
+   }else if(r.kind==='FUTURES'&&!a.derived&&a.source_class==='OFFICIAL_TENOR'&&last.source_class===a.source_class){
+    if((a.contract||last.contract)&&a.contract!==last.contract)return unavailable('Contratto cambiato');
+    basis=a.contract?'Medesimo contratto':'Tenore rappresentativo · rollover possibile';
+   }else if(r.kind==='FUTURES SECONDARI'&&!a.derived&&a.source_class==='SECONDARY_SAME_CONTRACT'&&last.source_class===a.source_class){
+    if(!a.contract||a.contract!==last.contract)return unavailable('Contratto cambiato');
+    // Reject a visible intermediate rollover even if endpoint IDs agree.
+    if(arr.some(p=>p.date>=from&&p.date<=to&&p.contract!==last.contract))
+     return unavailable('Contratto cambiato nel periodo');
+    basis='Stesso contratto · ricerca';
+   }else if(r.kind==='PROXY FUTURES'&&last.source_class==='BANK_BILL_PROXY'&&
+     a.contract&&a.contract===last.contract&&
+     (a.source_class==='BANK_BILL_PROXY'&&!a.derived||
+      a.source_class==='BANK_BILL_PROXY_DELTA_REFERENCE'&&a.derived&&days<=5)){
+    basis=a.derived?'Proxy · riferimento ricostruito':'Proxy stesso contratto';
+   }else return unavailable('Basi non confrontabili');
+   return {days,from,to,bp:Math.round((last.rate-a.rate)*10000)/100,basis,derived:a.derived};
+  });
+ }
+ function horizonTable(history,ccy){
+  const rows=G8.map(c=>{
+   const r=country(history,c,0),moves=horizonMoves(r);
+   const last=r?.tenors?.['6m']?.at(-1);
+   return '<tr'+(c===ccy?' class="active"':'')+'><td><strong>'+c+
+    '</strong><small>'+clean(labelKind(r?.kind))+'</small></td>'+
+    '<td>'+fmt(last?.rate,3)+'%<small>'+clean(last?.date||'—')+'</small></td>'+
+    moves.map(m=>{
+     const direction=m.bp>0?'up':m.bp<0?'down':'';
+     return '<td class="rates-cell"><strong class="rates-first-direction '+direction+'">'+
+      (num(m.bp)?(m.bp>0?'+':'')+fmt(m.bp,1)+' pb':'—')+'</strong>'+
+      '<small>'+clean(m.from||'—')+(num(m.bp)?' · '+clean(m.basis):' · '+clean(m.reason))+'</small></td>';
+    }).join('')+'</tr>';
+  }).join('');
+  return '<div class="ois-history-lower" data-pricing-horizon-matrix><span class="micro-over">G8 · MOMENTUM MONETARIO 6M</span>'+
+   '<h3>Chi sta repricing? 1 / 5 / 20 giorni feriali</h3>'+
+   '<div style="overflow-x:auto"><table class="rates-universe-table"><thead><tr><th>Valuta / fonte</th><th>Ultimo 6M</th>'+
+   '<th>1 giorno</th><th>5 giorni</th><th>20 giorni</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+   '<small>Variazioni in punti base rispetto alla data iniziale indicata, non conteggi di sedute di borsa: festività e dati mancanti possono lasciare vuoti. OIS, tenori futures rappresentativi (rollover possibile), contratti secondari e proxy non sono equivalenti. Nessuna interpolazione, nessun ranking FX.</small></div>';
+ }
  function sparkline(row){
   const pts=row?.tenors?.['6m']||[];
   if(!pts.length)return '<span class="ois-mini-empty">n.d.</span>';
@@ -174,6 +234,7 @@
    '<div class="rates-section-head"><div><span class="chapter-kicker">STORICO PRICING · G8 · 3M/6M/12M</span>'+
    '<h2>Non solo il livello. <em>Come si è evoluta la curva?</em></h2></div>'+
    '<p>Serie storiche archiviate, con i giorni mancanti lasciati vuoti. Contratti futures diversi non vengono uniti artificialmente.</p></div>'+
+   horizonTable(history,ccy)+
    '<div class="ois-history-top"><div><b>'+ccy+' · '+clean(labelKind(c.kind))+
    '</b><small>'+clean(c.quality)+' · Ultimo dato '+dmy(last)+
    ' · '+dates+' date in finestra</small></div>'+
@@ -219,7 +280,7 @@
    Number(history.excluded_conflicted_contract_days||0)+
    ' identità contratto/data). I punti NZD ricostruiti sono marcati come tali. Dati raccolti retrospettivamente: nessuna interpolazione né attribuzione automatica di policy surprises o segnali FX.</p></section>';
  }
- const api={country,connect,relative,render,historicalMoves,visualSeries};
+ const api={country,connect,relative,render,historicalMoves,visualSeries,weekdayReference,horizonMoves};
  root.FXQuantPricingHistory=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -77,7 +77,7 @@ assert(!safe.includes('<img')&&safe.includes('&lt;img'));
 assert(!render({history:{...data,official_ois_created:true},ccy:'GBP'}).includes('<svg'),
  'Official OIS promotion breaks data-readiness gate');
 const page=file('site/fx-quant-v2/next/index.html');
-assert(page.indexOf('rates-pricing-history-v1.js?v=1')<page.indexOf('rates-studio.js?v='));
+assert(page.indexOf('rates-pricing-history-v1.js?v=2')<page.indexOf('rates-studio.js?v='));
 assert.match(page,/rates-studio\.css\?v=\d+/);
 const app=file('site/fx-quant-v2/next/app.js');
 assert(app.includes("oisHistory:'./rates-pricing-history-v1.json'"));
@@ -85,3 +85,28 @@ assert(app.includes("data-rs-history-window"));
 const rates=file('site/fx-quant-v2/next/rates-studio.js');
 assert(rates.includes('FXQuantPricingHistory?.render'));
 console.log('NEXT_G8_PRICING_HISTORY_V1_PASS: 8x3 dated tenors, archive conflicts, rollover gaps, derived NZD, common-date relative 6M');
+
+const {weekdayReference,horizonMoves}=require('../../site/fx-quant-v2/next/rates-pricing-history-v1.js');
+assert.equal(weekdayReference('2026-11-23',1),'2026-11-20');
+assert.equal(weekdayReference('2026-11-23',5),'2026-11-16');
+assert.equal(weekdayReference('2026-11-23',20),'2026-10-26');
+const mk=(date,rate,contract='A',derived=false,source_class='SECONDARY_SAME_CONTRACT')=>({date,rate,contract,derived,source_class});
+const sample={kind:'FUTURES SECONDARI',tenors:{'6m':[mk('2026-10-26',3.2,'B'),mk('2026-11-16',3.4),mk('2026-11-20',3.5),mk('2026-11-23',3.55)]}};
+assert.deepEqual(horizonMoves(sample).map(m=>m.bp),[5,15,null]);
+const roll=structuredClone(sample);roll.tenors['6m'][2].contract='B';
+assert.deepEqual(horizonMoves(roll).map(m=>m.bp),[null,null,null]);
+const gap=structuredClone(sample);gap.tenors['6m'].splice(2,1);
+assert.equal(horizonMoves(gap)[0].bp,null);
+const nzdFixture={kind:'PROXY FUTURES',tenors:{'6m':[mk('2026-11-16',3.82,'Jun',true,'BANK_BILL_PROXY_DELTA_REFERENCE'),mk('2026-11-20',3.72,'Jun',true,'BANK_BILL_PROXY_DELTA_REFERENCE'),mk('2026-11-23',3.7,'Jun',false,'BANK_BILL_PROXY')]}};
+assert.deepEqual(horizonMoves(nzdFixture).map(m=>m.bp),[-2,-12,null]);
+assert(horizonMoves(nzdFixture)[0].derived);
+const future={kind:'FUTURES',tenors:{'6m':[mk('2026-11-20',3.5,null,false,'OFFICIAL_TENOR'),mk('2026-11-23',3.55,null,false,'OFFICIAL_TENOR')]}};
+assert.match(horizonMoves(future)[0].basis,/rollover possibile/);
+for(const c of G8){
+ const h=render({history:data,ccy:c,window:14});
+ assert(h.includes('data-pricing-horizon-matrix'));
+ assert(h.includes('1 / 5 / 20 giorni feriali'));
+ for(const k of G8)assert.equal((h.match(new RegExp('data-rate-ccy="'+k+'"','g'))||[]).length,1,'unique historical currency control '+k);
+}
+assert.equal(horizonMoves(null).filter(x=>x.bp!==null).length,0);
+console.log('NEXT_G8_PRICING_HORIZON_MATRIX_PASS');
