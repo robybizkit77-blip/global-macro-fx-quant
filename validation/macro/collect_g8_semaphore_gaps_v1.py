@@ -188,9 +188,9 @@ def parse_abs_services(raw,now):
         if len(row)<2:continue
         m=re.fullmatch(r"([A-Za-z]{3})[- ](\d{4})",row[0])
         if not m:continue
-        month=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].index(m[1].lower())+1 if m[1].lower() in
-               ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"] else None
-        if not month:raise ValueError("ABS date label changed")
+        months=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
+        if m[1].lower() not in months:raise ValueError("ABS date label changed")
+        month=months.index(m[1].lower())+1
         period=f"{m[2]}-{month:02d}"
         if period_end(period)>now:continue
         val=float(row[1].replace(",",""))
