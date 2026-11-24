@@ -62,3 +62,35 @@ console.log('EUR_ECB_NFC_RESEARCH_SIDECAR_PASS',JSON.stringify({
  latest:source.values.at(-1),nativeAsOf:native.EUR.credit.last_date,
  firstReleaseUnverified:true,sourceOnly:true
 }));
+
+ // The source is real when its producer has run; otherwise this explicitly
+ // synthetic fixture tests the renderer only, never the published data.
+ const liquidity=source.excess_liquidity||{
+  series_id:'ILM.D.U2.C.EXLIQ.U2.EUR',
+  source_url:'https://data.ecb.europa.eu/data/datasets/ILM/ILM.D.U2.C.EXLIQ.U2.EUR',
+  frequency:'D',unit:'milioni EUR',first_release_pit_verified:false,
+  eligible_for_fx_core:false,eligible_for_backtest:false,
+  dates:Array.from({length:30},(_,i)=>new Date(Date.UTC(2026,9,15+i)).toISOString().slice(0,10)),
+  values:Array.from({length:30},(_,i)=>2100000-i*1000),
+  latest_observation:'2026-11-13'
+ };
+ const original=globalThis.FXQuantEURNFCCreditResearch,before=JSON.stringify(native);
+ const current=ccy=>({...api(ccy),dayNow:()=>new Date().toISOString().slice(0,10)});
+ try{
+  globalThis.FXQuantEURNFCCreditResearch={...source,excess_liquidity:liquidity};
+  const plots=[];
+  const rendered=studio.render({...current('EUR'),plot:x=>{plots.push(x);return '<svg></svg>';}});
+  assert.match(rendered,/BCE \/ EUROSISTEMA · LIQUIDITÀ IN ECCESSO/);
+  assert(rendered.includes(fmt(liquidity.values.at(-1)/1000,2)+' miliardi EUR'));
+  const chart=plots.find(x=>x.label==='Liquidità · fonte ufficiale separata EUR');
+  assert(chart);
+  assert.equal(chart.lines[0].values.at(-1).label,liquidity.latest_observation);
+  assert.equal(chart.lines[0].values.at(-1).value,liquidity.values.at(-1));
+  assert(!studio.render(current('USD')).includes('BCE / EUROSISTEMA · LIQUIDITÀ IN ECCESSO'));
+  for(const changed of [{series_id:'ILM.D.U2.C.OTHER.U2.EUR'},{unit:'miliardi EUR'},{source_url:'https://example.com'}]){
+   globalThis.FXQuantEURNFCCreditResearch={...source,excess_liquidity:{...liquidity,...changed}};
+   assert(!studio.render(current('EUR')).includes('BCE / EUROSISTEMA · LIQUIDITÀ IN ECCESSO'));
+  }
+ }finally{globalThis.FXQuantEURNFCCreditResearch=original;}
+ assert.equal(JSON.stringify(native),before);
+ console.log('NEXT_ECB_EXLIQ_CHART_PASS',source.excess_liquidity?'actual':'synthetic rendering fixture',liquidity.latest_observation);
