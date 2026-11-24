@@ -58,6 +58,61 @@ def rome_build_day(stamp: object) -> str | None:
     return time.astimezone(ROME).date().isoformat()
 
 
+# Japanese Cabinet Office published national holidays for 2026 and 2027.
+# Explicit coverage only; do not assume the calendar is complete for later years.
+JP_HOLIDAY_SOURCE = "https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html"
+JP_HOLIDAYS = {
+    "2026-01-01","2026-01-12","2026-02-11","2026-02-23","2026-03-20",
+    "2026-04-29","2026-05-03","2026-05-04","2026-05-05","2026-05-06",
+    "2026-07-20","2026-08-11","2026-09-21","2026-09-22","2026-09-23",
+    "2026-10-12","2026-11-03","2026-11-23",
+    "2027-01-01","2027-01-11","2027-02-11","2027-02-23","2027-03-21",
+    "2027-03-22","2027-04-29","2027-05-03","2027-05-04","2027-05-05",
+    "2027-07-19","2027-08-11","2027-09-20","2027-09-23","2027-10-11",
+    "2027-11-03","2027-11-23",
+}
+RBA_CADENCE_SOURCE = "https://www.rba.gov.au/schedules-events/frequency-statistical-releases.html"
+
+
+def rate_cadence_context(currency: str, row: dict, now: dt.datetime, expected: str) -> dict | None:
+    """Explain dated official observations; schedule consistency is not a live issuer check."""
+    actual = valid_date(row.get("date"))
+    if not actual or actual >= expected or row.get("quality") != "FULL_CURRENT_OFFICIAL":
+        return None
+    if not all(type(row.get(k)) in (int, float) and math.isfinite(row[k]) for k in ("2Y", "10Y")):
+        return None
+    tenors = row.get("tenors", [])
+    if not all(any(t.get("tenor") == k and t.get("date") == actual and t.get("value") == row[k]
+                   for t in tenors) for k in ("2Y", "10Y")):
+        return None
+    if currency == "JPY" and row.get("source", "").startswith("Japan Ministry of Finance · JGB Interest Rate"):
+        target = dt.date.fromisoformat(expected)
+        skipped = []
+        while target.year in (2026, 2027) and (target.weekday() >= 5 or target.isoformat() in JP_HOLIDAYS):
+            if target.isoformat() in JP_HOLIDAYS:
+                skipped.append(target.isoformat())
+            target -= dt.timedelta(days=1)
+        if skipped and target.year in (2026, 2027) and actual == target.isoformat():
+            return {"status": "HOLIDAY_CALENDAR_CONSISTENT", "expected_observation": target.isoformat(),
+                    "holiday_dates": skipped, "calendar_source": JP_HOLIDAY_SOURCE,
+                    "calendar_valid_through": "2027-12-31", "live_issuer_verified": False}
+    if currency == "AUD" and row.get("source", "").startswith("Reserve Bank of Australia · F2 Capital Market Yields"):
+        local = now.astimezone(ZoneInfo("Australia/Sydney"))
+        friday = local.date() - dt.timedelta(days=(local.weekday()-4)%7)
+        if local.date() == friday and local.time().replace(tzinfo=None) < dt.time(14):
+            friday -= dt.timedelta(days=7)
+        target = friday - dt.timedelta(days=2)
+        # Normal weekly schedule, not a claim that a holiday-shifted edition
+        # was published. Any non-matching period remains a source-review gap.
+        if actual == target.isoformat():
+            return {"status": "NORMAL_WEEKLY_CADENCE_CONSISTENT",
+                    "expected_observation": target.isoformat(),
+                    "scheduled_release_sydney": friday.isoformat()+"T14:00",
+                    "next_regular_release_sydney": (friday+dt.timedelta(days=7)).isoformat()+"T14:00",
+                    "calendar_source": RBA_CADENCE_SOURCE, "live_issuer_verified": False}
+    return None
+
+
 def research_rates_evidence(feeds: dict, today: dt.date, expected: str) -> dict:
     """Informational only: never change canonical rate/monetary readiness."""
     research = feeds.get("_next_rates_research", {})
@@ -273,6 +328,9 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
         status = ("RECENT_OFFICIAL" if as_of and expected <= as_of <= today.isoformat() and
                   "OFFICIAL" in str(row.get("quality") or "") else "PUBLISHED_LAG_OR_SOURCE_BLOCKED")
         rate_rows[c] = {"as_of": as_of, "status": status}
+        cadence = rate_cadence_context(c, row, now, expected)
+        if cadence:
+            rate_rows[c]["cadence_context"] = cadence
     evidence["RATES_2Y_10Y"] = rate_rows
 
     op = {c: ois.get("currencies", {}).get(c, {}).get("operational_status") for c in G8}
@@ -289,10 +347,14 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
     # lagging or unavailable. Surface those gaps in the same compact receipt
     # used by Pages and the orchestrator, without inventing estimates or
     # changing the daily blocking rules for differently scheduled releases.
-    lagging_rates = sorted(c for c in G8 if rate_rows[c]["status"] != "RECENT_OFFICIAL")
+    lagging_rates = sorted(c for c in G8 if rate_rows[c]["status"] != "RECENT_OFFICIAL"
+                           and not rate_rows[c].get("cadence_context"))
+    cadence_rates = sorted(c for c in G8 if rate_rows[c].get("cadence_context"))
     missing_ois = evidence["OIS_G8"]["withheld"]
     if lagging_rates:
         documented_gaps.append("RATES_2Y_10Y_LAG_OR_BLOCKED:" + ",".join(lagging_rates))
+    if cadence_rates:
+        documented_gaps.append("RATES_2Y_10Y_CALENDAR_CONSISTENT_NOT_LIVE_VERIFIED:" + ",".join(cadence_rates))
     if missing_ois:
         documented_gaps.append("OIS_G8_UNAVAILABLE:" + ",".join(missing_ois))
     # Raw observation periods are not official release timestamps, PIT release
