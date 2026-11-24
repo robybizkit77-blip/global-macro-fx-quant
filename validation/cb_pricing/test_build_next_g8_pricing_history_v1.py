@@ -8,7 +8,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from build_next_g8_pricing_history_v1 import (
-    CCYS, TENORS, ROOT, build, read_jsonl, SNAP, OFFICIAL, QUOTES, CONFLICTS, NZD, DEST, NZD_ARCHIVE, nzd_monthly_reference
+    CCYS, TENORS, ROOT, build, read_jsonl, SNAP, OFFICIAL, QUOTES, CONFLICTS, NZD, DEST, NZD_ARCHIVE, nzd_monthly_reference, usd_roll_momentum
 )
 
 
@@ -131,6 +131,26 @@ class TestG8History(unittest.TestCase):
         bad=copy.deepcopy(feed)
         bad["monthly_reference"]["reference_date"]="2026-10-27"
         self.assertIsNone(nzd_monthly_reference(bad,observed,{}))
+
+    def test_usd_single_roll_estimate(self):
+        points=[{"date":"2026-10-27","contract":"APR","rate":4.38},
+                {"date":"2026-11-17","contract":"APR","rate":4.47},
+                {"date":"2026-11-19","contract":"MAY","rate":4.58},
+                {"date":"2026-11-24","contract":"MAY","rate":4.475}]
+        a={"contract":"APR","implied_rate":4.495,"expiration":"2027-05-03","first_seen_at_utc":"2026-11-18T21:50:30Z"}
+        b={"contract":"MAY","implied_rate":4.55,"expiration":"2027-06-01","first_seen_at_utc":"2026-11-19T02:38:45Z"}
+        q={"2026-11-18":[a,b]}
+        out=usd_roll_momentum(points,q)
+        self.assertEqual(out["20"]["change_bp"],4.0)
+        self.assertEqual(out["5"]["change_bp"],-5.0)
+        self.assertEqual(out["20"]["basis"],"ESTIMATED_SINGLE_ROLL_SAME_SOURCE_NOT_SYNCHRONIZED")
+        self.assertFalse(out["20"]["official_ois_created"])
+        self.assertEqual(usd_roll_momentum(points,{}),{})
+        self.assertEqual(usd_roll_momentum(points,{"2026-11-18":[a]}),{})
+        self.assertEqual(usd_roll_momentum(points,{"2026-11-18":[a,b,dict(b)]}),{})
+        self.assertEqual(usd_roll_momentum(points,{"2026-11-18":[a,b],"2026-11-20":[a]}),{})
+        late=dict(b,first_seen_at_utc="2026-11-20T02:38:45Z")
+        self.assertEqual(usd_roll_momentum(points,{"2026-11-18":[a,late]}),{})
 
     def test_official_withheld_never_launders_stale_rows(self):
         archive=copy.deepcopy(self.archive)
