@@ -20,7 +20,7 @@
  "first_release_pit_verified": false,
  "eligible_for_fx_core": false,
  "eligible_for_backtest": false,
- "last_checked_rome": "2026-11-14",
+ "last_checked_rome": "2026-11-24",
  "dates": [
   "2022-10",
   "2022-11",
@@ -124,7 +124,35 @@
  "last_observation": "2026-09",
  "official_july_overlap_revision_pp": 0.0,
  "official_september_overlap_revision_pp": 0.0,
- "inference": "Tasso annuo crescita prestiti garantiti alle famiglie; variazioni = punti percentuali. Non nuovi prestiti, riserve BoE, credito alle imprese né trade GBP."
+ "inference": "Tasso annuo crescita prestiti garantiti alle famiglie; variazioni = punti percentuali. Non nuovi prestiti, riserve BoE, credito alle imprese né trade GBP.",
+ "lending_conditions": {
+  "source_url": "https://www.bankofengland.co.uk/credit-conditions-survey/2026/2026-q3",
+  "series_id": "BOE_CCS_CORPORATE_AVAILABILITY_ACTUAL",
+  "frequency": "Q",
+  "unit": "net_percentage_balance",
+  "positive_means": "increased_availability",
+  "negative_means": "decreased_availability",
+  "dates": [
+   "2025-Q2",
+   "2025-Q3",
+   "2025-Q4",
+   "2026-Q1",
+   "2026-Q2",
+   "2026-Q3"
+  ],
+  "values": [
+   7.9,
+   7.7,
+   3.5,
+   3.0,
+   0.0,
+   -0.1
+  ],
+  "latest_observation": "2026-Q3",
+  "first_release_pit_verified": false,
+  "eligible_for_fx_core": false,
+  "eligible_for_backtest": false
+ }
 };
  root.FXQuantGBPBoESecuredCreditResearch=Object.freeze(data);
  if(typeof module!=='undefined'&&module.exports)module.exports=data;
