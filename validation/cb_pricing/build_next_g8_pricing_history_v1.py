@@ -12,7 +12,7 @@ import argparse
 import json
 import re
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from archive_nzd_asx_proxy_v1 import ARCHIVE as NZD_ARCHIVE, validate as validate_nzd_capture
 
@@ -87,6 +87,72 @@ def nzd_monthly_reference(feed, observed, prices):
             "reference_rate":rr,"current_rate":cr,"change_bp":bp,
             "source_url":m["reference_url"],"source_sha256":m["decoded_source_sha256"],
             "basis":"EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"}
+
+
+def usd_roll_momentum(points, daily_quotes):
+    """Estimate a single observed rollover; no synthetic daily price series."""
+    if not points:
+        return {}
+    last=points[-1]
+    end=last["date"]
+    result={}
+    for days in (5,20):
+        start=end
+        for _ in range(days):
+            start=prev_weekday(start)
+        first=next((p for p in points if p["date"]==start),None)
+        if not first or first["contract"]==last["contract"]:
+            continue
+        old,new=first["contract"],last["contract"]
+        selected=[p for p in points if start<=p["date"]<=end]
+        if {p["contract"] for p in selected}!={old,new}:
+            continue
+        old_last=max(p["date"] for p in selected if p["contract"]==old)
+        new_first=min(p["date"] for p in selected if p["contract"]==new)
+        if old_last>=new_first:
+            continue
+        # The tenor archive omits ambiguous mapping days from its chart.
+        # Recover only a unique overlapping source day between the segments.
+        overlap=[]
+        for d,rows in daily_quotes.items():
+            if not old_last<=d<=new_first or not start<d<end:
+                continue
+            if {q["contract"] for q in rows}!={old,new}:
+                continue
+            a=[q for q in rows if q["contract"]==old]
+            b=[q for q in rows if q["contract"]==new]
+            if len(a)!=1 or len(b)!=1:
+                continue
+            a,b=a[0],b[0]
+            try:
+                ta,tb=(datetime.fromisoformat(q["first_seen_at_utc"].replace("Z","+00:00")) for q in (a,b))
+                gap=abs((tb-ta).total_seconds())/3600
+            except (ValueError,TypeError):
+                continue
+            if gap>24 or a["expiration"]>=b["expiration"]:
+                continue
+            overlap.append((d,a,b,gap))
+        if len(overlap)!=1:
+            continue
+        roll,a,b,gap=overlap[0]
+        # No third contract or reversal hidden by an omitted tenor date.
+        if any(q["contract"] not in (old,new) or
+               (d<roll and q["contract"]==new) or (d>roll and q["contract"]==old)
+               for d,rows in daily_quotes.items() if start<=d<=end for q in rows):
+            continue
+        old_move=round((a["implied_rate"]-first["rate"])*100,4)
+        new_move=round((last["rate"]-b["implied_rate"])*100,4)
+        result[str(days)]={"from":start,"to":end,"roll_date":roll,
+            "old_contract":old,"new_contract":new,
+            "start_rate":first["rate"],"old_roll_rate":a["implied_rate"],
+            "new_roll_rate":b["implied_rate"],"end_rate":last["rate"],
+            "old_move_bp":old_move,"new_move_bp":new_move,
+            "change_bp":round(old_move+new_move,4),
+            "capture_gap_hours":round(gap,3),
+            "old_capture_utc":a["first_seen_at_utc"],"new_capture_utc":b["first_seen_at_utc"],
+            "basis":"ESTIMATED_SINGLE_ROLL_SAME_SOURCE_NOT_SYNCHRONIZED",
+            "official_ois_created":False,"fx_engine_effect":"NONE"}
+    return result
 
 
 def build(snapshot: dict, archive: list[dict], quotes: list[dict],
@@ -252,6 +318,9 @@ def build(snapshot: dict, archive: list[dict], quotes: list[dict],
             "observed_dates": len({p["date"] for t in TENORS for p in tenors[t] if not p["derived"]}),
             "derived_reference_points": sum(p["derived"] for t in TENORS for p in tenors[t]),
         }
+    roll=usd_roll_momentum(lines["USD"]["tenors"]["6m"],secondary[("USD","6m")])
+    if roll:
+        lines["USD"]["estimated_roll_momentum"]=roll
     monthly=nzd_monthly_reference(nzd,nzd_observed,nzd_contract_prices)
     if monthly:
         lines["NZD"]["fixed_contract_20d"]=monthly
