@@ -298,11 +298,26 @@ class G8SemaphoreSources(unittest.TestCase):
     def test_issuer_unavailable_keeps_only_expiring_verified_manual_snapshot(self):
         def fail(_):raise OSError("http 403 issuer blocked")
         out=mod.collect(date(2026,11,24),fetcher=fail)
-        self.assertEqual(len(out["series"]),1)
-        self.assertEqual(out["series"][0]["ccy"],"NZD")
-        self.assertEqual(out["series"][0]["area"],"services")
+        self.assertEqual(len(out["series"]),2)
+        self.assertEqual({(x["ccy"],x["area"]) for x in out["series"]},
+                         {("NZD","house"),("NZD","services")})
+        self.assertEqual(out["audit"]["NZD_house"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
+        self.assertEqual(out["audit"]["NZD_house"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
         self.assertEqual(out["audit"]["NZD_services"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
         self.assertEqual(out["audit"]["NZD_services"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
+
+    def test_stats_nz_house_official_snapshot_expiry_and_provenance(self):
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="NZD" and x["area"]=="house")
+        item,status=mod.curated_statsnz_house(spec,date(2026,11,24))
+        self.assertEqual(item["values"],[3495,3218])
+        self.assertEqual(item["dates"],["2026-08","2026-09"])
+        self.assertEqual(item["quality"],"SOURCE_VERIFIED_MANUAL_NONPIT")
+        self.assertEqual(status["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
+        self.assertEqual(item["source_page"],
+         "https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/")
+        self.assertIsNone(mod.curated_statsnz_house(spec,date(2027,4,1))[0])
+        with self.assertRaisesRegex(ValueError,"impossible dates"):
+            mod.curated_statsnz_house(spec,date(2026,11,23))
 
     def test_collect_transparently_withholds_failed_sources(self):
         def fail(_):raise OSError("issuer blocked")
