@@ -198,17 +198,24 @@ def parse_ccs(html,url,*,today):
     require((year,q)<=(today.year,(today.month-1)//3+1),"future CCS period")
     require((today-date(year,q*3-2,1)).days<=230,"stale CCS report")
     parser=CCSRows();parser.feed(html);parser.close()
-    question="how has the availability of credit provided to the corporate sector overall changed?"
+    question="availability of credit provided to the corporate sector overall"
     matches=[]
     for table in parser.tables:
         for i,row in enumerate(table):
-            if row and question in row[0].lower() and len(row)>=3 and row[1].lower()=="past three months":
-                matches.append((table,i,row))
-    require(len(matches)==1,"CCS corporate actual row absent or ambiguous")
-    table,i,row=matches[0]
-    values=row[2:]
+            # The issuer may place a footnote, the question, and the actual
+            # observation label in separate cells or consecutive rows.
+            text=" ".join(row).lower()
+            if question not in text:continue
+            for j in range(i,min(i+3,len(table))):
+                candidate=table[j]
+                actual=next((k for k,v in enumerate(candidate) if v.strip().lower()=="past three months"),None)
+                if actual is not None:
+                    matches.append((table,j,candidate[actual+1:]))
+                    break
+    require(len(matches)==1,"CCS corporate actual row absent or ambiguous: "+str([r[:3] for t in parser.tables for r in t if "corporate sector" in " ".join(r).lower()][:8])[:700])
+    table,i,values=matches[0]
     require(4<=len(values)<=12,"CCS unexpected observation columns")
-    require(i+1<len(table) and table[i+1][0].lower()=="next three months","CCS forecast separation not verified")
+    require(i+1<len(table) and any(v.strip().lower()=="next three months" for v in table[i+1]),"CCS forecast separation not verified")
     quarter_row=next((r for r in reversed(table[:i]) if len(r)>=len(values) and all(re.fullmatch(r"Q[1-4]",x) for x in r[-len(values):])),None)
     require(quarter_row is not None,"CCS quarter header missing")
     dates=[]
