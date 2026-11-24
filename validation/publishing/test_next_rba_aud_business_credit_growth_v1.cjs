@@ -62,3 +62,37 @@ assert.deepEqual(growth.lines[0].values,[{label:previous,value:source.prior_mont
 assert.match(growth.lines[0].name,/% mensile/);
 assert.match(growth.lines[0].name,/ultimi due mesi/);
 console.log('NEXT_AUD_ADJUSTED_GROWTH_CHART_PASS',source.observation_period);
+
+const proxy=source.lending_rate_proxy;
+assert(proxy,'Expected actual F7 production source');
+const last=proxy.history[proxy.latest_observation];
+const cost=studio.render(api('AUD'));
+assert.match(cost,/RBA \/ APRA · COSTO DEL CREDITO F7/);
+assert.match(cost,/Proxy del costo dei finanziamenti, non degli standard di concessione/);
+for(const key of ['small','medium','large'])assert(cost.includes(fmt(last[key].new,2)+'%'));
+const costPlots=[];
+studio.render({...api('AUD'),plot:x=>{costPlots.push(x);return '<svg></svg>';}});
+if(Object.keys(proxy.history).length===1){
+ assert.match(cost,/Una sola osservazione mensile acquisita/);
+ assert(!costPlots.some(x=>x.label==='Costo del credito · proxy ufficiale AUD'));
+}
+assert(!studio.render(api('EUR')).includes('RBA / APRA · COSTO DEL CREDITO F7'));
+const nzdRaw=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/nzd-rbnz-liquidity-research-v1.js'),'utf8');
+const nzdSource=JSON.parse(nzdRaw.replace(/^window\.FXQuantNZDRBNZLiquidity\s*=\s*/,'').trim().replace(/;$/,''));
+globalThis.FXQuantNZDRBNZLiquidity=nzdSource;
+const survey=nzdSource.credit_conditions;
+assert(survey,'Expected actual C60 production source');
+const nzdPlots=[];
+const nzdHtml=studio.render({...api('NZD'),plot:x=>{nzdPlots.push(x);return '<svg></svg>';}});
+assert.match(nzdHtml,/RBNZ · CREDIT CONDITIONS SURVEY C60/);
+assert(nzdHtml.includes(survey.released));
+for(const [label,key] of [['Condizioni di credito · fonte ufficiale separata NZD','availability_corporate'],['Condizioni di credito PMI · fonte ufficiale separata NZD','availability_sme']]){
+ const graph=nzdPlots.find(x=>x.label===label);assert(graph,label);
+ assert.deepEqual(graph.lines[0].values,survey.dates.map((label,i)=>({label,value:survey[key][i]})));
+}
+assert(!studio.render(api('AUD')).includes('RBNZ · CREDIT CONDITIONS SURVEY C60'));
+try{
+ globalThis.FXQuantNZDRBNZLiquidity={...nzdSource,credit_conditions:{...survey,positive_means:'tightening'}};
+ assert(!studio.render(api('NZD')).includes('RBNZ · CREDIT CONDITIONS SURVEY C60'));
+}finally{globalThis.FXQuantNZDRBNZLiquidity=nzdSource;}
+console.log('NEXT_AUD_F7_NZD_C60_ACTUAL_PASS',proxy.latest_observation,survey.latest_observation);

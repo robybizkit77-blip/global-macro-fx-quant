@@ -498,6 +498,17 @@ async function macroDriversJourney(page,label){
  const audCanonical=await locator(page,'[data-liq-role="credit"]').textContent();
  assert(audCanonical.includes('31/07/2026')&&!audCanonical.includes('Ultimo 2026-09'),
   label+' AUD native credit stock must not be replaced by research source');
+ const f7=await page.evaluate(()=>window.FXQuantAUDBusinessCreditGrowthResearch?.lending_rate_proxy);
+ const f7Block=locator(page,'[aria-label="Costo credito imprese Australia F7"]');
+ assert(f7&&await f7Block.count()===1,label+' F7 funding cost source missing');
+ const f7Text=await f7Block.innerText();
+ assert(f7Text.includes(f7.latest_observation)&&f7Text.includes('non degli standard di concessione'),label+' F7 cost proxy not distinguished');
+ await locator(page,'[data-liq-country="NZD"]').click();
+ const c60=await page.evaluate(()=>window.FXQuantNZDRBNZLiquidity?.credit_conditions);
+ const c60Block=locator(page,'[aria-label="Indagine C60 Nuova Zelanda"]');
+ assert(c60&&await c60Block.count()===1,label+' C60 survey source missing');
+ const c60Text=await c60Block.innerText();
+ assert(c60Text.includes(c60.latest_observation)&&c60Text.includes(c60.released)&&c60Text.includes('disponibilità e domanda sono misure distinte'),label+' C60 survey actual period and separate demand');
  await locator(page,'[data-liq-country="JPY"]').click();
  const bojCreditCard=locator(page,'.drivers-jpy-official');
  assert.equal(await bojCreditCard.count(),1,
