@@ -691,10 +691,10 @@
    ' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica.</p>';
   return pageHero('CONDIZIONI FINANZIARIE G8','Liquidità & Credito',
    'Come si muovono le riserve delle banche e il credito a famiglie e imprese.')+
-   marketFirstRead(get('risk'),today,esc,fmt)+
    '<section class="drivers-panel" id="liquidity-studio"><div class="drivers-head"><div><h2>Liquidità e prestiti nelle otto economie</h2><p class="liq-first-note">Ultime osservazioni delle fonti di ricerca già verificate, con il periodo nella lettura. Non sono una graduatoria delle condizioni finanziarie.</p>'+
    '</div></div>'+
    '<div class="drivers-country-grid">'+cards+'</div></section>'+
+   marketFirstRead(get('risk'),today,esc,fmt)+
    '<section class="drivers-panel drivers-selection" id="liquidity-dossier" aria-label="Scheda liquidità e credito '+selected+'">'+
    '<div class="drivers-head"><div><span class="mini-overline">'+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
    '<h2>'+esc(headline)+'</h2></div></div>'+
