@@ -189,7 +189,8 @@ function verifiedFreshAlternative(x,c,key){
  if(c==='AUD'&&['house','credit'].includes(key)){
    return !!x&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
      x.source_series_id===(key==='house'?'RBA_HOUSING_CREDIT_GROWTH_MM':'RBA_BUSINESS_CREDIT_GROWTH_MM')&&
-     /^https:\/\/www\.rba\.gov\.au\/statistics\/frequency\/fin-agg\/20\d{2}\/fin-agg-\d{4}\.html$/.test(x.source_page);
+     (/^https:\/\/www\.rba\.gov\.au\/statistics\/frequency\/fin-agg\/20\d{2}\/fin-agg-\d{4}\.html$/.test(x.source_page)||
+      x.source_page==='https://www.rba.gov.au/statistics/tables/csv/d1-data.csv'&&x.frequency==='M'&&x.metric_kind==='points'&&x.unit==='% m/m SA');
  }
  if(c==='NZD'&&key==='credit'&&x?.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&x.source_series_id==='RBNZ_PRIVATE_CREDIT_STOCK_TE'){
    return x.source_page==='https://tradingeconomics.com/new-zealand/private-sector-credit'&&x.metric_kind==='percent'&&x.unit==='mln NZD nominali';
@@ -197,7 +198,16 @@ function verifiedFreshAlternative(x,c,key){
  if(c==='NZD'&&key==='credit'&&x?.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'){
    return x.source_series_id==='RBNZ_C5_BUSINESS_YOY'&&x.source_page==='https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/registered-banks-and-non-bank-lending-institutions-sector-lending';
  }
+ if(c==='NZD'&&key==='leading'){
+   return x?.source_series_id==='ANZ_NZD_OWN_ACTIVITY_OUTLOOK_ROUNDED'&&
+     x.source_page==='https://www.anz.co.nz/about-us/economic-markets-research/business-outlook/'&&
+     x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&x.frequency==='M'&&x.metric_kind==='points'&&
+     x.unit==='saldo netto %'&&x.history?.quality==='ROUNDED_RELEASE_SUMMARIES_NOT_SINGLE_VINTAGE'&&
+     x.values?.every(v=>finite(v)&&Math.abs(v)<=100);
+ }
  if(c==='NZD'&&key==='house'){
+   if(x?.source_series_id==='QNZR368BIS')return x.source_page==='https://fred.stlouisfed.org/series/QNZR368BIS'&&
+     x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&x.frequency==='Q'&&x.metric_kind==='points'&&x.unit==='% a/a reale';
    return !!x&&x.source_series_id==='STATSNZ_NEWDWELLINGS_SA'&&
      ['SOURCE_REVISED_RESEARCH_NOT_PIT','SOURCE_VERIFIED_MANUAL_NONPIT'].includes(x.quality)&&
      /^https:\/\/www\.stats\.govt\.nz\/information-releases\/building-consents-issued-(?:january|february|march|april|may|june|july|august|september|october|november|december)-20\d{2}\/$/.test(x.source_page);
@@ -228,7 +238,7 @@ function supplementary(overlay,country,key,today){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz|data\.snb\.ch|www\.bnz\.co\.nz|tradingeconomics\.com)\//.test(x.source_page)&&
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz|data\.snb\.ch|www\.bnz\.co\.nz|www\.anz\.co\.nz|tradingeconomics\.com)\//.test(x.source_page)&&
    (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
     x.metric_kind==='points'&&(/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page)||x.source_series_id==='BNZ_BUSINESSNZ_PSI'&&x.source_page==='https://www.bnz.co.nz/institutional-banking/research/publications'))));
  return matches.length===1?matches[0]:null;
@@ -419,8 +429,10 @@ function model(catalog,today,country='USD',overlay=null){
    const latestExtra=extra?.dates?.[1] ? parsePeriod(extra.dates[1]):null;
    const officialAlternative=verifiedFreshAlternative(extra,c,area.key);
    const missingOriginal=metrics.length===0;
-   const newerValid=(missingOriginal||officialAlternative&&(
-       baseline.tone==='neutral'||(c==='EUR'&&area.key==='services'&&latestExtra>originalLatest)));
+   const strictProxy=c==='NZD'&&['house','leading'].includes(area.key)||c==='AUD'&&['house','credit'].includes(area.key);
+   const preferNewer=(c==='EUR'&&area.key==='services'||c==='NZD'&&area.key==='leading'||
+      c==='AUD'&&['house','credit'].includes(area.key))&&latestExtra>originalLatest;
+   const newerValid=(!strictProxy&&missingOriginal||officialAlternative&&(missingOriginal||baseline.tone==='neutral'||preferNewer));
    let supplement=null;
    if(extra&&newerValid){
      const src={...extra,source_file:extra.source_file+
