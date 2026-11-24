@@ -554,6 +554,12 @@ async function macroDriversJourney(page,label){
  const gbpOldCredit=await locator(page,'[data-liq-role="credit"]').textContent();
  assert(gbpOldCredit.includes('31 Jul 2026')&&!gbpOldCredit.includes('Ultimo 2026-09'),
   label+' GBP latest research must not overwrite original old native credit source');
+ const ccs=boeSources.secured.lending_conditions;
+ assert(ccs,label+' verified CCS data must load in browser');
+ const ccsBlock=locator(page,'.drivers-cad-official[aria-label="Indagine CCS Regno Unito"]');
+ assert.equal(await ccsBlock.count(),1,label+' CCS separate evidence missing');
+ const ccsText=await ccsBlock.innerText();
+ assert(ccsText.includes(ccs.latest_observation)&&ccsText.includes(itRate(ccs.values.at(-1)))&&ccsText.includes('Positivo = maggiore disponibilità'),label+' CCS dates, values, and sign convention');
  await locator(page,'[data-liq-country="CHF"]').click();
  const chfDossier=locator(page,'.drivers-selection');
  const chfLines=locator(page,'[data-chf-snb-lane="CHF.credit"]');

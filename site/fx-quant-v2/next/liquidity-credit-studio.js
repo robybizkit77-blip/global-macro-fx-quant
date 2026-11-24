@@ -237,6 +237,29 @@
     (matchedRelease?' · <a href="'+esc(x.official_september_2026_release)+'" target="_blank" rel="noopener noreferrer">Money and Credit · 29 ottobre ↗</a>':'')+
     '</small></div>'};
  }
+ function gbpCCSResearch(esc,fmt,now){
+  const parent=root.FXQuantGBPBoESecuredCreditResearch,x=parent?.lending_conditions;
+  if(parent?.schema!=='GMFQ_NEXT_GBP_BOE_SECURED_CREDIT_GROWTH_V1'||parent.publisher!=='Bank of England'||
+     x?.series_id!=='BOE_CCS_CORPORATE_AVAILABILITY_ACTUAL'||x.frequency!=='Q'||x.unit!=='net_percentage_balance'||
+     x.positive_means!=='increased_availability'||x.negative_means!=='decreased_availability'||
+     x.first_release_pit_verified!==false||x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     !/^https:\/\/www\.bankofengland\.co\.uk\/credit-conditions-survey\/20[0-9]{2}\/20[0-9]{2}-q[1-4]$/.test(x.source_url)||
+     !Array.isArray(x.dates)||x.dates.length<4||x.latest_observation!==x.dates.at(-1)||
+     !x.dates.every(d=>/^20[0-9]{2}-Q[1-4]$/.test(d)))return null;
+  const s=researchCreditSeries(x,'BoE CCS · Disponibilità credito imprese','saldo netto, punti',now,true);
+  if(!s||!s.values.every(v=>Math.abs(v)<=100))return null;
+  const serial=d=>Number(d.slice(0,4))*4+Number(d.at(-1));
+  if(!s.dates.every((d,i)=>i===0||serial(d)-serial(s.dates[i-1])===1))return null;
+  const latest=s.last_value,prior=s.values.at(-2),delta=latest-prior;
+  const signed=v=>(v>0?'+':'')+fmt(v,1);
+  const state=Math.abs(latest)<1?'sostanzialmente invariata':latest>0?'in miglioramento':'in peggioramento';
+  const change=Math.abs(delta)<1?'Il saldo è pressoché stabile rispetto al trimestre precedente.':delta>0?'Il saldo è salito rispetto al trimestre precedente.':'Il saldo è sceso rispetto al trimestre precedente.';
+  const opening='Nel '+s.last_date+' la disponibilità complessiva di credito alle imprese è '+state+'. '+change;
+  const age=(dateMs(observationDate(now))-dateMs(observationDate(s.last_date)))/864e5;
+  return {opening,conditionsSeries:s,html:'<section class="drivers-cad-official" aria-label="Indagine CCS Regno Unito"><span class="mini-overline">BANK OF ENGLAND · CREDIT CONDITIONS SURVEY</span><h3>'+esc(opening)+'</h3>'+
+   '<p>Saldo netto '+esc(signed(latest))+' punti nel '+esc(s.last_date)+' contro '+esc(signed(prior))+' nel '+esc(s.dates.at(-2))+'. Variazione '+esc(signed(delta))+' punti. Positivo = maggiore disponibilità, negativo = minore disponibilità. Si tratta di risposte delle banche sui tre mesi trascorsi, non della crescita dei prestiti o delle aspettative future.</p>'+
+   '<div class="drivers-cad-source"><span>'+esc(s.last_date)+' · '+(age>155?'periodo storico':'indagine trimestrale datata')+' · soglia descrittiva di stabilità: ±1 punto</span><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">BoE · Credit Conditions Survey ↗</a></div></section>'};
+ }
  function gbpBoEReservesResearch(esc,fmt,now){
   const x=root.FXQuantGBPBoEReservesResearch;
   if(!x||x.schema!=='GMFQ_NEXT_GBP_BOE_WEEKLY_RESERVES_V1'||
@@ -832,10 +855,17 @@
     conditionsSeries:conditions?.conditionsSeries,
     opening:available.map(x=>x.opening).join(' '),html:available.map(x=>x.html).join('')};
   };
+  const gbpReading=()=>{
+   const reserves=gbpBoEReservesResearch(esc,fmt,today),survey=gbpCCSResearch(esc,fmt,today);
+   const credit=reserves?null:gbpBoESecuredCreditReading(esc,fmt,today);
+   const available=[reserves,credit,survey].filter(Boolean);
+   if(!available.length)return null;
+   return {...available[0],conditionsSeries:survey?.conditionsSeries,opening:available.map(x=>x.opening).join(' '),html:available.map(x=>x.html).join('')};
+  };
   const issuerFor=ccy=>ccy==='CHF'?chfSNBResearch(get('residualResearch'),today,esc,fmt):
    ccy==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):
    ccy==='JPY'?jpyReading():
-   ccy==='GBP'?gbpBoEReservesResearch(esc,fmt,today):
+   ccy==='GBP'?gbpReading():
    ccy==='AUD'?audRBAAdjustedCredit(esc,fmt,today):
    ccy==='EUR'?eurReading():
    ccy==='USD'?usReading():
@@ -852,7 +882,7 @@
   const official=chf||
    (selected==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):null)||
    (selected==='JPY'?jpyReading():null)||
-   (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):null)||
+   (selected==='GBP'?gbpReading():null)||
    (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):null)||
    (selected==='EUR'?eurReading():null)||
    (selected==='USD'?usReading():null)||
