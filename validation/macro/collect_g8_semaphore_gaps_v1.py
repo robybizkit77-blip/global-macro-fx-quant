@@ -22,6 +22,7 @@ from urllib.parse import urlsplit
 
 ROOT=Path(__file__).resolve().parents[2]
 TARGET=ROOT/"site/fx-quant-v2/next/semaphore-supplement-v1.json"
+MANUAL_PSI=ROOT/"validation/macro/official_g8_services_source_snapshot_v1.json"
 SCHEMA="GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1"
 FRED="https://fred.stlouisfed.org/graph/fredgraph.csv?id="
 MAX_BYTES=3_000_000
@@ -453,6 +454,44 @@ def candidate(spec,observations,now):
       "quality":"SOURCE_REVISED_RESEARCH_NOT_PIT"}
     return payload,{"status":"READY_DESCRIPTIVE_REVISED","last_observation":newest,"days_since_period_end":age}
 
+def curated_official_businessnz(spec,now):
+    """Source-verified, manual fallback; NEVER label this as a fetched update."""
+    if spec["method"]!="biznz":raise ValueError("fallback only authorized for PSI")
+    doc=json.loads(MANUAL_PSI.read_text(encoding="utf-8"))
+    expected={"schema":"GMFQ_OFFICIAL_SERVICES_FALLBACK_V1","country":"NZD",
+      "area":"services","series_id":"BNZ_BUSINESSNZ_PSI","frequency":"M",
+      "source_issuer":"BusinessNZ","seasonal_adjustment":"Seasonally adjusted","baseline":50}
+    for key,value in expected.items():
+        if doc.get(key)!=value:raise ValueError("manual PSI provenance mismatch")
+    uri=doc.get("source_url")
+    if not isinstance(uri,str) or not re.fullmatch(
+        r"https://businessnz\.org\.nz/psi/[a-z0-9-]+",uri):
+        raise ValueError("manual PSI must link to dated official release")
+    checked=date.fromisoformat(doc["verified_on"])
+    released=date.fromisoformat(doc["official_release_date"])
+    if not released<=checked<=now:raise ValueError("manual PSI verification time invalid")
+    dates=doc.get("dates");values=doc.get("values")
+    if not isinstance(dates,list) or len(dates)!=2 or not isinstance(values,list) or len(values)!=2:
+        raise ValueError("manual PSI exact two observations required")
+    obs=[]
+    for p,v in zip(dates,values):
+        period_end(p)
+        if not isinstance(v,(int,float)) or not math.isfinite(v) or not 20<=v<=80:
+            raise ValueError("manual PSI value outside official survey scale")
+        obs.append((p,float(v)))
+    if obs!=sorted(obs):raise ValueError("manual PSI dates not ascending")
+    item,status=candidate(spec,obs,now)
+    if item is None:return None,{"status":"WITHHELD_STALE","reason":"Manually verified PSI snapshot expired"}
+    item.update({"quality":"SOURCE_VERIFIED_MANUAL_NONPIT",
+        "source_file":"BusinessNZ · verifica manuale "+doc["verified_on"]+" (accesso automatico bloccato)",
+        "source_page":uri,
+        "manual_verified_on":doc["verified_on"],
+        "official_release_date":doc["official_release_date"]})
+    return item,{"status":"READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+      "last_observation":item["observation_as_of"],
+      "verified_on":doc["verified_on"],
+      "source_page":uri}
+
 def collect(now=None,fetcher=fetch):
     now=now or datetime.now(timezone.utc).date()
     out={"schema":SCHEMA,"as_of":now.isoformat(),"source_count":len(REGISTRY),
@@ -485,6 +524,19 @@ def collect(now=None,fetcher=fetch):
                                  "origin":spec["origin"]}
             out["audit"][code].pop("...")
         except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+            if spec["method"]=="biznz":
+                try:
+                    fallback,status=curated_official_businessnz(spec,now)
+                    if fallback:out["series"].append(fallback)
+                    out["audit"][code]={**status,"automatic_fetch":"BLOCKED_OR_UNVALIDATED",
+                        "automatic_error":str(exc)[:100]}
+                    continue
+                except (ValueError,KeyError,IndexError,UnicodeError,OSError) as cur_exc:
+                    out["audit"][code]={"status":"WITHHELD_FETCH_OR_VALIDATION",
+                        "reason":"No current verified PSI: "+str(cur_exc)[:140],
+                        "automatic_error":str(exc)[:100],
+                        "source_page":spec["source_page"],"origin":spec["origin"]}
+                    continue
             out["audit"][code]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180],
                                  "source_page":spec["source_page"],"origin":spec["origin"]}
     return out
