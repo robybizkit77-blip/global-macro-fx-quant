@@ -67,6 +67,7 @@ expected_workflows={
     "cad-business-credit-official-research-refresh-v1.yml",
     "ecb-eur-nfc-credit-research-refresh-v1.yml",
     "rba-aud-business-credit-growth-research-refresh-v1.yml",
+    "rba-aud-es-balances-research-refresh-v1.yml",
     "boe-gbp-secured-credit-research-refresh-v1.yml",
     "boj-jpy-bank-credit-research-refresh-v1.yml",
 }
