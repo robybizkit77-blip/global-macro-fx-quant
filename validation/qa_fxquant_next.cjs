@@ -581,7 +581,7 @@ async function macroDriversJourney(page,label){
  const officialText=await officialCad.innerText();
  assert(officialText.includes('Bank of Canada')&&officialText.includes('V122667770')&&officialText.includes('stock bancario'),
   label+' CAD evidence must preserve bank source, exact series and stock interpretation');
- const lynx=readSource('site/fx-quant-v2/next/cad-official-credit-research-v1.js').settlement_balances;
+ const lynx=require('../site/fx-quant-v2/next/cad-official-credit-research-v1.js').settlement_balances;
   if(lynx){
    const balances=locator(page,'.drivers-cad-official[aria-label="Saldi di regolamento Lynx"]');
    assert.equal(await balances.count(),1,label+' CAD daily settlement balances must be a separate issuer block');
