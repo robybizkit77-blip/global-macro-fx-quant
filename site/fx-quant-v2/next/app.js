@@ -588,8 +588,7 @@ function overview(){
   currencyPrices:get('currencyPrices'),calendar,news,references,esc,date,dayNow});
  const fxRankStrip=homeFxRankStrip();
  const hourly=renderedHourly?renderedHourly.replace('<section class="hourly-decision-section"',
-   fxRankStrip+'<section class="hourly-decision-section"').replace('<section class="hourly-navigation-section"',
-   recalcProof+moneyProof+'<section class="hourly-navigation-section"'):renderedHourly;
+   fxRankStrip+recalcProof+moneyProof+'<section class="hourly-decision-section"'):renderedHourly;
  if(hourly&&!desk.preferMorning?.(morning,hourlyFeed,dayNow()))return hourly;
  if(typeof window!=='undefined' && window.FXQuantMorningDesk?.build && morning){
   // A new, independently dated FX snapshot must never rewrite the archived
@@ -611,8 +610,7 @@ function overview(){
   if(edition){
    const post=window.FXQuantMorningDesk.postRelease?.(morning,get('news'),esc,dayNow)||'';
    return edition.replace('<section class="morning-prose"',
-     post+fxRankStrip+'<section class="morning-prose"').replace('<details class="morning-supporting',
-     recalcProof+moneyProof+'<details class="morning-supporting');
+     fxRankStrip+post+recalcProof+moneyProof+'<section class="morning-prose"');
   }
  }
  if(hourly)return hourly;
