@@ -333,3 +333,32 @@ assert "VIX_SOURCE_INTEGRITY" in inspect(broken, asof)["critical_daily_problems"
 # Saturday is not a weekday market session: Friday is the correct comparison.
 assert prior_weekday(dt.date(2026,10,24)).isoformat() == "2026-10-23"
 print("GMFQ_MORNING_READINESS_SOURCE_AND_DST_GUARDS_PASS")
+
+# Separate Next research must never promote OIS or change the critical gate.
+from check_morning_readiness_v1 import research_rates_evidence
+sample = copy.deepcopy(data)
+sample["_next_rates_research"] = {"pricing": {
+    "schema": "GMFQ_FXV2_PRICING_SNAPSHOT_V1", "ui_only": True,
+    "eligible_for_fx_engine": False, "currencies": {
+        "EUR": {"kind": "FUTURES SECONDARI", "source": "QA fixture",
+                "horizons": {"6m": {"rate": 2.5, "as_of": "2026-10-22", "contract": "QA"}}},
+        "USD": {"kind": "FUTURES SECONDARI", "source": "QA fixture",
+                "horizons": {"6m": {"rate": 4.0, "as_of": "2026-10-24", "contract": "QA"}}},
+        "CHF": {"kind": "FUTURES SECONDARI", "source": "QA fixture",
+                "horizons": {"6m": {"rate": 0.4, "as_of": "2026-10-22"}}},
+    }
+}}
+research = research_rates_evidence(sample, asof.date(), "2026-10-22")
+assert research["dated_reference_count"] == 1
+assert research["pricing_6m_research"]["EUR"]["status"] == "RECENT_DATED_REFERENCE"
+assert research["pricing_6m_research"]["USD"]["status"] == "REFERENCE_UNVERIFIED"
+assert research["pricing_6m_research"]["CHF"]["status"] == "REFERENCE_UNVERIFIED"
+before = inspect(data, asof)
+after = inspect(sample, asof)
+assert before["critical_daily_problems"] == after["critical_daily_problems"]
+assert before["evidence"]["OIS_G8"] == after["evidence"]["OIS_G8"]
+sample["_next_rates_research"]["pricing"]["currencies"] = None
+invalid = inspect(sample, asof)
+assert invalid["evidence"]["NEXT_RATES_RESEARCH"]["status"] == "RESEARCH_EVIDENCE_INVALID"
+assert invalid["critical_daily_problems"] == before["critical_daily_problems"]
+print("NEXT_RATES_RESEARCH_READINESS_ISOLATION_PASS")
