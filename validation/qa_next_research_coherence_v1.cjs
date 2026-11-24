@@ -247,5 +247,35 @@ const usdImpulse=momentumApi.momentum(fixture,'2026-11-16').items.find(x=>x.ccy=
 assert(usdImpulse.recent>0&&usdImpulse.prior<0&&usdImpulse.delta>0);
 assert.equal(usdImpulse.label,'Passa in positivo');
 assert.equal(usdImpulse.tone,'positive');
+
+const pairEvidence=require('../site/fx-quant-v2/next/pair-rankings.js').pairEvidenceView;
+const shortEvidence=pairEvidence({base:'AUD',quote:'USD',favored:'USD',thesisStrength:'PARZIALE',tradeAttractiveness:'DA VALIDARE',move5Percent:-.8,pricePercent:-1.5});
+assert.deepEqual(shortEvidence.thesis,['amber','Parziale']);
+assert.deepEqual(shortEvidence.five,['green','A favore']);
+assert.deepEqual(shortEvidence.twenty,['green','A favore']);
+assert.deepEqual(shortEvidence.timing,['amber','Da validare']);
+const earlyEvidence=pairEvidence({base:'AUD',quote:'USD',favored:'USD',thesisStrength:'PARZIALE',tradeAttractiveness:'BASSA ORA',move5Percent:.6,pricePercent:-1.5});
+assert.deepEqual(earlyEvidence.five,['red','Contrario']);
+assert.deepEqual(earlyEvidence.twenty,['green','A favore']);
+assert.deepEqual(earlyEvidence.timing,['red','Sfavorevole ora']);
+assert.deepEqual(pairEvidence({base:'AUD',quote:'USD',favored:null,move5Percent:1}).five,['neutral','Non valutabile']);
+assert.deepEqual(pairEvidence({base:'AUD',quote:'USD',favored:'USD',move5Percent:-.02}).five,['amber','Indeciso']);
+
+const pricingMoves=require('../site/fx-quant-v2/next/rates-pricing-moves-v1.js');
+const pricingInputs={snapshot:initial.ois,operational:json('live_data/sections/OIS_OPERATIONAL_VIEW.json'),
+ research:json('site/fx-quant-v2/ois-same-contract-repricing-research.json'),
+ nzd:json('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),today:initial.currencyPrices.last_as_of};
+const firstRead=pricingMoves.overviewModel(pricingInputs);
+assert.equal(firstRead.rows.length,8);
+assert(firstRead.official.every(r=>r.source==='official'&&finite(r.week)));
+assert.equal(firstRead.weekly,firstRead.rows.filter(r=>finite(r.week)).length);
+const ratesHtml=pricingMoves.renderOverview(pricingInputs);
+assert.equal((ratesHtml.match(/class="rates-first-row"/g)||[]).length,8);
+assert.match(ratesHtml,/Perché conta per il Forex/);
+assert.match(ratesHtml,/non OIS ufficiali/);
+const blankRates=pricingMoves.overviewModel({today:pricingInputs.today});
+assert.equal(blankRates.weekly,0);
+assert.equal(blankRates.daily,0);
+assert(blankRates.rows.every(r=>r.tone==='neutral'));
 require('./publishing/test_next_home_thesis_recalc_v1.cjs');
 console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
