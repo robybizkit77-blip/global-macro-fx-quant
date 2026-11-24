@@ -98,6 +98,40 @@
   return {ready:true,asof,previousAsOf,headline,opening,fx,observation,judgement,monitor,
    sourceDates,quality:stale?'STORICO ALLINEATO':'DATE ALLINEATE',regime,stale,changes:vals,spanDays:span};
  }
- root.FXQuantRiskEvidence={read};
- if(typeof module!=='undefined'&&module.exports)module.exports={read};
+ // Latest observations are NOT a matched-session regime.
+ const titles={SP500:'S&P 500',NASDAQCOM:'Nasdaq Composite',VIX:'VIX',HY_OAS:'Credito HY',IG_OAS:'Credito IG'};
+ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function latestObservations(streams,now){
+  return K.map(key=>{
+   const x=streams?.[key],history=Array.isArray(x?.history)?x.history:[],age=isDay(now)&&isDay(x?.date)?(Date.parse(now)-Date.parse(x.date))/864e5:NaN;
+   const dates=history.filter(r=>Array.isArray(r)&&isDay(r[0])&&r[0]<=x.date&&finite(r[1])).sort((a,b)=>a[0].localeCompare(b[0]));
+   const a=dates.at(-2),b=dates.at(-1);
+   const ok=x?.quality==='PUBLISHED_SOURCE_RESEARCH_ONLY'&&x.not_intraday===true&&age>=0&&age<=7&&
+    a&&b&&a[0]<b[0]&&b[0]===x.date&&a[1]>0&&b[1]>0&&
+    Math.abs(b[1]-x.value)<.00001&&Math.abs(a[1]-x.previous)<.00001;
+   const delta=ok?(key.endsWith('_OAS')?(b[1]-a[1])*100:key==='VIX'?b[1]-a[1]:(b[1]/a[1]-1)*100):null;
+   const supportive=finite(delta)?delta*(key==='VIX'||key.endsWith('_OAS')?-1:1):null;
+   return {key,label:titles[key],ok:Boolean(ok),date:ok?b[0]:null,previousDate:ok?a[0]:null,value:ok?b[1]:null,delta,
+    tone:!finite(supportive)?'neutral':Math.abs(supportive)<.000001?'neutral':supportive>0?'up':'down'};
+  });
+ }
+ function renderFirstRead(streams,now,aligned=read(streams,now)){
+  const rows=latestObservations(streams,now);
+  const unit=k=>k.endsWith('_OAS')?' pb':k==='VIX'?' punti':'%';
+  const number=(k,v)=>finite(v)?sign(v,k.endsWith('_OAS')?1:2,unit(k)):'—';
+  const names={stress:'Pressione diffusa',distensione:'Distensione','concentrazione tech':'Pressione sul Nasdaq',misto:'Segnali contrastanti'};
+  const label=aligned.ready?(aligned.stale?'Ultima finestra comune · storica':'Ultima finestra comune'):'Finestra comune da verificare';
+  const common=aligned.ready?K.map(k=>{
+   const d=aligned.changes[k].change,positive=d*(k==='VIX'||k.endsWith('_OAS')?-1:1);
+   return '<div class="risk-first-common-item '+(positive>0?'up':positive<0?'down':'neutral')+'"><small>'+titles[k]+'</small><strong>'+esc(number(k,d))+'</strong></div>';
+  }).join(''):'';
+  const latest=rows.map(x=>'<div class="risk-first-latest-item '+x.tone+'"><span><strong>'+esc(x.label)+'</strong><small>'+esc(x.ok?x.previousDate+' → '+x.date:'Confronto da verificare')+'</small></span><span><strong>'+esc(number(x.key,x.delta))+'</strong><small>'+esc(x.ok?fmt(x.value,2)+(x.key.endsWith('_OAS')?'%':''):'—')+'</small></span></div>').join('');
+  return '<section class="risk-first-read" aria-label="Rischio di mercato, finestra comune e ultime osservazioni"><div class="risk-first-head"><div><span class="mini-overline">01 / CONFERME TRA MERCATI</span><h2>'+esc(aligned.ready?names[aligned.regime]:'Quadro non risolto')+'</h2></div><small>'+esc(label+(aligned.ready?' · '+aligned.previousAsOf+' → '+aligned.asof:''))+'</small></div>'+
+   '<p class="risk-first-judgment">'+esc(aligned.judgement||aligned.opening)+'</p>'+
+   (common?'<div class="risk-first-common">'+common+'</div>':'')+
+   '<h3>Le rilevazioni più recenti, separatamente</h3><p class="risk-first-note">Date diverse: non sono una conferma simultanea e non aggiornano automaticamente il regime comune.</p><div class="risk-first-latest">'+latest+'</div>'+
+   '<div class="risk-first-fx"><strong>Per il Forex</strong><p>'+esc(aligned.fx)+'</p><strong>Cosa monitorare</strong><p>'+esc(aligned.monitor)+'</p><a href="#pairs">Verifica le coppie FX ↗</a></div></section>';
+ }
+ root.FXQuantRiskEvidence={read,latestObservations,renderFirstRead};
+ if(typeof module!=='undefined'&&module.exports)module.exports={read,latestObservations,renderFirstRead};
 })(typeof window!=='undefined'?window:{});
