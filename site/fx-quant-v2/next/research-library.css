@@ -57,3 +57,21 @@
  .rl-featured{padding:14px}
  .rl-featured .rl-card-bottom{flex-direction:row;align-items:center;text-align:left;max-width:none}
 }
+
+/* Research Library: date / availability, scoped to existing Dark Desk. */
+#content[data-view="library"] .rl-summary{margin:0 0 15px;padding:16px;border:1px solid #3b596d;border-radius:11px;background:linear-gradient(140deg,#16374a,#11283b)}
+.rl-summary-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.rl-summary-kicker{font-size:10px;letter-spacing:.07em;color:#a3c8d9;font-weight:750}
+.rl-summary-head h2{font:750 22px/1.35 Manrope,sans-serif;color:#e7f3fa;margin:5px 0}
+.rl-summary-head>small{font-size:11px;color:#b2ccdc}
+.rl-summary-reading{font-size:13px;color:#e0ecf4;line-height:1.65;margin:7px 0 13px}
+.rl-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.rl-summary-item{display:flex;flex-direction:column;gap:4px;padding:10px 12px;min-width:0;border:1px solid #3c586c;border-top:2px solid #85adc4;border-radius:7px;background:#10283a}
+.rl-summary-item small{font-size:11px;color:#c3d8e6;line-height:1.35;font-weight:750}
+.rl-summary-item strong{font-size:24px;line-height:1.2;color:#e3f0f7;font-variant-numeric:tabular-nums}
+.rl-summary-item>span{font-size:10px;color:#aac5d6;line-height:1.5}
+.rl-summary-item.up{border-top-color:#69d3a2}.rl-summary-item.up strong{color:#9be7bc}
+.rl-summary-item.warn{border-top-color:#ddb778}.rl-summary-item.warn strong{color:#f1d29a}
+.rl-summary-note{font-size:10px;line-height:1.65;color:#acc5d6;margin:11px 0 0}
+#content[data-view="library"] .rl-card-bottom .rl-status[data-edition-state="today"],#content[data-view="library"] .rl-card-bottom .rl-status[data-edition-state="weekly"]{color:#9adfba}
+@media(max-width:760px){.rl-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rl-summary-item{padding:9px}.rl-summary-head h2{font-size:19px}}
