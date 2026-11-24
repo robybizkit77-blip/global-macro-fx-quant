@@ -105,4 +105,32 @@ assert.equal(model(catalog,asof,'AUD',tampered).find(x=>x.key==='industry').sign
 const tooOld=model(catalog,'2028-11-23','AUD',overlay);
 assert.equal(tooOld.find(x=>x.key==='industry').signal.tone,'neutral');
 
+// PSI has two independent dimensions: 50-level and recent change.
+const NZpsi={schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',series:[{
+ ccy:'NZD',area:'services',id:'SEM_G8_NZD_SERVICES',
+ label:'BNZ–BusinessNZ PSI servizi destagionalizzato',unit:'indice diffusione (soglia 50)',
+ dates:['2026-09','2026-10'],values:[50.9,51.7],frequency:'M',
+ metric_kind:'points',diffusion_threshold:50,
+ quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',
+ source_file:'BusinessNZ',source_page:'https://businessnz.org.nz/psi'
+}]};
+const nzServices=model(catalog,'2026-11-24','NZD',NZpsi).find(x=>x.key==='services');
+assert.equal(nzServices.signal.tone,'green');
+assert.equal(nzServices.items[0].metric.diffusionThreshold,50);
+const nzHTML=render({catalog,esc,dayNow:()=>'2026-11-24',country:'NZD',overlay:NZpsi});
+assert.match(nzHTML,/Livello: espansione \(PSI sopra 50\)/);
+assert.match(nzHTML,/Direzione: indice in accelerazione/);
+assert.match(nzHTML,/Industria e servizi · direzione del ciclo/);
+const psiDecel=structuredClone(NZpsi);
+psiDecel.series[0].values=[55,52];
+assert.equal(model(catalog,'2026-11-24','NZD',psiDecel).find(x=>x.key==='services').signal.tone,'red');
+const psiDecelHTML=render({catalog,esc,dayNow:()=>'2026-11-24',country:'NZD',overlay:psiDecel});
+assert.match(psiDecelHTML,/Livello: espansione \(PSI sopra 50\)/);
+assert.match(psiDecelHTML,/Direzione: indice in rallentamento/);
+const psiFake=structuredClone(NZpsi);
+psiFake.series[0].source_page='https://example.com/psi';
+assert.equal(model(catalog,'2026-11-24','NZD',psiFake).find(x=>x.key==='services').signal.tone,'neutral');
+const psiWrongArea=structuredClone(NZpsi);
+psiWrongArea.series[0].ccy='AUD';
+assert.equal(model(catalog,'2026-11-24','AUD',psiWrongArea).find(x=>x.key==='services').signal.tone,'neutral');
 console.log('OK: G8 economic semaphore — 8 economies, 7 areas, data age, dates, source gaps, HTML');
