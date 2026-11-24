@@ -85,3 +85,15 @@ assert "gh workflow run publish-fx-quant-v2.yml" not in semaphore
 assert "live_data/sections/NATIVE_LIQ_DATA.json" in s
 assert "live_data/sections/MACRO_SERIES.json" in s
 print("NEXT_SEMAPHORE_LIQUIDITY_PUBLIC_DELIVERY_CONTRACT_PASS",len(names))
+
+# Pushes that change the approved reader, and explicit dispatches, must
+# certify the same source-to-reader path instead of reporting a branch-only success.
+assert "github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||" in proof_if
+block=s.split('label = "NEXT_G8_LIQUIDITY_PUBLIC_HTTP"',1)[1].split("elif source_workflow in research_sources:",1)[0]
+for file in ("index.html","app.js","liquidity-credit-studio.js","liquidity-source-policy-gate-v1.js",
+             "live_data/sections/NATIVE_LIQ_DATA.json","live_data/sections/ESTIMATED_RESIDUAL_GAPS.json"):
+    assert '"'+file+'"' in block,file
+assert "research_sources.items()" in block
+assert 'git show "origin/gh-pages:$f" > "$f"' in s
+assert "budget_seconds=480" in s
+print("NEXT_G8_LIQUIDITY_PUBLIC_DELIVERY_CONTRACT_PASS",len(names)-1+6)
