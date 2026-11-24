@@ -98,6 +98,26 @@ const MAP={
   credit:[M('CA_BUSINESS_LOANS_OUTSTANDING_history_value','Prestiti alle imprese',true,{unit:'mln CAD'})]
  }
 };
+const VERIFIED_FRESH_FALLBACK={
+ USD:{
+  house:['PERMIT','https://fred.stlouisfed.org/series/PERMIT'],
+  industry:['INDPRO','https://fred.stlouisfed.org/series/INDPRO'],
+  leading:['UMCSENT','https://fred.stlouisfed.org/series/UMCSENT'],
+  demand:['PCEC96','https://fred.stlouisfed.org/series/PCEC96'],
+  credit:['DRTSCILM','https://fred.stlouisfed.org/series/DRTSCILM']
+ },
+ EUR:{
+  services:['TEIBS020_BS-SCI-BAL_SA_EA21','https://ec.europa.eu/eurostat/databrowser/view/teibs020/default/table?lang=en'],
+  industry:['STS_INPR_M_EA21_PRD_B-D_SCA_I21','https://ec.europa.eu/eurostat/databrowser/view/sts_inpr_m/default/table?lang=en'],
+  leading:['TEIBS010_EA21_BS-ESI-I_SA','https://ec.europa.eu/eurostat/databrowser/view/teibs010/default/table?lang=en'],
+  demand:['STS_TRTU_M_EA21_VOL_SLS_G47_SCA_I21','https://ec.europa.eu/eurostat/databrowser/view/sts_trtu_m/default/table?lang=en']
+ }
+};
+function verifiedFreshAlternative(x,c,key){
+ const expected=VERIFIED_FRESH_FALLBACK[c]?.[key];
+ return !!expected&&x?.source_series_id===expected[0]&&x?.source_page===expected[1]&&
+   x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&x.up_good!==null;
+}
 const SUPPLEMENT_SCHEMA='GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1';
 function supplementary(overlay,country,key,today){
  if(overlay?.schema!==SUPPLEMENT_SCHEMA||!Array.isArray(overlay.series))return null;
@@ -185,30 +205,38 @@ function classify(items,needed){
 function model(catalog,today,country='USD',overlay=null){
  const c=FX.includes(country)?country:'USD';
  const rows=Array.isArray(catalog?.[c])?catalog[c]:[];
- const sources=new Map(rows.map(s=>[s.id,s]));
+ const sources=new Map(rows.map(x=>[x.id,x]));
  return AREAS.map(area=>{
-   let metrics=MAP[c]?.[area.key]||[];
+   const metrics=MAP[c]?.[area.key]||[];
+   const original=metrics.map(metric=>inspect(metric,sources.get(metric.id),today));
+   const baseline=classify(original,metrics.length);
    const extra=supplementary(overlay,c,area.key,today);
-   const priorDate=metrics.length?
-      (inspect(metrics[0],sources.get(metrics[0].id),today)?.date||''):'';
-   const euroServicesUpgrade=c==='EUR'&&area.key==='services'&&
-      extra?.id==='SEM_G8_EUR_SERVICES'&&
-      extra?.source_series_id==='TEIBS020_BS-SCI-BAL_SA_EA21'&&
-      extra?.source_page==='https://ec.europa.eu/eurostat/databrowser/view/teibs020/default/table?lang=en'&&
-      Boolean(parsePeriod(extra.dates[1]))&&parsePeriod(extra.dates[1])>priorDate;
-   if(metrics.length===0||euroServicesUpgrade){
-     if(extra){
-       sources.set(extra.id,{...extra,source_file:extra.source_file+
-        (extra.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'?' · dato verificato manualmente, non aggiornato automaticamente':
-        ' · aggiornamento dal feed supplementare')});
-       metrics=[M(extra.id,extra.label,true,{unit:extra.unit,kind:extra.metric_kind,
-        minimum:extra.metric_kind==='points'?.2:.15,
-        pointUnit:extra.unit.startsWith('%')?'p.p.':'punti',freq:extra.frequency,source_page:extra.source_page,
-        diffusionThreshold:extra.diffusion_threshold===50?50:null})];
-     }
+   const originalLatest=original.reduce((latest,item)=>item?.date&&item.date>latest?item.date:latest,'');
+   const latestExtra=extra?.dates?.[1] ? parsePeriod(extra.dates[1]):null;
+   const officialAlternative=verifiedFreshAlternative(extra,c,area.key);
+   const missingOriginal=metrics.length===0;
+   const newerValid=(missingOriginal||officialAlternative&&(
+       baseline.tone==='neutral'||(c==='EUR'&&area.key==='services'&&latestExtra>originalLatest)));
+   let supplement=null;
+   if(extra&&newerValid){
+     const src={...extra,source_file:extra.source_file+
+       (extra.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'?' · dato verificato manualmente, non aggiornato automaticamente':
+         ' · aggiornamento dal feed supplementare')};
+     const metric=M(extra.id,extra.label,extra.up_good!==false,{unit:extra.unit,
+       kind:extra.metric_kind,minimum:extra.metric_kind==='points'?.2:.15,
+       pointUnit:extra.unit.startsWith('%')?'p.p.':'punti',
+       freq:extra.frequency,source_page:extra.source_page,
+       diffusionThreshold:extra.diffusion_threshold===50?50:null});
+     supplement=inspect(metric,src,today);
    }
-   const items=metrics.map(metric=>inspect(metric,sources.get(metric.id),today));
-   return {...area,items,expected:metrics.length,signal:classify(items,metrics.length)};
+   const promoted=!!supplement&&supplement.verdict!==null;
+   const items=promoted?[supplement,...original]:original;
+   return {...area,items,expected:promoted?1:metrics.length,
+     signal:promoted?classify([supplement],1):baseline,
+     signalSource:promoted?(metrics.length?'fallback':'new'):'original',
+     proxy:promoted&&
+        (extra.label.toLowerCase().includes('proxy')||extra.label.toLowerCase().includes('survey')||
+          extra.label.toLowerCase().includes('fiducia'))};
  });
 }
 function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x??'')}={}){
@@ -283,6 +311,8 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     '<div class="sem-evidence" role="cell">'+(r.items.length?r.items.map(measure).join(''):'<span class="sem-missing">Nessuna serie idonea nel feed attuale</span>')+(r.key==='services'?svcPriceNote:'')+'</div>'+
     '<div class="sem-signal" role="cell"><span class="sem-pill '+r.signal.tone+'"><i aria-hidden="true"></i>'+esc(r.signal.label)+'</span>'+
     (r.items.length===1?'<small>Un solo indicatore</small>':'')+
+    (r.signalSource==='fallback'?'<small>Segnale da fonte supplementare aggiornata; serie precedenti nel dettaglio</small>':'')+
+    (r.proxy?'<small>Proxy/sondaggio, non misura esaustiva del ciclo</small>':'')+
     (r.items.some(x=>x?.stale)?'<small>Osservazioni datate</small>':'')+'</div></div>').join('')+'</div>'+
   '<div class="sem-policy"><div><span>POLITICA MONETARIA · DA LEGGERE A PARTE</span>'+
   '<p>'+bank+' e aspettative sui tassi possono amplificare o attenuare le pressioni cicliche: non sono però un indicatore diretto di recessione né una prova di movimento del cambio.</p></div>'+
@@ -292,7 +322,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   (hasStale?'Sono presenti osservazioni datate: non interpretare i colori come fotografia intraday. ':'')+
   (hasManual?'È presente una rilevazione PSI BusinessNZ da fonte ufficiale verificata manualmente: il download automatico è bloccato; la data del dato è esplicita e il segnale scade se non viene aggiornata. ':'')+
   'La matrice confronta direzioni, NON livelli omogenei o cicli sincronizzati. La colonna Servizi misura il momentum dell’attività o dei suoi proxy e distingue il livello di espansione/contractione SOLO per un indice di diffusione con soglia documentata a 50 (es. PSI BusinessNZ). Non misura l’inflazione dei servizi. Prezzi nominali, saldi di survey, stock di credito e PIL sono strumenti diversi. '+
-  'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonte: MACRO_SERIES.json, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p>'+
+  'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p>'+
   '</section>';
 }
 root.FXQuantRecessionLight={render,model,parsePeriod,coverage:FX};
