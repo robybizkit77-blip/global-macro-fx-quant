@@ -6,12 +6,14 @@ on:
     paths:
       - '.github/workflows/frozen-core-macro-reference-comparison-v1.yml'
       - 'validation/forward/*check_frozen_core_macro_directions_v1.py'
+      - 'validation/forward/*check_next_estimate_core_comparison_v1.py'
       - 'validation/forward/observe_official_ecb_reference_outcomes_v1.py'
   push:
     branches: [main]
     paths:
       - '.github/workflows/frozen-core-macro-reference-comparison-v1.yml'
       - 'validation/forward/*check_frozen_core_macro_directions_v1.py'
+      - 'validation/forward/*check_next_estimate_core_comparison_v1.py'
   workflow_run:
     workflows: ['Forward ECB Reference Outcomes V1 (research only)']
     types: [completed]
@@ -49,6 +51,21 @@ jobs:
           set -euo pipefail
           python -m validation.forward.check_frozen_core_macro_directions_v1 \
             --receipt /tmp/frozen-core-macro-reference-comparison.json | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Test existing Next estimate against frozen Core comparison contract
+        run: python -m unittest validation.forward.test_check_next_estimate_core_comparison_v1 -v
+      - name: Evaluate existing Next estimate and Core on identical future ECB windows
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.forward.check_next_estimate_core_comparison_v1 \
+            --receipt /tmp/next-estimate-core-weekly-comparison.json | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Retain Next versus Core evidence (read-only)
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-estimate-core-weekly-comparison-${{ github.run_id }}
+          path: /tmp/next-estimate-core-weekly-comparison.json
+          if-no-files-found: error
+          retention-days: 90
       - name: Retain dated read-only Core research receipt
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
