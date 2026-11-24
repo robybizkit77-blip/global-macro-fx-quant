@@ -528,6 +528,7 @@ STATCAN_GDP_ZIP="https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip"
 
 
 BUSINESSNZ_INDEX="https://businessnz.org.nz/psi"
+BNZ_PSI_INDEX="https://www.bnz.co.nz/institutional-banking/research/publications"
 ABS_MHSI_SERVICES="https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release"
 def abs_services_fetch(url):
     if url!=ABS_MHSI_SERVICES:raise ValueError("ABS services URL not on allowlist")
@@ -577,6 +578,55 @@ def parse_abs_services(raw,now):
 def parse_abs_demand(raw,now):
     return _parse_abs_monthly_chart(raw,now,
       "Household spending, current price, seasonally adjusted estimate")
+
+class _PlainText(HTMLParser):
+    def __init__(self):
+        super().__init__();self.parts=[];self.skip=0
+    def handle_starttag(self,tag,attrs):
+        if tag in {"script","style"}:self.skip+=1
+    def handle_endtag(self,tag):
+        if tag in {"script","style"}:self.skip=max(0,self.skip-1)
+    def handle_data(self,data):
+        if not self.skip:self.parts.append(data)
+
+def parse_bnz_psi(raw,now):
+    """Co-publisher's dated press release, taking the latest vintage's revised prior."""
+    p=_PlainText();p.feed(raw.decode("utf-8","replace"))
+    txt=" ".join(" ".join(p.parts).split())
+    months={date(2000,m,1).strftime("%B").lower():m for m in range(1,13)}
+    monthpat="|".join(months)
+    found={}
+    for hit in re.finditer(r"BNZ Research\s*[-–]\s*BusinessNZ\s*[-–]\s*(\d{2}\.\d{2}\.20\d{2})",txt):
+        release=datetime.strptime(hit[1],"%d.%m.%Y").date()
+        if release>now:continue
+        body=txt[hit.end():hit.end()+1000]
+        if not re.search(r"Performance of Services Index\s*\(PSI\)",body[:350],re.I):continue
+        current=re.search(r"The PSI for ("+monthpat+r") was\s+(\d{2}\.\d)",body,re.I)
+        if not current:continue
+        prior=re.search(r"\bfrom\s+(\d{2}\.\d)\s+in\s+("+monthpat+r")\b",body[current.end():current.end()+500],re.I)
+        if not prior:continue
+        m=months[current[1].lower()];pm=months[prior[2].lower()]
+        year=release.year if m<=release.month else release.year-1
+        period=f"{year}-{m:02d}"
+        py=year-1 if m==1 else year
+        if pm!=(m-2)%12+1:continue
+        previous=f"{py}-{pm:02d}"
+        if period_end(period)>release or (release-period_end(period)).days>45:continue
+        x,y=float(current[2]),float(prior[1])
+        if not (20<=x<=80 and 20<=y<=80):raise ValueError("BNZ PSI outside valid scale")
+        pair=[(previous,y),(period,x)]
+        if release in found and found[release]!=pair:raise ValueError("BNZ conflicting releases")
+        found[release]=pair
+    if not found:raise ValueError("BNZ dated national PSI pair missing")
+    return found[max(found)]
+
+def fetch_bnz_psi(now):
+    req=Request(BNZ_PSI_INDEX,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
+    with urlopen(req,timeout=20) as r:
+        if r.geturl().rstrip("/")!=BNZ_PSI_INDEX:raise ValueError("BNZ unexpected redirect")
+        raw=r.read(5_000_001)
+        if not raw or len(raw)>5_000_000:raise ValueError("BNZ page invalid size")
+    return parse_bnz_psi(raw,now)
 
 def biznz_fetch(url):
     """Issuer article selected through the live PSI index, never via news snippets."""
@@ -1192,6 +1242,16 @@ def collect(now=None,fetcher=fetch):
                        "source_page":spec["source_page"],"origin":spec["origin"]}
                     continue
             if spec["method"]=="biznz":
+                if fetcher is fetch:
+                    try:
+                        item,status=candidate(spec,fetch_bnz_psi(now),now)
+                        if item:
+                            item.update({"source_page":BNZ_PSI_INDEX,"source_file":"BNZ / BusinessNZ · pubblicazione ufficiale coautore"})
+                            out["series"].append(item)
+                            out["audit"][code]={**status,"source_page":BNZ_PSI_INDEX,"origin":"BNZ / BusinessNZ","primary_error":str(exc)[:160]}
+                            continue
+                    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
+                        pass
                 try:
                     fallback,status=curated_official_businessnz(spec,now)
                     if fallback:out["series"].append(fallback)
