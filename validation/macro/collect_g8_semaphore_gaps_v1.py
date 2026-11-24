@@ -1260,6 +1260,23 @@ def curated_official_businessnz(spec,now):
       "verified_on":doc["verified_on"],
       "source_page":uri}
 
+
+def collect_nzd_bis_housing(spec,now,fetcher=fetch):
+    """Quarterly real house-price YoY proxy, not dwelling consents.
+    Only used if the automatic Stats NZ sources failed; never splice histories.
+    """
+    if (spec["ccy"],spec["area"])!=("NZD","house"):raise ValueError("NZD housing proxy identity")
+    key="QNZR368BIS"
+    alt={**spec,"key":key,"name":"Prezzi immobiliari residenziali reali NZ (proxy immobiliare BIS, variazione annua)",
+         "unit":"% a/a reale","frequency":"Q","kind":"points","max_age_days":175,
+         "origin":"Fonti nazionali / BIS Residential Property Price database tramite FRED",
+         "source_page":"https://fred.stlouisfed.org/series/"+key}
+    obs=parse_fred(fetcher(FRED+key),key,"Q",now)
+    if any(abs(v)>100 for _,v in obs):raise ValueError("BIS property price annual growth range")
+    if contiguous_history(obs,"Q",now)["observations"]<12:raise ValueError("BIS housing insufficient contiguous history")
+    return candidate(alt,obs,now)
+
+
 def curated_statsnz_house(spec,now):
     """Official-release manual snapshot when Stats NZ download is blocked.
     Never describe it as automatically refreshed.
@@ -1460,6 +1477,17 @@ def collect(now=None,fetcher=fetch):
                             continue
                     except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
                         pass
+                if fetcher is fetch:
+                    try:
+                        item,status=collect_nzd_bis_housing(spec,now)
+                        if item:
+                            out["series"].append(item)
+                            out["audit"][code]={**status,"source_page":item["source_page"],
+                                "origin":item["source_file"],"primary_error":str(exc)[:160],
+                                "proxy":True,"proxy_scope":"real residential prices, not permits"}
+                            continue
+                    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as bis_exc:
+                        exc=ValueError(str(exc)[:90]+"; BIS proxy: "+str(bis_exc)[:90])
                 try:
                     item,status=curated_statsnz_house(spec,now)
                     if item:out["series"].append(item)
