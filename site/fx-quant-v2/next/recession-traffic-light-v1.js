@@ -120,7 +120,7 @@ const VERIFIED_FRESH_FALLBACK={
 function verifiedFreshAlternative(x,c,key){
  if(c==='NZD'&&key==='house'){
    return !!x&&x.source_series_id==='STATSNZ_NEWDWELLINGS_SA'&&
-     x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
+     ['SOURCE_REVISED_RESEARCH_NOT_PIT','SOURCE_VERIFIED_MANUAL_NONPIT'].includes(x.quality)&&
      /^https:\/\/www\.stats\.govt\.nz\/information-releases\/building-consents-issued-(?:january|february|march|april|may|june|july|august|september|october|november|december)-20\d{2}\/$/.test(x.source_page);
  }
  const expected=VERIFIED_FRESH_FALLBACK[c]?.[key];
@@ -132,11 +132,14 @@ function supplementary(overlay,country,key,today){
  if(overlay?.schema!==SUPPLEMENT_SCHEMA||!Array.isArray(overlay.series))return null;
  const matches=overlay.series.filter(x=>x?.ccy===country&&x?.area===key&&
    (x?.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'||
-    (country==='NZD'&&key==='services'&&x?.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'&&
+    (country==='NZD'&&['services','house'].includes(key)&&
+     x?.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'&&
      /^20\d{2}-\d{2}-\d{2}$/.test(x.manual_verified_on||'')&&x.manual_verified_on<=today&&
      parsePeriod(x.dates?.[1])&&
      (Date.parse(today+'T12:00:00Z')-Date.parse(parsePeriod(x.dates[1])+'T12:00:00Z'))/864e5<=110&&
-     x.diffusion_threshold===50))&&
+     (key==='services'?x.diffusion_threshold===50:
+       x.diffusion_threshold==null&&x.source_page===
+       'https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/')))&&
    /^[A-Z0-9_]+$/.test(x.id||'')&&
    ['M','Q'].includes(x.frequency)&&
    ['percent','points'].includes(x.metric_kind)&&
