@@ -7,6 +7,7 @@ on:
       - 'validation/macro/collect_g8_semaphore_gaps_v1.py'
       - 'validation/macro/test_collect_g8_semaphore_gaps_v1.py'
       - 'validation/macro/probe_g8_semaphore_issuers_v1.py'
+      - 'validation/macro/probe_g8_national_sources_v2.py'
       - 'site/fx-quant-v2/next/semaphore-supplement-v1.json'
       - 'site/fx-quant-v2/next/recession-traffic-light-v1.js'
       - 'site/fx-quant-v2/next/macro-studio.js'
@@ -56,6 +57,9 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check openpyxl
           python validation/macro/probe_g8_semaphore_issuers_v1.py | tee /tmp/g8-issuers-probe.txt
+      - name: Identify fresh national source schemas for unclassified G8 cells (PR only)
+        if: github.event_name == 'pull_request'
+        run: python validation/macro/probe_g8_national_sources_v2.py
       - name: Probe eight publishers and record which series are actually fresh (PR only)
         if: github.event_name == 'pull_request'
         run: python validation/macro/collect_g8_semaphore_gaps_v1.py --dry-run | tee /tmp/g8-semaphore-source-probe.txt
