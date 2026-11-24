@@ -537,6 +537,26 @@ function overviewReferences(today){
    '<time datetime="'+day+'">'+date(day)+'</time>':'Data da verificare')+'</dd></div>'
  ).join('')+'</dl>';
 }
+// Read-only first-read of the SAME G8/28 estimated model used in Pairs.
+function homeFxRankStrip(){
+ const e=get('estimatedMacro'),today=dayNow();
+ const ranking=e?.currencies, pairs=e?.pairs;
+ if(e?.status!=='STIMA_OPERATIVA_NON_VALIDATA'||!validDay(e.asof)||!validDay(e.priceAsOf)||
+    e.asof>today||e.priceAsOf>today||!fresh(e.asof,8)||!fresh(e.priceAsOf,8)||
+    !Array.isArray(ranking)||ranking.length!==8||new Set(ranking.map(x=>x.ccy)).size!==8||
+    !ranking.every(x=>FX.includes(x.ccy)&&finite(x.score)&&Number.isInteger(x.rank)&&x.rank>=1&&x.rank<=8)||
+    new Set(ranking.map(x=>x.rank)).size!==8||!Array.isArray(pairs)||pairs.length!==28||
+    !window.FXQuantPairRankings?.selectResearchPairs)return '';
+ const ordered=ranking.slice().sort((a,b)=>a.rank-b.rank);
+ const chosen=window.FXQuantPairRankings.selectResearchPairs(pairs,5);
+ const max=Math.max(.0001,...ordered.map(x=>Math.abs(x.score)));
+ const currencyRows=ordered.map(x=>{
+   const tone=x.score>.04?'positive':x.score<-.04?'negative':'neutral';
+   return '<div class="home-fx-rank-row"><span class="home-fx-number">'+x.rank+'</span><strong>'+esc(FLAGS[x.ccy]+' '+x.ccy)+'</strong><span class="home-fx-bar" aria-hidden="true"><i class="'+tone+'" style="width:'+Math.max(3,Math.abs(x.score)/max*100).toFixed(1)+'%"></i></span><span class="home-fx-label '+tone+'">'+esc(x.label)+'</span></div>';
+ }).join('');
+ const pairRows=chosen.map((x,i)=>'<button type="button" class="home-fx-pair-row" data-pair="'+esc(x.key)+'" aria-label="Apri dossier '+esc(x.name)+'"><span class="home-fx-number">'+(i+1)+'</span><span><strong>'+esc(x.name)+'</strong><small>'+esc(x.favored)+' favorito</small></span><span class="home-fx-pair-status"><small>Tesi: '+esc(x.thesisStrength)+'</small><small>Trade: '+esc(x.tradeAttractiveness)+'</small></span><span aria-hidden="true">›</span></button>').join('');
+ return '<section class="home-fx-rank-strip" aria-label="Classifica stimata G8 e coppie da verificare"><div class="home-fx-rank-head"><div><span class="morning-section-label">DALLA MACRO AL FOREX</span><h2>Valute e coppie da seguire</h2></div><small>Stima del '+esc(date(e.asof))+' · fixing BCE '+esc(date(e.priceAsOf))+'</small></div><div class="home-fx-rank-grid"><article class="home-fx-rank-panel"><h3>Forza relativa G8</h3><p>Classifica del modello: macro, tassi e prezzo.</p>'+currencyRows+'<a href="#currencies">Approfondisci le 8 valute ↗</a></article><article class="home-fx-rank-panel"><h3>Top 5 · coppie da verificare</h3><p>Selezione di ricerca, non segnali di ingresso.</p>'+(pairRows||'<p>Nessuna coppia supera il filtro attuale.</p>')+(chosen.length<5&&chosen.length>0?'<small class="home-fx-note">Solo '+chosen.length+' coppie superano il filtro attuale.</small>':'')+'<a href="#pairs">Classifica completa delle 28 coppie ↗</a></article></div></section>';
+}
 function overview(){
  // Source-first monetary evidence is a separately dated observation,
  // not part of either the hourly editorial analysis or frozen morning report.
@@ -566,9 +586,9 @@ function overview(){
  const currentContext=()=> (desk?.renderCatalyst?.({calendar,news,today,esc,date})||'')+references;
  const renderedHourly=desk?.render?.({feed:hourlyFeed,check:get('hourlyCheck'),risk:get('risk'),
   currencyPrices:get('currencyPrices'),calendar,news,references,esc,date,dayNow});
- const hourly=renderedHourly&&(moneyProof||recalcProof)?
-  renderedHourly.replace('<section class="hourly-decision-section"',
-   recalcProof+moneyProof+'<section class="hourly-decision-section"'):renderedHourly;
+ const fxRankStrip=homeFxRankStrip();
+ const hourly=renderedHourly?renderedHourly.replace('<section class="hourly-decision-section"',
+   fxRankStrip+recalcProof+moneyProof+'<section class="hourly-decision-section"'):renderedHourly;
  if(hourly&&!desk.preferMorning?.(morning,hourlyFeed,dayNow()))return hourly;
  if(typeof window!=='undefined' && window.FXQuantMorningDesk?.build && morning){
   // A new, independently dated FX snapshot must never rewrite the archived
@@ -589,9 +609,8 @@ function overview(){
   });
   if(edition){
    const post=window.FXQuantMorningDesk.postRelease?.(morning,get('news'),esc,dayNow)||'';
-   return post||moneyProof||recalcProof?
-    edition.replace('<section class="morning-prose"',
-     post+recalcProof+moneyProof+'<section class="morning-prose"'):edition;
+   return edition.replace('<section class="morning-prose"',
+     fxRankStrip+post+recalcProof+moneyProof+'<section class="morning-prose"');
   }
  }
  if(hourly)return hourly;
@@ -874,6 +893,7 @@ function overview(){
  +(fxDesk.ready&&!fxDesk.recent?'<p class="letter-stale">Fixing FX storici: non rappresentano dati di mercato attuali.</p>':'')
  +'</header>'
  +currentContext()
+ +fxRankStrip
  +recalcProof
  +'<section class="dashboard-reading-story" aria-label="Il racconto del desk"><div class="dashboard-reading-eyebrow">LA LETTURA FX DEL DESK · '+date(fxDesk.asof)+'</div>'
  +'<div class="dashboard-reading-body"><p>'+esc(fxDesk.why)+'</p><p>'+esc(fxDesk.policy)+'</p><p>'+esc(fxDesk.market)+'</p>'
