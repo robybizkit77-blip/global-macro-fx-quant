@@ -354,6 +354,30 @@
    ' · pubblicato '+esc(x.release_date)+' · rettifiche storiche possibili · prima vintage non certificata · feed FX invariato</span>'+
    '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: RBA · Financial Aggregates ↗</a></div></section>'};
  }
+ function eurExcessLiquidityResearch(esc,fmt,now){
+  const parent=root.FXQuantEURNFCCreditResearch,x=parent?.excess_liquidity;
+  if(parent?.schema!=='GMFQ_NEXT_EUR_ECB_NFC_CREDIT_RESEARCH_V1'||
+     parent.publisher!=='European Central Bank / ESCB'||
+     x?.series_id!=='ILM.D.U2.C.EXLIQ.U2.EUR'||
+     x.source_url!=='https://data.ecb.europa.eu/data/datasets/ILM/ILM.D.U2.C.EXLIQ.U2.EUR'||
+     x.frequency!=='D'||x.unit!=='milioni EUR'||x.first_release_pit_verified!==false||
+     x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     !Array.isArray(x.dates)||x.latest_observation!==x.dates.at(-1)||
+     !x.dates.every(d=>/^20[0-9]{2}-[0-9]{2}-[0-9]{2}$/.test(d)))return null;
+  const s=researchCreditSeries(x,'BCE ILM · Liquidità in eccesso','milioni EUR',now);
+  if(!s||s.dates.length<15||!s.values.every(v=>v<10000000))return null;
+  const age=(dateMs(observationDate(now))-dateMs(s.last_date))/864e5;
+  const delta=s.last_value-s.values.at(-2),previousDate=s.dates.at(-2);
+  const weekTarget=dateMs(s.last_date)-7*864e5;
+  const weekIndex=s.dates.findLastIndex(d=>dateMs(d)<=weekTarget);
+  const week=weekIndex>=0&&weekTarget-dateMs(s.dates[weekIndex])<=3*864e5?s.last_value-s.values[weekIndex]:null;
+  const signed=v=>(v>0?'+':'')+fmt(v/1000,2)+' mld EUR';
+  const opening='Al '+dated(s.last_date)+' la liquidità in eccesso nell’Eurosistema '+movement(delta,'è aumentata','è diminuita','è rimasta stabile')+' rispetto alla rilevazione precedente'+(age>10?' (periodo storico)':'')+'.';
+  return {headline:'Liquidità in eccesso BCE',opening,liquiditySeries:s,
+   html:'<section class="drivers-cad-official" aria-label="Liquidità in eccesso BCE"><span class="mini-overline">BCE / EUROSISTEMA · LIQUIDITÀ IN ECCESSO</span><h3>'+esc(opening)+'</h3>'+
+   '<p>Saldo '+esc(fmt(s.last_value/1000,2))+' miliardi EUR · rispetto al '+esc(previousDate)+' '+esc(signed(delta))+(week!==null?' · rispetto al '+esc(s.dates[weekIndex])+' '+esc(signed(week)):'')+'. Misura le riserve in eccesso nel sistema bancario, non i nuovi prestiti o i flussi verso EUR.</p>'+
+   '<div class="drivers-cad-source"><span>'+esc(s.last_date)+' · '+(age>10?'periodo storico':'osservazione datata')+' · fonte ufficiale ILM · vintage iniziale non certificata</span><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">BCE · Data Portal ↗</a></div></section>'};
+ }
  function eurECBLoanResearch(esc,fmt,now){
   const x=root.FXQuantEURNFCCreditResearch;
   if(!x||x.schema!=='GMFQ_NEXT_EUR_ECB_NFC_CREDIT_RESEARCH_V1'||
@@ -724,12 +748,18 @@
    if(!money)return credit;
    return {...credit,liquiditySeries:money.liquiditySeries,opening:credit.opening+' '+money.opening,html:credit.html+money.html};
   };
+  const eurReading=()=>{
+   const credit=eurECBLoanResearch(esc,fmt,today),liquidity=eurExcessLiquidityResearch(esc,fmt,today);
+   if(!credit)return liquidity;
+   if(!liquidity)return credit;
+   return {...credit,liquiditySeries:liquidity.liquiditySeries,opening:credit.opening+' '+liquidity.opening,html:credit.html+liquidity.html};
+  };
   const issuerFor=ccy=>ccy==='CHF'?chfSNBResearch(get('residualResearch'),today,esc,fmt):
    ccy==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):
    ccy==='JPY'?jpyReading():
    ccy==='GBP'?gbpBoEReservesResearch(esc,fmt,today):
    ccy==='AUD'?audRBAAdjustedCredit(esc,fmt,today):
-   ccy==='EUR'?eurECBLoanResearch(esc,fmt,today):
+   ccy==='EUR'?eurReading():
    ccy==='USD'?usReading():
    ccy==='CAD'?cadIssuerResearch(esc,fmt,today):null;
   const cards=FX.map(ccy=>{
@@ -746,7 +776,7 @@
    (selected==='JPY'?jpyReading():null)||
    (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):null)||
    (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):null)||
-   (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):null)||
+   (selected==='EUR'?eurReading():null)||
    (selected==='USD'?usReading():null)||
    (selected==='CAD'?cadIssuerResearch(esc,fmt,today):null);
   const sloos=selected==='USD'?usSloosResearch(esc,fmt,today):'';
