@@ -242,3 +242,45 @@ body{background:radial-gradient(ellipse 70% 45% at 90% 0,rgba(20,62,82,.28),tran
 .pro-masthead .masthead-copy .home-desk-watch{color:#a5d0c8;font-size:12px;line-height:1.8;padding:12px 0 12px 14px;border-left:2px solid #81d8bf;margin:11px 0 20px}
 .pro-masthead .masthead-copy .home-desk-watch strong{color:#a5ebd6}
 @media(max-width:650px){.home-desk-line{font-size:9px;margin-bottom:11px}.pro-masthead .masthead-copy h1{font-size:29px}.pro-masthead .masthead-copy .home-desk-lead{font-size:12px}.pro-masthead .masthead-copy .home-desk-watch{font-size:11px}}
+
+/* Shared shell polish: keep the approved Dark Desk, do not restyle research cards. */
+#sidebar{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#426577 transparent}
+#sidebar>.brand,#sidebar>.edition-tag,#sidebar>.nav-heading,#sidebar>.sidebar-mini,#sidebar>.sidebar-end,#sidebar>#nav{flex-shrink:0}
+#sidebar>#nav{overflow:visible;gap:4px}
+#sidebar .brand{margin-bottom:18px}
+#sidebar .edition-tag{margin-bottom:20px}
+#sidebar #nav .nav-subheading{margin-top:14px;padding-top:9px;color:#9cbccd}
+#sidebar>.nav-heading{color:#97b8ca}
+#sidebar .nav a{font-size:13px;line-height:1.4;min-height:44px}
+#sidebar .nav a[aria-current="page"]{font-weight:800}
+#sidebar .nav-heading-other{margin-top:22px}
+#sidebar .sidebar-end{margin-top:18px}
+#sidebar .sidebar-mini p{color:#b2c8d7}
+#sidebar .nav a:focus-visible,#menu-toggle:focus-visible,#quicklaunch:focus-visible{outline:2px solid #9cdeed;outline-offset:2px}
+#content .source-caption{color:#a6bfce}
+#content .table-wrap{scrollbar-width:thin;scrollbar-color:#486d82 #112638}
+#content .data-table th{color:#a2c0d3}
+#content .data-table td{font-variant-numeric:tabular-nums}
+#content .page-hero .lead{line-height:1.7}
+#content .drivers-fold>summary,#content .cal-event-evidence>summary,#content .news-evidence-details>summary{cursor:pointer}
+@media(max-width:1050px){
+ #sidebar{width:min(290px,86vw);height:100dvh;padding:18px 12px 22px}
+ #sidebar .nav a{min-height:44px}
+ #sidebar .sidebar-mini,#sidebar .nav-heading-other{display:none}
+ #sidebar .sidebar-end{padding-top:13px;margin-top:16px}
+ #sidebar .edition-tag{margin-bottom:15px}
+ #sidebar #nav .nav-subheading{margin-top:10px;padding-top:8px}
+ #menu-toggle{min-width:44px;min-height:44px;align-items:center;justify-content:center}
+}
+@media(max-width:600px){
+ .topbar-left{gap:6px}
+ .topbar-right{gap:6px}
+ #crumb-page{font-size:11px;white-space:normal;line-height:1.3;overflow-wrap:anywhere}
+ #quicklaunch{min-width:40px;min-height:40px;justify-content:center}
+ #content .source-caption{font-size:11px;line-height:1.65}
+ #content .page-hero .lead{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ #sidebar,.nav a,.quick-launch{transition:none}
+}
