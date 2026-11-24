@@ -316,3 +316,30 @@ for(const patch of [{source_series_id:'WRONG'},{values:[...hs.history.values.sli
 }
 assert.equal(cycleHistory({...hs,quality:'SOURCE_VERIFIED_MANUAL_NONPIT'},'2026-11-24','M').dates.length,2);
 console.log('ECONOMIC_CYCLE_CONTIGUOUS_HISTORY_PASS');
+// Integration test: real collected source identities must reach the browser,
+ // including official D1 archives and the distinct NZ proxies.
+const liveOverlay=JSON.parse(fs.readFileSync(path.join(base,'site/fx-quant-v2/next/semaphore-supplement-v1.json'),'utf8'));
+const liveDay='2026-11-24';
+const sourceCase=(ccy,key,id)=>{
+ const x=liveOverlay.series.find(s=>s.ccy===ccy&&s.area===key&&s.source_series_id===id);
+ assert.ok(x,'Expected collected series '+id);
+ const row=model({},liveDay,ccy,{schema:liveOverlay.schema,series:[x]}).find(r=>r.key===key);
+ assert.notEqual(row.signal.tone,'neutral','Valid collected source must reach browser: '+id);
+ assert.equal(row.items[0].cycle.observations,x.history.observations);
+ const fake=structuredClone(x);fake.source_series_id='WRONG';
+ assert.equal(model({},liveDay,ccy,{schema:liveOverlay.schema,series:[fake]}).find(r=>r.key===key).signal.tone,'neutral');
+ return x;
+};
+for(const [key,id] of [['house','RBA_HOUSING_CREDIT_GROWTH_MM'],['credit','RBA_BUSINESS_CREDIT_GROWTH_MM']]){
+ const x=sourceCase('AUD',key,id);
+ const old={id:key==='house'?'AU_CREDIT_OWNER_OCC_HOUSING_SA_history_value':'AU_CREDIT_BUSINESS_CURRENT_SA_history_value',dates:['2026-06','2026-07'],values:[100,101],frequency:'M'};
+ const row=model({AUD:[old]},liveDay,'AUD',{schema:liveOverlay.schema,series:[x]}).find(r=>r.key===key);
+ assert.equal(row.signalSource,'fallback');
+ assert.equal(row.items[0].cycle.observations,36);
+}
+sourceCase('NZD','house','QNZR368BIS');
+const anz=sourceCase('NZD','leading','ANZ_NZD_OWN_ACTIVITY_OUTLOOK_ROUNDED');
+const priorLeading={id:'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_1Y',dates:['2026-Q2','2026-Q3'],values:[5.2,5.1],frequency:'Q'};
+assert.equal(model({NZD:[priorLeading]},liveDay,'NZD',{schema:liveOverlay.schema,series:[anz]}).find(r=>r.key==='leading').signalSource,'fallback');
+console.log('ECONOMIC_CYCLE_SOURCE_WIRING_PASS');
+
