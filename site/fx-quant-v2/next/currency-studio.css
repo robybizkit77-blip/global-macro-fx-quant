@@ -502,3 +502,16 @@
  #orient-strength-board .strength-analysis-next{padding:12px;align-items:stretch}
  #orient-strength-board .strength-analysis-jump{width:100%;min-height:44px}
 }
+
+/* G8 price impulse: distinguish the existing level/rank from the new observed short-window comparison. */
+#orient-strength-board .strength-momentum-note{padding:12px 15px;margin:10px 0 15px;border:1px solid #345366;border-left:3px solid #79c9de;background:#142e40;border-radius:8px;color:#c8dce7;font-size:12px;line-height:1.65}
+#orient-strength-board .strength-momentum-note strong{color:#f0f7fa}
+#orient-strength-board .strength-momentum-note small{display:block;color:#aac8d7;font-size:10.5px;margin-top:4px}
+#orient-strength-board .strength-impulse{display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:left;border:1px solid #3c5363;border-left:3px solid #b59a65;background:#162d3c;border-radius:6px;padding:8px 9px;margin-top:7px;width:100%;box-sizing:border-box}
+#orient-strength-board .strength-impulse b{font-size:11.5px;font-weight:800;color:#f2d398;line-height:1.35}
+#orient-strength-board .strength-impulse small{font-size:10px;line-height:1.45;color:#c0d4df;font-variant-numeric:tabular-nums}
+#orient-strength-board .strength-impulse.positive{border-left-color:#69d4a5;background:#163c37}
+#orient-strength-board .strength-impulse.positive b{color:#9ce8bc}
+#orient-strength-board .strength-impulse.negative{border-left-color:#e78390;background:#3d2d38}
+#orient-strength-board .strength-impulse.negative b{color:#ffb0b8}
+@media(max-width:600px){#orient-strength-board .strength-impulse{padding:6px;gap:2px}#orient-strength-board .strength-impulse b{font-size:10.5px}#orient-strength-board .strength-impulse small{font-size:9.5px}}
