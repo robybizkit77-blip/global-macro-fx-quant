@@ -663,7 +663,7 @@
           "fav": "—",
           "quality": "NESSUN CONTRASTO",
           "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
-          "timing": "AUD: RATES AVANTI · USD: TURNING RECENTE",
+          "timing": "AUD: RATES AVANTI · USD: NESSUN TIMING CHIARO",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
           "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -693,7 +693,7 @@
         "fav": "—",
         "quality": "NESSUN CONTRASTO",
         "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
-        "timing": "AUD: RATES AVANTI · USD: TURNING RECENTE",
+        "timing": "AUD: RATES AVANTI · USD: NESSUN TIMING CHIARO",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
         "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -741,12 +741,11 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -1980,11 +1979,11 @@
           "text": "Prezzo già avanzato · 1M +2.1% · P83 storico"
         },
         "timing": {
-          "state": "PARTIAL",
-          "text": "Timing da monitorare · EUR sta peggiorando · USD è in possibile svolta",
+          "state": "ALIGNED",
+          "text": "Timing favorevole · EUR sta peggiorando",
           "favChange": {
-            "side": "TRANSITION",
-            "text": "USD è in possibile svolta"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
             "side": "NEG",
@@ -2018,7 +2017,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "EUR: TURNING RECENTE · USD: TURNING RECENTE",
+          "timing": "EUR: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2048,7 +2047,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "EUR: TURNING RECENTE · USD: TURNING RECENTE",
+        "timing": "EUR: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2097,12 +2096,11 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -2787,8 +2785,8 @@
           "state": "ADVERSE",
           "text": "Timing contrario · GBP sta migliorando",
           "favChange": {
-            "side": "TRANSITION",
-            "text": "USD è in possibile svolta"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
             "side": "POS",
@@ -2822,7 +2820,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "GBP: TURNING RECENTE · USD: TURNING RECENTE",
+          "timing": "GBP: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2852,7 +2850,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "GBP: TURNING RECENTE · USD: TURNING RECENTE",
+        "timing": "GBP: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2899,12 +2897,11 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -3321,10 +3318,10 @@
         },
         "timing": {
           "state": "UNCERTAIN",
-          "text": "Timing da monitorare · USD è in possibile svolta · NZD è in possibile svolta",
+          "text": "Timing da monitorare · NZD è in possibile svolta",
           "favChange": {
-            "side": "TRANSITION",
-            "text": "USD è in possibile svolta"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
             "side": "TRANSITION",
@@ -3358,7 +3355,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "NZD: TURNING RECENTE · USD: TURNING RECENTE",
+          "timing": "NZD: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3388,7 +3385,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "NZD: TURNING RECENTE · USD: TURNING RECENTE",
+        "timing": "NZD: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3435,12 +3432,11 @@
         "B": {
           "positive": 2,
           "negative": 1,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -3470,11 +3466,11 @@
           "text": "Prezzo già molto avanzato · 1M +2.4% · P92 storico"
         },
         "timing": {
-          "state": "PARTIAL",
-          "text": "Timing da monitorare · CAD sta peggiorando · USD è in possibile svolta",
+          "state": "ALIGNED",
+          "text": "Timing favorevole · CAD sta peggiorando",
           "favChange": {
-            "side": "TRANSITION",
-            "text": "USD è in possibile svolta"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
             "side": "NEG",
@@ -3508,7 +3504,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "Tassi/CB favoriscono USD, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
-          "timing": "USD: TURNING RECENTE · CAD: RATES AVANTI",
+          "timing": "USD: NESSUN TIMING CHIARO · CAD: RATES AVANTI",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3538,7 +3534,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "Tassi/CB favoriscono USD, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
-        "timing": "USD: TURNING RECENTE · CAD: RATES AVANTI",
+        "timing": "USD: NESSUN TIMING CHIARO · CAD: RATES AVANTI",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3574,12 +3570,11 @@
         "A": {
           "positive": 2,
           "negative": 1,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -3623,10 +3618,10 @@
         },
         "timing": {
           "state": "UNCERTAIN",
-          "text": "Timing da monitorare · USD è in possibile svolta · CHF è in possibile svolta",
+          "text": "Timing da monitorare · CHF è in possibile svolta",
           "favChange": {
-            "side": "TRANSITION",
-            "text": "USD è in possibile svolta"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
             "side": "TRANSITION",
@@ -3660,7 +3655,7 @@
           "fav": "USD",
           "quality": "CONTRASTO STRUTTURALE FORTE",
           "relation": "Macro e Tassi/CB favoriscono entrambi USD: contrasto strutturale pieno.",
-          "timing": "USD: TURNING RECENTE · CHF: TURNING RECENTE",
+          "timing": "USD: NESSUN TIMING CHIARO · CHF: TURNING RECENTE",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Macro e Tassi/CB sono allineati sulla stessa valuta.",
@@ -3690,7 +3685,7 @@
         "fav": "USD",
         "quality": "CONTRASTO STRUTTURALE FORTE",
         "relation": "Macro e Tassi/CB favoriscono entrambi USD: contrasto strutturale pieno.",
-        "timing": "USD: TURNING RECENTE · CHF: TURNING RECENTE",
+        "timing": "USD: NESSUN TIMING CHIARO · CHF: TURNING RECENTE",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Macro e Tassi/CB sono allineati sulla stessa valuta.",
@@ -3716,9 +3711,9 @@
         "policySide": "USD"
       },
       "transition": {
-        "state": "NESSUNA DIVERGENZA RELATIVA CHIARA",
-        "cls": "transNeutral",
-        "note": "la dinamica relativa non contraddice né rafforza chiaramente il vantaggio strutturale di USD"
+        "state": "DIVERGENZA RELATIVA DA MONITORARE",
+        "cls": "transWatch",
+        "note": "il driver strutturale favorisce USD, ma la dinamica relativa favorisce CHF: divergenza da monitorare, non segnale automatico"
       },
       "relative_dynamics": {
         "a": "USD",
@@ -3726,12 +3721,11 @@
         "A": {
           "positive": 2,
           "negative": 1,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -3749,8 +3743,8 @@
         },
         "aNet": 1,
         "bNet": 1,
-        "state": "MISTO",
-        "fav": "—"
+        "state": "TURNING POINT ASIMMETRICO",
+        "fav": "CHF"
       },
       "price_state": null
     },
@@ -3773,11 +3767,11 @@
           "text": "Estensione non elevata · 1M +1.4% · P71 storico"
         },
         "timing": {
-          "state": "PARTIAL",
-          "text": "Timing da monitorare · JPY sta peggiorando · USD è in possibile svolta",
+          "state": "ALIGNED",
+          "text": "Timing favorevole · JPY sta peggiorando",
           "favChange": {
-            "side": "TRANSITION",
-            "text": "USD è in possibile svolta"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
             "side": "NEG",
@@ -3811,7 +3805,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "USD: TURNING RECENTE · JPY: RATES AVANTI",
+          "timing": "USD: NESSUN TIMING CHIARO · JPY: RATES AVANTI",
           "priceReading": "DIVERGENZA DA MONITORARE",
           "priceNote": "La struttura Macro + Tassi/CB favorisce USD, ma il Prezzo favorisce JPY.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3841,7 +3835,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "USD: TURNING RECENTE · JPY: RATES AVANTI",
+        "timing": "USD: NESSUN TIMING CHIARO · JPY: RATES AVANTI",
         "priceReading": "DIVERGENZA DA MONITORARE",
         "priceNote": "La struttura Macro + Tassi/CB favorisce USD, ma il Prezzo favorisce JPY.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3877,12 +3871,11 @@
         "A": {
           "positive": 2,
           "negative": 1,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
