@@ -195,7 +195,7 @@ def collect_monthly(previous, today):
     last_known = max(history)
     if last_known not in overlap:
         raise ValueError("No matching recent overlap with the last published release")
-    anchors = set(SEED) & overlap if not output.exists() else {last_known}
+    anchors = set(SEED) & overlap if not previous else {last_known}
     if any(observed[key][stamp] != value for stamp in anchors for key, value in history[stamp].items()):
         raise ValueError("Last published observation was revised; review before extending history")
     for stamp in sorted(overlap):
