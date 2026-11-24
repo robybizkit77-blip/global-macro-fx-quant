@@ -568,7 +568,7 @@
      x.original_runtime_validation?.original_runtime_vintage_equivalence_claimed!==false||
      x.continuity_anchor?.matched!==true||x.continuity_anchor?.period!=='2026-09'||
      x.continuity_anchor?.expected_official_value!==3849859||
-     !/^20\\d{2}-(0[1-9]|1[0-2])$/.test(x.proxy_as_of)||!period||!day||period>day||
+     !/^20[0-9]{2}-(0[1-9]|1[0-2])$/.test(x.proxy_as_of)||!period||!day||period>day||
      !finite(x.proxy_value)||x.proxy_value<1000000||x.proxy_value>8000000)return null;
   const age=(dateMs(day)-dateMs(period))/864e5;
   const change=finite(x.change_1m_pct)&&Math.abs(x.change_1m_pct)<100?x.change_1m_pct:null;
