@@ -30,7 +30,13 @@ MAX_BYTES=3_000_000
 # Definitions and transformations deliberately fixed and source-identifiable.
 # Several historical OECD/BIS feeds have stopped updating: retain status WITHHELD;
 # never use today's fetch time to make an old observation look current.
+BOJ_CREDIT_URL="https://www.stat-search.boj.or.jp/ssi/mtshtml/md13_m_1_en.html"
+RBNZ_CREDIT_URL="https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/Registered-banks-and-non-bank-lending-institutions-sector-lending"
 REGISTRY=[
+ dict(ccy="JPY",area="credit",key="BOJ_MD13_FAAPOBAL1_YOY",method="boj_credit",
+      name="Crescita prestiti e sconti delle banche maggiori e regionali (BoJ)",unit="% a/a",frequency="M",
+      kind="points",max_age_days=85,origin="Bank of Japan / MD13'FAAPOBAL1@",
+      source_page=BOJ_CREDIT_URL),
  dict(ccy="GBP",area="leading",key="GBRLOLITOAASTSAM",method="fred",
       name="OECD CLI Regno Unito (indicatore anticipatore)",unit="indice SA",frequency="M",kind="points",max_age_days=85,
       origin="OECD tramite FRED",up_good=True,
@@ -39,10 +45,10 @@ REGISTRY=[
       name="Tasso disoccupazione Giappone 15+ SA",unit="% SA",frequency="M",kind="points",max_age_days=85,
       origin="OECD tramite FRED",up_good=False,
       source_page="https://fred.stlouisfed.org/series/LRUNTTTTJPM156S"),
- dict(ccy="JPY",area="industry",key="JPNPROINDQISMEI",method="fred",
-      name="Produzione industriale Giappone (volumi SA, trimestrale)",unit="indice SA",frequency="Q",kind="percent",max_age_days=175,
+ dict(ccy="JPY",area="industry",key="JPNPRMNTO01GPSAM",method="fred",
+      name="Crescita produzione manifatturiera Giappone (SA)",unit="% m/m SA",frequency="M",kind="points",max_age_days=85,
       origin="OECD tramite FRED",up_good=True,
-      source_page="https://fred.stlouisfed.org/series/JPNPROINDQISMEI"),
+      source_page="https://fred.stlouisfed.org/series/JPNPRMNTO01GPSAM"),
  dict(ccy="JPY",area="demand",key="SLRTTO01JPQ657S",method="fred",
       name="Crescita volumi retail Giappone SA",unit="% q/q SA",frequency="Q",kind="points",max_age_days=175,
       origin="OECD tramite FRED",up_good=True,
@@ -200,16 +206,16 @@ REGISTRY=[
       name="OECD CLI Nuova Zelanda",unit="indice SA",frequency="M",
       kind="points",max_age_days=115,origin="OECD tramite FRED",
       source_page="https://fred.stlouisfed.org/series/NZLLOLITOAASTSAM"),
- dict(ccy="NZD",area="credit",key="QNZPBMXDCA",method="fred",
-      name="Credito bancario settore privato, corretto per rotture",unit="mld NZD NSA",frequency="Q",
-      kind="percent",max_age_days=250,origin="BIS tramite FRED",
-      source_page="https://fred.stlouisfed.org/series/QNZPBMXDCA"),
+ dict(ccy="NZD",area="credit",key="RBNZ_C5_BUSINESS_YOY",method="rbnz_credit",
+      name="Crescita prestiti alle imprese NZ, corretta per rotture (RBNZ C5)",unit="% a/a",frequency="M",
+      kind="points",max_age_days=85,origin="Reserve Bank of New Zealand / C5",
+      source_page="https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/Registered-banks-and-non-bank-lending-institutions-sector-lending"),
  dict(ccy="CAD",area="industry",key="16100047_MANUFACTURING_SA",method="statcan",
       name="Vendite manifatturiere (nominali, destagionalizzate)",unit="migliaia CAD nominali SA",frequency="M",
       kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
-assert len(REGISTRY)==41 and len({(s["ccy"],s["area"]) for s in REGISTRY})==41
+assert len(REGISTRY)==42 and len({(s["ccy"],s["area"]) for s in REGISTRY})==42
 
 def fetch(url:str)->bytes:
     host=urlsplit(url).hostname
@@ -645,8 +651,61 @@ def parse_businessnz_psi(raw,now):
     if len(result)!=1:raise ValueError("BusinessNZ exact national PSI table absent/ambiguous")
     return result[0]
 
+def parse_boj_credit(raw,now):
+    parser=_ReportTables();parser.feed(raw.decode("utf-8","replace"))
+    results=[]
+    for tab in parser.tables:
+        header=next((r for r in tab if any("MD13'FAAPOBAL1@" in c for c in r)),None)
+        if not header:continue
+        cols=[i for i,c in enumerate(header) if "MD13'FAAPOBAL1@" in c]
+        if len(cols)!=1:raise ValueError("BOJ credit code ambiguous")
+        col=cols[0]
+        name=next((r for r in tab if len(r)==len(header) and
+                  "percent changes in average amounts outstanding from previous year" in r[col]),None)
+        unit=next((r for r in tab if len(r)==len(header) and r[0]=="Unit" and r[col]=="%"),None)
+        if not name or not unit:raise ValueError("BOJ credit identity/units changed")
+        out={}
+        for row in tab:
+            if len(row)!=len(header) or not re.fullmatch(r"\\d{4}/(?:0[1-9]|1[0-2])",row[0]):continue
+            p=row[0].replace("/","-")
+            if period_end(p)>now or row[col] in {"ND","-",""}:continue
+            v=float(row[col])
+            if not math.isfinite(v) or abs(v)>50 or p in out:raise ValueError("BOJ invalid/duplicate rate")
+            out[p]=v
+        if len(out)>=12:results.append(sorted(out.items()))
+    if len(results)!=1:raise ValueError("BOJ exact credit table missing/ambiguous")
+    return results[0]
+
+def parse_rbnz_credit(raw,now):
+    html=raw.decode("utf-8","replace")
+    if not all(x in html for x in ("Sector lending (C5)","Annual growth rate","break-adjusted")):
+        raise ValueError("RBNZ C5 identity or break adjustment missing")
+    parser=_ReportTables();parser.feed(html)
+    results=[]
+    months={m:i+1 for i,m in enumerate(("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"))}
+    for tab in parser.tables:
+        header=None;in_growth=False
+        for row in tab:
+            found=[re.fullmatch(r"([A-Za-z]{3,9}) (20\\d{2})",c) for c in row]
+            if sum(bool(x) for x in found)>=5:
+                header=[(i,f"{m[2]}-{months[m[1][:3].lower()]:02d}") for i,m in enumerate(found)
+                        if m and m[1][:3].lower() in months]
+            if row and row[0].startswith("Annual growth rate (%)"):in_growth=True;continue
+            if not in_growth or not header or not row:continue
+            if not re.fullmatch(r"Business(?:\\s*[\\[\\]{}()^0-9]+)*",row[0]):continue
+            out={}
+            for i,p in header:
+                if i>=len(row):raise ValueError("RBNZ C5 header alignment changed")
+                if period_end(p)>now:continue
+                v=float(row[i].replace(",",""))
+                if not math.isfinite(v) or abs(v)>100 or p in out:raise ValueError("RBNZ invalid/duplicate rate")
+                out[p]=v
+            if len(out)>=5:results.append(sorted(out.items()))
+    if len(results)!=1:raise ValueError("RBNZ C5 exact annual growth row absent/ambiguous")
+    return results[0]
+
 def fetch_issuer(url):
-    if url not in {ONS_URL,ONS_INDUSTRY,STATCAN_GDP_ZIP}:raise ValueError("unregistered official services URL")
+    if url not in {ONS_URL,ONS_INDUSTRY,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL}:raise ValueError("unregistered official services URL")
     req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0",
       "Accept":"text/html,application/zip"})
     with urlopen(req,timeout=35) as response:
@@ -989,6 +1048,8 @@ def collect(now=None,fetcher=fetch):
     for spec in REGISTRY:
         code=spec["ccy"]+"_"+spec["area"]
         url=FRED+spec["key"] if spec["method"]=="fred" else (
+          BOJ_CREDIT_URL if spec["method"]=="boj_credit" else
+          RBNZ_CREDIT_URL if spec["method"]=="rbnz_credit" else
           STATCAN_DETAIL[spec["key"]]["url"] if spec["method"]=="statcan_detail" else
           RBA_BASE if spec["method"]=="rba_credit" else
           boe_mortgage_url(now) if spec["method"]=="boe_mortgage" else
@@ -1012,8 +1073,10 @@ def collect(now=None,fetcher=fetch):
                  fetch_statcan_detail(url) if spec["method"]=="statcan_detail" else
                  abs_services_fetch(url) if spec["method"] in {"abs_services","abs_demand"} else
                  fetch_statcan(url) if spec["method"]=="statcan" else
-                 fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","abs_demand","rba_credit","statcan_detail","statcan","ons","ons_industry","statcan_services","boe_mortgage","statsnz_house"} and fetcher is fetch else fetcher(url)
-            observations=(parse_statcan_detail(raw,now,spec["key"]) if spec["method"]=="statcan_detail" else
+                 fetch_issuer(url)) if spec["method"] in {"boj_credit","rbnz_credit","biznz","abs_services","abs_demand","rba_credit","statcan_detail","statcan","ons","ons_industry","statcan_services","boe_mortgage","statsnz_house"} and fetcher is fetch else fetcher(url)
+            observations=(parse_boj_credit(raw,now) if spec["method"]=="boj_credit" else
+                          parse_rbnz_credit(raw,now) if spec["method"]=="rbnz_credit" else
+                          parse_statcan_detail(raw,now,spec["key"]) if spec["method"]=="statcan_detail" else
                           parse_rba_aggregates(raw,now,spec["key"],fetched[1] if fetched else rba_release_url(now,2))
                           if spec["method"]=="rba_credit" else
                           parse_statsnz_house(raw,now) if spec["method"]=="statsnz_house" else
