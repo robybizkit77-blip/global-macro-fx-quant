@@ -42,6 +42,28 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Inspect official SNB new-loan rates series definitions
+        if: github.event_name == 'pull_request'
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from validation.estimated.refresh_chf_residual_proxies_v1 import get_json
+          base='https://data.snb.ch/api/cube/zikredlauf/'
+          dimensions,_=get_json(base+'dimensions/en')
+          print('CHF_NEW_LOAN_DIMENSIONS',json.dumps(dimensions,ensure_ascii=False)[:28000])
+          today=datetime.now(timezone.utc)
+          payload,_=get_json(base+'data/json/en',{'fromDate':f'{today.year-1}-01','toDate':today.strftime('%Y-%m')})
+          series=payload.get('timeseries',[])
+          assert series,'No new loan rate series'
+          for s in series:
+              m=s.get('metadata',{})
+              vals=[v for v in s.get('values',[]) if v.get('value') not in (None,'','.')]
+              if vals:
+                  print('CHF_NEW_LOAN_CANDIDATE',json.dumps({'metadata':m,'last':vals[-2:]},ensure_ascii=False))
+          print('CHF_NEW_LOAN_DISCOVERY_PASS',len(series))
+          PY
+
       - name: Refresh CHF official residual proxies
         run: |
           set -euo pipefail
