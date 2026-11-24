@@ -85,3 +85,34 @@ console.log('USD_FED_H8_RESEARCH_SIDECAR_PASS',JSON.stringify({
  latest:source.values.at(-1),lastNative:native.USD.credit.last_date,
  canonicalUnchanged:true,signal:false
 }));
+
+ // M2 has a separate contract and cannot replace the native historical series.
+ // Synthetic fixture is used only for rendering if the actual production
+ // sidecar has not yet been refreshed by its existing workflow.
+ const money=source.money_stock||{
+  series_id:'M2SL',source_url:'https://fred.stlouisfed.org/series/M2SL',
+  frequency:'M',unit:'miliardi USD',seasonally_adjusted:true,
+  first_release_pit_verified:false,eligible_for_fx_core:false,
+  dates:Array.from({length:13},(_,i)=>new Date(Date.UTC(2025,8+i,1)).toISOString().slice(0,7)),
+  values:Array.from({length:13},(_,i)=>22000+i*100),
+  latest_observation:'2026-09'
+ };
+ const originalNative=JSON.stringify(native);
+ try{
+  globalThis.FXQuantUSBanksCreditResearch={...source,money_stock:money};
+  const plots=[];
+  const rendered=studio.render({...api('USD'),plot:x=>{plots.push(x);return '<svg></svg>';}});
+  assert.match(rendered,/FED \/ FRED · M2 DESTAGIONALIZZATA/);
+  assert(rendered.includes(fmt(money.values.at(-1),1)+' miliardi USD'));
+  const chart=plots.find(x=>x.label==='Liquidità · fonte ufficiale separata USD');
+  assert(chart);
+  assert.equal(chart.lines[0].values.at(-1).label,money.latest_observation);
+  assert.equal(chart.lines[0].values.at(-1).value,money.values.at(-1));
+  assert(!studio.render(api('EUR')).includes('M2 DESTAGIONALIZZATA'));
+  for(const changed of [{series_id:'M2NS'},{source_url:'https://example.com'},{seasonally_adjusted:false}]){
+   globalThis.FXQuantUSBanksCreditResearch={...source,money_stock:{...money,...changed}};
+   assert(!studio.render(api('USD')).includes('M2 DESTAGIONALIZZATA'));
+  }
+ }finally{globalThis.FXQuantUSBanksCreditResearch=originalUS;}
+ assert.equal(JSON.stringify(native),originalNative);
+ console.log('NEXT_US_M2_CHART_PASS',source.money_stock?'actual':'synthetic rendering fixture',money.latest_observation);

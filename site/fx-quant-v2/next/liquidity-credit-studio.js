@@ -401,6 +401,27 @@
    ' · serie BSI NFC non destagionalizzata · revisioni possibili · vintage di prima pubblicazione non verificato · feed FX invariato</span>'+
    '<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte: BCE · Data Portal ↗</a></div></section>'};
  }
+ function usM2Research(esc,fmt,now){
+  const parent=root.FXQuantUSBanksCreditResearch,x=parent?.money_stock;
+  if(parent?.schema!=='GMFQ_NEXT_US_H8_CREDIT_RESEARCH_V1'||
+     parent.publisher!=='Board of Governors of the Federal Reserve System (US)'||
+     x?.series_id!=='M2SL'||x.source_url!=='https://fred.stlouisfed.org/series/M2SL'||
+     x.frequency!=='M'||x.unit!=='miliardi USD'||x.seasonally_adjusted!==true||
+     x.first_release_pit_verified!==false||x.eligible_for_fx_core!==false||
+     !Array.isArray(x.dates)||x.latest_observation!==x.dates.at(-1)||
+     !x.dates.every(d=>/^20[0-9]{2}-(0[1-9]|1[0-2])$/.test(d)))return null;
+  const s=researchCreditSeries(x,'Fed M2SL · Moneta ampia','miliardi USD',now);
+  if(!s||s.dates.length<12||!s.values.every(v=>v>15000&&v<40000))return null;
+  const age=(dateMs(observationDate(now))-dateMs(observationDate(s.last_date)))/864e5;
+  const m=(s.last_value/s.values.at(-2)-1)*100;
+  const y=s.values.length>=13?(s.last_value/s.values.at(-13)-1)*100:null;
+  const signed=v=>(v>0?'+':'')+fmt(v,2)+'%';
+  const opening=inMonth(s.last_date)+' la moneta ampia M2 '+movement(m,'è aumentata','è diminuita','è rimasta stabile')+' rispetto al mese precedente'+(age>75?' (periodo storico)':'')+'.';
+  return {headline:'Moneta ampia M2',opening,liquiditySeries:s,
+   html:'<section class="drivers-cad-official" aria-label="Moneta ampia M2 Fed"><span class="mini-overline">FED / FRED · M2 DESTAGIONALIZZATA</span><h3>'+esc(opening)+'</h3>'+
+   '<p>'+esc(fmt(s.last_value,1))+' miliardi USD · mese '+esc(signed(m))+(y!==null?' · anno '+esc(signed(y)):'')+'. M2 misura la moneta ampia, non i saldi di riserva presso la Fed né gli acquisti di attività finanziarie.</p>'+
+   '<div class="drivers-cad-source"><span>'+esc(s.last_date)+' · '+(age>75?'periodo storico':'osservazione datata')+' · M2SL · serie rivista, vintage iniziale non certificata</span><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fed / FRED ↗</a></div></section>'};
+ }
  function usFedCreditResearch(esc,fmt,now){
   const x=root.FXQuantUSBanksCreditResearch;
   if(!x||x.schema!=='GMFQ_NEXT_US_H8_CREDIT_RESEARCH_V1'||
@@ -697,13 +718,19 @@
    if(!reserves)return credit;
    return {...credit,opening:credit.opening+' '+reserves.opening,html:credit.html+reserves.html};
   };
+  const usReading=()=>{
+   const credit=usFedCreditResearch(esc,fmt,today),money=usM2Research(esc,fmt,today);
+   if(!credit)return money;
+   if(!money)return credit;
+   return {...credit,liquiditySeries:money.liquiditySeries,opening:credit.opening+' '+money.opening,html:credit.html+money.html};
+  };
   const issuerFor=ccy=>ccy==='CHF'?chfSNBResearch(get('residualResearch'),today,esc,fmt):
    ccy==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):
    ccy==='JPY'?jpyReading():
    ccy==='GBP'?gbpBoEReservesResearch(esc,fmt,today):
    ccy==='AUD'?audRBAAdjustedCredit(esc,fmt,today):
    ccy==='EUR'?eurECBLoanResearch(esc,fmt,today):
-   ccy==='USD'?usFedCreditResearch(esc,fmt,today):
+   ccy==='USD'?usReading():
    ccy==='CAD'?cadIssuerResearch(esc,fmt,today):null;
   const cards=FX.map(ccy=>{
     const issuer=issuerFor(ccy),active=ccy===selected;
@@ -720,13 +747,13 @@
    (selected==='GBP'?gbpBoEReservesResearch(esc,fmt,today):null)||
    (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):null)||
    (selected==='EUR'?eurECBLoanResearch(esc,fmt,today):null)||
-   (selected==='USD'?usFedCreditResearch(esc,fmt,today):null)||
+   (selected==='USD'?usReading():null)||
    (selected==='CAD'?cadIssuerResearch(esc,fmt,today):null);
   const sloos=selected==='USD'?usSloosResearch(esc,fmt,today):'';
   const headline=official?.headline||'La lettura del credito resta aperta';
   const opening=official?.opening||'Le rilevazioni disponibili non permettono di stabilire se il credito stia accelerando o frenando. Per capire come si finanziano famiglie e imprese servono osservazioni confrontabili sui prestiti e sui costi.';
   const liquidityAudit=audits[0];
-  const liquidityRead=official&&['USD','EUR','JPY','CAD'].includes(selected)&&
+  const liquidityRead=official&&!official.liquiditySeries&&['USD','EUR','JPY','CAD'].includes(selected)&&
    liquidityAudit.coverage&&liquidityAudit.state!=='DATA DA VERIFICARE'&&!policyGate('liquidity')?.withheld?
    '<p class="drivers-lead"><strong>'+esc(row.liquidity.label)+'</strong> · '+
    esc(snap(row.liquidity).replace(/T.*$/,''))+
@@ -759,7 +786,7 @@
    '<p>Copertura storica e date riferite alle rispettive serie. Se disponibile, il grafico del credito usa la fonte ufficiale separata più recente, senza modificare il feed storico. Frequenze, definizioni e unità possono differire.'+
    (row?.current_note?' '+esc(row.current_note):'')+'</p></details></section>'+
    (selected==='CHF'?'':'<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
-   '<div class="drivers-chart-grid">'+chart(official?.liquidityRecent||row?.liquidity,official?.liquidityRecent?'Liquidità · ultima settimana':'Liquidità','#69d5ad')+chart(official?.creditSeries||row?.credit,official?.creditSeries?'Credito · fonte ufficiale separata':'Credito','#95c6e9')+'</div>'+
+   '<div class="drivers-chart-grid">'+chart(official?.liquidityRecent||official?.liquiditySeries||row?.liquidity,official?.liquidityRecent?'Liquidità · ultima settimana':official?.liquiditySeries?'Liquidità · fonte ufficiale separata':'Liquidità','#69d5ad')+chart(official?.creditSeries||row?.credit,official?.creditSeries?'Credito · fonte ufficiale separata':'Credito','#95c6e9')+'</div>'+
    (official?.liquidityRecent?'<p class="drivers-source-note">Confronto delle ultime due settimane dalla fonte ufficiale separata. '+(selected==='AUD'?'Il saldo precedente è ricavato dal movimento settimanale pubblicato. ':'Entrambi i saldi sono pubblicati dalla BoE. ')+'Lo storico precedente rimane distinto: nessuna interpolazione fra periodi mancanti.</p><div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità · storico originario','#69d5ad')+'</div>':'')+
    '<p class="drivers-source-note">I grafici conservano i livelli originali nelle rispettive unità; non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>');
  }
