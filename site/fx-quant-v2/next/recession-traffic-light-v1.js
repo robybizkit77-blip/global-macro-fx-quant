@@ -101,7 +101,7 @@ const MAP={
 const VERIFIED_FRESH_FALLBACK={
  CAD:{
   house:['CAN_HOUSEHOLD_MORTGAGES_SA','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610063901'],
-  demand:['CAN_RETAIL_VOLUME_CHAINED','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=2010006701'],
+  demand:['CAN_RETAIL_REAL_LASPEYRES','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=2010006701'],
   credit:['CAN_NFC_NONMORTGAGE_LOANS_SA','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610064001']
  },
  AUD:{
