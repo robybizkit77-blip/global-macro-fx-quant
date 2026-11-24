@@ -99,16 +99,23 @@ const MAP={
  }
 };
 const SUPPLEMENT_SCHEMA='GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1';
-function supplementary(overlay,country,key){
+function supplementary(overlay,country,key,today){
  if(overlay?.schema!==SUPPLEMENT_SCHEMA||!Array.isArray(overlay.series))return null;
  const matches=overlay.series.filter(x=>x?.ccy===country&&x?.area===key&&
-   x?.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
+   (x?.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'||
+    (country==='NZD'&&key==='services'&&x?.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'&&
+     /^20\d{2}-\d{2}-\d{2}$/.test(x.manual_verified_on||'')&&x.manual_verified_on<=today&&
+     parsePeriod(x.dates?.[1])&&
+     (Date.parse(today+'T12:00:00Z')-Date.parse(parsePeriod(x.dates[1])+'T12:00:00Z'))/864e5<=110&&
+     x.diffusion_threshold===50))&&
    /^[A-Z0-9_]+$/.test(x.id||'')&&
    ['M','Q'].includes(x.frequency)&&
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk)\//.test(x.source_page));
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au)\//.test(x.source_page)&&
+   (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
+    x.metric_kind==='points'&&/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page))));
  return matches.length===1?matches[0]:null;
 }
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
@@ -182,12 +189,15 @@ function model(catalog,today,country='USD',overlay=null){
  return AREAS.map(area=>{
    let metrics=MAP[c]?.[area.key]||[];
    if(metrics.length===0){
-     const extra=supplementary(overlay,c,area.key);
+     const extra=supplementary(overlay,c,area.key,today);
      if(extra){
-       sources.set(extra.id,{...extra,source_file:extra.source_file+' · aggiornamento dal feed supplementare'});
+       sources.set(extra.id,{...extra,source_file:extra.source_file+
+        (extra.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'?' · dato verificato manualmente, non aggiornato automaticamente':
+        ' · aggiornamento dal feed supplementare')});
        metrics=[M(extra.id,extra.label,true,{unit:extra.unit,kind:extra.metric_kind,
         minimum:extra.metric_kind==='points'?.2:.15,
-        pointUnit:extra.unit==='% QoQ'?'p.p.':'punti',freq:extra.frequency,source_page:extra.source_page})];
+        pointUnit:extra.unit.startsWith('%')?'p.p.':'punti',freq:extra.frequency,source_page:extra.source_page,
+        diffusionThreshold:extra.diffusion_threshold===50?50:null})];
      }
    }
    const items=metrics.map(metric=>inspect(metric,sources.get(metric.id),today));
@@ -207,9 +217,13 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   const digits=x.metric.scale?2:x.kind==='points'?2:Math.abs(scaled)>=100?0:1;
   const reading=x.metric.hideValue?'variazione della serie':fmt(scaled,digits)+' '+esc(x.metric.unit||'unità della fonte');
   const diff=x.kind==='points'?d(x.diff,' '+(x.metric.pointUnit||'punti')):d(x.pct,'%');
+  const diffusion=x.metric.diffusionThreshold===50?
+   '<span class="sem-psi-regime">'+(x.current>50?'Livello: espansione (PSI sopra 50)':x.current<50?'Livello: contrazione (PSI sotto 50)':'Livello: soglia neutrale 50')+
+   ' · Direzione: '+(x.verdict===null?'non classificabile':x.diff>.2?'indice in accelerazione':x.diff<-.2?'indice in rallentamento':'indice stabile')+
+   '</span>':'';
   return '<div class="sem-measure"><div><strong>'+esc(x.metric.name)+'</strong> <span>'+reading+
    '</span> <b>'+diff+'</b></div><small>Periodo '+esc(x.period)+' (precedente '+esc(x.prior)+') · '+
-   esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small>'+  (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
+   esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small>'+diffusion+  (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
  };
  const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
  const svcPrices=servicePriceContext?recentTwo(servicePriceContext,today):null;
@@ -222,12 +236,23 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    (red.length?'Le ultime variazioni mostrano deterioramento in '+red.join(' e ')+'. ':'')+
    (green.length?'Si osserva un miglioramento in '+green.join(' e ')+'. ':'')+
    (unavailable?'Alcune aree restano senza segnale affidabile.':'Nelle altre aree il quadro è misto o stabile.');
+ const sectorSummary=(key,label)=>{
+  const a=rows.find(x=>x.key===key);
+  const tone=a?.signal.tone||'neutral';
+  const wording={green:'migliora',red:'peggiora',amber:'misto o stabile',neutral:'dato insufficiente'}[tone];
+  const item=a?.items?.find(x=>x&&x.verdict!==null);
+  const level=item?.metric?.diffusionThreshold===50?
+    (item.current>50?' · PSI sopra 50: espansione':item.current<50?' · PSI sotto 50: contrazione':' · PSI a 50: soglia neutrale'):'';
+  return '<div class="sem-sector-compare-item"><strong>'+esc(label)+'</strong><span class="'+tone+'">'+esc(wording)+
+   '</span><small>'+esc(item?.period||'senza periodo valido')+esc(level)+'</small></div>';
+ };
  const bank={USD:'Fed',EUR:'BCE',GBP:'BoE',JPY:'BoJ',CHF:'SNB',AUD:'RBA',NZD:'RBNZ',CAD:'BoC'}[selected];
  const dots=area=>{
    const q=area.signal;
    return '<span class="sem-mini '+q.tone+'" title="'+esc(q.label)+'" aria-label="'+esc(q.label)+'"><i aria-hidden="true"></i></span>';
  };
  const hasStale=rows.some(x=>x.items.some(z=>z?.stale));
+ const hasManual=rows.some(x=>x.items.some(z=>z?.source?.includes('verificato manualmente')));
  return '<section class="recession-light" aria-labelledby="recession-light-title">'+
   '<header class="sem-head"><div><span class="sem-kicker">GLOBAL MACRO / G8 / LETTURA CICLICA</span>'+
   '<h2 id="recession-light-title">Il semaforo economico</h2>'+
@@ -241,6 +266,9 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '</tbody></table></div>'+
   '<p class="sem-legend"><span class="sem-mini green"><i></i></span> Migliora <span class="sem-mini red"><i></i></span> Peggiora'+
   ' <span class="sem-mini amber"><i></i></span> Misto / stabile <span class="sem-mini neutral"><i></i></span> Non classificabile</p>'+
+  '<div class="sem-sector-compare" aria-label="Industria e servizi a confronto"><p>Industria e servizi · direzione del ciclo</p><div class="sem-sector-compare-grid">'+
+    sectorSummary('industry','Manifattura')+sectorSummary('services','Servizi')+'</div>'+
+    '<small>La direzione non è il livello: un PSI sopra 50 può rallentare pur restando in espansione. Non confrontare i livelli di serie differenti.</small></div>'+
   '<div class="sem-country-caption">'+FLAGS[selected]+' <strong>'+esc(NAMES[selected])+'</strong> · dettaglio per indicatore</div>'+
   '<div class="sem-table" role="table" aria-label="Semaforo economico '+esc(NAMES[selected])+'">'+
   '<div class="sem-columns" role="row"><span role="columnheader">Area</span><span role="columnheader">Ultima evidenza disponibile</span><span role="columnheader">Segnale</span></div>'+
@@ -255,7 +283,8 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<p class="sem-foot">Metodo: ogni indicatore confronta le sue ultime due osservazioni disponibili; verde indica miglioramento direzionale, rosso peggioramento, giallo quadro misto o quasi invariato, azzurro dati mancanti, troppo vecchi, non consecutivi o non sufficientemente allineati. '+
   'Le soglie descrittive evitano piccoli movimenti: ±0,15% per i livelli e soglie in punti esplicite per tassi, sondaggi e indicatori compositi. '+
   (hasStale?'Sono presenti osservazioni datate: non interpretare i colori come fotografia intraday. ':'')+
-  'La matrice confronta direzioni, NON livelli omogenei o cicli sincronizzati. La colonna Servizi misura il momentum dell’attività o dei suoi proxy, NON il livello di un PMI rispetto a 50 e NON l’inflazione dei servizi. Prezzi nominali, saldi di survey, stock di credito e PIL sono strumenti diversi. '+
+  (hasManual?'È presente una rilevazione PSI BusinessNZ da fonte ufficiale verificata manualmente: il download automatico è bloccato; la data del dato è esplicita e il segnale scade se non viene aggiornata. ':'')+
+  'La matrice confronta direzioni, NON livelli omogenei o cicli sincronizzati. La colonna Servizi misura il momentum dell’attività o dei suoi proxy e distingue il livello di espansione/contractione SOLO per un indice di diffusione con soglia documentata a 50 (es. PSI BusinessNZ). Non misura l’inflazione dei servizi. Prezzi nominali, saldi di survey, stock di credito e PIL sono strumenti diversi. '+
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonte: MACRO_SERIES.json, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p>'+
   '</section>';
 }

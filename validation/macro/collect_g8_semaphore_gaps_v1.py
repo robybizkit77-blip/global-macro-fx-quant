@@ -11,6 +11,8 @@ import io
 from zipfile import ZipFile
 from datetime import date, datetime, timezone
 from io import StringIO
+from html.parser import HTMLParser
+from html import unescape
 import json
 import math
 from pathlib import Path
@@ -20,6 +22,7 @@ from urllib.parse import urlsplit
 
 ROOT=Path(__file__).resolve().parents[2]
 TARGET=ROOT/"site/fx-quant-v2/next/semaphore-supplement-v1.json"
+MANUAL_PSI=ROOT/"validation/macro/official_g8_services_source_snapshot_v1.json"
 SCHEMA="GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1"
 FRED="https://fred.stlouisfed.org/graph/fredgraph.csv?id="
 MAX_BYTES=3_000_000
@@ -27,6 +30,19 @@ MAX_BYTES=3_000_000
 # Several historical OECD/BIS feeds have stopped updating: retain status WITHHELD;
 # never use today's fetch time to make an old observation look current.
 REGISTRY=[
+ dict(ccy="CHF",area="services",key="LFEASETTCHQ647S",method="fred",
+      name="Occupazione nei servizi (proxy, non output)",unit="persone SA",
+      frequency="Q",kind="percent",max_age_days=235,origin="OECD via FRED",
+      source_page="https://fred.stlouisfed.org/series/LFEASETTCHQ647S"),
+ dict(ccy="AUD",area="services",key="ABS_MHSI_SERVICES_MONTHLY_SA",method="abs_services",
+      name="Spesa famiglie servizi: variazione mensile nominale (proxy domanda)",
+      unit="% m/m nominale SA",frequency="M",kind="points",max_age_days=110,
+      origin="Australian Bureau of Statistics / MHSI",
+      source_page="https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release"),
+ dict(ccy="NZD",area="services",key="BNZ_BUSINESSNZ_PSI",method="biznz",
+      name="BNZ–BusinessNZ PSI servizi destagionalizzato",unit="indice diffusione (soglia 50)",
+      frequency="M",kind="points",max_age_days=110,origin="BusinessNZ",
+      source_page="https://businessnz.org.nz/psi"),
  dict(ccy="USD",area="services",key="CES0800000001",method="fred",
       name="Occupazione privata nei servizi (proxy, non output)",unit="mila occupati SA",
       frequency="M",kind="percent",max_age_days=105,origin="BLS via FRED",
@@ -73,7 +89,7 @@ REGISTRY=[
       kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
-assert len(REGISTRY)==11 and len({(s["ccy"],s["area"]) for s in REGISTRY})==11
+assert len(REGISTRY)==14 and len({(s["ccy"],s["area"]) for s in REGISTRY})==14
 
 def fetch(url:str)->bytes:
     host=urlsplit(url).hostname
@@ -139,6 +155,131 @@ def parse_statcan(raw,now):
 
 ONS_URL="https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/s2ku/ios1"
 STATCAN_GDP_ZIP="https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip"
+
+
+BUSINESSNZ_INDEX="https://businessnz.org.nz/psi"
+ABS_MHSI_SERVICES="https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release"
+def abs_services_fetch(url):
+    if url!=ABS_MHSI_SERVICES:raise ValueError("ABS services URL not on allowlist")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
+    with urlopen(req,timeout=25) as response:
+        final=response.geturl()
+        if urlsplit(final).hostname not in ("www.abs.gov.au","abs.gov.au") or not final.startswith("https://"):
+            raise ValueError("ABS redirect outside official site")
+        data=response.read(3_500_001)
+        if not data or len(data)>3_500_000:raise ValueError("invalid ABS HTML size")
+    return data
+
+def parse_abs_services(raw,now):
+    """ABS MHSI *nominal* household services spending MoM % changes, not services output."""
+    html=raw.decode("utf-8","replace")
+    title="Household spending on services, current price, seasonally adjusted estimate"
+    identity='aria-label="'+title+'.csv"'
+    occurrences=[m.start() for m in re.finditer(re.escape(identity),html)]
+    if len(occurrences)!=1:raise ValueError("ABS unique services chart source missing")
+    start=html.find("<table",occurrences[0])
+    end=html.find("</table>",start)
+    if start<0 or end<0 or end-start>175_000:
+        raise ValueError("ABS matching services chart table missing")
+    chart=html[start:end+8]
+    p=_ReportTables();p.feed(chart)
+    if len(p.tables)!=1:raise ValueError("ABS extracted chart count changed")
+    values={}
+    for row in p.tables[0]:
+        if len(row)<2:continue
+        m=re.fullmatch(r"([A-Za-z]{3})[- ](\d{4})",row[0])
+        if not m:continue
+        months=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
+        if m[1].lower() not in months:raise ValueError("ABS date label changed")
+        month=months.index(m[1].lower())+1
+        period=f"{m[2]}-{month:02d}"
+        if period_end(period)>now:continue
+        val=float(row[1].replace(",",""))
+        if not math.isfinite(val) or abs(val)>100:raise ValueError("invalid ABS monthly growth rate")
+        if period in values:raise ValueError("duplicate ABS period")
+        values[period]=val
+    if len(values)<12:raise ValueError("ABS services growth-rate table insufficient")
+    return sorted(values.items())
+
+def biznz_fetch(url):
+    """Issuer article selected through the live PSI index, never via news snippets."""
+    if url!=BUSINESSNZ_INDEX:raise ValueError("invalid BusinessNZ root URL")
+    def get(page):
+        if not re.fullmatch(r"https://businessnz\.org\.nz/psi(?:/[a-z0-9-]+)?",page):
+            raise ValueError("BusinessNZ URL outside issuer path")
+        req=Request(page,headers={"User-Agent":"GMFQ-Economic-Research/1.0",
+                                  "Accept":"text/html"})
+        with urlopen(req,timeout=22) as r:
+            target=r.geturl().rstrip("/")
+            if not re.fullmatch(r"https://businessnz\.org\.nz/psi(?:/[a-z0-9-]+)?",target):
+                raise ValueError("BusinessNZ redirect outside official PSI")
+            data=r.read(2_500_001)
+            if not data or len(data)>2_500_000:raise ValueError("BusinessNZ HTML oversized")
+        return data
+    home=get(url).decode("utf-8","replace")
+    # Latest PSI release comes first on the official index; exclude navigation.
+    paths=re.findall(r'href=["\'](https?://businessnz\.org\.nz)?(/psi/[a-z0-9-]+)(?:/)?["\']',home,re.I)
+    candidates=[]
+    for _,tail in paths:
+        if tail not in candidates and tail not in ("/psi","/psi/"):
+            candidates.append(tail)
+    for tail in candidates[:5]:
+        page="https://businessnz.org.nz"+tail
+        try:
+            item=get(page)
+            if b"PSI Time Series Table" in item and (b"BusinessNZ PSI" in item or b"BusinessNZ" in item):
+                return item
+        except (ValueError,OSError,TimeoutError):continue
+    raise ValueError("BusinessNZ live PSI table not located")
+
+class _ReportTables(HTMLParser):
+    def __init__(self):
+        super().__init__();self.tables=[];self.table=None;self.row=None;self.cell=None
+    def handle_starttag(self,tag,attrs):
+        if tag=="table" and self.table is None:self.table=[]
+        elif tag=="tr" and self.table is not None:self.row=[]
+        elif tag in ("td","th") and self.row is not None:self.cell=[]
+    def handle_data(self,data):
+        if self.cell is not None:self.cell.append(data)
+    def handle_endtag(self,tag):
+        if tag in ("td","th") and self.cell is not None:
+            self.row.append(" ".join(" ".join(self.cell).split()));self.cell=None
+        elif tag=="tr" and self.row is not None:
+            self.table.append(self.row);self.row=None
+        elif tag=="table" and self.table is not None:
+            self.tables.append(self.table);self.table=None
+
+def parse_businessnz_psi(raw,now):
+    """Read national headline seasonally-adjusted PSI, no PCI or global PMI substitution."""
+    html=raw.decode("utf-8","replace")
+    if "PSI Time Series Table" not in html or "Performance of Services Index" not in html:
+        raise ValueError("BusinessNZ PSI source identity changed")
+    parser=_ReportTables();parser.feed(html)
+    result=[]
+    for table in parser.tables:
+        header=next((r for r in table if len(r)>=3 and any(
+            re.fullmatch(r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) 20\d{2}",c,re.I)
+            for c in r)),None)
+        headline=next((r for r in table if len(r)>=3 and
+            re.fullmatch(r"BNZ\s*[\u2013\-]\s*BusinessNZ PSI",r[0],re.I)),None)
+        if not header or not headline:continue
+        dates=[c for c in header if re.fullmatch(r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) 20\d{2}",c,re.I)]
+        # Preserve header-to-value alignment; first field is the name.
+        if len(dates)!=len(headline)-1:continue
+        vals={}
+        for dat,val in zip(dates,headline[1:]):
+            month_str,year_str=dat.split()
+            month=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].index(month_str.lower())+1
+            p=f"{int(year_str)}-{month:02d}"
+            if period_end(p)>now:continue
+            x=float(val)
+            if not math.isfinite(x) or not 20<=x<=80:raise ValueError("invalid PSI index")
+            if p in vals:raise ValueError("duplicate PSI month")
+            vals[p]=x
+        if len(vals)>=2:
+            result.append(sorted(vals.items()))
+    if len(result)!=1:raise ValueError("BusinessNZ exact national PSI table absent/ambiguous")
+    return result[0]
 
 def fetch_issuer(url):
     if url not in {ONS_URL,STATCAN_GDP_ZIP}:raise ValueError("unregistered official services URL")
@@ -309,8 +450,47 @@ def candidate(spec,observations,now):
       "category":"Semaforo supplementare","source_file":spec["origin"],
       "source_page":spec["source_page"],"source_series_id":spec["key"],
       "metric_kind":spec["kind"],"observation_as_of":newest,
+      "diffusion_threshold":50 if spec["method"]=="biznz" else None,
       "quality":"SOURCE_REVISED_RESEARCH_NOT_PIT"}
     return payload,{"status":"READY_DESCRIPTIVE_REVISED","last_observation":newest,"days_since_period_end":age}
+
+def curated_official_businessnz(spec,now):
+    """Source-verified, manual fallback; NEVER label this as a fetched update."""
+    if spec["method"]!="biznz":raise ValueError("fallback only authorized for PSI")
+    doc=json.loads(MANUAL_PSI.read_text(encoding="utf-8"))
+    expected={"schema":"GMFQ_OFFICIAL_SERVICES_FALLBACK_V1","country":"NZD",
+      "area":"services","series_id":"BNZ_BUSINESSNZ_PSI","frequency":"M",
+      "source_issuer":"BusinessNZ","seasonal_adjustment":"Seasonally adjusted","baseline":50}
+    for key,value in expected.items():
+        if doc.get(key)!=value:raise ValueError("manual PSI provenance mismatch")
+    uri=doc.get("source_url")
+    if not isinstance(uri,str) or not re.fullmatch(
+        r"https://businessnz\.org\.nz/psi/[a-z0-9-]+",uri):
+        raise ValueError("manual PSI must link to dated official release")
+    checked=date.fromisoformat(doc["verified_on"])
+    released=date.fromisoformat(doc["official_release_date"])
+    if not released<=checked<=now:raise ValueError("manual PSI verification time invalid")
+    dates=doc.get("dates");values=doc.get("values")
+    if not isinstance(dates,list) or len(dates)!=2 or not isinstance(values,list) or len(values)!=2:
+        raise ValueError("manual PSI exact two observations required")
+    obs=[]
+    for p,v in zip(dates,values):
+        period_end(p)
+        if not isinstance(v,(int,float)) or not math.isfinite(v) or not 20<=v<=80:
+            raise ValueError("manual PSI value outside official survey scale")
+        obs.append((p,float(v)))
+    if obs!=sorted(obs):raise ValueError("manual PSI dates not ascending")
+    item,status=candidate(spec,obs,now)
+    if item is None:return None,{"status":"WITHHELD_STALE","reason":"Manually verified PSI snapshot expired"}
+    item.update({"quality":"SOURCE_VERIFIED_MANUAL_NONPIT",
+        "source_file":"BusinessNZ · verifica manuale "+doc["verified_on"]+" (accesso automatico bloccato)",
+        "source_page":uri,
+        "manual_verified_on":doc["verified_on"],
+        "official_release_date":doc["official_release_date"]})
+    return item,{"status":"READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+      "last_observation":item["observation_as_of"],
+      "verified_on":doc["verified_on"],
+      "source_page":uri}
 
 def collect(now=None,fetcher=fetch):
     now=now or datetime.now(timezone.utc).date()
@@ -319,15 +499,22 @@ def collect(now=None,fetcher=fetch):
     for spec in REGISTRY:
         code=spec["ccy"]+"_"+spec["area"]
         url=FRED+spec["key"] if spec["method"]=="fred" else (
+          BUSINESSNZ_INDEX if spec["method"]=="biznz" else
+          ABS_MHSI_SERVICES if spec["method"]=="abs_services" else
           STATCAN_CSV if spec["method"]=="statcan" else
           ONS_URL if spec["method"]=="ons" else
           STATCAN_GDP_ZIP if spec["method"]=="statcan_services" else
           "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?"
           "geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001_X_410014&s_adj=SCA&unit=I21&lang=EN")
         try:
-            raw=(fetch_statcan(url) if spec["method"]=="statcan" else fetch_issuer(url)) if spec["method"] in {"statcan","ons","statcan_services"} and fetcher is fetch else fetcher(url)
+            raw=(biznz_fetch(url) if spec["method"]=="biznz" else
+                 abs_services_fetch(url) if spec["method"]=="abs_services" else
+                 fetch_statcan(url) if spec["method"]=="statcan" else
+                 fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","statcan","ons","statcan_services"} and fetcher is fetch else fetcher(url)
             observations=(parse_fred(raw,spec["key"],spec["frequency"],now)
                           if spec["method"]=="fred" else
+                          parse_businessnz_psi(raw,now) if spec["method"]=="biznz" else
+                          parse_abs_services(raw,now) if spec["method"]=="abs_services" else
                           parse_statcan(raw,now) if spec["method"]=="statcan" else
                           parse_ons_services(raw,now) if spec["method"]=="ons" else
                           parse_statcan_services(raw,now) if spec["method"]=="statcan_services" else parse_eurostat(raw,now))
@@ -337,6 +524,19 @@ def collect(now=None,fetcher=fetch):
                                  "origin":spec["origin"]}
             out["audit"][code].pop("...")
         except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+            if spec["method"]=="biznz":
+                try:
+                    fallback,status=curated_official_businessnz(spec,now)
+                    if fallback:out["series"].append(fallback)
+                    out["audit"][code]={**status,"automatic_fetch":"BLOCKED_OR_UNVALIDATED",
+                        "automatic_error":str(exc)[:100]}
+                    continue
+                except (ValueError,KeyError,IndexError,UnicodeError,OSError) as cur_exc:
+                    out["audit"][code]={"status":"WITHHELD_FETCH_OR_VALIDATION",
+                        "reason":"No current verified PSI: "+str(cur_exc)[:140],
+                        "automatic_error":str(exc)[:100],
+                        "source_page":spec["source_page"],"origin":spec["origin"]}
+                    continue
             out["audit"][code]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180],
                                  "source_page":spec["source_page"],"origin":spec["origin"]}
     return out
@@ -351,5 +551,6 @@ def main():
     if not x.dry_run: Path(x.output).write_text(content,encoding="utf-8")
     print(json.dumps({"status":"CAPTURED_REVISED_NOT_PIT",
       "ready":len(out["series"]),"total":len(REGISTRY),
-      "audit":{k:v["status"] for k,v in out["audit"].items()}},ensure_ascii=False))
+      "audit":{k:v["status"] for k,v in out["audit"].items()},
+      "withheld_reasons":{k:v.get("reason","") for k,v in out["audit"].items() if v["status"]=="WITHHELD_FETCH_OR_VALIDATION"}},ensure_ascii=False))
 if __name__=="__main__":main()

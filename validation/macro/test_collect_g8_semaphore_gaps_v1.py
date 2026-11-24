@@ -25,10 +25,10 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),11)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),11)
+        self.assertEqual(len(mod.REGISTRY),14)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),14)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan","ons","statcan_services"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan","ons","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -138,11 +138,80 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
         self.assertEqual(item["area"],"services")
 
+    def test_businessnz_national_PSI_expansion_vs_momentum(self):
+        fake="""<html><h1>Performance of Services Index</h1><h2>PSI Time Series Table</h2>
+        <table><thead><tr><th>National Indicies</th><th>Aug 2026</th><th>Sep 2026</th><th>Oct 2026</th></tr></thead>
+        <tbody><tr><th>BNZ – BusinessNZ PSI</th><td>51.0</td><td>50.9</td><td>51.7</td></tr>
+        <tr><th>Activity/Sales</th><td>49.3</td><td>50.4</td><td>52.6</td></tr></tbody></table></html>"""
+        obs=mod.parse_businessnz_psi(fake.encode(),date(2026,11,24))
+        self.assertEqual(obs,[("2026-08",51),("2026-09",50.9),("2026-10",51.7)])
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="NZD" and x["area"]=="services")
+        item,status=mod.candidate(spec,obs,date(2026,11,24))
+        self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+        self.assertEqual(item["diffusion_threshold"],50)
+        self.assertEqual(item["dates"],["2026-09","2026-10"])
+        with self.assertRaisesRegex(ValueError,"source identity"):
+            mod.parse_businessnz_psi(fake.replace("PSI Time Series Table","wrong table").encode(),NOW)
+        with self.assertRaisesRegex(ValueError,"index"):
+            mod.parse_businessnz_psi(fake.replace("51.7","127.0").encode(),date(2026,11,24))
+
+    def test_services_proxies_require_fresh_quarterly_dates(self):
+        for ccy in ("CHF",):
+            spec=next(x for x in mod.REGISTRY if x["ccy"]==ccy and x["area"]=="services")
+            self.assertEqual(spec["frequency"],"Q")
+            self.assertIn("proxy",spec["name"])
+            raw=fixture(spec["key"],"Q",(2026,2))
+            obs=mod.parse_fred(raw,spec["key"],"Q",NOW)
+            item,status=mod.candidate(spec,obs,NOW)
+            self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+            self.assertEqual(item["dates"],["2026-Q1","2026-Q2"])
+
+    def test_abs_household_services_spending_nominal_monthly_proxy(self):
+        title="Household spending on services, current price, seasonally adjusted estimate"
+        html='<html><button aria-label="'+title+'.csv"></button><table><thead><tr><th>Month</th><th>Monthly (%)</th><th>Through the year (%)</th></tr></thead>'
+        for year in (2025,2026):
+            for month in range(1,13 if year==2025 else 11):
+                name=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][month-1]
+                value=-0.5 if year==2026 and month==9 else 1.1 if year==2026 and month==10 else 0.4
+                html+=f'<tr><td>{name}-{year}</td><td>{value}</td><td>6.4</td></tr>'
+        html+='</table></html>'
+        obs=mod.parse_abs_services(html.encode(),date(2026,11,24))
+        self.assertEqual(obs[-2:],[("2026-09",-0.5),("2026-10",1.1)])
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="AUD" and x["area"]=="services")
+        self.assertIn("proxy",spec["name"])
+        self.assertIn("nominale",spec["name"])
+        item,status=mod.candidate(spec,obs,date(2026,11,24))
+        self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+        self.assertEqual(item["metric_kind"],"points")
+        self.assertEqual(item["dates"],["2026-09","2026-10"])
+        with self.assertRaisesRegex(ValueError,"unique services chart"):
+            mod.parse_abs_services(html.replace(title,"Different chart").encode(),date(2026,11,24))
+
+    def test_businessnz_manual_official_snapshot_is_dated_and_cannot_be_current_forever(self):
+        spec=next(s for s in mod.REGISTRY if s["ccy"]=="NZD" and s["area"]=="services")
+        item,status=mod.curated_official_businessnz(spec,date(2026,11,24))
+        self.assertEqual(item["values"],[50.9,51.7])
+        self.assertEqual(item["quality"],"SOURCE_VERIFIED_MANUAL_NONPIT")
+        self.assertEqual(status["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
+        self.assertEqual(item["source_page"],"https://businessnz.org.nz/psi/pre-election-drinks")
+        self.assertIsNone(mod.curated_official_businessnz(spec,date(2027,4,1))[0])
+        with self.assertRaisesRegex(ValueError,"verification time"):
+            mod.curated_official_businessnz(spec,date(2026,11,23))
+
+    def test_issuer_unavailable_keeps_only_expiring_verified_manual_snapshot(self):
+        def fail(_):raise OSError("http 403 issuer blocked")
+        out=mod.collect(date(2026,11,24),fetcher=fail)
+        self.assertEqual(len(out["series"]),1)
+        self.assertEqual(out["series"][0]["ccy"],"NZD")
+        self.assertEqual(out["series"][0]["area"],"services")
+        self.assertEqual(out["audit"]["NZD_services"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
+        self.assertEqual(out["audit"]["NZD_services"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
+
     def test_collect_transparently_withholds_failed_sources(self):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),11)
+        self.assertEqual(len(out["audit"]),14)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
