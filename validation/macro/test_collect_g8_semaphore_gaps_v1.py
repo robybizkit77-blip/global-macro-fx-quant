@@ -25,10 +25,10 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),11)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),11)
+        self.assertEqual(len(mod.REGISTRY),14)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),14)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan","ons","statcan_services"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan","ons","statcan_services","biznz"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -138,11 +138,39 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
         self.assertEqual(item["area"],"services")
 
+    def test_businessnz_national_PSI_expansion_vs_momentum(self):
+        fake="""<html><h1>Performance of Services Index</h1><h2>PSI Time Series Table</h2>
+        <table><thead><tr><th>National Indicies</th><th>Aug 2026</th><th>Sep 2026</th><th>Oct 2026</th></tr></thead>
+        <tbody><tr><th>BNZ – BusinessNZ PSI</th><td>51.0</td><td>50.9</td><td>51.7</td></tr>
+        <tr><th>Activity/Sales</th><td>49.3</td><td>50.4</td><td>52.6</td></tr></tbody></table></html>"""
+        obs=mod.parse_businessnz_psi(fake.encode(),date(2026,11,24))
+        self.assertEqual(obs,[("2026-08",51),("2026-09",50.9),("2026-10",51.7)])
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="NZD" and x["area"]=="services")
+        item,status=mod.candidate(spec,obs,date(2026,11,24))
+        self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+        self.assertEqual(item["diffusion_threshold"],50)
+        self.assertEqual(item["dates"],["2026-09","2026-10"])
+        with self.assertRaisesRegex(ValueError,"source identity"):
+            mod.parse_businessnz_psi(fake.replace("PSI Time Series Table","wrong table").encode(),NOW)
+        with self.assertRaisesRegex(ValueError,"index"):
+            mod.parse_businessnz_psi(fake.replace("51.7","127.0").encode(),date(2026,11,24))
+
+    def test_services_proxies_require_fresh_quarterly_dates(self):
+        for ccy in ("CHF","AUD"):
+            spec=next(x for x in mod.REGISTRY if x["ccy"]==ccy and x["area"]=="services")
+            self.assertEqual(spec["frequency"],"Q")
+            self.assertIn("proxy",spec["name"])
+            raw=fixture(spec["key"],"Q",(2026,2))
+            obs=mod.parse_fred(raw,spec["key"],"Q",NOW)
+            item,status=mod.candidate(spec,obs,NOW)
+            self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+            self.assertEqual(item["dates"],["2026-Q1","2026-Q2"])
+
     def test_collect_transparently_withholds_failed_sources(self):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),11)
+        self.assertEqual(len(out["audit"]),14)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
