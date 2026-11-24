@@ -774,7 +774,7 @@ def parse_bnz_psi(raw,now):
     months={date(2000,m,1).strftime("%B").lower():m for m in range(1,13)}
     monthpat="|".join(months)
     found={}
-    for hit in re.finditer(r"BNZ Research\s*[-–]\s*BusinessNZ\s*[-–]\s*(\d{2}\.\d{2}\.20\d{2})",txt):
+    for hit in re.finditer(r"\b(?:BNZ|NZ) Research\s*[-–]\s*BusinessNZ\s*[-–]\s*(\d{2}\.\d{2}\.20\d{2})",txt):
         release=datetime.strptime(hit[1],"%d.%m.%Y").date()
         if release>now:continue
         body=txt[hit.end():hit.end()+1000]
@@ -1314,6 +1314,21 @@ def curated_official_businessnz(spec,now):
       "source_page":uri}
 
 
+
+def prefer_current_psi(spec,now,item,status):
+    """An older automatically fetched release must not displace a newer verified one.
+    Compare observation periods, never fetch timestamps. Keep automatic on equal periods.
+    """
+    try:
+        manual,manual_status=curated_official_businessnz(spec,now)
+    except (ValueError,KeyError,IndexError,UnicodeError,OSError):
+        return item,status
+    if manual and (item is None or manual["observation_as_of"]>item["observation_as_of"]):
+        return manual,{**manual_status,"automatic_last_observation":item["observation_as_of"] if item else None,
+                       "automatic_fetch":"OLDER_OR_UNAVAILABLE"}
+    return item,status
+
+
 def collect_nzd_bis_housing(spec,now,fetcher=fetch):
     """Quarterly real house-price YoY proxy, not dwelling consents.
     Only used if the automatic Stats NZ sources failed; never splice histories.
@@ -1502,6 +1517,12 @@ def collect(now=None,fetcher=fetch):
                         continue
                 except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as proxy_exc:
                     status["proxy_error"]=str(proxy_exc)[:180]
+            if spec["method"]=="biznz" and fetcher is fetch:
+                item,status=prefer_current_psi(spec,now,item,status)
+                if item and status["status"]=="READY_MANUAL_VERIFIED_NOT_AUTOMATIC":
+                    out["series"].append(item)
+                    out["audit"][code]={**status,"source_page":item["source_page"],"origin":item["source_file"]}
+                    continue
             if item is not None:
                 if fetched is not None:item["source_page"]=fetched[1]
                 if history_page:
@@ -1578,10 +1599,12 @@ def collect(now=None,fetcher=fetch):
                 if fetcher is fetch:
                     try:
                         item,status=candidate(spec,fetch_bnz_psi(now),now)
+                        item,status=prefer_current_psi(spec,now,item,status)
                         if item:
-                            item.update({"source_page":BNZ_PSI_INDEX,"source_file":"BNZ / BusinessNZ · pubblicazione ufficiale coautore"})
+                            if status["status"]!="READY_MANUAL_VERIFIED_NOT_AUTOMATIC":
+                                item.update({"source_page":BNZ_PSI_INDEX,"source_file":"BNZ / BusinessNZ · pubblicazione ufficiale coautore"})
                             out["series"].append(item)
-                            out["audit"][code]={**status,"source_page":BNZ_PSI_INDEX,"origin":"BNZ / BusinessNZ","primary_error":str(exc)[:160]}
+                            out["audit"][code]={**status,"source_page":item["source_page"],"origin":item["source_file"],"primary_error":str(exc)[:160]}
                             continue
                     except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
                         pass
