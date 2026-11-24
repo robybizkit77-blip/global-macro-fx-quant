@@ -264,7 +264,8 @@
   const credit=gbpBoESecuredCreditReading(esc,fmt,now);
   const headline=credit?'Riserve bancarie e mutui, due letture per la sterlina':'Le riserve bancarie '+direction;
   const opening='Al '+dated(x.source_period)+' le riserve delle banche '+direction+' rispetto alla settimana prima.';
-  return {headline,opening:opening+(credit?' '+credit.opening:''),
+  return {liquidityRecent:{label:'BoE RPWB56A · milioni GBP',dates:[x.previous_period,x.source_period],values:[earlier,latest],last_date:x.source_period,last_value:latest},
+   headline,opening:opening+(credit?' '+credit.opening:''),
    html:'<section class="drivers-cad-official drivers-gbp-official" aria-label="BoE riserve bancarie fonte ufficiale separata">'+
    '<span class="mini-overline">BANK OF ENGLAND · RISERVE BANCARIE UFFICIALI</span>'+
    '<h3>Riserve bancarie '+(delta>0?'in aumento':delta<0?'in calo':'stabili')+' nella settimana</h3>'+
@@ -302,7 +303,8 @@
   const signed=(movementValue>0?'+':movementValue<0?'−':'')+String(Math.abs(movementValue)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
   const observation=age>25?'STORICO · DA AGGIORNARE':'SETTIMANALE UFFICIALE';
   const opening='Nella settimana al '+dated(x.source_period)+' le riserve usate dalle banche per regolare i pagamenti '+movement(movementValue,'sono salite','sono scese','sono rimaste stabili')+'.';
-  return {opening,
+  const previous=new Date(dateMs(period)-7*864e5).toISOString().slice(0,10);
+  return {liquidityRecent:{label:'RBA ES · milioni AUD (precedente implicito)',dates:[previous,x.source_period],values:[x.previous_implied_million_aud,x.latest_balance_million_aud],last_date:x.source_period,last_value:x.latest_balance_million_aud},opening,
    html:'<div class="drivers-aud-es-bridge" aria-label="Riserve RBA settimanali fonte indipendente">'+
    '<b>SECONDO CANALE, NON SECONDA CONFERMA: LE RISERVE</b>'+
    '<p>Al '+esc(x.source_period)+' i saldi <em>Exchange Settlement</em> delle banche presso RBA sono '+esc(fmt(x.latest_balance_million_aud,0))+
@@ -338,7 +340,7 @@
   const headline=movement(current,'Il credito alle imprese è cresciuto','Il credito alle imprese è diminuito','Il credito alle imprese è rimasto stabile');
   const opening=inMonth(x.observation_period)+' il credito alle imprese è '+movement(current,'cresciuto','diminuito','rimasto stabile')+
    '. La variazione mensile è '+diff+'.';
-  return {headline,opening:opening+(reserves?' '+reserves.opening:''),
+  return {liquidityRecent:reserves?.liquidityRecent||null,headline,opening:opening+(reserves?' '+reserves.opening:''),
    html:'<section class="drivers-cad-official drivers-aud-official" aria-label="RBA credito imprese crescita corretta">'+
    '<span class="mini-overline">RBA · CRESCITA UFFICIALE CORRETTA PER DISCONTINUITÀ</span>'+
    '<h3>Australia: il credito alle imprese '+esc(current>0?'cresce':current<0?'si riduce':'è invariato')+'; il ritmo mensile è '+esc(Math.abs(change)<0.05?'stabile':change>0?'in accelerazione':'in decelerazione')+'.</h3>'+
@@ -728,7 +730,8 @@
    '<p>Copertura storica e date riferite alle rispettive serie. Se disponibile, il grafico del credito usa la fonte ufficiale separata più recente, senza modificare il feed storico. Frequenze, definizioni e unità possono differire.'+
    (row?.current_note?' '+esc(row.current_note):'')+'</p></details></section>'+
    (selected==='CHF'?'':'<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
-   '<div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità','#69d5ad')+chart(official?.creditSeries||row?.credit,official?.creditSeries?'Credito · fonte ufficiale separata':'Credito','#95c6e9')+'</div>'+
+   '<div class="drivers-chart-grid">'+chart(official?.liquidityRecent||row?.liquidity,official?.liquidityRecent?'Liquidità · ultima settimana':'Liquidità','#69d5ad')+chart(official?.creditSeries||row?.credit,official?.creditSeries?'Credito · fonte ufficiale separata':'Credito','#95c6e9')+'</div>'+
+   (official?.liquidityRecent?'<p class="drivers-source-note">Confronto delle ultime due settimane dalla fonte ufficiale separata. '+(selected==='AUD'?'Il saldo precedente è ricavato dal movimento settimanale pubblicato. ':'Entrambi i saldi sono pubblicati dalla BoE. ')+'Lo storico precedente rimane distinto: nessuna interpolazione fra periodi mancanti.</p><div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità · storico originario','#69d5ad')+'</div>':'')+
    '<p class="drivers-source-note">I grafici conservano i livelli originali nelle rispettive unità; non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>');
  }
  const api={series,direction,interpret,observationDate,sourceEvidence,creditMarket,marketFirstRead,render};
