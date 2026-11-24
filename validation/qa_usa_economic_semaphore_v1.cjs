@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,cycleMetric,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,cycleHistory,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -300,3 +300,19 @@ console.log('OK: G8 economic semaphore — 8 economies, 7 areas, data age, dates
  assert.equal(shortReal.phase,null);assert.equal(shortReal.direction,null);
  assert.match(nzHTML,/Lettura ciclica/);
  console.log('ECONOMIC_CYCLE_PHASE1_PASS');
+
+const hs={...sample('INDPRO',[104,106],monthlyDates.slice(-2)),quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',
+ history:{schema:'GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1',frequency:'M',source_series_id:'INDPRO',
+ dates:monthlyDates,values:[100,101,102,103,104,105,106,107,108,109,110,111,104,106],
+ observations:14,max_observations:36,quality:'SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT'}};
+assert.equal(cycleHistory(hs,'2026-11-24','M').dates.length,14);
+assert.equal(cycleMetric({id:'INDPRO',upGood:true},hs,'2026-11-24','M').phase,'expansion');
+for(const patch of [{source_series_id:'WRONG'},{values:[...hs.history.values.slice(0,-1),999]},
+ {dates:hs.history.dates.map((d,i)=>i===2?'2024-01':d)},{quality:'MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT'},
+ {observations:99},{frequency:'Q'}]){
+ const bad={...hs,history:{...hs.history,...patch}};
+ assert.equal(cycleHistory(bad,'2026-11-24','M').dates.length,2);
+ assert.equal(cycleMetric({id:'INDPRO',upGood:true},bad,'2026-11-24','M').phase,null);
+}
+assert.equal(cycleHistory({...hs,quality:'SOURCE_VERIFIED_MANUAL_NONPIT'},'2026-11-24','M').dates.length,2);
+console.log('ECONOMIC_CYCLE_CONTIGUOUS_HISTORY_PASS');
