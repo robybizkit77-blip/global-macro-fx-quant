@@ -94,3 +94,33 @@ console.log('EUR_ECB_NFC_RESEARCH_SIDECAR_PASS',JSON.stringify({
  }finally{globalThis.FXQuantEURNFCCreditResearch=original;}
  assert.equal(JSON.stringify(native),before);
  console.log('NEXT_ECB_EXLIQ_CHART_PASS',source.excess_liquidity?'actual':'synthetic rendering fixture',liquidity.latest_observation);
+
+ // BLS signed values and period alignment: synthetic rendering fixture only
+ // until the existing collector writes the official sidecar.
+ const survey=source.lending_conditions||{
+  series_id:'BLS.Q.U2.ALL.O.E.Z.B3.ST.S.WFNET',
+  source_url:'https://data.ecb.europa.eu/data/datasets/BLS/BLS.Q.U2.ALL.O.E.Z.B3.ST.S.WFNET',
+  frequency:'Q',unit:'net_percentage_balance',positive_means:'tightening',
+  reference_period_is_previous_quarter:true,first_release_pit_verified:false,
+  eligible_for_fx_core:false,eligible_for_backtest:false,
+  dates:['2025-Q4','2026-Q1','2026-Q2','2026-Q3'],
+  publication_quarters:['2026-Q1','2026-Q2','2026-Q3','2026-Q4'],
+  values:[-2,4,7,8.55],latest_observation:'2026-Q3'
+ };
+ try{
+  globalThis.FXQuantEURNFCCreditResearch={...source,lending_conditions:survey};
+  const plots=[];
+  const rendered=studio.render({...current('EUR'),plot:x=>{plots.push(x);return '<svg></svg>';}});
+  assert.match(rendered,/BCE · BANK LENDING SURVEY/);
+  assert(rendered.includes('Periodo osservato '+survey.latest_observation+' · trimestre di pubblicazione '+survey.publication_quarters.at(-1)));
+  const chart=plots.find(x=>x.label==='Condizioni di credito · fonte ufficiale separata EUR');
+  assert(chart);
+  assert.deepEqual(chart.lines[0].values,survey.dates.map((label,i)=>({label,value:survey.values[i]})));
+  assert(!studio.render(current('USD')).includes('BCE · BANK LENDING SURVEY'));
+  for(const changed of [{series_id:'WRONG'},{positive_means:'easing'},{publication_quarters:survey.dates},{eligible_for_fx_core:true}]){
+   globalThis.FXQuantEURNFCCreditResearch={...source,lending_conditions:{...survey,...changed}};
+   assert(!studio.render(current('EUR')).includes('BCE · BANK LENDING SURVEY'));
+  }
+ }finally{globalThis.FXQuantEURNFCCreditResearch=original;}
+ assert.equal(JSON.stringify(native),before);
+ console.log('NEXT_ECB_BLS_CHART_PASS',source.lending_conditions?'actual':'synthetic rendering fixture',survey.latest_observation);
