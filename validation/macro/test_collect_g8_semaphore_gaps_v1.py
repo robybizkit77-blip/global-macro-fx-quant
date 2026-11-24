@@ -25,10 +25,43 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),31)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),31)
+        self.assertEqual(len(mod.REGISTRY),42)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),42)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit","statcan_detail"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","eurostat_house_price","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit","statcan_detail","boj_credit","rbnz_credit"} for s in mod.REGISTRY))
+
+    def test_wave3_exact_id_frequency_and_direction(self):
+        expected={"GBP_leading":"GBRLOLITOAASTSAM","JPY_jobs":"LRUNTTTTJPM156S","JPY_industry":"JPNPRMNTO01GPSAM","JPY_demand":"SLRTTO01JPQ657S","CHF_house":"QCHR368BIS","CHF_industry":"PRMNTO01CHQ657S","CHF_demand":"SLRTTO01CHQ657S","AUD_jobs":"LRUNTTTTAUM156S","AUD_leading":"AUSLOLITOAASTSAM","NZD_demand":"SLRTTO01NZQ657S"}
+        for code,key in expected.items():
+            ccy,area=code.split("_")
+            spec=next(s for s in mod.REGISTRY if s["ccy"]==ccy and s["area"]==area)
+            self.assertEqual(spec["key"],key)
+            self.assertEqual(spec["source_page"],mod.FRED.replace("/graph/fredgraph.csv?id=","/series/")+key)
+            self.assertEqual(spec.get("up_good",True),area!="jobs")
+            freq=spec["frequency"]
+            rows=mod.parse_fred(fixture(key,freq,(2026,9 if freq=="M" else 2)),key,freq,NOW)
+            item,status=mod.candidate(spec,rows,NOW)
+            self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+            self.assertEqual(item["up_good"],area!="jobs")
+
+    def test_boj_credit_exact_yoy_column(self):
+        raw="<table><tr><td>Name</td><td>Other</td><td>Loans and Discounts/Total of major and regional banks/percent changes in average amounts outstanding from previous year</td></tr><tr><td>Series code</td><td>OTHER</td><td>MD13'FAAPOBAL1@</td></tr><tr><td>Unit</td><td>yen</td><td>%</td></tr>"
+        for y in (2025,2026):
+            for m in range(1,11):
+                raw+=f"<tr><td>{y}/{m:02d}</td><td>9999</td><td>{m/10}</td></tr>"
+        raw+="</table>"
+        self.assertEqual(mod.parse_boj_credit(raw.encode(),NOW)[-2:],[("2026-09",.9),("2026-10",1.)])
+        with self.assertRaises(ValueError):
+            mod.parse_boj_credit(raw.replace("MD13'FAAPOBAL1@","WRONG").encode(),NOW)
+
+    def test_rbnz_credit_break_adjusted_business_row(self):
+        raw="""<h1>Sector lending (C5)</h1><p>Annual growth rates have been break-adjusted</p><table>
+        <tr><th></th><th>Sept 2024</th><th>Sept 2025</th><th>May 2026</th><th>Jun 2026</th><th>Jul 2026</th><th>Aug 2026</th><th>Sept 2026</th></tr>
+        <tr><th>Business ($m)</th></tr><tr><td>Total</td><td>100</td></tr>
+        <tr><th>Annual growth rate (%)</th></tr><tr><td>Business [3]</td><td>2</td><td>3.7</td><td>4.9</td><td>4.6</td><td>4.4</td><td>4.1</td><td>5.3</td></tr></table>"""
+        self.assertEqual(mod.parse_rbnz_credit(raw.encode(),NOW)[-2:],[("2026-08",4.1),("2026-09",5.3)])
+        with self.assertRaises(ValueError):
+            mod.parse_rbnz_credit(raw.replace("break-adjusted","unadjusted").encode(),NOW)
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -42,7 +75,7 @@ class G8SemaphoreSources(unittest.TestCase):
 
     def test_stale_official_feed_does_not_generate_signal(self):
         spec=next(s for s in mod.REGISTRY if s["ccy"]=="JPY" and s["area"]=="house")
-        rows=mod.parse_fred(fixture(spec["key"],"M",(2023,11)),spec["key"],"M",NOW)
+        rows=mod.parse_fred(fixture(spec["key"],"Q",(2023,4)),spec["key"],"Q",NOW)
         item,status=mod.candidate(spec,rows,NOW)
         self.assertIsNone(item)
         self.assertEqual(status["status"],"WITHHELD_STALE")
@@ -122,6 +155,26 @@ class G8SemaphoreSources(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"selector changed"):
                 mod.parse_euro_extra(json.dumps(payload).encode(),NOW,method)
         self.assertTrue(mod.euro_extra_url("eurostat_industry").startswith("https://ec.europa.eu/eurostat/"))
+
+    def test_eurostat_house_price_quarterly_exact_annual_rate(self):
+        method="eurostat_house_price"
+        dataset, selectors=mod.EUROSTAT_EXTRA[method]
+        self.assertEqual(dataset,"prc_hpi_q")
+        self.assertEqual(selectors,{"freq":"Q","geo":"EA21","purchase":"TOTAL","unit":"RCH_A"})
+        times=[f"{y}-Q{q}" for y in range(2020,2027) for q in range(1,5)]
+        ids=list(selectors)+["time"]
+        dims={k:{"category":{"index":{v:0}}} for k,v in selectors.items()}
+        dims["time"]={"category":{"index":{t:i for i,t in enumerate(times)}}}
+        payload={"class":"dataset","id":ids,"size":[1]*len(selectors)+[len(times)],
+                 "dimension":dims,"value":{str(i):i/10 for i in range(len(times))}}
+        obs=mod.parse_euro_extra(json.dumps(payload).encode(),NOW,method)
+        self.assertEqual(obs[-1][0],"2026-Q3")
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="EUR" and x["area"]=="house")
+        self.assertEqual(spec["kind"],"points")
+        self.assertEqual(spec["frequency"],"Q")
+        dims["unit"]["category"]["index"]={"I15_Q":0}
+        with self.assertRaisesRegex(ValueError,"selector changed"):
+            mod.parse_euro_extra(json.dumps(payload).encode(),NOW,method)
 
     def test_new_fred_registry_has_no_implicit_sign_error(self):
         expected={"house":"PERMIT","industry":"INDPRO","leading":"UMCSENT",
@@ -384,7 +437,7 @@ class G8SemaphoreSources(unittest.TestCase):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),31)
+        self.assertEqual(len(out["audit"]),42)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
