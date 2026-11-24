@@ -24,6 +24,29 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
     return out.getvalue().encode()
 
 class G8SemaphoreSources(unittest.TestCase):
+    def test_rba_d1_history_and_release_identity(self):
+        out=StringIO()
+        writer=csv.writer(out)
+        writer.writerows([
+            ["Title","Credit; Housing; Monthly growth","Credit; Business; Monthly growth","Credit; Housing; Year-ended growth"],
+            ["Units","Per cent","Per cent","Per cent"],
+            ["Frequency","Monthly","Monthly","Monthly"],
+            ["Series ID","HOUSING","BUSINESS","ANNUAL"],
+        ])
+        for i in range(36):
+            year,m=divmod(2026*12+8-35+i,12)
+            writer.writerow([f"{year}-{m+1:02d}-01",0.4,0.9,7.0])
+        raw=out.getvalue().encode()
+        for key,value in [("RBA_HOUSING_CREDIT_GROWTH_MM",0.4),("RBA_BUSINESS_CREDIT_GROWTH_MM",0.9)]:
+            reference=[("2026-08",value),("2026-09",value)]
+            obs=mod.parse_rba_d1(raw,NOW,key,reference)
+            self.assertEqual(len(obs),36)
+            self.assertEqual(obs[-2:],reference)
+            with self.assertRaises(ValueError):
+                mod.parse_rba_d1(raw,NOW,key,[("2026-08",9.0),("2026-09",9.0)])
+            with self.assertRaises(ValueError):
+                mod.parse_rba_d1(raw.replace(b"Monthly growth",b"Annual growth"),NOW,key,reference)
+
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
