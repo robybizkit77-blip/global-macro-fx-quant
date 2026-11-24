@@ -16,6 +16,7 @@ from pathlib import Path
 from ois_g8_history_snapshot_v1 import make_record
 
 G8_HISTORY = "validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl"
+NZD_CAPTURE_HISTORY = "validation/cb_pricing/history/NZD_ASX_PROXY_CAPTURES_V1.jsonl"
 OPERATIONAL_VIEW = "live_data/sections/OIS_OPERATIONAL_VIEW.json"
 
 ESTIMATED_PATHS = (
@@ -34,6 +35,7 @@ ESTIMATED_PATHS = (
     "site/fx-quant-v2/ois-same-contract-repricing-research.json",
     "site/fx-quant-v2/next/rates-pricing-history-v1.json",
     G8_HISTORY,
+    NZD_CAPTURE_HISTORY,
 )
 G8_PATHS = ESTIMATED_PATHS
 # Changing any of these upstream invalidates the observations or the producer
@@ -128,6 +130,18 @@ def persist(base_sha: str, mode: str, *, cwd: Path | None = None, attempts: int 
         raise LeaseError("REFUSED_OUT_OF_SCOPE: " + json.dumps(sorted(set(unstaged + staged) - set(paths))))
     if mode == "estimated" and G8_HISTORY in unstaged + staged:
         verify_official_history_append(base_sha, cwd)
+    if NZD_CAPTURE_HISTORY in unstaged + staged:
+        root = cwd if cwd is not None else Path.cwd()
+        previous = git("show", f"{base_sha}:{NZD_CAPTURE_HISTORY}", cwd=cwd).stdout.encode("utf-8")
+        updated = (root / NZD_CAPTURE_HISTORY).read_bytes()
+        if not updated.startswith(previous):
+            raise LeaseError("REFUSED_NZD_CAPTURE_HISTORY_REWRITE")
+        source = json.loads((root / "live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json").read_text())
+        from archive_nzd_asx_proxy_v1 import validate
+        for line in updated[len(previous):].splitlines():
+            record = validate(json.loads(line))
+            if record["source_commit"] != "VALIDATED_COLLECTOR_RUNTIME" or record["feed"] != source:
+                raise LeaseError("REFUSED_NZD_CAPTURE_NOT_CURRENT_VALIDATED_SOURCE")
     if not staged and only_fetch_clock_changed(base_sha, set(unstaged), cwd):
         return {"status": "NO_CHANGE", "mode": mode, "attempts": 0,
                 "reason": "FETCH_CLOCK_ONLY"}
