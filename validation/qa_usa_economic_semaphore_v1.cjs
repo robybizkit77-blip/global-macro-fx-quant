@@ -145,4 +145,32 @@ const manualTampered=structuredClone(manualPsi);
 manualTampered.series[0].source_page='https://somethingelse.com/fake';
 assert.equal(model(catalog,'2026-11-24','NZD',manualTampered).find(x=>x.key==='services').signal.tone,'neutral');
 
+// An old service survey remains readable, but cannot silently stay green/red.
+const euroStale=model(catalog,'2026-11-24','EUR').find(x=>x.key==='services');
+assert.equal(euroStale.signal.tone,'neutral','July services data are stale in late November');
+assert.ok(euroStale.items[0].stale,'Explicit stale marker needed');
+assert.equal(euroStale.items[0].verdict,null,'Stale observation must not generate a direction');
+const freshEuro={
+ schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',series:[{
+  ccy:'EUR',area:'services',id:'SEM_G8_EUR_SERVICES',
+  source_series_id:'TEIBS020_BS-SCI-BAL_SA_EA21',
+  label:'DG ECFIN services confidence (EA21, SA)',unit:'saldo fiducia',
+  frequency:'M',metric_kind:'points',quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',
+  dates:['2026-09','2026-10'],values:[3.1,3.8],
+  source_file:'Eurostat / DG ECFIN teibs020',
+  source_page:'https://ec.europa.eu/eurostat/databrowser/view/teibs020/default/table?lang=en'
+ }]};
+const euroUpgraded=model(catalog,'2026-11-24','EUR',freshEuro).find(x=>x.key==='services');
+assert.equal(euroUpgraded.signal.tone,'green','Fresh official EA21 survey supersedes July');
+assert.equal(euroUpgraded.items[0].period,'2026-10');
+assert.equal(euroUpgraded.items[0].current,3.8);
+assert.match(render({catalog,esc,dayNow:()=>'2026-11-24',country:'EUR',overlay:freshEuro}),/teibs020/);
+const wrongEuro=structuredClone(freshEuro);
+wrongEuro.series[0].source_series_id='UNRELATED';
+assert.equal(model(catalog,'2026-11-24','EUR',wrongEuro).find(x=>x.key==='services').signal.tone,'neutral');
+const olderEuro=structuredClone(freshEuro);
+olderEuro.series[0].dates=['2026-05','2026-06'];
+assert.equal(model(catalog,'2026-11-24','EUR',olderEuro).find(x=>x.key==='services').signal.tone,'neutral');
+const euroNextYear=model(catalog,'2028-01-01','EUR',freshEuro).find(x=>x.key==='services');
+assert.equal(euroNextYear.signal.tone,'neutral');
 console.log('OK: G8 economic semaphore — 8 economies, 7 areas, data age, dates, source gaps, HTML');

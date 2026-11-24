@@ -168,7 +168,7 @@ function inspect(metric,source,today){
  const stale=age>(freq==='Q'?175:freq==='W'?42:85);
  const invalid=age>(freq==='Q'?300:freq==='W'?100:210)||
    gap>(freq==='Q'?200:freq==='W'?25:78);
- const verdict=invalid||!finite(move)?null:Math.abs(move)<threshold?0:Math.sign(move)*(metric.upGood?1:-1);
+ const verdict=invalid||stale||!finite(move)?null:Math.abs(move)<threshold?0:Math.sign(move)*(metric.upGood?1:-1);
  return {metric,period:pair.cur.period,prior:pair.pre.period,date:pair.cur.date,source:source.source_file||'MACRO_SERIES',
   current:c,previous:p,diff,pct,kind,verdict,stale,invalid,age:Math.round(age),freq};
 }
@@ -188,8 +188,15 @@ function model(catalog,today,country='USD',overlay=null){
  const sources=new Map(rows.map(s=>[s.id,s]));
  return AREAS.map(area=>{
    let metrics=MAP[c]?.[area.key]||[];
-   if(metrics.length===0){
-     const extra=supplementary(overlay,c,area.key,today);
+   const extra=supplementary(overlay,c,area.key,today);
+   const priorDate=metrics.length?
+      (inspect(metrics[0],sources.get(metrics[0].id),today)?.date||''):'';
+   const euroServicesUpgrade=c==='EUR'&&area.key==='services'&&
+      extra?.id==='SEM_G8_EUR_SERVICES'&&
+      extra?.source_series_id==='TEIBS020_BS-SCI-BAL_SA_EA21'&&
+      extra?.source_page==='https://ec.europa.eu/eurostat/databrowser/view/teibs020/default/table?lang=en'&&
+      Boolean(parsePeriod(extra.dates[1]))&&parsePeriod(extra.dates[1])>priorDate;
+   if(metrics.length===0||euroServicesUpgrade){
      if(extra){
        sources.set(extra.id,{...extra,source_file:extra.source_file+
         (extra.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'?' · dato verificato manualmente, non aggiornato automaticamente':
@@ -281,7 +288,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<p>'+bank+' e aspettative sui tassi possono amplificare o attenuare le pressioni cicliche: non sono però un indicatore diretto di recessione né una prova di movimento del cambio.</p></div>'+
   '<a href="#rates">Apri tassi & OIS ↗</a></div>'+
   '<p class="sem-foot">Metodo: ogni indicatore confronta le sue ultime due osservazioni disponibili; verde indica miglioramento direzionale, rosso peggioramento, giallo quadro misto o quasi invariato, azzurro dati mancanti, troppo vecchi, non consecutivi o non sufficientemente allineati. '+
-  'Le soglie descrittive evitano piccoli movimenti: ±0,15% per i livelli e soglie in punti esplicite per tassi, sondaggi e indicatori compositi. '+
+  'Le soglie descrittive evitano piccoli movimenti: ±0,15% per i livelli e soglie in punti esplicite per tassi, sondaggi e indicatori compositi. Le osservazioni oltre la soglia di anzianità sono visibili ma non producono semafori direzionali. '+
   (hasStale?'Sono presenti osservazioni datate: non interpretare i colori come fotografia intraday. ':'')+
   (hasManual?'È presente una rilevazione PSI BusinessNZ da fonte ufficiale verificata manualmente: il download automatico è bloccato; la data del dato è esplicita e il segnale scade se non viene aggiornata. ':'')+
   'La matrice confronta direzioni, NON livelli omogenei o cicli sincronizzati. La colonna Servizi misura il momentum dell’attività o dei suoi proxy e distingue il livello di espansione/contractione SOLO per un indice di diffusione con soglia documentata a 50 (es. PSI BusinessNZ). Non misura l’inflazione dei servizi. Prezzi nominali, saldi di survey, stock di credito e PIL sono strumenti diversi. '+

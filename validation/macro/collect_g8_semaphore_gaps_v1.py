@@ -30,6 +30,10 @@ MAX_BYTES=3_000_000
 # Several historical OECD/BIS feeds have stopped updating: retain status WITHHELD;
 # never use today's fetch time to make an old observation look current.
 REGISTRY=[
+ dict(ccy="EUR",area="services",key="TEIBS020_BS-SCI-BAL_SA_EA21",method="eurostat_services",
+      name="Fiducia imprese servizi — Eurozona EA21 (survey SA)",unit="saldo netto destagionalizzato",
+      frequency="M",kind="points",max_age_days=75,origin="Eurostat / DG ECFIN teibs020",
+      source_page="https://ec.europa.eu/eurostat/databrowser/view/teibs020/default/table?lang=en"),
  dict(ccy="CHF",area="services",key="LFEASETTCHQ647S",method="fred",
       name="Occupazione nei servizi (proxy, non output)",unit="persone SA",
       frequency="Q",kind="percent",max_age_days=235,origin="OECD via FRED",
@@ -89,7 +93,7 @@ REGISTRY=[
       kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
-assert len(REGISTRY)==14 and len({(s["ccy"],s["area"]) for s in REGISTRY})==14
+assert len(REGISTRY)==15 and len({(s["ccy"],s["area"]) for s in REGISTRY})==15
 
 def fetch(url:str)->bytes:
     host=urlsplit(url).hostname
@@ -383,6 +387,49 @@ def parse_fred(raw:bytes,key:str,frequency:str,now:date):
     if len(result)<12: raise ValueError("insufficient history")
     return sorted(result.items())
 
+EUROSTAT_SERVICES_URL=(
+ "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/teibs020?"
+ "geo=EA21&s_adj=SA&indic=BS-SCI-BAL&freq=M&sinceTimePeriod=2025-01"
+)
+def parse_eurostat_services(raw:bytes,now:date):
+    """Exact Eurostat/DG ECFIN EA21 services confidence (BS-SCI-BAL, SA, monthly).
+    Fail closed if selection is ambiguous, changed, or not updated.
+    """
+    d=json.loads(raw.decode("utf-8"))
+    if d.get("class")!="dataset" or not isinstance(d.get("value"),dict):
+        raise ValueError("Eurostat services JSON-stat dataset missing")
+    ids=d.get("id",[])
+    shape=d.get("size",[])
+    expected={"freq":"M","geo":"EA21","s_adj":"SA","indic":"BS-SCI-BAL"}
+    if set(ids)!=set(expected)|{"time"} or len(ids)!=len(shape):
+        raise ValueError("Eurostat services dimensions changed")
+    dims=d.get("dimension",{})
+    positions={}
+    for field,key in expected.items():
+        values=dims.get(field,{}).get("category",{}).get("index",{})
+        if not isinstance(values,dict) or len(values)!=1 or key not in values:
+            raise ValueError("Eurostat services source selector changed: "+field)
+        positions[field]=values[key]
+    time_index=dims.get("time",{}).get("category",{}).get("index",{})
+    if not isinstance(time_index,dict):raise ValueError("Eurostat services dates missing")
+    obs={}
+    for p,index in time_index.items():
+        if not re.fullmatch(r"20\d{2}-(?:0[1-9]|1[0-2])",p):
+            continue
+        if period_end(p)>now:continue
+        coords={**positions,"time":index}
+        k=0
+        for field,size in zip(ids,shape):
+            k=k*size+coords[field]
+        val=d["value"].get(str(k))
+        if val is None:continue
+        f=float(val)
+        if not math.isfinite(f) or abs(f)>100:raise ValueError("Eurostat services balance invalid")
+        if p in obs:raise ValueError("Eurostat services duplicate period")
+        obs[p]=f
+    if len(obs)<12:raise ValueError("Eurostat services too few observations")
+    return sorted(obs.items())
+
 def parse_eurostat(raw:bytes,now:date):
     """JSON-stat v2: accept only *one exact* EA20 / permits-dwellings / adjusted index.
     Do not collapse multiple dimensions or select a convenient value implicitly.
@@ -499,6 +546,7 @@ def collect(now=None,fetcher=fetch):
     for spec in REGISTRY:
         code=spec["ccy"]+"_"+spec["area"]
         url=FRED+spec["key"] if spec["method"]=="fred" else (
+          EUROSTAT_SERVICES_URL if spec["method"]=="eurostat_services" else
           BUSINESSNZ_INDEX if spec["method"]=="biznz" else
           ABS_MHSI_SERVICES if spec["method"]=="abs_services" else
           STATCAN_CSV if spec["method"]=="statcan" else
@@ -511,7 +559,8 @@ def collect(now=None,fetcher=fetch):
                  abs_services_fetch(url) if spec["method"]=="abs_services" else
                  fetch_statcan(url) if spec["method"]=="statcan" else
                  fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","statcan","ons","statcan_services"} and fetcher is fetch else fetcher(url)
-            observations=(parse_fred(raw,spec["key"],spec["frequency"],now)
+            observations=(parse_eurostat_services(raw,now) if spec["method"]=="eurostat_services" else
+                          parse_fred(raw,spec["key"],spec["frequency"],now)
                           if spec["method"]=="fred" else
                           parse_businessnz_psi(raw,now) if spec["method"]=="biznz" else
                           parse_abs_services(raw,now) if spec["method"]=="abs_services" else
