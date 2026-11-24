@@ -103,6 +103,41 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(stat["status"],"READY_DESCRIPTIVE_REVISED")
         self.assertEqual(item["dates"],["2026-08","2026-09"])
 
+    def test_ons_services_exact_index_months_and_identity(self):
+        html='<html><body><h1>IoS: Services: Index-1dp</h1><p>Series ID: S2KU</p><table>'
+        for year in (2025,2026):
+            for month in range(1,13 if year==2025 else 10):
+                txt=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][month-1]
+                html+=f'<tr><td>{year} {txt}</td><td>{100+month*0.2:.1f}</td></tr>'
+        html+='</table></body></html>'
+        obs=mod.parse_ons_services(html.encode(),NOW)
+        self.assertEqual(obs[-1],("2026-09",101.8))
+        with self.assertRaisesRegex(ValueError,"ONS total services"):
+            mod.parse_ons_services(html.replace("S2KU","OTHER").encode(),NOW)
+
+    def test_statcan_services_real_gdp_explicit_aggregate(self):
+        bio=io.BytesIO()
+        header=["REF_DATE","GEO","North American Industry Classification System (NAICS)",
+                "Prices","Seasonal adjustment","VALUE"]
+        rows=[]
+        for year in (2025,2026):
+            for month in range(1,13 if year==2025 else 10):
+                rows.append([f"{year}-{month:02d}","Canada",
+                 "Services-producing industries [T003]","Chained (2017) dollars",
+                 "Seasonally adjusted at annual rates",round(1_760_000+month*100+year-2025,2)])
+        rows.append(["2026-09","Canada","Goods-producing industries [T002]",
+          "Chained (2017) dollars","Seasonally adjusted at annual rates",999999999])
+        with ZipFile(bio,"w") as z:
+            b=StringIO();w=csv.writer(b);w.writerow(header);w.writerows(rows)
+            z.writestr("36100434.csv",b.getvalue())
+        obs=mod.parse_statcan_services(bio.getvalue(),NOW)
+        self.assertEqual(len(obs),21)
+        self.assertEqual(obs[-1][0],"2026-09")
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="CAD" and x["area"]=="services")
+        item,status=mod.candidate(spec,obs,NOW)
+        self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+        self.assertEqual(item["area"],"services")
+
     def test_collect_transparently_withholds_failed_sources(self):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
