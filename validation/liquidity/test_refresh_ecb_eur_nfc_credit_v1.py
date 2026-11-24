@@ -111,4 +111,31 @@ class ECBNFCSourceTest(unittest.TestCase):
             e.write_text("invalid daily liquidity")
             self.assertEqual(run(dest,**args)["excess_liquidity"]["retained_observation"],"2026-11-13")
 
+    def test_bls_reference_period_retention_and_idempotence(self):
+        from validation.liquidity.refresh_ecb_eur_nfc_credit_v1 import parse_bls
+        from validation.liquidity.probe_ecb_eur_bls_actual_v1 import KEY
+        rows=["KEY,TIME_PERIOD,OBS_VALUE"]
+        for y in range(2016,2027):
+            for q in range(1,5):
+                value=7 if (y,q)==(2026,3) else 8.55 if (y,q)==(2026,4) else 0
+                rows.append(f"{KEY},{y}-Q{q},{value}")
+        raw="\n".join(rows)+"\n"
+        x=parse_bls(raw,today=TODAY)
+        self.assertEqual(x["latest_observation"],"2026-Q3")
+        self.assertEqual(x["publication_quarters"][-1],"2026-Q4")
+        self.assertEqual(x["values"][-1],8.55)
+        with self.assertRaises(ValueError):
+            parse_bls(raw.replace(KEY,"WRONG"),today=TODAY)
+        with tempfile.TemporaryDirectory() as root:
+            f=Path(root)/"nfc.csv";b=Path(root)/"bls.csv";dest=Path(root)/"research.js"
+            f.write_text(fixture());b.write_text(raw)
+            args=dict(apply=True,fixture=f,bls_fixture=b,today=TODAY)
+            self.assertEqual(run(dest,**args)["write_state"],"RESEARCH_SIDECAR_ONLY")
+            self.assertEqual(existing_payload(dest.read_text())["lending_conditions"],x)
+            self.assertEqual(run(dest,**args)["status"],"NO_CHANGE")
+            b.write_text("invalid")
+            result=run(dest,**args)
+            self.assertEqual(result["lending_conditions"]["retained_observation"],"2026-Q3")
+            self.assertEqual(existing_payload(dest.read_text())["lending_conditions"],x)
+
 if __name__=="__main__":unittest.main()
