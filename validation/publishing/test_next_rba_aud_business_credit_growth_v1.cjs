@@ -51,3 +51,14 @@ console.log('AUD_RBA_ADJUSTED_BUSINESS_CREDIT_PASS',JSON.stringify({
  yoy:source.annual_growth_pct,canonicalCreditDate:native.AUD.credit.last_date,
  sourceOnly:true,notStockDerived:true
 }));
+
+const growthPlots=[];
+studio.render({...api('AUD'),plot:x=>{growthPlots.push(x);return '<svg></svg>';}});
+const growth=growthPlots.find(x=>x.label==='Credito · fonte ufficiale separata AUD');
+assert(growth,'AUD adjusted business credit chart missing');
+const [year,month]=source.observation_period.split('-').map(Number);
+const previous=new Date(Date.UTC(year,month-2,1)).toISOString().slice(0,7);
+assert.deepEqual(growth.lines[0].values,[{label:previous,value:source.prior_month_growth_pct},{label:source.observation_period,value:source.monthly_growth_pct}]);
+assert.match(growth.lines[0].name,/% mensile/);
+assert.match(growth.lines[0].name,/ultimi due mesi/);
+console.log('NEXT_AUD_ADJUSTED_GROWTH_CHART_PASS',source.observation_period);
