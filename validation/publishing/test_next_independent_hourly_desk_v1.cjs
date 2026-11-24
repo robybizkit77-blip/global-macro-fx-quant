@@ -116,9 +116,9 @@ assert.match(catalyst({...agenda,last_checked_at_utc:'2026-11-06T14:00:00Z'}),/d
 assert.match(catalyst({...agenda,events:[{...nextEvent,source_url:null}]}),/data-home-catalyst="unavailable"/);
 
 assert(out.includes('data-standalone-market-desk="active"'));
-assert(out.indexOf('IL QUADRO GENERALE DEI MERCATI')<out.indexOf('Notizie e fonti di questa edizione'),
+assert(out.includes('IL TEMA CHE CONTA ORA')&&out.indexOf('IL TEMA CHE CONTA ORA')<out.indexOf('Notizie e fonti di questa edizione'),
  'Overall narrative must come before article drilldown');
-assert(out.includes('PROSSIMO CATALIZZATORE')&&out.includes('Lettura Forex dell’edizione'));
+assert(out.includes('PROSSIMO CATALIZZATORE')&&out.includes('PERCHÉ CONTA PER IL FOREX')&&out.includes('class="home-fx-meaning"'));
 assert(out.includes('data-hourly-hero-to-sources="true"'),
  'The market-picture hero must lead to source evidence');
 assert(out.includes('data-hourly-open-sources'),
