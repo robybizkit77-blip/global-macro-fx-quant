@@ -25,13 +25,13 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),41)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),41)
+        self.assertEqual(len(mod.REGISTRY),42)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),42)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit","statcan_detail"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit","statcan_detail","boj_credit","rbnz_credit"} for s in mod.REGISTRY))
 
     def test_wave3_exact_id_frequency_and_direction(self):
-        expected={"GBP_leading":"GBRLOLITOAASTSAM","JPY_jobs":"LRUNTTTTJPM156S","JPY_industry":"JPNPROINDQISMEI","JPY_demand":"SLRTTO01JPQ657S","CHF_house":"QCHR368BIS","CHF_industry":"PRMNTO01CHQ657S","CHF_demand":"SLRTTO01CHQ657S","AUD_jobs":"LRUNTTTTAUM156S","AUD_leading":"AUSLOLITOAASTSAM","NZD_demand":"SLRTTO01NZQ657S"}
+        expected={"GBP_leading":"GBRLOLITOAASTSAM","JPY_jobs":"LRUNTTTTJPM156S","JPY_industry":"JPNPRMNTO01GPSAM","JPY_demand":"SLRTTO01JPQ657S","CHF_house":"QCHR368BIS","CHF_industry":"PRMNTO01CHQ657S","CHF_demand":"SLRTTO01CHQ657S","AUD_jobs":"LRUNTTTTAUM156S","AUD_leading":"AUSLOLITOAASTSAM","NZD_demand":"SLRTTO01NZQ657S"}
         for code,key in expected.items():
             ccy,area=code.split("_")
             spec=next(s for s in mod.REGISTRY if s["ccy"]==ccy and s["area"]==area)
@@ -43,6 +43,25 @@ class G8SemaphoreSources(unittest.TestCase):
             item,status=mod.candidate(spec,rows,NOW)
             self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
             self.assertEqual(item["up_good"],area!="jobs")
+
+    def test_boj_credit_exact_yoy_column(self):
+        raw="<table><tr><td>Name</td><td>Other</td><td>Loans and Discounts/Total of major and regional banks/percent changes in average amounts outstanding from previous year</td></tr><tr><td>Series code</td><td>OTHER</td><td>MD13'FAAPOBAL1@</td></tr><tr><td>Unit</td><td>yen</td><td>%</td></tr>"
+        for y in (2025,2026):
+            for m in range(1,11):
+                raw+=f"<tr><td>{y}/{m:02d}</td><td>9999</td><td>{m/10}</td></tr>"
+        raw+="</table>"
+        self.assertEqual(mod.parse_boj_credit(raw.encode(),NOW)[-2:],[("2026-09",.9),("2026-10",1.)])
+        with self.assertRaises(ValueError):
+            mod.parse_boj_credit(raw.replace("MD13'FAAPOBAL1@","WRONG").encode(),NOW)
+
+    def test_rbnz_credit_break_adjusted_business_row(self):
+        raw="""<h1>Sector lending (C5)</h1><p>Annual growth rates have been break-adjusted</p><table>
+        <tr><th></th><th>Sept 2024</th><th>Sept 2025</th><th>May 2026</th><th>Jun 2026</th><th>Jul 2026</th><th>Aug 2026</th><th>Sept 2026</th></tr>
+        <tr><th>Business ($m)</th></tr><tr><td>Total</td><td>100</td></tr>
+        <tr><th>Annual growth rate (%)</th></tr><tr><td>Business [3]</td><td>2</td><td>3.7</td><td>4.9</td><td>4.6</td><td>4.4</td><td>4.1</td><td>5.3</td></tr></table>"""
+        self.assertEqual(mod.parse_rbnz_credit(raw.encode(),NOW)[-2:],[("2026-08",4.1),("2026-09",5.3)])
+        with self.assertRaises(ValueError):
+            mod.parse_rbnz_credit(raw.replace("break-adjusted","unadjusted").encode(),NOW)
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -398,7 +417,7 @@ class G8SemaphoreSources(unittest.TestCase):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),41)
+        self.assertEqual(len(out["audit"]),42)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
