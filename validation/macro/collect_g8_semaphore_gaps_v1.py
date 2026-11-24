@@ -33,10 +33,11 @@ REGISTRY=[
       name="Occupazione nei servizi (proxy, non output)",unit="persone SA",
       frequency="Q",kind="percent",max_age_days=235,origin="OECD via FRED",
       source_page="https://fred.stlouisfed.org/series/LFEASETTCHQ647S"),
- dict(ccy="AUD",area="services",key="LFEASETTAUQ647S",method="fred",
-      name="Occupazione nei servizi (proxy, non output)",unit="persone SA",
-      frequency="Q",kind="percent",max_age_days=235,origin="OECD via FRED",
-      source_page="https://fred.stlouisfed.org/series/LFEASETTAUQ647S"),
+ dict(ccy="AUD",area="services",key="ABS_MHSI_SERVICES_MONTHLY_SA",method="abs_services",
+      name="Spesa famiglie servizi: variazione mensile nominale (proxy domanda)",
+      unit="% m/m nominale SA",frequency="M",kind="points",max_age_days=110,
+      origin="Australian Bureau of Statistics / MHSI",
+      source_page="https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release"),
  dict(ccy="NZD",area="services",key="BNZ_BUSINESSNZ_PSI",method="biznz",
       name="BNZ–BusinessNZ PSI servizi destagionalizzato",unit="indice diffusione (soglia 50)",
       frequency="M",kind="points",max_age_days=110,origin="BusinessNZ",
@@ -156,6 +157,49 @@ STATCAN_GDP_ZIP="https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip"
 
 
 BUSINESSNZ_INDEX="https://businessnz.org.nz/psi"
+ABS_MHSI_SERVICES="https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release"
+def abs_services_fetch(url):
+    if url!=ABS_MHSI_SERVICES:raise ValueError("ABS services URL not on allowlist")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
+    with urlopen(req,timeout=25) as response:
+        final=response.geturl()
+        if urlsplit(final).hostname not in ("www.abs.gov.au","abs.gov.au") or not final.startswith("https://"):
+            raise ValueError("ABS redirect outside official site")
+        data=response.read(3_500_001)
+        if not data or len(data)>3_500_000:raise ValueError("invalid ABS HTML size")
+    return data
+
+def parse_abs_services(raw,now):
+    """ABS MHSI *nominal* household services spending MoM % changes, not services output."""
+    html=raw.decode("utf-8","replace")
+    title="Household spending on services, current price, seasonally adjusted estimate"
+    identity='aria-label="'+title+'.csv"'
+    occurrences=[m.start() for m in re.finditer(re.escape(identity),html)]
+    if len(occurrences)!=1:raise ValueError("ABS unique services chart source missing")
+    start=html.find("<table",occurrences[0])
+    end=html.find("</table>",start)
+    if start<0 or end<0 or end-start>175_000:
+        raise ValueError("ABS matching services chart table missing")
+    chart=html[start:end+8]
+    p=_ReportTables();p.feed(chart)
+    if len(p.tables)!=1:raise ValueError("ABS extracted chart count changed")
+    values={}
+    for row in p.tables[0]:
+        if len(row)<2:continue
+        m=re.fullmatch(r"([A-Za-z]{3})[- ](\d{4})",row[0])
+        if not m:continue
+        month=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].index(m[1].lower())+1 if m[1].lower() in
+               ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"] else None
+        if not month:raise ValueError("ABS date label changed")
+        period=f"{m[2]}-{month:02d}"
+        if period_end(period)>now:continue
+        val=float(row[1].replace(",",""))
+        if not math.isfinite(val) or abs(val)>100:raise ValueError("invalid ABS monthly growth rate")
+        if period in values:raise ValueError("duplicate ABS period")
+        values[period]=val
+    if len(values)<12:raise ValueError("ABS services growth-rate table insufficient")
+    return sorted(values.items())
+
 def biznz_fetch(url):
     """Issuer article selected through the live PSI index, never via news snippets."""
     if url!=BUSINESSNZ_INDEX:raise ValueError("invalid BusinessNZ root URL")
@@ -417,6 +461,7 @@ def collect(now=None,fetcher=fetch):
         code=spec["ccy"]+"_"+spec["area"]
         url=FRED+spec["key"] if spec["method"]=="fred" else (
           BUSINESSNZ_INDEX if spec["method"]=="biznz" else
+          ABS_MHSI_SERVICES if spec["method"]=="abs_services" else
           STATCAN_CSV if spec["method"]=="statcan" else
           ONS_URL if spec["method"]=="ons" else
           STATCAN_GDP_ZIP if spec["method"]=="statcan_services" else
@@ -424,11 +469,13 @@ def collect(now=None,fetcher=fetch):
           "geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001_X_410014&s_adj=SCA&unit=I21&lang=EN")
         try:
             raw=(biznz_fetch(url) if spec["method"]=="biznz" else
+                 abs_services_fetch(url) if spec["method"]=="abs_services" else
                  fetch_statcan(url) if spec["method"]=="statcan" else
-                 fetch_issuer(url)) if spec["method"] in {"biznz","statcan","ons","statcan_services"} and fetcher is fetch else fetcher(url)
+                 fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","statcan","ons","statcan_services"} and fetcher is fetch else fetcher(url)
             observations=(parse_fred(raw,spec["key"],spec["frequency"],now)
                           if spec["method"]=="fred" else
                           parse_businessnz_psi(raw,now) if spec["method"]=="biznz" else
+                          parse_abs_services(raw,now) if spec["method"]=="abs_services" else
                           parse_statcan(raw,now) if spec["method"]=="statcan" else
                           parse_ons_services(raw,now) if spec["method"]=="ons" else
                           parse_statcan_services(raw,now) if spec["method"]=="statcan_services" else parse_eurostat(raw,now))
