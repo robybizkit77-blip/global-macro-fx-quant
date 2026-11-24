@@ -6,6 +6,7 @@ on:
     paths:
       - 'validation/liquidity/refresh_ecb_eur_nfc_credit_v1.py'
       - 'validation/liquidity/test_refresh_ecb_eur_nfc_credit_v1.py'
+      - 'validation/liquidity/probe_ecb_eur_bls_actual_v1.py'
       - '.github/workflows/ecb-eur-nfc-credit-research-refresh-v1.yml'
   workflow_dispatch:
   schedule:
@@ -16,6 +17,7 @@ on:
     paths:
       - 'validation/liquidity/refresh_ecb_eur_nfc_credit_v1.py'
       - 'validation/liquidity/test_refresh_ecb_eur_nfc_credit_v1.py'
+      - 'validation/liquidity/probe_ecb_eur_bls_actual_v1.py'
       - '.github/workflows/ecb-eur-nfc-credit-research-refresh-v1.yml'
 
 permissions:
@@ -27,6 +29,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  bls-source-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify official ECB BLS actual enterprise series and historical overlap
+        run: python validation/liquidity/probe_ecb_eur_bls_actual_v1.py --receipt /tmp/eur-bls-source-receipt.json
+      - name: Preserve BLS issuer receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecb-eur-bls-source-receipt
+          path: /tmp/eur-bls-source-receipt.json
+          if-no-files-found: error
+          retention-days: 14
   validate-pr:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
