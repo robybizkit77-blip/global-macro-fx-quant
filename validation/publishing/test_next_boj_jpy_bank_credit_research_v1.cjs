@@ -128,3 +128,21 @@ console.log('BOJ_JPY_OFFICIAL_BANK_CREDIT_RESEARCH_PASS',JSON.stringify({
  }
  assert.equal(JSON.stringify(native),before);
  console.log('NEXT_JPY_RESERVE_READING_PASS',reserve.proxy_as_of,reserve.proxy_value);
+
+ const tankan=source.tankan;
+ assert(tankan,'Expected actual Tankan sidecar from verified production run');
+ const plots=[];
+ const surveyHtml=studio.render({...api('JPY'),plot:x=>{plots.push(x);return '<svg></svg>';}});
+ assert.match(surveyHtml,/BANK OF JAPAN · TANKAN/);
+ assert(surveyHtml.includes(tankan.latest_observation));
+ const graph=plots.find(x=>x.label==='Condizioni di credito · fonte ufficiale separata JPY');
+ assert(graph);
+ assert.deepEqual(graph.lines[0].values,tankan.dates.map((label,i)=>({label,value:tankan.lending_attitude[i]})));
+ assert(surveyHtml.includes(fmt(tankan.loan_rate_change.at(-1),0)));
+ assert(!studio.render(api('EUR')).includes('BANK OF JAPAN · TANKAN'));
+ const priorJPY=globalThis.FXQuantJPYBankCreditResearch;
+ try{
+  globalThis.FXQuantJPYBankCreditResearch={...source,tankan:{...tankan,positive_lending_means:'restrictive'}};
+  assert(!studio.render(api('JPY')).includes('BANK OF JAPAN · TANKAN'));
+ }finally{globalThis.FXQuantJPYBankCreditResearch=priorJPY;}
+ console.log('NEXT_JPY_TANKAN_CHART_PASS',tankan.latest_observation,tankan.lending_attitude.at(-1));

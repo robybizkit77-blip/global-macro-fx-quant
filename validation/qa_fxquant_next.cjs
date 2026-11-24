@@ -620,7 +620,12 @@ async function macroDriversJourney(page,label){
  const detail=locator(page,'.drivers-fold');
  await detail.locator('summary').click();
  assert(await detail.evaluate(el=>el.open),label+' financial conditions source details cannot open');
- assert.equal(await locator(page,'.drivers-chart-grid .drivers-chart').count(),2);
+ const tankan=require('../site/fx-quant-v2/next/jpy-boj-bank-credit-research-v1.js').tankan;
+ assert(tankan,label+' verified JPY Tankan source is required');
+ const survey=locator(page,'.drivers-cad-official[aria-label="Indagine Tankan Giappone"]');
+ assert.equal(await survey.count(),1,label+' Tankan evidence must be separate');
+ assert((await survey.innerText()).includes(tankan.latest_observation));
+ assert.equal(await locator(page,'.drivers-chart-grid .drivers-chart').count(),3);
 }
 async function chosenPair(page,key,label){
  const button=locator(page,'#fx-ranking-desk button.fx-rank-pair[data-pair="'+key+'"]').first();
