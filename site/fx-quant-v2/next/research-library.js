@@ -149,7 +149,7 @@ function summaryView(today=romeDay()){
 function url(r){return r.publicUrl||(r.date>='2026-11-01'?ROOT:BASE)+encodeURIComponent(r.file);}
 function card(r,today,featured=false){
  const archived=catalogReady&&![...localReports,...remoteReports].some(report=>report.file===r.file);
- const status=archived?{state:'unverified',text:'Collegamento non confermato · riferimento precedente'}:editionStatus(r,today);
+ const status=archived?{state:'unverified',text:featured?'Indice del Briefing non verificato':'Collegamento non confermato · riferimento precedente'}:editionStatus(r,today);
  const heading=featured?'h2':'h3';
  const tag=featured?(archived?'Briefing d’archivio':'Ultimo Briefing'):label(r.type);
  return '<article class="rl-card'+(featured?' rl-featured':'')+'"><div class="rl-card-copy">'+
