@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-24T12:40:43.793223Z",
-  "edition_time_rome": "2026-11-24 13:40",
-  "material_digest": "693f7a49540ea16079f7628d5a17778c64d262adb84bf29f6eec7f0c1eeaca69",
+  "generated_at_utc": "2026-11-24T14:57:54.883164Z",
+  "edition_time_rome": "2026-11-24 15:57",
+  "material_digest": "befe9bb1cfd8bdbe0573f2b73a0882aa49d358f353b99632a1e7e0515be22d11",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Volatilità in calo, dollaro in rialzo",
@@ -59,9 +59,21 @@
       "evidence": "Proxy futures da fonte secondaria. Oro −0,82% al 24 novembre. WTI −0,62% al 24 novembre."
     },
     {
+      "headline": "How does EIA compare different types of energy?",
+      "analysis": "Questo approfondimento aiuta a leggere come cambia l’offerta di energia.",
+      "kind": "NEWS",
+      "published_date": "2026-11-24",
+      "event_date": "2026-11-24",
+      "market_area": "ENERGIA",
+      "sources": [
+        "https://www.eia.gov/todayinenergy/detail.php?id=68504"
+      ],
+      "evidence": ""
+    },
+    {
       "headline": "Speech by Tiff Macklem, Governor of the Bank of Canada",
       "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-24",
       "event_date": "2026-11-24",
       "market_area": "BANCHE CENTRALI",
@@ -69,23 +81,11 @@
         "https://www.bankofcanada.ca/2026/11/speech-tiff-macklem-governor-bank-canada-2026-11-24/"
       ],
       "evidence": ""
-    },
-    {
-      "headline": "Speech: Economic Club of Canada",
-      "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
-      "kind": "NEWS",
-      "published_date": "2026-11-24",
-      "event_date": "2026-11-24",
-      "market_area": "BANCHE CENTRALI",
-      "sources": [
-        "https://www.bankofcanada.ca/multimedia/speech-economic-club-of-canada-2026-11-24/"
-      ],
-      "evidence": ""
     }
   ],
-  "desk_judgment": "La volatilità azionaria è scesa alla chiusura del 23 novembre. Il 23 novembre il dollaro ha guadagnato contro euro e yen.",
+  "desk_judgment": "La volatilità azionaria è scesa alla chiusura del 23 novembre. Il 23 novembre il dollaro ha guadagnato contro euro e yen. Nella seduta del 23 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
   "fx_implications": "Il 25 novembre alle 01:30 italiane escono i prezzi al consumo in Australia. Per AUD conta come il dato modifica le attese sui tassi.",
-  "what_changed": "Nei proxy futures del 24 novembre l’oro scende e il WTI scende.",
+  "what_changed": "Nei proxy futures del 24 novembre l’oro scende e il WTI scende. Nella seduta del 23 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
   "contrary_evidence": "La tenuta del movimento dipende anche dal sostegno dei tassi a breve.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
@@ -94,14 +94,14 @@
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bankofcanada.ca/2026/11/speech-tiff-macklem-governor-bank-canada-2026-11-24/",
-      "https://www.bankofcanada.ca/multimedia/speech-economic-club-of-canada-2026-11-24/",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "https://www.eia.gov/todayinenergy/detail.php?id=68504",
       "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-23",
-      "rss_checked_at_utc": "2026-11-24T12:40:43.793223Z",
+      "rss_checked_at_utc": "2026-11-24T14:57:54.883164Z",
       "commodities": "2026-11-24"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-24T12:40:43.793223Z",
+      "headline": "Volatilità in calo, dollaro in rialzo",
+      "material_digest": "693f7a49540ea16079f7628d5a17778c64d262adb84bf29f6eec7f0c1eeaca69"
+    },
     {
       "generated_at_utc": "2026-11-24T07:36:28.248064Z",
       "headline": "Volatilità in calo, dollaro in rialzo",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-20T15:31:27.267356Z",
       "headline": "Sono usciti i dati sui prezzi in Giappone",
       "material_digest": "962d03b4260f801ead76f4148730eee6765dcca62f0992c4fd32306c54df56db"
-    },
-    {
-      "generated_at_utc": "2026-11-20T15:26:56.330892Z",
-      "headline": "Sono usciti i dati sui prezzi in Giappone",
-      "material_digest": "3e461bcee5fc91dcde0887e2ea6dda419ff9456c4653224b80ad8a25161f03c0"
     }
   ]
 }
