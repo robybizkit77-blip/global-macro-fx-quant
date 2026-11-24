@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-24T07:36:28.248064Z",
-  "edition_time_rome": "2026-11-24 08:36",
-  "material_digest": "77531e4c186ecb5bf1644c368ca26bc8725f6eebeae29ac6ea69f9cf9761fbbc",
+  "generated_at_utc": "2026-11-24T12:40:43.793223Z",
+  "edition_time_rome": "2026-11-24 13:40",
+  "material_digest": "693f7a49540ea16079f7628d5a17778c64d262adb84bf29f6eec7f0c1eeaca69",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Volatilità in calo, dollaro in rialzo",
@@ -59,26 +59,26 @@
       "evidence": "Proxy futures da fonte secondaria. Oro −0,82% al 24 novembre. WTI −0,62% al 24 novembre."
     },
     {
-      "headline": "Bank of Canada Media Interview – Barrie 360",
+      "headline": "Speech by Tiff Macklem, Governor of the Bank of Canada",
       "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-19",
-      "event_date": "2026-11-19",
+      "kind": "NEWS",
+      "published_date": "2026-11-24",
+      "event_date": "2026-11-24",
       "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.bankofcanada.ca/2026/11/bank-canada-media-interview-barrie-360-2026-11-19/"
+        "https://www.bankofcanada.ca/2026/11/speech-tiff-macklem-governor-bank-canada-2026-11-24/"
       ],
       "evidence": ""
     },
     {
-      "headline": "Oil flows through Middle East chokepoints increased in the third quarter",
-      "analysis": "Più petrolio è transitato per queste rotte nel terzo trimestre. Il dato aiuta a capire da quali passaggi dipendono le forniture.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-19",
-      "event_date": "2026-11-19",
-      "market_area": "ENERGIA",
+      "headline": "Speech: Economic Club of Canada",
+      "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
+      "kind": "NEWS",
+      "published_date": "2026-11-24",
+      "event_date": "2026-11-24",
+      "market_area": "BANCHE CENTRALI",
       "sources": [
-        "https://www.eia.gov/todayinenergy/detail.php?id="
+        "https://www.bankofcanada.ca/multimedia/speech-economic-club-of-canada-2026-11-24/"
       ],
       "evidence": ""
     }
@@ -93,15 +93,15 @@
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
-      "https://www.bankofcanada.ca/2026/11/bank-canada-media-interview-barrie-360-2026-11-19/",
+      "https://www.bankofcanada.ca/2026/11/speech-tiff-macklem-governor-bank-canada-2026-11-24/",
+      "https://www.bankofcanada.ca/multimedia/speech-economic-club-of-canada-2026-11-24/",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "https://www.eia.gov/todayinenergy/detail.php?id=",
       "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-23",
-      "rss_checked_at_utc": "2026-11-24T07:36:28.248064Z",
+      "rss_checked_at_utc": "2026-11-24T12:40:43.793223Z",
       "commodities": "2026-11-24"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-24T07:36:28.248064Z",
+      "headline": "Volatilità in calo, dollaro in rialzo",
+      "material_digest": "77531e4c186ecb5bf1644c368ca26bc8725f6eebeae29ac6ea69f9cf9761fbbc"
+    },
     {
       "generated_at_utc": "2026-11-24T06:13:10.259221Z",
       "headline": "Volatilità in calo, dollaro in rialzo",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-20T15:26:56.330892Z",
       "headline": "Sono usciti i dati sui prezzi in Giappone",
       "material_digest": "3e461bcee5fc91dcde0887e2ea6dda419ff9456c4653224b80ad8a25161f03c0"
-    },
-    {
-      "generated_at_utc": "2026-11-20T13:00:45.256563Z",
-      "headline": "Sono usciti i dati sui prezzi in Giappone",
-      "material_digest": "8f692aa82ed9622fb5b15fa90ed9f18e0ad0ea19b79ac01d34433ebfa9a623c0"
     }
   ]
 }
