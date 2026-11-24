@@ -164,7 +164,7 @@ def parse_ons_services(raw,now):
             if t:self.data.append(t)
     h=Tokens();h.feed(raw.decode("utf-8","replace"))
     content=" | ".join(h.data)
-    if "IoS: Services: Index-1dp" not in content or "Series ID: S2KU" not in content:
+    if "IoS: Services: Index-1dp" not in content or not re.search(r"Series ID:\s*(?:\\|\s)*S2KU",content):
         raise ValueError("ONS total services index identity changed")
     monthly={}
     for m in re.finditer(r"\b(\d{4})\s+(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b\s*\|\s*(\d+(?:\.\d+)?)",content):
