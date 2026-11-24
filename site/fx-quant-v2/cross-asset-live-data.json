@@ -1691,16 +1691,12 @@
       "no_core_or_backtest_effect": true
     },
     "VIX": {
-      "date": "2026-11-20",
-      "previous_date": "2026-11-19",
-      "value": 35.89,
-      "previous": 28.44,
-      "change_1d_pct": 26.1955,
+      "date": "2026-11-23",
+      "previous_date": "2026-11-20",
+      "value": 26.62,
+      "previous": 35.89,
+      "change_1d_pct": -25.8289,
       "history": [
-        [
-          "2026-07-06",
-          15.57
-        ],
         [
           "2026-07-07",
           16.13
@@ -2096,6 +2092,10 @@
         [
           "2026-11-20",
           35.89
+        ],
+        [
+          "2026-11-23",
+          26.62
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -2104,7 +2104,7 @@
       "kind": "VOLATILITY_INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 4,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     }
