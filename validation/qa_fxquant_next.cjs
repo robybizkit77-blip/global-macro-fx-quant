@@ -589,6 +589,11 @@ async function macroDriversJourney(page,label){
   label+' CHF credit limits must not be described as loans drawn');
  assert.equal(await chfDossier.locator('a[href="https://data.snb.ch/en/topics/banken/cube/bakredinausbm"]').count(),1,
   label+' CHF credit-limit source link is missing');
+ const rateProxy=chfSource.lending_rate_proxy;
+ const rateBlock=locator(page,'[aria-label="Costo finanziamenti Svizzera SNB"]');
+ assert(rateProxy&&await rateBlock.count()===1,label+' CHF funding cost proxy missing');
+ const rateText=await rateBlock.innerText();
+ assert(rateText.includes(rateProxy.latest_observation)&&rateText.includes('non degli standard di concessione'),label+' CHF loan-price scope or date missing');
  await locator(page,'[data-liq-country="CAD"]').click();
  assert.equal(await locator(page,'[data-liq-country="CAD"]').getAttribute('aria-pressed'),'true');
  const cadDossier=await locator(page,'.drivers-source-provenance-fold').textContent();
