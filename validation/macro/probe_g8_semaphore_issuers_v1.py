@@ -51,7 +51,7 @@ def call(name,url):
     return {"bytes":len(data),"tables":txt.lower().count("<table"),
        "fragments":{term:txt[max(0,txt.find(term)-350):txt.find(term)+1600]
                     for term in terms if txt.find(term)>=0},
-       "psi_href_sample":__import__('re').findall(r'href=["\\\']([^"\\\']*/psi/[^"\\\']+)["\\\']',txt)[:10]}
+       "psi_href_sample":__import__('re').findall(r"href=[\\x22\\x27]([^\\x22\\x27]*/psi/[^\\x22\\x27]+)[\\x22\\x27]",txt)[:10]}
    if name.startswith("EUROSTAT"):
     doc=json.loads(data)
     return {"status":x.status,"value_count":len(doc.get("value",{})),"code_coverage":_coverage(doc), "id":doc.get("id"),"size":doc.get("size"),
