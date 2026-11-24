@@ -4,15 +4,14 @@
   "source": "Reserve Bank of New Zealand B2 · NZFMA indicative government bond closing yields",
   "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
   "xlsx_url": "https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx",
-  "html_sha256": "ae34bd8f8afb9a4b22a0c74e0d866b5be134b1b406f870971ed7dd6f6fe7431a",
-  "xlsx_sha256": "a2323020a2e6c280a326c061d2d3c4b0c7e8262cdd9cd17238530722e34c3c91",
-  "publication_date": "2026-11-23",
-  "last_observation_date": "2026-11-20",
+  "html_sha256": "d5ae72432f99b63c8dc7abb2f7330f47c5af35ee052ba6c78c8f738b0ccd0ce0",
+  "xlsx_sha256": "5d96ca11d5e45ac7110cf367a63729b24264c0e15b949a35a7d857c96bd55996",
+  "publication_date": "2026-11-24",
+  "last_observation_date": "2026-11-23",
   "benchmark_roll_date": "2026-10-30",
   "benchmark_2Y": "April 2029",
   "benchmark_10Y": "April 2037",
   "html_xlsx_matched_dates": [
-    "2026-11-09",
     "2026-11-10",
     "2026-11-11",
     "2026-11-12",
@@ -21,7 +20,8 @@
     "2026-11-17",
     "2026-11-18",
     "2026-11-19",
-    "2026-11-20"
+    "2026-11-20",
+    "2026-11-23"
   ],
   "observations": [
     {
@@ -103,6 +103,11 @@
       "date": "2026-11-20",
       "2Y": 3.86,
       "10Y": 4.79
+    },
+    {
+      "date": "2026-11-23",
+      "2Y": 3.82,
+      "10Y": 4.76
     }
   ],
   "research_only": true,
