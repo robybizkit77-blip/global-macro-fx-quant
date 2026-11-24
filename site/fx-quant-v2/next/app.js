@@ -1107,9 +1107,12 @@ function news(){
  const evidence=window.FXQuantNewsEvidence?.parse?.(n,dayNow())||{
   pulse:[],official:[],latest:null,gap:'I dati sulle notizie non sono validati.',quality:'NON VALIDATO'};
  const list=state.newsMode==='pulse'?evidence.pulse:evidence.official;
+ const priority=state.newsMode==='pulse'?(window.FXQuantNewsEvidence?.focusPulse?.(evidence.pulse,dayNow())||[]):[];
+ const focusIds=new Set(priority.map(x=>x.id));
+ const regular=list.filter(x=>!focusIds.has(x.id));
  const type=state.newsMode==='pulse'?'MERCATI / OSSERVAZIONI DATATE':'COMUNICAZIONI UFFICIALI';
  const newsCard=x=>'<article class="timeline-item news-evidence-item" data-news-kind="'+esc(state.newsMode)+'" data-news-asof="'+esc(x.asof)+'">'
-  +'<span class="mini-overline">'+esc(x.kind)+' · '+esc(x.ccy||x.source)+' · '+date(x.asof)+(x.time?' · '+esc(x.time)+' IT':'')+'</span>'
+  +'<span class="mini-overline">'+esc(x.kind)+' · '+esc(x.ccy||x.source)+(x.importance==='HIGH'?' · PRIORITÀ ALTA':'')+' · '+date(x.asof)+(x.time?' · '+esc(x.time)+' IT':'')+'</span>'
   +'<h3>'+esc(x.displayTitle||x.title)+'</h3>'
   +(state.newsMode==='pulse'&&x.body?'<p class="news-evidence-fact"><strong>Il fatto.</strong> '+esc(x.body)+'</p>':'')
   +'<p class="news-evidence-meaning"><strong>Perché monitorarla.</strong> '+esc(x.why)+'</p>'
@@ -1131,7 +1134,9 @@ function news(){
   +'<div class="grid tilted news-edition-grid"><section class="panel news-evidence-panel"><div class="panel-head"><div><span class="mini-overline">'+type+'</span>'
   +'<h2>'+(state.newsMode==='pulse'?'Cosa è cambiato nei mercati':'Comunicazioni ufficiali: cosa hanno pubblicato le istituzioni')+'</h2>'
   +'<p>Prima il fatto documentato, poi la sua rilevanza. Le prove e i limiti restano espandibili.</p></div></div>'
-  +'<div class="timeline">'+(list.length?list.slice(0,20).map(newsCard).join(''):
+  +(priority.length?'<section class="news-priority-group" aria-label="Osservazioni recenti a priorità alta"><h3>Da leggere per prime</h3><p>Priorità del feed; date diverse, non una graduatoria dei catalizzatori effettivi.</p><div class="timeline">'+priority.map(newsCard).join('')+'</div></section>':'')
+  +(priority.length&&regular.length?'<h3 class="news-other-heading">Altre osservazioni datate</h3>':'')
+  +'<div class="timeline">'+(list.length?regular.slice(0,Math.max(0,20-priority.length)).map(newsCard).join(''):
     '<div class="empty"><strong>Nessuna voce con data verificabile</strong><p>Non sostituiamo eventi mancanti con notizie presunte.</p></div>')
   +'</div></section>'
   +'<aside class="panel glow news-research-reading"><span class="mini-overline">IL GIUDIZIO DEL DESK / NOTIZIE</span>'
