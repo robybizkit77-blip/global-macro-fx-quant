@@ -189,7 +189,9 @@ function verifiedFreshAlternative(x,c,key){
  if(c==='AUD'&&['house','credit'].includes(key)){
    return !!x&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
      x.source_series_id===(key==='house'?'RBA_HOUSING_CREDIT_GROWTH_MM':'RBA_BUSINESS_CREDIT_GROWTH_MM')&&
-     /^https:\/\/www\.rba\.gov\.au\/statistics\/frequency\/fin-agg\/20\d{2}\/fin-agg-\d{4}\.html$/.test(x.source_page);
+     (x.source_page==='https://www.rba.gov.au/statistics/tables/csv/d1-data.csv'||
+      /^https:\/\/www\.rba\.gov\.au\/statistics\/frequency\/fin-agg\/20\d{2}\/fin-agg-\d{4}\.html$/.test(x.source_page))&&
+     x.frequency==='M'&&x.metric_kind==='points'&&x.unit==='% m/m SA';
  }
  if(c==='NZD'&&key==='credit'&&x?.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&x.source_series_id==='RBNZ_PRIVATE_CREDIT_STOCK_TE'){
    return x.source_page==='https://tradingeconomics.com/new-zealand/private-sector-credit'&&x.metric_kind==='percent'&&x.unit==='mln NZD nominali';
