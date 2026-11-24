@@ -72,3 +72,19 @@ console.log('NEXT_LIQUIDITY_SOURCE_POLICY_PASS',JSON.stringify({
   currencies:FX.length,channels:FX.length*roles.length,asof:sourceGate.AS_OF,
   usdSLOOS:'WITHHELD_UNRESOLVED_VARIANT',cadCredit:'RESEARCH_NOT_PROMOTED'
 }));
+
+const residual=load('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json');
+const proxy=residual.lanes['CHF.credit'].lending_rate_proxy;
+assert(proxy,'CHF production loan-price proxy required');
+const renderCHF=(data= residual,ccy='CHF',plots=[])=>page.render({...api(ccy),get:k=>k==='liquidity'?runtime:k==='residualResearch'?data:null,dayNow:()=>new Date().toISOString().slice(0,10),plot:x=>{plots.push(x);return '<svg></svg>';}});
+const plots=[],chf=renderCHF(residual,'CHF',plots);
+assert.match(chf,/SNB · COSTO DEI NUOVI FINANZIAMENTI/);
+assert.match(chf,/Proxy del costo del credito, non degli standard di concessione/);
+assert(chf.includes(fmt(proxy.values.at(-1),2)+'%'));
+assert(chf.includes(fmt(proxy.contract_counts.at(-1),0)));
+const chart=plots.find(x=>x.label==='Costo del credito · proxy ufficiale CHF');assert(chart);
+assert.deepEqual(chart.lines[0].values,proxy.dates.map((label,i)=>({label,value:proxy.values[i]})));
+assert(!renderCHF(residual,'EUR').includes('SNB · COSTO DEI NUOVI FINANZIAMENTI'));
+const bad=structuredClone(residual);bad.lanes['CHF.credit'].lending_rate_proxy.maturity='over_1_to_2_years';
+assert(!renderCHF(bad).includes('SNB · COSTO DEI NUOVI FINANZIAMENTI'));
+console.log('NEXT_CHF_LOAN_RATE_ACTUAL_PASS',proxy.latest_observation,proxy.values.at(-1),proxy.dates.length);
