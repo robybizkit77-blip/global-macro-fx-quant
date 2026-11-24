@@ -25,10 +25,10 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),14)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),14)
+        self.assertEqual(len(mod.REGISTRY),15)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),15)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan","ons","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","statcan","ons","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -74,6 +74,35 @@ class G8SemaphoreSources(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"missing/ambiguous"):
             mod.parse_eurostat(json.dumps({"class":"dataset","id":ids,"size":[1]*6+[len(time)],
               "dimension":dims,"value":{str(i):100+i for i in range(len(time))}}).encode(),NOW)
+
+    def test_eurostat_services_EA21_survey_exact_selection_and_periods(self):
+        dates=[f"2025-{i:02d}" for i in range(1,13)]+[f"2026-{i:02d}" for i in range(1,11)]
+        ids=["freq","s_adj","indic","geo","time"]
+        dimensions={
+           "freq":{"category":{"index":{"M":0}}},
+           "s_adj":{"category":{"index":{"SA":0}}},
+           "indic":{"category":{"index":{"BS-SCI-BAL":0}}},
+           "geo":{"category":{"index":{"EA21":0}}},
+           "time":{"category":{"index":{day:i for i,day in enumerate(dates)}}}
+        }
+        payload={"class":"dataset","id":ids,"size":[1,1,1,1,len(dates)],
+                 "dimension":dimensions,
+                 "value":{str(i):i*.4-5 for i in range(len(dates))}}
+        raw=json.dumps(payload).encode()
+        obs=mod.parse_eurostat_services(raw,date(2026,11,24))
+        self.assertEqual(obs[-2:],[("2026-09",3.0),("2026-10",3.4000000000000004)])
+        spec=next(s for s in mod.REGISTRY if s["ccy"]=="EUR" and s["area"]=="services")
+        item,status=mod.candidate(spec,obs,date(2026,11,24))
+        self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+        self.assertEqual(item["source_series_id"],"TEIBS020_BS-SCI-BAL_SA_EA21")
+        self.assertEqual(item["dates"],["2026-09","2026-10"])
+        dimensions["geo"]["category"]["index"]={"EA20":0}
+        with self.assertRaisesRegex(ValueError,"selector changed"):
+            mod.parse_eurostat_services(json.dumps(payload).encode(),date(2026,11,24))
+        dimensions["geo"]["category"]["index"]={"EA21":0}
+        dimensions["indic"]["category"]["index"]={"BS-SCI-BAL":0,"BS-ICI-BAL":1}
+        with self.assertRaisesRegex(ValueError,"selector changed"):
+            mod.parse_eurostat_services(json.dumps(payload).encode(),date(2026,11,24))
 
     def test_statcan_exact_manufacturing_sa_total(self):
         bio=io.BytesIO()
@@ -211,7 +240,7 @@ class G8SemaphoreSources(unittest.TestCase):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),14)
+        self.assertEqual(len(out["audit"]),15)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
