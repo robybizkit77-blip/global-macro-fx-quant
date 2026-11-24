@@ -106,6 +106,7 @@ for(const c of G8){
  const h=render({history:data,ccy:c,window:14});
  assert(h.includes('data-pricing-horizon-matrix'));
  assert(h.includes('1 / 5 / 20 giorni feriali'));
+ for(const k of G8)assert.equal((h.match(new RegExp('data-rate-ccy="'+k+'"','g'))||[]).length,1,'unique historical currency control '+k);
 }
 assert.equal(horizonMoves(null).filter(x=>x.bp!==null).length,0);
 console.log('NEXT_G8_PRICING_HORIZON_MATRIX_PASS');
