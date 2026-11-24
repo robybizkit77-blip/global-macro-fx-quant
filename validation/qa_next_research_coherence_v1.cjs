@@ -260,5 +260,14 @@ assert.deepEqual(earlyEvidence.twenty,['green','A favore']);
 assert.deepEqual(earlyEvidence.timing,['red','Sfavorevole ora']);
 assert.deepEqual(pairEvidence({base:'AUD',quote:'USD',favored:null,move5Percent:1}).five,['neutral','Non valutabile']);
 assert.deepEqual(pairEvidence({base:'AUD',quote:'USD',favored:'USD',move5Percent:-.02}).five,['amber','Indeciso']);
+
+const creditMarket=require('../site/fx-quant-v2/next/liquidity-credit-studio.js').creditMarket;
+const creditDate='2026-11-24';
+const fixtureCredit={streams:Object.fromEntries([['IG_OAS','BAMLC0A0CM',.98,.94],['HY_OAS','BAMLH0A0HYM2',3.76,3.52]].map(([k,id,value,previous])=>[k,{date:'2026-11-20',value,previous,quality:'PUBLISHED_SOURCE_RESEARCH_ONLY',not_intraday:true,source_url:'https://fred.stlouisfed.org/graph/fredgraph.csv?id='+id}]))};
+const spreadRead=creditMarket(fixtureCredit,creditDate);
+assert.deepEqual(spreadRead.map(x=>x.bp),[4,24]);
+assert(spreadRead.every(x=>x.tone==='down'));
+assert(creditMarket(fixtureCredit,'2026-12-20').every(x=>!x.ok));
+assert(creditMarket(fixtureCredit,'2026-11-19').every(x=>!x.ok));
 require('./publishing/test_next_home_thesis_recalc_v1.cjs');
 console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
