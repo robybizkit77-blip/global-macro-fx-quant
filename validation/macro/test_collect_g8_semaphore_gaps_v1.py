@@ -143,7 +143,7 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertTrue(mod.statsnz_house_url(date(2026,11,24),2).endswith("september-2026/"))
         with self.assertRaisesRegex(ValueError,"identity"):
             mod.parse_statsnz_house(html.replace("New dwellings consented","Other").encode(),NOW)
-        with self.assertRaisesRegex(ValueError,"table"):
+        with self.assertRaisesRegex(ValueError,"identity"):
             mod.parse_statsnz_house(html.replace("Seasonally adjusted","not adjusted").encode(),NOW)
 
     def test_boe_mortgage_exact_official_identifier(self):
