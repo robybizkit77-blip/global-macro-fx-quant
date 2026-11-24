@@ -102,7 +102,9 @@ const SUPPLEMENT_SCHEMA='GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1';
 function supplementary(overlay,country,key){
  if(overlay?.schema!==SUPPLEMENT_SCHEMA||!Array.isArray(overlay.series))return null;
  const matches=overlay.series.filter(x=>x?.ccy===country&&x?.area===key&&
-   x?.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
+   (x?.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'||
+    (country==='NZD'&&key==='services'&&x?.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'&&
+     /^20\d{2}-\d{2}-\d{2}$/.test(x.manual_verified_on||'')&&x.diffusion_threshold===50))&&
    /^[A-Z0-9_]+$/.test(x.id||'')&&
    ['M','Q'].includes(x.frequency)&&
    ['percent','points'].includes(x.metric_kind)&&
@@ -110,7 +112,7 @@ function supplementary(overlay,country,key){
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
    typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au)\//.test(x.source_page)&&
    (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
-    x.metric_kind==='points'&&x.source_page==='https://businessnz.org.nz/psi')));
+    x.metric_kind==='points'&&/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page))));
  return matches.length===1?matches[0]:null;
 }
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
@@ -186,7 +188,9 @@ function model(catalog,today,country='USD',overlay=null){
    if(metrics.length===0){
      const extra=supplementary(overlay,c,area.key);
      if(extra){
-       sources.set(extra.id,{...extra,source_file:extra.source_file+' · aggiornamento dal feed supplementare'});
+       sources.set(extra.id,{...extra,source_file:extra.source_file+
+        (extra.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'?' · dato verificato manualmente, non aggiornato automaticamente':
+        ' · aggiornamento dal feed supplementare')});
        metrics=[M(extra.id,extra.label,true,{unit:extra.unit,kind:extra.metric_kind,
         minimum:extra.metric_kind==='points'?.2:.15,
         pointUnit:extra.unit.startsWith('%')?'p.p.':'punti',freq:extra.frequency,source_page:extra.source_page,
@@ -245,6 +249,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    return '<span class="sem-mini '+q.tone+'" title="'+esc(q.label)+'" aria-label="'+esc(q.label)+'"><i aria-hidden="true"></i></span>';
  };
  const hasStale=rows.some(x=>x.items.some(z=>z?.stale));
+ const hasManual=rows.some(x=>x.items.some(z=>z?.source?.includes('verificato manualmente')));
  return '<section class="recession-light" aria-labelledby="recession-light-title">'+
   '<header class="sem-head"><div><span class="sem-kicker">GLOBAL MACRO / G8 / LETTURA CICLICA</span>'+
   '<h2 id="recession-light-title">Il semaforo economico</h2>'+
@@ -275,6 +280,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<p class="sem-foot">Metodo: ogni indicatore confronta le sue ultime due osservazioni disponibili; verde indica miglioramento direzionale, rosso peggioramento, giallo quadro misto o quasi invariato, azzurro dati mancanti, troppo vecchi, non consecutivi o non sufficientemente allineati. '+
   'Le soglie descrittive evitano piccoli movimenti: ±0,15% per i livelli e soglie in punti esplicite per tassi, sondaggi e indicatori compositi. '+
   (hasStale?'Sono presenti osservazioni datate: non interpretare i colori come fotografia intraday. ':'')+
+  (hasManual?'È presente una rilevazione PSI BusinessNZ da fonte ufficiale verificata manualmente: il download automatico è bloccato; la data del dato è esplicita e il segnale scade se non viene aggiornata. ':'')+
   'La matrice confronta direzioni, NON livelli omogenei o cicli sincronizzati. La colonna Servizi misura il momentum dell’attività o dei suoi proxy e distingue il livello di espansione/contractione SOLO per un indice di diffusione con soglia documentata a 50 (es. PSI BusinessNZ). Non misura l’inflazione dei servizi. Prezzi nominali, saldi di survey, stock di credito e PIL sono strumenti diversi. '+
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonte: MACRO_SERIES.json, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p>'+
   '</section>';
