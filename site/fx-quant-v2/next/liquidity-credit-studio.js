@@ -744,6 +744,27 @@
    '<p>Variazione mensile '+esc(pct(change))+' · tre mesi '+esc(pct(change3))+'. Si tratta di riserve presso la banca centrale, non di nuovi prestiti o di flussi valutari.</p>'+
    '<div class="drivers-cad-source"><span>'+esc(x.proxy_as_of)+' · '+(age>75?'periodo storico':'osservazione datata')+' · fonte ufficiale alternativa; equivalenza con la vintage storica non certificata</span><a href="'+esc(x.source_endpoint)+'" target="_blank" rel="noopener noreferrer">BoJ · Monetary Base ↗</a></div></section>'};
  }
+ function chfLoanPrice(feed,today,esc,fmt){
+  const x=feed?.lanes?.['CHF.credit']?.lending_rate_proxy;
+  if(feed?.schema!=='GMFQ_ESTIMATED_RESIDUAL_GAPS_V1'||feed.official_lanes_untouched!==true||
+     x?.series_id!=='EPB@SNB.zikredlauf{FI,L16M,MP0}'||x.count_series_id!=='EPB@SNB.zikredlauf{FI,L16M,AK}'||
+     x.source_url!=='https://data.snb.ch/en/topics/ziredev/cube/zikredlauf'||x.frequency!=='M'||x.unit!=='percent_per_annum'||
+     x.proxy_kind!=='loan_price_not_lending_standards'||x.product!=='fixed_rate_investment_loans'||x.maturity!=='over_1_to_6_months'||
+     x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||x.first_release_pit_verified!==false||
+     !Array.isArray(x.dates)||x.dates.length<6||x.latest_observation!==x.dates.at(-1)||
+     !x.dates.every(d=>/^20[0-9]{2}-(0[1-9]|1[0-2])$/.test(d))||
+     !Array.isArray(x.values)||!x.values.every(v=>finite(v)&&v>=-5&&v<=25)||
+     !Array.isArray(x.contract_counts)||x.contract_counts.length!==x.dates.length||!x.contract_counts.every(v=>Number.isInteger(v)&&v>0))return null;
+  const s=researchCreditSeries(x,'SNB · Nuovi prestiti per investimenti a tasso fisso, 1–6 mesi','% annua',today,true);
+  if(!s)return null;
+  const previous=s.values.at(-2),delta=s.last_value-previous,age=(dateMs(observationDate(today))-dateMs(observationDate(s.last_date)))/864e5;
+  const opening=inMonth(s.last_date)+' il tasso medio sui nuovi prestiti per investimenti a 1–6 mesi è '+fmt(s.last_value,2)+'%. Rispetto alla rilevazione precedente ('+s.dates.at(-2)+') il costo '+movement(delta,'è salito','è sceso','è rimasto stabile')+'.';
+  return {opening,conditionsSeries:s,conditionsChartLabel:'Costo del credito · proxy ufficiale',
+   html:'<section class="drivers-cad-official" aria-label="Costo finanziamenti Svizzera SNB"><span class="mini-overline">SNB · COSTO DEI NUOVI FINANZIAMENTI</span><h3>'+esc(opening)+'</h3>'+
+   '<p>Tasso medio annuo '+esc(fmt(s.last_value,2))+'%, precedente '+esc(fmt(previous,2))+'%; variazione '+esc((delta>0?'+':'')+fmt(delta*100,1))+' punti base. Contratti osservati: '+esc(fmt(x.contract_counts.at(-1),0))+'.</p>'+
+   '<p>Prestiti per investimenti a tasso fisso, durata superiore a un mese e fino a sei mesi. Proxy del costo del credito, non degli standard di concessione: non rappresenta tutti i prestiti, né prova un cambiamento della disponibilità bancaria.</p>'+
+   '<div class="drivers-cad-source"><span>'+esc(s.last_date)+' · '+(age>155?'periodo storico':'osservazione mensile datata')+'</span><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">SNB · Nuovi finanziamenti ↗</a></div></section>'};
+ }
  function chfSNBResearch(feed,today,esc,fmt){
   const roles=[
    {key:'CHF.sight_deposits',id:'BSTA@SNB.MONA_U.BIL.AKT.FMI.GGU{U,T,T,A40}',
@@ -763,7 +784,8 @@
     ' · '+esc(fmt(row.proxy_value/1000,2))+' miliardi CHF. Sul mese '+pct(row.change_1m_pct)+
     ' · in tre mesi '+pct(row.change_3m_pct)+(age>70?' · dato storico.':'.')+'</p>'}];
   });
-  if(!entries.length)return null;
+  const cost=chfLoanPrice(feed,today,esc,fmt);
+  if(!entries.length)return cost;
   const read=entries.map(entry=>entry.html).join('');
   const byKey=Object.fromEntries(entries.map(entry=>[entry.key,entry.row]));
   const deposits=byKey['CHF.sight_deposits'],creditLines=byKey['CHF.credit'];
@@ -789,7 +811,7 @@
   });
   const opening=sameMonth?inMonth(month)+' '+observations.join(' e ')+'.':
    observations.map((item,i)=>inMonth(entries[i].row.proxy_as_of)+' '+item+'.').join(' ');
-  return {headline,opening,
+  return {headline,opening:opening+(cost?' '+cost.opening:''),conditionsSeries:cost?.conditionsSeries,conditionsChartLabel:cost?.conditionsChartLabel,
    html:'<section class="drivers-cad-official" aria-label="Serie mensili ufficiali SNB">'+
    '<span class="mini-overline">SWISS NATIONAL BANK · SERIE MENSILI</span>'+
    '<h3>'+esc((monthLabel?monthLabel.charAt(0).toUpperCase()+monthLabel.slice(1)+' · ':'')+headline)+'</h3>'+
@@ -797,7 +819,7 @@
    '<div class="drivers-cad-source">'+
    (deposits?'<a href="https://data.snb.ch/en/publishingSet/BSTA" target="_blank" rel="noopener noreferrer">SNB · Depositi a vista ↗</a>':'')+
    (creditLines?'<a href="https://data.snb.ch/en/topics/banken/cube/bakredinausbm" target="_blank" rel="noopener noreferrer">SNB · Linee di credito ↗</a>':'')+
-   '</div></section>'};
+   '</div></section>'+(cost?.html||'')};
  }
  // Market credit spread observations, separate from national lending and reserves.
  function creditMarket(risk,today){
@@ -976,7 +998,7 @@
    '<ul>'+roles.map(role=>{const g=policyGate(role);return '<li><strong>'+esc(({liquidity:'Liquidità',credit:'Credito',conditions:'Standard e condizioni'})[role])+'</strong>: '+esc(g?.label||'provenienza non verificata')+'. '+esc(g?.narrative||'Verificare il registro fonti.')+'</li>'}).join('')+'</ul>'+
    '<p>Copertura storica e date riferite alle rispettive serie. Se disponibile, il grafico del credito usa la fonte ufficiale separata più recente, senza modificare il feed storico. Frequenze, definizioni e unità possono differire.'+
    (row?.current_note?' '+esc(row.current_note):'')+'</p></details></section>'+
-   (selected==='CHF'?'':'<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
+   (selected==='CHF'?(official?.conditionsSeries?'<details class="drivers-panel drivers-fold"><summary>Apri grafico del costo dei finanziamenti</summary><div class="drivers-chart-grid">'+chart(official.conditionsSeries,official.conditionsChartLabel,'#95c6e9')+'</div><p class="drivers-source-note">Serie SNB separata: non rappresenta lo storico originario di liquidità o credito.</p></details>':''):'<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
    '<div class="drivers-chart-grid">'+chart(official?.liquidityRecent||official?.liquiditySeries||row?.liquidity,official?.liquidityRecent?'Liquidità · ultima settimana':official?.liquiditySeries?'Liquidità · fonte ufficiale separata':'Liquidità','#69d5ad')+chart(official?.creditSeries||row?.credit,official?.creditSeries?'Credito · fonte ufficiale separata':'Credito','#95c6e9')+'</div>'+
    (official?.liquidityRecent?'<p class="drivers-source-note">Confronto delle ultime due settimane dalla fonte ufficiale separata. '+(selected==='AUD'?'Il saldo precedente è ricavato dal movimento settimanale pubblicato. ':'Entrambi i saldi sono pubblicati dalla BoE. ')+'Lo storico precedente rimane distinto: nessuna interpolazione fra periodi mancanti.</p><div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità · storico originario','#69d5ad')+'</div>':'')+
    (official?.keepOriginalLiquidity?'<p class="drivers-source-note">Saldi Lynx giornalieri e storico mensile originario rimangono separati: nessuna equivalenza o interpolazione presunta.</p><div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità · storico originario','#69d5ad')+'</div>':'')+
