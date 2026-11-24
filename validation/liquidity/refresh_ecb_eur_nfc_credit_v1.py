@@ -31,13 +31,16 @@ PUBLIC="https://data.ecb.europa.eu/data/datasets/BSI/"+SERIES
 ANCHOR_DATE="2026-07"
 ANCHOR_VALUE=5481083.172910931
 SCHEMA="GMFQ_NEXT_EUR_ECB_NFC_CREDIT_RESEARCH_V1"
+EXLIQ_SERIES="ILM.D.U2.C.EXLIQ.U2.EUR"
+EXLIQ_API="https://data-api.ecb.europa.eu/service/data/ILM/D.U2.C.EXLIQ.U2.EUR?format=csvdata&startPeriod=2026-09-01"
+EXLIQ_PUBLIC="https://data.ecb.europa.eu/data/datasets/ILM/"+EXLIQ_SERIES
 
 def require(ok,why):
     if not ok:
         raise ValueError("ECB_EUR_NFC_SOURCE_WITHHELD: "+why)
 
-def fetch():
-    req=urllib.request.Request(API,headers={
+def fetch(url=API):
+    req=urllib.request.Request(url,headers={
         "Accept":"text/csv", "User-Agent":"FXQuant-Research-Sources/1.0"})
     with urllib.request.urlopen(req,timeout=30) as response:
         require(response.geturl().startswith("https://data-api.ecb.europa.eu/"),
@@ -109,6 +112,43 @@ def parse(content,*,today=None):
        "anchor_revision_pct":round(reference_diff,4),
     }
 
+def parse_excess_liquidity(content,*,today=None):
+    today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
+    reader=csv.DictReader(io.StringIO(content))
+    columns=set(reader.fieldnames or [])
+    require({"TIME_PERIOD","OBS_VALUE","UNIT_MULT"}<=columns,"missing ECB excess liquidity data or units")
+    require("KEY" in columns or "SERIES_KEY" in columns,"missing ECB excess liquidity identity")
+    key="KEY" if "KEY" in columns else "SERIES_KEY"
+    records={}
+    for rec in reader:
+        require(rec.get(key)==EXLIQ_SERIES,"wrong ECB excess liquidity series")
+        raw=rec.get("OBS_VALUE")
+        if raw in (None,"","."):continue
+        require(rec.get("UNIT_MULT")=="6","ECB excess liquidity must be in millions")
+        day=date.fromisoformat(rec["TIME_PERIOD"])
+        require(day<=today and day not in records,"future or duplicate liquidity date")
+        value=float(raw)
+        require(math.isfinite(value) and -1000000<value<10000000,"ECB excess liquidity outside plausible range")
+        records[day]=value
+    days=sorted(records)
+    require(len(days)>=15 and list(records) in (days,list(reversed(days))),"insufficient or unordered liquidity history")
+    anchor=records.get(date(2026,9,21))
+    require(anchor is not None and abs(anchor/2123137-1)<.02,"ECB liquidity canonical overlap mismatch")
+    require((today-days[-1]).days<=10,"ECB liquidity source stale")
+    require(all((b-a).days<=5 for a,b in zip(days,days[1:])),"unexplained excess liquidity observation gap")
+    days=days[-80:]
+    return {"series_id":EXLIQ_SERIES,"source_url":EXLIQ_PUBLIC,"frequency":"D","unit":"milioni EUR",
+            "dates":[d.isoformat() for d in days],"values":[records[d] for d in days],
+            "latest_observation":days[-1].isoformat(),"first_release_pit_verified":False,
+            "eligible_for_fx_core":False,"eligible_for_backtest":False}
+
+def existing_payload(text):
+    start=text.find("const data=")
+    if start!=-1:
+        try:return json.JSONDecoder().raw_decode(text[start+len("const data="):])[0]
+        except ValueError:pass
+    return {}
+
 def existing_observations(text):
     keys=[]
     for k in ("dates","values"):
@@ -118,7 +158,7 @@ def existing_observations(text):
         except (SyntaxError,ValueError):return None
     return tuple(keys)
 
-def emit_js(parsed,checked):
+def emit_js(parsed,checked,excess_liquidity=None):
     x={
       "schema":SCHEMA,
       "status":"VERIFIED_ECB_BSI_NFC_STOCK_RESEARCH_ONLY",
@@ -143,6 +183,7 @@ def emit_js(parsed,checked):
       "values":parsed["values"],
       "inference":"Stock prestiti MFI alle imprese non finanziarie, non nuove erogazioni, non credit impulse corretto per cessioni; ricerca separata."
     }
+    if excess_liquidity is not None:x['excess_liquidity']=excess_liquidity
     return ("'use strict';\n"
             "/* Official ECB BSI NFC stock: research only, revision aware. */\n"
             "(function(root){\n const data="+json.dumps(x,ensure_ascii=False,indent=1)+";\n"
@@ -150,11 +191,32 @@ def emit_js(parsed,checked):
             " if(typeof module!=='undefined'&&module.exports)module.exports=data;\n"
             "})(typeof window!=='undefined'?window:globalThis);\n")
 
-def run(destination=DEST,*,apply=False,fixture=None,today=None):
+def run(destination=DEST,*,apply=False,fixture=None,exliq_fixture=None,today=None):
     today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
-    data=parse(Path(fixture).read_text(encoding="utf-8") if fixture else fetch(),today=today)
-    previous=existing_observations(destination.read_text(encoding="utf-8")) if destination.exists() else None
-    changed=previous!=(data["dates"],data["values"])
+    old=destination.read_text(encoding="utf-8") if destination.exists() else ""
+    prior=existing_payload(old)
+    previous=existing_observations(old) if old else None
+    prior_exliq=prior.get("excess_liquidity")
+    exliq=prior_exliq
+    exliq_status={"status":"SKIPPED_FIXTURE"}
+    if exliq_fixture or not fixture:
+        try:
+            candidate=parse_excess_liquidity(Path(exliq_fixture).read_text(encoding="utf-8") if exliq_fixture else fetch(EXLIQ_API),today=today)
+            if prior_exliq and candidate["latest_observation"]<prior_exliq["latest_observation"]:
+                raise ValueError("ECB excess liquidity source rolled back")
+            exliq=candidate
+            exliq_status={"status":"VERIFIED","latest_observation":candidate["latest_observation"]}
+        except (OSError,ValueError,UnicodeError) as error:
+            exliq_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:320]}
+            if prior_exliq:exliq_status["retained_observation"]=prior_exliq["latest_observation"]
+    nfc_status={"status":"VERIFIED"}
+    try:
+        data=parse(Path(fixture).read_text(encoding="utf-8") if fixture else fetch(),today=today)
+    except (OSError,ValueError,UnicodeError) as error:
+        if not (previous and prior.get("schema")==SCHEMA and exliq!=prior_exliq):raise
+        data=prior
+        nfc_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:320]}
+    changed=previous!=(data["dates"],data["values"]) or exliq!=prior_exliq
     receipt={
       "schema":"GMFQ_ECB_NFC_CREDIT_SOURCE_RECEIPT_V1",
       "status":"UPDATE_AVAILABLE" if changed else "NO_CHANGE",
@@ -167,13 +229,14 @@ def run(destination=DEST,*,apply=False,fixture=None,today=None):
       "overlap_revision_pct":data["anchor_revision_pct"],
       "verified_on_rome":today.isoformat(),
       "first_release_pit_verified":False,
+      "nfc":nfc_status,"excess_liquidity":exliq_status,
       "canonical_runtime_unchanged":True,
       "fx_rank_effect":"NONE",
       "write_state":"NO_MUTATION"
     }
     if apply and changed:
         destination.parent.mkdir(parents=True,exist_ok=True)
-        destination.write_text(emit_js(data,today.isoformat()),encoding="utf-8")
+        destination.write_text(emit_js(data,today.isoformat() if nfc_status["status"]=="VERIFIED" else prior["last_checked_rome"],exliq),encoding="utf-8")
         receipt["write_state"]="RESEARCH_SIDECAR_ONLY"
     return receipt
 
@@ -181,11 +244,12 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument("--apply",action="store_true")
     p.add_argument("--fixture",type=Path)
+    p.add_argument("--exliq-fixture",type=Path)
     p.add_argument("--destination",type=Path,default=DEST)
     p.add_argument("--receipt",type=Path)
     args=p.parse_args()
     try:
-        out=run(args.destination,apply=args.apply,fixture=args.fixture)
+        out=run(args.destination,apply=args.apply,fixture=args.fixture,exliq_fixture=args.exliq_fixture)
     except (OSError,TimeoutError,ValueError,UnicodeError) as exc:
         out={"schema":"GMFQ_ECB_NFC_CREDIT_SOURCE_RECEIPT_V1",
              "status":"WITHHELD_SOURCE_INACCESSIBLE_OR_UNVERIFIED",
