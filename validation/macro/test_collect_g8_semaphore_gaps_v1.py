@@ -351,13 +351,22 @@ class G8SemaphoreSources(unittest.TestCase):
     def test_issuer_unavailable_keeps_only_expiring_verified_manual_snapshot(self):
         def fail(_):raise OSError("http 403 issuer blocked")
         out=mod.collect(date(2026,11,24),fetcher=fail)
-        self.assertEqual(len(out["series"]),2)
+        self.assertEqual(len(out["series"]),3)
         self.assertEqual({(x["ccy"],x["area"]) for x in out["series"]},
-                         {("NZD","house"),("NZD","services")})
+                         {("NZD","house"),("NZD","services"),("NZD","credit")})
         self.assertEqual(out["audit"]["NZD_house"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
         self.assertEqual(out["audit"]["NZD_house"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
         self.assertEqual(out["audit"]["NZD_services"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
         self.assertEqual(out["audit"]["NZD_services"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
+
+    def test_rbnz_credit_snapshot_is_verified_and_expires(self):
+        spec=next(s for s in mod.REGISTRY if s["ccy"]=="NZD" and s["area"]=="credit")
+        item,st=mod.curated_rbnz_credit(spec,date(2026,11,24))
+        self.assertEqual(item["values"],[4.1,5.3])
+        self.assertEqual(st["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
+        self.assertEqual(item["quality"],"SOURCE_VERIFIED_MANUAL_NONPIT")
+        self.assertIsNone(mod.curated_rbnz_credit(spec,date(2026,12,8))[0])
+        with self.assertRaises(ValueError):mod.curated_rbnz_credit(spec,NOW)
 
     def test_stats_nz_house_official_snapshot_expiry_and_provenance(self):
         spec=next(x for x in mod.REGISTRY if x["ccy"]=="NZD" and x["area"]=="house")
