@@ -25,10 +25,10 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),28)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),28)
+        self.assertEqual(len(mod.REGISTRY),31)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),31)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit","statcan_detail"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -350,11 +350,41 @@ class G8SemaphoreSources(unittest.TestCase):
             mod.parse_rba_aggregates(raw.replace(b"Business",b"Other"),date(2026,11,24),
              "RBA_BUSINESS_CREDIT_GROWTH_MM",page)
 
+    def test_statcan_three_issuer_exact_selector_contracts(self):
+        for key,payload in mod.STATCAN_DETAIL.items():
+            dates=[f"2025-{m:02d}" for m in range(1,13)]+[f"2026-{m:02d}" for m in range(1,11)]
+            header=["REF_DATE","GEO",payload["category"],payload["other"],
+                    "UOM","SCALAR_FACTOR","VALUE"]
+            rows=[[dt,"Canada",payload["value"],payload["selection"],
+                   payload["unit"],payload["scale"],100+i] for i,dt in enumerate(dates)]
+            rows.append(["2026-10","Canada",payload["value"],"Other category",
+                         payload["unit"],payload["scale"],999999])
+            bio=io.BytesIO()
+            with ZipFile(bio,"w") as z:
+                out=StringIO();writer=csv.writer(out);writer.writerow(header);writer.writerows(rows)
+                z.writestr(payload["file"],out.getvalue())
+            obs=mod.parse_statcan_detail(bio.getvalue(),date(2026,11,24),key)
+            self.assertEqual(obs[-1],("2026-10",121.0))
+            spec=next(x for x in mod.REGISTRY if x["key"]==key)
+            item,st=mod.candidate(spec,obs,date(2026,11,24))
+            self.assertEqual(st["status"],"READY_DESCRIPTIVE_REVISED")
+            self.assertEqual(item["dates"],["2026-09","2026-10"])
+            with self.assertRaisesRegex(ValueError,"Unknown StatCan"):
+                mod.parse_statcan_detail(bio.getvalue(),date(2026,11,24),"WRONG")
+            z2=io.BytesIO()
+            with ZipFile(z2,"w") as z:
+                out=StringIO();w=csv.writer(out);w.writerow(header)
+                w.writerows([[d,"Canada",payload["value"],payload["selection"],
+                           payload["unit"],"thousands",100+i] for i,d in enumerate(dates)])
+                z.writestr(payload["file"],out.getvalue())
+            with self.assertRaisesRegex(ValueError,"unit/scale"):
+                mod.parse_statcan_detail(z2.getvalue(),date(2026,11,24),key)
+
     def test_collect_transparently_withholds_failed_sources(self):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),28)
+        self.assertEqual(len(out["audit"]),31)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
