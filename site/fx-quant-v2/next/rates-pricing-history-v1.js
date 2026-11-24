@@ -46,9 +46,9 @@
  }
  function connect(a,b){
   if(!a||!b||span(a.date,b.date)<1||span(a.date,b.date)>4)return false;
-  if(a.source_class==='BANK_BILL_PROXY_DELTA_REFERENCE'&&b.source_class==='BANK_BILL_PROXY')return true;
+  if(a.source_class==='BANK_BILL_PROXY_DELTA_REFERENCE'&&b.source_class==='BANK_BILL_PROXY')return !!a.contract&&a.contract===b.contract;
   if(a.source_class!==b.source_class)return false;
-  if(a.source_class==='SECONDARY_SAME_CONTRACT'||a.source_class==='RELATIVE_SAME_DATE')
+  if(a.source_class==='SECONDARY_SAME_CONTRACT'||a.source_class==='RELATIVE_SAME_DATE'||a.source_class==='BANK_BILL_PROXY')
    return a.contract===b.contract;
   if(a.derived||b.derived)return false;
   return true;
@@ -165,6 +165,7 @@
      a.contract&&a.contract===last.contract&&
      (a.source_class==='BANK_BILL_PROXY'&&!a.derived||
       a.source_class==='BANK_BILL_PROXY_DELTA_REFERENCE'&&a.derived&&days<=5)){
+    if(arr.some(p=>p.date>=from&&p.date<=to&&p.contract!==last.contract))return unavailable('Contratto cambiato nel periodo');
     basis=a.derived?'Proxy · riferimento ricostruito':'Proxy stesso contratto';
    }else return unavailable('Basi non confrontabili');
    return {days,from,to,bp:Math.round((last.rate-a.rate)*10000)/100,basis,derived:a.derived};
@@ -249,7 +250,7 @@
     c.kind==='FUTURES SECONDARI'?
     'Quotazioni futures secondarie: linee interrotte a ogni cambio di contratto o giorno non osservato. Non sono OIS.':
     c.kind==='PROXY FUTURES'?
-    'Proxy NZD: un solo livello indipendente e riferimenti 1D/1W ricostruiti dai delta ASX, non nuove osservazioni.':
+    'Proxy NZD: prezzi di regolamento ASX archiviati e riferimenti 1D/1W ricostruiti solo dove mancano osservazioni. Le linee si interrompono al cambio di contratto.':
     'Futures ufficiali: andamento dei tenori rappresentativi; senza identità contrattuale storica non equivale alla performance dello stesso contratto.')+
    '</p></article>'+
    '<article class="ois-history-secondary"><span class="micro-over">SPREAD 6M · '+ccy+' − '+other+'</span>'+
