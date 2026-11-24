@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Supplemental G8 economic traffic-light research, never FX Core or canonical Macro.
-Seven explicit OECD/BIS/issuer series via FRED and Eurostat building permits.
+Official and research series via FRED, ONS, Statistics Canada and Eurostat.
 Fails closed on stale, missing, changed-source or ambiguous observations.
 All data are current revised vintages, not point-in-time historical releases.
 """
@@ -27,6 +27,18 @@ MAX_BYTES=3_000_000
 # Several historical OECD/BIS feeds have stopped updating: retain status WITHHELD;
 # never use today's fetch time to make an old observation look current.
 REGISTRY=[
+ dict(ccy="USD",area="services",key="CES0800000001",method="fred",
+      name="Occupazione privata nei servizi (proxy, non output)",unit="mila occupati SA",
+      frequency="M",kind="percent",max_age_days=105,origin="BLS via FRED",
+      source_page="https://fred.stlouisfed.org/series/CES0800000001"),
+ dict(ccy="GBP",area="services",key="ONS_S2KU_IOS1",method="ons",
+      name="Index of Services (volumi reali destagionalizzati)",unit="indice volumi SA",
+      frequency="M",kind="percent",max_age_days=110,origin="UK Office for National Statistics",
+      source_page="https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/s2ku/ios1"),
+ dict(ccy="CAD",area="services",key="36100434_SERVICES_T003",method="statcan_services",
+      name="PIL reale settore servizi (mensile, SA)",unit="mln CAD reali SAAR",
+      frequency="M",kind="percent",max_age_days=110,origin="Statistics Canada table 36-10-0434-01",
+      source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610043401"),
  dict(ccy="EUR",area="house",key="EA21_STS_COBP_M",method="eurostat",
       name="Permessi per nuove abitazioni EA21 (escluse residenze collettive)",unit="indice 2021=100",
       frequency="M",kind="percent",max_age_days=115,
@@ -61,7 +73,7 @@ REGISTRY=[
       kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
-assert len(REGISTRY)==8 and len({(s["ccy"],s["area"]) for s in REGISTRY})==8
+assert len(REGISTRY)==11 and len({(s["ccy"],s["area"]) for s in REGISTRY})==11
 
 def fetch(url:str)->bytes:
     host=urlsplit(url).hostname
@@ -123,6 +135,77 @@ def parse_statcan(raw,now):
                 values[p]=value
     if len(values)<12:raise ValueError("insufficient StatCan history")
     return sorted(values.items())
+
+
+ONS_URL="https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/s2ku/ios1"
+STATCAN_GDP_ZIP="https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip"
+
+def fetch_issuer(url):
+    if url not in {ONS_URL,STATCAN_GDP_ZIP}:raise ValueError("unregistered official services URL")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0",
+      "Accept":"text/html,application/zip"})
+    with urlopen(req,timeout=35) as response:
+        final=response.geturl()
+        if not final.startswith("https://") or urlsplit(final).hostname!=urlsplit(url).hostname:
+            raise ValueError("official source redirect to other host")
+        data=response.read(55_000_001)
+        if not data or len(data)>55_000_000:
+            raise ValueError("empty/oversized official services response")
+        return data
+
+def parse_ons_services(raw,now):
+    """Extract ONLY the monthly total Index of Services S2KU from the issuer table."""
+    from html.parser import HTMLParser
+    class Tokens(HTMLParser):
+        def __init__(self):
+            super().__init__();self.data=[]
+        def handle_data(self,data):
+            t=data.strip()
+            if t:self.data.append(t)
+    h=Tokens();h.feed(raw.decode("utf-8","replace"))
+    content=" | ".join(h.data)
+    if "IoS: Services: Index-1dp" not in content or "Series ID: S2KU" not in content:
+        raise ValueError("ONS total services index identity changed")
+    monthly={}
+    for m in re.finditer(r"\b(\d{4})\s+(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b\s*\|\s*(\d+(?:\.\d+)?)",content):
+        year=int(m[1]);month=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"].index(m[2])+1
+        p=f"{year:04d}-{month:02d}"
+        if period_end(p)>now:continue
+        if p in monthly:raise ValueError("duplicate ONS month")
+        value=float(m[3])
+        if not math.isfinite(value) or value<=0:raise ValueError("invalid ONS index")
+        monthly[p]=value
+    if len(monthly)<12:raise ValueError("ONS monthly table unavailable")
+    return sorted(monthly.items())
+
+def parse_statcan_services(raw,now):
+    """Exact Statistics Canada T003 services aggregate; no sum of subindustries."""
+    with ZipFile(io.BytesIO(raw)) as z:
+        names=[n for n in z.namelist() if n=="36100434.csv"]
+        if len(names)!=1:raise ValueError("StatCan GDP file identity changed")
+        if z.getinfo(names[0]).file_size>500_000_000:raise ValueError("oversized StatCan GDP archive")
+        with z.open(names[0]) as f:
+            rdr=csv.DictReader(io.TextIOWrapper(f,encoding="utf-8-sig"))
+            need={"REF_DATE","GEO","North American Industry Classification System (NAICS)",
+                  "Prices","Seasonal adjustment","VALUE"}
+            if not need.issubset(set(rdr.fieldnames or [])):
+                raise ValueError("StatCan GDP column identity changed")
+            rows={}
+            for row in rdr:
+                if row["GEO"]!="Canada" or row["North American Industry Classification System (NAICS)"]!="Services-producing industries [T003]":
+                    continue
+                if row["Prices"]!="Chained (2017) dollars" or row["Seasonal adjustment"]!="Seasonally adjusted at annual rates":
+                    continue
+                p=row["REF_DATE"]
+                if not re.fullmatch(r"\d{4}-\d{2}",p):raise ValueError("StatCan GDP period changed")
+                if period_end(p)>now:continue
+                try:val=float(row["VALUE"])
+                except (TypeError,ValueError):continue
+                if not math.isfinite(val) or val<=0:raise ValueError("invalid StatCan GDP value")
+                if p in rows:raise ValueError("duplicate services GDP aggregate")
+                rows[p]=val
+    if len(rows)<12:raise ValueError("StatCan services aggregate missing/incompatible")
+    return sorted(rows.items())
 
 def period(date_string, frequency):
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}",date_string):
@@ -237,13 +320,17 @@ def collect(now=None,fetcher=fetch):
         code=spec["ccy"]+"_"+spec["area"]
         url=FRED+spec["key"] if spec["method"]=="fred" else (
           STATCAN_CSV if spec["method"]=="statcan" else
+          ONS_URL if spec["method"]=="ons" else
+          STATCAN_GDP_ZIP if spec["method"]=="statcan_services" else
           "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?"
           "geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001_X_410014&s_adj=SCA&unit=I21&lang=EN")
         try:
-            raw=fetch_statcan(url) if spec["method"]=="statcan" and fetcher is fetch else fetcher(url)
+            raw=(fetch_statcan(url) if spec["method"]=="statcan" else fetch_issuer(url)) if spec["method"] in {"statcan","ons","statcan_services"} and fetcher is fetch else fetcher(url)
             observations=(parse_fred(raw,spec["key"],spec["frequency"],now)
                           if spec["method"]=="fred" else
-                          parse_statcan(raw,now) if spec["method"]=="statcan" else parse_eurostat(raw,now))
+                          parse_statcan(raw,now) if spec["method"]=="statcan" else
+                          parse_ons_services(raw,now) if spec["method"]=="ons" else
+                          parse_statcan_services(raw,now) if spec["method"]=="statcan_services" else parse_eurostat(raw,now))
             item,status=candidate(spec,observations,now)
             if item is not None:out["series"].append(item)
             out["audit"][code]={"...":None,**status,"source_page":spec["source_page"],
