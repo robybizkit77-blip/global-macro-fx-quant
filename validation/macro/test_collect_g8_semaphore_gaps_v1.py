@@ -73,6 +73,29 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(item["dates"],["2026-Q1","2026-Q2"])
         self.assertFalse("first_seen_at" in item)
 
+    def test_contiguous_history_preserves_latest_pair_and_single_vintage(self):
+        for freq,n,limit,end in (("M",50,36,(2026,9)),("Q",24,12,(2026,2))):
+            spec=next(s for s in mod.REGISTRY if s["method"]=="fred" and s["frequency"]==freq)
+            obs=mod.parse_fred(fixture(spec["key"],freq,end,n),spec["key"],freq,NOW)
+            item,status=mod.candidate(spec,obs,NOW)
+            h=item["history"]
+            self.assertEqual(h["observations"],limit)
+            self.assertEqual(h["source_series_id"],spec["key"])
+            self.assertEqual(h["dates"],[p for p,v in obs[-limit:]])
+            self.assertEqual(h["values"][-2:],item["values"])
+            self.assertEqual(h["dates"][-2:],item["dates"])
+            self.assertEqual(h["quality"],"SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT")
+            self.assertEqual(status["history_observations"],limit)
+            short=obs[:-5]+obs[-4:]
+            h=mod.contiguous_history(short,freq,NOW)
+            self.assertEqual(h["observations"],4)
+            with self.assertRaises(ValueError):
+                mod.contiguous_history(obs+[obs[-1]],freq,NOW)
+            with self.assertRaises(ValueError):
+                mod.contiguous_history(obs[:-2]+[obs[-1]],freq,NOW)
+            with self.assertRaises(ValueError):
+                mod.contiguous_history(obs[:-1]+[(obs[-1][0],float("nan"))],freq,NOW)
+
     def test_stale_official_feed_does_not_generate_signal(self):
         spec=next(s for s in mod.REGISTRY if s["ccy"]=="JPY" and s["area"]=="house")
         rows=mod.parse_fred(fixture(spec["key"],"Q",(2023,4)),spec["key"],"Q",NOW)
