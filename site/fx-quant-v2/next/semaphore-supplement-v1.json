@@ -1,8 +1,33 @@
 {
   "schema": "GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1",
   "as_of": "2026-11-24",
-  "source_count": 42,
+  "source_count": 43,
   "series": [
+    {
+      "ccy": "CHF",
+      "area": "credit",
+      "id": "SEM_G8_CHF_CREDIT",
+      "label": "Credito domestico utilizzato, totale prestiti (SNB; stock nominale)",
+      "frequency": "M",
+      "unit": "mln CHF nominali",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        1467969.0,
+        1474005.0
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Swiss National Bank / bakredinausbm",
+      "source_page": "https://data.snb.ch/en/topics/banken/cube/bakredinausbm",
+      "source_series_id": "SNB_BAKREDINAUSBM_AV1_I_T1_F",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
     {
       "ccy": "JPY",
       "area": "credit",
@@ -983,6 +1008,33 @@
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
+      "ccy": "NZD",
+      "area": "credit",
+      "id": "SEM_G8_NZD_CREDIT",
+      "label": "Crescita prestiti alle imprese NZ, corretta per rotture (RBNZ C5)",
+      "frequency": "M",
+      "unit": "% a/a",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        4.1,
+        5.3
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "RBNZ C5 · verifica manuale 2026-11-24 (download automatico bloccato)",
+      "source_page": "https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/registered-banks-and-non-bank-lending-institutions-sector-lending",
+      "source_series_id": "RBNZ_C5_BUSINESS_YOY",
+      "metric_kind": "points",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
+      "manual_verified_on": "2026-11-24",
+      "official_release_date": "2026-10-30"
+    },
+    {
       "ccy": "CAD",
       "area": "industry",
       "id": "SEM_G8_CAD_INDUSTRY",
@@ -1009,6 +1061,13 @@
     }
   ],
   "audit": {
+    "CHF_credit": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 55,
+      "source_page": "https://data.snb.ch/en/topics/banken/cube/bakredinausbm",
+      "origin": "Swiss National Bank / bakredinausbm"
+    },
     "JPY_credit": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
@@ -1292,10 +1351,11 @@
       "origin": "OECD tramite FRED"
     },
     "NZD_credit": {
-      "status": "WITHHELD_FETCH_OR_VALIDATION",
-      "reason": "HTTP Error 403: Forbidden",
-      "source_page": "https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/Registered-banks-and-non-bank-lending-institutions-sector-lending",
-      "origin": "Reserve Bank of New Zealand / C5"
+      "status": "READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+      "last_observation": "2026-09",
+      "verified_on": "2026-11-24",
+      "automatic_fetch": "BLOCKED_OR_UNVALIDATED",
+      "automatic_error": "HTTP Error 403: Forbidden"
     },
     "CAD_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
