@@ -42,6 +42,33 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Verify exact SNB investment loan rate and count from live issuer
+        if: github.event_name == 'pull_request'
+        run: |
+          python - <<'PY'
+          from datetime import datetime,timezone
+          from validation.estimated.refresh_chf_residual_proxies_v1 import fetch_new_loan_rates,parse_new_loan_rates,get_json,RATE_DIMENSIONS,RATE_URL,RATE_KEY
+          today=datetime.now(timezone.utc)
+          d,_=get_json(RATE_DIMENSIONS)
+          p,_=get_json(RATE_URL,{'dimSel':'D0(FI),D1(L16M),D2(MP0,AK)','fromDate':'2023-01','toDate':today.strftime('%Y-%m')})
+          x=parse_new_loan_rates(d,p,today)
+          assert x['series_id']==RATE_KEY and len(x['dates'])>=6
+          assert x['eligible_for_fx_core'] is False and x['eligible_for_backtest'] is False
+          import copy
+          bad=copy.deepcopy(d)
+          for dim in bad['dimensions']:
+              if dim['id']=='D2':
+                  for item in dim['dimensionItems']:
+                      if item['id']=='MP0':item['name']='Number of loan agreements'
+          try:
+              parse_new_loan_rates(bad,p,today)
+          except RuntimeError:
+              pass
+          else:
+              raise AssertionError('Wrong rate units accepted')
+          print('CHF_LOAN_RATE_LIVE_SOURCE_PASS',x['latest_observation'],x['values'][-1],x['contract_counts'][-1],len(x['dates']))
+          PY
+
       - name: Refresh CHF official residual proxies
         run: |
           set -euo pipefail
@@ -63,6 +90,11 @@ jobs:
               assert lane['official_canonical_untouched'] is True
               assert 'SNB official API' in lane['source']
               assert lane['timeseries_key']
+          rate=d['lanes']['CHF.credit'].get('lending_rate_proxy')
+          if rate is not None:
+              assert rate['eligible_for_fx_core'] is False and rate['eligible_for_backtest'] is False
+              assert rate['proxy_kind']=='loan_price_not_lending_standards'
+              assert rate['latest_observation']==rate['dates'][-1]
           assert d['lanes']['CHF.credit']['confidence']=='B/C'
           assert d['lanes']['CHF.sight_deposits']['confidence']=='C'
           gov=d['governance']
@@ -78,7 +110,7 @@ jobs:
           PY
 
       - name: Persist changed CHF proxies on main only
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.ref == 'refs/heads/main' && github.ref_name == 'main' && github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           changed="$(git diff --name-only -- live_data/sections/ESTIMATED_RESIDUAL_GAPS.json)"
