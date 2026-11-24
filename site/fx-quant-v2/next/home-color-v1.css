@@ -473,3 +473,33 @@
   font-size:11px;padding:8px 9px
  }
 }
+
+/* Home first-read: same canonical ranking, more prominent Forex interpretation. */
+.market-dashboard .home-fx-meaning{margin:16px 0 20px;padding:16px 20px;border-left:3px solid #69d8bf;border-radius:0 10px 10px 0;background:linear-gradient(100deg,#173a43,#12283a);color:#e0eef4}
+.market-dashboard .home-fx-meaning p{font-size:15px;line-height:1.65;margin:8px 0;max-width:100ch}
+.market-dashboard .home-fx-meaning a{font-size:12px;color:#8de5d4;font-weight:750}
+.home-fx-rank-strip{margin:24px 0 30px;min-width:0;color:#edf5fb}
+.home-fx-rank-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:13px}
+.home-fx-rank-head h2{font-size:clamp(22px,2.5vw,29px);margin:5px 0 0;color:#eef7fc;letter-spacing:-.025em}
+.home-fx-rank-head>small{font-size:11px;color:#adc5d6}
+.home-fx-rank-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.home-fx-rank-panel{padding:18px;border:1px solid #35556b;border-radius:13px;background:linear-gradient(145deg,#142f43,#102334);min-width:0}
+.home-fx-rank-panel h3{font-size:16px;color:#f0f7fc;margin:0 0 4px}
+.home-fx-rank-panel>p{font-size:12px;line-height:1.5;color:#acc5d6;margin:0 0 14px}
+.home-fx-rank-row{display:grid;grid-template-columns:22px 70px minmax(35px,1fr) minmax(65px,auto);align-items:center;gap:8px;border-top:1px solid #2c4659;padding:9px 0;font-size:12px}
+.home-fx-number{color:#9ab6c9;font-variant-numeric:tabular-nums;font-size:12px}
+.home-fx-rank-row>strong{white-space:nowrap;color:#ecf6fd;font-weight:750}
+.home-fx-bar{height:6px;border-radius:8px;background:#2a4054;overflow:hidden}
+.home-fx-bar i{display:block;height:100%;border-radius:8px;background:#8eb4d0}
+.home-fx-bar i.positive{background:#66d3a2}.home-fx-bar i.negative{background:#ef8392}
+.home-fx-label{font-size:11px;color:#b5cfe1;text-align:right;overflow-wrap:anywhere}
+.home-fx-label.positive{color:#8ae0b7}.home-fx-label.negative{color:#ff9eaa}
+.home-fx-pair-row{width:100%;display:grid;grid-template-columns:20px minmax(78px,.8fr) minmax(0,1fr) 10px;align-items:center;gap:8px;padding:11px 8px;border:0;border-top:1px solid #2c4659;background:transparent;color:#eef5fa;text-align:left;font-family:inherit;cursor:pointer}
+.home-fx-pair-row:hover,.home-fx-pair-row:focus-visible{background:#203e53;outline:2px solid #8acff2;outline-offset:-2px;border-radius:5px}
+.home-fx-pair-row strong{font-size:14px;display:block}
+.home-fx-pair-row small{display:block;font-size:10px;color:#b0c9da;line-height:1.5}
+.home-fx-pair-status{min-width:0;overflow-wrap:anywhere}
+.home-fx-rank-panel>a{display:inline-block;color:#8cdbeb;font-size:12px;font-weight:750;margin-top:13px}
+.home-fx-note{display:block;margin:8px 0;color:#b8cad7;font-size:11px}
+@media(max-width:850px){.home-fx-rank-grid{grid-template-columns:1fr}.home-fx-rank-panel{padding:14px}.home-fx-rank-head{align-items:flex-start;gap:5px}}
+@media(max-width:440px){.home-fx-rank-row{grid-template-columns:18px 60px minmax(20px,1fr) minmax(60px,auto);gap:5px}.home-fx-rank-panel{padding:12px}.home-fx-meaning{padding:13px}.home-fx-meaning p{font-size:13px}}
