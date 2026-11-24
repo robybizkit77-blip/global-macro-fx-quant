@@ -4,8 +4,8 @@
 No interpolated observations, no promotion to official OIS, no FX signal.
 Official tenor snapshots are historical published 3M/6M/12M points, which can
 still rotate futures contracts. Secondary quotes are single *listed contract*
-bars, with unresolved historical conflicts removed. NZD is a 1D/1W proxy with
-explicitly derived previous levels, not an observed time series.
+bars, with unresolved historical conflicts removed. NZD uses archived ASX
+bank-bill settlements and separately labeled derived prior references.
 """
 from __future__ import annotations
 import argparse
@@ -13,6 +13,7 @@ import json
 from collections import defaultdict
 from datetime import date, timedelta
 from pathlib import Path
+from archive_nzd_asx_proxy_v1 import ARCHIVE as NZD_ARCHIVE, validate as validate_nzd_capture
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAP = ROOT / "site/fx-quant-v2/ois-pricing-snapshot.json"
@@ -51,7 +52,7 @@ def prev_weekday(day: str) -> str:
 
 
 def build(snapshot: dict, archive: list[dict], quotes: list[dict],
-          conflicts: list[dict], nzd: dict) -> dict:
+          conflicts: list[dict], nzd: dict, nzd_archive: list[dict] | None = None) -> dict:
     today = snapshot["snapshot_built_from_repo_date"]
     if not good_day(today, today):
         raise ValueError("invalid source snapshot date")
@@ -117,6 +118,33 @@ def build(snapshot: dict, archive: list[dict], quotes: list[dict],
             continue
         secondary[(c, t)][day].append(row)
 
+    # Archived and current NZD source captures are independent observed levels.
+    # Conflicts are quarantined across all horizons by listed contract identity.
+    nzd_candidates = defaultdict(list)
+    nzd_contract_prices = defaultdict(set)
+    for record in (nzd_archive or []) + [{"schema": "GMFQ_NZD_ASX_PROXY_CAPTURE_V1",
+                                           "source_commit": "VALIDATED_COLLECTOR_RUNTIME", "feed": nzd}]:
+        try:
+            feed = validate_nzd_capture(record)["feed"]
+        except (ValueError, TypeError, KeyError):
+            continue
+        d = feed["as_of"]
+        if not good_day(d, today):
+            continue
+        for t, h in feed["horizons"].items():
+            identity = (d, h["expiry_label"], h["expiration"])
+            nzd_contract_prices[identity].add(h["settlement_price"])
+            nzd_candidates[(t, d)].append((identity, h["implied_bank_bill_rate"]))
+    nzd_conflicts = {key for key, prices in nzd_contract_prices.items() if len(prices) > 1}
+    nzd_observed = defaultdict(dict)
+    for (t, d), candidates in nzd_candidates.items():
+        identities = {x[0] for x in candidates}
+        if len(identities) != 1 or identities & nzd_conflicts:
+            continue
+        identity, value = candidates[0]
+        nzd_observed[t][d] = {"date": d, "rate": round(float(value), 6),
+                              "contract": identity[1], "expiration": identity[2],
+                              "source_class": "BANK_BILL_PROXY", "derived": False}
     # Current contract identities are NOT applied retrospectively to previous
     # instruments. Store contract in every point, break the graph at each roll.
     lines = {}
@@ -145,7 +173,7 @@ def build(snapshot: dict, archive: list[dict], quotes: list[dict],
                         "contract": item["contract"], "source_class": "SECONDARY_SAME_CONTRACT",
                         "derived": False, "captured_at_utc": item["first_seen_at_utc"]
                     })
-            else:  # NZD: current ASX proxy and two explicitly reconstructed references.
+            else:  # NZD: archive plus explicitly reconstructed reference levels.
                 points = []
                 source_h = (nzd.get("horizons") or {}).get(t) or {}
                 current = (row.get("horizons") or {}).get(t) or {}
@@ -156,19 +184,19 @@ def build(snapshot: dict, archive: list[dict], quotes: list[dict],
                         source_h.get("expiry_label") == current.get("contract") and
                         number(source_h.get("implied_bank_bill_rate")) and
                         abs(source_h["implied_bank_bill_rate"] - rate) < .00001):
-                    points.append({"date": d, "rate": round(float(rate), 6),
-                                   "contract": current.get("contract"),
-                                   "source_class": "BANK_BILL_PROXY",
-                                   "derived": False})
+                    # The current observed level is already in the validated capture set.
+                    # Do not reconstruct a reference over a conflicting or actual archived date.
                     day1 = prev_weekday(d)
-                    if number(source_h.get("change_1d_bp")):
+                    if (d in nzd_observed[t] and (t, day1) not in nzd_candidates
+                            and number(source_h.get("change_1d_bp"))):
                         points.append({"date": day1,
                                        "rate": round(float(rate - source_h["change_1d_bp"]/100), 6),
                                        "contract": current.get("contract"),
                                        "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
                                        "derived": True})
                     week = source_h.get("weekly_reference_trade_date")
-                    if (good_day(week, d) and week < d and
+                    if (d in nzd_observed[t] and (t, week) not in nzd_candidates
+                            and good_day(week, d) and week < d and
                             5 <= (date.fromisoformat(d) - date.fromisoformat(week)).days <= 10
                             and number(source_h.get("change_1w_bp"))):
                         points.append({"date": week,
@@ -176,6 +204,7 @@ def build(snapshot: dict, archive: list[dict], quotes: list[dict],
                                        "contract": current.get("contract"),
                                        "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
                                        "derived": True})
+                points.extend(nzd_observed[t].values())
             points.sort(key=lambda x: x["date"])
             tenors[t] = points
         lines[c] = {
@@ -196,11 +225,12 @@ def build(snapshot: dict, archive: list[dict], quotes: list[dict],
         "eligible_for_backtests_as_official_ois": False,
         "official_ois_created": False,
         "date_gaps_interpolated": False, "excluded_conflicted_contract_days": len(disputed),
+        "excluded_nzd_conflicted_contract_days": len(nzd_conflicts),
         "note": ("Archive quotes have source dates but may be collected later. Official "
                  "published 3M/6M/12M futures tenor series can rotate contracts. "
                  "Secondary rates always retain their listed contract identity; "
-                 "NZD past references are derived from ASX proxy deltas, "
-                 "not independent observations. No meeting probabilities or signals."),
+                 "NZD archived ASX bank-bill settlements are observed proxy levels; "
+                 "only explicitly marked delta references are reconstructed. No meeting probabilities or signals."),
         "currencies": lines
     }
 
@@ -213,7 +243,7 @@ def main() -> None:
     actual = build(
         json.loads(SNAP.read_text(encoding="utf-8")),
         read_jsonl(OFFICIAL), read_jsonl(QUOTES), read_jsonl(CONFLICTS),
-        json.loads(NZD.read_text(encoding="utf-8")))
+        json.loads(NZD.read_text(encoding="utf-8")), read_jsonl(NZD_ARCHIVE))
     if args.check:
         expected = json.loads(args.output.read_text(encoding="utf-8"))
         if expected != actual:
