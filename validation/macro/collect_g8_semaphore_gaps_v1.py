@@ -337,7 +337,7 @@ def parse_rba_aggregates(raw,now,which,release_url):
         for row in table:
             if len(row)<3:continue
             label=re.sub(r"[^A-Za-z ]","",row[0]).strip()
-            if label!=target:continue
+            if label!=target and not (target=="Business" and label.replace(" ","") in {"Businessa"}):continue
             try: first=float(row[1].replace(",",""));second=float(row[2].replace(",",""))
             except ValueError:continue
             if not all(math.isfinite(x) and -15<=x<=15 for x in (first,second)):
