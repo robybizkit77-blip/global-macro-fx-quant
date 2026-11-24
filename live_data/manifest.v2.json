@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "1147df9578949452f5c847a95b98f07e300866c0d0544eaf85710ff6a3ca2fb6",
-  "runtime_bytes": 2771254,
+  "runtime_sha256": "f2fecd0530a127aba3b5db231dae18a7ca53957601054d92ebd4a849f79dcc98",
+  "runtime_bytes": 2771248,
   "part_count": 16,
   "direct_section_count": 12,
   "derived_section_count": 2,
@@ -61,8 +61,8 @@
       "key": "OIS_DATA",
       "file": "OIS_DATA.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 14644,
-      "sha256": "186b0f557c9b327c1f1a6ab17351432ceb3e9506af48bf163eb0e85981acbb0b",
+      "bytes": 14638,
+      "sha256": "d49a020e2e21d7d18a66c899928cd635198e731bdc331fecb2e348c35bc6f8c0",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
@@ -92,7 +92,7 @@
       "file": "NATIVE_CB_DATA.json",
       "mode": "DIRECT_SINGLE_PART",
       "bytes": 12050,
-      "sha256": "5972115194702badb28492a9fd37b0aa5facdbb2e0e5308116e9f34efe7fc83b",
+      "sha256": "61cde38c8e11b3b9600444f042a1a9cf3614dd2cac872701e3df255b0d960b6f",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
