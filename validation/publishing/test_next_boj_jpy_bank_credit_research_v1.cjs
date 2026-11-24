@@ -77,3 +77,35 @@ console.log('BOJ_JPY_OFFICIAL_BANK_CREDIT_RESEARCH_PASS',JSON.stringify({
  newMonths:source.new_after_canonical,canonicalDate:canonical.last_date,
  fxCoreChanged:false,notNewLoans:true
 }));
+
+ // All four full-stock issuer histories reach the existing chart, not only
+ // the narrative. Historical native facts stay separate and immutable.
+ const sourceFiles={
+  USD:'us-h8-bank-credit-research-v1.js',
+  EUR:'eur-ecb-nfc-credit-research-v1.js',
+  JPY:'jpy-boj-bank-credit-research-v1.js',
+  CAD:'cad-official-credit-research-v1.js'
+ };
+ const before=JSON.stringify(native);
+ for(const [ccy,file] of Object.entries(sourceFiles)){
+  const issuer=require(path.join(root,'site/fx-quant-v2/next',file));
+  const plots=[];
+  const html=studio.render({...api(ccy),plot:arg=>{plots.push(arg);return '<svg></svg>';}});
+  const credit=plots.find(x=>x.label==='Credito · fonte ufficiale separata '+ccy);
+  assert(credit,'Missing issuer chart '+ccy);
+  assert.equal(credit.lines[0].values.at(-1).label,issuer.dates.at(-1));
+  assert.equal(credit.lines[0].values.at(-1).value,issuer.values.at(-1));
+  assert.match(html,/Credito · fonte ufficiale separata/);
+ }
+ assert.equal(JSON.stringify(native),before);
+ // Invalid future or nonnumeric observations must not produce an issuer chart.
+ const original=globalThis.FXQuantUSBanksCreditResearch;
+ try{
+  const bad=structuredClone(original);
+  bad.values[0]=null;
+  globalThis.FXQuantUSBanksCreditResearch=bad;
+  const plots=[];
+  studio.render({...api('USD'),plot:arg=>{plots.push(arg);return '<svg></svg>';}});
+  assert(!plots.some(x=>x.label==='Credito · fonte ufficiale separata USD'));
+ }finally{globalThis.FXQuantUSBanksCreditResearch=original;}
+ console.log('NEXT_VERIFIED_ISSUER_CREDIT_CHART_PASS',Object.keys(sourceFiles));

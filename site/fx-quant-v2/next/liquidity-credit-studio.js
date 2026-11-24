@@ -14,6 +14,20 @@
    .filter(x=>x.label&&finite(x.value)&&x.value>0);
   return rows.slice(-80);
  }
+ // Keep the approved research series distinct from the legacy native feed.
+ // Only use complete, finite, ordered, non-future observations; never splice
+ // two definitions or fabricate a continuous history.
+ function researchCreditSeries(x,label,unit,now){
+  if(!Array.isArray(x?.dates)||!Array.isArray(x?.values)||
+     x.dates.length<2||x.dates.length!==x.values.length)return null;
+  const today=observationDate(now);
+  if(!today||!x.dates.every((d,i)=>{
+   const period=observationDate(d);
+   return period&&period<=today&&(!i||d>x.dates[i-1])&&finite(x.values[i])&&x.values[i]>0;
+  }))return null;
+  return {label:label+' · '+unit,dates:x.dates.slice(),values:x.values.slice(),
+   last_date:x.dates.at(-1),last_value:x.values.at(-1),researchOnly:true};
+ }
  function direction(raw,exists){
   if(!exists)return {label:'NON DISPONIBILE',tone:'unknown'};
   const d=norm(raw);
@@ -163,7 +177,7 @@
   const creditHeading=move>0?'Lo stock dei prestiti cresce':move<0?'Lo stock dei prestiti scende':'Lo stock dei prestiti è stabile';
   const moveSigned=q=>(q>0?'+':q<0?'−':'')+fmt(Math.abs(q),2);
   const headline=movement(move,'I prestiti bancari sono aumentati','I prestiti bancari sono diminuiti','I prestiti bancari sono rimasti stabili');
-  return {headline,opening:inMonth(x.last_observation)+' il totale dei prestiti in essere è '+movement(move,'salito','sceso','rimasto stabile')+
+  return {creditSeries:researchCreditSeries(x,'BoJ MD11 · Credito bancario','100 milioni JPY',now),headline,opening:inMonth(x.last_observation)+' il totale dei prestiti in essere è '+movement(move,'salito','sceso','rimasto stabile')+
    ' rispetto al mese precedente. La continuità del movimento e le nuove erogazioni aiutano a capire se cambia la domanda interna.',
    html:'<section class="drivers-cad-official drivers-jpy-official" aria-label="BoJ credito bancario mensile fonte ufficiale separata">'+
    '<span class="mini-overline">BANK OF JAPAN · CREDITO BANCARIO DI FINE MESE</span>'+
@@ -372,7 +386,7 @@
   const opening=inMonth(lastDate)+' i prestiti in essere sono '+movement(pct,'saliti','scesi','rimasti stabili')+
    ' rispetto alla rilevazione precedente.'+(partialRecovery?
     ' Nel complesso dei due mesi il saldo resta in calo.':' La domanda di finanziamenti aiuta a capire se il movimento può durare.');
-  return {headline,opening,
+  return {creditSeries:researchCreditSeries(x,'BCE BSI · Prestiti imprese','milioni EUR',now),headline,opening,
    html:'<section class="drivers-cad-official drivers-eur-official" aria-label="Fonte ufficiale BCE separata">'+
    '<span class="mini-overline">BCE / ESCB · SERIE UFFICIALE SEPARATA</span>'+
    '<h3>Prestiti alle imprese dell’Eurozona '+(pct===0?'invariati':state)+'</h3>'+
@@ -408,7 +422,7 @@
   const headline=movement(diff,'Il credito bancario è aumentato','Il credito bancario è diminuito','Il credito bancario è rimasto stabile');
   const opening='Al '+dated(lastDate)+' il totale era '+movement(diff,'in aumento','in calo','stabile')+
    ' rispetto alla rilevazione precedente. Il totale comprende prestiti e titoli detenuti dalle banche. Per capire se cambia la spesa, contano soprattutto i finanziamenti a famiglie e imprese.';
-  return {headline,opening,
+  return {creditSeries:researchCreditSeries(x,'Fed H.8 · Credito bancario totale','miliardi USD',now),headline,opening,
    html:'<section class="drivers-cad-official drivers-us-official" aria-label="Ricerca Fed H.8 separata">'+
    '<span class="mini-overline">FONTE FED H.8 / FRED · SERIE SEPARATA</span>'+
    '<h3>Lo stock del credito bancario '+direction+'</h3>'+
@@ -467,7 +481,7 @@
   const headline=movement(delta,'I prestiti alle imprese sono aumentati','I prestiti alle imprese sono diminuiti','I prestiti alle imprese sono rimasti stabili');
   const opening=inMonth(latest)+' il totale dei prestiti in essere alle imprese è '+movement(delta,'salito','sceso','rimasto stabile')+
    ' rispetto alla rilevazione precedente. La domanda di nuovi prestiti aiuta a capire se stanno cambiando i piani di investimento delle aziende.';
-  return {headline,opening,
+  return {creditSeries:researchCreditSeries(x,'BoC V122667770 · Prestiti imprese','milioni CAD',now),headline,opening,
    html:'<section class="drivers-cad-official" aria-label="Fonte ufficiale canadese separata">'+
    '<span class="mini-overline">BANK OF CANADA · PRESTITI ALLE IMPRESE</span>'+
    '<h3>Prestiti alle imprese '+move+'</h3>'+
@@ -711,10 +725,10 @@
    facts+sourceStatus+
    '<p>Registro delle fonti al '+esc(provenance?.as_of||'dato non verificato')+' · Copertura '+esc(covered)+'/3 serie · Contratti mappati '+esc(provenance?.verifiedContracts??'n.d.')+'/3.</p>'+
    '<ul>'+roles.map(role=>{const g=policyGate(role);return '<li><strong>'+esc(({liquidity:'Liquidità',credit:'Credito',conditions:'Standard e condizioni'})[role])+'</strong>: '+esc(g?.label||'provenienza non verificata')+'. '+esc(g?.narrative||'Verificare il registro fonti.')+'</li>'}).join('')+'</ul>'+
-   '<p>Copertura storica e date riferite alle rispettive serie. Frequenze, definizioni e unità possono differire.'+
+   '<p>Copertura storica e date riferite alle rispettive serie. Se disponibile, il grafico del credito usa la fonte ufficiale separata più recente, senza modificare il feed storico. Frequenze, definizioni e unità possono differire.'+
    (row?.current_note?' '+esc(row.current_note):'')+'</p></details></section>'+
    (selected==='CHF'?'':'<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
-   '<div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità','#69d5ad')+chart(row?.credit,'Credito','#95c6e9')+'</div>'+
+   '<div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità','#69d5ad')+chart(official?.creditSeries||row?.credit,official?.creditSeries?'Credito · fonte ufficiale separata':'Credito','#95c6e9')+'</div>'+
    '<p class="drivers-source-note">I grafici conservano i livelli originali nelle rispettive unità; non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>');
  }
  const api={series,direction,interpret,observationDate,sourceEvidence,creditMarket,marketFirstRead,render};
