@@ -344,16 +344,22 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
  const measure=x=>{
   if(!x)return '<span class="sem-missing">Serie assente oppure periodi non confrontabili</span>';
   const scaled=x.metric.scale?x.current/x.metric.scale:x.current;
+  const prior=x.metric.scale?x.previous/x.metric.scale:x.previous;
   const digits=x.metric.scale?2:x.kind==='points'?2:Math.abs(scaled)>=100?0:1;
-  const reading=x.metric.hideValue?'variazione della serie':fmt(scaled,digits)+' '+esc(x.metric.unit||'unità della fonte');
+  const unit=esc(x.metric.unit||'unità della fonte');
   const diff=x.kind==='points'?d(x.diff,' '+(x.metric.pointUnit||'punti')):d(x.pct,'%');
+  const tone=x.verdict===null?'neutral':x.verdict>0?'green':x.verdict<0?'red':'amber';
   const diffusion=x.metric.diffusionThreshold===50?
    '<span class="sem-psi-regime">'+(x.current>50?'Livello: espansione (PSI sopra 50)':x.current<50?'Livello: contrazione (PSI sotto 50)':'Livello: soglia neutrale 50')+
    ' · Direzione: '+(x.verdict===null?'non classificabile':x.diff>.2?'indice in accelerazione':x.diff<-.2?'indice in rallentamento':'indice stabile')+
    '</span>':'';
-  return '<div class="sem-measure"><div><strong>'+esc(x.metric.name)+'</strong> <span>'+reading+
-   '</span> <b>'+diff+'</b></div><small>Periodo '+esc(x.period)+' (precedente '+esc(x.prior)+') · '+
-   esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small>'+diffusion+  (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
+  const value=(v,p,label)=>'<div class="sem-value"><small>'+label+' · '+esc(p)+'</small><strong>'+fmt(v,digits)+'</strong><span>'+unit+'</span></div>';
+  return '<div class="sem-measure '+tone+'"><div class="sem-measure-title"><strong>'+esc(x.metric.name)+'</strong></div>'+
+   '<div class="sem-value-grid'+(x.metric.hideValue?' sem-value-hidden':'')+'">'+
+   (x.metric.hideValue?'<div class="sem-value"><small>Confronto</small><strong class="sem-period-pair">'+esc(x.prior)+' → '+esc(x.period)+'</strong></div>':value(scaled,x.period,'Attuale')+value(prior,x.prior,'Precedente'))+
+   '<div class="sem-value sem-change"><small>Variazione</small><strong class="'+tone+'">'+esc(diff)+'</strong><span>'+({green:'Favorevole',red:'Sfavorevole',amber:'Quasi stabile',neutral:'Non classificabile'}[tone])+'</span></div></div>'+
+   '<small class="sem-source-note">'+esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small>'+diffusion+
+   (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
  };
  const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
  const svcPrices=servicePriceContext?recentTwo(servicePriceContext,today):null;
@@ -375,6 +381,17 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     (item.current>50?' · PSI sopra 50: espansione':item.current<50?' · PSI sotto 50: contrazione':' · PSI a 50: soglia neutrale'):'';
   return '<div class="sem-sector-compare-item"><strong>'+esc(label)+'</strong><span class="'+tone+'">'+esc(wording)+
    '</span><small>'+esc(item?.period||'senza periodo valido')+esc(level)+'</small></div>';
+ };
+ const readingFor=r=>{
+   if(r.signal.tone==='neutral')return 'Le osservazioni disponibili non consentono un giudizio direzionale affidabile.';
+   const active=(r.signalSource==='original'?r.items:r.items.slice(0,1)).filter(x=>x&&x.verdict!==null);
+   if(!active.length)return 'Nessun confronto valido.';
+   const clauses=active.map(x=>{
+     const m=x.kind==='points'?x.diff:x.pct;
+     return x.metric.name+': '+(m>0?'aumenta':m<0?'diminuisce':'resta invariato')+(m!==0?' ('+d(m,x.kind==='points'?' '+(x.metric.pointUnit||'punti'):'%')+')':'');
+   });
+   const judgment={green:'Segnale di miglioramento rispetto alle osservazioni precedenti.',red:'Segnale di deterioramento rispetto alle osservazioni precedenti.',amber:'Il quadro è misto o le variazioni sono contenute.'}[r.signal.tone];
+   return clauses.join('; ')+'. '+judgment;
  };
  const bank={USD:'Fed',EUR:'BCE',GBP:'BoE',JPY:'BoJ',CHF:'SNB',AUD:'RBA',NZD:'RBNZ',CAD:'BoC'}[selected];
  const tones={green:'Migliora',red:'Peggiora',amber:'Stabile / misto',neutral:'Non classificabile'};
@@ -407,9 +424,9 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<div class="sem-country-caption"><div>'+FLAGS[selected]+' <strong>'+esc(NAMES[selected])+'</strong><small>Dettaglio per indicatore</small></div><div class="sem-country-counts">'+['green','amber','red','neutral'].map(t=>'<span class="sem-country-count '+t+'" title="'+tones[t]+'">'+symbols[t]+' '+tally(rows,t)+'</span>').join('')+'</div></div>'+
   '<div class="sem-table" role="table" aria-label="Semaforo economico '+esc(NAMES[selected])+'">'+
   '<div class="sem-columns" role="row"><span role="columnheader">Area</span><span role="columnheader">Ultima evidenza disponibile</span><span role="columnheader">Segnale</span></div>'+
-  rows.map(r=>'<div class="sem-row" role="row"><div role="cell" class="sem-area"><strong>'+esc(r.name)+'</strong><small>'+esc(r.why)+'</small></div>'+
-    '<div class="sem-evidence" role="cell">'+(r.items.length?r.items.map(measure).join(''):'<span class="sem-missing">Nessuna serie idonea nel feed attuale</span>')+(r.key==='services'?svcPriceNote:'')+'</div>'+
-    '<div class="sem-signal" role="cell"><span class="sem-pill '+r.signal.tone+'"><i aria-hidden="true"></i>'+esc(r.signal.label)+'</span>'+
+  rows.map(r=>'<div class="sem-row '+r.signal.tone+'" role="row"><div role="cell" class="sem-area"><strong>'+esc(r.name)+'</strong><span class="sem-area-reading">'+esc(tones[r.signal.tone])+'</span><small>'+esc(r.why)+'</small></div>'+
+    '<div class="sem-evidence" role="cell"><div class="sem-area-judgment"><span>Cosa sta cambiando</span><p>'+esc(readingFor(r))+'</p></div>'+(r.items.length?(r.signalSource==='fallback'?measure(r.items[0])+'<details class="sem-history"><summary>Altre serie di contesto ('+(r.items.length-1)+')</summary>'+r.items.slice(1).map(measure).join('')+'</details>':r.items.map(measure).join('')):'<span class="sem-missing">Nessuna serie idonea nel feed attuale</span>')+(r.key==='services'?svcPriceNote:'')+'</div>'+
+    '<div class="sem-signal" role="cell"><span class="sem-pill '+r.signal.tone+'"><i aria-hidden="true"></i>'+esc(tones[r.signal.tone])+'</span>'+
     (r.items.length===1?'<small>Un solo indicatore</small>':'')+
     (r.signalSource==='fallback'?'<small>Segnale da fonte supplementare aggiornata; serie precedenti nel dettaglio</small>':'')+
     (r.proxy?'<small>Proxy/sondaggio, non misura esaustiva del ciclo</small>':'')+
