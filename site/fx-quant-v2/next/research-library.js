@@ -178,8 +178,8 @@ function render(){
  return '<header class="rl-head"><h1>Research Library</h1>'+
   '<p>Briefing feriale e ultima edizione pubblicata per ogni categoria.</p></header>'+
   '<p id="library-loading" class="rl-loading" role="status"'+(view.loading?'':' hidden')+'>Verifica delle edizioni pubblicate in corso…</p>'+
-  '<div id="library-summary">'+summaryView()+'</div>'+
   '<div id="library-featured"'+(view.featured?'':' hidden')+'>'+view.featured+'</div>'+
+  '<div id="library-summary">'+summaryView()+'</div>'+
   '<section class="rl-controls" aria-label="Filtri e ricerca"><div id="library-filterbar" class="rl-filters">'+filters()+'</div>'+
   '<label class="rl-search" for="library-search"><span>Cerca fra gli ultimi report</span><input id="library-search" type="search" autocomplete="off" placeholder="Es. OIS, COT, Fed, macro..." value="'+esc(query)+'"></label></section>'+
   '<section id="library-weekly" aria-labelledby="library-weekly-title"'+(view.hideWeekly?' hidden':'')+'>'+
