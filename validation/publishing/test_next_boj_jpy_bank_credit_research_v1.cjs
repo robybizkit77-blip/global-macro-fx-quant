@@ -109,3 +109,22 @@ console.log('BOJ_JPY_OFFICIAL_BANK_CREDIT_RESEARCH_PASS',JSON.stringify({
   assert(!plots.some(x=>x.label==='Credito · fonte ufficiale separata USD'));
  }finally{globalThis.FXQuantUSBanksCreditResearch=original;}
  console.log('NEXT_VERIFIED_ISSUER_CREDIT_CHART_PASS',Object.keys(sourceFiles));
+
+ // The already-collected official alternative reserve series must reach the
+ // JPY dossier; it is not a replacement for the original vintage.
+ const residual=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json'),'utf8'));
+ const reserve=residual.lanes['JPY.reserve_balances'];
+ const withReserve=(ccy,data=residual)=>studio.render({...api(ccy),get:k=>k==='liquidity'?native:k==='residualResearch'?data:null});
+ const japan=withReserve('JPY');
+ assert.match(japan,/BANK OF JAPAN · RISERVE DI FINE MESE/);
+ assert(japan.includes(reserve.proxy_as_of));
+ assert(japan.includes(fmt(reserve.proxy_value/10,2)+' miliardi JPY'));
+ assert.match(japan,/equivalenza con la vintage storica non certificata/);
+ assert.match(japan,/DLCLAEDBLTTO/,'Credit reading must remain available alongside reserves');
+ assert(!withReserve('USD').includes('BANK OF JAPAN · RISERVE DI FINE MESE'));
+ for(const mutate of [x=>{x.source_endpoint='https://example.com';},x=>{x.proxy_as_of='2099-01';},x=>{x.continuity_anchor.matched=false;}]){
+  const bad=structuredClone(residual);mutate(bad.lanes['JPY.reserve_balances']);
+  assert(!withReserve('JPY',bad).includes('BANK OF JAPAN · RISERVE DI FINE MESE'));
+ }
+ assert.equal(JSON.stringify(native),before);
+ console.log('NEXT_JPY_RESERVE_READING_PASS',reserve.proxy_as_of,reserve.proxy_value);
