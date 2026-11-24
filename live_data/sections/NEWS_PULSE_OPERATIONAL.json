@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-24",
-  "generated_at_utc": "2026-11-24T19:34:50.039266Z",
+  "generated_at_utc": "2026-11-24T21:18:33.353152Z",
   "items": [
     {
       "as_of": "2026-11-24",
@@ -222,7 +222,7 @@
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
     }
   ],
-  "last_checked_at_utc": "2026-11-24T19:34:50.039266Z",
+  "last_checked_at_utc": "2026-11-24T21:18:33.353152Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -515,6 +515,61 @@
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
           "market_direction": "NOT_DETERMINED",
           "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "REVIEW",
+          "topic": "CB_COMMUNICATION",
+          "verify_next": "Esaminare il testo integrale; identificare eventuali novità rispetto alla posizione precedente e verificare la reazione del mercato.",
+          "why_watch": "Intervento di una banca centrale: il solo titolo non permette di classificare il tono hawkish o dovish."
+        },
+        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/11/bank-of-canada-media-interview-the-logic/",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-24T15:00:24Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 2.93,
+            "date": "2026-11-23",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-23",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-23",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.21
+          }
+        },
+        "source": "Bank of Canada",
+        "source_id": "BOC_PRESS",
+        "title": "Bank of Canada Media Interview – The Logic",
+        "url": "https://www.bankofcanada.ca/2026/11/bank-of-canada-media-interview-the-logic/"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "CAD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
           "operational_relevance": "CONTEXT",
           "topic": "INSTITUTIONAL",
           "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
@@ -605,19 +660,19 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "CAD",
+        "ccy": "NZD",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
           "market_direction": "NOT_DETERMINED",
           "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "REVIEW",
-          "topic": "CB_COMMUNICATION",
-          "verify_next": "Esaminare il testo integrale; identificare eventuali novità rispetto alla posizione precedente e verificare la reazione del mercato.",
-          "why_watch": "Intervento di una banca centrale: il solo titolo non permette di classificare il tono hawkish o dovish."
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
         },
-        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/11/speech-tiff-macklem-governor-bank-canada-2026-11-24/",
+        "id": "RBNZ_NEWS:https://www.rbnz.govt.nz/news-and-events/news/2026/11/payments-system-modernisation-crucial-for-global-connection",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-24T12:40:55Z",
+        "published_at_utc": "2026-11-24T11:00:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
         "reaction_evidence": {
           "causal_attribution": "NOT_ESTABLISHED",
@@ -628,14 +683,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.93,
-            "date": "2026-11-23",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-            "status": "DAILY_CONTEXT_ONLY"
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -644,19 +692,19 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-23",
+            "date": "2026-10-16",
             "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
+            "quality": "FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-23",
+            "source": "Reserve Bank of New Zealand · B2 government bond closing yields · 2026-10-16 · reviewed public table",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.21
+            "yield_2y_pct": 3.89
           }
         },
-        "source": "Bank of Canada",
-        "source_id": "BOC_PRESS",
-        "title": "Speech by Tiff Macklem, Governor of the Bank of Canada",
-        "url": "https://www.bankofcanada.ca/2026/11/speech-tiff-macklem-governor-bank-canada-2026-11-24/"
+        "source": "Reserve Bank of New Zealand",
+        "source_id": "RBNZ_NEWS",
+        "title": "Payments system modernisation crucial for global connection",
+        "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/payments-system-modernisation-crucial-for-global-connection"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -1054,54 +1102,6 @@
         "source_id": "EIA_ENERGY",
         "title": "Oil flows through Middle East chokepoints increased in the third quarter",
         "url": "https://www.eia.gov/todayinenergy/detail.php?id="
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "NZD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "RBNZ_NEWS:https://www.rbnz.govt.nz/news-and-events/news/2026/11/rbnz-governor-outlines-inflation-outlook-amid-uneven-recovery",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-18T11:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-16",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Reserve Bank of New Zealand · B2 government bond closing yields · 2026-10-16 · reviewed public table",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.89
-          }
-        },
-        "source": "Reserve Bank of New Zealand",
-        "source_id": "RBNZ_NEWS",
-        "title": "RBNZ Governor outlines inflation outlook amid uneven recovery",
-        "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/rbnz-governor-outlines-inflation-outlook-amid-uneven-recovery"
       }
     ],
     "last_attempt_day_rome": "2026-11-24",
@@ -1189,9 +1189,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 3,
+        "accepted_items": 4,
         "ccy": "NZD",
-        "entries_rejected": 47,
+        "entries_rejected": 46,
         "feed_entries_seen": 50,
         "feed_url": "https://www.rbnz.govt.nz/feeds/news",
         "source": "Reserve Bank of New Zealand",
