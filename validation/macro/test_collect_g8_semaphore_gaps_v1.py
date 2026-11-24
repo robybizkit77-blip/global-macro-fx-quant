@@ -28,7 +28,7 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(len(mod.REGISTRY),42)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),42)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit","statcan_detail","boj_credit","rbnz_credit"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","eurostat_house_price","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit","statcan_detail","boj_credit","rbnz_credit"} for s in mod.REGISTRY))
 
     def test_wave3_exact_id_frequency_and_direction(self):
         expected={"GBP_leading":"GBRLOLITOAASTSAM","JPY_jobs":"LRUNTTTTJPM156S","JPY_industry":"JPNPRMNTO01GPSAM","JPY_demand":"SLRTTO01JPQ657S","CHF_house":"QCHR368BIS","CHF_industry":"PRMNTO01CHQ657S","CHF_demand":"SLRTTO01CHQ657S","AUD_jobs":"LRUNTTTTAUM156S","AUD_leading":"AUSLOLITOAASTSAM","NZD_demand":"SLRTTO01NZQ657S"}
@@ -155,6 +155,26 @@ class G8SemaphoreSources(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"selector changed"):
                 mod.parse_euro_extra(json.dumps(payload).encode(),NOW,method)
         self.assertTrue(mod.euro_extra_url("eurostat_industry").startswith("https://ec.europa.eu/eurostat/"))
+
+    def test_eurostat_house_price_quarterly_exact_annual_rate(self):
+        method="eurostat_house_price"
+        dataset, selectors=mod.EUROSTAT_EXTRA[method]
+        self.assertEqual(dataset,"prc_hpi_q")
+        self.assertEqual(selectors,{"freq":"Q","geo":"EA21","purchase":"TOTAL","unit":"RCH_A"})
+        times=[f"{y}-Q{q}" for y in range(2020,2027) for q in range(1,5)]
+        ids=list(selectors)+["time"]
+        dims={k:{"category":{"index":{v:0}}} for k,v in selectors.items()}
+        dims["time"]={"category":{"index":{t:i for i,t in enumerate(times)}}}
+        payload={"class":"dataset","id":ids,"size":[1]*len(selectors)+[len(times)],
+                 "dimension":dims,"value":{str(i):i/10 for i in range(len(times))}}
+        obs=mod.parse_euro_extra(json.dumps(payload).encode(),NOW,method)
+        self.assertEqual(obs[-1][0],"2026-Q3")
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="EUR" and x["area"]=="house")
+        self.assertEqual(spec["kind"],"points")
+        self.assertEqual(spec["frequency"],"Q")
+        dims["unit"]["category"]["index"]={"I15_Q":0}
+        with self.assertRaisesRegex(ValueError,"selector changed"):
+            mod.parse_euro_extra(json.dumps(payload).encode(),NOW,method)
 
     def test_new_fred_registry_has_no_implicit_sign_error(self):
         expected={"house":"PERMIT","industry":"INDPRO","leading":"UMCSENT",
