@@ -161,20 +161,23 @@ def parse(content,*,today=None):
 class CCSRows(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
-        self.tables=[];self.table=None;self.row=None;self.cell=None
+        self.tables=[];self.stack=[]
     def handle_starttag(self,tag,attrs):
-        if tag=="table":self.table=[]
-        if tag=="tr" and self.table is not None:self.row=[]
-        if tag in ("td","th") and self.row is not None:self.cell=[]
+        if tag=="table":self.stack.append({"rows":[],"row":None,"cell":None})
+        if not self.stack:return
+        t=self.stack[-1]
+        if tag=="tr":t["row"]=[]
+        if tag in ("td","th") and t["row"] is not None:t["cell"]=[]
     def handle_data(self,data):
-        if self.cell is not None:self.cell.append(data)
+        if self.stack and self.stack[-1]["cell"] is not None:self.stack[-1]["cell"].append(data)
     def handle_endtag(self,tag):
-        if tag in ("td","th") and self.cell is not None and self.row is not None:
-            self.row.append(" ".join(" ".join(self.cell).split()));self.cell=None
-        if tag=="tr" and self.row is not None and self.table is not None:
-            self.table.append(self.row);self.row=None
-        if tag=="table" and self.table is not None:
-            self.tables.append(self.table);self.table=None
+        if not self.stack:return
+        t=self.stack[-1]
+        if tag in ("td","th") and t["cell"] is not None and t["row"] is not None:
+            t["row"].append(" ".join("".join(t["cell"]).split()));t["cell"]=None
+        if tag=="tr" and t["row"] is not None:
+            t["rows"].append(t["row"]);t["row"]=None
+        if tag=="table":self.tables.append(self.stack.pop()["rows"])
 
 def ccs_fetch(url):
     req=urllib.request.Request(url,headers={"User-Agent":"FXQuant-Official-Macro-Research/1.0","Accept":"text/html"})
@@ -186,7 +189,7 @@ def ccs_fetch(url):
 
 def ccs_latest_url(index,today):
     candidates=set(re.findall(r"/credit-conditions-survey/(20[0-9]{2})/20[0-9]{2}-q([1-4])(?=[\"'/?#<])",index,re.I))
-    valid=[(int(y),int(q)) for y,q in candidates if (int(y),int(q))<=(today.year,(today.month-1)//3+1)]
+    valid=[(int(y),int(q)) for y,q in candidates if (int(y),int(q))<(today.year,(today.month-1)//3+1)]
     require(bool(valid),"official CCS links missing")
     year,q=max(valid)
     return f"{CCS_ROOT}{year}/{year}-q{q}"
@@ -212,7 +215,7 @@ def parse_ccs(html,url,*,today):
                 if actual is not None:
                     matches.append((table,j,candidate[actual+1:]))
                     break
-    require(len(matches)==1,"CCS corporate actual row absent or ambiguous: "+str([r[:3] for t in parser.tables for r in t if "corporate sector" in " ".join(r).lower()][:8])[:700])
+    require(len(matches)==1,"CCS corporate actual row absent or ambiguous at "+url+" tables="+str(len(parser.tables))+" bytes="+str(len(html))+": "+str([r[:3] for t in parser.tables for r in t if "corporate sector" in " ".join(r).lower()][:8])[:700])
     table,i,values=matches[0]
     require(4<=len(values)<=12,"CCS unexpected observation columns")
     require(i+1<len(table) and any(v.strip().lower()=="next three months" for v in table[i+1]),"CCS forecast separation not verified")
