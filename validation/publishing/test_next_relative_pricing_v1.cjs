@@ -47,8 +47,22 @@ if(withJPY.live)assert.equal(withJPY.live.relativeBp,
 const proxy=read({...inputs,ccy:'NZD',other:'JPY'});
 if(proxy.live)assert.equal(proxy.live.relativeBp,
  Math.round((proxy.live.aBp-proxy.live.bBp)*100)/100);
-assert.equal(proxy.observations.length,0,
- 'NZD reconstructed prior levels cannot be treated as two independent observations');
+const nzPoints=globalThis.FXQuantPricingHistory.country(history,'NZD',60).tenors['6m'];
+const jpPoints=globalThis.FXQuantPricingHistory.country(history,'JPY',60).tenors['6m'];
+for(const x of proxy.observations){
+ const a=nzPoints.find(p=>p.date===x.from),b=nzPoints.find(p=>p.date===x.to);
+ const c=jpPoints.find(p=>p.date===x.from),d=jpPoints.find(p=>p.date===x.to);
+ assert(a&&b&&c&&d&&!a.derived&&!b.derived&&!c.derived&&!d.derived,
+  'Relative history requires four actually observed endpoints');
+ assert.equal(a.contract,b.contract,'NZD comparison cannot cross contracts');
+ assert.equal(x.aBp,Math.round((b.rate-a.rate)*10000)/100);
+}
+assert.equal(historicalIntervals(
+ {tenors:{'6m':[{date:'2026-11-19',rate:3.8,contract:'Jun 2027',source_class:'BANK_BILL_PROXY_DELTA_REFERENCE',derived:true},
+ {date:'2026-11-20',rate:3.72,contract:'Jun 2027',source_class:'BANK_BILL_PROXY',derived:false}]}},
+ {tenors:{'6m':[{date:'2026-11-19',rate:1.6,source_class:'OFFICIAL_TENOR',derived:false},
+ {date:'2026-11-20',rate:1.62,source_class:'OFFICIAL_TENOR',derived:false}]}}
+ ).length,0,'Derived endpoints must still be rejected');
 const week=read({...inputs,ccy:'EUR',other:'GBP',window:'1w'});
 if(week.live)assert.equal(week.live.relativeBp,
  Math.round((week.live.aBp-week.live.bBp)*100)/100);
@@ -81,7 +95,8 @@ assert(future.includes('data-rr6-status="NOT_ALIGNED"'),
 const invalid=read({...inputs,ccy:'EUR',other:'EUR'});
 assert.equal(invalid,null,'Same-currency relative spread is meaningless');
 const page=get(base+'index.html'),studio=get(base+'rates-studio.js');
-assert(page.indexOf('rates-pricing-history-v1.js?v=1')<
+assert(page.indexOf('rates-pricing-history-v1.js?v=3')>=0&&
+ page.indexOf('rates-pricing-history-v1.js?v=3')<
  page.indexOf('rates-relative-pricing-v1.js?v=1')&&
  page.indexOf('rates-relative-pricing-v1.js?v=1')<
  page.indexOf('rates-studio.js?v='),
