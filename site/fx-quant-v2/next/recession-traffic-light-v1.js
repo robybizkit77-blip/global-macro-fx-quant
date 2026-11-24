@@ -269,6 +269,86 @@ function recentTwo(series,today){
  if(a.length<2)return null;
  return {cur:a.at(-1),pre:a.at(-2)};
 }
+// Phase 1: descriptive economic-cycle research, isolated from the legacy
+// direction semaphore and all currency scoring. Regime meanings are source-specific.
+const REAL_ACTIVITY_LEVELS=new Set([
+ 'US_INDPRO_history_value','INDPRO','US_PCEC96_history_value','PCEC96','US_RRSFS_history_value',
+ 'EA_IP_history_value','STS_INPR_M_EA21_PRD_B-D_SCA_I21','EA_RETAIL_VOL_history_value','STS_TRTU_M_EA21_VOL_SLS_G47_SCA_I21',
+ 'UK_PRODUCTION_history_value','ONS_K222_DIOP','ONS_S2KU_IOS1','UK_RETAIL_VOL_history_value',
+ 'JP_IIP_history_value','CH_PRODUCTION_history_value','CH_RETAIL_REAL_history_value',
+ 'NZ_RETAIL_VOLUME_Q_history_value','CA_RETAIL_VOLUME_history_value','CAN_RETAIL_REAL_LASPEYRES',
+ '36100434_SERVICES_T003','JPNRGDPPRI'
+]);
+const REAL_ACTIVITY_GROWTH=new Set([
+ 'JPNPRMNTO01GPSAM','SLRTTO01JPQ657S','PRMNTO01CHQ657S','SLRTTO01CHQ657S',
+ 'SLRTTO01NZQ657S','PRMNTO01AUQ657S','PRMNTO01NZQ657S'
+]);
+function cycleMetric(metric,source,today,frequency,stale=false){
+ const empty={phase:null,level:null,direction:null,acceleration:null,persistence:null,
+   basis:null,observations:0,historySufficient:false,quality:'INSUFFICIENT',scope:'INDICATOR_NOT_ECONOMY'};
+ if(stale||!source||!Array.isArray(source.dates)||!Array.isArray(source.values)||
+    source.dates.length!==source.values.length)return empty;
+ const freq=String(frequency||'').toUpperCase();
+ const months=freq==='M'?1:freq==='Q'?3:0;
+ const records=new Map();
+ source.dates.forEach((period,i)=>{
+   const date=parsePeriod(period),value=source.values[i];
+   if(!date||date>today||!finite(value))return;
+   const y=Number(date.slice(0,4)),m=Number(date.slice(5,7));
+   const key=months?y*12+Math.floor((m-1)/months)*months:Date.parse(date)/864e5;
+   const prev=records.get(key);
+   if(!prev||date>=prev.date)records.set(key,{key,date,value});
+ });
+ const all=[...records.values()].sort((a,b)=>a.key-b.key);
+ const contiguous=(a,b)=>months?b.key-a.key===months:freq==='W'&&b.key-a.key>=5&&b.key-a.key<=9;
+ const tail=[];
+ for(let i=all.length-1;i>=0;i--){
+   if(tail.length&&!contiguous(all[i],tail[0]))break;
+   tail.unshift(all[i]);
+ }
+ const n=tail.length,id=source.source_series_id||metric.id;
+ const result={...empty,observations:n};
+ if(n<2)return result;
+ const direction=(x,epsilon)=>Math.abs(x)<epsilon||x===0?0:Math.sign(x);
+ const phaseOf=(level,dir)=>level===0||dir===0?null:level>0?(dir>0?'expansion':'slowdown'):(dir>0?'recovery':'contraction');
+ let values=[],basis=null,threshold=metric.minimum??.15,levelThreshold=null;
+ if(metric.diffusionThreshold===50){
+   values=tail.map(x=>x.value);basis='DIFFUSION_50';levelThreshold=50;
+ }else if(REAL_ACTIVITY_GROWTH.has(id)){
+   values=tail.map(x=>x.value);basis='REAL_ACTIVITY_REPORTED_GROWTH';levelThreshold=0;
+ }else if(REAL_ACTIVITY_LEVELS.has(id)&&months){
+   const lag=12/months;
+   // Require exact same-frequency consecutive history; no interpolation,
+   // no comparing a monthly series with quarterly or a different source.
+   values=tail.slice(lag).map((x,i)=>tail[i].value>0&&x.value>0?100*(x.value/tail[i].value-1):null);
+   basis='REAL_ACTIVITY_YOY_GROWTH';levelThreshold=0;threshold=.2;
+ }else{
+   // Nominal spending, credit stocks, prices, employment levels and generic
+   // surveys do not establish an activity expansion/contraction threshold.
+   values=tail.map(x=>x.value);
+   basis=metric.kind==='points'?'DESCRIPTIVE_POINTS':'DESCRIPTIVE_PERCENT';
+ }
+ const structural=levelThreshold!==null;
+ const signedMove=(a,b)=>{
+   if(!finite(a)||!finite(b))return null;
+   if(structural||metric.kind==='points')return (b-a)*(metric.upGood===false?-1:1);
+   return a>0?100*(b/a-1)*(metric.upGood===false?-1:1):null;
+ };
+ const moves=values.slice(1).map((x,i)=>signedMove(values[i],x));
+ const last=moves.at(-1),prior=moves.at(-2);
+ const dir=finite(last)?direction(last,threshold):null;
+ let persistence=null;
+ if(dir!==null&&dir!==0){
+   persistence=0;
+   for(let i=moves.length-1;i>=0&&finite(moves[i])&&direction(moves[i],threshold)===dir;i--)persistence++;
+ }
+ const levelValue=values.at(-1);
+ const level=structural&&finite(levelValue)?Math.sign(levelValue-levelThreshold):null;
+ return {...result,phase:level!==null&&dir!==null?phaseOf(level,dir):null,level,levelValue:finite(levelValue)?levelValue:null,
+   direction:dir,move:finite(last)?last:null,acceleration:finite(last)&&finite(prior)?direction(last-prior,threshold):null,
+   persistence,basis,historySufficient:values.filter(finite).length>=3,quality:dir===null?'INSUFFICIENT':'DESCRIPTIVE_UNCALIBRATED',
+   threshold,scope:'INDICATOR_NOT_ECONOMY'};
+}
 function inspect(metric,source,today){
  const pair=recentTwo(source,today);
  if(!pair)return null;
@@ -285,7 +365,8 @@ function inspect(metric,source,today){
    gap>(freq==='Q'?200:freq==='W'?25:78);
  const verdict=invalid||stale||!finite(move)?null:Math.abs(move)<threshold?0:Math.sign(move)*(metric.upGood?1:-1);
  return {metric,period:pair.cur.period,prior:pair.pre.period,date:pair.cur.date,source:source.source_file||'MACRO_SERIES',
-  current:c,previous:p,diff,pct,kind,verdict,stale,invalid,age:Math.round(age),freq};
+  current:c,previous:p,diff,pct,kind,verdict,stale,invalid,age:Math.round(age),freq,
+  cycle:cycleMetric(metric,source,today,freq,stale||invalid)};
 }
 function classify(items,needed){
  if(!needed)return {tone:'neutral',label:'Non classificabile',coverage:0};
@@ -353,12 +434,20 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    '<span class="sem-psi-regime">'+(x.current>50?'Livello: espansione (PSI sopra 50)':x.current<50?'Livello: contrazione (PSI sotto 50)':'Livello: soglia neutrale 50')+
    ' · Direzione: '+(x.verdict===null?'non classificabile':x.diff>.2?'indice in accelerazione':x.diff<-.2?'indice in rallentamento':'indice stabile')+
    '</span>':'';
+  const cycle=x.cycle;
+  const cycleLabel=cycle?.phase?{expansion:'Espansione',slowdown:'Rallentamento',contraction:'Contrazione',recovery:'Recupero'}[cycle.phase]:null;
+  const cycleText=cycle?.direction!==null&&cycle?.direction!==undefined?
+    '<small class="sem-source-note"><strong>Lettura ciclica · </strong>'+esc(cycleLabel||(cycle.level===null?'Solo direzione, livello non determinato':cycle.level===0?'Livello sulla soglia':cycle.direction===0?'Livello '+(cycle.level>0?'sopra':'sotto')+' soglia, momentum stabile':'Livello determinato'))+
+    (cycle.basis==='REAL_ACTIVITY_YOY_GROWTH'?' · crescita a/a '+d(cycle.levelValue,'%'):cycle.basis==='REAL_ACTIVITY_REPORTED_GROWTH'?' · crescita reale della serie':cycle.basis==='DIFFUSION_50'?' · soglia 50':' · variazione descrittiva')+
+    (cycle.persistence>1?' · '+cycle.persistence+' confronti consecutivi nella stessa direzione':cycle.persistence===1?' · un solo confronto nella direzione attuale':'')+
+    (cycle.acceleration!==null?' · '+({1:'momentum in aumento',0:'momentum stabile','-1':'momentum in diminuzione'}[cycle.acceleration]):'')+
+    '</small>':'';
   const value=(v,p,label)=>'<div class="sem-value"><small>'+label+' · '+esc(p)+'</small><strong>'+fmt(v,digits)+'</strong><span>'+unit+'</span></div>';
   return '<div class="sem-measure '+tone+'"><div class="sem-measure-title"><strong>'+esc(x.metric.name)+'</strong></div>'+
    '<div class="sem-value-grid'+(x.metric.hideValue?' sem-value-hidden':'')+'">'+
    (x.metric.hideValue?'<div class="sem-value"><small>Confronto</small><strong class="sem-period-pair">'+esc(x.prior)+' → '+esc(x.period)+'</strong></div>':value(scaled,x.period,'Attuale')+value(prior,x.prior,'Precedente'))+
    '<div class="sem-value sem-change"><small>Variazione</small><strong class="'+tone+'">'+esc(diff)+'</strong><span>'+({green:'Favorevole',red:'Sfavorevole',amber:'Quasi stabile',neutral:'Non classificabile'}[tone])+'</span></div></div>'+
-   '<small class="sem-source-note">'+esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small>'+diffusion+
+   '<small class="sem-source-note">'+esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small>'+diffusion+cycleText+
    (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
  };
  const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
@@ -435,6 +524,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<p>'+bank+' e aspettative sui tassi possono amplificare o attenuare le pressioni cicliche: non sono però un indicatore diretto di recessione né una prova di movimento del cambio.</p></div>'+
   '<a href="#rates">Apri tassi & OIS ↗</a></div>'+
   '<details class="sem-method"><summary>Metodo, soglie e fonti</summary><p class="sem-foot">Metodo: ogni indicatore confronta le sue ultime due osservazioni disponibili; verde indica miglioramento direzionale, rosso peggioramento, giallo quadro misto o quasi invariato, azzurro dati mancanti, troppo vecchi, non consecutivi o non sufficientemente allineati. '+
+  'Lettura ciclica sperimentale per singolo indicatore: soglia 50 per indici di diffusione, zero per crescita reale e crescita a/a per livelli reali con storia consecutiva; gli altri indicatori descrivono solo direzione. Nessun segnale ciclico aggregato o calibrazione storica. '+
   'Le soglie descrittive evitano piccoli movimenti: ±0,15% per i livelli e soglie in punti esplicite per tassi, sondaggi e indicatori compositi. Le osservazioni oltre la soglia di anzianità sono visibili ma non producono semafori direzionali. '+
   (hasStale?'Sono presenti osservazioni datate: non interpretare i colori come fotografia intraday. ':'')+
   (hasManual?'Sono presenti rilevazioni ufficiali verificate manualmente: la data del dato è esplicita e i segnali scadono se non vengono aggiornati. ':'')+
@@ -442,6 +532,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
