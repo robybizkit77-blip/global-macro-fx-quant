@@ -40,7 +40,7 @@
     seen.add(p.date);return true;
    }).sort((a,b)=>a.date.localeCompare(b.date));
   }
-  return {ccy:c,kind:r.kind,quality:r.quality,source:r.source,tenors:ts,fixedContract20d:r.fixed_contract_20d,
+  return {ccy:c,kind:r.kind,quality:r.quality,source:r.source,tenors:ts,fixedContract20d:r.fixed_contract_20d,estimatedRollMomentum:r.estimated_roll_momentum,
    observedDates:new Set(TENORS.flatMap(t=>ts[t].filter(p=>!p.derived).map(p=>p.date))).size,
    derivedReferences:TENORS.flatMap(t=>ts[t].filter(p=>p.derived)).length};
  }
@@ -171,6 +171,22 @@
       basis:'Contratto attuale '+last.contract+' · prima '+ref.t.toUpperCase()+' (non 6M costante)',derived:false};
     }
    }
+   // Research estimate only: one overlapping source date, not synchronous
+   // settlement and not a constant maturity curve observation.
+   const roll=r.estimatedRollMomentum?.[String(days)];
+   if(r.ccy==='USD'&&r.kind==='FUTURES SECONDARI'&&[5,20].includes(days)&&a&&
+      a.contract!==last.contract&&roll?.basis==='ESTIMATED_SINGLE_ROLL_SAME_SOURCE_NOT_SYNCHRONIZED'&&
+      roll.official_ois_created===false&&roll.fx_engine_effect==='NONE'&&
+      roll.from===from&&roll.to===to&&dateOK(roll.roll_date)&&roll.roll_date>from&&roll.roll_date<to&&
+      roll.old_contract===a.contract&&roll.new_contract===last.contract&&
+      roll.start_rate===a.rate&&roll.end_rate===last.rate&&
+      [roll.old_roll_rate,roll.new_roll_rate,roll.old_move_bp,roll.new_move_bp,roll.change_bp,roll.capture_gap_hours].every(num)&&
+      roll.capture_gap_hours>=0&&roll.capture_gap_hours<=24&&
+      Math.abs((roll.old_roll_rate-a.rate)*100-roll.old_move_bp)<.011&&
+      Math.abs((last.rate-roll.new_roll_rate)*100-roll.new_move_bp)<.011&&
+      Math.abs(roll.old_move_bp+roll.new_move_bp-roll.change_bp)<.011){
+    return {days,from,to,bp:roll.change_bp,basis:'STIMA rollover · '+roll.old_contract+' → '+roll.new_contract+' · '+roll.roll_date+' · rilevazioni non simultanee',derived:true};
+   }
    // For a 20-weekday official representative tenor only, allow a single
    // earlier weekday reference as a clearly labeled approximate interval.
    // Never fill a missing daily/weekly observation, roll or disputed quote.
@@ -226,7 +242,7 @@
    '<h3>Chi sta repricing? 1 / 5 / 20 giorni feriali</h3>'+
    '<div style="overflow-x:auto"><table class="rates-universe-table"><thead><tr><th>Valuta / fonte</th><th>Ultimo 6M</th>'+
    '<th>1 giorno</th><th>5 giorni</th><th>20 giorni</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-   '<small>Variazioni in punti base rispetto alla data iniziale indicata, non conteggi di sedute di borsa: festività e dati mancanti possono lasciare vuoti. Solo per OIS e futures ufficiali, se manca il riferimento 20D, è ammesso il riferimento precedente di un giorno feriale, marcato 21 giorni; non viene stimato un prezzo. OIS, tenori futures rappresentativi (rollover possibile), contratti secondari e proxy non sono equivalenti. Le variazioni del contratto oggi associato al 6M, già archiviato sotto un altro tenore, sono indicate separatamente: non sono variazioni di un 6M a scadenza costante. Nessuna interpolazione, nessun ranking FX.</small></div>';
+   '<small>Variazioni in punti base rispetto alla data iniziale indicata, non conteggi di sedute di borsa: festività e dati mancanti possono lasciare vuoti. Solo per OIS e futures ufficiali, se manca il riferimento 20D, è ammesso il riferimento precedente di un giorno feriale, marcato 21 giorni; non viene stimato un prezzo. OIS, tenori futures rappresentativi (rollover possibile), contratti secondari e proxy non sono equivalenti. Le variazioni del contratto oggi associato al 6M, già archiviato sotto un altro tenore, sono indicate separatamente: non sono variazioni di un 6M a scadenza costante. USD: la stima rollover somma i movimenti dei due contratti su una data di raccordo osservata, ma non certificata come simultanea. Nessuna interpolazione, nessun ranking FX.</small></div>';
  }
  function sparkline(row){
   const pts=row?.tenors?.['6m']||[];
