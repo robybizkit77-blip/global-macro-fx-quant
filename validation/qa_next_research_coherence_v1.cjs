@@ -301,5 +301,18 @@ for(const ccy of cbFx){
  assert.match(html,/Cosa seguire/);
  assert.doesNotMatch(html,/undefined|NaN/);
 }
+
+const riskView=require('../site/fx-quant-v2/next/risk-evidence-reading.js');
+const riskDate=Object.values(initial.risk.streams).map(x=>x.date).filter(Boolean).sort().at(-1);
+const riskAlignedView=riskView.read(initial.risk.streams,riskDate);
+const riskLatestView=riskView.latestObservations(initial.risk.streams,riskDate);
+assert.equal(riskLatestView.length,5);
+const riskOverviewHtml=riskView.renderFirstRead(initial.risk.streams,riskDate,riskAlignedView);
+assert.equal((riskOverviewHtml.match(/class="risk-first-latest-item /g)||[]).length,5);
+assert.match(riskOverviewHtml,/Date diverse: non sono una conferma simultanea/);
+if(riskAlignedView.ready)assert.equal((riskOverviewHtml.match(/class="risk-first-common-item /g)||[]).length,5);
+assert(riskView.latestObservations({},riskDate).every(x=>!x.ok));
+assert(riskView.latestObservations(initial.risk.streams,'2099-01-01').every(x=>!x.ok));
+assert(riskView.latestObservations(initial.risk.streams,'2000-01-01').every(x=>!x.ok));
 require('./publishing/test_next_home_thesis_recalc_v1.cjs');
 console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
