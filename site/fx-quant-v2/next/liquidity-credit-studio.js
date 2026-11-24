@@ -421,6 +421,30 @@
    '<p>Saldo '+esc(fmt(s.last_value/1000,2))+' miliardi EUR · rispetto al '+esc(previousDate)+' '+esc(signed(delta))+(week!==null?' · rispetto al '+esc(s.dates[weekIndex])+' '+esc(signed(week)):'')+'. Misura le riserve in eccesso nel sistema bancario, non i nuovi prestiti o i flussi verso EUR.</p>'+
    '<div class="drivers-cad-source"><span>'+esc(s.last_date)+' · '+(age>10?'periodo storico':'osservazione datata')+' · fonte ufficiale ILM · vintage iniziale non certificata</span><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">BCE · Data Portal ↗</a></div></section>'};
  }
+ function eurBLSResearch(esc,fmt,now){
+  const parent=root.FXQuantEURNFCCreditResearch,x=parent?.lending_conditions;
+  if(parent?.schema!=='GMFQ_NEXT_EUR_ECB_NFC_CREDIT_RESEARCH_V1'||parent.publisher!=='European Central Bank / ESCB'||
+     x?.series_id!=='BLS.Q.U2.ALL.O.E.Z.B3.ST.S.WFNET'||x.frequency!=='Q'||x.unit!=='net_percentage_balance'||
+     x.positive_means!=='tightening'||x.reference_period_is_previous_quarter!==true||
+     x.first_release_pit_verified!==false||x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     x.source_url!=='https://data.ecb.europa.eu/data/datasets/BLS/BLS.Q.U2.ALL.O.E.Z.B3.ST.S.WFNET'||
+     !Array.isArray(x.dates)||x.dates.length<4||x.latest_observation!==x.dates.at(-1)||
+     !Array.isArray(x.publication_quarters)||x.publication_quarters.length!==x.dates.length)return null;
+  const serial=d=>/^20[0-9]{2}-Q[1-4]$/.test(d)?Number(d.slice(0,4))*4+Number(d.at(-1)):NaN;
+  const current=serial(now.slice(0,4)+'-Q'+Math.ceil(Number(now.slice(5,7))/3));
+  if(!x.dates.every((d,i)=>serial(x.publication_quarters[i])===serial(d)+1&&
+     serial(x.publication_quarters[i])<=current&&(!i||serial(d)-serial(x.dates[i-1])===1)))return null;
+  const s=researchCreditSeries(x,'BCE BLS · Standard credito imprese','saldo netto, punti',now,true);
+  if(!s||!s.values.every(v=>Math.abs(v)<=100))return null;
+  const latest=s.last_value,prior=s.values.at(-2),delta=latest-prior;
+  const signed=v=>(v>0?'+':'')+fmt(v,1);
+  const state=latest>0?'più restrittivi':latest<0?'meno restrittivi':'invariati';
+  const pace=Math.abs(delta)<1?'La variazione del saldo è contenuta.':delta>0?'Il saldo si è spostato verso una maggiore restrizione.':'Il saldo si è spostato verso un minore irrigidimento.';
+  const opening='Nel '+s.last_date+' gli standard bancari per le imprese sono diventati '+state+'. '+pace;
+  return {opening,conditionsSeries:s,html:'<section class="drivers-cad-official" aria-label="Bank Lending Survey BCE"><span class="mini-overline">BCE · BANK LENDING SURVEY</span><h3>'+esc(opening)+'</h3>'+
+   '<p>Saldo netto '+esc(signed(latest))+' punti, precedente '+esc(signed(prior))+'; variazione '+esc(signed(delta))+' punti. Positivo = prevalgono le banche che irrigidiscono gli standard; negativo = prevale l’allentamento. Non misura volume o domanda dei prestiti.</p>'+
+   '<div class="drivers-cad-source"><span>Periodo osservato '+esc(s.last_date)+' · trimestre di pubblicazione '+esc(x.publication_quarters.at(-1))+'</span><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">BCE · BLS ↗</a></div></section>'};
+ }
  function eurECBLoanResearch(esc,fmt,now){
   const x=root.FXQuantEURNFCCreditResearch;
   if(!x||x.schema!=='GMFQ_NEXT_EUR_ECB_NFC_CREDIT_RESEARCH_V1'||
@@ -907,10 +931,11 @@
    return {...credit,liquiditySeries:money.liquiditySeries,opening:credit.opening+' '+money.opening,html:credit.html+money.html};
   };
   const eurReading=()=>{
-   const credit=eurECBLoanResearch(esc,fmt,today),liquidity=eurExcessLiquidityResearch(esc,fmt,today);
-   if(!credit)return liquidity;
-   if(!liquidity)return credit;
-   return {...credit,liquiditySeries:liquidity.liquiditySeries,opening:credit.opening+' '+liquidity.opening,html:credit.html+liquidity.html};
+   const credit=eurECBLoanResearch(esc,fmt,today),liquidity=eurExcessLiquidityResearch(esc,fmt,today),survey=eurBLSResearch(esc,fmt,today);
+   const available=[credit,liquidity,survey].filter(Boolean);
+   if(!available.length)return null;
+   return {...available[0],liquiditySeries:liquidity?.liquiditySeries,conditionsSeries:survey?.conditionsSeries,
+    opening:available.map(x=>x.opening).join(' '),html:available.map(x=>x.html).join('')};
   };
   const cadReading=()=>{
    const credit=cadIssuerResearch(esc,fmt,today),liquidity=cadLynxResearch(esc,fmt,today),conditions=cadSLOSResearch(esc,fmt,today);
