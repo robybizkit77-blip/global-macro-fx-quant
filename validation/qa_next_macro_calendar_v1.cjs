@@ -10,7 +10,7 @@ const css=read('site/fx-quant-v2/next/calendar-operational-reading.css');
 new vm.Script(lib,{filename:'calendar-operational-reading.js'});
 new vm.Script(app,{filename:'app.js'});
 const {parse,render,toRome,verifiedValue,watchlistAgenda}=require('../site/fx-quant-v2/next/calendar-operational-reading.js');
-assert.match(html,/calendar-operational-reading\.js\?v=7/);
+assert.match(html,/calendar-operational-reading\.js\?v=8/);
 assert.match(html,/calendar-operational-reading\.css\?v=4/);
 assert.match(app,/calendar:'\.\.\/\.\.\/\.\.\/live_data\/sections\/CALENDAR_OPERATIONAL_VIEW\.json'/);
 assert.match(app,/FXQuantMacroCalendar\?\.render\?\.\(calendarFeed,dayNow\(\),Date\.now\(\),n\)/);

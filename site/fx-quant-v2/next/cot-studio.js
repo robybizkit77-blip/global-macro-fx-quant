@@ -254,6 +254,26 @@
       return '<section class="cot-glossary"><div class="cot-analysis-head"><div><span class="chapter-kicker">06 / METODO & DEFINIZIONI</span><h2>Ogni numero ha <em>un significato preciso.</em></h2></div><p>Le definizioni non sono nascoste: sono parte del processo di ricerca.</p></div>'
         +'<div class="cot-definitions">'+terms.map(([title,body])=>'<details><summary>'+esc(title)+'<span>＋</span></summary><p>'+esc(body)+'</p></details>').join('')+'</div></section>';
     }
+    // Read-only first glance: preserve the stock / gross position / normalized flow distinction.
+    function flowOverview(d){
+      const valid=d.all.every(x=>finite(x.dLong)&&finite(x.dShort)&&finite(x.delta1)&&finite(x.net)&&
+       Math.abs(x.dLong-x.dShort-x.delta1)<1.1);
+      if(!valid)return '';
+      const order=d.comparable?[...d.all].sort((a,b)=>b.velocity-a.velocity):d.all;
+      const stock=x=>x.net>0?'Net long':x.net<0?'Net short':'Net neutro';
+      const position=(n,shortSide)=>n>0?(shortSide?'Short in aumento':'Long in aumento'):n<0?(shortSide?'Short in riduzione':'Long in riduzione'):'Invariato';
+      const axis=(label,n,shortSide)=>'<span class="cot-flow-axis '+(n===0?'flat':(shortSide?-n:n)>0?'up':'down')+'"><small>'+label+'</small><strong>'+esc(sign(n,0))+'</strong><small>'+position(n,shortSide)+'</small></span>';
+      return '<section class="cot-flow-overview" aria-label="Composizione settimanale delle posizioni G8"><div class="cot-analysis-head"><div><span class="chapter-kicker">G8 / COMPOSIZIONE 1W</span><h3>Chi aumenta i long e chi riduce gli short?</h3></div><p>'+esc(d.comparable?'Ordine per variazione netta / OI stimato.':'Ordine G8: OI non confrontabile.')+'</p></div>'+
+       '<div class="cot-flow-grid">'+order.map(x=>{
+        const story=root.FXQuantCOTDeskV26?.reading?.(x);
+        const tone=x.delta1>0?'up':x.delta1<0?'down':'flat';
+        return '<button type="button" class="cot-flow-row '+tone+'" data-ccy="'+esc(x.ccy)+'" aria-label="Apri COT '+esc(x.ccy)+'">'+
+         '<span class="cot-flow-name"><strong>'+esc(FLAGS[x.ccy]+' '+x.ccy)+'</strong><small>'+stock(x)+'</small><b>'+esc(sign(x.net,0))+'</b></span>'+
+         axis('Δ Long',x.dLong,false)+axis('Δ Short',x.dShort,true)+
+         '<span class="cot-flow-net '+tone+'"><small>Δ Net / OI*</small><strong>'+esc(finite(x.velocity)?sign(x.velocity,2,'%'):'—')+'</strong><small>Net '+esc(sign(x.delta1,0))+'</small></span>'+
+         '<span class="cot-flow-story"><strong>'+esc(story?.flow||'Composizione da verificare')+'</strong><small>'+esc(story?.speed||'Ritmo da verificare')+'</small></span></button>';
+       }).join('')+'</div><p class="cot-flow-note">Le variazioni di long e short sono differenze tra stock aggregati CFTC, non ordini o identità dei singoli operatori. Verde indica contributo positivo al netto, rosso negativo. * OI stimato, non dato certificato separatamente. Il ritmo confronta la settimana con la media 4W inclusa la settimana corrente. Clicca una valuta per approfondire.</p></section>';
+    }
     function deskOverview(all){
       const d=root.FXQuantCOTDeskV26?.desk?.(all);
       if(!d)return '<section class="cot-desk-overview"><h2>Cosa vedo davvero nel G8</h2><p>La sintesi G8 non è disponibile: servono otto Net CFTC con stessa data e 104 osservazioni precedenti verificate. Le schede di ciascuna valuta rimangono consultabili con qualità esplicita.</p></section>';
@@ -294,7 +314,7 @@
        +'<h3 class="cot-desk-headline">'+esc(d.headline)+'</h3>'
        +'<p class="cot-desk-narrative">'+esc(d.summary)+'</p>'
        +'<div class="cot-desk-cards">'+top+pressure+overcrowd+mismatch+'</div>'
-       +'<p class="cot-desk-monitor"><strong>Il giudizio del desk.</strong> '+esc(d.question)+'</p>'
+       +'<p class="cot-desk-monitor"><strong>Il giudizio del desk.</strong> '+esc(d.question)+'</p>'+flowOverview(d)
        +'<details class="cot-desk-breakdown"><summary>COT vs prezzo · tutte le 8 valute · stesso martedì</summary>'
        +'<div class="table-wrap"><table class="data-table cot-table cot-compare-table"><thead><tr><th>Valuta</th><th>Δ Net/OI*</th><th>Δ Net 1W</th><th>Prezzo BCE 1W</th><th>Lettura</th></tr></thead><tbody>'
        +cross+'</tbody></table></div>'
