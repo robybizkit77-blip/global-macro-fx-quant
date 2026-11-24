@@ -93,7 +93,8 @@ for(const c of ccys){
  const html=page(c);
  const lead=html.split('<div class="drivers-bank-story">')[1].split('<div class="drivers-links">')[0];
  assert.match(lead,/Cosa seguire/);
- assert.doesNotMatch(lead,/%|punti base|\bOIS\b|\b6M\b|\bWANT\b|\bCAN\b/);
+ assert.doesNotMatch(lead,/%|punti base|\bOIS\b|\b6M\b/);
+ assert.match(lead,/01 · WANT/);assert.match(lead,/02 · CAN/);assert.match(lead,/03 · PRICING/);
  assert.match(html,/WANT · COSA COMUNICA/);
  assert.match(html,/CAN · MARGINE DI MANOVRA/);
  assert.match(html,/COSA PREZZA IL MERCATO/);
