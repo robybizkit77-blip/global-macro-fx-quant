@@ -412,6 +412,16 @@ class G8SemaphoreSources(unittest.TestCase):
         with self.assertRaises(ValueError):mod.parse_nzd_credit_proxy(html.replace(b"in August",b"in July"),date(2026,11,24))
         with self.assertRaises(ValueError):mod.parse_nzd_credit_proxy(html,date(2026,8,31))
 
+    def test_statsnz_archive_discovery_only_exact_official_release(self):
+        page=mod.statsnz_house_url(date(2026,11,24),2)
+        raw=b'''<a href="/assets/Uploads/Building-consents-issued/Building-consents-issued-September-2026/Download-data/Building-consents-issued-September-2026.zip">CSV</a>
+        <a href="https://external.example/building-consents-issued-september-2026.zip">external</a>
+        <a href="//stats.govt.nz/assets/building-consents-issued-august-2026.zip">old</a>
+        <a href="/assets/Building-consents-issued-september-2026.xlsx">XLSX</a>
+        <a href="https://stats.govt.nz.evil.example/building-consents-issued-september-2026.zip">wrong host</a>'''
+        self.assertEqual(mod.statsnz_archive_links(raw,page,date(2026,11,24),2),
+            ["https://www.stats.govt.nz/assets/Uploads/Building-consents-issued/Building-consents-issued-September-2026/Download-data/Building-consents-issued-September-2026.zip"])
+
     def test_statsnz_zip_exact_series(self):
         bio=io.BytesIO()
         with ZipFile(bio,"w") as z:
