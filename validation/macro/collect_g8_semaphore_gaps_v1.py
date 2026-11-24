@@ -666,7 +666,7 @@ def parse_boj_credit(raw,now):
         if not name or not unit:raise ValueError("BOJ credit identity/units changed")
         out={}
         for row in tab:
-            if len(row)!=len(header) or not re.fullmatch(r"\\d{4}/(?:0[1-9]|1[0-2])",row[0]):continue
+            if len(row)!=len(header) or not re.fullmatch(r"\d{4}/(?:0[1-9]|1[0-2])",row[0]):continue
             p=row[0].replace("/","-")
             if period_end(p)>now or row[col] in {"ND","-",""}:continue
             v=float(row[col])
@@ -686,13 +686,13 @@ def parse_rbnz_credit(raw,now):
     for tab in parser.tables:
         header=None;in_growth=False
         for row in tab:
-            found=[re.fullmatch(r"([A-Za-z]{3,9}) (20\\d{2})",c) for c in row]
+            found=[re.fullmatch(r"([A-Za-z]{3,9}) (20\d{2})",c) for c in row]
             if sum(bool(x) for x in found)>=5:
                 header=[(i,f"{m[2]}-{months[m[1][:3].lower()]:02d}") for i,m in enumerate(found)
                         if m and m[1][:3].lower() in months]
             if row and row[0].startswith("Annual growth rate (%)"):in_growth=True;continue
             if not in_growth or not header or not row:continue
-            if not re.fullmatch(r"Business(?:\\s*[\\[\\]{}()^0-9]+)*",row[0]):continue
+            if not re.fullmatch(r"Business(?:\s*[\[\]{}()^0-9]+)*",row[0]):continue
             out={}
             for i,p in header:
                 if i>=len(row):raise ValueError("RBNZ C5 header alignment changed")
