@@ -1,8 +1,283 @@
 {
   "schema": "GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1",
   "as_of": "2026-11-24",
-  "source_count": 31,
+  "source_count": 42,
   "series": [
+    {
+      "ccy": "JPY",
+      "area": "credit",
+      "id": "SEM_G8_JPY_CREDIT",
+      "label": "Crescita prestiti e sconti delle banche maggiori e regionali (BoJ)",
+      "frequency": "M",
+      "unit": "% a/a",
+      "dates": [
+        "2026-09",
+        "2026-10"
+      ],
+      "values": [
+        5.7,
+        5.6
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Bank of Japan / MD13'FAAPOBAL1@",
+      "source_page": "https://www.stat-search.boj.or.jp/ssi/mtshtml/md13_m_1_en.html",
+      "source_series_id": "BOJ_MD13_FAAPOBAL1_YOY",
+      "metric_kind": "points",
+      "observation_as_of": "2026-10",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "GBP",
+      "area": "leading",
+      "id": "SEM_G8_GBP_LEADING",
+      "label": "OECD CLI Regno Unito (indicatore anticipatore)",
+      "frequency": "M",
+      "unit": "indice SA",
+      "dates": [
+        "2026-09",
+        "2026-10"
+      ],
+      "values": [
+        101.3567506599,
+        101.426274359
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/GBRLOLITOAASTSAM",
+      "source_series_id": "GBRLOLITOAASTSAM",
+      "metric_kind": "points",
+      "observation_as_of": "2026-10",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "JPY",
+      "area": "jobs",
+      "id": "SEM_G8_JPY_JOBS",
+      "label": "Tasso disoccupazione Giappone 15+ SA",
+      "frequency": "M",
+      "unit": "% SA",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        2.5,
+        2.4
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/LRUNTTTTJPM156S",
+      "source_series_id": "LRUNTTTTJPM156S",
+      "metric_kind": "points",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "up_good": false,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "JPY",
+      "area": "industry",
+      "id": "SEM_G8_JPY_INDUSTRY",
+      "label": "Crescita produzione manifatturiera Giappone (SA)",
+      "frequency": "M",
+      "unit": "% m/m SA",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        -2.4880382775,
+        2.2571148184
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/JPNPRMNTO01GPSAM",
+      "source_series_id": "JPNPRMNTO01GPSAM",
+      "metric_kind": "points",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "JPY",
+      "area": "demand",
+      "id": "SEM_G8_JPY_DEMAND",
+      "label": "Crescita volumi retail Giappone SA",
+      "frequency": "Q",
+      "unit": "% q/q SA",
+      "dates": [
+        "2026-Q1",
+        "2026-Q2"
+      ],
+      "values": [
+        1.84220005098379,
+        1.1435733229811
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/SLRTTO01JPQ657S",
+      "source_series_id": "SLRTTO01JPQ657S",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q2",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "CHF",
+      "area": "house",
+      "id": "SEM_G8_CHF_HOUSE",
+      "label": "Prezzi immobiliari residenziali reali (variazione annua; proxy immobiliare)",
+      "frequency": "Q",
+      "unit": "% a/a",
+      "dates": [
+        "2026-Q1",
+        "2026-Q2"
+      ],
+      "values": [
+        4.5464,
+        2.9528
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "BIS tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/QCHR368BIS",
+      "source_series_id": "QCHR368BIS",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q2",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "CHF",
+      "area": "industry",
+      "id": "SEM_G8_CHF_INDUSTRY",
+      "label": "Crescita produzione manifatturiera Svizzera SA",
+      "frequency": "Q",
+      "unit": "% q/q SA",
+      "dates": [
+        "2026-Q1",
+        "2026-Q2"
+      ],
+      "values": [
+        -1.80679785330917,
+        9.61923847695398
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/PRMNTO01CHQ657S",
+      "source_series_id": "PRMNTO01CHQ657S",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q2",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "CHF",
+      "area": "demand",
+      "id": "SEM_G8_CHF_DEMAND",
+      "label": "Crescita volumi retail Svizzera SA",
+      "frequency": "Q",
+      "unit": "% q/q SA",
+      "dates": [
+        "2026-Q2",
+        "2026-Q3"
+      ],
+      "values": [
+        1.2123197903,
+        0.8416963419
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/SLRTTO01CHQ657S",
+      "source_series_id": "SLRTTO01CHQ657S",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q3",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "AUD",
+      "area": "jobs",
+      "id": "SEM_G8_AUD_JOBS",
+      "label": "Tasso disoccupazione Australia 15+ SA",
+      "frequency": "M",
+      "unit": "% SA",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        4.651608,
+        4.718349
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/LRUNTTTTAUM156S",
+      "source_series_id": "LRUNTTTTAUM156S",
+      "metric_kind": "points",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "up_good": false,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "AUD",
+      "area": "leading",
+      "id": "SEM_G8_AUD_LEADING",
+      "label": "OECD CLI Australia (indicatore anticipatore)",
+      "frequency": "M",
+      "unit": "indice SA",
+      "dates": [
+        "2026-09",
+        "2026-10"
+      ],
+      "values": [
+        99.9825749044,
+        99.9723601471
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/AUSLOLITOAASTSAM",
+      "source_series_id": "AUSLOLITOAASTSAM",
+      "metric_kind": "points",
+      "observation_as_of": "2026-10",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "NZD",
+      "area": "demand",
+      "id": "SEM_G8_NZD_DEMAND",
+      "label": "Crescita volumi retail Nuova Zelanda SA",
+      "frequency": "Q",
+      "unit": "% q/q SA",
+      "dates": [
+        "2026-Q1",
+        "2026-Q2"
+      ],
+      "values": [
+        1.00908682100809,
+        -0.530781895846399
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/SLRTTO01NZQ657S",
+      "source_series_id": "SLRTTO01NZQ657S",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q2",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
     {
       "ccy": "CAD",
       "area": "demand",
@@ -608,6 +883,56 @@
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
+      "ccy": "EUR",
+      "area": "house",
+      "id": "SEM_G8_EUR_HOUSE",
+      "label": "Prezzi residenziali nominali EA21 (variazione annua; proxy immobiliare)",
+      "frequency": "Q",
+      "unit": "% a/a",
+      "dates": [
+        "2026-Q1",
+        "2026-Q2"
+      ],
+      "values": [
+        4.6,
+        4.0
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Eurostat / prc_hpi_q",
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/prc_hpi_q/default/table?lang=en",
+      "source_series_id": "EA21_PRC_HPI_Q_TOTAL_RCH_A",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q2",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "JPY",
+      "area": "house",
+      "id": "SEM_G8_JPY_HOUSE",
+      "label": "Investimenti residenziali privati reali Giappone (SA)",
+      "frequency": "Q",
+      "unit": "mld JPY concatenati 2015 SA",
+      "dates": [
+        "2026-Q2",
+        "2026-Q3"
+      ],
+      "values": [
+        22668.1,
+        22411.2
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Cabinet Office tramite FRED",
+      "source_page": "https://fred.stlouisfed.org/series/JPNRGDPPRI",
+      "source_series_id": "JPNRGDPPRI",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-Q3",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
       "ccy": "AUD",
       "area": "industry",
       "id": "SEM_G8_AUD_INDUSTRY",
@@ -658,31 +983,6 @@
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
-      "ccy": "NZD",
-      "area": "credit",
-      "id": "SEM_G8_NZD_CREDIT",
-      "label": "Credito bancario settore privato, corretto per rotture",
-      "frequency": "Q",
-      "unit": "mld NZD NSA",
-      "dates": [
-        "2025-Q4",
-        "2026-Q1"
-      ],
-      "values": [
-        590.612,
-        595.74
-      ],
-      "category": "Semaforo supplementare",
-      "source_file": "BIS tramite FRED",
-      "source_page": "https://fred.stlouisfed.org/series/QNZPBMXDCA",
-      "source_series_id": "QNZPBMXDCA",
-      "metric_kind": "percent",
-      "observation_as_of": "2026-Q1",
-      "diffusion_threshold": null,
-      "up_good": true,
-      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
-    },
-    {
       "ccy": "CAD",
       "area": "industry",
       "id": "SEM_G8_CAD_INDUSTRY",
@@ -709,6 +1009,83 @@
     }
   ],
   "audit": {
+    "JPY_credit": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-10",
+      "days_since_period_end": 24,
+      "source_page": "https://www.stat-search.boj.or.jp/ssi/mtshtml/md13_m_1_en.html",
+      "origin": "Bank of Japan / MD13'FAAPOBAL1@"
+    },
+    "GBP_leading": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-10",
+      "days_since_period_end": 24,
+      "source_page": "https://fred.stlouisfed.org/series/GBRLOLITOAASTSAM",
+      "origin": "OECD tramite FRED"
+    },
+    "JPY_jobs": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 55,
+      "source_page": "https://fred.stlouisfed.org/series/LRUNTTTTJPM156S",
+      "origin": "OECD tramite FRED"
+    },
+    "JPY_industry": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 55,
+      "source_page": "https://fred.stlouisfed.org/series/JPNPRMNTO01GPSAM",
+      "origin": "OECD tramite FRED"
+    },
+    "JPY_demand": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q2",
+      "days_since_period_end": 147,
+      "source_page": "https://fred.stlouisfed.org/series/SLRTTO01JPQ657S",
+      "origin": "OECD tramite FRED"
+    },
+    "CHF_house": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q2",
+      "days_since_period_end": 147,
+      "source_page": "https://fred.stlouisfed.org/series/QCHR368BIS",
+      "origin": "BIS tramite FRED"
+    },
+    "CHF_industry": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q2",
+      "days_since_period_end": 147,
+      "source_page": "https://fred.stlouisfed.org/series/PRMNTO01CHQ657S",
+      "origin": "OECD tramite FRED"
+    },
+    "CHF_demand": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q3",
+      "days_since_period_end": 55,
+      "source_page": "https://fred.stlouisfed.org/series/SLRTTO01CHQ657S",
+      "origin": "OECD tramite FRED"
+    },
+    "AUD_jobs": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 55,
+      "source_page": "https://fred.stlouisfed.org/series/LRUNTTTTAUM156S",
+      "origin": "OECD tramite FRED"
+    },
+    "AUD_leading": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-10",
+      "days_since_period_end": 24,
+      "source_page": "https://fred.stlouisfed.org/series/AUSLOLITOAASTSAM",
+      "origin": "OECD tramite FRED"
+    },
+    "NZD_demand": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q2",
+      "days_since_period_end": 147,
+      "source_page": "https://fred.stlouisfed.org/series/SLRTTO01NZQ657S",
+      "origin": "OECD tramite FRED"
+    },
     "CAD_demand": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
@@ -880,18 +1257,18 @@
       "origin": "Statistics Canada table 36-10-0434-01"
     },
     "EUR_house": {
-      "status": "WITHHELD_STALE",
-      "last_observation": "2026-07",
-      "days_since_period_end": 116,
-      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/sts_cobp_m/default/table?lang=en",
-      "origin": "Eurostat / sts_cobp_m"
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q2",
+      "days_since_period_end": 147,
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/prc_hpi_q/default/table?lang=en",
+      "origin": "Eurostat / prc_hpi_q"
     },
     "JPY_house": {
-      "status": "WITHHELD_STALE",
-      "last_observation": "2023-11",
-      "days_since_period_end": 1090,
-      "source_page": "https://fred.stlouisfed.org/series/JPNWSCNDW01MLSAM",
-      "origin": "OECD tramite FRED"
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q3",
+      "days_since_period_end": 55,
+      "source_page": "https://fred.stlouisfed.org/series/JPNRGDPPRI",
+      "origin": "Cabinet Office tramite FRED"
     },
     "AUD_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
@@ -915,11 +1292,10 @@
       "origin": "OECD tramite FRED"
     },
     "NZD_credit": {
-      "status": "READY_DESCRIPTIVE_REVISED",
-      "last_observation": "2026-Q1",
-      "days_since_period_end": 238,
-      "source_page": "https://fred.stlouisfed.org/series/QNZPBMXDCA",
-      "origin": "BIS tramite FRED"
+      "status": "WITHHELD_FETCH_OR_VALIDATION",
+      "reason": "HTTP Error 403: Forbidden",
+      "source_page": "https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/Registered-banks-and-non-bank-lending-institutions-sector-lending",
+      "origin": "Reserve Bank of New Zealand / C5"
     },
     "CAD_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
