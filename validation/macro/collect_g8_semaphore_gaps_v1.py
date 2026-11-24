@@ -578,20 +578,61 @@ def parse_statsnz_house_zip(raw,now):
     if len(values)<2:raise ValueError("Stats NZ exact BLDM.SFTZ1100A1S absent")
     return sorted(values.items())
 
+def statsnz_archive_links(raw,page,now,back):
+    """Discover only dated official ZIPs for the building-consents release."""
+    from urllib.parse import urljoin, unquote
+    expected=statsnz_house_url(now,back).rstrip("/").rsplit("/",1)[1]
+    class Links(HTMLParser):
+        def __init__(self):
+            super().__init__();self.urls=[]
+        def handle_starttag(self,tag,attrs):
+            if tag!="a":return
+            href=dict(attrs).get("href")
+            if not href:return
+            dest=urljoin(page,href)
+            u=urlsplit(dest)
+            path=unquote(u.path).lower()
+            if (u.scheme=="https" and u.netloc in {"www.stats.govt.nz","stats.govt.nz"}
+                and path.endswith(".zip") and "building-consents-issued" in path and expected in path
+                and "building-consents-issued" in path.rsplit("/",1)[1]):
+                if dest not in self.urls:self.urls.append(dest)
+    parser=Links();parser.feed(raw.decode("utf-8","replace"))
+    return parser.urls
+
 def statsnz_fetch_zip(now):
+    errors=[]
     for back in range(1,4):
-        url=statsnz_house_zip_url(now,back)
-        try:
-            req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"application/zip,application/octet-stream"})
-            with urlopen(req,timeout=25) as r:
-                if urlsplit(r.geturl()).hostname!="www.stats.govt.nz":raise ValueError("Stats NZ archive off official host")
-                raw=r.read(32_000_001)
-                if len(raw)>32_000_000:raise ValueError("Stats NZ archive above budget")
-            observations=parse_statsnz_house_zip(raw,now)
-            latest=statsnz_house_url(now,back)
-            return observations,latest
-        except (OSError,ValueError,KeyError,UnicodeError,TimeoutError,__import__("zipfile").BadZipFile):continue
-    raise ValueError("No verified Stats NZ dwelling archive")
+        page=statsnz_house_url(now,back)
+        urls=[statsnz_house_zip_url(now,back)]
+        # Publisher may change the file path or casing. Discover actual links
+        # from the release and bulk catalogue, but never follow external hosts.
+        for listing in (page,"https://www.stats.govt.nz/large-datasets/csv-files-for-download/"):
+            try:
+                req=Request(listing,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
+                with urlopen(req,timeout=12) as r:
+                    if urlsplit(r.geturl()).netloc not in {"www.stats.govt.nz","stats.govt.nz"}:raise ValueError("Stats NZ listing host")
+                    raw=r.read(3_500_001)
+                    if len(raw)>3_500_000:raise ValueError("Stats NZ listing size")
+                    for url in statsnz_archive_links(raw,r.geturl(),now,back):
+                        if url not in urls:urls.append(url)
+            except (OSError,ValueError,TimeoutError) as exc:errors.append("listing:"+str(exc)[:70])
+        for url in urls[:5]:
+            try:
+                req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"application/zip,application/octet-stream"})
+                with urlopen(req,timeout=20) as r:
+                    if urlsplit(r.geturl()).netloc not in {"www.stats.govt.nz","stats.govt.nz"}:raise ValueError("Stats NZ archive off official host")
+                    raw=r.read(32_000_001)
+                    if len(raw)>32_000_000:raise ValueError("Stats NZ archive above budget")
+                observations=parse_statsnz_house_zip(raw,now)
+                expected=page.rstrip("/").rsplit("/",1)[1]
+                release_period=datetime.strptime(expected,"%B-%Y").strftime("%Y-%m")
+                if observations[-1][0]!=release_period:raise ValueError("Stats NZ archive release period mismatch")
+                if contiguous_history(observations,"M",now)["observations"]<12:
+                    raise ValueError("Stats NZ archive lacks consecutive history")
+                return observations,page
+            except (OSError,ValueError,KeyError,UnicodeError,TimeoutError,__import__("zipfile").BadZipFile) as exc:
+                errors.append("zip:"+str(exc)[:90])
+    raise ValueError("No verified Stats NZ dwelling archive; "+"; ".join(errors[-3:]))
 
 def statsnz_fetch(url,now):
     # Before the new monthly release, walk the official monthly release archive.
@@ -1403,6 +1444,16 @@ def collect(now=None,fetcher=fetch):
                           parse_ons_services(raw,now) if spec["method"]=="ons" else
                           parse_statcan_services(raw,now) if spec["method"]=="statcan_services" else parse_eurostat(raw,now))
             history_page=None
+            history_source=None
+            if spec["method"]=="statsnz_house" and fetcher is fetch and len(observations)<12:
+                try:
+                    extended,page=statsnz_fetch_zip(now)
+                    if extended[-2:]==observations[-2:]:
+                        observations=extended
+                        history_page=page
+                        history_source="Stats NZ / CSV BLDM.SFTZ1100A1S"
+                except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
+                    pass
             if spec["method"]=="rba_credit" and fetcher is fetch:
                 try:
                     extended=fetch_rba_d1(now,spec["key"],observations)
@@ -1417,7 +1468,7 @@ def collect(now=None,fetcher=fetch):
                 if fetched is not None:item["source_page"]=fetched[1]
                 if history_page:
                     item["source_page"]=history_page
-                    item["source_file"]="RBA D1 / Monthly growth (cross-checked against latest release)"
+                    item["source_file"]=history_source or "RBA D1 / Monthly growth (cross-checked against latest release)"
                 out["series"].append(item)
             out["audit"][code]={"...":None,**status,"source_page":spec["source_page"],
                                  "origin":spec["origin"]}
@@ -1450,8 +1501,8 @@ def collect(now=None,fetcher=fetch):
                             out["series"].append(item)
                             out["audit"][code]={**status,"source_page":page,"origin":"Stats NZ / BLDM.SFTZ1100A1S","primary_error":str(exc)[:160]}
                             continue
-                    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
-                        pass
+                    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as archive_exc:
+                        exc=ValueError(str(exc)[:80]+"; archive: "+str(archive_exc)[:130])
                 try:
                     item,status=curated_statsnz_house(spec,now)
                     if item:out["series"].append(item)
