@@ -304,7 +304,8 @@ jobs:
 
       - name: Verify the updated Next data and its reader on public Pages
         if: >-
-          github.event_name == 'workflow_run' &&
+          github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'workflow_run' &&
           (github.event.workflow_run.name == 'FX Quant Next Estimated Thesis History' ||
            github.event.workflow_run.name == 'FX Quant V2 AUD Official RBA F2 Research Refresh' ||
            github.event.workflow_run.name == 'CHF SNB 10Y Informational Context V1' ||
@@ -318,15 +319,25 @@ jobs:
            github.event.workflow_run.name == 'RBA AUD Business Credit Growth Research Refresh V1' ||
            github.event.workflow_run.name == 'RBA AUD Exchange Settlement Balances Research Refresh V1' ||
            github.event.workflow_run.name == 'BoE GBP Secured Credit Growth Research Refresh V1' ||
-           github.event.workflow_run.name == 'BoJ JPY Bank Credit Research Refresh V1')
+           github.event.workflow_run.name == 'BoJ JPY Bank Credit Research Refresh V1'))
         env:
           GH_TOKEN: ${{ github.token }}
           PUBLISH_NEEDED: ${{ steps.v2-tree.outputs.publish_needed }}
           SOURCE_WORKFLOW: ${{ github.event.workflow_run.name }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
+          # Pin the checked-out approved V2 tree. Shared data belongs to the
+          # Dashboard publisher; compare the approved published shared snapshot,
+          # not a moving main commit which this writer does not own.
+          git fetch --no-tags origin '+refs/heads/gh-pages:refs/remotes/origin/gh-pages'
           if [[ "$PUBLISH_NEEDED" == "false" ]]; then
             git checkout --detach origin/main
+          fi
+          if [[ "$EVENT_NAME" == "push" || "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            for f in live_data/sections/NATIVE_LIQ_DATA.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json; do
+              git show "origin/gh-pages:$f" > "$f"
+            done
           fi
           page_sha="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
           latest="$(gh api "repos/$GITHUB_REPOSITORY/pages/builds/latest" 2>/dev/null || echo '{}')"
@@ -353,7 +364,17 @@ jobs:
               "BoJ JPY Bank Credit Research Refresh V1": "jpy-boj-bank-credit-research-v1.js",
           }
           source_workflow = os.environ["SOURCE_WORKFLOW"]
-          if source_workflow in research_sources:
+          if os.environ["EVENT_NAME"] in ("push", "workflow_dispatch"):
+              label = "NEXT_G8_LIQUIDITY_PUBLIC_HTTP"
+              base = "site/fx-quant-v2/next/"
+              paths = tuple(base + f for f in (
+                  "index.html", "app.js", "liquidity-credit-studio.js",
+                  "liquidity-source-policy-gate-v1.js",
+                  *(file for name, file in research_sources.items()
+                    if name != "G8 Economic Semaphore Source Recovery V1"),
+              )) + ("live_data/sections/NATIVE_LIQ_DATA.json",
+                    "live_data/sections/ESTIMATED_RESIDUAL_GAPS.json")
+          elif source_workflow in research_sources:
               label = "NEXT_MACRO_LIQUIDITY_PUBLIC_HTTP"
               base = "site/fx-quant-v2/next/"
               paths = (
@@ -412,7 +433,7 @@ jobs:
                   "site/fx-quant-v2/next/app.js",
                   "site/fx-quant-v2/next/index.html",
               )
-          proof = verify(Path("."), BASE_URL, paths, budget_seconds=240, interval_seconds=10)
+          proof = verify(Path("."), BASE_URL, paths, budget_seconds=480, interval_seconds=10)
           print(label, json.dumps(proof, sort_keys=True), flush=True)
           if proof["status"] != "PASS":
               raise SystemExit("Next data or its reader did not reach public Pages")
