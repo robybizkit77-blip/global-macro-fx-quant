@@ -117,10 +117,6 @@ REGISTRY=[
       name="Manifattura: crescita trimestrale SA",unit="% QoQ",frequency="Q",
       kind="points",max_age_days=250,origin="OECD tramite FRED",
       source_page="https://fred.stlouisfed.org/series/PRMNTO01AUQ657S"),
- dict(ccy="NZD",area="house",key="NZLPERMITMISMEI",method="fred",
-      name="Permessi residenziali",unit="indice 2015=100 SA",frequency="M",
-      kind="percent",max_age_days=110,origin="OECD tramite FRED",
-      source_page="https://fred.stlouisfed.org/series/NZLPERMITMISMEI"),
  dict(ccy="NZD",area="industry",key="PRMNTO01NZQ657S",method="fred",
       name="Manifattura: crescita trimestrale SA",unit="% QoQ",frequency="Q",
       kind="points",max_age_days=250,origin="OECD tramite FRED",
@@ -138,7 +134,7 @@ REGISTRY=[
       kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
-assert len(REGISTRY)==26 and len({(s["ccy"],s["area"]) for s in REGISTRY})==26
+assert len(REGISTRY)==25 and len({(s["ccy"],s["area"]) for s in REGISTRY})==25
 
 def fetch(url:str)->bytes:
     host=urlsplit(url).hostname
