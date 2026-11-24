@@ -13,6 +13,9 @@ URLS={
  "RBNZ_HOUSING":"https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m10/hm10.xlsx",
  "RBNZ_EXPECTATIONS":"https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m15/hm15.xlsx",
  "STATCAN_MANUFACTURING":"https://www150.statcan.gc.ca/n1/tbl/csv/16100047-eng.zip",
+ "BUSINESSNZ_PSI_LATEST":"https://businessnz.org.nz/psi/pre-election-drinks",
+ "BUSINESSNZ_PSI_INDEX":"https://businessnz.org.nz/psi",
+ "ABS_SPENDING_SERVICES":"https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release",
 }
 def _coverage(doc):
     ids=doc.get("id",[])
@@ -41,6 +44,14 @@ def call(name,url):
   with urllib.request.urlopen(r,timeout=18) as x:
    data=x.read(28_000_000+1)
    if len(data)>28_000_000: return {"error":"file above 28MB budget"}
+   if name.startswith("BUSINESSNZ") or name.startswith("ABS_"):
+    txt=data.decode("utf-8","replace")
+    terms=["PSI Time Series Table","BNZ – BusinessNZ PSI",
+            "BNZ - BusinessNZ PSI","Household spending on services, current price, seasonally adjusted estimate"]
+    return {"bytes":len(data),"tables":txt.lower().count("<table"),
+       "fragments":{term:txt[max(0,txt.find(term)-350):txt.find(term)+1600]
+                    for term in terms if txt.find(term)>=0},
+       "psi_href_sample":__import__('re').findall(r'href=["\\\']([^"\\\']*/psi/[^"\\\']+)["\\\']',txt)[:10]}
    if name.startswith("EUROSTAT"):
     doc=json.loads(data)
     return {"status":x.status,"value_count":len(doc.get("value",{})),"code_coverage":_coverage(doc), "id":doc.get("id"),"size":doc.get("size"),
