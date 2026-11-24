@@ -95,6 +95,52 @@
   "canonical_monthly_equivalence_verified": false,
   "eligible_for_fx_core": false,
   "eligible_for_backtest": false
+ },
+ "lending_conditions": {
+  "series_id": "SLOS_BUS_LEND",
+  "source_url": "https://www.bankofcanada.ca/publications/slos/",
+  "frequency": "Q",
+  "unit": "net_balance_pct_points",
+  "positive_means": "tightening",
+  "negative_means": "easing",
+  "dates": [
+   "2023-01-01",
+   "2023-04-01",
+   "2023-07-01",
+   "2023-10-01",
+   "2024-01-01",
+   "2024-04-01",
+   "2024-07-01",
+   "2024-10-01",
+   "2025-01-01",
+   "2025-04-01",
+   "2025-07-01",
+   "2025-10-01",
+   "2026-01-01",
+   "2026-04-01",
+   "2026-07-01"
+  ],
+  "values": [
+   11.3,
+   7.61,
+   13.2,
+   5.76,
+   2.64,
+   6.85,
+   1.71,
+   -1.89,
+   1.51,
+   0.67,
+   0.67,
+   2.81,
+   0.96,
+   -1.04,
+   -6.48
+  ],
+  "latest_observation": "2026-07-01",
+  "first_release_pit_verified": false,
+  "eligible_for_fx_core": false,
+  "eligible_for_backtest": false
  }
 };
  root.FXQuantCADCreditResearch=Object.freeze(data);
