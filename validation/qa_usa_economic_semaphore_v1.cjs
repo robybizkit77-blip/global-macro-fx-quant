@@ -243,4 +243,10 @@ assert.equal(model(catalog,'2026-11-24','NZD',nextSources).find(r=>r.key==='hous
 const forgedNZ=structuredClone(nextSources);
 forgedNZ.series[1].source_page='https://another.stats.govt.nz/fake';
 assert.equal(model(catalog,'2026-11-24','NZD',forgedNZ).find(r=>r.key==='house').signal.tone,'neutral');
+const manualDwelling=structuredClone(nextSources);
+manualDwelling.series[1].quality='SOURCE_VERIFIED_MANUAL_NONPIT';
+manualDwelling.series[1].manual_verified_on='2026-11-24';
+assert.equal(model(catalog,'2026-11-24','NZD',manualDwelling).find(x=>x.key==='house').signal.tone,'red');
+assert.match(render({catalog,esc,dayNow:()=>'2026-11-24',country:'NZD',overlay:manualDwelling}),/verificato manualmente/);
+assert.equal(model(catalog,'2027-04-01','NZD',manualDwelling).find(x=>x.key==='house').signal.tone,'neutral');
 console.log('OK: G8 economic semaphore — 8 economies, 7 areas, data age, dates, source gaps, HTML');
