@@ -162,6 +162,20 @@
       basis:'Contratto attuale '+last.contract+' · prima '+ref.t.toUpperCase()+' (non 6M costante)',derived:false};
     }
    }
+   // For a 20-weekday official representative tenor only, allow a single
+   // earlier weekday reference as a clearly labeled approximate interval.
+   // Never fill a missing daily/weekly observation, roll or disputed quote.
+   if(!a&&days===20&&['FUTURES','OIS'].includes(r.kind)&&!last.derived&&
+      last.source_class==='OFFICIAL_TENOR'){
+    let prior=new Date(from+'T12:00:00Z');
+    do{prior.setUTCDate(prior.getUTCDate()-1)}while([0,6].includes(prior.getUTCDay()));
+    const refDay=prior.toISOString().slice(0,10);
+    const ref=arr.find(p=>p.date===refDay&&!p.derived&&p.source_class===last.source_class&&
+      p.contract===last.contract&&num(p.rate));
+    if(ref)return {days,from:refDay,to,bp:Math.round((last.rate-ref.rate)*10000)/100,
+     basis:'21 giorni feriali · '+(r.kind==='OIS'?'OIS 6M':ref.contract?'Medesimo contratto':'Tenore rappresentativo · rollover possibile'),
+     derived:false,approximateWindow:true,referenceTarget:from};
+   }
    if(!a)return unavailable('Riferimento esatto assente');
    let basis;
    if(r.kind==='OIS'&&!a.derived&&a.source_class==='OFFICIAL_TENOR'&&last.source_class===a.source_class){
@@ -203,7 +217,7 @@
    '<h3>Chi sta repricing? 1 / 5 / 20 giorni feriali</h3>'+
    '<div style="overflow-x:auto"><table class="rates-universe-table"><thead><tr><th>Valuta / fonte</th><th>Ultimo 6M</th>'+
    '<th>1 giorno</th><th>5 giorni</th><th>20 giorni</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-   '<small>Variazioni in punti base rispetto alla data iniziale indicata, non conteggi di sedute di borsa: festività e dati mancanti possono lasciare vuoti. OIS, tenori futures rappresentativi (rollover possibile), contratti secondari e proxy non sono equivalenti. Le variazioni del contratto oggi associato al 6M, già archiviato sotto un altro tenore, sono indicate separatamente: non sono variazioni di un 6M a scadenza costante. Nessuna interpolazione, nessun ranking FX.</small></div>';
+   '<small>Variazioni in punti base rispetto alla data iniziale indicata, non conteggi di sedute di borsa: festività e dati mancanti possono lasciare vuoti. Solo per OIS e futures ufficiali, se manca il riferimento 20D, è ammesso il riferimento precedente di un giorno feriale, marcato 21 giorni; non viene stimato un prezzo. OIS, tenori futures rappresentativi (rollover possibile), contratti secondari e proxy non sono equivalenti. Le variazioni del contratto oggi associato al 6M, già archiviato sotto un altro tenore, sono indicate separatamente: non sono variazioni di un 6M a scadenza costante. Nessuna interpolazione, nessun ranking FX.</small></div>';
  }
  function sparkline(row){
   const pts=row?.tenors?.['6m']||[];
