@@ -476,6 +476,56 @@ def statsnz_house_url(now,months_back):
     year=n//12;month=n%12+1
     return STATSNZ_BASE+date(year,month,1).strftime("%B").lower()+"-"+str(year)+"/"
 
+def statsnz_house_zip_url(now,back):
+    n=now.year*12+now.month-1-back
+    y,m=n//12,n%12+1
+    name=date(y,m,1).strftime("%B")
+    return ("https://www.stats.govt.nz/assets/Uploads/Building-consents-issued/"
+       f"Building-consents-issued-{name}-{y}/Download-data/building-consents-issued-{name.lower()}-{y}.zip")
+
+def parse_statsnz_house_zip(raw,now):
+    """Stats NZ official series BLDM.SFTZ1100A1S, national SA dwelling counts."""
+    values={}
+    with ZipFile(io.BytesIO(raw)) as z:
+        members=[x for x in z.infolist() if x.filename.lower().endswith(".csv") and not x.is_dir()]
+        if not members or sum(x.file_size for x in members)>350_000_000:
+            raise ValueError("Stats NZ CSV archive missing or oversized")
+        for member in members:
+            with z.open(member) as stream:
+                reader=csv.DictReader(io.TextIOWrapper(stream,encoding="utf-8-sig"))
+                if not {"Series_reference","Period","Data_value","UNITS","MAGNTUDE"}.issubset(reader.fieldnames or []):
+                    if not {"Series_reference","Period","Data_value","UNITS","MAGNITUDE"}.issubset(reader.fieldnames or []):continue
+                for row in reader:
+                    if row.get("Series_reference")!="BLDM.SFTZ1100A1S":continue
+                    if row.get("UNITS","").lower() not in {"number","units"} or row.get("MAGNTUDE",row.get("MAGNITUDE"))!="0":
+                        raise ValueError("Stats NZ SA dwelling series unit or scale changed")
+                    if row.get("Suppressed","").strip():continue
+                    match=re.fullmatch(r"(\d{4})[.\-](\d{2})",row["Period"])
+                    if not match:raise ValueError("Stats NZ monthly period invalid")
+                    p=f"{match[1]}-{match[2]}"
+                    if period_end(p)>now or not row["Data_value"].strip():continue
+                    val=float(row["Data_value"])
+                    if p in values or not math.isfinite(val) or not 100<val<100000:
+                        raise ValueError("Stats NZ duplicate or implausible dwelling count")
+                    values[p]=val
+    if len(values)<2:raise ValueError("Stats NZ exact BLDM.SFTZ1100A1S absent")
+    return sorted(values.items())
+
+def statsnz_fetch_zip(now):
+    for back in range(1,4):
+        url=statsnz_house_zip_url(now,back)
+        try:
+            req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"application/zip,application/octet-stream"})
+            with urlopen(req,timeout=25) as r:
+                if urlsplit(r.geturl()).hostname!="www.stats.govt.nz":raise ValueError("Stats NZ archive off official host")
+                raw=r.read(32_000_001)
+                if len(raw)>32_000_000:raise ValueError("Stats NZ archive above budget")
+            observations=parse_statsnz_house_zip(raw,now)
+            latest=statsnz_house_url(now,back)
+            return observations,latest
+        except (OSError,ValueError,KeyError,UnicodeError,TimeoutError,__import__("zipfile").BadZipFile):continue
+    raise ValueError("No verified Stats NZ dwelling archive")
+
 def statsnz_fetch(url,now):
     # Before the new monthly release, walk the official monthly release archive.
     errors=[]
@@ -1229,6 +1279,17 @@ def collect(now=None,fetcher=fetch):
                 except (ValueError,KeyError,IndexError,UnicodeError,OSError):
                     pass
             if spec["method"]=="statsnz_house":
+                if fetcher is fetch:
+                    try:
+                        observations,page=statsnz_fetch_zip(now)
+                        item,status=candidate(spec,observations,now)
+                        if item:
+                            item.update({"source_page":page,"source_file":"Stats NZ / CSV BLDM.SFTZ1100A1S"})
+                            out["series"].append(item)
+                            out["audit"][code]={**status,"source_page":page,"origin":"Stats NZ / BLDM.SFTZ1100A1S","primary_error":str(exc)[:160]}
+                            continue
+                    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
+                        pass
                 try:
                     item,status=curated_statsnz_house(spec,now)
                     if item:out["series"].append(item)
