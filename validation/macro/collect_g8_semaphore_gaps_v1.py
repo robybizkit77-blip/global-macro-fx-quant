@@ -774,7 +774,7 @@ def parse_bnz_psi(raw,now):
     months={date(2000,m,1).strftime("%B").lower():m for m in range(1,13)}
     monthpat="|".join(months)
     found={}
-    for hit in re.finditer(r"BNZ Research\s*[-–]\s*BusinessNZ\s*[-–]\s*(\d{2}\.\d{2}\.20\d{2})",txt):
+    for hit in re.finditer(r"\b(?:BNZ|NZ) Research\s*[-–]\s*BusinessNZ\s*[-–]\s*(\d{2}\.\d{2}\.20\d{2})",txt):
         release=datetime.strptime(hit[1],"%d.%m.%Y").date()
         if release>now:continue
         body=txt[hit.end():hit.end()+1000]
