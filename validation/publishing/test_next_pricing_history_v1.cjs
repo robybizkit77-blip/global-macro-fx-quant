@@ -77,7 +77,7 @@ assert(!safe.includes('<img')&&safe.includes('&lt;img'));
 assert(!render({history:{...data,official_ois_created:true},ccy:'GBP'}).includes('<svg'),
  'Official OIS promotion breaks data-readiness gate');
 const page=file('site/fx-quant-v2/next/index.html');
-assert(page.indexOf('rates-pricing-history-v1.js?v=3')<page.indexOf('rates-studio.js?v='));
+assert(page.indexOf('rates-pricing-history-v1.js?v=4')<page.indexOf('rates-studio.js?v='));
 assert.match(page,/rates-studio\.css\?v=\d+/);
 const app=file('site/fx-quant-v2/next/app.js');
 assert(app.includes("oisHistory:'./rates-pricing-history-v1.json'"));
@@ -112,3 +112,18 @@ assert.equal(horizonMoves(null).filter(x=>x.bp!==null).length,0);
 console.log('NEXT_G8_PRICING_HORIZON_MATRIX_PASS');
 
 assert(!connect({...quoteA,source_class:'BANK_BILL_PROXY'},{...quoteB,source_class:'BANK_BILL_PROXY'}),'NZD rollover must break chart');
+
+const crossTenor={kind:'FUTURES SECONDARI',tenors:{
+ '6m':[mk('2026-10-26',.1,'OLD'),mk('2026-11-23',.35,'CURRENT')],
+ '12m':[mk('2026-10-26',.275,'CURRENT')]}};
+const recovered=horizonMoves(crossTenor)[2];
+assert.equal(recovered.bp,7.5);
+assert.match(recovered.basis,/prima 12M \(non 6M costante\)/);
+const conflicted=structuredClone(crossTenor);
+conflicted.tenors['3m']=[mk('2026-10-26',.29,'CURRENT')];
+assert.equal(horizonMoves(conflicted)[2].bp,null,'Conflicting cross-tenor prices are not accepted');
+const derivedCross=structuredClone(crossTenor);
+derivedCross.tenors['12m'][0].derived=true;
+assert.equal(horizonMoves(derivedCross)[2].bp,null);
+assert.equal(horizonMoves({...crossTenor,kind:'FUTURES'})[2].bp,null);
+console.log('NEXT_FIXED_CONTRACT_CROSS_TENOR_MOMENTUM_PASS');
