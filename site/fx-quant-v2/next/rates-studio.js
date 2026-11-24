@@ -447,7 +447,7 @@ function make(api){
     +'<div class="rates-pricing-grid">'+shapeBars(c)+oisAudit(c)+'</div>'+repricing(c)+'</section>'
     +'<section class="rates-chapter"><div class="rates-section-head"><div><span class="chapter-kicker">03B / FX RELATIVE RATES</span><h2>Due economie. <em>Un differenziale da verificare.</em></h2></div><p>Confronta governativi coerenti per data. La direzione dello spread è contesto FX, non la prova di un futuro movimento del cambio.</p></div>'
     +countryControls()+spread(c,other)+'</section>'
-    +explanations(c)+tableUniverse()+glossary()
+    +tableUniverse()+'<details class="rates-method-detail"><summary>Approfondisci l’interpretazione dei tassi e della curva</summary>'+explanations(c)+glossary()+'</details>'
     +'<div class="rates-end-note"><div><span class="chapter-kicker">DALLA RICERCA ALLA TESI FX</span><h2>Macro → Pricing → Positioning → Prezzo.</h2><p>La divergenza tra front-end, OIS/futures e prezzo è un problema da investigare. Non trasformiamo automaticamente ogni variazione di yield in un trade.</p></div><a href="#pairs" class="action-primary">Vai alle coppie FX <span>↗</span></a></div>'
     +'<p class="source-caption">Fonti dei rendimenti governativi: NATIVE_RATES_DATA e serie storica SNB per il dossier CHF. Tassi ufficiali: NATIVE_CB_DATA. Pricing: ois-pricing-snapshot.json. Ogni serie conserva la propria data.</p>';
  }

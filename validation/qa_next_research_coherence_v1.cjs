@@ -352,5 +352,21 @@ assert.equal((cotPanel.match(/class="cot-flow-axis /g)||[]).length,16);
 assert.doesNotMatch(cotPanel,/undefined|NaN/);
 assert.match(cotPanel,/OI stimato/);
 assert.match(cotPanel,/non ordini o identità/);
+
+const libraryDesk=require('../site/fx-quant-v2/next/research-library.js');
+const libraryFixture=[
+ {type:'daily',file:'daily.html',date:'2026-11-23',title:'Briefing'},
+ {type:'macro',file:'macro.html',date:'2026-11-20',title:'Macro'},
+ {type:'cot',file:'cot.html',date:'2026-11-17',title:'COT'},
+ {type:'ois',file:'ois.html',date:'2026-11-20',title:'OIS'}
+];
+const librarySummary=libraryDesk.catalogSummary(libraryFixture,libraryFixture.slice(0,3),'2026-11-24');
+assert.equal(librarySummary.total,4);
+assert.equal(librarySummary.confirmed,3);
+assert.equal(librarySummary.current,2);
+assert.equal(librarySummary.overdue,1);
+assert.equal(librarySummary.unverified,1);
+assert.equal(librarySummary.daily.status.state,'previous');
+assert.equal(libraryDesk.catalogSummary(libraryFixture,[],'2026-11-24').confirmed,0);
 require('./publishing/test_next_home_thesis_recalc_v1.cjs');
 console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');

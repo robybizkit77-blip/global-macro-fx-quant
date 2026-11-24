@@ -1126,9 +1126,16 @@ async function pairLinkJourney(page,label){
     assert(count&&Number(count[1])===Number(count[2])&&Number(count[2])>=19,
      label+' missing source(s): '+loaded);
     if(label==='mobile'){
+     assert(await page.locator('#sidebar').evaluate(el=>el.inert),'Closed mobile menu must not receive keyboard focus');
      await locator(page,'#menu-toggle').click();
      assert.equal(await locator(page,'#menu-toggle').getAttribute('aria-expanded'),'true',
       'Mobile navigation did not open');
+     assert(await page.locator('#sidebar').evaluate(el=>!el.inert&&el.contains(document.activeElement)),'Open menu must receive focus');
+     assert(await page.locator('#sidebar').evaluate(el=>getComputedStyle(el).overflowY==='auto'),'Menu must scroll on short screens');
+     await page.keyboard.press('Escape');
+     assert.equal(await locator(page,'#menu-toggle').getAttribute('aria-expanded'),'false');
+     assert(await page.locator('#menu-toggle').evaluate(el=>el===document.activeElement),'Escape must restore menu button focus');
+     await locator(page,'#menu-toggle').click();
      await locator(page,'#nav [data-route="pairs"]').click();
      await route(page,'pairs');
      assert.equal(await locator(page,'#menu-toggle').getAttribute('aria-expanded'),'false',
