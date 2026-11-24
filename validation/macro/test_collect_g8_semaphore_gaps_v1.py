@@ -25,8 +25,8 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),26)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),26)
+        self.assertEqual(len(mod.REGISTRY),25)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),25)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
         self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
 
@@ -308,7 +308,7 @@ class G8SemaphoreSources(unittest.TestCase):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),26)
+        self.assertEqual(len(out["audit"]),25)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
