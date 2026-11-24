@@ -98,7 +98,65 @@ const MAP={
   credit:[M('CA_BUSINESS_LOANS_OUTSTANDING_history_value','Prestiti alle imprese',true,{unit:'mln CAD'})]
  }
 };
+const WAVE3_FRED_FALLBACK={
+  "GBP": {
+    "leading": [
+      "GBRLOLITOAASTSAM",
+      "https://fred.stlouisfed.org/series/GBRLOLITOAASTSAM"
+    ]
+  },
+  "JPY": {
+    "jobs": [
+      "LRUNTTTTJPM156S",
+      "https://fred.stlouisfed.org/series/LRUNTTTTJPM156S"
+    ],
+    "industry": [
+      "JPNPRMNTO01GPSAM",
+      "https://fred.stlouisfed.org/series/JPNPRMNTO01GPSAM"
+    ],
+    "demand": [
+      "SLRTTO01JPQ657S",
+      "https://fred.stlouisfed.org/series/SLRTTO01JPQ657S"
+    ],
+    "house": [
+      "JPNRGDPPRI",
+      "https://fred.stlouisfed.org/series/JPNRGDPPRI"
+    ]
+  },
+  "CHF": {
+    "house": [
+      "QCHR368BIS",
+      "https://fred.stlouisfed.org/series/QCHR368BIS"
+    ],
+    "industry": [
+      "PRMNTO01CHQ657S",
+      "https://fred.stlouisfed.org/series/PRMNTO01CHQ657S"
+    ],
+    "demand": [
+      "SLRTTO01CHQ657S",
+      "https://fred.stlouisfed.org/series/SLRTTO01CHQ657S"
+    ]
+  },
+  "AUD": {
+    "jobs": [
+      "LRUNTTTTAUM156S",
+      "https://fred.stlouisfed.org/series/LRUNTTTTAUM156S"
+    ],
+    "leading": [
+      "AUSLOLITOAASTSAM",
+      "https://fred.stlouisfed.org/series/AUSLOLITOAASTSAM"
+    ]
+  },
+  "NZD": {
+    "demand": [
+      "SLRTTO01NZQ657S",
+      "https://fred.stlouisfed.org/series/SLRTTO01NZQ657S"
+    ]
+  }
+};
 const VERIFIED_FRESH_FALLBACK={
+ JPY:{credit:['BOJ_MD13_FAAPOBAL1_YOY','https://www.stat-search.boj.or.jp/ssi/mtshtml/md13_m_1_en.html']},
+ NZD:{credit:['RBNZ_C5_BUSINESS_YOY','https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/Registered-banks-and-non-bank-lending-institutions-sector-lending']},
  CAD:{
   house:['CAN_HOUSEHOLD_MORTGAGES_SA','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610063901'],
   demand:['CAN_RETAIL_REAL_LASPEYRES','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=2010006701'],
@@ -119,6 +177,7 @@ const VERIFIED_FRESH_FALLBACK={
   industry:['ONS_K222_DIOP','https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop']
  },
  EUR:{
+  house:['EA21_PRC_HPI_Q_TOTAL_RCH_A','https://ec.europa.eu/eurostat/databrowser/view/prc_hpi_q/default/table?lang=en'],
   services:['TEIBS020_BS-SCI-BAL_SA_EA21','https://ec.europa.eu/eurostat/databrowser/view/teibs020/default/table?lang=en'],
   industry:['STS_INPR_M_EA21_PRD_B-D_SCA_I21','https://ec.europa.eu/eurostat/databrowser/view/sts_inpr_m/default/table?lang=en'],
   leading:['TEIBS010_EA21_BS-ESI-I_SA','https://ec.europa.eu/eurostat/databrowser/view/teibs010/default/table?lang=en'],
@@ -136,7 +195,7 @@ function verifiedFreshAlternative(x,c,key){
      ['SOURCE_REVISED_RESEARCH_NOT_PIT','SOURCE_VERIFIED_MANUAL_NONPIT'].includes(x.quality)&&
      /^https:\/\/www\.stats\.govt\.nz\/information-releases\/building-consents-issued-(?:january|february|march|april|may|june|july|august|september|october|november|december)-20\d{2}\/$/.test(x.source_page);
  }
- const expected=VERIFIED_FRESH_FALLBACK[c]?.[key];
+ const expected=VERIFIED_FRESH_FALLBACK[c]?.[key]||WAVE3_FRED_FALLBACK[c]?.[key];
  return !!expected&&x?.source_series_id===expected[0]&&x?.source_page===expected[1]&&
    x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&x.up_good!==null;
 }
@@ -158,7 +217,7 @@ function supplementary(overlay,country,key,today){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au)\//.test(x.source_page)&&
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz)\//.test(x.source_page)&&
    (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
     x.metric_kind==='points'&&/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page))));
  return matches.length===1?matches[0]:null;
@@ -248,7 +307,7 @@ function model(catalog,today,country='USD',overlay=null){
        (extra.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'?' · dato verificato manualmente, non aggiornato automaticamente':
          ' · aggiornamento dal feed supplementare')};
      const metric=M(extra.id,extra.label,extra.up_good!==false,{unit:extra.unit,
-       kind:extra.metric_kind,minimum:extra.metric_kind==='points'?.2:.15,
+       kind:extra.metric_kind,minimum:extra.metric_kind==='points'?(area.key==='jobs'||area.key==='leading'?.05:.2):.15,
        pointUnit:extra.unit.startsWith('%')?'p.p.':'punti',
        freq:extra.frequency,source_page:extra.source_page,
        diffusionThreshold:extra.diffusion_threshold===50?50:null});
