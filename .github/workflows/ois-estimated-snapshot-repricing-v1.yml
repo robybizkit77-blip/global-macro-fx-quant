@@ -6,6 +6,9 @@ on:
       - 'validation/cb_pricing/OIS_ESTIMATED_REPRICING_CONTRACT_V1_2026-10-15.json'
       - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
       - 'validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py'
+      - 'validation/cb_pricing/archive_nzd_asx_proxy_v1.py'
+      - 'validation/cb_pricing/test_archive_nzd_asx_proxy_v1.py'
+      - 'validation/cb_pricing/history/NZD_ASX_PROXY_CAPTURES_V1.jsonl'
       - 'validation/cb_pricing/nzd_asx_scenario_sensitivity_v2.py'
       - 'validation/cb_pricing/test_nzd_asx_scenario_sensitivity_v2.py'
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
@@ -50,6 +53,9 @@ on:
       - 'validation/cb_pricing/OIS_ESTIMATED_REPRICING_CONTRACT_V1_2026-10-15.json'
       - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
       - 'validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py'
+      - 'validation/cb_pricing/archive_nzd_asx_proxy_v1.py'
+      - 'validation/cb_pricing/test_archive_nzd_asx_proxy_v1.py'
+      - 'validation/cb_pricing/history/NZD_ASX_PROXY_CAPTURES_V1.jsonl'
       - 'validation/cb_pricing/nzd_asx_scenario_sensitivity_v2.py'
       - 'validation/cb_pricing/test_nzd_asx_scenario_sensitivity_v2.py'
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
@@ -133,6 +139,11 @@ jobs:
 
       - name: Collect official ASX NZD directional rates proxy
         run: python validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py
+
+      - name: Preserve validated ASX NZD observations
+        run: |
+          python validation/cb_pricing/test_archive_nzd_asx_proxy_v1.py
+          python validation/cb_pricing/archive_nzd_asx_proxy_v1.py ${{ github.event_name != 'pull_request' && '--write' || '' }}
 
       - name: Test NZD ASX bank-bill scenario source and frozen research calibration
         run: python validation/cb_pricing/test_nzd_asx_scenario_sensitivity_v2.py
