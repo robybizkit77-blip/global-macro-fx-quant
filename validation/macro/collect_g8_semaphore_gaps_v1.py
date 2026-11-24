@@ -476,6 +476,56 @@ def statsnz_house_url(now,months_back):
     year=n//12;month=n%12+1
     return STATSNZ_BASE+date(year,month,1).strftime("%B").lower()+"-"+str(year)+"/"
 
+def statsnz_house_zip_url(now,back):
+    n=now.year*12+now.month-1-back
+    y,m=n//12,n%12+1
+    name=date(y,m,1).strftime("%B")
+    return ("https://www.stats.govt.nz/assets/Uploads/Building-consents-issued/"
+       f"Building-consents-issued-{name}-{y}/Download-data/building-consents-issued-{name.lower()}-{y}.zip")
+
+def parse_statsnz_house_zip(raw,now):
+    """Stats NZ official series BLDM.SFTZ1100A1S, national SA dwelling counts."""
+    values={}
+    with ZipFile(io.BytesIO(raw)) as z:
+        members=[x for x in z.infolist() if x.filename.lower().endswith(".csv") and not x.is_dir()]
+        if not members or sum(x.file_size for x in members)>350_000_000:
+            raise ValueError("Stats NZ CSV archive missing or oversized")
+        for member in members:
+            with z.open(member) as stream:
+                reader=csv.DictReader(io.TextIOWrapper(stream,encoding="utf-8-sig"))
+                if not {"Series_reference","Period","Data_value","UNITS","MAGNTUDE"}.issubset(reader.fieldnames or []):
+                    if not {"Series_reference","Period","Data_value","UNITS","MAGNITUDE"}.issubset(reader.fieldnames or []):continue
+                for row in reader:
+                    if row.get("Series_reference")!="BLDM.SFTZ1100A1S":continue
+                    if row.get("UNITS","").lower() not in {"number","units"} or row.get("MAGNTUDE",row.get("MAGNITUDE"))!="0":
+                        raise ValueError("Stats NZ SA dwelling series unit or scale changed")
+                    if row.get("Suppressed","").strip():continue
+                    match=re.fullmatch(r"(\d{4})[.\-](\d{2})",row["Period"])
+                    if not match:raise ValueError("Stats NZ monthly period invalid")
+                    p=f"{match[1]}-{match[2]}"
+                    if period_end(p)>now or not row["Data_value"].strip():continue
+                    val=float(row["Data_value"])
+                    if p in values or not math.isfinite(val) or not 100<val<100000:
+                        raise ValueError("Stats NZ duplicate or implausible dwelling count")
+                    values[p]=val
+    if len(values)<2:raise ValueError("Stats NZ exact BLDM.SFTZ1100A1S absent")
+    return sorted(values.items())
+
+def statsnz_fetch_zip(now):
+    for back in range(1,4):
+        url=statsnz_house_zip_url(now,back)
+        try:
+            req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"application/zip,application/octet-stream"})
+            with urlopen(req,timeout=25) as r:
+                if urlsplit(r.geturl()).hostname!="www.stats.govt.nz":raise ValueError("Stats NZ archive off official host")
+                raw=r.read(32_000_001)
+                if len(raw)>32_000_000:raise ValueError("Stats NZ archive above budget")
+            observations=parse_statsnz_house_zip(raw,now)
+            latest=statsnz_house_url(now,back)
+            return observations,latest
+        except (OSError,ValueError,KeyError,UnicodeError,TimeoutError,__import__("zipfile").BadZipFile):continue
+    raise ValueError("No verified Stats NZ dwelling archive")
+
 def statsnz_fetch(url,now):
     # Before the new monthly release, walk the official monthly release archive.
     errors=[]
@@ -528,6 +578,7 @@ STATCAN_GDP_ZIP="https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip"
 
 
 BUSINESSNZ_INDEX="https://businessnz.org.nz/psi"
+BNZ_PSI_INDEX="https://www.bnz.co.nz/institutional-banking/research/publications"
 ABS_MHSI_SERVICES="https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release"
 def abs_services_fetch(url):
     if url!=ABS_MHSI_SERVICES:raise ValueError("ABS services URL not on allowlist")
@@ -577,6 +628,55 @@ def parse_abs_services(raw,now):
 def parse_abs_demand(raw,now):
     return _parse_abs_monthly_chart(raw,now,
       "Household spending, current price, seasonally adjusted estimate")
+
+class _PlainText(HTMLParser):
+    def __init__(self):
+        super().__init__();self.parts=[];self.skip=0
+    def handle_starttag(self,tag,attrs):
+        if tag in {"script","style"}:self.skip+=1
+    def handle_endtag(self,tag):
+        if tag in {"script","style"}:self.skip=max(0,self.skip-1)
+    def handle_data(self,data):
+        if not self.skip:self.parts.append(data)
+
+def parse_bnz_psi(raw,now):
+    """Co-publisher's dated press release, taking the latest vintage's revised prior."""
+    p=_PlainText();p.feed(raw.decode("utf-8","replace"))
+    txt=" ".join(" ".join(p.parts).split())
+    months={date(2000,m,1).strftime("%B").lower():m for m in range(1,13)}
+    monthpat="|".join(months)
+    found={}
+    for hit in re.finditer(r"BNZ Research\s*[-–]\s*BusinessNZ\s*[-–]\s*(\d{2}\.\d{2}\.20\d{2})",txt):
+        release=datetime.strptime(hit[1],"%d.%m.%Y").date()
+        if release>now:continue
+        body=txt[hit.end():hit.end()+1000]
+        if not re.search(r"Performance of Services Index\s*\(PSI\)",body[:350],re.I):continue
+        current=re.search(r"The PSI for ("+monthpat+r") was\s+(\d{2}\.\d)",body,re.I)
+        if not current:continue
+        prior=re.search(r"\bfrom\s+(\d{2}\.\d)\s+in\s+("+monthpat+r")\b",body[current.end():current.end()+500],re.I)
+        if not prior:continue
+        m=months[current[1].lower()];pm=months[prior[2].lower()]
+        year=release.year if m<=release.month else release.year-1
+        period=f"{year}-{m:02d}"
+        py=year-1 if m==1 else year
+        if pm!=(m-2)%12+1:continue
+        previous=f"{py}-{pm:02d}"
+        if period_end(period)>release or (release-period_end(period)).days>45:continue
+        x,y=float(current[2]),float(prior[1])
+        if not (20<=x<=80 and 20<=y<=80):raise ValueError("BNZ PSI outside valid scale")
+        pair=[(previous,y),(period,x)]
+        if release in found and found[release]!=pair:raise ValueError("BNZ conflicting releases")
+        found[release]=pair
+    if not found:raise ValueError("BNZ dated national PSI pair missing")
+    return found[max(found)]
+
+def fetch_bnz_psi(now):
+    req=Request(BNZ_PSI_INDEX,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
+    with urlopen(req,timeout=20) as r:
+        if r.geturl().rstrip("/")!=BNZ_PSI_INDEX:raise ValueError("BNZ unexpected redirect")
+        raw=r.read(5_000_001)
+        if not raw or len(raw)>5_000_000:raise ValueError("BNZ page invalid size")
+    return parse_bnz_psi(raw,now)
 
 def biznz_fetch(url):
     """Issuer article selected through the live PSI index, never via news snippets."""
@@ -1082,6 +1182,42 @@ def curated_statsnz_house(spec,now):
       "last_observation":item["observation_as_of"],
       "verified_on":d["verified_on"],"source_page":page}
 
+NZD_CREDIT_PROXY_URL="https://tradingeconomics.com/new-zealand/private-sector-credit"
+
+def parse_nzd_credit_proxy(raw,now):
+    """Publicly reported RBNZ private credit stock, NOT C5 business growth."""
+    p=_PlainText();p.feed(raw.decode("utf-8","replace"))
+    txt=" ".join(" ".join(p.parts).split())
+    months={date(2000,m,1).strftime("%B").lower():m for m in range(1,13)}
+    pat="|".join(months)
+    m=re.search(r"Private Sector Credit in New Zealand (?:increased|decreased|rose|fell) to ([\d,.]+) NZD Million in ("+pat+r") from ([\d,.]+) NZD Million in ("+pat+r") of (20\d{2})\.",txt,re.I)
+    if not m:raise ValueError("NZD private credit exact published pair missing")
+    if not re.search(r"source:\s*Reserve Bank of New Zealand",txt,re.I):
+        raise ValueError("NZD credit issuer attribution missing")
+    cur,prev=months[m[2].lower()],months[m[4].lower()]
+    if prev!=(cur-2)%12+1:raise ValueError("NZD credit nonadjacent months")
+    year=int(m[5])+(cur==1)
+    period=f"{year}-{cur:02d}";prior=f"{int(m[5])}-{prev:02d}"
+    if period_end(period)>now:raise ValueError("NZD credit future period")
+    current=float(m[1].replace(",",""));previous=float(m[3].replace(",",""))
+    if not all(math.isfinite(x) and 10000<x<2000000 for x in (current,previous)):
+        raise ValueError("NZD credit stock invalid")
+    return [(prior,previous),(period,current)]
+
+def collect_nzd_credit_proxy(spec,now):
+    req=Request(NZD_CREDIT_PROXY_URL,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
+    with urlopen(req,timeout=20) as r:
+        if r.geturl().rstrip("/")!=NZD_CREDIT_PROXY_URL:raise ValueError("NZD credit proxy redirect")
+        raw=r.read(2_000_001)
+        if not raw or len(raw)>2_000_000:raise ValueError("NZD credit proxy size")
+    obs=parse_nzd_credit_proxy(raw,now)
+    # Never replace newer verified C5 data with older proxy observations.
+    manual=json.loads(MANUAL_NZ_CREDIT.read_text(encoding="utf-8"))
+    if obs[-1][0]<manual["dates"][-1]:raise ValueError("NZD credit proxy older than C5")
+    alt={**spec,"key":"RBNZ_PRIVATE_CREDIT_STOCK_TE","name":"Credito privato totale, stock nominale (proxy del credito; RBNZ via Trading Economics)",
+         "unit":"mln NZD nominali","kind":"percent","origin":"RBNZ / Trading Economics","source_page":NZD_CREDIT_PROXY_URL}
+    return candidate(alt,obs,now)
+
 def curated_rbnz_credit(spec,now):
     if spec["key"]!="RBNZ_C5_BUSINESS_YOY":raise ValueError("RBNZ snapshot identity")
     d=json.loads(MANUAL_NZ_CREDIT.read_text(encoding="utf-8"))
@@ -1171,6 +1307,15 @@ def collect(now=None,fetcher=fetch):
             out["audit"][code].pop("...")
         except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
             if spec["method"]=="rbnz_credit":
+                if fetcher is fetch:
+                    try:
+                        item,status=collect_nzd_credit_proxy(spec,now)
+                        if item:
+                            out["series"].append(item)
+                            out["audit"][code]={**status,"source_page":item["source_page"],"origin":item["source_file"],"primary_error":str(exc)[:160],"proxy":True}
+                            continue
+                    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
+                        pass
                 try:
                     item,status=curated_rbnz_credit(spec,now)
                     if item:out["series"].append(item)
@@ -1179,6 +1324,17 @@ def collect(now=None,fetcher=fetch):
                 except (ValueError,KeyError,IndexError,UnicodeError,OSError):
                     pass
             if spec["method"]=="statsnz_house":
+                if fetcher is fetch:
+                    try:
+                        observations,page=statsnz_fetch_zip(now)
+                        item,status=candidate(spec,observations,now)
+                        if item:
+                            item.update({"source_page":page,"source_file":"Stats NZ / CSV BLDM.SFTZ1100A1S"})
+                            out["series"].append(item)
+                            out["audit"][code]={**status,"source_page":page,"origin":"Stats NZ / BLDM.SFTZ1100A1S","primary_error":str(exc)[:160]}
+                            continue
+                    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
+                        pass
                 try:
                     item,status=curated_statsnz_house(spec,now)
                     if item:out["series"].append(item)
@@ -1192,6 +1348,16 @@ def collect(now=None,fetcher=fetch):
                        "source_page":spec["source_page"],"origin":spec["origin"]}
                     continue
             if spec["method"]=="biznz":
+                if fetcher is fetch:
+                    try:
+                        item,status=candidate(spec,fetch_bnz_psi(now),now)
+                        if item:
+                            item.update({"source_page":BNZ_PSI_INDEX,"source_file":"BNZ / BusinessNZ · pubblicazione ufficiale coautore"})
+                            out["series"].append(item)
+                            out["audit"][code]={**status,"source_page":BNZ_PSI_INDEX,"origin":"BNZ / BusinessNZ","primary_error":str(exc)[:160]}
+                            continue
+                    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
+                        pass
                 try:
                     fallback,status=curated_official_businessnz(spec,now)
                     if fallback:out["series"].append(fallback)

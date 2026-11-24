@@ -359,6 +359,32 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(out["audit"]["NZD_services"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
         self.assertEqual(out["audit"]["NZD_services"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
 
+    def test_nzd_credit_proxy_exact_attributed_pair(self):
+        html=b"<h2>Private Sector Credit in New Zealand increased to 630847 NZD Million in September from 624663 NZD Million in August of 2026. source: <a>Reserve Bank of New Zealand</a></h2>"
+        self.assertEqual(mod.parse_nzd_credit_proxy(html,date(2026,11,24)),[("2026-08",624663),("2026-09",630847)])
+        with self.assertRaises(ValueError):mod.parse_nzd_credit_proxy(html.replace(b"Reserve Bank of New Zealand",b"Other issuer"),date(2026,11,24))
+        with self.assertRaises(ValueError):mod.parse_nzd_credit_proxy(html.replace(b"in August",b"in July"),date(2026,11,24))
+        with self.assertRaises(ValueError):mod.parse_nzd_credit_proxy(html,date(2026,8,31))
+
+    def test_statsnz_zip_exact_series(self):
+        bio=io.BytesIO()
+        with ZipFile(bio,"w") as z:
+            z.writestr("consents.csv","Series_reference,Period,Data_value,UNITS,MAGNTUDE,Suppressed\nBLDM.SFTZ1100A1S,2026.08,3495,Number,0,\nBLDM.SFTZ1100A1S,2026.09,3218,Number,0,\nBLDM.FAKE,2026.10,9999,Number,0,\n")
+        self.assertEqual(mod.parse_statsnz_house_zip(bio.getvalue(),date(2026,11,24)),[("2026-08",3495),("2026-09",3218)])
+        self.assertIn("September-2026/Download-data/building-consents-issued-september-2026.zip",mod.statsnz_house_zip_url(date(2026,11,24),2))
+
+    def test_bnz_copublisher_psi(self):
+        html="""<h3>BNZ Services Landscape (PSI)</h3><p>BNZ Research - BusinessNZ - 16.11.2026</p>
+        <p>According to the BNZ – BusinessNZ Performance of Services Index (PSI), activity grew.
+        The PSI for October was 51.7 (where a reading above 50.0 indicates expansion).
+        This was up 0.8 points from 50.9 in September.</p>
+        <p>BNZ Research - BusinessNZ - 19.10.2026</p>
+        <p>Performance of Services Index (PSI). The PSI for September was 50.8.
+        This was down from 51.0 in August.</p>"""
+        self.assertEqual(mod.parse_bnz_psi(html.encode(),date(2026,11,24)),[("2026-09",50.9),("2026-10",51.7)])
+        self.assertEqual(mod.parse_bnz_psi(html.encode(),date(2026,11,1)),[("2026-08",51.0),("2026-09",50.8)])
+        with self.assertRaises(ValueError):mod.parse_bnz_psi(html.replace("Performance of Services Index (PSI)","Manufacturing Index (PMI)").encode(),date(2026,11,24))
+
     def test_snb_exact_domestic_loan_utilisation(self):
         raw='CubeId;bakredinausbm\nPublishingDate;2026-11-23 09:00\n\nDate;D0;D1;D2;D3;Value\n'
         for y in (2025,2026):
