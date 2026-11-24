@@ -133,4 +133,16 @@ assert.equal(model(catalog,'2026-11-24','NZD',psiFake).find(x=>x.key==='services
 const psiWrongArea=structuredClone(NZpsi);
 psiWrongArea.series[0].ccy='AUD';
 assert.equal(model(catalog,'2026-11-24','AUD',psiWrongArea).find(x=>x.key==='services').signal.tone,'neutral');
+const manualPsi=structuredClone(NZpsi);
+manualPsi.series[0].quality='SOURCE_VERIFIED_MANUAL_NONPIT';
+manualPsi.series[0].manual_verified_on='2026-11-24';
+manualPsi.series[0].source_page='https://businessnz.org.nz/psi/pre-election-drinks';
+manualPsi.series[0].source_file='BusinessNZ · verifica manuale 2026-11-24';
+assert.equal(model(catalog,'2026-11-24','NZD',manualPsi).find(x=>x.key==='services').signal.tone,'green');
+assert.match(render({catalog,esc,dayNow:()=>'2026-11-24',country:'NZD',overlay:manualPsi}),/verificato manualmente/);
+assert.equal(model(catalog,'2027-04-01','NZD',manualPsi).find(x=>x.key==='services').signal.tone,'neutral');
+const manualTampered=structuredClone(manualPsi);
+manualTampered.series[0].source_page='https://somethingelse.com/fake';
+assert.equal(model(catalog,'2026-11-24','NZD',manualTampered).find(x=>x.key==='services').signal.tone,'neutral');
+
 console.log('OK: G8 economic semaphore — 8 economies, 7 areas, data age, dates, source gaps, HTML');
