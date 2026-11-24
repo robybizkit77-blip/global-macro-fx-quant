@@ -25,23 +25,23 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),8)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),8)
+        self.assertEqual(len(mod.REGISTRY),11)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),11)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan","ons","statcan_services"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
         obs=mod.parse_fred(raw,"PRMNTO01AUQ657S","Q",NOW)
         self.assertEqual(obs[-1][0],"2026-Q2")
-        item,status=mod.candidate(next(s for s in mod.REGISTRY if s["ccy"]=="AUD"),obs,NOW)
+        item,status=mod.candidate(next(s for s in mod.REGISTRY if s["ccy"]=="AUD" and s["area"]=="industry"),obs,NOW)
         self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
         self.assertEqual(item["metric_kind"],"points")
         self.assertEqual(item["dates"],["2026-Q1","2026-Q2"])
         self.assertFalse("first_seen_at" in item)
 
     def test_stale_official_feed_does_not_generate_signal(self):
-        spec=next(s for s in mod.REGISTRY if s["ccy"]=="JPY")
+        spec=next(s for s in mod.REGISTRY if s["ccy"]=="JPY" and s["area"]=="house")
         rows=mod.parse_fred(fixture(spec["key"],"M",(2023,11)),spec["key"],"M",NOW)
         item,status=mod.candidate(spec,rows,NOW)
         self.assertIsNone(item)
@@ -98,7 +98,7 @@ class G8SemaphoreSources(unittest.TestCase):
         observations=mod.parse_statcan(bio.getvalue(),NOW)
         self.assertEqual(observations[-1],("2026-09",102009))
         self.assertEqual(len(observations),21)
-        spec=next(x for x in mod.REGISTRY if x["ccy"]=="CAD")
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="CAD" and x["area"]=="industry")
         item,stat=mod.candidate(spec,observations,NOW)
         self.assertEqual(stat["status"],"READY_DESCRIPTIVE_REVISED")
         self.assertEqual(item["dates"],["2026-08","2026-09"])
@@ -107,7 +107,7 @@ class G8SemaphoreSources(unittest.TestCase):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),8)
+        self.assertEqual(len(out["audit"]),11)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
