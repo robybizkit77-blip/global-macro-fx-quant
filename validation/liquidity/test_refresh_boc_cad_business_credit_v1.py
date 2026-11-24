@@ -7,7 +7,7 @@ import unittest
 from datetime import date
 from pathlib import Path
 from validation.liquidity.refresh_boc_cad_business_credit_v1 import (
-    parse, emit_js, existing_observations, run, DEST, INITIAL_OBSERVED
+    parse, parse_lynx, existing_payload, emit_js, existing_observations, run, DEST, INITIAL_OBSERVED
 )
 DAY=date(2026,11,14)
 
@@ -81,5 +81,32 @@ class BoCCreditResearchTest(unittest.TestCase):
             none=run(out,apply=True,fixture=fixture,today=DAY)
             self.assertEqual(none["status"],"NO_CHANGE")
             self.assertEqual(none["write_state"],"NO_MUTATION")
+
+
+    def test_lynx_source_and_independent_update(self):
+        page="<table><tr><th>Millions of dollars</th><th>2026‑11‑12</th><th>2026‑11‑13</th><th>2026‑11‑16</th></tr><tr><th>Total settlement balances</th><td>70,902</td><td>75,275</td><td></td></tr><tr><th>Amount in Lynx</th><td>70,900</td><td>75,273</td><td></td></tr><tr><th>Amount in Real-Time Rail (RTR)</th><td>2</td><td>2</td><td></td></tr></table>"
+        x=parse_lynx(page,today=DAY)
+        self.assertEqual(x["dates"],["2026-11-12","2026-11-13"])
+        self.assertEqual(x["values"],[70900,75273])
+        self.assertFalse(x["canonical_monthly_equivalence_verified"])
+        for bad in (page.replace("Amount in Lynx","Target in Lynx"),page.replace("75,275","75,200"),page.replace("Millions of dollars","Billions of dollars")):
+            with self.assertRaises(ValueError):parse_lynx(bad,today=DAY)
+        with tempfile.TemporaryDirectory() as temp:
+            f=Path(temp)/"credit.json";l=Path(temp)/"lynx.html";dest=Path(temp)/"out.js"
+            f.write_text(json.dumps(raw()));l.write_text(page)
+            run(dest,apply=True,fixture=f,today=DAY)
+            before=existing_payload(dest.read_text())
+            f.write_text("invalid credit")
+            args={"apply":True,"fixture":f,"lynx_fixture":l,"today":DAY}
+            result=run(dest,**args)
+            self.assertEqual(result["lynx"]["status"],"VERIFIED")
+            self.assertTrue(result["credit"]["status"].startswith("WITHHELD"))
+            after=existing_payload(dest.read_text())
+            self.assertEqual(after["values"],before["values"])
+            self.assertEqual(after["settlement_balances"],x)
+            f.write_text(json.dumps(raw()))
+            self.assertEqual(run(dest,**args)["status"],"NO_CHANGE")
+            l.write_text("invalid Lynx")
+            self.assertEqual(run(dest,**args)["lynx"]["retained_observation"],"2026-11-13")
 
 if __name__=="__main__":unittest.main()
