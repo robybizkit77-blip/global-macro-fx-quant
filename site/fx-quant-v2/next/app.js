@@ -1259,7 +1259,7 @@ const mobileNav=typeof window.matchMedia==='function'?window.matchMedia('(max-wi
 function setMobileMenu(open,restoreFocus=false){
  const drawer=$('sidebar'),toggle=$('menu-toggle');
  const expanded=mobileNav.matches&&Boolean(open);
- $('app').classList.toggle('menu-open',expanded);
+ if(expanded)$('app').classList.add('menu-open');else $('app').classList.remove('menu-open');
  toggle.setAttribute('aria-expanded',String(expanded));
  toggle.setAttribute('aria-label',expanded?'Chiudi menu':'Apri menu');
  if(drawer)drawer.inert=mobileNav.matches&&!expanded;
