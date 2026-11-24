@@ -1,7 +1,20 @@
 {
   "content_as_of": "2026-11-23",
-  "generated_at_utc": "2026-11-24T00:57:55.541720Z",
+  "generated_at_utc": "2026-11-24T03:26:30.685320Z",
   "items": [
+    {
+      "as_of": "2026-11-23",
+      "category": "MARKET_VOLATILITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 26.62; confronto con chiusura 2026-11-20. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "HIGH",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-20",
+      "source": "Cboe Global Markets, VIX daily close",
+      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "title": "VIX: -9.27 punti nella chiusura del 2026-11-23"
+    },
     {
       "as_of": "2026-11-23",
       "category": "MARKET_FX_ECB_FIXING",
@@ -68,19 +81,6 @@
       "source": "S&P Dow Jones Indices via FRED",
       "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "title": "S&P 500: -3.70% nella chiusura del 2026-11-20"
-    },
-    {
-      "as_of": "2026-11-20",
-      "category": "MARKET_VOLATILITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 35.89; confronto con chiusura 2026-11-19. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "HIGH",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-19",
-      "source": "Cboe Global Markets, VIX daily close",
-      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "title": "VIX: +7.45 punti nella chiusura del 2026-11-20"
     },
     {
       "as_of": "2026-11-20",
@@ -181,6 +181,18 @@
       "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
     },
     {
+      "as_of": "2026-11-20",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Fra 2026-11-19 e 2026-11-20; 2Y 1.826%, 10Y 2.838%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-19",
+      "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-20",
+      "title": "JPY: governativo 2Y -2.7 pb, 10Y -3.2 pb"
+    },
+    {
       "as_of": "2026-11-19",
       "category": "MARKET_EQUITY_CLOSE",
       "ccy": "",
@@ -208,21 +220,9 @@
       "source": "Australian Bureau of Statistics",
       "source_url": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/oct-2026",
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
-    },
-    {
-      "as_of": "2026-11-19",
-      "category": "MARKET_GOVERNMENT_RATES",
-      "ccy": "JPY",
-      "confidence": "A",
-      "detail": "Fra 2026-11-18 e 2026-11-19; 2Y 1.853%, 10Y 2.870%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
-      "importance": "MEDIUM",
-      "quality": "FULL_CURRENT_OFFICIAL",
-      "reference_previous_date": "2026-11-18",
-      "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-19",
-      "title": "JPY: governativo 2Y -1.9 pb, 10Y -4.6 pb"
     }
   ],
-  "last_checked_at_utc": "2026-11-24T00:57:55.541720Z",
+  "last_checked_at_utc": "2026-11-24T03:26:30.685320Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -446,13 +446,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-19",
+            "date": "2026-11-20",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-19",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-20",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.853
+            "yield_2y_pct": 1.826
           }
         },
         "source": "Bank of Japan",
@@ -810,13 +810,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-19",
+            "date": "2026-11-20",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-19",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-20",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.853
+            "yield_2y_pct": 1.826
           }
         },
         "source": "Bank of Japan",
@@ -1165,8 +1165,8 @@
       {
         "accepted_items": 8,
         "ccy": "JPY",
-        "entries_rejected": 36,
-        "feed_entries_seen": 44,
+        "entries_rejected": 35,
+        "feed_entries_seen": 43,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
