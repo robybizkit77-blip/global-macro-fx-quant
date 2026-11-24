@@ -25,10 +25,10 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),15)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),15)
+        self.assertEqual(len(mod.REGISTRY),23)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),23)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","statcan","ons","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -103,6 +103,35 @@ class G8SemaphoreSources(unittest.TestCase):
         dimensions["indic"]["category"]["index"]={"BS-SCI-BAL":0,"BS-ICI-BAL":1}
         with self.assertRaisesRegex(ValueError,"selector changed"):
             mod.parse_eurostat_services(json.dumps(payload).encode(),date(2026,11,24))
+
+    def test_eurostat_multiple_official_domains_exact_semantics(self):
+        for method in ("eurostat_industry","eurostat_esi","eurostat_retail"):
+            dataset, selectors=mod.EUROSTAT_EXTRA[method]
+            ids=list(selectors)+["time"]
+            times=[f"2025-{m:02d}" for m in range(1,13)]+[f"2026-{m:02d}" for m in range(1,11)]
+            dims={k:{"category":{"index":{v:0}}} for k,v in selectors.items()}
+            dims["time"]={"category":{"index":{t:i for i,t in enumerate(times)}}}
+            values={str(i):105+i for i in range(len(times))}
+            payload={"class":"dataset","id":ids,"size":[1]*len(selectors)+[len(times)],
+                     "dimension":dims,"value":values}
+            observations=mod.parse_euro_extra(json.dumps(payload).encode(),NOW,method)
+            self.assertEqual(observations[-2:],[("2026-09",125),("2026-10",126)])
+            # Source dimensions are required to be *one exact selection*.
+            k=next(k for k in selectors if k!="freq")
+            dims[k]["category"]["index"]={"wrong":0}
+            with self.assertRaisesRegex(ValueError,"selector changed"):
+                mod.parse_euro_extra(json.dumps(payload).encode(),NOW,method)
+        self.assertTrue(mod.euro_extra_url("eurostat_industry").startswith("https://ec.europa.eu/eurostat/"))
+
+    def test_new_fred_registry_has_no_implicit_sign_error(self):
+        expected={"house":"PERMIT","industry":"INDPRO","leading":"UMCSENT",
+                  "demand":"PCEC96","credit":"DRTSCILM"}
+        records={x["area"]:x for x in mod.REGISTRY if x["ccy"]=="USD" and x["area"] in expected}
+        self.assertEqual({a:r["key"] for a,r in records.items()},expected)
+        self.assertFalse(records["credit"]["up_good"],"Tightening must be adverse when rising")
+        for a,r in records.items():
+            self.assertTrue(r["source_page"].endswith("/"+r["key"]))
+            self.assertGreaterEqual(r["max_age_days"],100)
 
     def test_statcan_exact_manufacturing_sa_total(self):
         bio=io.BytesIO()
@@ -240,7 +269,7 @@ class G8SemaphoreSources(unittest.TestCase):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),15)
+        self.assertEqual(len(out["audit"]),23)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
