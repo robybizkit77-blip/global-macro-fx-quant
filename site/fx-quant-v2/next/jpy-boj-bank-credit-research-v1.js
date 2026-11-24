@@ -20,7 +20,7 @@
  "observation_is_not_publication_date": true,
  "original_canonical_last": "2026-07",
  "original_canonical_value": 6764306,
- "checked_rome": "2026-11-14",
+ "checked_rome": "2026-11-24",
  "dates": [
   "2023-10",
   "2023-11",
@@ -100,7 +100,35 @@
  "last_observation": "2026-09",
  "matched_canonical_months": 31,
  "new_after_canonical": 2,
- "inference": "Monthly BoJ bank-credit stock including trust and overseas-office accounts: not new loans, not BoJ settlement reserves or observed yen demand. FX and funding response require independent confirmation."
+ "inference": "Monthly BoJ bank-credit stock including trust and overseas-office accounts: not new loans, not BoJ settlement reserves or observed yen demand. FX and funding response require independent confirmation.",
+ "tankan": {
+  "source_url": "https://www.boj.or.jp/en/statistics/tk/yoshi/tk2609.htm",
+  "frequency": "Q",
+  "unit": "diffusion_index_points",
+  "scope": "all enterprises, all industries",
+  "positive_lending_means": "accommodative",
+  "positive_loan_rate_means": "rise",
+  "dates": [
+   "2026-Q2",
+   "2026-Q3"
+  ],
+  "lending_attitude": [
+   13,
+   13
+  ],
+  "financial_position": [
+   11,
+   11
+  ],
+  "loan_rate_change": [
+   61,
+   68
+  ],
+  "latest_observation": "2026-Q3",
+  "eligible_for_fx_core": false,
+  "eligible_for_backtest": false,
+  "first_release_pit_verified": false
+ }
 };
  root.FXQuantJPYBankCreditResearch=Object.freeze(data);
  if(typeof module!=='undefined'&&module.exports)module.exports=data;
