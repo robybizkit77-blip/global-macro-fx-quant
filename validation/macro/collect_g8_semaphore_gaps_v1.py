@@ -222,7 +222,7 @@ def parse_statcan_detail(raw,now,identifier):
             raise ValueError("StatCan exact dataset filename changed")
         if archive.getinfo(spec["file"]).file_size>100_000_000:
             raise ValueError("StatCan uncompressed archive exceeds budget")
-        values={}
+        values={};references={}
         with archive.open(spec["file"]) as src:
             reader=csv.DictReader(io.TextIOWrapper(src,encoding="utf-8-sig"))
             fields={"REF_DATE","GEO","VALUE","UOM","SCALAR_FACTOR",spec["category"],spec["other"]}
@@ -232,7 +232,7 @@ def parse_statcan_detail(raw,now,identifier):
                 if row["GEO"]!="Canada" or row[spec["category"]]!=spec["value"] or row[spec["other"]]!=spec["selection"]:
                     continue
                 if row["UOM"]!=spec["unit"] or row["SCALAR_FACTOR"]!=spec["scale"]:
-                    raise ValueError("StatCan selected unit/scale mismatch")
+                    raise ValueError("StatCan selected unit/scale mismatch: "+row["UOM"]+"/"+row["SCALAR_FACTOR"])
                 p=row["REF_DATE"]
                 if not re.fullmatch(r"\d{4}-(?:0[1-9]|1[0-2])",p):
                     raise ValueError("StatCan selected month code invalid")
@@ -242,8 +242,8 @@ def parse_statcan_detail(raw,now,identifier):
                 v=float(raw_value)
                 if not math.isfinite(v) or v<=0 or v>1e12:
                     raise ValueError("StatCan selected value implausible")
-                if p in values:raise ValueError("StatCan selected duplicate month")
-                values[p]=v
+                if p in values:raise ValueError("StatCan selected duplicate month "+p+" current="+row.get("COORDINATE","?")+" vector="+row.get("VECTOR","?")+" prior="+references.get(p,"?"))
+                values[p]=v;references[p]=row.get("COORDINATE","?")+"/"+row.get("VECTOR","?")
     if len(values)<12:raise ValueError("StatCan selected series lacks 12 observations")
     return sorted(values.items())
 
