@@ -31,6 +31,12 @@ MAX_BYTES=3_000_000
 # Several historical OECD/BIS feeds have stopped updating: retain status WITHHELD;
 # never use today's fetch time to make an old observation look current.
 REGISTRY=[
+ dict(ccy="AUD",area="demand",key="ABS_MHSI_TOTAL_MONTHLY_SA",method="abs_demand",
+      name="Spesa famiglie totale nominale SA (proxy domanda, % m/m)",
+      unit="% m/m nominale SA",frequency="M",kind="points",max_age_days=115,
+      origin="Australian Bureau of Statistics / MHSI",
+      source_page="https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release"),
+
  dict(ccy="GBP",area="industry",key="ONS_K222_DIOP",method="ons_industry",
       name="Indice della produzione industriale UK (volumi reali SA)",unit="indice CVMSA",
       frequency="M",kind="percent",max_age_days=115,origin="ONS Index of Production",
@@ -135,7 +141,7 @@ REGISTRY=[
       kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
-assert len(REGISTRY)==25 and len({(s["ccy"],s["area"]) for s in REGISTRY})==25
+assert len(REGISTRY)==26 and len({(s["ccy"],s["area"]) for s in REGISTRY})==26
 
 def fetch(url:str)->bytes:
     host=urlsplit(url).hostname
@@ -335,13 +341,12 @@ def abs_services_fetch(url):
         if not data or len(data)>3_500_000:raise ValueError("invalid ABS HTML size")
     return data
 
-def parse_abs_services(raw,now):
-    """ABS MHSI *nominal* household services spending MoM % changes, not services output."""
+def _parse_abs_monthly_chart(raw,now,title):
+    """ABS exact graph/table identity: monthly % nominal SA (not volume)."""
     html=raw.decode("utf-8","replace")
-    title="Household spending on services, current price, seasonally adjusted estimate"
     identity='aria-label="'+title+'.csv"'
     occurrences=[m.start() for m in re.finditer(re.escape(identity),html)]
-    if len(occurrences)!=1:raise ValueError("ABS unique services chart source missing")
+    if len(occurrences)!=1:raise ValueError("ABS unique exact chart source missing")
     start=html.find("<table",occurrences[0])
     end=html.find("</table>",start)
     if start<0 or end<0 or end-start>175_000:
@@ -363,8 +368,16 @@ def parse_abs_services(raw,now):
         if not math.isfinite(val) or abs(val)>100:raise ValueError("invalid ABS monthly growth rate")
         if period in values:raise ValueError("duplicate ABS period")
         values[period]=val
-    if len(values)<12:raise ValueError("ABS services growth-rate table insufficient")
+    if len(values)<12:raise ValueError("ABS monthly growth-rate table insufficient")
     return sorted(values.items())
+
+def parse_abs_services(raw,now):
+    return _parse_abs_monthly_chart(raw,now,
+      "Household spending on services, current price, seasonally adjusted estimate")
+
+def parse_abs_demand(raw,now):
+    return _parse_abs_monthly_chart(raw,now,
+      "Household spending, current price, seasonally adjusted estimate")
 
 def biznz_fetch(url):
     """Issuer article selected through the live PSI index, never via news snippets."""
@@ -796,7 +809,7 @@ def collect(now=None,fetcher=fetch):
           euro_extra_url(spec["method"]) if spec["method"] in EUROSTAT_EXTRA else
           EUROSTAT_SERVICES_URL if spec["method"]=="eurostat_services" else
           BUSINESSNZ_INDEX if spec["method"]=="biznz" else
-          ABS_MHSI_SERVICES if spec["method"]=="abs_services" else
+          ABS_MHSI_SERVICES if spec["method"] in {"abs_services","abs_demand"} else
           STATCAN_CSV if spec["method"]=="statcan" else
           ONS_URL if spec["method"]=="ons" else
           STATCAN_GDP_ZIP if spec["method"]=="statcan_services" else
@@ -807,9 +820,9 @@ def collect(now=None,fetcher=fetch):
             raw=(fetched[0] if fetched is not None else
                  fetch_boe(url) if spec["method"]=="boe_mortgage" and fetcher is fetch else
                  biznz_fetch(url) if spec["method"]=="biznz" else
-                 abs_services_fetch(url) if spec["method"]=="abs_services" else
+                 abs_services_fetch(url) if spec["method"] in {"abs_services","abs_demand"} else
                  fetch_statcan(url) if spec["method"]=="statcan" else
-                 fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","statcan","ons","ons_industry","statcan_services","boe_mortgage","statsnz_house"} and fetcher is fetch else fetcher(url)
+                 fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","abs_demand","statcan","ons","ons_industry","statcan_services","boe_mortgage","statsnz_house"} and fetcher is fetch else fetcher(url)
             observations=(parse_statsnz_house(raw,now) if spec["method"]=="statsnz_house" else
                           parse_boe_mortgage(raw,now) if spec["method"]=="boe_mortgage" else
                           parse_ons_industry(raw,now) if spec["method"]=="ons_industry" else
@@ -819,6 +832,7 @@ def collect(now=None,fetcher=fetch):
                           if spec["method"]=="fred" else
                           parse_businessnz_psi(raw,now) if spec["method"]=="biznz" else
                           parse_abs_services(raw,now) if spec["method"]=="abs_services" else
+                          parse_abs_demand(raw,now) if spec["method"]=="abs_demand" else
                           parse_statcan(raw,now) if spec["method"]=="statcan" else
                           parse_ons_services(raw,now) if spec["method"]=="ons" else
                           parse_statcan_services(raw,now) if spec["method"]=="statcan_services" else parse_eurostat(raw,now))
