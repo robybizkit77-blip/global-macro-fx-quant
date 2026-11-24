@@ -227,5 +227,25 @@ assert.match(app,/visibilitychange/);
 const page=read('site/fx-quant-v2/next/index.html');
 assert.match(page,/editorial-v4\.css\?v=18/);
 assert.match(page,/app\.js\?v=18/);
+
+const momentumApi=require('../site/fx-quant-v2/next/currency-strength-reading.js');
+const momentumDate=initial.currencyPrices.last_as_of;
+const momentum=momentumApi.momentum(initial.currencyPrices,momentumDate);
+assert.equal(momentum.items.length,8);
+assert.equal(momentum.asof,momentumDate);
+assert(momentum.from<momentum.mid&&momentum.mid<momentum.asof);
+assert(momentum.items.every(x=>finite(x.delta)&&Math.abs(x.delta-(x.recent-x.prior))<1e-10));
+assert.equal(momentumApi.momentum({...initial.currencyPrices,rows:initial.currencyPrices.rows.slice(-10)},momentumDate),null);
+assert.equal(momentumApi.momentum({...initial.currencyPrices,rows:[...initial.currencyPrices.rows,initial.currencyPrices.rows.at(-1)]},momentumDate),null);
+assert.equal(momentumApi.momentum(initial.currencyPrices,staleDay),null);
+const fxBasket=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+const fixture={...initial.currencyPrices,last_as_of:'2026-11-16',rows:Array.from({length:11},(_,i)=>({
+ Date:new Date(Date.UTC(2026,10,6+i)).toISOString().slice(0,10),
+ ...Object.fromEntries(fxBasket.map(c=>[c,c==='USD'?Math.exp(i<6?i*.001:.005-(i-5)*.002):1]))
+}))};
+const usdImpulse=momentumApi.momentum(fixture,'2026-11-16').items.find(x=>x.ccy==='USD');
+assert(usdImpulse.recent>0&&usdImpulse.prior<0&&usdImpulse.delta>0);
+assert.equal(usdImpulse.label,'Passa in positivo');
+assert.equal(usdImpulse.tone,'positive');
 require('./publishing/test_next_home_thesis_recalc_v1.cjs');
 console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
