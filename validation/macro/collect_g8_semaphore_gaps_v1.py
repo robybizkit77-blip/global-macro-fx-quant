@@ -23,6 +23,7 @@ from urllib.parse import urlsplit
 ROOT=Path(__file__).resolve().parents[2]
 TARGET=ROOT/"site/fx-quant-v2/next/semaphore-supplement-v1.json"
 MANUAL_PSI=ROOT/"validation/macro/official_g8_services_source_snapshot_v1.json"
+MANUAL_NZ_HOUSE=ROOT/"validation/macro/official_nzd_house_snapshot_v1.json"
 SCHEMA="GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1"
 FRED="https://fred.stlouisfed.org/graph/fredgraph.csv?id="
 MAX_BYTES=3_000_000
@@ -750,6 +751,38 @@ def curated_official_businessnz(spec,now):
       "verified_on":doc["verified_on"],
       "source_page":uri}
 
+def curated_statsnz_house(spec,now):
+    """Official-release manual snapshot when Stats NZ download is blocked.
+    Never describe it as automatically refreshed.
+    """
+    if spec["method"]!="statsnz_house":raise ValueError("fallback only Stats NZ")
+    d=json.loads(MANUAL_NZ_HOUSE.read_text(encoding="utf-8"))
+    expected={"schema":"GMFQ_NZD_HOUSING_OFFICIAL_SNAPSHOT_V1",
+      "ccy":"NZD","area":"house","source_series_id":"STATSNZ_NEWDWELLINGS_SA",
+      "source_issuer":"Stats NZ","freq":"M","status":"MANUAL_OFFICIAL_RELEASE_NOT_LIVE"}
+    for k,v in expected.items():
+        if d.get(k)!=v:raise ValueError("Stats NZ snapshot provenance changed")
+    page=d.get("source_url")
+    if page!="https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/":
+        raise ValueError("Stats NZ manual release URL is not exact verified record")
+    verified=date.fromisoformat(d["verified_on"])
+    release=date.fromisoformat(d["official_release_date"])
+    if not release<=verified<=now:raise ValueError("Stats NZ snapshot impossible dates")
+    dates=d.get("dates");values=d.get("values")
+    if not isinstance(dates,list) or len(dates)!=2 or not isinstance(values,list) or len(values)!=2:
+        raise ValueError("Stats NZ snapshot requires two dated observations")
+    if dates!=["2026-08","2026-09"]:raise ValueError("Stats NZ snapshot original months changed")
+    if any(not isinstance(x,(int,float)) or not math.isfinite(x) or x<=100 or x>100000 for x in values):
+        raise ValueError("Stats NZ release values implausible")
+    item,status=candidate(spec,list(zip(dates,values)),now)
+    if item is None:return None,{"status":"WITHHELD_STALE","reason":"Verified snapshot expired"}
+    item.update({"quality":"SOURCE_VERIFIED_MANUAL_NONPIT","source_page":page,
+        "source_file":"Stats NZ · verifica manuale "+d["verified_on"]+" (accesso automatico bloccato)",
+        "manual_verified_on":d["verified_on"],"official_release_date":d["official_release_date"]})
+    return item,{"status":"READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+      "last_observation":item["observation_as_of"],
+      "verified_on":d["verified_on"],"source_page":page}
+
 def collect(now=None,fetcher=fetch):
     now=now or datetime.now(timezone.utc).date()
     out={"schema":SCHEMA,"as_of":now.isoformat(),"source_count":len(REGISTRY),
@@ -797,6 +830,19 @@ def collect(now=None,fetcher=fetch):
                                  "origin":spec["origin"]}
             out["audit"][code].pop("...")
         except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+            if spec["method"]=="statsnz_house":
+                try:
+                    item,status=curated_statsnz_house(spec,now)
+                    if item:out["series"].append(item)
+                    out["audit"][code]={**status,"automatic_fetch":"BLOCKED_OR_UNVALIDATED",
+                        "automatic_error":str(exc)[:220]}
+                    continue
+                except (ValueError,KeyError,IndexError,UnicodeError,OSError) as manual_exc:
+                    out["audit"][code]={"status":"WITHHELD_FETCH_OR_VALIDATION",
+                       "reason":"No verified current Stats NZ: "+str(manual_exc)[:120],
+                       "automatic_error":str(exc)[:180],
+                       "source_page":spec["source_page"],"origin":spec["origin"]}
+                    continue
             if spec["method"]=="biznz":
                 try:
                     fallback,status=curated_official_businessnz(spec,now)
