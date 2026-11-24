@@ -82,6 +82,7 @@ on:
       - 'CAD Official Business Credit Research Refresh V1'
       - 'ECB EUR NFC Credit Research Refresh V1'
       - 'RBA AUD Business Credit Growth Research Refresh V1'
+      - 'RBA AUD Exchange Settlement Balances Research Refresh V1'
       - 'BoE GBP Secured Credit Growth Research Refresh V1'
       - 'BoJ JPY Bank Credit Research Refresh V1'
       - 'FX Quant V2 AUD Official RBA F2 Research Refresh'
@@ -315,6 +316,7 @@ jobs:
            github.event.workflow_run.name == 'CAD Official Business Credit Research Refresh V1' ||
            github.event.workflow_run.name == 'ECB EUR NFC Credit Research Refresh V1' ||
            github.event.workflow_run.name == 'RBA AUD Business Credit Growth Research Refresh V1' ||
+           github.event.workflow_run.name == 'RBA AUD Exchange Settlement Balances Research Refresh V1' ||
            github.event.workflow_run.name == 'BoE GBP Secured Credit Growth Research Refresh V1' ||
            github.event.workflow_run.name == 'BoJ JPY Bank Credit Research Refresh V1')
         env:
@@ -346,6 +348,7 @@ jobs:
               "CAD Official Business Credit Research Refresh V1": "cad-official-credit-research-v1.js",
               "ECB EUR NFC Credit Research Refresh V1": "eur-ecb-nfc-credit-research-v1.js",
               "RBA AUD Business Credit Growth Research Refresh V1": "aud-rba-business-credit-growth-research-v1.js",
+              "RBA AUD Exchange Settlement Balances Research Refresh V1": "aud-rba-es-balances-research-v1.js",
               "BoE GBP Secured Credit Growth Research Refresh V1": "gbp-boe-secured-credit-research-v1.js",
               "BoJ JPY Bank Credit Research Refresh V1": "jpy-boj-bank-credit-research-v1.js",
           }
