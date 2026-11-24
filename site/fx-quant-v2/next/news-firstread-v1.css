@@ -84,3 +84,20 @@
 @media(prefers-reduced-motion:reduce){
  #content[data-view="news"] .news-evidence-item{transition:none}
 }
+
+/* Calendar focus and news priorities are labels, not causal or trading scores. */
+#content[data-view="news"] .cal-focus{padding:15px 17px;margin:12px 0 18px;border:1px solid #496174;border-radius:10px;background:#142f42}
+#content[data-view="news"] .cal-focus-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start}
+#content[data-view="news"] .cal-focus-head h3{margin:5px 0 9px;font-size:20px;color:#e6f1f8}
+#content[data-view="news"] .cal-focus-head>small,.cal-focus-note{font-size:11px;line-height:1.6;color:#acc6d7}
+#content[data-view="news"] .cal-focus-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#content[data-view="news"] .cal-focus-event{padding:11px 12px;border:1px solid #425d70;border-left:3px solid #dab674;border-radius:7px;background:#102638;min-width:0}
+#content[data-view="news"] .cal-focus-event span{display:block;font-size:10px;color:#e2c58f;font-weight:750}
+#content[data-view="news"] .cal-focus-event strong{display:block;font-size:14px;line-height:1.4;margin-top:6px;color:#e3f0f7}
+#content[data-view="news"] .cal-focus-event p{font-size:11px;line-height:1.6;color:#c4dbe8;margin:8px 0}
+#content[data-view="news"] .cal-focus-event small{font-size:10px;color:#adc6d6;line-height:1.5}
+#content[data-view="news"] .news-priority-group{margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid #415e70}
+#content[data-view="news"] .news-priority-group>h3,#content[data-view="news"] .news-other-heading{font-size:16px;color:#ebf3f9;margin:0 0 8px}
+#content[data-view="news"] .news-priority-group>p{font-size:11px;color:#b0cbdc;line-height:1.6;margin:0 0 10px}
+#content[data-view="news"] .news-priority-group .news-evidence-item{border-left:3px solid #d8af69}
+@media(max-width:760px){#content[data-view="news"] .cal-focus-list{grid-template-columns:1fr}#content[data-view="news"] .cal-focus{padding:12px}}
