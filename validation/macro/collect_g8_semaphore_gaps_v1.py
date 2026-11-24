@@ -431,8 +431,16 @@ def parse_rba_d1(raw,now,which,reference):
     matches=[]
     for i,t in enumerate(titles[1:],1):
         title=norm(t)
-        if title not in {f"credit {sector} monthly growth",f"{sector} credit monthly growth",
-                         f"credit {sector} monthly percentage change",f"{sector} credit monthly percentage change"}:
+        if sector=="business":
+            # RBA release footnote (a): lending to non-financial businesses.
+            # The former generic business series is discontinued; never substitute
+            # the broader series including select financial institutions.
+            if field("series id",i)!="dgfacbnfm" or title not in {
+                    "credit non financial business monthly growth",
+                    "credit non financial business monthly growth sa"}:
+                continue
+        elif title not in {f"credit {sector} monthly growth",f"{sector} credit monthly growth",
+                           f"credit {sector} monthly percentage change",f"{sector} credit monthly percentage change"}:
             continue
         if field("frequency",i)!="monthly" or field("units",i) not in {"%","per cent","percent","percentage"} or not field("series id",i):
             continue

@@ -28,14 +28,14 @@ class G8SemaphoreSources(unittest.TestCase):
         out=StringIO()
         writer=csv.writer(out)
         writer.writerows([
-            ["Title","Credit; Housing; Monthly growth","Credit; Business; Monthly growth","Credit; Housing; Year-ended growth"],
-            ["Units","Per cent","Per cent","Per cent"],
-            ["Frequency","Monthly","Monthly","Monthly"],
-            ["Series ID","HOUSING","BUSINESS","ANNUAL"],
+            ["Title","Credit; Housing; Monthly growth","Credit; Non-financial Business; Monthly growth","Credit; Housing; Year-ended growth","Credit; Business including select financial businesses; Monthly growth"],
+            ["Units","Per cent","Per cent","Per cent","Per cent"],
+            ["Frequency","Monthly","Monthly","Monthly","Monthly"],
+            ["Series ID","HOUSING","DGFACBNFM","ANNUAL","DGFACBNWM"],
         ])
         for i in range(36):
             year,m=divmod(2026*12+8-35+i,12)
-            writer.writerow([f"{year}-{m+1:02d}-01",0.4,0.9,7.0])
+            writer.writerow([f"{year}-{m+1:02d}-01",0.4,0.9,7.0,0.9])
         raw=out.getvalue().encode()
         for key,value in [("RBA_HOUSING_CREDIT_GROWTH_MM",0.4),("RBA_BUSINESS_CREDIT_GROWTH_MM",0.9)]:
             reference=[("2026-08",value),("2026-09",value)]
@@ -46,6 +46,10 @@ class G8SemaphoreSources(unittest.TestCase):
                 mod.parse_rba_d1(raw,NOW,key,[("2026-08",9.0),("2026-09",9.0)])
             with self.assertRaises(ValueError):
                 mod.parse_rba_d1(raw.replace(b"Monthly growth",b"Annual growth"),NOW,key,reference)
+
+        with self.assertRaises(ValueError):
+            mod.parse_rba_d1(raw.replace(b"DGFACBNFM",b"UNKNOWN"),NOW,
+                "RBA_BUSINESS_CREDIT_GROWTH_MM",[("2026-08",0.9),("2026-09",0.9)])
 
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
