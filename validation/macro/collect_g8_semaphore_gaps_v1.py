@@ -452,5 +452,6 @@ def main():
     if not x.dry_run: Path(x.output).write_text(content,encoding="utf-8")
     print(json.dumps({"status":"CAPTURED_REVISED_NOT_PIT",
       "ready":len(out["series"]),"total":len(REGISTRY),
-      "audit":{k:v["status"] for k,v in out["audit"].items()}},ensure_ascii=False))
+      "audit":{k:v["status"] for k,v in out["audit"].items()},
+      "withheld_reasons":{k:v.get("reason","") for k,v in out["audit"].items() if v["status"]=="WITHHELD_FETCH_OR_VALIDATION"}},ensure_ascii=False))
 if __name__=="__main__":main()
