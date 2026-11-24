@@ -53,3 +53,34 @@ required=source_paths | {
 assert paths == required, (required-paths, paths-required)
 assert "if proof[\"status\"] != \"PASS\":" in s
 print("NEXT_RECALC_PUBLIC_INPUT_PROOF_CONTRACT_PASS",len(paths))
+
+# Completion-driven recovery must remain available even when the source
+# collector's next run makes no change. Verify every registered producer.
+from ast import literal_eval
+research_block=s.split("research_sources = {",1)[1].split("source_workflow =",1)[0]
+research_sources=literal_eval("{"+research_block.strip())
+expected_workflows={
+    "g8-economic-semaphore-source-recovery-v1.yml",
+    "fx-next-rbnz-liquidity.yml",
+    "boe-gbp-reserves-research-refresh-v1.yml",
+    "us-h8-bank-credit-research-refresh-v1.yml",
+    "cad-business-credit-official-research-refresh-v1.yml",
+    "ecb-eur-nfc-credit-research-refresh-v1.yml",
+    "rba-aud-business-credit-growth-research-refresh-v1.yml",
+    "boe-gbp-secured-credit-research-refresh-v1.yml",
+    "boj-jpy-bank-credit-research-refresh-v1.yml",
+}
+workflow_dir=p.parent
+root=p.parents[2]
+names={(workflow_dir/f).read_text(encoding="utf-8").splitlines()[0].removeprefix("name: ") for f in expected_workflows}
+assert set(research_sources)==names
+triggers=s.split("  workflow_run:",1)[1].split("permissions:",1)[0]
+proof_if=s.split("      - name: Verify the updated Next data",1)[1].split("        env:",1)[0]
+for name,file in research_sources.items():
+    assert "'"+name+"'" in triggers and "'"+name+"'" in proof_if,name
+    assert (root/"site/fx-quant-v2/next"/file).is_file(),file
+semaphore=(workflow_dir/"g8-economic-semaphore-source-recovery-v1.yml").read_text(encoding="utf-8")
+assert "gh workflow run publish-fx-quant-v2.yml" not in semaphore
+assert "live_data/sections/NATIVE_LIQ_DATA.json" in s
+assert "live_data/sections/MACRO_SERIES.json" in s
+print("NEXT_SEMAPHORE_LIQUIDITY_PUBLIC_DELIVERY_CONTRACT_PASS",len(names))
