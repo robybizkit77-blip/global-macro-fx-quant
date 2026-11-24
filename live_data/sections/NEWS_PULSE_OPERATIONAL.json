@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-23",
-  "generated_at_utc": "2026-11-24T10:46:55.194173Z",
+  "generated_at_utc": "2026-11-24T11:23:30.425776Z",
   "items": [
     {
       "as_of": "2026-11-23",
@@ -222,7 +222,7 @@
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
     }
   ],
-  "last_checked_at_utc": "2026-11-24T10:46:55.194173Z",
+  "last_checked_at_utc": "2026-11-24T11:23:30.425776Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -407,6 +407,54 @@
     "headlines": [
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "EUR",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261124~17928e5456.en.html",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-24T11:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-20",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-20",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.0302644153
+          }
+        },
+        "source": "Banca centrale europea",
+        "source_id": "ECB_PRESS",
+        "title": "Boris Vujčić: Resilience in an age of shocks: lessons from central and eastern Europe",
+        "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261124~17928e5456.en.html"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "JPY",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -555,54 +603,6 @@
         "source_id": "RBNZ_NEWS",
         "title": "New RBNZ research sheds light on economic impacts of drought",
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/new-rbnz-research-sheds-light-on-economic-impacts-of-drought"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "EUR",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261123~76b6f57b74.en.html",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-23T10:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-20",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-20",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0302644153
-          }
-        },
-        "source": "Banca centrale europea",
-        "source_id": "ECB_PRESS",
-        "title": "ECB expands acceptance of DLT-based assets as eligible Eurosystem collateral",
-        "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261123~76b6f57b74.en.html"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -1105,7 +1105,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-24",
-    "latest_published_at_utc": "2026-11-23T23:50:00Z",
+    "latest_published_at_utc": "2026-11-24T11:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1129,9 +1129,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 8,
+        "accepted_items": 9,
         "ccy": "EUR",
-        "entries_rejected": 7,
+        "entries_rejected": 6,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
