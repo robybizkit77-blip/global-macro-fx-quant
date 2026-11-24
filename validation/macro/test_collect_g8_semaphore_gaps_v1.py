@@ -359,6 +359,13 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(out["audit"]["NZD_services"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
         self.assertEqual(out["audit"]["NZD_services"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
 
+    def test_statsnz_zip_exact_series(self):
+        bio=io.BytesIO()
+        with ZipFile(bio,"w") as z:
+            z.writestr("consents.csv","Series_reference,Period,Data_value,UNITS,MAGNTUDE,Suppressed\nBLDM.SFTZ1100A1S,2026.08,3495,Number,0,\nBLDM.SFTZ1100A1S,2026.09,3218,Number,0,\nBLDM.FAKE,2026.10,9999,Number,0,\n")
+        self.assertEqual(mod.parse_statsnz_house_zip(bio.getvalue(),date(2026,11,24)),[("2026-08",3495),("2026-09",3218)])
+        self.assertIn("September-2026/Download-data/building-consents-issued-september-2026.zip",mod.statsnz_house_zip_url(date(2026,11,24),2))
+
     def test_bnz_copublisher_psi(self):
         html="""<h3>BNZ Services Landscape (PSI)</h3><p>BNZ Research - BusinessNZ - 16.11.2026</p>
         <p>According to the BNZ – BusinessNZ Performance of Services Index (PSI), activity grew.
