@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-23",
-  "generated_at_utc": "2026-11-24T03:26:30.685320Z",
+  "generated_at_utc": "2026-11-24T07:10:38.230467Z",
   "items": [
     {
       "as_of": "2026-11-23",
@@ -14,6 +14,17 @@
       "source": "Cboe Global Markets, VIX daily close",
       "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "title": "VIX: -9.27 punti nella chiusura del 2026-11-23"
+    },
+    {
+      "as_of": "2026-11-23",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "CAD",
+      "confidence": "A",
+      "detail": "Movimento 1D +3.5 bp sul bucket 6M; variazione 1W -3.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+      "title": "CAD: repricing implicito da futures più hawkish (+3.5 bp 6M in 1D)"
     },
     {
       "as_of": "2026-11-23",
@@ -54,6 +65,17 @@
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "title": "EUR/USD: -0.46% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-23",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "Movimento 1D +0.0 bp sul bucket 6M; variazione 1W -11.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+      "title": "AUD: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
     },
     {
       "as_of": "2026-11-23",
@@ -121,28 +143,6 @@
       "source": "Statistics Bureau of Japan",
       "source_url": "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html",
       "title": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
-    },
-    {
-      "as_of": "2026-11-20",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "CAD",
-      "confidence": "A",
-      "detail": "Movimento 1D -12.5 bp sul bucket 12M; variazione 1W -21.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "title": "CAD: repricing implicito da futures più dovish (-12.5 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-20",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "Movimento 1D -2.0 bp sul bucket 6M; variazione 1W -10.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing implicito da futures più dovish (-2.0 bp 6M in 1D)"
     },
     {
       "as_of": "2026-11-20",
@@ -222,7 +222,7 @@
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
     }
   ],
-  "last_checked_at_utc": "2026-11-24T03:26:30.685320Z",
+  "last_checked_at_utc": "2026-11-24T07:10:38.230467Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -849,8 +849,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.895,
-            "date": "2026-11-20",
+            "6m_rate_pct": 2.93,
+            "date": "2026-11-23",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -1039,8 +1039,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.895,
-            "date": "2026-11-20",
+            "6m_rate_pct": 2.93,
+            "date": "2026-11-23",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -1163,10 +1163,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 8,
+        "accepted_items": 7,
         "ccy": "JPY",
-        "entries_rejected": 35,
-        "feed_entries_seen": 43,
+        "entries_rejected": 34,
+        "feed_entries_seen": 41,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
