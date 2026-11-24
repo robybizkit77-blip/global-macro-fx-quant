@@ -446,6 +446,7 @@ class G8SemaphoreSources(unittest.TestCase):
         <p>Performance of Services Index (PSI). The PSI for September was 50.8.
         This was down from 51.0 in August.</p>"""
         self.assertEqual(mod.parse_bnz_psi(html.encode(),date(2026,11,24)),[("2026-09",50.9),("2026-10",51.7)])
+        self.assertEqual(mod.parse_bnz_psi(html.replace("BNZ Research - BusinessNZ - 16.11.2026","NZ Research - BusinessNZ - 16.11.2026").encode(),date(2026,11,24)),[("2026-09",50.9),("2026-10",51.7)])
         self.assertEqual(mod.parse_bnz_psi(html.encode(),date(2026,11,1)),[("2026-08",51.0),("2026-09",50.8)])
         with self.assertRaises(ValueError):mod.parse_bnz_psi(html.replace("Performance of Services Index (PSI)","Manufacturing Index (PMI)").encode(),date(2026,11,24))
 
