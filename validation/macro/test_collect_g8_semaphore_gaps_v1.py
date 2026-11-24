@@ -359,6 +359,18 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(out["audit"]["NZD_services"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
         self.assertEqual(out["audit"]["NZD_services"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
 
+    def test_bnz_copublisher_psi(self):
+        html="""<h3>BNZ Services Landscape (PSI)</h3><p>BNZ Research - BusinessNZ - 16.11.2026</p>
+        <p>According to the BNZ – BusinessNZ Performance of Services Index (PSI), activity grew.
+        The PSI for October was 51.7 (where a reading above 50.0 indicates expansion).
+        This was up 0.8 points from 50.9 in September.</p>
+        <p>BNZ Research - BusinessNZ - 19.10.2026</p>
+        <p>Performance of Services Index (PSI). The PSI for September was 50.8.
+        This was down from 51.0 in August.</p>"""
+        self.assertEqual(mod.parse_bnz_psi(html.encode(),date(2026,11,24)),[("2026-09",50.9),("2026-10",51.7)])
+        self.assertEqual(mod.parse_bnz_psi(html.encode(),date(2026,11,1)),[("2026-08",51.0),("2026-09",50.8)])
+        with self.assertRaises(ValueError):mod.parse_bnz_psi(html.replace("Performance of Services Index (PSI)","Manufacturing Index (PMI)").encode(),date(2026,11,24))
+
     def test_snb_exact_domestic_loan_utilisation(self):
         raw='CubeId;bakredinausbm\nPublishingDate;2026-11-23 09:00\n\nDate;D0;D1;D2;D3;Value\n'
         for y in (2025,2026):
