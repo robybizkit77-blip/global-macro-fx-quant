@@ -77,6 +77,72 @@ def compare_labeled_sloos(runtime, research):
         "resolution": "WITHHELD_PENDING_EXACT_VARIANT" if mismatch else "NO_OBSERVED_LABEL_CONFLICT",
     }
 
+def separate_source_inventory(root, today, runtime):
+    """Inventory research inputs separately from native series, not scheduled or HTTP certification."""
+    base = root / "site/fx-quant-v2/next"
+    def sidecar(name):
+        text = (base / name).read_text(encoding="utf-8")
+        prefix = "const data=" if "const data=" in text else "window.FXQuantNZDRBNZLiquidity = "
+        return json.JSONDecoder().raw_decode(text.split(prefix, 1)[1].lstrip())[0]
+    us=sidecar("us-h8-bank-credit-research-v1.js")
+    eu=sidecar("eur-ecb-nfc-credit-research-v1.js")
+    gb=sidecar("gbp-boe-reserves-research-v1.js")
+    gc=sidecar("gbp-boe-secured-credit-research-v1.js")
+    jp=sidecar("jpy-boj-bank-credit-research-v1.js")
+    ca=sidecar("cad-official-credit-research-v1.js")
+    au=sidecar("aud-rba-business-credit-growth-research-v1.js")
+    ab=sidecar("aud-rba-es-balances-research-v1.js")
+    nz=sidecar("nzd-rbnz-liquidity-research-v1.js")
+    residual=json.loads((root/"live_data/sections/ESTIMATED_RESIDUAL_GAPS.json").read_text())["lanes"]
+    records=[]
+    def add(ccy,role,period,source,frequency,kind,expected=True):
+        end=observed_date(period)
+        age=(today-end).days if end else None
+        status=("MISSING_OR_UNVERIFIED" if not expected or age is None or age<0 else "OBSERVED")
+        records.append(dict(ccy=ccy,role=role,period=period,source=source,
+                            frequency=frequency,kind=kind,observation_age_days=age,
+                            status=status,scheduled_execution_certified=False))
+    def series(ccy,role,x,expected_id,frequency,kind="OFFICIAL_RESEARCH",period_key="latest_observation"):
+        add(ccy,role,x.get(period_key),expected_id,frequency,kind,
+            x.get("series_id")==expected_id and x.get("frequency")==frequency
+            and x.get("eligible_for_fx_core") is False)
+    def proxy(ccy,role,key,source):
+        x=residual.get(key,{})
+        add(ccy,role,x.get("proxy_as_of"),source,"M","OFFICIAL_DIMENSIONAL_PROXY",
+            x.get("official_canonical_untouched") is True and x.get("proxy_value") is not None)
+    series("USD","liquidity",us.get("money_stock",{}),"M2SL","M")
+    series("USD","credit",us,"TOTBKCR","W")
+    sl=us.get("lending_standards",{})
+    sl_date=(sl.get("observations") or [[None]])[-1][0]
+    add("USD","conditions",sl_date,"DRTSCILM","Q","OFFICIAL_SURVEY",sl.get("series_id")=="DRTSCILM")
+    series("EUR","liquidity",eu.get("excess_liquidity",{}),"ILM.D.U2.C.EXLIQ.U2.EUR","D")
+    series("EUR","credit",eu,"BSI.M.U2.N.A.A20.A.1.U2.2240.Z01.E","M")
+    add("EUR","conditions",runtime["EUR"].get("conditions",{}).get("last_date"),"Native BLS (exact variant not certified)","Q","NATIVE_VARIANT_UNVERIFIED",False)
+    series("GBP","liquidity",gb,"RPWB56A","W",period_key="source_period")
+    series("GBP","credit",gc,"LPMVTYI","M",period_key="last_observation")
+    series("GBP","conditions",gc.get("lending_conditions",{}),"BOE_CCS_CORPORATE_AVAILABILITY_ACTUAL","Q","OFFICIAL_SURVEY")
+    proxy("JPY","liquidity","JPY.reserve_balances","BoJ monetary base end-month reserves")
+    series("JPY","credit",jp,"DLCLAEDBLTTO","M",period_key="last_observation")
+    tk=jp.get("tankan",{})
+    add("JPY","conditions",tk.get("latest_observation"),"BoJ Tankan","Q","OFFICIAL_SURVEY",tk.get("scope")=="all enterprises, all industries" and tk.get("positive_lending_means")=="accommodative")
+    proxy("CHF","liquidity","CHF.sight_deposits","SNB sight deposits")
+    proxy("CHF","credit","CHF.credit","SNB foreign credit limits (not drawn loans)")
+    series("CHF","conditions",residual.get("CHF.credit",{}).get("lending_rate_proxy",{}),"EPB@SNB.zikredlauf{FI,L16M,MP0}","M","OFFICIAL_COST_PROXY")
+    series("CAD","liquidity",ca.get("settlement_balances",{}),"BOC_LYNX_ACTUAL_DAILY","D")
+    series("CAD","credit",ca,"V122667770","M")
+    series("CAD","conditions",ca.get("lending_conditions",{}),"SLOS_BUS_LEND","Q","OFFICIAL_SURVEY")
+    add("AUD","liquidity",ab.get("source_period"),"RBA weekly ES balances","W","OFFICIAL_RESEARCH",ab.get("schema")=="GMFQ_NEXT_AUD_RBA_ES_BALANCES_V1")
+    add("AUD","credit",au.get("observation_period"),"RBA adjusted business credit growth","M","OFFICIAL_RESEARCH",au.get("breaks_adjusted") is True and au.get("is_credit_stock") is False)
+    series("AUD","conditions",au.get("lending_rate_proxy",{}),"RBA_F7_BUSINESS_LENDING_RATES_SUMMARY","M","OFFICIAL_COST_PROXY")
+    for role,key,src in (("liquidity","liquidity","RBNZ D10"),("credit","credit","RBNZ C50")):
+        add("NZD",role,nz.get("period"),src,"M","OFFICIAL_RESEARCH",nz.get("history",{}).get(nz.get("period"),{}).get(key,0)>0)
+    series("NZD","conditions",nz.get("credit_conditions",{}),"RBNZ_C60_ACTUAL_CREDIT_AVAILABILITY","H","OFFICIAL_SURVEY")
+    assert len(records)==24 and len({(x["ccy"],x["role"]) for x in records})==24
+    return {"records":records,"observed_separate_sources":sum(x["status"]=="OBSERVED" for x in records),
+            "native_variant_gaps":sum(x["kind"]=="NATIVE_VARIANT_UNVERIFIED" for x in records),
+            "scope":"OBSERVATION_INVENTORY_NOT_LIVE_OR_SCHEDULE_CERTIFICATION"}
+
+
 def audit(*, today=None, root=ROOT):
     today = today or datetime.now(ZoneInfo("Europe/Rome")).date()
     policy = json.loads((root / POLICY.relative_to(ROOT)).read_text(encoding="utf-8"))
@@ -138,6 +204,7 @@ def audit(*, today=None, root=ROOT):
         "cad_research_candidate_not_promoted": True,
         "research_source_cannot_override_canonical": True,
         "records": items,
+        "separate_source_inventory": separate_source_inventory(root,today,runtime),
         "status": "SOURCE_GAPS_EXPLICIT_NOT_LIVE_CERTIFIED",
     }
 
@@ -163,6 +230,12 @@ def markdown(report):
             f"{x['role']} {x['period'] or 'ASSENTE'} ({x['freshness']}; mappatura {'ready' if x['source_mapping_ready_at_registry_snapshot'] else 'pending'})"
             for x in rows)
         lines.append(f"- **{c}:** {compact}")
+    inv=report["separate_source_inventory"]
+    lines += ["", "## Fonti separate effettivamente presenti nel codice Next",
+              f"**Canali osservati:** {inv['observed_separate_sources']}/24. Non certifica nuova release, esecuzione programmata o consegna HTTP.", ""]
+    for c in CCY:
+        rows=[x for x in inv["records"] if x["ccy"]==c]
+        lines.append(f"- **{c}:** "+" · ".join(f"{x['role']} {x['period'] or 'ASSENTE'} [{x['kind']}; {x['status']}; {x['source']}]" for x in rows))
     return "\n".join(lines) + "\n"
 
 def selftest():
@@ -174,11 +247,15 @@ def selftest():
     assert observed_date("impossibile") is None
     assert threshold({"frequency": "QUARTERLY"}) == 135
     assert threshold({"frequency": "WEEKLY"}) == 21
-    data = audit(today=date(2026, 11, 14))
+    data = audit(today=date(2026, 11, 24))
     assert data["channels"] == 24 and data["missing_series"] >= 3
     assert data["sloos_variant"]["resolution"] == "WITHHELD_PENDING_EXACT_VARIANT"
     assert data["cad_research_candidate_not_promoted"]
     assert data["not_fx_signal_or_new_source_fetch"]
+    inventory=data["separate_source_inventory"]
+    assert len(inventory["records"])==24
+    assert not any(x["scheduled_execution_certified"] for x in inventory["records"])
+    assert next(x for x in inventory["records"] if x["ccy"]=="EUR" and x["role"]=="conditions")["status"]=="MISSING_OR_UNVERIFIED"
     print("NEXT_LIQUIDITY_FRESHNESS_AUDIT_SELFTEST_PASS")
 
 def main():
