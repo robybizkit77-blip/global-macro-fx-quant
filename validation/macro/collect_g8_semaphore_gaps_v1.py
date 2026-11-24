@@ -185,11 +185,11 @@ REGISTRY=[
       name="PIL reale settore servizi (mensile, SA)",unit="mln CAD reali SAAR",
       frequency="M",kind="percent",max_age_days=110,origin="Statistics Canada table 36-10-0434-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610043401"),
- dict(ccy="EUR",area="house",key="EA21_STS_COBP_M",method="eurostat",
-      name="Permessi per nuove abitazioni EA21 (escluse residenze collettive)",unit="indice 2021=100",
-      frequency="M",kind="percent",max_age_days=115,
-      source_page="https://ec.europa.eu/eurostat/databrowser/view/sts_cobp_m/default/table?lang=en",
-      origin="Eurostat / sts_cobp_m"),
+ dict(ccy="EUR",area="house",key="EA21_PRC_HPI_Q_TOTAL_RCH_A",method="eurostat_house_price",
+      name="Prezzi residenziali nominali EA21 (variazione annua; proxy immobiliare)",unit="% a/a",
+      frequency="Q",kind="points",max_age_days=175,
+      source_page="https://ec.europa.eu/eurostat/databrowser/view/prc_hpi_q/default/table?lang=en",
+      origin="Eurostat / prc_hpi_q"),
  dict(ccy="JPY",area="house",key="JPNRGDPPRI",method="fred",
       name="Investimenti residenziali privati reali Giappone (SA)",unit="mld JPY concatenati 2015 SA",frequency="Q",
       kind="percent",max_age_days=175,origin="Cabinet Office tramite FRED",
@@ -811,6 +811,7 @@ EUROSTAT_SERVICES_URL=(
  "geo=EA21&s_adj=SA&indic=BS-SCI-BAL&freq=M&sinceTimePeriod=2025-01"
 )
 EUROSTAT_EXTRA={
+ "eurostat_house_price":("prc_hpi_q",{"freq":"Q","geo":"EA21","purchase":"TOTAL","unit":"RCH_A"}),
  "eurostat_industry":("sts_inpr_m",{"freq":"M","geo":"EA21","indic_bt":"PRD",
       "nace_r2":"B-D","s_adj":"SCA","unit":"I21"}),
  "eurostat_esi":("teibs010",{"freq":"M","geo":"EA21","indic":"BS-ESI-I","s_adj":"SA"}),
@@ -821,7 +822,7 @@ def euro_extra_url(method):
     dataset,filters=EUROSTAT_EXTRA[method]
     from urllib.parse import urlencode
     return "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/"+dataset+"?"+urlencode({
-      **filters,"sinceTimePeriod":"2024-01"})
+      **filters,"sinceTimePeriod":"2020-Q1" if filters["freq"]=="Q" else "2024-01"})
 
 def parse_euro_extra(raw,now,method):
     """Exact dimension selectors and one time series per Eurostat requested category."""
@@ -845,7 +846,7 @@ def parse_euro_extra(raw,now,method):
         raise ValueError("Eurostat "+dataset+" period axis missing")
     out={}
     for p,ix in periods.items():
-        if not re.fullmatch(r"\d{4}-(?:0[1-9]|1[0-2])",p): continue
+        if not re.fullmatch(r"\d{4}-Q[1-4]" if selected["freq"]=="Q" else r"\d{4}-(?:0[1-9]|1[0-2])",p): continue
         if period_end(p)>now:continue
         coords={**fixed,"time":ix}
         index=0
