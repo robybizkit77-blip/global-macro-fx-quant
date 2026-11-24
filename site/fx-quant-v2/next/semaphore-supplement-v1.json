@@ -3013,19 +3013,19 @@
       "frequency": "M",
       "unit": "indice diffusione (soglia 50)",
       "dates": [
-        "2026-08",
-        "2026-09"
+        "2026-09",
+        "2026-10"
       ],
       "values": [
-        51.0,
-        50.9
+        50.9,
+        51.7
       ],
       "category": "Semaforo supplementare",
       "source_file": "BNZ / BusinessNZ · pubblicazione ufficiale coautore",
       "source_page": "https://www.bnz.co.nz/institutional-banking/research/publications",
       "source_series_id": "BNZ_BUSINESSNZ_PSI",
       "metric_kind": "points",
-      "observation_as_of": "2026-09",
+      "observation_as_of": "2026-10",
       "diffusion_threshold": 50,
       "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
@@ -3033,12 +3033,12 @@
         "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
         "frequency": "M",
         "dates": [
-          "2026-08",
-          "2026-09"
+          "2026-09",
+          "2026-10"
         ],
         "values": [
-          51.0,
-          50.9
+          50.9,
+          51.7
         ],
         "observations": 2,
         "max_observations": 36,
@@ -4071,11 +4071,11 @@
     },
     "NZD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
-      "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "last_observation": "2026-10",
+      "days_since_period_end": 24,
       "history_observations": 2,
       "source_page": "https://www.bnz.co.nz/institutional-banking/research/publications",
-      "origin": "BNZ / BusinessNZ",
+      "origin": "BNZ / BusinessNZ · pubblicazione ufficiale coautore",
       "primary_error": "HTTP Error 403: Forbidden"
     },
     "USD_services": {
