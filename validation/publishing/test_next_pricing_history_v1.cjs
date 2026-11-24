@@ -77,7 +77,7 @@ assert(!safe.includes('<img')&&safe.includes('&lt;img'));
 assert(!render({history:{...data,official_ois_created:true},ccy:'GBP'}).includes('<svg'),
  'Official OIS promotion breaks data-readiness gate');
 const page=file('site/fx-quant-v2/next/index.html');
-assert(page.indexOf('rates-pricing-history-v1.js?v=6')<page.indexOf('rates-studio.js?v='));
+assert(page.indexOf('rates-pricing-history-v1.js?v=7')<page.indexOf('rates-studio.js?v='));
 assert.match(page,/rates-studio\.css\?v=\d+/);
 const app=file('site/fx-quant-v2/next/app.js');
 assert(app.includes("oisHistory:'./rates-pricing-history-v1.json'"));
@@ -167,3 +167,18 @@ assert.equal(horizonMoves(wrongExpiry)[2].bp,null);
 const wrongDelta=structuredClone(nzdMonthly);wrongDelta.fixedContract20d.change_bp=-99;
 assert.equal(horizonMoves(wrongDelta)[2].bp,null);
 console.log('NEXT_NZD_ASX_MONTHLY_REFERENCE_PASS');
+
+const usdRoll={ccy:'USD',kind:'FUTURES SECONDARI',tenors:{'6m':[
+ mk('2026-10-27',4.38,'APR'),mk('2026-11-17',4.47,'APR'),
+ mk('2026-11-19',4.58,'MAY'),mk('2026-11-24',4.475,'MAY')]},
+ estimatedRollMomentum:{'20':{from:'2026-10-27',to:'2026-11-24',roll_date:'2026-11-18',
+ old_contract:'APR',new_contract:'MAY',start_rate:4.38,old_roll_rate:4.495,new_roll_rate:4.55,
+ end_rate:4.475,old_move_bp:11.5,new_move_bp:-7.5,change_bp:4,capture_gap_hours:4.8,
+ basis:'ESTIMATED_SINGLE_ROLL_SAME_SOURCE_NOT_SYNCHRONIZED',official_ois_created:false,fx_engine_effect:'NONE'}}};
+assert.equal(horizonMoves(usdRoll)[2].bp,4);
+assert(horizonMoves(usdRoll)[2].derived);
+assert.match(horizonMoves(usdRoll)[2].basis,/STIMA rollover/);
+const invalidRoll=structuredClone(usdRoll);invalidRoll.estimatedRollMomentum['20'].change_bp=99;
+assert.equal(horizonMoves(invalidRoll)[2].bp,null);
+assert.equal(horizonMoves({...usdRoll,ccy:'CHF'})[2].bp,null);
+console.log('NEXT_USD_ROLL_ESTIMATE_PASS');
