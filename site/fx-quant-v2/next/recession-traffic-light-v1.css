@@ -77,3 +77,71 @@
  .sem-g8-table{min-width:620px}
  .sem-g8-table th,.sem-g8-table td{padding:8px 5px}
 }
+
+/* Dark Desk polish: component-scoped, direction semantics unchanged. */
+.recession-light{--sem-ink:#edf5fb;--sem-muted:#a9c0d1;--sem-line:#304a60;--sem-green:#76e3ad;--sem-red:#ff8794;--sem-amber:#f8cd80;--sem-blue:#a6c6e2;position:relative;min-width:0;padding:clamp(16px,2.6vw,30px);border-color:var(--sem-line);border-radius:18px;background:radial-gradient(ellipse at 95% 0%,#153f523b,transparent 53%),linear-gradient(145deg,#102538,#0b1b2b 65%);color:var(--sem-ink);box-shadow:0 14px 40px #0003}
+.recession-light .sem-head{gap:14px;margin-bottom:22px}
+.recession-light .sem-head h2{font-size:clamp(24px,3vw,33px);letter-spacing:-.025em}
+.recession-light .sem-head p{color:#c2d4e0;font-size:13px;line-height:1.7}
+.recession-light .sem-kicker{color:#6fddce}
+.recession-light .sem-date{background:#132b3e;border-color:#37546a;color:#c4d8e8;font-variant-numeric:tabular-nums}
+.sem-overview{display:grid;grid-template-columns:minmax(136px,1.4fr) repeat(4,minmax(0,1fr));gap:9px;margin:0 0 22px}
+.sem-overview-coverage,.sem-overview-kpi{min-width:0;padding:13px 14px;border:1px solid #30495e;border-radius:10px;background:#12283a;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.sem-overview-coverage>span,.sem-overview-kpi>span{font-size:11px;font-weight:650;line-height:1.3;color:#b9cedc;overflow-wrap:break-word}
+.sem-overview-coverage>strong,.sem-overview-kpi>strong{font-size:26px;line-height:1.05;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.sem-overview-coverage>strong small{font-size:15px;color:#9fb7c9;font-weight:500}
+.sem-overview-coverage>strong{color:#e9f4fc}
+.sem-coverage-track{height:4px;background:#31465b;border-radius:8px;overflow:hidden}
+.sem-coverage-track i{display:block;height:100%;background:#62d6ba;border-radius:8px}
+.sem-overview-kpi.green{border-top:2px solid var(--sem-green)}.sem-overview-kpi.green>strong{color:var(--sem-green)}
+.sem-overview-kpi.red{border-top:2px solid var(--sem-red)}.sem-overview-kpi.red>strong{color:var(--sem-red)}
+.sem-overview-kpi.amber{border-top:2px solid var(--sem-amber)}.sem-overview-kpi.amber>strong{color:var(--sem-amber)}
+.sem-overview-kpi.neutral{border-top:2px solid var(--sem-blue)}.sem-overview-kpi.neutral>strong{color:var(--sem-blue)}
+.recession-light .sem-g8-title strong{font-size:15px}
+.recession-light .sem-g8-title span{color:var(--sem-muted)}
+.recession-light .sem-g8-scroll{border-color:var(--sem-line);background:#0d1e2e;border-radius:12px}
+.recession-light .sem-g8-table{min-width:650px;border-collapse:separate;border-spacing:0}
+.recession-light .sem-g8-table th,.recession-light .sem-g8-table td{padding:5px 5px;border-bottom:1px solid #294052}
+.recession-light .sem-g8-table thead th{padding:11px 4px;background:#1b3348;font-size:11px;color:#d4e4ef}
+.recession-light .sem-g8-table th:first-child{width:102px;padding-left:10px;position:sticky;left:0;z-index:1;background:#12283a}
+.recession-light .sem-g8-table thead th:first-child{z-index:2;background:#1b3348}
+.recession-light .sem-g8-table tbody tr:nth-child(2n){background:#122638}
+.recession-light .sem-g8-table tbody tr.selected{background:#1c3449}
+.recession-light .sem-g8-table tbody tr.selected th:first-child{background:#1c3449;box-shadow:inset 3px 0 #69c9f0}
+.recession-light .sem-g8-table tbody tr:hover{background:#1a3347}
+.recession-light .sem-g8-pick{display:block;width:100%;text-align:left;padding:9px 8px;color:#e4f1fa}
+.recession-light .sem-g8-pick[aria-pressed=true]{background:#21465b;border-color:#6bc6eb}
+.recession-light .sem-g8-pick:focus-visible{outline:2px solid #8bd7f5;outline-offset:2px}
+.recession-light .sem-cell{display:flex;width:100%;height:32px;border-radius:6px;border:1px solid transparent;font-size:19px;font-weight:800;line-height:1;box-sizing:border-box}
+.recession-light .sem-cell.green{background:#194d3b;color:#b0f7cf;border-color:#326d50}
+.recession-light .sem-cell.red{background:#552c38;color:#ffb0b7;border-color:#854651}
+.recession-light .sem-cell.amber{background:#51432b;color:#ffe1a5;border-color:#7a653f}
+.recession-light .sem-cell.neutral{background:#253c50;color:#b7d3eb;border-color:#425c73}
+.recession-light .sem-legend{display:flex;flex-wrap:wrap;gap:9px 18px;margin:12px 0 20px;color:#c2d3df;font-size:11px}
+.sem-legend-item{display:inline-flex;align-items:center;gap:6px}
+.recession-light .sem-legend .sem-cell{width:25px;height:22px;font-size:15px}
+.recession-light .sem-sector-compare{background:#102638;border-color:var(--sem-line);padding:15px}
+.recession-light .sem-sector-compare-item{background:#182e40;border-color:#365065}
+.recession-light .sem-country-caption{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-color:var(--sem-line);padding:17px 0 13px}
+.recession-light .sem-country-caption strong{font-size:19px;color:var(--sem-ink)}
+.sem-country-caption small{display:block;font-size:11px;color:var(--sem-muted);margin:4px 0 0}
+.sem-country-counts{display:flex;gap:6px;flex-wrap:wrap}
+.sem-country-count{font-size:12px;font-weight:750;padding:5px 9px;border:1px solid #3b5366;background:#172b3d;border-radius:6px;font-variant-numeric:tabular-nums}
+.sem-country-count.green{color:var(--sem-green)}.sem-country-count.red{color:var(--sem-red)}.sem-country-count.amber{color:var(--sem-amber)}.sem-country-count.neutral{color:var(--sem-blue)}
+.recession-light .sem-table{border-color:var(--sem-line)}
+.recession-light .sem-columns{background:#1c354a;color:#c2d7e7}
+.recession-light .sem-row{background:#102638;border-color:#30465a}
+.recession-light .sem-row:nth-child(2n+1){background:#132b3e}
+.recession-light .sem-area strong{font-size:14px;color:#f0f6fc}
+.recession-light .sem-area small{color:#b3c7d6;font-size:11px}
+.recession-light .sem-measure>div{font-size:13px}
+.recession-light .sem-measure small{color:#a7bece;font-size:11px}
+.recession-light .sem-measure b{font-variant-numeric:tabular-nums}
+.recession-light .sem-src-link{font-size:11px;color:#83d8e5}
+.recession-light .sem-pill i{box-shadow:none}
+.recession-light .sem-policy{background:#132a3c;border-color:var(--sem-line)}
+.sem-method{margin-top:16px;border-top:1px solid var(--sem-line);padding-top:12px}
+.sem-method summary{cursor:pointer;font-size:12px;font-weight:700;color:#b7d2e3;padding:6px 0}
+.sem-method .sem-foot{margin-top:8px;font-size:11px;color:#a6bfce}
+@media(max-width:830px){.sem-overview{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.sem-overview-coverage{grid-column:1/-1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 14px}.sem-coverage-track{grid-column:1/-1}.sem-overview-kpi{padding:9px 8px;gap:7px}.sem-overview-kpi>span{font-size:10px}.sem-overview-kpi>strong{font-size:22px}.recession-light .sem-row{padding:13px}.recession-light .sem-signal{flex-direction:row;align-items:center;flex-wrap:wrap;justify-content:flex-start}.recession-light .sem-g8-title{margin-top:14px}}
+@media(max-width:400px){.sem-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.recession-light .sem-head{margin-bottom:14px}.recession-light .sem-country-caption strong{font-size:17px}.recession-light .sem-country-count{padding:5px 7px}}
