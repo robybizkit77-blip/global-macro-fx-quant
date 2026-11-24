@@ -219,4 +219,28 @@ const EAfresh={
 assert.equal(model(catalog,'2026-11-24','EUR',EAfresh).find(x=>x.key==='demand').signal.tone,'green');
 assert.equal(model(catalog,'2028-01-01','EUR',EAfresh).find(x=>x.key==='demand').signal.tone,'neutral');
 
+const nextSources={
+ schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',
+ series:[{
+  ccy:'GBP',area:'industry',id:'SEM_G8_GBP_INDUSTRY',
+  source_series_id:'ONS_K222_DIOP',source_file:'ONS',
+  source_page:'https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop',
+  label:'Indice della produzione industriale UK (volumi reali SA)',
+  unit:'indice CVMSA',frequency:'M',metric_kind:'percent',up_good:true,
+  dates:['2026-08','2026-09'],values:[99.2,99.9],
+  quality:'SOURCE_REVISED_RESEARCH_NOT_PIT'
+ },{
+  ccy:'NZD',area:'house',id:'SEM_G8_NZD_HOUSE',
+  source_series_id:'STATSNZ_NEWDWELLINGS_SA',source_file:'Stats NZ',
+  source_page:'https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/',
+  label:'New dwellings consented SA',unit:'dwellings SA',
+  frequency:'M',metric_kind:'percent',up_good:true,
+  dates:['2026-08','2026-09'],values:[3495,3218],
+  quality:'SOURCE_REVISED_RESEARCH_NOT_PIT'
+ }]};
+assert.equal(model(catalog,'2026-11-24','GBP',nextSources).find(r=>r.key==='industry').signal.tone,'green');
+assert.equal(model(catalog,'2026-11-24','NZD',nextSources).find(r=>r.key==='house').signal.tone,'red');
+const forgedNZ=structuredClone(nextSources);
+forgedNZ.series[1].source_page='https://another.stats.govt.nz/fake';
+assert.equal(model(catalog,'2026-11-24','NZD',forgedNZ).find(r=>r.key==='house').signal.tone,'neutral');
 console.log('OK: G8 economic semaphore — 8 economies, 7 areas, data age, dates, source gaps, HTML');
