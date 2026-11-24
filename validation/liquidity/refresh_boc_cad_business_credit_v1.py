@@ -31,6 +31,9 @@ INITIAL_OBSERVED={"2026-04":922171,"2026-05":927358,"2026-06":937138,
                   "2026-07":941686,"2026-08":944614}
 SCHEMA="GMFQ_NEXT_CAD_BUSINESS_CREDIT_OFFICIAL_RESEARCH_V1"
 LYNX_URL="https://www.bankofcanada.ca/rates/indicators/market-operations-indicators/"
+SLOS_API="https://www.bankofcanada.ca/valet/observations/group/slos/json?start_date=2023-01-01"
+SLOS_PUBLIC="https://www.bankofcanada.ca/publications/slos/"
+SLOS_ID="SLOS_BUS_LEND"
 
 def require(flag,why):
     if not flag:
@@ -152,6 +155,41 @@ def parse_lynx(html,*,today=None):
             "latest_observation":days[-1].isoformat(),"preliminary_may_be_revised":True,
             "canonical_monthly_equivalence_verified":False,"eligible_for_fx_core":False,"eligible_for_backtest":False}
 
+def fetch_slos():
+    request=urllib.request.Request(SLOS_API,headers={"User-Agent":"FX-Quant-Research-Sources/1.0","Accept":"application/json"})
+    with urllib.request.urlopen(request,timeout=25) as response:
+        require(response.geturl().startswith("https://www.bankofcanada.ca/valet/"),"unexpected SLOS redirect")
+        raw=response.read(1000001)
+    require(len(raw)<1000001,"SLOS payload too large")
+    return json.loads(raw)
+
+def parse_slos(payload,*,today=None):
+    today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
+    meta=payload.get("seriesDetail",{}).get(SLOS_ID,{})
+    require(meta.get("label")=="Overall business lending conditions" and meta.get("dateFormat")=="quarterly","SLOS source identity")
+    records={}
+    for row in payload.get("observations",[]):
+        raw=row.get(SLOS_ID,{}).get("v")
+        if raw in (None,"","."):continue
+        d=date.fromisoformat(row["d"])
+        q=(d.month-1)//3+1
+        require(d.day==1 and d.month in (1,4,7,10) and (d.year,q)<(today.year,(today.month-1)//3+1),"SLOS invalid or unfinished quarter")
+        v=float(raw)
+        require(math.isfinite(v) and -100<=v<=100,"SLOS net balance out of range")
+        require(d not in records,"SLOS duplicate quarter")
+        records[d]=v
+    days=sorted(records)
+    require(len(days)>=4 and list(records) in (days,list(reversed(days))),"SLOS insufficient or unordered history")
+    require(abs(records.get(date(2026,4,1),999)+1.04)<.1,"SLOS canonical Q2 overlap mismatch")
+    for a,b in zip(days,days[1:]):
+        require((b.year-a.year)*12+b.month-a.month==3,"SLOS quarter gap")
+    require((today-days[-1]).days<=220,"SLOS stale source")
+    days=days[-16:]
+    return {"series_id":SLOS_ID,"source_url":SLOS_PUBLIC,"frequency":"Q","unit":"net_balance_pct_points",
+            "positive_means":"tightening","negative_means":"easing","dates":[d.isoformat() for d in days],
+            "values":[records[d] for d in days],"latest_observation":days[-1].isoformat(),
+            "first_release_pit_verified":False,"eligible_for_fx_core":False,"eligible_for_backtest":False}
+
 def existing_payload(text):
     start=text.find("const data=")
     if start!=-1:
@@ -170,7 +208,7 @@ def existing_observations(text):
     except (SyntaxError, ValueError):
         return None
 
-def emit_js(candidate,verified_on,settlement_balances=None):
+def emit_js(candidate,verified_on,settlement_balances=None,lending_conditions=None):
     data={
       "schema":SCHEMA,"status":"VERIFIED_BOCA_VALET_MONTHLY_STOCK_RESEARCH_ONLY",
       "country":"CAD","publisher":"Bank of Canada",
@@ -187,6 +225,7 @@ def emit_js(candidate,verified_on,settlement_balances=None):
       "inference":"Stock bancario, non nuove erogazioni, domanda di prestiti o standard. Serie separata da NATIVE_LIQ_DATA.CAD.credit."
     }
     if settlement_balances is not None:data['settlement_balances']=settlement_balances
+    if lending_conditions is not None:data['lending_conditions']=lending_conditions
     return ("'use strict';\n"
       "/* Source: Bank of Canada Valet V122667770; research only, NOT FX Core. */\n"
       "(function(root){\n const data="+json.dumps(data,ensure_ascii=False,indent=1)
@@ -194,7 +233,7 @@ def emit_js(candidate,verified_on,settlement_balances=None):
       " if(typeof module!=='undefined'&&module.exports)module.exports=data;\n"
       "})(typeof window!=='undefined'?window:globalThis);\n")
 
-def run(destination=DEST,*,apply=False,fixture=None,lynx_fixture=None,today=None):
+def run(destination=DEST,*,apply=False,fixture=None,lynx_fixture=None,slos_fixture=None,today=None):
     today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
     old=destination.read_text(encoding="utf-8") if destination.exists() else ""
     prior_payload=existing_payload(old)
@@ -216,25 +255,38 @@ def run(destination=DEST,*,apply=False,fixture=None,lynx_fixture=None,today=None
         except (OSError,ValueError,UnicodeError) as error:
             lynx_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:300]}
             if prior_lynx:lynx_status["retained_observation"]=prior_lynx["latest_observation"]
+    prior_slos=prior_payload.get("lending_conditions")
+    slos=prior_slos
+    slos_status={"status":"SKIPPED_FIXTURE"}
+    if slos_fixture or not fixture:
+        try:
+            candidate=parse_slos(json.loads(Path(slos_fixture).read_text(encoding="utf-8")) if slos_fixture else fetch_slos(),today=today)
+            if prior_slos and candidate["latest_observation"]<prior_slos["latest_observation"]:
+                raise ValueError("SLOS source rolled back")
+            slos=candidate
+            slos_status={"status":"VERIFIED","latest_observation":candidate["latest_observation"]}
+        except (OSError,ValueError,UnicodeError,TypeError,KeyError) as error:
+            slos_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:300]}
+            if prior_slos:slos_status["retained_observation"]=prior_slos["latest_observation"]
     credit_status={"status":"VERIFIED"}
     try:
         parsed=parse(json.loads(Path(fixture).read_text(encoding="utf-8")) if fixture else fetch(),today=today)
     except (OSError,ValueError,UnicodeError) as error:
-        if not (prior and prior_payload.get("schema")==SCHEMA and lynx!=prior_lynx):raise
+        if not (prior and prior_payload.get("schema")==SCHEMA and (lynx!=prior_lynx or slos!=prior_slos)):raise
         parsed={**prior_payload,"revised_august_2026":False}
         credit_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(error)[:300]}
     now=(parsed["dates"],parsed["values"])
-    status="NO_CHANGE" if prior and prior==now and lynx==prior_lynx else "UPDATE_AVAILABLE"
+    status="NO_CHANGE" if prior and prior==now and lynx==prior_lynx and slos==prior_slos else "UPDATE_AVAILABLE"
     receipt={"schema":"GMFQ_BOC_CAD_CREDIT_COLLECTOR_V1",
         "status":status,"last_observation":parsed["latest_observation"],
         "observation_count":len(parsed["dates"]),
         "revised_august_2026":parsed["revised_august_2026"],
         "source":SOURCE_URL,"series":SOURCE_ID,"verified_on_rome":today.isoformat(),
         "canonical_runtime_unchanged":True,"fx_ranking_effect":"NONE",
-        "release_date_certified":False,"credit":credit_status,"lynx":lynx_status}
+        "release_date_certified":False,"credit":credit_status,"lynx":lynx_status,"slos":slos_status}
     if apply and status=="UPDATE_AVAILABLE":
         destination.parent.mkdir(parents=True,exist_ok=True)
-        destination.write_text(emit_js(parsed,today.isoformat() if credit_status["status"]=="VERIFIED" else prior_payload["last_checked_rome"],lynx),encoding="utf-8")
+        destination.write_text(emit_js(parsed,today.isoformat() if credit_status["status"]=="VERIFIED" else prior_payload["last_checked_rome"],lynx,slos),encoding="utf-8")
         receipt["write_state"]="RESEARCH_SIDECAR_ONLY"
     else:
         receipt["write_state"]="NO_MUTATION"
@@ -245,11 +297,12 @@ def main():
     parser.add_argument("--apply",action="store_true")
     parser.add_argument("--fixture",type=Path)
     parser.add_argument("--lynx-fixture",type=Path)
+    parser.add_argument("--slos-fixture",type=Path)
     parser.add_argument("--destination",type=Path,default=DEST)
     parser.add_argument("--receipt",type=Path)
     args=parser.parse_args()
     try:
-        receipt=run(args.destination,apply=args.apply,fixture=args.fixture,lynx_fixture=args.lynx_fixture)
+        receipt=run(args.destination,apply=args.apply,fixture=args.fixture,lynx_fixture=args.lynx_fixture,slos_fixture=args.slos_fixture)
     except (OSError,TimeoutError,ValueError,json.JSONDecodeError) as error:
         receipt={"schema":"GMFQ_BOC_CAD_CREDIT_COLLECTOR_V1","status":"WITHHELD_SOURCE_UNAVAILABLE_OR_UNVERIFIED",
                  "reason":str(error)[:300],"canonical_runtime_unchanged":True,

@@ -43,9 +43,11 @@ jobs:
         run: |
           python -m unittest validation.liquidity.test_refresh_boc_cad_business_credit_v1 -v
           python - <<'PY'
-          from validation.liquidity.refresh_boc_cad_business_credit_v1 import fetch_lynx,parse_lynx
+          from validation.liquidity.refresh_boc_cad_business_credit_v1 import fetch_lynx,parse_lynx,fetch_slos,parse_slos
           x=parse_lynx(fetch_lynx())
           print('CAD_LYNX_LIVE_SOURCE_PASS',x['latest_observation'],x['values'][-1],len(x['dates']))
+          survey=parse_slos(fetch_slos())
+          print('CAD_SLOS_LIVE_SOURCE_PASS',survey['latest_observation'],survey['values'][-1],len(survey['dates']))
           PY
   source-only:
     if: github.event_name != 'pull_request'
@@ -65,7 +67,7 @@ jobs:
         run: |
           sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/cad-credit-runtime.before
           sha256sum live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json > /tmp/cad-credit-fx.before
-      - name: Fetch issuer monthly credit and daily Lynx balances with guarded research-only apply
+      - name: Fetch issuer credit, Lynx balances and SLOS with guarded research-only apply
         id: acquire
         run: |
           python validation/liquidity/refresh_boc_cad_business_credit_v1.py \
