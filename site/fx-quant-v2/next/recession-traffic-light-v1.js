@@ -177,6 +177,7 @@ const VERIFIED_FRESH_FALLBACK={
   industry:['ONS_K222_DIOP','https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop']
  },
  EUR:{
+  house:['EA21_PRC_HPI_Q_TOTAL_RCH_A','https://ec.europa.eu/eurostat/databrowser/view/prc_hpi_q/default/table?lang=en'],
   services:['TEIBS020_BS-SCI-BAL_SA_EA21','https://ec.europa.eu/eurostat/databrowser/view/teibs020/default/table?lang=en'],
   industry:['STS_INPR_M_EA21_PRD_B-D_SCA_I21','https://ec.europa.eu/eurostat/databrowser/view/sts_inpr_m/default/table?lang=en'],
   leading:['TEIBS010_EA21_BS-ESI-I_SA','https://ec.europa.eu/eurostat/databrowser/view/teibs010/default/table?lang=en'],
