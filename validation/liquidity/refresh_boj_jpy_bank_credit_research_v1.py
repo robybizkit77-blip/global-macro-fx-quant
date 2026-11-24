@@ -20,6 +20,8 @@ import json
 import math
 import re
 import sys
+import urllib.request
+from html.parser import HTMLParser
 from datetime import date,datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -33,6 +35,7 @@ SOURCE="https://www.stat-search.boj.or.jp/ssi/mtshtml/md11_m_1_en.html"
 SCHEMA="GMFQ_NEXT_JPY_BOJ_BANK_CREDIT_RESEARCH_V1"
 ORIGINAL_PERIOD="2026-07"
 ORIGINAL_VALUE=6764306
+TANKAN_INDEX="https://www.boj.or.jp/en/statistics/tk/yoshi/index.htm"
 
 def require(ok,why):
     if not ok:raise ValueError("BOJ_JPY_CREDIT_SOURCE_WITHHELD: "+why)
@@ -121,6 +124,90 @@ def parse(candidate,*,today=None,canonical=None):
       "new_after_canonical":len(added)
     }
 
+class TankanTables(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.tables=[];self.table=None;self.row=None;self.cell=None
+    def handle_starttag(self,tag,attrs):
+        if tag=="table":self.table={"caption":"","rows":[]}
+        if tag=="caption" and self.table is not None:self.cell=[]
+        if tag=="tr" and self.table is not None:self.row=[]
+        if tag in ("td","th") and self.row is not None:self.cell=[]
+    def handle_data(self,data):
+        if self.cell is not None:self.cell.append(data)
+    def handle_endtag(self,tag):
+        if tag=="caption" and self.table is not None and self.cell is not None:
+            self.table["caption"]=" ".join(" ".join(self.cell).split());self.cell=None
+        if tag in ("td","th") and self.row is not None and self.cell is not None:
+            self.row.append(" ".join(" ".join(self.cell).split()));self.cell=None
+        if tag=="tr" and self.row is not None and self.table is not None:
+            self.table["rows"].append(self.row);self.row=None
+        if tag=="table" and self.table is not None:self.tables.append(self.table);self.table=None
+
+def tankan_fetch(url):
+    req=urllib.request.Request(url,headers={"User-Agent":"FX-Quant-Research-Sources/1.0","Accept":"text/html"})
+    with urllib.request.urlopen(req,timeout=30) as response:
+        require(response.geturl().startswith("https://www.boj.or.jp/en/statistics/tk/yoshi/"),"unexpected Tankan redirect")
+        raw=response.read(3000001)
+    require(len(raw)<3000001,"Tankan page too large")
+    return raw.decode("utf-8-sig")
+
+def tankan_latest_url(index,today):
+    candidates=set(re.findall(r"(?:/en/statistics/tk/yoshi/)?tk([0-9]{4})\.htm",index))
+    valid=[]
+    for token in candidates:
+        year,month=2000+int(token[:2]),int(token[2:])
+        if month in (3,6,9,12) and (year,month)<=(today.year,today.month):
+            valid.append((year,month,token))
+    require(bool(valid),"Tankan official outline links missing")
+    return "https://www.boj.or.jp/en/statistics/tk/yoshi/tk"+max(valid)[2]+".htm"
+
+def parse_tankan(html,url,*,today):
+    match=re.fullmatch(r"https://www\.boj\.or\.jp/en/statistics/tk/yoshi/tk([0-9]{2})(03|06|09|12)\.htm",url)
+    require(match is not None,"Tankan outline URL identity")
+    year,month=2000+int(match[1]),int(match[2])
+    require((year,month)<=(today.year,today.month),"future Tankan survey")
+    prior_year,prior_month=(year-1,12) if month==3 else (year,month-3)
+    current=f"{year:04d}-Q{month//3}"
+    previous=f"{prior_year:04d}-Q{prior_month//3}"
+    require((today-date(year,month,1)).days<=155,"Tankan stale release")
+    table=TankanTables();table.feed(html);table.close()
+    def read(label,semantic,*,forecast=False):
+        hits=[t for t in table.tables if label.lower() in t["caption"].lower() and "all industries" in t["caption"].lower()]
+        require(len(hits)==1,"Tankan missing or ambiguous table "+label)
+        t=hits[0]
+        headers=" ".join(" ".join(r) for r in t["rows"][:3])
+        description=t["caption"]+" "+headers
+        require(all(word in description.lower() for word in semantic),"Tankan sign definition missing "+label)
+        require(str(year) in headers and str(prior_year) in headers,"Tankan survey year header mismatch")
+        rows=[r for r in t["rows"] if r and r[0]=="All Enterprises"]
+        require(len(rows)==1,"Tankan all-enterprise row missing "+label)
+        r=rows[0]
+        require(len(r)==(6 if forecast else 4),"Tankan unexpected actual/forecast columns")
+        def number(s):
+            s=s.replace("−","-").replace("△","-").strip()
+            require(re.fullmatch(r"[+-]?[0-9]+",s) is not None,"Tankan nonnumeric DI")
+            n=int(s);require(-100<=n<=100,"Tankan DI out of range");return n
+        a,b,delta=map(number,r[1:4])
+        require(b-a==delta,"Tankan actual change does not reconcile")
+        return [a,b]
+    lending=read("Lending Attitude of Financial institutions",["accommodative","severe"])
+    financial=read("Financial Position",["easy","tight"])
+    rates=read("Change in Interest Rate on Loans",["rise","fall"],forecast=True)
+    if previous=="2026-Q2":require(lending[0]==13,"Tankan canonical Q2 overlap mismatch")
+    return {"source_url":url,"frequency":"Q","unit":"diffusion_index_points","scope":"all enterprises, all industries",
+            "positive_lending_means":"accommodative","positive_loan_rate_means":"rise",
+            "dates":[previous,current],"lending_attitude":lending,"financial_position":financial,"loan_rate_change":rates,
+            "latest_observation":current,"eligible_for_fx_core":False,"eligible_for_backtest":False,
+            "first_release_pit_verified":False}
+
+def existing_payload(text):
+    start=text.find("const data=")
+    if start!=-1:
+        try:return json.JSONDecoder().raw_decode(text[start+len("const data="):])[0]
+        except ValueError:pass
+    return {}
+
 def existing(text):
     arrays=[]
     for key in ("dates","values"):
@@ -130,7 +217,7 @@ def existing(text):
         except (SyntaxError,ValueError):return None
     return tuple(arrays)
 
-def emit_js(result,checked):
+def emit_js(result,checked,tankan=None):
     out={
       "schema":SCHEMA,
       "status":"VERIFIED_BOJ_MD11_MONTHLY_BANK_CREDIT_RESEARCH_ONLY",
@@ -147,6 +234,7 @@ def emit_js(result,checked):
       **result,
       "inference":"Monthly BoJ bank-credit stock including trust and overseas-office accounts: not new loans, not BoJ settlement reserves or observed yen demand. FX and funding response require independent confirmation."
     }
+    if tankan is not None:out['tankan']=tankan
     return ("'use strict';\n"
        "/* Official BoJ MD11 credit, exact match to canonical history; research-only. */\n"
        "(function(root){\n const data="+json.dumps(out,ensure_ascii=False,indent=1)+";\n"
@@ -154,15 +242,34 @@ def emit_js(result,checked):
        " if(typeof module!=='undefined'&&module.exports)module.exports=data;\n"
        "})(typeof window!=='undefined'?window:globalThis);\n")
 
-def run(*,candidate_file,destination=DEST,apply=False,today=None,canonical=None):
+def run(*,candidate_file,destination=DEST,apply=False,today=None,canonical=None,tankan_fixture=None,tankan_url=None,fetch_survey=False):
     today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
     candidate=json.loads(Path(candidate_file).read_text(encoding="utf-8"))
     item=parse(candidate,today=today,canonical=canonical)
-    original=existing(destination.read_text(encoding="utf-8")) if destination.exists() else None
+    old=destination.read_text(encoding="utf-8") if destination.exists() else ""
+    original=existing(old) if old else None
+    prior=existing_payload(old)
+    prior_tankan=prior.get("tankan")
+    survey=prior_tankan
+    tankan_status={"status":"SKIPPED"}
+    if tankan_fixture or fetch_survey:
+        try:
+            url=tankan_url if tankan_fixture else tankan_latest_url(tankan_fetch(TANKAN_INDEX),today)
+            candidate=parse_tankan(Path(tankan_fixture).read_text(encoding="utf-8") if tankan_fixture else tankan_fetch(url),url,today=today)
+            if prior_tankan and candidate["latest_observation"]<prior_tankan["latest_observation"]:
+                raise ValueError("Tankan source rolled back")
+            merged={d:[prior_tankan[k][i] for k in ("lending_attitude","financial_position","loan_rate_change")] for i,d in enumerate(prior_tankan["dates"])} if prior_tankan else {}
+            merged.update({d:[candidate[k][i] for k in ("lending_attitude","financial_position","loan_rate_change")] for i,d in enumerate(candidate["dates"])})
+            dates=sorted(merged)[-16:]
+            survey={**candidate,"dates":dates,**{k:[merged[d][i] for d in dates] for i,k in enumerate(("lending_attitude","financial_position","loan_rate_change"))}}
+            tankan_status={"status":"VERIFIED","latest_observation":survey["latest_observation"]}
+        except (OSError,ValueError,TypeError,KeyError,UnicodeError) as exc:
+            tankan_status={"status":"WITHHELD_INVALID_OR_INACCESSIBLE_SOURCE","reason":str(exc)[:300]}
+            if prior_tankan:tankan_status["retained_observation"]=prior_tankan["latest_observation"]
     require(not original or not original[0] or item["last_observation"]>=original[0][-1],
             "official BoJ credit observation rolled backward")
     current=(item["dates"],item["values"])
-    changed=original!=current
+    changed=original!=current or survey!=prior_tankan
     result={
       "schema":"GMFQ_BOJ_JPY_BANK_CREDIT_SOURCE_RECEIPT_V1",
       "status":"UPDATE_AVAILABLE" if changed else "NO_CHANGE",
@@ -174,12 +281,12 @@ def run(*,candidate_file,destination=DEST,apply=False,today=None,canonical=None)
       "new_months_after_canonical":item["new_after_canonical"],
       "checked_rome":today.isoformat(),
       "first_release_pit_verified":False,
-      "canon_jpy_credit_unchanged":True,
+      "canon_jpy_credit_unchanged":True,"tankan":tankan_status,
       "fx_ranking_effect":"NONE","write_state":"NO_MUTATION"
     }
     if changed and apply:
         destination.parent.mkdir(parents=True,exist_ok=True)
-        destination.write_text(emit_js(item,today.isoformat()),encoding="utf-8")
+        destination.write_text(emit_js(item,today.isoformat(),survey),encoding="utf-8")
         result["write_state"]="RESEARCH_SIDECAR_ONLY"
     return result
 
@@ -189,9 +296,10 @@ def main():
     a.add_argument("--destination",type=Path,default=DEST)
     a.add_argument("--apply",action="store_true")
     a.add_argument("--receipt",type=Path)
+    a.add_argument("--fetch-survey",action="store_true")
     args=a.parse_args()
     try:
-        result=run(candidate_file=args.candidate,destination=args.destination,apply=args.apply)
+        result=run(candidate_file=args.candidate,destination=args.destination,apply=args.apply,fetch_survey=args.fetch_survey)
     except (OSError,ValueError,KeyError,json.JSONDecodeError) as exc:
         result={
           "schema":"GMFQ_BOJ_JPY_BANK_CREDIT_SOURCE_RECEIPT_V1",
