@@ -8,7 +8,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from build_next_g8_pricing_history_v1 import (
-    CCYS, TENORS, ROOT, build, read_jsonl, SNAP, OFFICIAL, QUOTES, CONFLICTS, NZD, DEST, NZD_ARCHIVE
+    CCYS, TENORS, ROOT, build, read_jsonl, SNAP, OFFICIAL, QUOTES, CONFLICTS, NZD, DEST, NZD_ARCHIVE, nzd_monthly_reference
 )
 
 
@@ -104,6 +104,33 @@ class TestG8History(unittest.TestCase):
         result=build(self.snapshot,self.archive,self.quotes,self.conflicts,self.nzd,self.nzd_archive+[rec])
         self.assertGreaterEqual(result["excluded_nzd_conflicted_contract_days"],1)
         self.assertNotIn(rec["feed"]["as_of"],[x["date"] for x in result["currencies"]["NZD"]["tenors"]["6m"]])
+
+    def test_nzd_exact_monthly_reference(self):
+        feed=copy.deepcopy(next(x["feed"] for x in self.nzd_archive if x["feed"]["as_of"]=="2026-11-23"))
+        d="2026-11-23"
+        h=feed["horizons"]["6m"]
+        self.assertEqual((feed["as_of"],h["expiry_label"],h["implied_bank_bill_rate"]),(d,"Jun 2027",3.7))
+        feed["monthly_reference"]={
+            "schema":"GMFQ_NZD_ASX_EXACT_20_WEEKDAY_REFERENCE_V1","status":"REFERENCE_PARSED",
+            "official_ois_created":False,"fx_engine_effect":"NONE","as_of":d,
+            "reference_date":"2026-10-26","current_source_url":feed["source_url"],
+            "reference_url":"https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261026ZFT.htm",
+            "decoded_source_sha256":"88e6c88b112435f8c46af6bdc25d07e4822f30bed0e5c56de31ef2e2d5d53c1b",
+            "horizons":{"6m":{"contract":"Jun 2027","expiration":"2027-06-16",
+              "reference_price":95.94,"reference_implied_pct":4.06,"current_price":96.3,
+              "current_implied_pct":3.7,"change_bp":-36,
+              "basis":"EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"}}}
+        observed={"6m":{d:{"contract":"Jun 2027","expiration":"2027-06-16","rate":3.7}}}
+        result=nzd_monthly_reference(feed,observed,{})
+        self.assertEqual(result["change_bp"],-36)
+        self.assertIsNone(nzd_monthly_reference(feed,observed,{("2026-10-26","Jun 2027","2027-06-16"):{95.95}}))
+        self.assertIsNone(nzd_monthly_reference(feed,{},{}))
+        bad=copy.deepcopy(feed)
+        bad["monthly_reference"]["horizons"]["6m"]["change_bp"]=-99
+        self.assertIsNone(nzd_monthly_reference(bad,observed,{}))
+        bad=copy.deepcopy(feed)
+        bad["monthly_reference"]["reference_date"]="2026-10-27"
+        self.assertIsNone(nzd_monthly_reference(bad,observed,{}))
 
     def test_official_withheld_never_launders_stale_rows(self):
         archive=copy.deepcopy(self.archive)
