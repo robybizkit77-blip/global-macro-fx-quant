@@ -254,4 +254,9 @@ assert.equal((heatmap.match(/class="sem-mini sem-cell (?:green|red|amber|neutral
 assert.match(heatmap,/role="progressbar" aria-label="Copertura G8" aria-valuenow="\d+" aria-valuemin="0" aria-valuemax="56"/);
 assert.equal((heatmap.match(/class="sem-overview-kpi /g)||[]).length,4);
 assert.match(heatmap,/class="sem-method"><summary>Metodo, soglie e fonti/);
+assert.equal((heatmap.match(/class="sem-area-judgment"/g)||[]).length,7);
+assert.match(heatmap,/Attuale · 2026-10/);
+assert.match(heatmap,/Precedente · 2026-09/);
+assert.match(heatmap,/class="sem-value sem-change"/);
+assert.match(heatmap,/class="sem-history"/);
 console.log('OK: G8 economic semaphore — 8 economies, 7 areas, data age, dates, source gaps, HTML');
