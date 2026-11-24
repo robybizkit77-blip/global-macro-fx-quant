@@ -314,5 +314,23 @@ if(riskAlignedView.ready)assert.equal((riskOverviewHtml.match(/class="risk-first
 assert(riskView.latestObservations({},riskDate).every(x=>!x.ok));
 assert(riskView.latestObservations(initial.risk.streams,'2099-01-01').every(x=>!x.ok));
 assert(riskView.latestObservations(initial.risk.streams,'2000-01-01').every(x=>!x.ok));
+
+const calendarFocus=require('../site/fx-quant-v2/next/calendar-operational-reading.js');
+const newsFocus=require('../site/fx-quant-v2/next/news-evidence-reading.js');
+const agendaFixture={asof:'2026-11-24T08:00:00Z',events:[
+ {importance:'HIGH',quality:'OFFICIAL_CALENDAR',day:'2026-11-25',title:'Near'},
+ {importance:'MEDIUM',quality:'OFFICIAL_CALENDAR',day:'2026-11-25',title:'Medium'},
+ {importance:'HIGH',quality:'OFFICIAL_CALENDAR',day:'2026-12-02',title:'Far'},
+ {importance:'HIGH',quality:'UNVERIFIED',day:'2026-11-25',title:'Unverified'}
+]};
+const calendarNow=Date.parse('2026-11-24T12:00:00Z');
+assert.deepEqual(calendarFocus.nearCatalysts(agendaFixture,'2026-11-24',calendarNow).map(x=>x.title),['Near']);
+assert.equal(calendarFocus.nearCatalysts({...agendaFixture,asof:'2026-11-01T08:00:00Z'},'2026-11-24',calendarNow).length,0);
+assert.deepEqual(newsFocus.focusPulse([
+ {id:'recent',importance:'HIGH',asof:'2026-11-23'},
+ {id:'medium',importance:'MEDIUM',asof:'2026-11-23'},
+ {id:'old',importance:'HIGH',asof:'2026-11-01'},
+ {id:'future',importance:'HIGH',asof:'2026-11-25'}
+],'2026-11-24').map(x=>x.id),['recent']);
 require('./publishing/test_next_home_thesis_recalc_v1.cjs');
 console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
