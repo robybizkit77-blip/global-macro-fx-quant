@@ -283,6 +283,33 @@ const REAL_ACTIVITY_GROWTH=new Set([
  'JPNPRMNTO01GPSAM','SLRTTO01JPQ657S','PRMNTO01CHQ657S','SLRTTO01CHQ657S',
  'SLRTTO01NZQ657S','PRMNTO01AUQ657S','PRMNTO01NZQ657S'
 ]);
+// Keep the two-observation legacy signal intact. Admit longer history only
+// with matching identity, vintage type, frequency and exact current endpoints.
+function cycleHistory(source,today,frequency){
+ const h=source?.history;
+ if(!h||h.schema!=='GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1'||
+    typeof source.source_series_id!=='string'||h.source_series_id!==source.source_series_id||
+    h.frequency!==frequency||!['M','Q'].includes(frequency)||
+    h.quality!=='SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT'||
+    source.quality!=='SOURCE_REVISED_RESEARCH_NOT_PIT'||
+    !Array.isArray(h.dates)||!Array.isArray(h.values)||h.dates.length!==h.values.length||
+    h.observations!==h.dates.length||h.max_observations!==(frequency==='M'?36:12)||
+    h.observations<2||h.observations>h.max_observations||
+    !Array.isArray(source.dates)||!Array.isArray(source.values)||source.dates.length!==2||source.values.length!==2||
+    h.dates.at(-2)!==source.dates[0]||h.dates.at(-1)!==source.dates[1]||
+    h.values.at(-2)!==source.values[0]||h.values.at(-1)!==source.values[1]||
+    !h.values.every(finite))return source;
+ let last=null;
+ for(const p of h.dates){
+   if(typeof p!=='string'||!(frequency==='M'?/^\d{4}-\d{2}$/:/^\d{4}-Q[1-4]$/).test(p))return source;
+   const date=parsePeriod(p);
+   if(!date||date>today)return source;
+   const idx=Number(p.slice(0,4))*(frequency==='M'?12:4)+Number(p.slice(5).replace('Q',''));
+   if(last!==null&&idx!==last+1)return source;
+   last=idx;
+ }
+ return {...source,dates:h.dates,values:h.values};
+}
 function cycleMetric(metric,source,today,frequency,stale=false){
  const empty={phase:null,level:null,direction:null,acceleration:null,persistence:null,
    basis:null,observations:0,historySufficient:false,quality:'INSUFFICIENT',scope:'INDICATOR_NOT_ECONOMY'};
@@ -290,6 +317,7 @@ function cycleMetric(metric,source,today,frequency,stale=false){
     source.dates.length!==source.values.length)return empty;
  const freq=String(frequency||'').toUpperCase();
  const months=freq==='M'?1:freq==='Q'?3:0;
+ source=cycleHistory(source,today,freq);
  const records=new Map();
  source.dates.forEach((period,i)=>{
    const date=parsePeriod(period),value=source.values[i];
@@ -439,6 +467,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   const cycleText=cycle?.direction!==null&&cycle?.direction!==undefined?
     '<small class="sem-source-note"><strong>Lettura ciclica · </strong>'+esc(cycleLabel||(cycle.level===null?'Solo direzione, livello non determinato':cycle.level===0?'Livello sulla soglia':cycle.direction===0?'Livello '+(cycle.level>0?'sopra':'sotto')+' soglia, momentum stabile':'Livello determinato'))+
     (cycle.basis==='REAL_ACTIVITY_YOY_GROWTH'?' · crescita a/a '+d(cycle.levelValue,'%'):cycle.basis==='REAL_ACTIVITY_REPORTED_GROWTH'?' · crescita reale della serie':cycle.basis==='DIFFUSION_50'?' · soglia 50':' · variazione descrittiva')+
+    (cycle.observations>2?' · '+cycle.observations+' osservazioni consecutive':'')+
     (cycle.persistence>1?' · '+cycle.persistence+' confronti consecutivi nella stessa direzione':cycle.persistence===1?' · un solo confronto nella direzione attuale':'')+
     (cycle.acceleration!==null?' · '+({1:'momentum in aumento',0:'momentum stabile','-1':'momentum in diminuzione'}[cycle.acceleration]):'')+
     '</small>':'';
@@ -532,6 +561,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
