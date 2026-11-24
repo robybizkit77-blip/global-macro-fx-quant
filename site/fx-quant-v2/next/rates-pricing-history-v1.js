@@ -40,7 +40,7 @@
     seen.add(p.date);return true;
    }).sort((a,b)=>a.date.localeCompare(b.date));
   }
-  return {ccy:c,kind:r.kind,quality:r.quality,source:r.source,tenors:ts,
+  return {ccy:c,kind:r.kind,quality:r.quality,source:r.source,tenors:ts,fixedContract20d:r.fixed_contract_20d,
    observedDates:new Set(TENORS.flatMap(t=>ts[t].filter(p=>!p.derived).map(p=>p.date))).size,
    derivedReferences:TENORS.flatMap(t=>ts[t].filter(p=>p.derived)).length};
  }
@@ -148,6 +148,15 @@
    const unavailable=reason=>({days,from,to,bp:null,reason});
    if(!from||last.derived)return unavailable('Ultimo livello non osservato');
    const a=arr.find(p=>p.date===from);
+   const m=r.fixedContract20d;
+   if(days===20&&r.kind==='PROXY FUTURES'&&last.source_class==='BANK_BILL_PROXY'&&
+      m?.basis==='EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS'&&m.from===from&&m.to===to&&
+      m.contract===last.contract&&m.expiration===last.expiration&&m.current_rate===last.rate&&
+      num(m.reference_rate)&&num(m.change_bp)&&Math.abs((last.rate-m.reference_rate)*100-m.change_bp)<.011&&
+      /^[a-f0-9]{64}$/.test(m.source_sha256||'')&&
+      m.source_url==='https://www.asx.com.au/data/futures/reports/EODWebMarketSummary'+from.slice(2).replace(/-/g,'')+'ZFT.htm'){
+    return {days,from,to,bp:m.change_bp,basis:'ASX · stesso contratto '+last.contract+' (proxy non OIS)',derived:false};
+   }
    // Recover an exact fixed-contract observation even if that contract was
    // previously mapped to another representative horizon. This measures
    // today's 6M contract, NOT a constant-maturity 6M curve move.
