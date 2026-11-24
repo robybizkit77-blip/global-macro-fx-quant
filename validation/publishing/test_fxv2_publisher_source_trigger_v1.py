@@ -30,3 +30,26 @@ assert s.count("  contract:")==1
 assert "git push origin HEAD:gh-pages" in s
 assert "git add -A -- site/fx-quant-v2" in s
 print("FXV2_SOURCE_TRIGGER_TO_PUBLICATION_CONTRACT_PASS")
+
+# The existing thesis publication event must verify both the receipt and the
+# exact model input families from the recalculation audit, not merely the
+# archived pair history. Other publishers retain ownership of their feeds.
+import re
+block=s.split('label = "NEXT_THESIS_HISTORY_PUBLIC_HTTP"',1)[1].split('proof = verify(',1)[0]
+paths=set(re.findall(r'"([^"]+\.(?:json|js|html))"',block))
+audit=(p.parents[2]/"validation/pair_thesis/audit_estimated_recalc_readiness_v1.cjs").read_text(encoding="utf-8")
+inputs=audit.split("const paths={",1)[1].split("};",1)[0]
+source_paths=set(re.findall(r"'([^']+\.json)'",inputs))
+assert len(source_paths)==5,source_paths
+required=source_paths | {
+    "site/fx-quant-v2/next/pair-estimate-recalc-receipt-v1.json",
+    "site/fx-quant-v2/next/pair-estimate-history-v1.json",
+    "site/fx-quant-v2/next/macro-strength-estimated-v1.js",
+    "site/fx-quant-v2/next/home-thesis-recalc-v1.js",
+    "site/fx-quant-v2/next/pair-rankings.js",
+    "site/fx-quant-v2/next/app.js",
+    "site/fx-quant-v2/next/index.html",
+}
+assert paths == required, (required-paths, paths-required)
+assert "if proof[\"status\"] != \"PASS\":" in s
+print("NEXT_RECALC_PUBLIC_INPUT_PROOF_CONTRACT_PASS",len(paths))
