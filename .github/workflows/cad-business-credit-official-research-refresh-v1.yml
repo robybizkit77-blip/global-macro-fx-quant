@@ -1,6 +1,12 @@
 name: CAD Official Business Credit Research Refresh V1
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/liquidity/refresh_boc_cad_business_credit_v1.py'
+      - 'validation/liquidity/test_refresh_boc_cad_business_credit_v1.py'
+      - '.github/workflows/cad-business-credit-official-research-refresh-v1.yml'
   workflow_dispatch:
   schedule:
     # Daily check of a monthly Bank of Canada release, off GitHub's hour boundary.
@@ -21,7 +27,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate CAD credit and settlement source and probe actual daily balances
+        run: |
+          python -m unittest validation.liquidity.test_refresh_boc_cad_business_credit_v1 -v
+          python - <<'PY'
+          from validation.liquidity.refresh_boc_cad_business_credit_v1 import fetch_lynx,parse_lynx
+          x=parse_lynx(fetch_lynx())
+          print('CAD_LYNX_LIVE_SOURCE_PASS',x['latest_observation'],x['values'][-1],len(x['dates']))
+          PY
   source-only:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -38,7 +65,7 @@ jobs:
         run: |
           sha256sum live_data/sections/NATIVE_LIQ_DATA.json > /tmp/cad-credit-runtime.before
           sha256sum live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json > /tmp/cad-credit-fx.before
-      - name: Fetch issuer Valet monthly credit with guarded research-only apply
+      - name: Fetch issuer monthly credit and daily Lynx balances with guarded research-only apply
         id: acquire
         run: |
           python validation/liquidity/refresh_boc_cad_business_credit_v1.py \
