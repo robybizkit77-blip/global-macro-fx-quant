@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-24T11:00:25Z",
+  "generated_at_utc": "2026-11-24T21:17:51Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-5e083a52259a5f5b8ee1",
+      "observed_at_utc": "2026-11-24T14:37:09Z",
+      "headline": "Used crude tankers top newbuild prices, CMB.Tech says",
+      "summary": "Reuters riporta: Used crude tankers top newbuild prices, CMB.Tech says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPb1R1ZkdZSEIyRmQ5X1A2ZWJqeFZsT1BiOG1aYTZvRVM2eElkVnkxVFRHUDk0b054WUxmcU1VcnBZVFJEbmpIb3BidHVyMWpicXYzWWFJYzZIYThvcV96c0hERTk0bnREUTRLR29MSmJXMHpzR0VMb1ltTGt0VV9fbDV5c2dRdVhZOWlrdGxOX1kzMVZTbGtrZmZEZU9FNlpfTGNETGZ3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-c3acac7a54602458949c",
+      "observed_at_utc": "2026-11-24T07:39:42Z",
+      "headline": "British endurance swimmer passes burning ships in Strait of Hormuz",
+      "summary": "Reuters riporta: British endurance swimmer passes burning ships in Strait of Hormuz. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMid0FVX3lxTFBMWnQ3NVNULXo1NG9iVE5tdHkyZXJsRXlta05rYlBGbVlvMlZzckowZEdqTmhhUm43UXpkd0pNbzRHa2huRXdLSkNYMDBubmxFRk9kVXVVaUdHdkg0LTFKbWNuSkZ3MXZaLUhic0c2bjgwN3JVdlJ3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-078c3d9b997bc605b519",
+      "observed_at_utc": "2026-11-24T02:56:00Z",
+      "headline": "Oil settles up $2 as traders weigh continued Hormuz ship attacks",
+      "summary": "Reuters riporta: Oil settles up $2 as traders weigh continued Hormuz ship attacks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQMDQ4RU9qMFd6TWl0WkFDUGVsdk5Gb3Q1dURMcjcwbGxUV3ItdjhZUGdQUTBZOVUyZEZlRzdmSEtjM3EwQTNUam1nRVZNdXFRbmNfeHhpUnNVQjNPbjNyOGtSZHVnNEZmbnpJdC1VdVA5X25rWndhMnZqemNGVWdVU1Y5OE8ybExyT2xLelF6dnZsNkM0OU55b1dKc1NuNF9sWkVGSGZJaUNxLXc4eEdGZTl3LUtFTDFuUUE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-f9ace6eec515d3b222c4",
       "observed_at_utc": "2026-11-24T02:56:00Z",
@@ -1370,49 +1411,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNZTNDTVIxbVNEWDkyN3QzVk9YR2stVjFURXFqcDNXeGZ2S3FUcmhJNzJqcEp5R3JMY0dDdnl3MDEyRXVKRnB1ZGhMVHpQeTRYNnZwZDQ3UlpnTG5mR1o0akdxWDRhWDU1dm1CY2M3bFZQNHhNRHZyaUZFU1VPODZIdFJrbXBaM2UzTnRXOA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-dabad28a678e983a332f",
-      "observed_at_utc": "2026-11-13T15:40:04Z",
-      "headline": "Bessent, Fed's Goolsbee divided on role of energy shock in inflation",
-      "summary": "Reuters riporta: Bessent, Fed's Goolsbee divided on role of energy shock in inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOWGl4M3I4cEx4Q1pteUwtd3I3OFBYWWFUU096V1Y3X2oxdl9KOFprODJXTEoxallGdk8tXzNuMzlWSXdjTTBFNjUxUHFwWmdVZTFHeTh0TEVYcWtNSXI2aUJkRFdKVFgtNmpWS01zTlhMS21ndThYQjY2bDhXSFpnV2c0Sl8wSzdBWnJzNmZVR05iUGdxU3BCUnBIYlcteEQtRkNMbDBQRF82QXVESmZSRGNvZG9yaGtfbm5QNHBTUE1jNjA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-81cc21262584cda36bbc",
-      "observed_at_utc": "2026-11-13T02:42:00Z",
-      "headline": "Indian stocks slip as oil, inflation cap weekly rally",
-      "summary": "Reuters riporta: Indian stocks slip as oil, inflation cap weekly rally. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxOX1E4QjJWZklPblVub0xweU1jNXRDdDlBdDFpbDFlZDl1d21idHhkbnAtTkZOcGEzZ3dSRnh0dWhQOFRPQXRuQVR2QkE0RFVvbnVSM2N3MmtWZjhsa0FhSGRLTlVtZUxXeTVGQUlUWTQyTjlwNm9HT2pvek1nZ0JXWkVWd0FVdEdvMFpZbkxuU2VlcHFUbDMtNzlzc09oeVB1eVVLaE12MHE1QXh6eEFIZ3lyUlUyRks0eU8tbA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-d14a072390baa72c107e",
-      "observed_at_utc": "2026-11-13T01:55:00Z",
-      "headline": "European stocks set for weekly gain, dollar near 19-month high on rate hike bets",
-      "summary": "Reuters riporta: European stocks set for weekly gain, dollar near 19-month high on rate hike bets. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOZ0cyVmdPTTRkWGt3UlMtUFRyOGhvdDNlM1FYVy1MSVN0elpQZHgtWXctVEE1M2RjQm9IcmwzUGU4cEhEQnhsQWlOX2RhUFk1NzBXeFkwM3lMek16ajB1ZmozdGpLR0cwQ2JTcGVlTTJwMEc2ZFZ3bklxeTk4eElFaHZLaw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
