@@ -25,10 +25,24 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),31)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),31)
+        self.assertEqual(len(mod.REGISTRY),41)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),41)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
         self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit","statcan_detail"} for s in mod.REGISTRY))
+
+    def test_wave3_exact_id_frequency_and_direction(self):
+        expected={"GBP_leading":"GBRLOLITOAASTSAM","JPY_jobs":"LRUNTTTTJPM156S","JPY_industry":"JPNPROINDQISMEI","JPY_demand":"SLRTTO01JPQ657S","CHF_house":"QCHR368BIS","CHF_industry":"PRMNTO01CHQ657S","CHF_demand":"SLRTTO01CHQ657S","AUD_jobs":"LRUNTTTTAUM156S","AUD_leading":"AUSLOLITOAASTSAM","NZD_demand":"SLRTTO01NZQ657S"}
+        for code,key in expected.items():
+            ccy,area=code.split("_")
+            spec=next(s for s in mod.REGISTRY if s["ccy"]==ccy and s["area"]==area)
+            self.assertEqual(spec["key"],key)
+            self.assertEqual(spec["source_page"],mod.FRED.replace("/graph/fredgraph.csv?id=","/series/")+key)
+            self.assertEqual(spec.get("up_good",True),area!="jobs")
+            freq=spec["frequency"]
+            rows=mod.parse_fred(fixture(key,freq,(2026,9 if freq=="M" else 2)),key,freq,NOW)
+            item,status=mod.candidate(spec,rows,NOW)
+            self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+            self.assertEqual(item["up_good"],area!="jobs")
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -42,7 +56,7 @@ class G8SemaphoreSources(unittest.TestCase):
 
     def test_stale_official_feed_does_not_generate_signal(self):
         spec=next(s for s in mod.REGISTRY if s["ccy"]=="JPY" and s["area"]=="house")
-        rows=mod.parse_fred(fixture(spec["key"],"M",(2023,11)),spec["key"],"M",NOW)
+        rows=mod.parse_fred(fixture(spec["key"],"Q",(2023,4)),spec["key"],"Q",NOW)
         item,status=mod.candidate(spec,rows,NOW)
         self.assertIsNone(item)
         self.assertEqual(status["status"],"WITHHELD_STALE")
@@ -384,7 +398,7 @@ class G8SemaphoreSources(unittest.TestCase):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),31)
+        self.assertEqual(len(out["audit"]),41)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
