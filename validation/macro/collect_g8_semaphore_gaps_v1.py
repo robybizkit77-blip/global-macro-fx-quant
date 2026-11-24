@@ -30,6 +30,38 @@ MAX_BYTES=3_000_000
 # Several historical OECD/BIS feeds have stopped updating: retain status WITHHELD;
 # never use today's fetch time to make an old observation look current.
 REGISTRY=[
+ dict(ccy="USD",area="house",key="PERMIT",method="fred",
+      name="Permessi edilizi residenziali USA (SA)",unit="migliaia unità SA",frequency="M",
+      kind="percent",max_age_days=115,origin="US Census Bureau via FRED",
+      source_page="https://fred.stlouisfed.org/series/PERMIT"),
+ dict(ccy="USD",area="industry",key="INDPRO",method="fred",
+      name="Produzione industriale Fed (indice reale SA)",unit="indice 2017=100",frequency="M",
+      kind="percent",max_age_days=115,origin="Federal Reserve via FRED",
+      source_page="https://fred.stlouisfed.org/series/INDPRO"),
+ dict(ccy="USD",area="leading",key="UMCSENT",method="fred",
+      name="Fiducia consumatori University of Michigan (survey, proxy)",unit="indice NSA",frequency="M",
+      kind="points",max_age_days=115,origin="University of Michigan via FRED",
+      source_page="https://fred.stlouisfed.org/series/UMCSENT"),
+ dict(ccy="USD",area="demand",key="PCEC96",method="fred",
+      name="Spesa consumi personali reali (PCE, SAAR)",unit="mld USD concatenati SAAR",frequency="M",
+      kind="percent",max_age_days=115,origin="US BEA via FRED",
+      source_page="https://fred.stlouisfed.org/series/PCEC96"),
+ dict(ccy="USD",area="credit",key="DRTSCILM",method="fred",
+      name="SLOOS: quota banche che irrigidisce prestiti C&I",unit="saldo netto punti percentuali",frequency="Q",
+      kind="points",max_age_days=250,origin="Federal Reserve SLOOS via FRED",
+      source_page="https://fred.stlouisfed.org/series/DRTSCILM",up_good=False),
+ dict(ccy="EUR",area="industry",key="STS_INPR_M_EA21_PRD_B-D_SCA_I21",method="eurostat_industry",
+      name="Produzione industriale reale EA21 (SCA)",unit="indice 2021=100 SCA",frequency="M",
+      kind="percent",max_age_days=115,origin="Eurostat / sts_inpr_m",
+      source_page="https://ec.europa.eu/eurostat/databrowser/view/sts_inpr_m/default/table?lang=en"),
+ dict(ccy="EUR",area="leading",key="TEIBS010_EA21_BS-ESI-I_SA",method="eurostat_esi",
+      name="Economic Sentiment Indicator — Eurozona EA21",unit="indice ESI SA",frequency="M",
+      kind="points",max_age_days=85,origin="Eurostat / DG ECFIN teibs010",
+      source_page="https://ec.europa.eu/eurostat/databrowser/view/teibs010/default/table?lang=en"),
+ dict(ccy="EUR",area="demand",key="STS_TRTU_M_EA21_VOL_SLS_G47_SCA_I21",method="eurostat_retail",
+      name="Volume vendite reali al dettaglio EA21 (SCA)",unit="indice 2021=100 SCA",frequency="M",
+      kind="percent",max_age_days=115,origin="Eurostat / sts_trtu_m",
+      source_page="https://ec.europa.eu/eurostat/databrowser/view/sts_trtu_m/default/table?lang=en"),
  dict(ccy="EUR",area="services",key="TEIBS020_BS-SCI-BAL_SA_EA21",method="eurostat_services",
       name="Fiducia imprese servizi — Eurozona EA21 (survey SA)",unit="saldo netto destagionalizzato",
       frequency="M",kind="points",max_age_days=75,origin="Eurostat / DG ECFIN teibs020",
@@ -93,7 +125,7 @@ REGISTRY=[
       kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
-assert len(REGISTRY)==15 and len({(s["ccy"],s["area"]) for s in REGISTRY})==15
+assert len(REGISTRY)==23 and len({(s["ccy"],s["area"]) for s in REGISTRY})==23
 
 def fetch(url:str)->bytes:
     host=urlsplit(url).hostname
@@ -391,6 +423,56 @@ EUROSTAT_SERVICES_URL=(
  "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/teibs020?"
  "geo=EA21&s_adj=SA&indic=BS-SCI-BAL&freq=M&sinceTimePeriod=2025-01"
 )
+EUROSTAT_EXTRA={
+ "eurostat_industry":("sts_inpr_m",{"freq":"M","geo":"EA21","indic_bt":"PRD",
+      "nace_r2":"B-D","s_adj":"SCA","unit":"I21"}),
+ "eurostat_esi":("teibs010",{"freq":"M","geo":"EA21","indic":"BS-ESI-I","s_adj":"SA"}),
+ "eurostat_retail":("sts_trtu_m",{"freq":"M","geo":"EA21","indic_bt":"VOL_SLS",
+      "nace_r2":"G47","s_adj":"SCA","unit":"I21"}),
+}
+def euro_extra_url(method):
+    dataset,filters=EUROSTAT_EXTRA[method]
+    from urllib.parse import urlencode
+    return "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/"+dataset+"?"+urlencode({
+      **filters,"sinceTimePeriod":"2024-01"})
+
+def parse_euro_extra(raw,now,method):
+    """Exact dimension selectors and one time series per Eurostat requested category."""
+    if method not in EUROSTAT_EXTRA:raise ValueError("unknown Eurostat method")
+    dataset,selected=EUROSTAT_EXTRA[method]
+    d=json.loads(raw.decode("utf-8"))
+    if d.get("class")!="dataset" or not isinstance(d.get("value"),dict):
+        raise ValueError("Eurostat "+dataset+" invalid JSON-stat dataset")
+    ids=d.get("id",[]); shape=d.get("size",[])
+    if len(ids)!=len(shape) or set(ids)!=set(selected)|{"time"}:
+        raise ValueError("Eurostat "+dataset+" dimensions changed")
+    dimensions=d.get("dimension",{})
+    fixed={}
+    for k,option in selected.items():
+        choices=dimensions.get(k,{}).get("category",{}).get("index",{})
+        if not isinstance(choices,dict) or len(choices)!=1 or option not in choices:
+            raise ValueError("Eurostat "+dataset+" selector changed: "+k)
+        fixed[k]=choices[option]
+    periods=dimensions.get("time",{}).get("category",{}).get("index",{})
+    if not isinstance(periods,dict) or not periods:
+        raise ValueError("Eurostat "+dataset+" period axis missing")
+    out={}
+    for p,ix in periods.items():
+        if not re.fullmatch(r"\d{4}-(?:0[1-9]|1[0-2])",p): continue
+        if period_end(p)>now:continue
+        coords={**fixed,"time":ix}
+        index=0
+        for dimension,size in zip(ids,shape):index=index*size+coords[dimension]
+        value=d["value"].get(str(index))
+        if value is None:continue
+        y=float(value)
+        if not math.isfinite(y) or abs(y)>1000000:
+            raise ValueError("Eurostat "+dataset+" value implausible")
+        if p in out:raise ValueError("Eurostat "+dataset+" repeated period")
+        out[p]=y
+    if len(out)<12:raise ValueError("Eurostat "+dataset+" insufficient history")
+    return sorted(out.items())
+
 def parse_eurostat_services(raw:bytes,now:date):
     """Exact Eurostat/DG ECFIN EA21 services confidence (BS-SCI-BAL, SA, monthly).
     Fail closed if selection is ambiguous, changed, or not updated.
@@ -498,6 +580,7 @@ def candidate(spec,observations,now):
       "source_page":spec["source_page"],"source_series_id":spec["key"],
       "metric_kind":spec["kind"],"observation_as_of":newest,
       "diffusion_threshold":50 if spec["method"]=="biznz" else None,
+      "up_good":spec.get("up_good",True),
       "quality":"SOURCE_REVISED_RESEARCH_NOT_PIT"}
     return payload,{"status":"READY_DESCRIPTIVE_REVISED","last_observation":newest,"days_since_period_end":age}
 
@@ -546,6 +629,7 @@ def collect(now=None,fetcher=fetch):
     for spec in REGISTRY:
         code=spec["ccy"]+"_"+spec["area"]
         url=FRED+spec["key"] if spec["method"]=="fred" else (
+          euro_extra_url(spec["method"]) if spec["method"] in EUROSTAT_EXTRA else
           EUROSTAT_SERVICES_URL if spec["method"]=="eurostat_services" else
           BUSINESSNZ_INDEX if spec["method"]=="biznz" else
           ABS_MHSI_SERVICES if spec["method"]=="abs_services" else
@@ -559,7 +643,8 @@ def collect(now=None,fetcher=fetch):
                  abs_services_fetch(url) if spec["method"]=="abs_services" else
                  fetch_statcan(url) if spec["method"]=="statcan" else
                  fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","statcan","ons","statcan_services"} and fetcher is fetch else fetcher(url)
-            observations=(parse_eurostat_services(raw,now) if spec["method"]=="eurostat_services" else
+            observations=(parse_euro_extra(raw,now,spec["method"]) if spec["method"] in EUROSTAT_EXTRA else
+                          parse_eurostat_services(raw,now) if spec["method"]=="eurostat_services" else
                           parse_fred(raw,spec["key"],spec["frequency"],now)
                           if spec["method"]=="fred" else
                           parse_businessnz_psi(raw,now) if spec["method"]=="biznz" else
