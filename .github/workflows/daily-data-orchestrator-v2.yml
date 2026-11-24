@@ -23,6 +23,7 @@ on:
       - 'validation/orchestration/test_plan_premorning_calendar_news_recovery_v1.py'
       - 'validation/orchestration/plan_premorning_vix_recovery_v1.py'
       - 'validation/orchestration/test_plan_premorning_vix_recovery_v1.py'
+      - 'validation/orchestration/audit_g8_liquidity_schedule_evidence_v1.py'
   push:
     branches: [main]
     paths:
@@ -45,6 +46,7 @@ on:
       - 'validation/orchestration/test_plan_premorning_calendar_news_recovery_v1.py'
       - 'validation/orchestration/plan_premorning_vix_recovery_v1.py'
       - 'validation/orchestration/test_plan_premorning_vix_recovery_v1.py'
+      - 'validation/orchestration/audit_g8_liquidity_schedule_evidence_v1.py'
   workflow_dispatch:
     inputs:
       phase:
@@ -140,6 +142,35 @@ jobs:
         run: python -m unittest validation.orchestration.test_plan_premorning_vix_recovery_v1 -v
       - name: Test transient GitHub run/job reads without duplicate dispatch
         run: python validation/orchestration/test_orchestrator_readonly_api_retry_v1.py
+      - name: Test scheduled liquidity evidence without false certification
+        run: python validation/orchestration/audit_g8_liquidity_schedule_evidence_v1.py --selftest
+
+  liquidity-schedule-evidence:
+    # Independent observational audit: never delays or gates the production job.
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '30 18 * * 1-5') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    continue-on-error: true
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit scheduled acquisition for 11 G8 liquidity producers
+        run: python validation/orchestration/audit_g8_liquidity_schedule_evidence_v1.py --output /tmp/g8-liquidity-schedule-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: g8-liquidity-schedule-evidence
+          path: /tmp/g8-liquidity-schedule-evidence.json
+          if-no-files-found: error
+          retention-days: 30
 
   orchestrate:
     needs: contract
