@@ -7,7 +7,7 @@ import unittest
 from datetime import date
 from pathlib import Path
 from validation.liquidity.refresh_boc_cad_business_credit_v1 import (
-    parse, parse_lynx, existing_payload, emit_js, existing_observations, run, DEST, INITIAL_OBSERVED
+    parse, parse_lynx, parse_slos, existing_payload, emit_js, existing_observations, run, DEST, INITIAL_OBSERVED
 )
 DAY=date(2026,11,14)
 
@@ -108,5 +108,40 @@ class BoCCreditResearchTest(unittest.TestCase):
             self.assertEqual(run(dest,**args)["status"],"NO_CHANGE")
             l.write_text("invalid Lynx")
             self.assertEqual(run(dest,**args)["lynx"]["retained_observation"],"2026-11-13")
+
+
+    def test_slos_exact_series_and_independent_retention(self):
+        day=date(2026,11,24)
+        payload={"seriesDetail":{"SLOS_BUS_LEND":{"label":"Overall business lending conditions","dateFormat":"quarterly"}},
+                 "observations":[{"d":d,"SLOS_BUS_LEND":{"v":str(v)}} for d,v in
+                    [("2025-10-01",2.81),("2026-01-01",0.96),("2026-04-01",-1.04),("2026-07-01",-6.48)]]}
+        x=parse_slos(payload,today=day)
+        self.assertEqual(x["values"][-2:],[-1.04,-6.48])
+        self.assertEqual(x["negative_means"],"easing")
+        self.assertEqual(x["positive_means"],"tightening")
+        for bad in ("label","gap","future","anchor"):
+            y=copy.deepcopy(payload)
+            if bad=="label":y["seriesDetail"]["SLOS_BUS_LEND"]["label"]="Business price lending conditions"
+            elif bad=="gap":y["observations"].pop(1)
+            elif bad=="future":y["observations"].append({"d":"2026-10-01","SLOS_BUS_LEND":{"v":"0"}})
+            else:y["observations"][2]["SLOS_BUS_LEND"]["v"]="20"
+            with self.assertRaises(ValueError):parse_slos(y,today=day)
+        with tempfile.TemporaryDirectory() as temp:
+            f=Path(temp)/"credit.json";s=Path(temp)/"slos.json";dest=Path(temp)/"out.js"
+            f.write_text(json.dumps(raw()));s.write_text(json.dumps(payload))
+            run(dest,apply=True,fixture=f,today=day)
+            before=existing_payload(dest.read_text())
+            f.write_text("invalid credit")
+            args={"apply":True,"fixture":f,"slos_fixture":s,"today":day}
+            receipt=run(dest,**args)
+            self.assertEqual(receipt["slos"]["status"],"VERIFIED")
+            self.assertTrue(receipt["credit"]["status"].startswith("WITHHELD"))
+            after=existing_payload(dest.read_text())
+            self.assertEqual(after["values"],before["values"])
+            self.assertEqual(after["lending_conditions"],x)
+            f.write_text(json.dumps(raw()))
+            self.assertEqual(run(dest,**args)["status"],"NO_CHANGE")
+            s.write_text("invalid SLOS")
+            self.assertEqual(run(dest,**args)["slos"]["retained_observation"],"2026-07-01")
 
 if __name__=="__main__":unittest.main()
