@@ -58,6 +58,68 @@ def rome_build_day(stamp: object) -> str | None:
     return time.astimezone(ROME).date().isoformat()
 
 
+def research_rates_evidence(feeds: dict, today: dt.date, expected: str) -> dict:
+    """Informational only: never change canonical rate/monetary readiness."""
+    research = feeds.get("_next_rates_research", {})
+    snapshot = research.get("pricing", {})
+    pricing = {}
+    accepted = {"OIS", "FUTURES", "FUTURES SECONDARI", "PROXY FUTURES"}
+    valid_snapshot = (snapshot.get("schema") == "GMFQ_FXV2_PRICING_SNAPSHOT_V1"
+                      and snapshot.get("ui_only") is True
+                      and snapshot.get("eligible_for_fx_engine") is False)
+    for c in G8:
+        row = snapshot.get("currencies", {}).get(c, {}) if valid_snapshot else {}
+        h = row.get("horizons", {}).get("6m", {})
+        period = valid_date(h.get("as_of"))
+        value = h.get("rate")
+        kind = row.get("kind")
+        valid = (period and period <= today.isoformat() and type(value) in (int, float)
+                 and math.isfinite(value) and kind in accepted
+                 and isinstance(row.get("source"), str) and bool(row["source"].strip()))
+        if valid and kind in {"FUTURES SECONDARI", "PROXY FUTURES"}:
+            valid = isinstance(h.get("contract"), str) and bool(h["contract"].strip())
+        pricing[c] = {"as_of": period if valid else None, "level": value if valid else None,
+                      "instrument": kind if valid else None, "source": row.get("source") if valid else None,
+                      "status": ("RECENT_DATED_REFERENCE" if period >= expected else "OLDER_DATED_REFERENCE")
+                      if valid else "REFERENCE_UNVERIFIED"}
+    nzd = research.get("nzd", {})
+    government = {}
+    rows = nzd.get("observations", [])
+    last = rows[-1] if isinstance(rows, list) and rows else {}
+    period = valid_date(last.get("date"))
+    if (nzd.get("schema") == "GMFQ_NZD_RBNZ_B2_RECONCILED_RESEARCH_V1"
+        and nzd.get("status") == "RBNZ_B2_HTML_XLSX_AGREE_POSTROLL_RESEARCH_ONLY"
+        and nzd.get("research_only") is True and nzd.get("no_interpolation") is True
+        and all(nzd.get(k) is False for k in ("eligible_for_core", "eligible_for_fx_pair_engine",
+                                               "eligible_for_backtests", "eligible_for_automatic_promotion"))
+        and nzd.get("source_url") == "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates"
+        and nzd.get("xlsx_url") == "https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx"
+        and all(re.fullmatch(r"[0-9a-f]{64}", str(nzd.get(k))) for k in ("html_sha256", "xlsx_sha256"))
+        and period and period == nzd.get("last_observation_date")
+        and period in nzd.get("html_xlsx_matched_dates", [])
+        and valid_date(nzd.get("publication_date")) and period <= nzd["publication_date"] <= today.isoformat()
+        and valid_date(nzd.get("benchmark_roll_date")) and nzd["benchmark_roll_date"] <= period
+        and all(type(last.get(k)) in (int, float) and math.isfinite(last[k]) for k in ("2Y", "10Y"))):
+        government["NZD"] = {"as_of": period, "2Y": last["2Y"], "10Y": last["10Y"],
+                             "status": "RECONCILED_RESEARCH_ONLY", "source": nzd["source"]}
+    chf = research.get("chf_spot", {})
+    period = valid_date(chf.get("as_of"))
+    if (chf.get("schema") == "GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1"
+        and chf.get("status") == "OFFICIAL_PUBLISHED_10Y_INFORMATIONAL"
+        and chf.get("source_url") == "https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates"
+        and chf.get("tenor") == "10Y" and chf.get("has_current_2y") is False
+        and chf.get("eligible_for_curve_spreads") is False and chf.get("eligible_for_core_signals") is False
+        and period and period <= today.isoformat()
+        and type(chf.get("value_percent")) in (int, float) and math.isfinite(chf["value_percent"])):
+        government["CHF"] = {"as_of": period, "10Y": chf["value_percent"],
+                             "status": "OFFICIAL_10Y_ONLY_NOT_PAIRED", "source": chf["source"]}
+    return {"pricing_6m_research": pricing,
+            "dated_reference_count": sum(x["status"] != "REFERENCE_UNVERIFIED" for x in pricing.values()),
+            "recent_reference_count": sum(x["status"] == "RECENT_DATED_REFERENCE" for x in pricing.values()),
+            "government_research": government, "canonical_effect": "NONE",
+            "scope": "Informational references, not official OIS coverage, current-session source verification or public HTTP proof"}
+
+
 def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") -> dict:
     now = now.astimezone(ROME)
     today = now.date()
@@ -219,6 +281,10 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
         "estimated": sorted(c for c in G8 if op[c] == "GREEN_ESTIMATED"),
         "withheld": sorted(c for c in G8 if op[c] not in {"GREEN_OFFICIAL", "GREEN_ESTIMATED"}),
     }
+    try:
+        evidence["NEXT_RATES_RESEARCH"] = research_rates_evidence(feeds, today, expected)
+    except (AttributeError, KeyError, TypeError, ValueError) as exc:
+        evidence["NEXT_RATES_RESEARCH"] = {"status": "RESEARCH_EVIDENCE_INVALID", "canonical_effect": "NONE", "error": type(exc).__name__}
     # A delivery can meet the 08:00 SLA while some research sources remain
     # lagging or unavailable. Surface those gaps in the same compact receipt
     # used by Pages and the orchestrator, without inventing estimates or
@@ -321,7 +387,20 @@ def critical_source_blockers(report: dict) -> list[str]:
 
 
 def read_feeds() -> dict:
-    return {p: json.loads((FEEDS / p).read_text(encoding="utf-8")) for p in REQUIRED}
+    feeds = {p: json.loads((FEEDS / p).read_text(encoding="utf-8")) for p in REQUIRED}
+    optional = {"pricing": ROOT / "site/fx-quant-v2/ois-pricing-snapshot.json",
+                "nzd": ROOT / "site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json",
+                "chf_spot": FEEDS / "CHF_SNB_10Y_SPOT_CONTEXT.json"}
+    research = {}
+    for name, path in optional.items():
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(value, dict):
+                research[name] = value
+        except (OSError, ValueError):
+            pass
+    feeds["_next_rates_research"] = research
+    return feeds
 
 
 def main() -> int:

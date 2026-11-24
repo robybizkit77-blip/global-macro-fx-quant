@@ -61,6 +61,7 @@ def evaluate(instant: dt.datetime, feeds: dict | None = None, cb_data: dict | No
     receipt["critical_daily_problems"] = report["critical_daily_problems"]
     receipt["documented_nonblocking_gaps"] = report.get("documented_nonblocking_gaps", [])
     receipt["news_content_vintage"] = report["evidence"].get("NEWS_CONTENT_VINTAGE")
+    receipt["next_rates_research"] = report["evidence"].get("NEXT_RATES_RESEARCH")
     # A same-day scheduled CB meeting is a watch cue, NOT evidence that the
     # issuer released a statement. Keep HTTP publication working while clearly
     # flagging an unresolved native policy row at the time of observation.
