@@ -191,6 +191,9 @@ function verifiedFreshAlternative(x,c,key){
      x.source_series_id===(key==='house'?'RBA_HOUSING_CREDIT_GROWTH_MM':'RBA_BUSINESS_CREDIT_GROWTH_MM')&&
      /^https:\/\/www\.rba\.gov\.au\/statistics\/frequency\/fin-agg\/20\d{2}\/fin-agg-\d{4}\.html$/.test(x.source_page);
  }
+ if(c==='NZD'&&key==='credit'&&x?.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&x.source_series_id==='RBNZ_PRIVATE_CREDIT_STOCK_TE'){
+   return x.source_page==='https://tradingeconomics.com/new-zealand/private-sector-credit'&&x.metric_kind==='percent'&&x.unit==='mln NZD nominali';
+ }
  if(c==='NZD'&&key==='credit'&&x?.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'){
    return x.source_series_id==='RBNZ_C5_BUSINESS_YOY'&&x.source_page==='https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/registered-banks-and-non-bank-lending-institutions-sector-lending';
  }
@@ -225,7 +228,7 @@ function supplementary(overlay,country,key,today){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz|data\.snb\.ch|www\.bnz\.co\.nz)\//.test(x.source_page)&&
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz|data\.snb\.ch|www\.bnz\.co\.nz|tradingeconomics\.com)\//.test(x.source_page)&&
    (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
     x.metric_kind==='points'&&(/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page)||x.source_series_id==='BNZ_BUSINESSNZ_PSI'&&x.source_page==='https://www.bnz.co.nz/institutional-banking/research/publications'))));
  return matches.length===1?matches[0]:null;
