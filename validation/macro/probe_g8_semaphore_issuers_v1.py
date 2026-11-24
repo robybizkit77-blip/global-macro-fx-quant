@@ -72,7 +72,12 @@ def call(name,url):
     raw=data.decode("utf-8","replace");parser=Plain();parser.feed(raw)
     plain=" ".join(" ".join(parser.parts).split())
     terms=["The PSI for", "New dwellings consented", "Seasonally adjusted", "Annual growth rate", "Private sector credit","Building Permits","Private Sector Credit","BLDM.SFTZ1100A1S"]
-    return {"bytes":len(data),"url":x.geturl(),"type":x.headers.get("Content-Type"),
+    tables=[]
+    if "STAT_" in name:
+     from collect_g8_semaphore_gaps_v1 import _ReportTables
+     t=_ReportTables();t.feed(raw)
+     tables=[{"head":tab[:4],"tail":tab[-3:],"rows":len(tab)} for tab in t.tables[:12]]
+    return {"bytes":len(data),"url":x.geturl(),"type":x.headers.get("Content-Type"),"tables":tables,
      "matches":{k:plain[max(0,plain.find(k)-50):plain.find(k)+600] for k in terms if k in plain},
      "links":[m for m in re.findall(r'href=["\x27]([^"\x27]+)',raw,re.I) if "building-consents" in m.lower() or "bld" in m.lower() or "psi" in m.lower()][:12],
      "tail":raw[-400:] if name.startswith("NZALT_FRED") else ""}
@@ -125,5 +130,8 @@ def call(name,url):
   return {"error":type(e).__name__,"detail":str(e)[:250]}
 
 if __name__=="__main__":
- for key,url in URLS.items():
-  print(key,json.dumps(call(key,url),ensure_ascii=False)[:5500])
+ from concurrent.futures import ThreadPoolExecutor
+ with ThreadPoolExecutor(max_workers=5) as pool:
+  results=pool.map(lambda kv:(kv[0],call(*kv)),URLS.items())
+  for key,result in results:
+   print(key,json.dumps(result,ensure_ascii=False)[:9500] if key.startswith("NZALT_") else json.dumps(result,ensure_ascii=False)[:5500],flush=True)
