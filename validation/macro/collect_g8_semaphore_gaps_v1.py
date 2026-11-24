@@ -31,6 +31,39 @@ MAX_BYTES=3_000_000
 # Several historical OECD/BIS feeds have stopped updating: retain status WITHHELD;
 # never use today's fetch time to make an old observation look current.
 REGISTRY=[
+ dict(ccy="CAD",area="demand",key="CAN_RETAIL_REAL_LASPEYRES",method="statcan_detail",
+      name="Vendite retail reali a prezzi costanti 2017 Canada (SA)",unit="mln CAD reali 2017 SA",
+      frequency="M",kind="percent",max_age_days=115,
+      origin="Statistics Canada / 20-10-0067-01",
+      source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=2010006701"),
+ dict(ccy="CAD",area="house",key="CAN_HOUSEHOLD_MORTGAGES_SA",method="statcan_detail",
+      name="Stock mutui residenziali famiglie Canada (SA; proxy immobiliare)",
+      unit="mln CAD SA",frequency="M",kind="percent",max_age_days=115,
+      origin="Statistics Canada / 36-10-0639-01",
+      source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610063901"),
+ dict(ccy="CAD",area="credit",key="CAN_NFC_NONMORTGAGE_LOANS_SA",method="statcan_detail",
+      name="Prestiti non ipotecari società non finanziarie Canada (SA)",
+      unit="mln CAD SA",frequency="M",kind="percent",max_age_days=115,
+      origin="Statistics Canada / 36-10-0640-01",
+      source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610064001"),
+
+ dict(ccy="AUD",area="house",key="RBA_HOUSING_CREDIT_GROWTH_MM",method="rba_credit",
+      name="Crescita credito abitativo RBA (proxy immobiliare, SA, corretta rotture)",
+      unit="% m/m SA",frequency="M",kind="points",max_age_days=120,
+      origin="Reserve Bank of Australia / Financial Aggregates",
+      source_page="https://www.rba.gov.au/statistics/frequency/fin-agg/"),
+ dict(ccy="AUD",area="credit",key="RBA_BUSINESS_CREDIT_GROWTH_MM",method="rba_credit",
+      name="Crescita credito alle imprese RBA (SA, corretta rotture)",
+      unit="% m/m SA",frequency="M",kind="points",max_age_days=120,
+      origin="Reserve Bank of Australia / Financial Aggregates",
+      source_page="https://www.rba.gov.au/statistics/frequency/fin-agg/"),
+
+ dict(ccy="AUD",area="demand",key="ABS_MHSI_TOTAL_MONTHLY_SA",method="abs_demand",
+      name="Spesa famiglie totale nominale SA (proxy domanda, % m/m)",
+      unit="% m/m nominale SA",frequency="M",kind="points",max_age_days=115,
+      origin="Australian Bureau of Statistics / MHSI",
+      source_page="https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release"),
+
  dict(ccy="GBP",area="industry",key="ONS_K222_DIOP",method="ons_industry",
       name="Indice della produzione industriale UK (volumi reali SA)",unit="indice CVMSA",
       frequency="M",kind="percent",max_age_days=115,origin="ONS Index of Production",
@@ -135,7 +168,7 @@ REGISTRY=[
       kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
-assert len(REGISTRY)==25 and len({(s["ccy"],s["area"]) for s in REGISTRY})==25
+assert len(REGISTRY)==31 and len({(s["ccy"],s["area"]) for s in REGISTRY})==31
 
 def fetch(url:str)->bytes:
     host=urlsplit(url).hostname
@@ -151,6 +184,72 @@ def fetch(url:str)->bytes:
         if not data or len(data)>MAX_BYTES:
             raise ValueError("oversized/empty source")
     return data
+
+STATCAN_DETAIL={
+ "CAN_RETAIL_REAL_LASPEYRES":{
+  "url":"https://www150.statcan.gc.ca/n1/tbl/csv/20100067-eng.zip",
+  "file":"20100067.csv","category":"North American Industry Classification System (NAICS)",
+  "value":"Retail trade [44-45]","other":"Sales, price and volume",
+  "selection":"Retail sales at 2017 constant prices (Unchained Laspeyres Index)",
+  "unit":"Dollars","scale":"millions"},
+ "CAN_HOUSEHOLD_MORTGAGES_SA":{
+  "url":"https://www150.statcan.gc.ca/n1/tbl/csv/36100639-eng.zip",
+  "file":"36100639.csv","category":"Credit liabilities of households",
+  "value":"Residential mortgages","other":"Seasonality",
+  "selection":"Seasonally adjusted data","unit":"Dollars","scale":"millions",
+  "vector":"v1231415621"},
+ "CAN_NFC_NONMORTGAGE_LOANS_SA":{
+  "url":"https://www150.statcan.gc.ca/n1/tbl/csv/36100640-eng.zip",
+  "file":"36100640.csv","category":"Credit liabilities of private non-financial corporations",
+  "value":"Non-mortgage loans","other":"Seasonality",
+  "selection":"Seasonally adjusted data","unit":"Dollars","scale":"millions"}
+}
+def fetch_statcan_detail(url):
+    if url not in {d["url"] for d in STATCAN_DETAIL.values()}:
+        raise ValueError("Unexpected StatCan detail endpoint")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"application/zip"})
+    with urlopen(req,timeout=25) as r:
+        if r.geturl()!=url:raise ValueError("StatCan redirected outside pinned dataset")
+        payload=r.read(35_000_001)
+        if len(payload)>35_000_000 or not payload:
+            raise ValueError("StatCan archive too large or empty")
+    return payload
+
+def parse_statcan_detail(raw,now,identifier):
+    spec=STATCAN_DETAIL.get(identifier)
+    if not spec:raise ValueError("Unknown StatCan series identifier")
+    with ZipFile(io.BytesIO(raw)) as archive:
+        if spec["file"] not in archive.namelist():
+            raise ValueError("StatCan exact dataset filename changed")
+        if archive.getinfo(spec["file"]).file_size>100_000_000:
+            raise ValueError("StatCan uncompressed archive exceeds budget")
+        values={};references={}
+        with archive.open(spec["file"]) as src:
+            reader=csv.DictReader(io.TextIOWrapper(src,encoding="utf-8-sig"))
+            fields={"REF_DATE","GEO","VALUE","UOM","SCALAR_FACTOR",spec["category"],spec["other"]}
+            if "vector" in spec:fields.add("VECTOR")
+            if not fields.issubset(set(reader.fieldnames or [])):
+                raise ValueError("StatCan required dimensions absent")
+            for row in reader:
+                if row["GEO"]!="Canada" or row[spec["category"]]!=spec["value"] or row[spec["other"]]!=spec["selection"]:
+                    continue
+                if "vector" in spec and row.get("VECTOR")!=spec["vector"]:
+                    continue
+                if row["UOM"]!=spec["unit"] or row["SCALAR_FACTOR"]!=spec["scale"]:
+                    raise ValueError("StatCan selected unit/scale mismatch: "+row["UOM"]+"/"+row["SCALAR_FACTOR"])
+                p=row["REF_DATE"]
+                if not re.fullmatch(r"\d{4}-(?:0[1-9]|1[0-2])",p):
+                    raise ValueError("StatCan selected month code invalid")
+                if period_end(p)>now:continue
+                raw_value=row["VALUE"]
+                if raw_value in ("", "..", "."):continue
+                v=float(raw_value)
+                if not math.isfinite(v) or v<=0 or v>1e12:
+                    raise ValueError("StatCan selected value implausible")
+                if p in values:raise ValueError("StatCan selected duplicate month "+p+" current="+row.get("COORDINATE","?")+" vector="+row.get("VECTOR","?")+" prior="+references.get(p,"?"))
+                values[p]=v;references[p]=row.get("COORDINATE","?")+"/"+row.get("VECTOR","?")
+    if len(values)<12:raise ValueError("StatCan selected series lacks 12 observations")
+    return sorted(values.items())
 
 STATCAN_CSV="https://www150.statcan.gc.ca/n1/tbl/csv/16100047-eng.zip"
 def fetch_statcan(url):
@@ -198,6 +297,58 @@ def parse_statcan(raw,now):
     if len(values)<12:raise ValueError("insufficient StatCan history")
     return sorted(values.items())
 
+
+RBA_BASE="https://www.rba.gov.au/statistics/frequency/fin-agg/"
+def rba_release_url(now,months_ago):
+    index=now.year*12+now.month-1-months_ago
+    year,rem=divmod(index,12);month=rem+1
+    return f"{RBA_BASE}{year}/fin-agg-{month:02d}{year%100:02d}.html"
+def fetch_rba_aggregate(now):
+    for months_ago in range(1,5):
+        url=rba_release_url(now,months_ago)
+        req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
+        try:
+            with urlopen(req,timeout=16) as response:
+                final=response.geturl()
+                if final!=url:raise ValueError("RBA unexpected redirect")
+                raw=response.read(2_000_001)
+                if not raw or len(raw)>2_000_000:raise ValueError("invalid RBA response size")
+            # Do not accept arbitrary RBA pages that merely mention the year.
+            if "Financial Aggregates" not in raw.decode("utf-8","replace"):
+                raise ValueError("wrong RBA release identity")
+            return raw,url
+        except (ValueError,OSError,TimeoutError):
+            continue
+    raise ValueError("No valid recent RBA financial aggregates release")
+def parse_rba_aggregates(raw,now,which,release_url):
+    if which not in {"RBA_HOUSING_CREDIT_GROWTH_MM","RBA_BUSINESS_CREDIT_GROWTH_MM"}:
+        raise ValueError("unregistered RBA series")
+    match=re.fullmatch(r"https://www\.rba\.gov\.au/statistics/frequency/fin-agg/(\d{4})/fin-agg-(\d{2})(\d{2})\.html",release_url)
+    if not match or int(match[1])%100!=int(match[3]):
+        raise ValueError("RBA release URL identity changed")
+    year=int(match[1]);month=int(match[2])
+    if not 1<=month<=12:raise ValueError("RBA invalid month")
+    current=f"{year}-{month:02d}"
+    prev=f"{year-1}-12" if month==1 else f"{year}-{month-1:02d}"
+    if period_end(current)>now:raise ValueError("RBA release from future")
+    html=raw.decode("utf-8","replace")
+    if not all(token in html for token in ("Financial Aggregates","Year-ended","Monthly")):
+        raise ValueError("RBA Financial Aggregates title / table identity absent")
+    tables=_ReportTables();tables.feed(html)
+    target="Housing" if "HOUSING" in which else "Business"
+    values=[]
+    for table in tables.tables:
+        for row in table:
+            if len(row)<3:continue
+            label=re.sub(r"[^A-Za-z ]","",row[0]).strip()
+            if label!=target and not (target=="Business" and label.replace(" ","") in {"Businessa"}):continue
+            try: first=float(row[1].replace(",",""));second=float(row[2].replace(",",""))
+            except ValueError:continue
+            if not all(math.isfinite(x) and -15<=x<=15 for x in (first,second)):
+                raise ValueError("RBA growth rate impossible")
+            values.append((first,second))
+    if len(values)!=1:raise ValueError("RBA credit subcategory ambiguous/missing")
+    return [(prev,values[0][0]),(current,values[0][1])]
 
 ONS_INDUSTRY="https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop"
 BOE_IADB="https://www.bankofengland.co.uk/boeapps/database/fromshowcolumns.asp"
@@ -335,13 +486,12 @@ def abs_services_fetch(url):
         if not data or len(data)>3_500_000:raise ValueError("invalid ABS HTML size")
     return data
 
-def parse_abs_services(raw,now):
-    """ABS MHSI *nominal* household services spending MoM % changes, not services output."""
+def _parse_abs_monthly_chart(raw,now,title):
+    """ABS exact graph/table identity: monthly % nominal SA (not volume)."""
     html=raw.decode("utf-8","replace")
-    title="Household spending on services, current price, seasonally adjusted estimate"
     identity='aria-label="'+title+'.csv"'
     occurrences=[m.start() for m in re.finditer(re.escape(identity),html)]
-    if len(occurrences)!=1:raise ValueError("ABS unique services chart source missing")
+    if len(occurrences)!=1:raise ValueError("ABS unique exact chart source missing")
     start=html.find("<table",occurrences[0])
     end=html.find("</table>",start)
     if start<0 or end<0 or end-start>175_000:
@@ -363,8 +513,16 @@ def parse_abs_services(raw,now):
         if not math.isfinite(val) or abs(val)>100:raise ValueError("invalid ABS monthly growth rate")
         if period in values:raise ValueError("duplicate ABS period")
         values[period]=val
-    if len(values)<12:raise ValueError("ABS services growth-rate table insufficient")
+    if len(values)<12:raise ValueError("ABS monthly growth-rate table insufficient")
     return sorted(values.items())
+
+def parse_abs_services(raw,now):
+    return _parse_abs_monthly_chart(raw,now,
+      "Household spending on services, current price, seasonally adjusted estimate")
+
+def parse_abs_demand(raw,now):
+    return _parse_abs_monthly_chart(raw,now,
+      "Household spending, current price, seasonally adjusted estimate")
 
 def biznz_fetch(url):
     """Issuer article selected through the live PSI index, never via news snippets."""
@@ -790,27 +948,34 @@ def collect(now=None,fetcher=fetch):
     for spec in REGISTRY:
         code=spec["ccy"]+"_"+spec["area"]
         url=FRED+spec["key"] if spec["method"]=="fred" else (
+          STATCAN_DETAIL[spec["key"]]["url"] if spec["method"]=="statcan_detail" else
+          RBA_BASE if spec["method"]=="rba_credit" else
           boe_mortgage_url(now) if spec["method"]=="boe_mortgage" else
           statsnz_house_url(now,2) if spec["method"]=="statsnz_house" else
           ONS_INDUSTRY if spec["method"]=="ons_industry" else
           euro_extra_url(spec["method"]) if spec["method"] in EUROSTAT_EXTRA else
           EUROSTAT_SERVICES_URL if spec["method"]=="eurostat_services" else
           BUSINESSNZ_INDEX if spec["method"]=="biznz" else
-          ABS_MHSI_SERVICES if spec["method"]=="abs_services" else
+          ABS_MHSI_SERVICES if spec["method"] in {"abs_services","abs_demand"} else
           STATCAN_CSV if spec["method"]=="statcan" else
           ONS_URL if spec["method"]=="ons" else
           STATCAN_GDP_ZIP if spec["method"]=="statcan_services" else
           "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?"
           "geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001_X_410014&s_adj=SCA&unit=I21&lang=EN")
         try:
-            fetched=(statsnz_fetch(url,now) if spec["method"]=="statsnz_house" and fetcher is fetch else None)
+            fetched=(statsnz_fetch(url,now) if spec["method"]=="statsnz_house" and fetcher is fetch else
+                fetch_rba_aggregate(now) if spec["method"]=="rba_credit" and fetcher is fetch else None)
             raw=(fetched[0] if fetched is not None else
                  fetch_boe(url) if spec["method"]=="boe_mortgage" and fetcher is fetch else
                  biznz_fetch(url) if spec["method"]=="biznz" else
-                 abs_services_fetch(url) if spec["method"]=="abs_services" else
+                 fetch_statcan_detail(url) if spec["method"]=="statcan_detail" else
+                 abs_services_fetch(url) if spec["method"] in {"abs_services","abs_demand"} else
                  fetch_statcan(url) if spec["method"]=="statcan" else
-                 fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","statcan","ons","ons_industry","statcan_services","boe_mortgage","statsnz_house"} and fetcher is fetch else fetcher(url)
-            observations=(parse_statsnz_house(raw,now) if spec["method"]=="statsnz_house" else
+                 fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","abs_demand","rba_credit","statcan_detail","statcan","ons","ons_industry","statcan_services","boe_mortgage","statsnz_house"} and fetcher is fetch else fetcher(url)
+            observations=(parse_statcan_detail(raw,now,spec["key"]) if spec["method"]=="statcan_detail" else
+                          parse_rba_aggregates(raw,now,spec["key"],fetched[1] if fetched else rba_release_url(now,2))
+                          if spec["method"]=="rba_credit" else
+                          parse_statsnz_house(raw,now) if spec["method"]=="statsnz_house" else
                           parse_boe_mortgage(raw,now) if spec["method"]=="boe_mortgage" else
                           parse_ons_industry(raw,now) if spec["method"]=="ons_industry" else
                           parse_euro_extra(raw,now,spec["method"]) if spec["method"] in EUROSTAT_EXTRA else
@@ -819,6 +984,7 @@ def collect(now=None,fetcher=fetch):
                           if spec["method"]=="fred" else
                           parse_businessnz_psi(raw,now) if spec["method"]=="biznz" else
                           parse_abs_services(raw,now) if spec["method"]=="abs_services" else
+                          parse_abs_demand(raw,now) if spec["method"]=="abs_demand" else
                           parse_statcan(raw,now) if spec["method"]=="statcan" else
                           parse_ons_services(raw,now) if spec["method"]=="ons" else
                           parse_statcan_services(raw,now) if spec["method"]=="statcan_services" else parse_eurostat(raw,now))

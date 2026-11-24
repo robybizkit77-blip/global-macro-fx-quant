@@ -25,10 +25,10 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),25)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),25)
+        self.assertEqual(len(mod.REGISTRY),31)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),31)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit","statcan_detail"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -281,7 +281,7 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
         self.assertEqual(item["metric_kind"],"points")
         self.assertEqual(item["dates"],["2026-09","2026-10"])
-        with self.assertRaisesRegex(ValueError,"unique services chart"):
+        with self.assertRaisesRegex(ValueError,"unique exact chart"):
             mod.parse_abs_services(html.replace(title,"Different chart").encode(),date(2026,11,24))
 
     def test_businessnz_manual_official_snapshot_is_dated_and_cannot_be_current_forever(self):
@@ -319,11 +319,72 @@ class G8SemaphoreSources(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"impossible dates"):
             mod.curated_statsnz_house(spec,date(2026,11,23))
 
+    def test_abs_nominal_total_demand_not_services_or_real_volumes(self):
+        title="Household spending, current price, seasonally adjusted estimate"
+        data='<html><button aria-label="'+title+'.csv"></button><table>'
+        for yr in [2025,2026]:
+            for m in range(1,13 if yr==2025 else 10):
+                mon=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m-1]
+                data+=f"<tr><td>{mon}-{yr}</td><td>{m*.1:.1f}</td><td>3.5</td></tr>"
+        data+='</table></html>'
+        obs=mod.parse_abs_demand(data.encode(),date(2026,11,24))
+        self.assertEqual(obs[-2:],[("2026-08",0.8),("2026-09",0.9)])
+        with self.assertRaisesRegex(ValueError,"unique exact chart"):
+            mod.parse_abs_services(data.encode(),date(2026,11,24))
+
+    def test_rba_housing_business_credit_monthly_growth_not_stock(self):
+        page=mod.rba_release_url(date(2026,11,24),2)
+        self.assertEqual(page,"https://www.rba.gov.au/statistics/frequency/fin-agg/2026/fin-agg-0926.html")
+        raw="""<html><title>Financial Aggregates September 2026</title>
+        <p>Monthly and Year-ended changes</p><table>
+        <tr><th>Category</th><th>Aug 26</th><th>Sep 26</th><th>Sep 25</th><th>Sep 26</th></tr>
+        <tr><th>Total credit</th><td>0.6</td><td>0.6</td><td>7.2</td><td>8.4</td></tr>
+        <tr><th>– Housing</th><td>0.4</td><td>0.4</td><td>6.3</td><td>7.0</td></tr>
+        <tr><th>– Business</th><td>0.9</td><td>0.9</td><td>9.4</td><td>11.3</td></tr>
+        </table></html>""".encode()
+        for sector,pct in [("RBA_HOUSING_CREDIT_GROWTH_MM",.4),
+                           ("RBA_BUSINESS_CREDIT_GROWTH_MM",.9)]:
+            obs=mod.parse_rba_aggregates(raw,date(2026,11,24),sector,page)
+            self.assertEqual(obs,[("2026-08",pct),("2026-09",pct)])
+        with self.assertRaisesRegex(ValueError,"subcategory"):
+            mod.parse_rba_aggregates(raw.replace(b"Business",b"Other"),date(2026,11,24),
+             "RBA_BUSINESS_CREDIT_GROWTH_MM",page)
+
+    def test_statcan_three_issuer_exact_selector_contracts(self):
+        for key,payload in mod.STATCAN_DETAIL.items():
+            dates=[f"2025-{m:02d}" for m in range(1,13)]+[f"2026-{m:02d}" for m in range(1,11)]
+            header=["REF_DATE","GEO",payload["category"],payload["other"],
+                    "UOM","SCALAR_FACTOR","VECTOR","VALUE"]
+            rows=[[dt,"Canada",payload["value"],payload["selection"],
+                   payload["unit"],payload["scale"],payload.get("vector","vTEST"),100+i] for i,dt in enumerate(dates)]
+            rows.append(["2026-10","Canada",payload["value"],"Other category",
+                         payload["unit"],payload["scale"],payload.get("vector","vTEST"),999999])
+            bio=io.BytesIO()
+            with ZipFile(bio,"w") as z:
+                out=StringIO();writer=csv.writer(out);writer.writerow(header);writer.writerows(rows)
+                z.writestr(payload["file"],out.getvalue())
+            obs=mod.parse_statcan_detail(bio.getvalue(),date(2026,11,24),key)
+            self.assertEqual(obs[-1],("2026-10",121.0))
+            spec=next(x for x in mod.REGISTRY if x["key"]==key)
+            item,st=mod.candidate(spec,obs,date(2026,11,24))
+            self.assertEqual(st["status"],"READY_DESCRIPTIVE_REVISED")
+            self.assertEqual(item["dates"],["2026-09","2026-10"])
+            with self.assertRaisesRegex(ValueError,"Unknown StatCan"):
+                mod.parse_statcan_detail(bio.getvalue(),date(2026,11,24),"WRONG")
+            z2=io.BytesIO()
+            with ZipFile(z2,"w") as z:
+                out=StringIO();w=csv.writer(out);w.writerow(header)
+                w.writerows([[d,"Canada",payload["value"],payload["selection"],
+                           payload["unit"],"thousands",payload.get("vector","vTEST"),100+i] for i,d in enumerate(dates)])
+                z.writestr(payload["file"],out.getvalue())
+            with self.assertRaisesRegex(ValueError,"unit/scale"):
+                mod.parse_statcan_detail(z2.getvalue(),date(2026,11,24),key)
+
     def test_collect_transparently_withholds_failed_sources(self):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),25)
+        self.assertEqual(len(out["audit"]),31)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
