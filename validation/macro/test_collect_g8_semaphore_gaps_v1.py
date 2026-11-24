@@ -25,23 +25,23 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),8)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),8)
+        self.assertEqual(len(mod.REGISTRY),11)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),11)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","statcan","ons","statcan_services"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
         obs=mod.parse_fred(raw,"PRMNTO01AUQ657S","Q",NOW)
         self.assertEqual(obs[-1][0],"2026-Q2")
-        item,status=mod.candidate(next(s for s in mod.REGISTRY if s["ccy"]=="AUD"),obs,NOW)
+        item,status=mod.candidate(next(s for s in mod.REGISTRY if s["ccy"]=="AUD" and s["area"]=="industry"),obs,NOW)
         self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
         self.assertEqual(item["metric_kind"],"points")
         self.assertEqual(item["dates"],["2026-Q1","2026-Q2"])
         self.assertFalse("first_seen_at" in item)
 
     def test_stale_official_feed_does_not_generate_signal(self):
-        spec=next(s for s in mod.REGISTRY if s["ccy"]=="JPY")
+        spec=next(s for s in mod.REGISTRY if s["ccy"]=="JPY" and s["area"]=="house")
         rows=mod.parse_fred(fixture(spec["key"],"M",(2023,11)),spec["key"],"M",NOW)
         item,status=mod.candidate(spec,rows,NOW)
         self.assertIsNone(item)
@@ -98,16 +98,51 @@ class G8SemaphoreSources(unittest.TestCase):
         observations=mod.parse_statcan(bio.getvalue(),NOW)
         self.assertEqual(observations[-1],("2026-09",102009))
         self.assertEqual(len(observations),21)
-        spec=next(x for x in mod.REGISTRY if x["ccy"]=="CAD")
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="CAD" and x["area"]=="industry")
         item,stat=mod.candidate(spec,observations,NOW)
         self.assertEqual(stat["status"],"READY_DESCRIPTIVE_REVISED")
         self.assertEqual(item["dates"],["2026-08","2026-09"])
+
+    def test_ons_services_exact_index_months_and_identity(self):
+        html='<html><body><h1>IoS: Services: Index-1dp</h1><p>Series ID: S2KU</p><table>'
+        for year in (2025,2026):
+            for month in range(1,13 if year==2025 else 10):
+                txt=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][month-1]
+                html+=f'<tr><td>{year} {txt}</td><td>{100+month*0.2:.1f}</td></tr>'
+        html+='</table></body></html>'
+        obs=mod.parse_ons_services(html.encode(),NOW)
+        self.assertEqual(obs[-1],("2026-09",101.8))
+        with self.assertRaisesRegex(ValueError,"ONS total services"):
+            mod.parse_ons_services(html.replace("S2KU","OTHER").encode(),NOW)
+
+    def test_statcan_services_real_gdp_explicit_aggregate(self):
+        bio=io.BytesIO()
+        header=["REF_DATE","GEO","North American Industry Classification System (NAICS)",
+                "Prices","Seasonal adjustment","VALUE"]
+        rows=[]
+        for year in (2025,2026):
+            for month in range(1,13 if year==2025 else 10):
+                rows.append([f"{year}-{month:02d}","Canada",
+                 "Services-producing industries [T003]","Chained (2017) dollars",
+                 "Seasonally adjusted at annual rates",round(1_760_000+month*100+year-2025,2)])
+        rows.append(["2026-09","Canada","Goods-producing industries [T002]",
+          "Chained (2017) dollars","Seasonally adjusted at annual rates",999999999])
+        with ZipFile(bio,"w") as z:
+            b=StringIO();w=csv.writer(b);w.writerow(header);w.writerows(rows)
+            z.writestr("36100434.csv",b.getvalue())
+        obs=mod.parse_statcan_services(bio.getvalue(),NOW)
+        self.assertEqual(len(obs),21)
+        self.assertEqual(obs[-1][0],"2026-09")
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="CAD" and x["area"]=="services")
+        item,status=mod.candidate(spec,obs,NOW)
+        self.assertEqual(status["status"],"READY_DESCRIPTIVE_REVISED")
+        self.assertEqual(item["area"],"services")
 
     def test_collect_transparently_withholds_failed_sources(self):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),8)
+        self.assertEqual(len(out["audit"]),11)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 

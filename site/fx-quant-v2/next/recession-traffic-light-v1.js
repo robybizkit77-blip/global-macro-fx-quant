@@ -14,6 +14,7 @@ const AREAS=[
  {key:'house',name:'Immobiliare',short:'Case',why:'Domanda di abitazioni, costruzioni e credito casa. Gli stock di mutui non misurano da soli le nuove compravendite.'},
  {key:'jobs',name:'Lavoro',short:'Lavoro',why:'Occupazione e disoccupazione descrivono parti diverse del ciclo; livelli e assunzioni non sono sinonimi.'},
  {key:'industry',name:'Manifattura',short:'Industria',why:'Produzione industriale e ordini possono anticipare cambiamenti nella domanda, ma non sono il PIL.'},
+ {key:'services',name:'Servizi',short:'Servizi',why:'Attività reale e indagini del settore terziario. La direzione dei sondaggi non coincide necessariamente con il livello di espansione o contrazione; inflazione dei servizi separata.'},
  {key:'leading',name:'Indicatore anticipatore',short:'Anticipatori',why:'Indici compositi e sondaggi misurano aspettative o condizioni, non il PIL realizzato.'},
  {key:'demand',name:'Consumi e domanda',short:'Consumi',why:'La domanda effettiva sostiene il ciclo. Se la serie è nominale, l’inflazione non è stata sottratta.'},
  {key:'credit',name:'Credito',short:'Credito',why:'Stock, condizioni e domanda di prestiti sono fenomeni differenti. Più stock non prova maggiore disponibilità di nuovo credito.'}
@@ -38,6 +39,7 @@ const MAP={
           M('US_TOTBKCR_history_value','Credito bancario totale',true,{unit:'mld USD'})]
  },
  EUR:{
+  services:[M('EA_ECFIN_BCS_LEAD_INDICATORS_history_Services','Fiducia imprese dei servizi (DG ECFIN)',true,{kind:'points',minimum:.2,unit:'saldo fiducia',pointUnit:'punti',source_page:'https://economy-finance.ec.europa.eu/economic-forecast-and-surveys/business-and-consumer-surveys_en'})],
   jobs:[M('EA_UNEMP_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
         M('EA_EMPLOYMENT_history_value','Occupati',true,{unit:'mila persone'})],
   industry:[M('EA_IP_history_value','Produzione industriale',true,{unit:'indice 2021=100'}),
@@ -56,6 +58,7 @@ const MAP={
   credit:[M('UK_CCS_CORPORATE_CREDIT_AVAILABILITY_history_value','Disponibilità credito corporate',true,{kind:'points',minimum:1,unit:'saldo netto',pointUnit:'p.p.'})]
  },
  JPY:{
+  services:[M('JP_BOJ_TANKAN_LEAD_INDICATORS_history_Large_Nonmanufacturing_Forecast','Tankan grandi imprese non manifatturiere — prospettive',true,{kind:'points',minimum:1,unit:'saldo sondaggio',pointUnit:'punti',freq:'Q',source_page:'https://www.boj.or.jp/en/statistics/tk/'})],
   jobs:[M('JP_UNEMP_RATE_history_value','Disoccupazione',false,{kind:'points',minimum:.05,unit:'%',pointUnit:'p.p.'}),
         M('JP_EMPLOYED_history_value','Occupati',true,{unit:'decine di migliaia persone'})],
   industry:[M('JP_IIP_history_value','Produzione industriale',true,{unit:'indice 2020=100'})],
@@ -105,7 +108,7 @@ function supplementary(overlay,country,key){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca)\//.test(x.source_page));
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk)\//.test(x.source_page));
  return matches.length===1?matches[0]:null;
 }
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
@@ -208,6 +211,9 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    '</span> <b>'+diff+'</b></div><small>Periodo '+esc(x.period)+' (precedente '+esc(x.prior)+') · '+
    esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small>'+  (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
  };
+ const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
+ const svcPrices=servicePriceContext?recentTwo(servicePriceContext,today):null;
+ const svcPriceNote=svcPrices?'<p class="sem-services-price"><strong>Inflazione servizi (contesto, fuori dal semaforo):</strong> '+esc(fmt(svcPrices.cur.value,1))+'% YoY · '+esc(svcPrices.cur.period)+' (prima '+esc(fmt(svcPrices.pre.value,1))+'%). Prezzi e attività sono fenomeni diversi.</p>':'';
  const noData=rows.every(x=>x.signal.tone==='neutral');
  const red=rows.filter(x=>x.signal.tone==='red').map(x=>x.name.toLowerCase());
  const green=rows.filter(x=>x.signal.tone==='green').map(x=>x.name.toLowerCase());
@@ -227,7 +233,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<h2 id="recession-light-title">Il semaforo economico</h2>'+
   '<p>'+esc(NAMES[selected]+': '+intro)+' Segnali direzionali descrittivi, non probabilità di recessione.</p></div>'+
   '<span class="sem-date">Consultazione '+esc(today)+' · periodi originali in tabella</span></header>'+
-  '<div class="sem-g8-title"><strong>Otto economie, sei aree</strong><span>Seleziona un Paese. I colori non sono un ranking di forza FX.</span></div>'+
+  '<div class="sem-g8-title"><strong>Otto economie, sette aree</strong><span>Seleziona un Paese. I colori non sono un ranking di forza FX.</span></div>'+
   '<div class="sem-g8-scroll"><table class="sem-g8-table"><thead><tr><th scope="col">Paese</th>'+
   AREAS.map(a=>'<th scope="col">'+esc(a.short)+'</th>').join('')+'</tr></thead><tbody>'+
   FX.map(c=>'<tr'+(c===selected?' class="selected"':'')+'><th scope="row"><button type="button" class="sem-g8-pick" data-ms-country="'+c+'" aria-pressed="'+String(c===selected)+'">'+
@@ -239,7 +245,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<div class="sem-table" role="table" aria-label="Semaforo economico '+esc(NAMES[selected])+'">'+
   '<div class="sem-columns" role="row"><span role="columnheader">Area</span><span role="columnheader">Ultima evidenza disponibile</span><span role="columnheader">Segnale</span></div>'+
   rows.map(r=>'<div class="sem-row" role="row"><div role="cell" class="sem-area"><strong>'+esc(r.name)+'</strong><small>'+esc(r.why)+'</small></div>'+
-    '<div class="sem-evidence" role="cell">'+(r.items.length?r.items.map(measure).join(''):'<span class="sem-missing">Nessuna serie idonea nel feed attuale</span>')+'</div>'+
+    '<div class="sem-evidence" role="cell">'+(r.items.length?r.items.map(measure).join(''):'<span class="sem-missing">Nessuna serie idonea nel feed attuale</span>')+(r.key==='services'?svcPriceNote:'')+'</div>'+
     '<div class="sem-signal" role="cell"><span class="sem-pill '+r.signal.tone+'"><i aria-hidden="true"></i>'+esc(r.signal.label)+'</span>'+
     (r.items.length===1?'<small>Un solo indicatore</small>':'')+
     (r.items.some(x=>x?.stale)?'<small>Osservazioni datate</small>':'')+'</div></div>').join('')+'</div>'+
@@ -249,7 +255,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<p class="sem-foot">Metodo: ogni indicatore confronta le sue ultime due osservazioni disponibili; verde indica miglioramento direzionale, rosso peggioramento, giallo quadro misto o quasi invariato, azzurro dati mancanti, troppo vecchi, non consecutivi o non sufficientemente allineati. '+
   'Le soglie descrittive evitano piccoli movimenti: ±0,15% per i livelli e soglie in punti esplicite per tassi, sondaggi e indicatori compositi. '+
   (hasStale?'Sono presenti osservazioni datate: non interpretare i colori come fotografia intraday. ':'')+
-  'La matrice confronta direzioni, NON livelli omogenei o cicli sincronizzati. Prezzi nominali, saldi di survey, stock di credito e PIL sono strumenti diversi. '+
+  'La matrice confronta direzioni, NON livelli omogenei o cicli sincronizzati. La colonna Servizi misura il momentum dell’attività o dei suoi proxy, NON il livello di un PMI rispetto a 50 e NON l’inflazione dei servizi. Prezzi nominali, saldi di survey, stock di credito e PIL sono strumenti diversi. '+
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonte: MACRO_SERIES.json, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p>'+
   '</section>';
 }
