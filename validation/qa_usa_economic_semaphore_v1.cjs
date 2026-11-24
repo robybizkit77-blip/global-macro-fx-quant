@@ -316,3 +316,21 @@ for(const patch of [{source_series_id:'WRONG'},{values:[...hs.history.values.sli
 }
 assert.equal(cycleHistory({...hs,quality:'SOURCE_VERIFIED_MANUAL_NONPIT'},'2026-11-24','M').dates.length,2);
 console.log('ECONOMIC_CYCLE_CONTIGUOUS_HISTORY_PASS');
+
+
+ // RBA D1 is an exact approved archive, not an arbitrary RBA URL.
+ for(const key of ['house','credit']){
+   const id=key==='house'?'RBA_HOUSING_CREDIT_GROWTH_MM':'RBA_BUSINESS_CREDIT_GROWTH_MM';
+   const dates=['2026-06','2026-07','2026-08','2026-09'],values=[.1,.2,.4,.8];
+   const series={ccy:'AUD',area:key,id:'SEM_G8_AUD_'+key.toUpperCase(),label:'RBA monthly credit growth',unit:'% m/m SA',
+     source_series_id:id,source_page:'https://www.rba.gov.au/statistics/tables/csv/d1-data.csv',
+     source_file:'RBA D1',frequency:'M',metric_kind:'points',up_good:true,quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',
+     dates:dates.slice(-2),values:values.slice(-2),history:{schema:'GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1',
+       frequency:'M',source_series_id:id,dates,values,observations:4,max_observations:36,quality:'SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT'}};
+   const data={schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',series:[series]};
+   const row=model({},'2026-11-24','AUD',data).find(x=>x.key===key);
+   assert.equal(row.signal.tone,'green','RBA D1 should cover missing Australian '+key);
+   assert.equal(row.items[0].cycle.observations,4,'RBA D1 history must reach the cycle engine');
+   const fake=structuredClone(data);fake.series[0].source_page='https://www.rba.gov.au/statistics/tables/csv/other-data.csv';
+   assert.equal(model({},'2026-11-24','AUD',fake).find(x=>x.key===key).signal.tone,'neutral');
+ }
