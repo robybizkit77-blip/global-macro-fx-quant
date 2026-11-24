@@ -26,6 +26,7 @@ DEST=ROOT/"site/fx-quant-v2/next/aud-rba-business-credit-growth-research-v1.js"
 BASE="https://www.rba.gov.au"
 ARCHIVE="/statistics/frequency/fin-agg/{year}/"
 SCHEMA="GMFQ_NEXT_AUD_RBA_BUSINESS_CREDIT_GROWTH_V1"
+F7_URL=BASE+"/statistics/interest-rates/"
 SOURCE="Reserve Bank of Australia"
 MTH={m:i for i,m in enumerate([
  "","January","February","March","April","May","June","July","August",
@@ -164,7 +165,41 @@ def parse_release(html,*,expected_period,url,today):
       "source_seasonally_adjusted":True
     }
 
-def emit_js(data,checked):
+def parse_f7(html,*,today):
+    h=html_reader(html)
+    m=re.search(r"Housing and Business Rates\s*(?:\[[a-z]\])?\s*("+"|".join(MTH)+r")\s+(20[0-9]{2})",h.text,re.I)
+    require(m is not None,"F7 dated heading absent")
+    year=int(m[2]);month=next(v for k,v in MTH.items() if k.lower()==m[1].lower())
+    period=f"{year:04d}-{month:02d}"
+    require((year,month)<(today.year,today.month) and (today-date(year,month,1)).days<=125,"F7 observation future or stale")
+    hits=[]
+    for table in h.tables:
+        rows=[" ".join(r).lower() for r in table]
+        if not any("business (table f7)" in x for x in rows):continue
+        header=" ".join(rows[:5])
+        require("outstanding loans" in header and "new loans" in header and header.count("% per annum")>=2,"F7 column units/identity")
+        require(header.index("outstanding loans")<header.index("new loans"),"F7 column order")
+        data={}
+        for key in ("small","medium","large"):
+            rr=[r for r in table if r and r[0].strip().lower()==key+" business"]
+            require(len(rr)==1 and len(rr[0])==3,"F7 exact size row absent")
+            a,b=map(float,rr[0][1:])
+            require(all(math.isfinite(v) and 0<=v<=30 for v in (a,b)),"F7 out-of-range rates")
+            data[key]={"outstanding":a,"new":b}
+        hits.append(data)
+    require(len(hits)==1,"F7 summary table not unique")
+    return {"series_id":"RBA_F7_BUSINESS_LENDING_RATES_SUMMARY","source_url":F7_URL,"frequency":"M","unit":"percent_per_annum",
+            "proxy_kind":"loan_price_not_lending_standards","latest_observation":period,"history":{period:hits[0]},
+            "first_release_pit_verified":False,"eligible_for_fx_core":False,"eligible_for_backtest":False}
+
+def existing_payload(text):
+    start=text.find("const data=")
+    if start!=-1:
+        try:return json.JSONDecoder().raw_decode(text[start+len("const data="):])[0]
+        except ValueError:pass
+    return {}
+
+def emit_js(data,checked,f7=None):
     obj={
       "schema":SCHEMA,
       "status":"VERIFIED_RBA_FIN_AGG_BUSINESS_GROWTH_RESEARCH_ONLY",
@@ -187,14 +222,29 @@ def emit_js(data,checked):
        "annual_growth_pct","prior_year_growth_pct")},
       "inference":"Official adjusted monthly and year-ended business credit growth (D1 economic meaning); never infer this from D2 stocks, and no causal FX claim."
     }
+    if f7 is not None:obj["lending_rate_proxy"]=f7
     return ("'use strict';\n/* RBA official growth, source-dated, research-only. */\n"
       "(function(root){\n const data="+json.dumps(obj,ensure_ascii=False,indent=1)+";\n"
       " root.FXQuantAUDBusinessCreditGrowthResearch=Object.freeze(data);\n"
       " if(typeof module!=='undefined'&&module.exports)module.exports=data;\n"
       "})(typeof window!=='undefined'?window:globalThis);\n")
 
-def run(*,destination=DEST,today=None,archive_fixture=None,release_fixture=None,apply=False):
+def run(*,destination=DEST,today=None,archive_fixture=None,release_fixture=None,apply=False,f7_fixture=None):
     today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
+    earlier=destination.read_text(encoding="utf-8") if destination.exists() else ""
+    previous=existing_payload(earlier)
+    prior_f7=previous.get("lending_rate_proxy")
+    f7=prior_f7
+    f7_status={"status":"SKIPPED_FIXTURE"}
+    if f7_fixture or archive_fixture is None:
+        try:
+            x=parse_f7(Path(f7_fixture).read_text(encoding="utf-8") if f7_fixture else get(F7_URL),today=today)
+            if prior_f7 and x["latest_observation"]<prior_f7["latest_observation"]:raise ValueError("F7 source rolled back")
+            merged={**(prior_f7 or {}).get("history",{}),**x["history"]}
+            f7={**x,"history":{k:merged[k] for k in sorted(merged)[-48:]}}
+            f7_status={"status":"VERIFIED","latest_observation":x["latest_observation"]}
+        except (OSError,ValueError,TypeError,KeyError) as exc:
+            f7_status={"status":"WITHHELD","reason":str(exc)[:250]}
     release_year=today.year
     index=get(BASE+ARCHIVE.format(year=release_year)) if archive_fixture is None \
           else Path(archive_fixture).read_text(encoding="utf-8")
@@ -202,8 +252,7 @@ def run(*,destination=DEST,today=None,archive_fixture=None,release_fixture=None,
     release=get(ref["url"]) if release_fixture is None \
           else Path(release_fixture).read_text(encoding="utf-8")
     parsed=parse_release(release,expected_period=ref["period"],url=ref["url"],today=today)
-    earlier=destination.read_text(encoding="utf-8") if destination.exists() else ""
-    changed=not earlier or not all(
+    changed=f7!=prior_f7 or not earlier or not all(
         f'"{key}": {json.dumps(parsed[key])}' in earlier
         for key in ("observation_period","monthly_growth_pct",
                     "prior_month_growth_pct","annual_growth_pct",
@@ -221,10 +270,10 @@ def run(*,destination=DEST,today=None,archive_fixture=None,release_fixture=None,
             "source_breaks_adjusted":True,
             "stock_levels_untouched":True,
             "canonical_liquidity_unchanged":True,
-            "fx_rank_effect":"NONE","write_state":"NO_MUTATION"}
+            "fx_rank_effect":"NONE","f7":f7_status,"write_state":"NO_MUTATION"}
     if apply and changed:
         destination.parent.mkdir(parents=True,exist_ok=True)
-        destination.write_text(emit_js(parsed,today.isoformat()),encoding="utf-8")
+        destination.write_text(emit_js(parsed,today.isoformat(),f7),encoding="utf-8")
         report["write_state"]="RESEARCH_SIDECAR_ONLY"
     return report
 

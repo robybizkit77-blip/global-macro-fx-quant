@@ -1,6 +1,12 @@
 name: RBA AUD Business Credit Growth Research Refresh V1
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/liquidity/refresh_rba_aud_business_credit_growth_v1.py'
+      - 'validation/liquidity/test_refresh_rba_aud_business_credit_growth_v1.py'
+      - '.github/workflows/rba-aud-business-credit-growth-research-refresh-v1.yml'
   workflow_dispatch:
   schedule:
     # RBA publishes monthly; check weekday release archive after Australian close.
@@ -21,7 +27,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate F7 exact business lending cost rows on official source
+        run: |
+          python -m unittest validation.liquidity.test_refresh_rba_aud_business_credit_growth_v1 -v
+          python - <<'PY'
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          from validation.liquidity.refresh_rba_aud_business_credit_growth_v1 import get,parse_f7,F7_URL
+          today=datetime.now(ZoneInfo("Europe/Rome")).date()
+          x=parse_f7(get(F7_URL),today=today)
+          print('AUD_F7_LIVE_SOURCE_PASS',x['latest_observation'],x['history'][x['latest_observation']])
+          PY
   source-only:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:

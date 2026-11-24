@@ -5,7 +5,7 @@ import unittest
 from datetime import date
 from pathlib import Path
 from validation.liquidity.refresh_rba_aud_business_credit_growth_v1 import (
-    latest_release_from_archive, parse_release, emit_js, run, BASE
+    latest_release_from_archive, parse_release, parse_f7, existing_payload, emit_js, run, BASE
 )
 
 DAY=date(2026,11,14)
@@ -82,5 +82,26 @@ class RBAAdjustedGrowthTest(unittest.TestCase):
             second=run(destination=dest,today=DAY,archive_fixture=a,release_fixture=b,apply=True)
             self.assertEqual(second["status"],"NO_CHANGE")
             self.assertEqual(second["write_state"],"NO_MUTATION")
+
+
+    def test_f7_loan_price_not_lending_standards(self):
+        html="""<table><caption>Housing and Business Rates [a] September 2026</caption><tr><th>Loan purpose</th><th>Outstanding loans % per annum</th><th>New loans % per annum</th></tr><tr><th>Business (Table F7)</th></tr><tr><td>Small business</td><td>7.48</td><td>7.38</td></tr><tr><td>Medium business</td><td>6.30</td><td>6.27</td></tr><tr><td>Large business</td><td>5.85</td><td>5.71</td></tr></table>"""
+        x=parse_f7(html,today=DAY)
+        self.assertEqual(x["history"]["2026-09"]["small"]["new"],7.38)
+        self.assertEqual(x["history"]["2026-09"]["large"]["outstanding"],5.85)
+        self.assertEqual(x["proxy_kind"],"loan_price_not_lending_standards")
+        for bad in (html.replace("New loans","Loans"),html.replace("7.38","38"),html.replace("Small business","Other business")):
+            with self.assertRaises(ValueError):parse_f7(bad,today=DAY)
+        with tempfile.TemporaryDirectory() as d:
+            a,b,s,out=[Path(d)/n for n in ("index.html","release.html","f7.html","out.js")]
+            a.write_text(index());b.write_text(document());s.write_text(html)
+            args=dict(destination=out,today=DAY,archive_fixture=a,release_fixture=b,apply=True,f7_fixture=s)
+            result=run(**args)
+            self.assertEqual(result["f7"]["status"],"VERIFIED")
+            self.assertEqual(existing_payload(out.read_text())["lending_rate_proxy"],x)
+            self.assertEqual(run(**args)["status"],"NO_CHANGE")
+            s.write_text("invalid")
+            self.assertEqual(run(**args)["f7"]["status"],"WITHHELD")
+            self.assertEqual(existing_payload(out.read_text())["lending_rate_proxy"],x)
 
 if __name__=="__main__":unittest.main()
