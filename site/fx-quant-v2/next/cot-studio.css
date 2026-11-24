@@ -305,3 +305,23 @@
  #content[data-view="cot"] .cot-table .cot-z-chip{padding:4px 6px;font-size:10px}
  #content[data-view="cot"] .cot-table tbody td.cot-netoi-cell-alert .cot-netoi-alert{font-size:10px}
 }
+
+/* G8 first-read: gross components are signed contributions to net, not trade signals. */
+#content[data-view="cot"] .cot-flow-overview{margin:16px 0 20px;padding:14px;border:1px solid #39566a;border-radius:10px;background:#122c3e}
+#content[data-view="cot"] .cot-flow-overview h3{font-size:18px;margin:6px 0 9px;color:#e5f1f8}
+#content[data-view="cot"] .cot-flow-grid{display:grid;gap:7px}
+#content[data-view="cot"] .cot-flow-row{display:grid;grid-template-columns:84px minmax(80px,.85fr) minmax(80px,.85fr) minmax(90px,.85fr) minmax(140px,1.5fr);gap:8px;align-items:stretch;padding:8px;border:1px solid #395468;border-left:3px solid #86a6bd;border-radius:7px;background:#102638;color:#e0edf4;text-align:left;cursor:pointer;min-width:0;font:inherit}
+#content[data-view="cot"] .cot-flow-row.up{border-left-color:#6bd3a1}
+#content[data-view="cot"] .cot-flow-row.down{border-left-color:#e17b88}
+#content[data-view="cot"] .cot-flow-row:hover,#content[data-view="cot"] .cot-flow-row:focus-visible{outline:2px solid #8bcbd7;outline-offset:2px}
+#content[data-view="cot"] .cot-flow-row>span{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0;overflow-wrap:anywhere}
+#content[data-view="cot"] .cot-flow-row strong{font-size:12px;line-height:1.4;font-variant-numeric:tabular-nums}
+#content[data-view="cot"] .cot-flow-row small{font-size:10px;line-height:1.4;color:#afc7d7}
+#content[data-view="cot"] .cot-flow-name b{font-size:11px;color:#cfe0e9}
+#content[data-view="cot"] .cot-flow-axis,#content[data-view="cot"] .cot-flow-net{padding:7px;background:#193447;border-left:2px solid #81a9bf;border-radius:5px}
+#content[data-view="cot"] .cot-flow-axis.up,#content[data-view="cot"] .cot-flow-net.up{background:#1a3b34;border-left-color:#70d4a5}
+#content[data-view="cot"] .cot-flow-axis.down,#content[data-view="cot"] .cot-flow-net.down{background:#3d2a35;border-left-color:#e17f8d}
+#content[data-view="cot"] .cot-flow-axis.up strong,#content[data-view="cot"] .cot-flow-net.up strong{color:#9de8bd}
+#content[data-view="cot"] .cot-flow-axis.down strong,#content[data-view="cot"] .cot-flow-net.down strong{color:#ffabb6}
+#content[data-view="cot"] .cot-flow-note{font-size:11px;color:#b2c9d8;line-height:1.65;margin:12px 0 0}
+@media(max-width:780px){#content[data-view="cot"] .cot-flow-row{grid-template-columns:repeat(3,minmax(0,1fr))}#content[data-view="cot"] .cot-flow-name{grid-column:1/-1;flex-direction:row!important;align-items:center;justify-content:flex-start!important;gap:9px!important}#content[data-view="cot"] .cot-flow-story{grid-column:1/-1}}
