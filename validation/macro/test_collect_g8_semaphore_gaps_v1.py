@@ -359,6 +359,13 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(out["audit"]["NZD_services"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
         self.assertEqual(out["audit"]["NZD_services"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
 
+    def test_nzd_credit_proxy_exact_attributed_pair(self):
+        html=b"<h2>Private Sector Credit in New Zealand increased to 630847 NZD Million in September from 624663 NZD Million in August of 2026. source: <a>Reserve Bank of New Zealand</a></h2>"
+        self.assertEqual(mod.parse_nzd_credit_proxy(html,date(2026,11,24)),[("2026-08",624663),("2026-09",630847)])
+        with self.assertRaises(ValueError):mod.parse_nzd_credit_proxy(html.replace(b"Reserve Bank of New Zealand",b"Other issuer"),date(2026,11,24))
+        with self.assertRaises(ValueError):mod.parse_nzd_credit_proxy(html.replace(b"in August",b"in July"),date(2026,11,24))
+        with self.assertRaises(ValueError):mod.parse_nzd_credit_proxy(html,date(2026,8,31))
+
     def test_statsnz_zip_exact_series(self):
         bio=io.BytesIO()
         with ZipFile(bio,"w") as z:
