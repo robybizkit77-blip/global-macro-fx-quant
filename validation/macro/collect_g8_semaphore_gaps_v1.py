@@ -30,6 +30,19 @@ MAX_BYTES=3_000_000
 # Several historical OECD/BIS feeds have stopped updating: retain status WITHHELD;
 # never use today's fetch time to make an old observation look current.
 REGISTRY=[
+ dict(ccy="GBP",area="industry",key="ONS_K222_DIOP",method="ons_industry",
+      name="Indice della produzione industriale UK (volumi reali SA)",unit="indice CVMSA",
+      frequency="M",kind="percent",max_age_days=115,origin="ONS Index of Production",
+      source_page="https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop"),
+ dict(ccy="GBP",area="house",key="BOE_LPMVTVX",method="boe_mortgage",
+      name="Mutui approvati per acquisto casa (BoE, SA)",unit="numero autorizzazioni SA",
+      frequency="M",kind="percent",max_age_days=120,origin="Bank of England IADB / LPMVTVX",
+      source_page="https://www.bankofengland.co.uk/boeapps/database/BankStats.asp"),
+ dict(ccy="NZD",area="house",key="STATSNZ_NEWDWELLINGS_SA",method="statsnz_house",
+      name="Nuove abitazioni autorizzate (Stats NZ, SA)",unit="numero abitazioni SA",
+      frequency="M",kind="percent",max_age_days=115,origin="Stats NZ / Building consents",
+      source_page="https://www.stats.govt.nz/topics/building/"),
+
  dict(ccy="USD",area="house",key="PERMIT",method="fred",
       name="Permessi edilizi residenziali USA (SA)",unit="migliaia unità SA",frequency="M",
       kind="percent",max_age_days=115,origin="US Census Bureau via FRED",
@@ -125,7 +138,7 @@ REGISTRY=[
       kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
-assert len(REGISTRY)==23 and len({(s["ccy"],s["area"]) for s in REGISTRY})==23
+assert len(REGISTRY)==26 and len({(s["ccy"],s["area"]) for s in REGISTRY})==26
 
 def fetch(url:str)->bytes:
     host=urlsplit(url).hostname
@@ -187,6 +200,123 @@ def parse_statcan(raw,now):
                 values[p]=value
     if len(values)<12:raise ValueError("insufficient StatCan history")
     return sorted(values.items())
+
+
+ONS_INDUSTRY="https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop"
+BOE_IADB="https://www.bankofengland.co.uk/boeapps/database/fromshowcolumns.asp"
+STATSNZ_BASE="https://www.stats.govt.nz/information-releases/building-consents-issued-"
+def boe_mortgage_url(now):
+    from urllib.parse import urlencode
+    return BOE_IADB+"?"+urlencode({
+      "CSVF":"TT","DAT":"RNG","FD":"1","FM":"Jan","FNY":"Y","FY":"2024",
+      "Filter":"N","FromSeries":"1","SeriesCodes":"LPMVTVX",
+      "TD":str(now.day),"TM":now.strftime("%b"),"TY":str(now.year),
+      "ToSeries":"50","UsingCodes":"Y","VPD":"Y","html.x":"66","html.y":"26","title":"LPMVTVX"})
+
+def fetch_boe(url):
+    if not url.startswith(BOE_IADB+"?"):raise ValueError("Bank of England URL mismatch")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0"})
+    with urlopen(req,timeout=25) as r:
+        if urlsplit(r.geturl()).hostname!="www.bankofengland.co.uk":
+            raise ValueError("BoE redirected away from issuer")
+        data=r.read(2_500_001)
+        if not data or len(data)>2_500_000:raise ValueError("BoE HTML oversized/empty")
+    return data
+
+def parse_boe_mortgage(raw,now):
+    txt=raw.decode("utf-8","replace")
+    if "LPMVTVX" not in txt or not re.search(r"approvals for house purchase",txt,re.I):
+        raise ValueError("BoE mortgage time-series identity changed")
+    p=_ReportTables();p.feed(txt)
+    out={}
+    for tab in p.tables:
+        rows=[]
+        for row in tab:
+            if len(row)<2:continue
+            x=re.fullmatch(r"(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{2})",row[0])
+            if not x:continue
+            year=2000+int(x[3]);month=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(x[2])+1
+            period=f"{year:04d}-{month:02d}"
+            if period_end(period)>now:continue
+            val=float(row[1].replace(",",""))
+            if not math.isfinite(val) or not 1000<=val<=300000:raise ValueError("invalid BoE approvals")
+            if period in out:raise ValueError("BoE duplicate month")
+            rows.append((period,val))
+        if len(rows)>=2:
+            if out:raise ValueError("BoE multiple eligible tables")
+            out=dict(rows)
+    if len(out)<2:raise ValueError("BoE series not available in HTML table")
+    return sorted(out.items())
+
+def parse_ons_industry(raw,now):
+    txt=raw.decode("utf-8","replace")
+    if "IOP: B-E: PRODUCTION: CVMSA" not in txt or not re.search(r"Series ID:\s*K222",txt):
+        raise ValueError("ONS K222 source identity changed")
+    parser=_ReportTables();parser.feed(txt)
+    out={}
+    for table in parser.tables:
+        for row in table:
+            if len(row)!=2:continue
+            mm=re.fullmatch(r"(\d{4}) (JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)",row[0],re.I)
+            if not mm:continue
+            year=int(mm[1]);month=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"].index(mm[2].upper())+1
+            p=f"{year:04d}-{month:02d}"
+            if period_end(p)>now:continue
+            val=float(row[1])
+            if not math.isfinite(val) or val<=0:raise ValueError("invalid ONS production index")
+            if p in out:raise ValueError("ONS repeated monthly index")
+            out[p]=val
+    if len(out)<12:raise ValueError("ONS K222 monthly index unavailable")
+    return sorted(out.items())
+
+def statsnz_house_url(now,months_back):
+    n=now.year*12+now.month-1-months_back
+    year=n//12;month=n%12+1
+    return STATSNZ_BASE+date(year,month,1).strftime("%B").lower()+"-"+str(year)+"/"
+
+def statsnz_fetch(url,now):
+    # Before the new monthly release, walk the official monthly release archive.
+    for back in range(1,6):
+        dest=statsnz_house_url(now,back)
+        req=Request(dest,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
+        try:
+            with urlopen(req,timeout=16) as r:
+                if urlsplit(r.geturl()).hostname not in ("www.stats.govt.nz","stats.govt.nz"):
+                    raise ValueError("Stats NZ redirected off official host")
+                data=r.read(3_500_001)
+                if not data or len(data)>3_500_000:
+                    raise ValueError("Stats NZ release HTML empty or oversized")
+            parse_statsnz_house(data,now) # fail closed on revisions/page format
+            return data,dest
+        except (OSError,ValueError,TimeoutError):
+            continue
+    raise ValueError("No verified recent official Stats NZ building-consent release")
+
+def parse_statsnz_house(raw,now):
+    txt=raw.decode("utf-8","replace")
+    if "New dwellings consented" not in txt or "Seasonally adjusted" not in txt:
+        raise ValueError("Stats NZ new dwelling / SA identity missing")
+    tables=_ReportTables();tables.feed(txt)
+    eligible=[]
+    for table in tables.tables:
+        head=next((r for r in table[:4] if len(r)>=4 and
+          "Actual" in r and "Seasonally adjusted" in r and "Trend" in r),None)
+        if not head:continue
+        values={}
+        sa_index=head.index("Seasonally adjusted")
+        for row in table:
+            if len(row)<=sa_index:continue
+            p=re.fullmatch(r"(\d{4})-(\d{2})-01",row[0])
+            if not p:continue
+            period=f"{p[1]}-{p[2]}"
+            if period_end(period)>now:continue
+            x=float(row[sa_index].replace(",",""))
+            if not math.isfinite(x) or x<=100:raise ValueError("Stats NZ invalid dwellings")
+            if period in values:raise ValueError("Stats NZ duplicate month")
+            values[period]=x
+        if len(values)>=2:eligible.append(sorted(values.items()))
+    if len(eligible)!=1:raise ValueError("Stats NZ new dwellings SA table missing/ambiguous")
+    return eligible[0]
 
 
 ONS_URL="https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/s2ku/ios1"
@@ -629,6 +759,9 @@ def collect(now=None,fetcher=fetch):
     for spec in REGISTRY:
         code=spec["ccy"]+"_"+spec["area"]
         url=FRED+spec["key"] if spec["method"]=="fred" else (
+          boe_mortgage_url(now) if spec["method"]=="boe_mortgage" else
+          statsnz_house_url(now,2) if spec["method"]=="statsnz_house" else
+          ONS_INDUSTRY if spec["method"]=="ons_industry" else
           euro_extra_url(spec["method"]) if spec["method"] in EUROSTAT_EXTRA else
           EUROSTAT_SERVICES_URL if spec["method"]=="eurostat_services" else
           BUSINESSNZ_INDEX if spec["method"]=="biznz" else
@@ -639,11 +772,17 @@ def collect(now=None,fetcher=fetch):
           "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?"
           "geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001_X_410014&s_adj=SCA&unit=I21&lang=EN")
         try:
-            raw=(biznz_fetch(url) if spec["method"]=="biznz" else
+            fetched=(statsnz_fetch(url,now) if spec["method"]=="statsnz_house" and fetcher is fetch else None)
+            raw=(fetched[0] if fetched is not None else
+                 fetch_boe(url) if spec["method"]=="boe_mortgage" and fetcher is fetch else
+                 biznz_fetch(url) if spec["method"]=="biznz" else
                  abs_services_fetch(url) if spec["method"]=="abs_services" else
                  fetch_statcan(url) if spec["method"]=="statcan" else
-                 fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","statcan","ons","statcan_services"} and fetcher is fetch else fetcher(url)
-            observations=(parse_euro_extra(raw,now,spec["method"]) if spec["method"] in EUROSTAT_EXTRA else
+                 fetch_issuer(url)) if spec["method"] in {"biznz","abs_services","statcan","ons","ons_industry","statcan_services","boe_mortgage","statsnz_house"} and fetcher is fetch else fetcher(url)
+            observations=(parse_statsnz_house(raw,now) if spec["method"]=="statsnz_house" else
+                          parse_boe_mortgage(raw,now) if spec["method"]=="boe_mortgage" else
+                          parse_ons_industry(raw,now) if spec["method"]=="ons_industry" else
+                          parse_euro_extra(raw,now,spec["method"]) if spec["method"] in EUROSTAT_EXTRA else
                           parse_eurostat_services(raw,now) if spec["method"]=="eurostat_services" else
                           parse_fred(raw,spec["key"],spec["frequency"],now)
                           if spec["method"]=="fred" else
@@ -653,7 +792,9 @@ def collect(now=None,fetcher=fetch):
                           parse_ons_services(raw,now) if spec["method"]=="ons" else
                           parse_statcan_services(raw,now) if spec["method"]=="statcan_services" else parse_eurostat(raw,now))
             item,status=candidate(spec,observations,now)
-            if item is not None:out["series"].append(item)
+            if item is not None:
+                if fetched is not None:item["source_page"]=fetched[1]
+                out["series"].append(item)
             out["audit"][code]={"...":None,**status,"source_page":spec["source_page"],
                                  "origin":spec["origin"]}
             out["audit"][code].pop("...")
