@@ -7,7 +7,7 @@ import unittest
 from datetime import date, timedelta
 from pathlib import Path
 from validation.liquidity.refresh_us_h8_bank_credit_fred_v1 import (
-    parse, parse_sloos, emit_js, run, ANCHOR_DATE, ANCHOR_VALUE, existing_obs, existing_payload
+    parse, parse_sloos, parse_m2, emit_js, run, ANCHOR_DATE, ANCHOR_VALUE, existing_obs, existing_payload
 )
 DAY=date(2026,11,14)
 SLOOS_SAMPLE=("observation_date,DRTSCILM\n2026-01-01,5.3\n2026-04-01,8.1\n"
@@ -125,5 +125,36 @@ class USH8SourceTest(unittest.TestCase):
             current=existing_payload(dest.read_text(encoding='utf-8'))
             self.assertEqual(current['values'][-1],ANCHOR_VALUE+95)
             self.assertEqual(current['lending_standards']['observations'][-1],['2027-01-01',2])
+
+
+    def test_m2_identity_overlap_continuity_and_isolated_refresh(self):
+        rows=["observation_date,M2SL"]
+        for i in range(21):
+            y,m=divmod(2025*12+i,12)
+            rows.append(f"{y:04d}-{m+1:02d}-01,{23342.8+(i-19)*75}")
+        raw="\n".join(rows)+"\n"
+        x=parse_m2(raw,today=DAY)
+        self.assertEqual(x["latest_observation"],"2026-09")
+        self.assertEqual(x["values"][-1],23417.8)
+        for bad in (raw.replace("M2SL","M2NS"),raw.replace("2026-08-01,23342.8","2026-08-01,33342.8"),
+                    raw.replace("2026-08-01","2026-07-01"),raw+"2026-11-01,24000\n"):
+            with self.assertRaises(ValueError):parse_m2(bad,today=DAY)
+        with tempfile.TemporaryDirectory() as temp:
+            dest=Path(temp)/"research.js";h8=Path(temp)/"h8.csv";m2=Path(temp)/"m2.csv"
+            h8.write_text(sample());m2.write_text(raw)
+            run(dest,apply=True,fixture=h8,today=DAY)
+            before=existing_payload(dest.read_text())
+            h8.write_text("invalid weekly source")
+            args={"apply":True,"fixture":h8,"m2_fixture":m2,"today":DAY}
+            r=run(dest,**args)
+            self.assertEqual(r["m2"]["status"],"VERIFIED")
+            self.assertTrue(r["h8"]["status"].startswith("WITHHELD"))
+            after=existing_payload(dest.read_text())
+            self.assertEqual(after["values"],before["values"])
+            self.assertEqual(after["money_stock"],x)
+            h8.write_text(sample())
+            self.assertEqual(run(dest,**args)["status"],"NO_CHANGE")
+            m2.write_text("invalid M2")
+            self.assertEqual(run(dest,**args)["m2"]["retained_observation"],"2026-09")
 
 if __name__=='__main__':unittest.main()
