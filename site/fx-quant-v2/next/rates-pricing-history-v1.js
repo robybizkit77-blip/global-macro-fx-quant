@@ -174,8 +174,8 @@
   const rows=G8.map(c=>{
    const r=country(history,c,0),moves=horizonMoves(r);
    const last=r?.tenors?.['6m']?.at(-1);
-   return '<tr'+(c===ccy?' class="active"':'')+'><td><button type="button" data-rate-ccy="'+c+'">'+c+
-    '</button><small>'+clean(labelKind(r?.kind))+'</small></td>'+
+   return '<tr'+(c===ccy?' class="active"':'')+'><td><strong>'+c+
+    '</strong><small>'+clean(labelKind(r?.kind))+'</small></td>'+
     '<td>'+fmt(last?.rate,3)+'%<small>'+clean(last?.date||'—')+'</small></td>'+
     moves.map(m=>{
      const direction=m.bp>0?'up':m.bp<0?'down':'';
