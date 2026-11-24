@@ -10,6 +10,10 @@ URLS={
  "EUROSTAT_EA21":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001&s_adj=SCA&unit=I21&lang=EN",
  "EUROSTAT_EA20":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA20&indic_bt=BPRM_DW&cpa2_1=CPA_F41001&s_adj=SCA&unit=I21&lang=EN",
  "EUROSTAT_EA21_ALL_RESIDENTIAL_CODES":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA21&indic_bt=BPRM_DW&s_adj=SCA&unit=I21&lang=EN",
+ "RBNZ_C5_FILE":"https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/c/c5/hc5.xlsx",
+ "RBNZ_C5_WWW":"https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/c/c5/hc5.xlsx",
+ "SNB_CREDIT_LEGACY":"https://data.snb.ch/api/cube/bakredinausbm/data/csv/en?fromDate=2025-01",
+ "SNB_CREDIT_META":"https://data.snb.ch/api/cube/bakredinausbm/dimensions/en",
  "RBNZ_HOUSING":"https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m10/hm10.xlsx",
  "RBNZ_EXPECTATIONS":"https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m15/hm15.xlsx",
  "STATCAN_MANUFACTURING":"https://www150.statcan.gc.ca/n1/tbl/csv/16100047-eng.zip",
@@ -52,6 +56,9 @@ def call(name,url):
        "fragments":{term:txt[max(0,txt.find(term)-350):txt.find(term)+1600]
                     for term in terms if txt.find(term)>=0},
        "psi_href_sample":__import__('re').findall(r"href=[\\x22\\x27]([^\\x22\\x27]*/psi/[^\\x22\\x27]+)[\\x22\\x27]",txt)[:10]}
+   if name.startswith("SNB_"):
+    text=data.decode("utf-8-sig","replace")
+    return {"bytes":len(data),"content_type":x.headers.get("Content-Type"),"head":text[:4500],"tail":text[-3500:]}
    if name.startswith("EUROSTAT"):
     doc=json.loads(data)
     return {"status":x.status,"value_count":len(doc.get("value",{})),"code_coverage":_coverage(doc), "id":doc.get("id"),"size":doc.get("size"),

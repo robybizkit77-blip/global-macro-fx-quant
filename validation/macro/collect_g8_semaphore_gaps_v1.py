@@ -23,6 +23,7 @@ from urllib.parse import urlsplit
 ROOT=Path(__file__).resolve().parents[2]
 TARGET=ROOT/"site/fx-quant-v2/next/semaphore-supplement-v1.json"
 MANUAL_PSI=ROOT/"validation/macro/official_g8_services_source_snapshot_v1.json"
+MANUAL_NZ_CREDIT=ROOT/"validation/macro/official_nzd_credit_snapshot_v1.json"
 MANUAL_NZ_HOUSE=ROOT/"validation/macro/official_nzd_house_snapshot_v1.json"
 SCHEMA="GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1"
 FRED="https://fred.stlouisfed.org/graph/fredgraph.csv?id="
@@ -32,7 +33,13 @@ MAX_BYTES=3_000_000
 # never use today's fetch time to make an old observation look current.
 BOJ_CREDIT_URL="https://www.stat-search.boj.or.jp/ssi/mtshtml/md13_m_1_en.html"
 RBNZ_CREDIT_URL="https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/Registered-banks-and-non-bank-lending-institutions-sector-lending"
+SNB_CREDIT_URL="https://data.snb.ch/api/cube/bakredinausbm/data/csv/en?fromDate=2025-01"
+SNB_CREDIT_META="https://data.snb.ch/api/cube/bakredinausbm/dimensions/en"
 REGISTRY=[
+ dict(ccy="CHF",area="credit",key="SNB_BAKREDINAUSBM_AV1_I_T1_F",method="snb_credit",
+      name="Credito domestico utilizzato, totale prestiti (SNB; stock nominale)",unit="mln CHF nominali",frequency="M",
+      kind="percent",max_age_days=85,origin="Swiss National Bank / bakredinausbm",
+      source_page="https://data.snb.ch/en/topics/banken/cube/bakredinausbm"),
  dict(ccy="JPY",area="credit",key="BOJ_MD13_FAAPOBAL1_YOY",method="boj_credit",
       name="Crescita prestiti e sconti delle banche maggiori e regionali (BoJ)",unit="% a/a",frequency="M",
       kind="points",max_age_days=85,origin="Bank of Japan / MD13'FAAPOBAL1@",
@@ -215,7 +222,7 @@ REGISTRY=[
       kind="percent",max_age_days=110,origin="Statistics Canada table 16-10-0047-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701"),
 ]
-assert len(REGISTRY)==42 and len({(s["ccy"],s["area"]) for s in REGISTRY})==42
+assert len(REGISTRY)==43 and len({(s["ccy"],s["area"]) for s in REGISTRY})==43
 
 def fetch(url:str)->bytes:
     host=urlsplit(url).hostname
@@ -704,10 +711,43 @@ def parse_rbnz_credit(raw,now):
     if len(results)!=1:raise ValueError("RBNZ C5 exact annual growth row absent/ambiguous")
     return results[0]
 
+def validate_snb_credit_metadata(raw):
+    d=json.loads(raw.decode("utf-8-sig"))
+    if d.get("cubeId")!="bakredinausbm":raise ValueError("SNB cube mismatch")
+    expected={"D0":("AV1","Banks in Switzerland"),"D1":("I","Domestic"),
+              "D2":("T1","Total loans"),"D3":("F","Utilisation")}
+    dims={x["id"]:x for x in d["dimensions"]}
+    if set(dims)!=set(expected):raise ValueError("SNB dimensions changed")
+    for k,(code,name) in expected.items():
+        choices=[x for x in dims[k]["dimensionItems"] if x["id"]==code and x["name"]==name]
+        if len(choices)!=1:raise ValueError("SNB credit dimension identity changed: "+k)
+
+def parse_snb_credit(raw,now):
+    rows=list(csv.reader(StringIO(raw.decode("utf-8-sig")),delimiter=";"))
+    if len(rows)<16 or rows[0]!=["CubeId","bakredinausbm"] or rows[1][0]!="PublishingDate":
+        raise ValueError("SNB CSV identity changed")
+    if date.fromisoformat(rows[1][1][:10])>now:raise ValueError("SNB future publishing date")
+    start=next((i for i,row in enumerate(rows) if row==["Date","D0","D1","D2","D3","Value"]),None)
+    if start is None:raise ValueError("SNB CSV dimensions changed")
+    out={}
+    for row in rows[start+1:]:
+        if not row:continue
+        if len(row)!=6:raise ValueError("SNB CSV width changed")
+        p,*coords,v=row
+        if coords!=["AV1","I","T1","F"]:continue
+        if not re.fullmatch(r"\d{4}-\d{2}",p):raise ValueError("SNB invalid monthly period")
+        if period_end(p)>now or v in {"","-","."}:continue
+        value=float(v)
+        if p in out or not math.isfinite(value) or not 10000<value<10000000:
+            raise ValueError("SNB invalid or duplicate domestic loan stock")
+        out[p]=value
+    if len(out)<12:raise ValueError("SNB domestic credit history missing")
+    return sorted(out.items())
+
 def fetch_issuer(url):
-    if url not in {ONS_URL,ONS_INDUSTRY,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL}:raise ValueError("unregistered official services URL")
-    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0",
-      "Accept":"text/html,application/zip"})
+    if url not in {ONS_URL,ONS_INDUSTRY,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
+    accept=("application/json" if url==SNB_CREDIT_META else "text/csv" if url==SNB_CREDIT_URL else "text/html,application/zip")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":accept})
     with urlopen(req,timeout=35) as response:
         final=response.geturl()
         if not final.startswith("https://") or urlsplit(final).hostname!=urlsplit(url).hostname:
@@ -1042,6 +1082,31 @@ def curated_statsnz_house(spec,now):
       "last_observation":item["observation_as_of"],
       "verified_on":d["verified_on"],"source_page":page}
 
+def curated_rbnz_credit(spec,now):
+    if spec["key"]!="RBNZ_C5_BUSINESS_YOY":raise ValueError("RBNZ snapshot identity")
+    d=json.loads(MANUAL_NZ_CREDIT.read_text(encoding="utf-8"))
+    expected={"schema":"GMFQ_RBNZ_C5_OFFICIAL_SNAPSHOT_V1","series_id":spec["key"],
+      "source_url":"https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/registered-banks-and-non-bank-lending-institutions-sector-lending",
+      "unit":"% a/a","adjustment":"Break-adjusted",
+      "scope":"Registered banks and non-bank lending institutions; business loans excluding agriculture"}
+    if any(d.get(k)!=v for k,v in expected.items()):raise ValueError("RBNZ snapshot provenance mismatch")
+    release=date.fromisoformat(d["official_release_date"]);verified=date.fromisoformat(d["verified_on"])
+    if not release<=verified<=now:raise ValueError("RBNZ snapshot verification date invalid")
+    periods=d["dates"];values=d["values"]
+    if len(periods)!=2 or len(values)!=2 or period_end(periods[-1])>release:
+        raise ValueError("RBNZ snapshot periods invalid")
+    if any(not isinstance(x,(int,float)) or not math.isfinite(x) or abs(x)>100 for x in values):
+        raise ValueError("RBNZ snapshot rate invalid")
+    # Never present an old manual observation as current after the next monthly release + grace.
+    if (now-release).days>38:return None,{"status":"WITHHELD_STALE","reason":"RBNZ verified release expired"}
+    item,status=candidate(spec,list(zip(periods,values)),now)
+    if item is None:return None,status
+    item.update({"quality":"SOURCE_VERIFIED_MANUAL_NONPIT","source_page":d["source_url"],
+        "source_file":"RBNZ C5 · verifica manuale "+d["verified_on"]+" (download automatico bloccato)",
+        "manual_verified_on":d["verified_on"],"official_release_date":d["official_release_date"]})
+    return item,{"status":"READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+        "last_observation":item["observation_as_of"],"verified_on":d["verified_on"]}
+
 def collect(now=None,fetcher=fetch):
     now=now or datetime.now(timezone.utc).date()
     out={"schema":SCHEMA,"as_of":now.isoformat(),"source_count":len(REGISTRY),
@@ -1049,6 +1114,7 @@ def collect(now=None,fetcher=fetch):
     for spec in REGISTRY:
         code=spec["ccy"]+"_"+spec["area"]
         url=FRED+spec["key"] if spec["method"]=="fred" else (
+          SNB_CREDIT_URL if spec["method"]=="snb_credit" else
           BOJ_CREDIT_URL if spec["method"]=="boj_credit" else
           RBNZ_CREDIT_URL if spec["method"]=="rbnz_credit" else
           STATCAN_DETAIL[spec["key"]]["url"] if spec["method"]=="statcan_detail" else
@@ -1066,6 +1132,8 @@ def collect(now=None,fetcher=fetch):
           "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?"
           "geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001_X_410014&s_adj=SCA&unit=I21&lang=EN")
         try:
+            if spec["method"]=="snb_credit" and fetcher is fetch:
+                validate_snb_credit_metadata(fetch_issuer(SNB_CREDIT_META))
             fetched=(statsnz_fetch(url,now) if spec["method"]=="statsnz_house" and fetcher is fetch else
                 fetch_rba_aggregate(now) if spec["method"]=="rba_credit" and fetcher is fetch else None)
             raw=(fetched[0] if fetched is not None else
@@ -1074,8 +1142,9 @@ def collect(now=None,fetcher=fetch):
                  fetch_statcan_detail(url) if spec["method"]=="statcan_detail" else
                  abs_services_fetch(url) if spec["method"] in {"abs_services","abs_demand"} else
                  fetch_statcan(url) if spec["method"]=="statcan" else
-                 fetch_issuer(url)) if spec["method"] in {"boj_credit","rbnz_credit","biznz","abs_services","abs_demand","rba_credit","statcan_detail","statcan","ons","ons_industry","statcan_services","boe_mortgage","statsnz_house"} and fetcher is fetch else fetcher(url)
-            observations=(parse_boj_credit(raw,now) if spec["method"]=="boj_credit" else
+                 fetch_issuer(url)) if spec["method"] in {"snb_credit","boj_credit","rbnz_credit","biznz","abs_services","abs_demand","rba_credit","statcan_detail","statcan","ons","ons_industry","statcan_services","boe_mortgage","statsnz_house"} and fetcher is fetch else fetcher(url)
+            observations=(parse_snb_credit(raw,now) if spec["method"]=="snb_credit" else
+                          parse_boj_credit(raw,now) if spec["method"]=="boj_credit" else
                           parse_rbnz_credit(raw,now) if spec["method"]=="rbnz_credit" else
                           parse_statcan_detail(raw,now,spec["key"]) if spec["method"]=="statcan_detail" else
                           parse_rba_aggregates(raw,now,spec["key"],fetched[1] if fetched else rba_release_url(now,2))
@@ -1101,6 +1170,14 @@ def collect(now=None,fetcher=fetch):
                                  "origin":spec["origin"]}
             out["audit"][code].pop("...")
         except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+            if spec["method"]=="rbnz_credit":
+                try:
+                    item,status=curated_rbnz_credit(spec,now)
+                    if item:out["series"].append(item)
+                    out["audit"][code]={**status,"automatic_fetch":"BLOCKED_OR_UNVALIDATED","automatic_error":str(exc)[:180]}
+                    continue
+                except (ValueError,KeyError,IndexError,UnicodeError,OSError):
+                    pass
             if spec["method"]=="statsnz_house":
                 try:
                     item,status=curated_statsnz_house(spec,now)

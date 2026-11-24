@@ -155,6 +155,7 @@ const WAVE3_FRED_FALLBACK={
   }
 };
 const VERIFIED_FRESH_FALLBACK={
+ CHF:{credit:['SNB_BAKREDINAUSBM_AV1_I_T1_F','https://data.snb.ch/en/topics/banken/cube/bakredinausbm']},
  JPY:{credit:['BOJ_MD13_FAAPOBAL1_YOY','https://www.stat-search.boj.or.jp/ssi/mtshtml/md13_m_1_en.html']},
  NZD:{credit:['RBNZ_C5_BUSINESS_YOY','https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/Registered-banks-and-non-bank-lending-institutions-sector-lending']},
  CAD:{
@@ -190,6 +191,9 @@ function verifiedFreshAlternative(x,c,key){
      x.source_series_id===(key==='house'?'RBA_HOUSING_CREDIT_GROWTH_MM':'RBA_BUSINESS_CREDIT_GROWTH_MM')&&
      /^https:\/\/www\.rba\.gov\.au\/statistics\/frequency\/fin-agg\/20\d{2}\/fin-agg-\d{4}\.html$/.test(x.source_page);
  }
+ if(c==='NZD'&&key==='credit'&&x?.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'){
+   return x.source_series_id==='RBNZ_C5_BUSINESS_YOY'&&x.source_page==='https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/registered-banks-and-non-bank-lending-institutions-sector-lending';
+ }
  if(c==='NZD'&&key==='house'){
    return !!x&&x.source_series_id==='STATSNZ_NEWDWELLINGS_SA'&&
      ['SOURCE_REVISED_RESEARCH_NOT_PIT','SOURCE_VERIFIED_MANUAL_NONPIT'].includes(x.quality)&&
@@ -204,12 +208,16 @@ function supplementary(overlay,country,key,today){
  if(overlay?.schema!==SUPPLEMENT_SCHEMA||!Array.isArray(overlay.series))return null;
  const matches=overlay.series.filter(x=>x?.ccy===country&&x?.area===key&&
    (x?.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'||
-    (country==='NZD'&&['services','house'].includes(key)&&
+    (country==='NZD'&&['services','house','credit'].includes(key)&&
      x?.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'&&
      /^20\d{2}-\d{2}-\d{2}$/.test(x.manual_verified_on||'')&&x.manual_verified_on<=today&&
      parsePeriod(x.dates?.[1])&&
      (Date.parse(today+'T12:00:00Z')-Date.parse(parsePeriod(x.dates[1])+'T12:00:00Z'))/864e5<=110&&
      (key==='services'?x.diffusion_threshold===50:
+       key==='credit'?x.diffusion_threshold==null&&x.source_series_id==='RBNZ_C5_BUSINESS_YOY'&&
+         x.source_page==='https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/registered-banks-and-non-bank-lending-institutions-sector-lending'&&
+         /^20\d{2}-\d{2}-\d{2}$/.test(x.official_release_date||'')&&x.official_release_date<=x.manual_verified_on&&
+         (Date.parse(today+'T12:00:00Z')-Date.parse(x.official_release_date+'T12:00:00Z'))/864e5<=38:
        x.diffusion_threshold==null&&x.source_page===
        'https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/')))&&
    /^[A-Z0-9_]+$/.test(x.id||'')&&
@@ -217,7 +225,7 @@ function supplementary(overlay,country,key,today){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz)\//.test(x.source_page)&&
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz|data\.snb\.ch)\//.test(x.source_page)&&
    (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
     x.metric_kind==='points'&&/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page))));
  return matches.length===1?matches[0]:null;

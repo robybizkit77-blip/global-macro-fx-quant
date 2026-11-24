@@ -25,10 +25,10 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),42)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),42)
+        self.assertEqual(len(mod.REGISTRY),43)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","eurostat_house_price","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit","statcan_detail","boj_credit","rbnz_credit"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","eurostat_house_price","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services","abs_demand","rba_credit","statcan_detail","boj_credit","rbnz_credit","snb_credit"} for s in mod.REGISTRY))
 
     def test_wave3_exact_id_frequency_and_direction(self):
         expected={"GBP_leading":"GBRLOLITOAASTSAM","JPY_jobs":"LRUNTTTTJPM156S","JPY_industry":"JPNPRMNTO01GPSAM","JPY_demand":"SLRTTO01JPQ657S","CHF_house":"QCHR368BIS","CHF_industry":"PRMNTO01CHQ657S","CHF_demand":"SLRTTO01CHQ657S","AUD_jobs":"LRUNTTTTAUM156S","AUD_leading":"AUSLOLITOAASTSAM","NZD_demand":"SLRTTO01NZQ657S"}
@@ -351,13 +351,38 @@ class G8SemaphoreSources(unittest.TestCase):
     def test_issuer_unavailable_keeps_only_expiring_verified_manual_snapshot(self):
         def fail(_):raise OSError("http 403 issuer blocked")
         out=mod.collect(date(2026,11,24),fetcher=fail)
-        self.assertEqual(len(out["series"]),2)
+        self.assertEqual(len(out["series"]),3)
         self.assertEqual({(x["ccy"],x["area"]) for x in out["series"]},
-                         {("NZD","house"),("NZD","services")})
+                         {("NZD","house"),("NZD","services"),("NZD","credit")})
         self.assertEqual(out["audit"]["NZD_house"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
         self.assertEqual(out["audit"]["NZD_house"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
         self.assertEqual(out["audit"]["NZD_services"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
         self.assertEqual(out["audit"]["NZD_services"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
+
+    def test_snb_exact_domestic_loan_utilisation(self):
+        raw='CubeId;bakredinausbm\nPublishingDate;2026-11-23 09:00\n\nDate;D0;D1;D2;D3;Value\n'
+        for y in (2025,2026):
+            for m in range(1,11):
+                raw+=f"{y}-{m:02d};AV1;I;T1;F;{1400000+m*1000}\n"
+                raw+=f"{y}-{m:02d};AV1;I;T1;B;9999999\n"
+        out=mod.parse_snb_credit(raw.encode(),date(2026,11,24))
+        self.assertEqual(out[-2:],[("2026-09",1409000),("2026-10",1410000)])
+        meta={"cubeId":"bakredinausbm","dimensions":[
+          {"id":k,"dimensionItems":[{"id":c,"name":n}]} for k,c,n in
+          [("D0","AV1","Banks in Switzerland"),("D1","I","Domestic"),("D2","T1","Total loans"),("D3","F","Utilisation")]]}
+        mod.validate_snb_credit_metadata(json.dumps(meta).encode())
+        meta["dimensions"][-1]["dimensionItems"][0]["name"]="Credit lines"
+        with self.assertRaises(ValueError):mod.validate_snb_credit_metadata(json.dumps(meta).encode())
+        with self.assertRaises(ValueError):mod.parse_snb_credit(raw.replace("bakredinausbm","wrong").encode(),date(2026,11,24))
+
+    def test_rbnz_credit_snapshot_is_verified_and_expires(self):
+        spec=next(s for s in mod.REGISTRY if s["ccy"]=="NZD" and s["area"]=="credit")
+        item,st=mod.curated_rbnz_credit(spec,date(2026,11,24))
+        self.assertEqual(item["values"],[4.1,5.3])
+        self.assertEqual(st["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
+        self.assertEqual(item["quality"],"SOURCE_VERIFIED_MANUAL_NONPIT")
+        self.assertIsNone(mod.curated_rbnz_credit(spec,date(2026,12,8))[0])
+        with self.assertRaises(ValueError):mod.curated_rbnz_credit(spec,NOW)
 
     def test_stats_nz_house_official_snapshot_expiry_and_provenance(self):
         spec=next(x for x in mod.REGISTRY if x["ccy"]=="NZD" and x["area"]=="house")
@@ -437,7 +462,7 @@ class G8SemaphoreSources(unittest.TestCase):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),42)
+        self.assertEqual(len(out["audit"]),43)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 

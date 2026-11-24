@@ -1,0 +1,18 @@
+{
+  "schema": "GMFQ_RBNZ_C5_OFFICIAL_SNAPSHOT_V1",
+  "series_id": "RBNZ_C5_BUSINESS_YOY",
+  "source_url": "https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/registered-banks-and-non-bank-lending-institutions-sector-lending",
+  "official_release_date": "2026-10-30",
+  "verified_on": "2026-11-24",
+  "dates": [
+    "2026-08",
+    "2026-09"
+  ],
+  "values": [
+    4.1,
+    5.3
+  ],
+  "unit": "% a/a",
+  "adjustment": "Break-adjusted",
+  "scope": "Registered banks and non-bank lending institutions; business loans excluding agriculture"
+}
