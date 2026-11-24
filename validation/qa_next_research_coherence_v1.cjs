@@ -260,7 +260,6 @@ assert.deepEqual(earlyEvidence.twenty,['green','A favore']);
 assert.deepEqual(earlyEvidence.timing,['red','Sfavorevole ora']);
 assert.deepEqual(pairEvidence({base:'AUD',quote:'USD',favored:null,move5Percent:1}).five,['neutral','Non valutabile']);
 assert.deepEqual(pairEvidence({base:'AUD',quote:'USD',favored:'USD',move5Percent:-.02}).five,['amber','Indeciso']);
-
 const pricingMoves=require('../site/fx-quant-v2/next/rates-pricing-moves-v1.js');
 const pricingInputs={snapshot:initial.ois,operational:json('live_data/sections/OIS_OPERATIONAL_VIEW.json'),
  research:json('site/fx-quant-v2/ois-same-contract-repricing-research.json'),
