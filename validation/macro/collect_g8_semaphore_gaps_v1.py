@@ -404,6 +404,73 @@ def parse_rba_aggregates(raw,now,which,release_url):
     if len(values)!=1:raise ValueError("RBA credit subcategory ambiguous/missing")
     return [(prev,values[0][0]),(current,values[0][1])]
 
+
+RBA_D1_CSV="https://www.rba.gov.au/statistics/tables/csv/d1-data.csv"
+
+def parse_rba_d1(raw,now,which,reference):
+    """Accept only an unambiguous official monthly growth column matching the release.
+    No stitching of separate vintages or growth computed from credit stocks.
+    """
+    sector={"RBA_HOUSING_CREDIT_GROWTH_MM":"housing",
+            "RBA_BUSINESS_CREDIT_GROWTH_MM":"business"}.get(which)
+    if sector is None or len(reference)!=2:raise ValueError("RBA D1 identity/reference")
+    rows=list(csv.reader(StringIO(raw.decode("utf-8-sig"))))
+    meta={}
+    for row in rows[:30]:
+        if row:
+            label=row[0].strip().lower()
+            if label in {"title","description","units","frequency","series id"}:
+                if label in meta:raise ValueError("RBA D1 duplicate metadata")
+                meta[label]=row
+    titles=meta.get("title",meta.get("description",[]))
+    def field(label,i):
+        row=meta.get(label,[])
+        return row[i].strip().lower() if i<len(row) else ""
+    def norm(s):
+        return re.sub(r"[^a-z0-9]+"," ",s.lower()).strip()
+    matches=[]
+    for i,t in enumerate(titles[1:],1):
+        title=norm(t)
+        if title not in {f"credit {sector} monthly growth",f"{sector} credit monthly growth",
+                         f"credit {sector} monthly percentage change",f"{sector} credit monthly percentage change"}:
+            continue
+        if field("frequency",i)!="monthly" or field("units",i) not in {"%","per cent","percent","percentage"} or not field("series id",i):
+            continue
+        obs={}
+        for row in rows:
+            if not row or i>=len(row):continue
+            stamp=row[0].strip()
+            p=None
+            if re.fullmatch(r"\d{4}-\d{2}-\d{2}",stamp):
+                p=date.fromisoformat(stamp).strftime("%Y-%m")
+            else:
+                for fmt in ("%d-%b-%Y","%b-%Y","%d/%m/%Y","%d %b %Y"):
+                    try:p=datetime.strptime(stamp,fmt).strftime("%Y-%m");break
+                    except ValueError:pass
+            if p is None or period_end(p)>now or not row[i].strip():continue
+            try:v=float(row[i])
+            except ValueError:raise ValueError("RBA D1 nonnumeric observation")
+            if not math.isfinite(v) or not -15<=v<=15 or p in obs:raise ValueError("RBA D1 invalid observation")
+            obs[p]=v
+        ordered=sorted(obs.items())
+        if len(ordered)<12:continue
+        if [p for p,v in ordered[-2:]]!=[p for p,v in reference]:continue
+        if any(abs(v-r)>0.05000001 for (_,v),(_,r) in zip(ordered[-2:],reference)):continue
+        # Keep the exact source values; the live release is only an identity cross-check.
+        history=contiguous_history(ordered,"M",now)
+        if history["observations"]>=12:matches.append(ordered)
+    if len(matches)!=1:raise ValueError("RBA D1 exact current growth column unavailable/ambiguous")
+    return matches[0]
+
+def fetch_rba_d1(now,which,reference):
+    req=Request(RBA_D1_CSV,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/csv"})
+    with urlopen(req,timeout=16) as response:
+        if response.geturl()!=RBA_D1_CSV:raise ValueError("RBA D1 unexpected redirect")
+        raw=response.read(3_000_001)
+        if not raw or len(raw)>3_000_000:raise ValueError("RBA D1 size")
+    return parse_rba_d1(raw,now,which,reference)
+
+
 ONS_INDUSTRY="https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop"
 BOE_IADB="https://www.bankofengland.co.uk/boeapps/database/fromshowcolumns.asp"
 STATSNZ_BASE="https://www.stats.govt.nz/information-releases/building-consents-issued-"
@@ -1335,9 +1402,22 @@ def collect(now=None,fetcher=fetch):
                           parse_statcan(raw,now) if spec["method"]=="statcan" else
                           parse_ons_services(raw,now) if spec["method"]=="ons" else
                           parse_statcan_services(raw,now) if spec["method"]=="statcan_services" else parse_eurostat(raw,now))
+            history_page=None
+            if spec["method"]=="rba_credit" and fetcher is fetch:
+                try:
+                    extended=fetch_rba_d1(now,spec["key"],observations)
+                    extended_item,_=candidate(spec,extended,now)
+                    if extended_item and extended_item["history"]["observations"]>2:
+                        observations=extended
+                        history_page=RBA_D1_CSV
+                except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
+                    pass # retain verified latest release if archive is not validated
             item,status=candidate(spec,observations,now)
             if item is not None:
                 if fetched is not None:item["source_page"]=fetched[1]
+                if history_page:
+                    item["source_page"]=history_page
+                    item["source_file"]="RBA D1 / Monthly growth (cross-checked against latest release)"
                 out["series"].append(item)
             out["audit"][code]={"...":None,**status,"source_page":spec["source_page"],
                                  "origin":spec["origin"]}
