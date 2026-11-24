@@ -21,6 +21,17 @@
 .sem-measure small{display:block;color:#94b7c3;font-size:10px;line-height:1.5;margin-top:2px;overflow-wrap:anywhere}
 .sem-src-link{display:inline-block;margin-top:5px;font-size:10px;color:#81d6be;text-decoration:underline;text-underline-offset:2px}
 .sem-services-price{font-size:11px;line-height:1.55;color:#b8d1d6;padding:10px 12px;border-left:2px solid #679fbb;background:#183b4b;border-radius:5px;margin:8px 0 0}.sem-services-price strong{color:#d8e9ee}
+.sem-psi-regime{display:block;margin-top:7px;padding:5px 8px;border:1px solid #4c8a7a;border-radius:5px;background:#143c3c;color:#e0f4e8!important;font-size:11px;line-height:1.5}
+.sem-sector-compare{margin:15px 0;padding:14px;border:1px solid #396171;border-radius:9px;background:#123340}
+.sem-sector-compare>p{font-size:12px;font-weight:800;color:#e8f8f3;margin:0 0 10px}
+.sem-sector-compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sem-sector-compare-item{border:1px solid #37606b;border-radius:8px;padding:11px;background:#193b49;min-width:0}
+.sem-sector-compare-item strong{font-size:13px;color:#f0f8f5;display:block;margin-bottom:5px}
+.sem-sector-compare-item span{font-weight:800;font-size:12px}
+.sem-sector-compare-item span.green{color:#82dcac}.sem-sector-compare-item span.red{color:#f59c97}
+.sem-sector-compare-item span.amber{color:#e9c776}.sem-sector-compare-item span.neutral{color:#9dbbd0}
+.sem-sector-compare-item small,.sem-sector-compare>small{display:block;color:#a9c9d0;font-size:10px;line-height:1.5;margin-top:5px}
+@media(max-width:500px){.sem-sector-compare-grid{grid-template-columns:1fr}}
 .sem-missing{color:#e0c88f;font-size:12px}
 .sem-signal{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px}
 .sem-signal small{color:#b7cbd0;font-size:10px;line-height:1.4}
