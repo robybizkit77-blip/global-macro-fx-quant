@@ -1257,14 +1257,14 @@ function focusCalendarEvent(query){
 }
 // The navigation drawer is scrollable, keyboard reachable, and never traps
 // focus in an off-screen mobile menu.
-const mobileNav=window.matchMedia('(max-width:1050px)');
+const mobileNav=typeof window.matchMedia==='function'?window.matchMedia('(max-width:1050px)'):{matches:false,addEventListener(){}};
 function setMobileMenu(open,restoreFocus=false){
  const drawer=$('sidebar'),toggle=$('menu-toggle');
  const expanded=mobileNav.matches&&Boolean(open);
  $('app').classList.toggle('menu-open',expanded);
  toggle.setAttribute('aria-expanded',String(expanded));
  toggle.setAttribute('aria-label',expanded?'Chiudi menu':'Apri menu');
- drawer.inert=mobileNav.matches&&!expanded;
+ if(drawer)drawer.inert=mobileNav.matches&&!expanded;
  if(expanded)drawer.querySelector('a[aria-current="page"],a')?.focus({preventScroll:true});
  else if(restoreFocus&&mobileNav.matches)toggle.focus({preventScroll:true});
 }
