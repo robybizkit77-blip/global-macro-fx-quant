@@ -1,8 +1,82 @@
 {
   "schema": "GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1",
   "as_of": "2026-11-24",
-  "source_count": 11,
+  "source_count": 14,
   "series": [
+    {
+      "ccy": "CHF",
+      "area": "services",
+      "id": "SEM_G8_CHF_SERVICES",
+      "label": "Occupazione nei servizi (proxy, non output)",
+      "frequency": "Q",
+      "unit": "persone SA",
+      "dates": [
+        "2026-Q1",
+        "2026-Q2"
+      ],
+      "values": [
+        3627500.0,
+        3657100.0
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "OECD via FRED",
+      "source_page": "https://fred.stlouisfed.org/series/LFEASETTCHQ647S",
+      "source_series_id": "LFEASETTCHQ647S",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-Q2",
+      "diffusion_threshold": null,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "AUD",
+      "area": "services",
+      "id": "SEM_G8_AUD_SERVICES",
+      "label": "Spesa famiglie servizi: variazione mensile nominale (proxy domanda)",
+      "frequency": "M",
+      "unit": "% m/m nominale SA",
+      "dates": [
+        "2026-08",
+        "2026-09"
+      ],
+      "values": [
+        -0.5,
+        1.1
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Australian Bureau of Statistics / MHSI",
+      "source_page": "https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release",
+      "source_series_id": "ABS_MHSI_SERVICES_MONTHLY_SA",
+      "metric_kind": "points",
+      "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
+    },
+    {
+      "ccy": "NZD",
+      "area": "services",
+      "id": "SEM_G8_NZD_SERVICES",
+      "label": "BNZ–BusinessNZ PSI servizi destagionalizzato",
+      "frequency": "M",
+      "unit": "indice diffusione (soglia 50)",
+      "dates": [
+        "2026-09",
+        "2026-10"
+      ],
+      "values": [
+        50.9,
+        51.7
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "BusinessNZ · verifica manuale 2026-11-24 (accesso automatico bloccato)",
+      "source_page": "https://businessnz.org.nz/psi/pre-election-drinks",
+      "source_series_id": "BNZ_BUSINESSNZ_PSI",
+      "metric_kind": "points",
+      "observation_as_of": "2026-10",
+      "diffusion_threshold": 50,
+      "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
+      "manual_verified_on": "2026-11-24",
+      "official_release_date": "2026-11-16"
+    },
     {
       "ccy": "USD",
       "area": "services",
@@ -24,6 +98,7 @@
       "source_series_id": "CES0800000001",
       "metric_kind": "percent",
       "observation_as_of": "2026-10",
+      "diffusion_threshold": null,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -47,6 +122,7 @@
       "source_series_id": "ONS_S2KU_IOS1",
       "metric_kind": "percent",
       "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -70,6 +146,7 @@
       "source_series_id": "36100434_SERVICES_T003",
       "metric_kind": "percent",
       "observation_as_of": "2026-08",
+      "diffusion_threshold": null,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -93,6 +170,7 @@
       "source_series_id": "PRMNTO01AUQ657S",
       "metric_kind": "points",
       "observation_as_of": "2026-Q2",
+      "diffusion_threshold": null,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -116,6 +194,7 @@
       "source_series_id": "PRMNTO01NZQ657S",
       "metric_kind": "points",
       "observation_as_of": "2026-Q2",
+      "diffusion_threshold": null,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -139,6 +218,7 @@
       "source_series_id": "QNZPBMXDCA",
       "metric_kind": "percent",
       "observation_as_of": "2026-Q1",
+      "diffusion_threshold": null,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
@@ -162,10 +242,33 @@
       "source_series_id": "16100047_MANUFACTURING_SA",
       "metric_kind": "percent",
       "observation_as_of": "2026-09",
+      "diffusion_threshold": null,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     }
   ],
   "audit": {
+    "CHF_services": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-Q2",
+      "days_since_period_end": 147,
+      "source_page": "https://fred.stlouisfed.org/series/LFEASETTCHQ647S",
+      "origin": "OECD via FRED"
+    },
+    "AUD_services": {
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 55,
+      "source_page": "https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release",
+      "origin": "Australian Bureau of Statistics / MHSI"
+    },
+    "NZD_services": {
+      "status": "READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+      "last_observation": "2026-10",
+      "verified_on": "2026-11-24",
+      "source_page": "https://businessnz.org.nz/psi/pre-election-drinks",
+      "automatic_fetch": "BLOCKED_OR_UNVALIDATED",
+      "automatic_error": "HTTP Error 403: Forbidden"
+    },
     "USD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
