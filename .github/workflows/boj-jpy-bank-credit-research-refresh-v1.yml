@@ -1,6 +1,12 @@
 name: BoJ JPY Bank Credit Research Refresh V1
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/liquidity/refresh_boj_jpy_bank_credit_research_v1.py'
+      - 'validation/liquidity/test_refresh_boj_jpy_bank_credit_research_v1.py'
+      - '.github/workflows/boj-jpy-bank-credit-research-refresh-v1.yml'
   workflow_dispatch:
   schedule:
     # BoJ MD11 monthly statistical release; check business days.
@@ -22,7 +28,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate credit and Tankan actuals and probe official survey
+        run: |
+          python -m unittest validation.liquidity.test_refresh_boj_jpy_bank_credit_research_v1 -v
+          python - <<'PY'
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          from validation.liquidity.refresh_boj_jpy_bank_credit_research_v1 import tankan_fetch,tankan_latest_url,parse_tankan,TANKAN_INDEX
+          today=datetime.now(ZoneInfo("Europe/Rome")).date()
+          url=tankan_latest_url(tankan_fetch(TANKAN_INDEX),today)
+          x=parse_tankan(tankan_fetch(url),url,today=today)
+          print('JPY_TANKAN_LIVE_SOURCE_PASS',x['latest_observation'],x['lending_attitude'],x['financial_position'],x['loan_rate_change'])
+          PY
   source-only:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
@@ -46,7 +77,7 @@ jobs:
         run: |
           python validation/liquidity/refresh_boj_jpy_bank_credit_research_v1.py \
             --candidate /tmp/boj-jpy-bank-credit-candidate.json \
-            --apply --receipt /tmp/boj-jpy-bank-credit-receipt.json
+            --apply --fetch-survey --receipt /tmp/boj-jpy-bank-credit-receipt.json
           cat /tmp/boj-jpy-bank-credit-receipt.json >> "$GITHUB_STEP_SUMMARY"
       - name: Verify exact source-only write scope
         run: |
