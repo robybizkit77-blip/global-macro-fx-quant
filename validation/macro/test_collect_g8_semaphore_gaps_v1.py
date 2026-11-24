@@ -51,6 +51,20 @@ class G8SemaphoreSources(unittest.TestCase):
             mod.parse_rba_d1(raw.replace(b"DGFACBNFM",b"UNKNOWN"),NOW,
                 "RBA_BUSINESS_CREDIT_GROWTH_MM",[("2026-08",0.9),("2026-09",0.9)])
 
+    def test_anz_own_activity_release_summary_proxy(self):
+        raw=b'''<h1>ANZ Business Outlook</h1>
+        <h2>October 2026</h2><p>Business confidence rose 1 point to +53.
+        Expected own activity eased 2 points to +46. Reported past activity rose to +15.</p>
+        <h2>September 2026</h2><p>Business confidence eased to +52.
+        Expected own activity was steady at +48. Reported past activity fell to +11.</p>'''
+        self.assertEqual(mod.parse_anz_outlook(raw,NOW),[("2026-09",48.0),("2026-10",46.0)])
+        with self.assertRaises(ValueError):
+            mod.parse_anz_outlook(raw.replace(b"September 2026",b"August 2026"),NOW)
+        with self.assertRaises(ValueError):
+            mod.parse_anz_outlook(raw.replace(b"Expected own activity",b"Reported past activity"),NOW)
+        with self.assertRaises(ValueError):
+            mod.parse_anz_outlook(raw,date(2027,3,1))
+
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
