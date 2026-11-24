@@ -191,7 +191,7 @@ STATCAN_DETAIL={
   "file":"20100067.csv","category":"North American Industry Classification System (NAICS)",
   "value":"Retail trade [44-45]","other":"Sales, price and volume",
   "selection":"Retail sales Chained Fisher volume index (scaled to equal 100 in 2017)",
-  "unit":"Index","scale":"millions"} # Issuer reports a table-wide scalar even for index UOM,
+  "unit":"Index","scale":"millions"}, # Source cube carries a table-wide scalar even on Index rows
  "CAN_HOUSEHOLD_MORTGAGES_SA":{
   "url":"https://www150.statcan.gc.ca/n1/tbl/csv/36100639-eng.zip",
   "file":"36100639.csv","category":"Credit liabilities of households",
