@@ -25,10 +25,10 @@ def fixture(key,frequency="M",end=(2026,9),n=24):
 
 class G8SemaphoreSources(unittest.TestCase):
     def test_registry_targets_exactly_eight_gaps(self):
-        self.assertEqual(len(mod.REGISTRY),15)
-        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),15)
+        self.assertEqual(len(mod.REGISTRY),25)
+        self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),25)
         self.assertTrue(all(s["source_page"].startswith("https://") for s in mod.REGISTRY))
-        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","statcan","ons","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
+        self.assertTrue(all(s["method"] in {"fred","eurostat","eurostat_services","eurostat_industry","eurostat_esi","eurostat_retail","statcan","ons","ons_industry","boe_mortgage","statsnz_house","statcan_services","biznz","abs_services"} for s in mod.REGISTRY))
 
     def test_fred_parses_fixed_series_header_and_periods(self):
         raw=fixture("PRMNTO01AUQ657S","Q",(2026,2))
@@ -103,6 +103,74 @@ class G8SemaphoreSources(unittest.TestCase):
         dimensions["indic"]["category"]["index"]={"BS-SCI-BAL":0,"BS-ICI-BAL":1}
         with self.assertRaisesRegex(ValueError,"selector changed"):
             mod.parse_eurostat_services(json.dumps(payload).encode(),date(2026,11,24))
+
+    def test_eurostat_multiple_official_domains_exact_semantics(self):
+        for method in ("eurostat_industry","eurostat_esi","eurostat_retail"):
+            dataset, selectors=mod.EUROSTAT_EXTRA[method]
+            ids=list(selectors)+["time"]
+            times=[f"2025-{m:02d}" for m in range(1,13)]+[f"2026-{m:02d}" for m in range(1,11)]
+            dims={k:{"category":{"index":{v:0}}} for k,v in selectors.items()}
+            dims["time"]={"category":{"index":{t:i for i,t in enumerate(times)}}}
+            values={str(i):105+i for i in range(len(times))}
+            payload={"class":"dataset","id":ids,"size":[1]*len(selectors)+[len(times)],
+                     "dimension":dims,"value":values}
+            observations=mod.parse_euro_extra(json.dumps(payload).encode(),NOW,method)
+            self.assertEqual(observations[-2:],[("2026-09",125),("2026-10",126)])
+            # Source dimensions are required to be *one exact selection*.
+            k=next(k for k in selectors if k!="freq")
+            dims[k]["category"]["index"]={"wrong":0}
+            with self.assertRaisesRegex(ValueError,"selector changed"):
+                mod.parse_euro_extra(json.dumps(payload).encode(),NOW,method)
+        self.assertTrue(mod.euro_extra_url("eurostat_industry").startswith("https://ec.europa.eu/eurostat/"))
+
+    def test_new_fred_registry_has_no_implicit_sign_error(self):
+        expected={"house":"PERMIT","industry":"INDPRO","leading":"UMCSENT",
+                  "demand":"PCEC96","credit":"DRTSCILM"}
+        records={x["area"]:x for x in mod.REGISTRY if x["ccy"]=="USD" and x["area"] in expected}
+        self.assertEqual({a:r["key"] for a,r in records.items()},expected)
+        self.assertFalse(records["credit"]["up_good"],"Tightening must be adverse when rising")
+        for a,r in records.items():
+            self.assertTrue(r["source_page"].endswith("/"+r["key"]))
+            self.assertGreaterEqual(r["max_age_days"],100)
+
+    def test_stats_nz_new_dwellings_sa_series_and_release_identity(self):
+        html='<html><h2>New dwellings consented, monthly</h2><table><tr><th>Category</th><th>Actual</th><th>Seasonally adjusted</th><th>Trend</th></tr>'
+        for i in range(1,11):
+            html+=f'<tr><td>2026-{i:02d}-01</td><td>3500</td><td>{3000+i*20}</td><td>3100</td></tr>'
+        html+='</table></html>'
+        out=mod.parse_statsnz_house(html.encode(),date(2026,11,24))
+        self.assertEqual(out[-2:],[("2026-09",3180.0),("2026-10",3200.0)])
+        self.assertTrue(mod.statsnz_house_url(date(2026,11,24),2).endswith("september-2026/"))
+        with self.assertRaisesRegex(ValueError,"identity"):
+            mod.parse_statsnz_house(html.replace("New dwellings consented","Other").encode(),NOW)
+        with self.assertRaisesRegex(ValueError,"identity"):
+            mod.parse_statsnz_house(html.replace("Seasonally adjusted","not adjusted").encode(),NOW)
+
+    def test_boe_mortgage_exact_official_identifier(self):
+        html="<html><h1>Monthly number of total sterling approvals for house purchase</h1><p>LPMVTVX</p>"
+        html+="<table><tr><th>Date</th><th>LPMVTVX</th></tr>"
+        for year in (2025,2026):
+            for month in range(1,13 if year==2025 else 10):
+                name=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][month-1]
+                html+=f"<tr><td>28 {name} {str(year)[-2:]}</td><td>{55000+month*120}</td></tr>"
+        html+="</table></html>"
+        out=mod.parse_boe_mortgage(html.encode(),NOW)
+        self.assertEqual(out[-1],("2026-09",56080))
+        with self.assertRaisesRegex(ValueError,"identity"):
+            mod.parse_boe_mortgage(html.replace("LPMVTVX","WRONG").encode(),NOW)
+        self.assertIn("SeriesCodes=LPMVTVX",mod.boe_mortgage_url(NOW))
+
+    def test_ons_industry_k222_monthly_only(self):
+        html='<html><h1>IOP: B-E: PRODUCTION: CVMSA</h1><p>Series ID: K222</p><table>'
+        for year in (2025,2026):
+            for month in range(1,13 if year==2025 else 10):
+                key=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][month-1]
+                html+=f"<tr><td>{year} {key}</td><td>{100+month/10:.1f}</td></tr>"
+        html+='</table></html>'
+        out=mod.parse_ons_industry(html.encode(),NOW)
+        self.assertEqual(out[-1],("2026-09",100.9))
+        with self.assertRaisesRegex(ValueError,"identity"):
+            mod.parse_ons_industry(html.replace("K222","NOTK222").encode(),NOW)
 
     def test_statcan_exact_manufacturing_sa_total(self):
         bio=io.BytesIO()
@@ -230,17 +298,32 @@ class G8SemaphoreSources(unittest.TestCase):
     def test_issuer_unavailable_keeps_only_expiring_verified_manual_snapshot(self):
         def fail(_):raise OSError("http 403 issuer blocked")
         out=mod.collect(date(2026,11,24),fetcher=fail)
-        self.assertEqual(len(out["series"]),1)
-        self.assertEqual(out["series"][0]["ccy"],"NZD")
-        self.assertEqual(out["series"][0]["area"],"services")
+        self.assertEqual(len(out["series"]),2)
+        self.assertEqual({(x["ccy"],x["area"]) for x in out["series"]},
+                         {("NZD","house"),("NZD","services")})
+        self.assertEqual(out["audit"]["NZD_house"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
+        self.assertEqual(out["audit"]["NZD_house"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
         self.assertEqual(out["audit"]["NZD_services"]["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
         self.assertEqual(out["audit"]["NZD_services"]["automatic_fetch"],"BLOCKED_OR_UNVALIDATED")
+
+    def test_stats_nz_house_official_snapshot_expiry_and_provenance(self):
+        spec=next(x for x in mod.REGISTRY if x["ccy"]=="NZD" and x["area"]=="house")
+        item,status=mod.curated_statsnz_house(spec,date(2026,11,24))
+        self.assertEqual(item["values"],[3495,3218])
+        self.assertEqual(item["dates"],["2026-08","2026-09"])
+        self.assertEqual(item["quality"],"SOURCE_VERIFIED_MANUAL_NONPIT")
+        self.assertEqual(status["status"],"READY_MANUAL_VERIFIED_NOT_AUTOMATIC")
+        self.assertEqual(item["source_page"],
+         "https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/")
+        self.assertIsNone(mod.curated_statsnz_house(spec,date(2027,4,1))[0])
+        with self.assertRaisesRegex(ValueError,"impossible dates"):
+            mod.curated_statsnz_house(spec,date(2026,11,23))
 
     def test_collect_transparently_withholds_failed_sources(self):
         def fail(_):raise OSError("issuer blocked")
         out=mod.collect(NOW,fetcher=fail)
         self.assertEqual(len(out["series"]),0)
-        self.assertEqual(len(out["audit"]),15)
+        self.assertEqual(len(out["audit"]),25)
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
