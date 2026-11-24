@@ -86,6 +86,9 @@
     "workflow_concurrency_cancel_in_progress": false,
     "prebrief_avoids_top_of_hour_load": true,
     "native_rome_schedules_tested": true,
-    "premorning_vix_selective_retry": true
+    "premorning_vix_selective_retry": true,
+    "late_scheduled_morning_supersession_requires_independent_0800_http_proof": true,
+    "late_scheduled_morning_supersession_window_end_rome": "10:00",
+    "late_superseded_phase_never_certifies_own_deadline": true
   }
 }

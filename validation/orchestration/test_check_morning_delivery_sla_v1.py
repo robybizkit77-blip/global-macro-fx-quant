@@ -10,7 +10,7 @@ from unittest.mock import patch
 import zipfile
 from zoneinfo import ZoneInfo
 
-from check_morning_delivery_sla_v1 import confirmed_pages_receipt, evaluate, find_pages_receipt
+from check_morning_delivery_sla_v1 import confirmed_pages_receipt, evaluate, find_pages_receipt, late_scheduled_guard
 
 ROME = ZoneInfo("Europe/Rome")
 
@@ -158,4 +158,39 @@ with patch("check_morning_delivery_sla_v1.github_api", return_value=b'{"workflow
 with patch("check_morning_delivery_sla_v1.github_api", side_effect=OSError):
     assert find_pages_receipt("owner/repo", now)["status"] == "PUBLISHER_EVIDENCE_LOOKUP_FAILED"
 
+# Delayed cron after the publisher's morning window must not re-audit a
+# prior-session snapshot when an exact historical HTTP receipt already exists.
+for phase in ("prebrief","premorning"):
+    with patch("check_morning_delivery_sla_v1.find_pages_receipt",return_value=pages) as lookup:
+        for stamp in ("2026-11-19T10:00:00+01:00","2026-11-19T19:18:46+01:00",
+                      "2026-11-19T09:00:00Z"):
+            guard=late_scheduled_guard(phase,"schedule",at(stamp),"owner/repo")
+            assert guard["status"]=="PHASE_SUPERSEDED_AFTER_MORNING_WINDOW",guard
+            assert guard["skip_obsolete_phase"] is True
+            assert guard["on_time"] is False
+            assert guard["pages_public_delivery"]==pages
+            assert not guard["source_audit_performed"] and not guard["new_acquisition_claimed"] and not guard["new_publication_claimed"]
+        assert lookup.call_count==3
+    with patch("check_morning_delivery_sla_v1.find_pages_receipt") as lookup:
+        for event,stamp in (("schedule","2026-11-19T09:59:59+01:00"),
+                            ("workflow_dispatch","2026-11-19T19:18:46+01:00"),
+                            ("schedule","2026-11-21T19:18:46+01:00")):
+            assert late_scheduled_guard(phase,event,at(stamp),"owner/repo")["skip_obsolete_phase"] is False
+        assert not lookup.called
+    for status in ("PUBLIC_BY_0800_UNPROVEN","PUBLISHER_EVIDENCE_LOOKUP_FAILED"):
+        with patch("check_morning_delivery_sla_v1.find_pages_receipt",return_value={"status":status}):
+            guard=late_scheduled_guard(phase,"schedule",now,"owner/repo")
+            assert guard["status"]=="LATE_RECOVERY_REQUIRED_NO_ON_TIME_PROOF"
+            assert guard["skip_obsolete_phase"] is False
+    assert not late_scheduled_guard(phase,"schedule",now,None)["skip_obsolete_phase"]
+with patch("check_morning_delivery_sla_v1.find_pages_receipt") as lookup:
+    assert not late_scheduled_guard("morning","schedule",now,"owner/repo")["skip_obsolete_phase"]
+    assert not lookup.called
+# A proof belonging to another day cannot suppress recovery: exercise the real
+# lookup rather than supplying a synthetic confirmed result.
+with patch("check_morning_delivery_sla_v1.github_api",side_effect=(
+    json.dumps({"workflow_runs":[run]}).encode(),
+    json.dumps(artifacts).encode(),archive_bytes.getvalue())):
+    assert not late_scheduled_guard("premorning","schedule",at("2026-11-20T19:18:46+01:00"),"owner/repo")["skip_obsolete_phase"]
+print("LATE_SCHEDULED_MORNING_GUARD_PASS")
 print("MORNING_0800_DELIVERY_SLA_CET_CEST_PASS")

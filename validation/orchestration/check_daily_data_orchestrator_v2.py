@@ -58,6 +58,9 @@ def main() -> None:
     assert c["rules"]["premorning_avoids_not_yet_ready_sources"] is True
     assert c["rules"]["premorning_calendar_news_selective_retry"] is True
     assert c["rules"]["premorning_vix_selective_retry"] is True
+    assert c["rules"]["late_scheduled_morning_supersession_requires_independent_0800_http_proof"] is True
+    assert c["rules"]["late_scheduled_morning_supersession_window_end_rome"] == "10:00"
+    assert c["rules"]["late_superseded_phase_never_certifies_own_deadline"] is True
     assert c["separate_cadences"]["COT"] == "cot-persistent-weekly-v1.yml"
     assert c["separate_cadences"]["CB_PRICING_MORNING"] == "cb-pricing-persistent-daily-v1.yml"
     assert c["rules"]["prebrief_cb_pricing_independent_source_outage_isolation"] is True
@@ -275,6 +278,21 @@ def main() -> None:
     assert text.index('run_id=$(jq -er') < text.index('for _ in $(seq 1 360); do')
     assert '[[ "$child_event" != "workflow_dispatch"' in text
     assert '"$child_branch" != "main"' in text
+
+    # Only the dedicated guard can suppress the obsolete morning phase.
+    assert 'Check independently delivered late scheduled morning phase' in text
+    assert "--late-scheduled-guard --output /tmp/late-scheduled-morning-guard.json" in text
+    for step in ("Snapshot G8 source dates and hashes before child collectors",
+                 "Run serialized refresh sequence",
+                 "Audit true source dates for the morning study",
+                 "Certify 08:00 morning delivery deadline"):
+        block=text.split("      - name: "+step+"\n",1)[1].split("      - name:",1)[0]
+        assert "steps.late_morning.outputs.superseded != 'true'" in block, step
+    missed=text.split("      - name: Record missed deadline of independently superseded scheduled phase\n",1)[1].split("      - name:",1)[0]
+    assert "steps.late_morning.outputs.superseded == 'true'" in missed
+    assert "PHASE_SUPERSEDED_AFTER_MORNING_WINDOW PHASE_ON_TIME False" in missed
+    assert "exit 1" in missed
+    assert "/tmp/late-scheduled-morning-guard.json" in text.split("      - name: Retain morning source readiness evidence\n",1)[1]
 
     print(json.dumps({
         "status": "PASS",
