@@ -241,6 +241,10 @@ def main():
     ap.add_argument("--output", default=str(DEFAULT_OUT))
     args = ap.parse_args()
     data = collect()
+    # Same exact historical contract probe, with its original source evidence.
+    # Keep this optional research datum in the existing atomic pricing feed.
+    from probe_nzd_asx_20d_reference_v1 import probe
+    data["monthly_reference"] = probe(data)
     path = Path(args.output)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
