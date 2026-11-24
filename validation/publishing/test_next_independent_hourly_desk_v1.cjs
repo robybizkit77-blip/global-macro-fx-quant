@@ -335,6 +335,27 @@ assert.equal(win.FXQuantHourlyDesk.titleItaliano({
 }),'Più petrolio in transito nei passaggi chiave del Medio Oriente');
 const app=fs.readFileSync(path.join(ROOT,next,'app.js'),'utf8');
 const index=fs.readFileSync(path.join(ROOT,next,'index.html'),'utf8');
+const rankStart=app.indexOf('function homeFxRankStrip(){');
+const rankEnd=app.indexOf('function overview(){',rankStart);
+assert(rankStart>=0&&rankEnd>rankStart);
+const currencies=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+const ranked={status:'STIMA_OPERATIVA_NON_VALIDATA',asof:'2026-11-24',priceAsOf:'2026-11-23',
+ currencies:currencies.map((ccy,i)=>({ccy,rank:i+1,score:(7-i*2)/7,label:i<4?'Forte':'Debole'})),
+ pairs:currencies.flatMap((base,i)=>currencies.slice(i+1).map(quote=>({key:base+quote,name:base+'/'+quote,base,quote,favored:base,thesisStrength:'COERENTE',tradeAttractiveness:'DA VALIDARE',tier:1})))};
+let model=ranked;
+const rankCtx={get:()=>model,dayNow:()=>'2026-11-24',validDay:d=>/^\\d{4}-\\d{2}-\\d{2}$/.test(d),fresh:(d,n)=>(Date.parse('2026-11-24')-Date.parse(d))/86400000<=n,
+ FX:currencies,finite:Number.isFinite,FLAGS:Object.fromEntries(currencies.map(c=>[c,''])),esc,date,
+ window:{FXQuantPairRankings:{selectResearchPairs:(items,n)=>items.filter(p=>p.tier===1).slice(0,n)}}};
+vm.runInNewContext(app.slice(rankStart,rankEnd),rankCtx);
+const rankedHtml=rankCtx.homeFxRankStrip();
+assert.equal((rankedHtml.match(/class="home-fx-rank-row"/g)||[]).length,8);
+assert.equal((rankedHtml.match(/class="home-fx-pair-row"/g)||[]).length,5);
+assert.match(rankedHtml,/Classifica completa delle 28 coppie/);
+model={...ranked,asof:'2026-11-01'};
+assert.equal(rankCtx.homeFxRankStrip(),'');
+model={...ranked,pairs:ranked.pairs.map(p=>({...p,tier:4}))};
+assert.match(rankCtx.homeFxRankStrip(),/Nessuna coppia supera il filtro attuale/);
+
 assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent free research');
 assert(app.includes("fetch('../../../market-desk/hourly-market-desk-check.json'"),
  'Hourly receipt fetch must be independent of the substantive edition');
