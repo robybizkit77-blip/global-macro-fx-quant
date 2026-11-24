@@ -99,6 +99,9 @@ const MAP={
  }
 };
 const VERIFIED_FRESH_FALLBACK={
+ AUD:{
+  demand:['ABS_MHSI_TOTAL_MONTHLY_SA','https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release']
+ },
  USD:{
   house:['PERMIT','https://fred.stlouisfed.org/series/PERMIT'],
   industry:['INDPRO','https://fred.stlouisfed.org/series/INDPRO'],
@@ -118,6 +121,11 @@ const VERIFIED_FRESH_FALLBACK={
  }
 };
 function verifiedFreshAlternative(x,c,key){
+ if(c==='AUD'&&['house','credit'].includes(key)){
+   return !!x&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
+     x.source_series_id===(key==='house'?'RBA_HOUSING_CREDIT_GROWTH_MM':'RBA_BUSINESS_CREDIT_GROWTH_MM')&&
+     /^https:\/\/www\.rba\.gov\.au\/statistics\/frequency\/fin-agg\/20\d{2}\/fin-agg-\d{4}\.html$/.test(x.source_page);
+ }
  if(c==='NZD'&&key==='house'){
    return !!x&&x.source_series_id==='STATSNZ_NEWDWELLINGS_SA'&&
      ['SOURCE_REVISED_RESEARCH_NOT_PIT','SOURCE_VERIFIED_MANUAL_NONPIT'].includes(x.quality)&&
@@ -145,7 +153,7 @@ function supplementary(overlay,country,key,today){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz)\//.test(x.source_page)&&
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au)\//.test(x.source_page)&&
    (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
     x.metric_kind==='points'&&/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page))));
  return matches.length===1?matches[0]:null;
