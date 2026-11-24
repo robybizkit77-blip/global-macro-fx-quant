@@ -813,24 +813,22 @@
       "frequency": "M",
       "unit": "indice diffusione (soglia 50)",
       "dates": [
-        "2026-09",
-        "2026-10"
+        "2026-08",
+        "2026-09"
       ],
       "values": [
-        50.9,
-        51.7
+        51.0,
+        50.9
       ],
       "category": "Semaforo supplementare",
-      "source_file": "BusinessNZ · verifica manuale 2026-11-24 (accesso automatico bloccato)",
-      "source_page": "https://businessnz.org.nz/psi/pre-election-drinks",
+      "source_file": "BNZ / BusinessNZ · pubblicazione ufficiale coautore",
+      "source_page": "https://www.bnz.co.nz/institutional-banking/research/publications",
       "source_series_id": "BNZ_BUSINESSNZ_PSI",
       "metric_kind": "points",
-      "observation_as_of": "2026-10",
+      "observation_as_of": "2026-09",
       "diffusion_threshold": 50,
       "up_good": true,
-      "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
-      "manual_verified_on": "2026-11-24",
-      "official_release_date": "2026-11-16"
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
       "ccy": "USD",
@@ -1011,28 +1009,26 @@
       "ccy": "NZD",
       "area": "credit",
       "id": "SEM_G8_NZD_CREDIT",
-      "label": "Crescita prestiti alle imprese NZ, corretta per rotture (RBNZ C5)",
+      "label": "Credito privato totale, stock nominale (proxy del credito; RBNZ via Trading Economics)",
       "frequency": "M",
-      "unit": "% a/a",
+      "unit": "mln NZD nominali",
       "dates": [
         "2026-08",
         "2026-09"
       ],
       "values": [
-        4.1,
-        5.3
+        624663.0,
+        630847.0
       ],
       "category": "Semaforo supplementare",
-      "source_file": "RBNZ C5 · verifica manuale 2026-11-24 (download automatico bloccato)",
-      "source_page": "https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/registered-banks-and-non-bank-lending-institutions-sector-lending",
-      "source_series_id": "RBNZ_C5_BUSINESS_YOY",
-      "metric_kind": "points",
+      "source_file": "RBNZ / Trading Economics",
+      "source_page": "https://tradingeconomics.com/new-zealand/private-sector-credit",
+      "source_series_id": "RBNZ_PRIVATE_CREDIT_STOCK_TE",
+      "metric_kind": "percent",
       "observation_as_of": "2026-09",
       "diffusion_threshold": null,
       "up_good": true,
-      "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
-      "manual_verified_on": "2026-11-24",
-      "official_release_date": "2026-10-30"
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT"
     },
     {
       "ccy": "CAD",
@@ -1287,12 +1283,12 @@
       "origin": "Australian Bureau of Statistics / MHSI"
     },
     "NZD_services": {
-      "status": "READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
-      "last_observation": "2026-10",
-      "verified_on": "2026-11-24",
-      "source_page": "https://businessnz.org.nz/psi/pre-election-drinks",
-      "automatic_fetch": "BLOCKED_OR_UNVALIDATED",
-      "automatic_error": "HTTP Error 403: Forbidden"
+      "status": "READY_DESCRIPTIVE_REVISED",
+      "last_observation": "2026-09",
+      "days_since_period_end": 55,
+      "source_page": "https://www.bnz.co.nz/institutional-banking/research/publications",
+      "origin": "BNZ / BusinessNZ",
+      "primary_error": "HTTP Error 403: Forbidden"
     },
     "USD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
@@ -1351,11 +1347,13 @@
       "origin": "OECD tramite FRED"
     },
     "NZD_credit": {
-      "status": "READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+      "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "verified_on": "2026-11-24",
-      "automatic_fetch": "BLOCKED_OR_UNVALIDATED",
-      "automatic_error": "HTTP Error 403: Forbidden"
+      "days_since_period_end": 55,
+      "source_page": "https://tradingeconomics.com/new-zealand/private-sector-credit",
+      "origin": "RBNZ / Trading Economics",
+      "primary_error": "HTTP Error 403: Forbidden",
+      "proxy": true
     },
     "CAD_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
