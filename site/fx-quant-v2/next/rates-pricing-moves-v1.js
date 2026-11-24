@@ -93,6 +93,49 @@
   const {snapshot,operational,research,nzd,today}=inputs;
   return Object.fromEntries(FX.map(c=>[c,readCurrency(c,snapshot,operational,research,nzd,today)]));
  }
+ // A first-read of the already verified 6M observations. Do not create rates or compare mismatched dates as simultaneous.
+ function overviewModel(inputs){
+  const data=model(inputs);
+  const rows=FX.map(ccy=>{
+   const m=data[ccy],r=m.rows.find(x=>x.tenor==='6m');
+   const week=r.week?.bp,one=r.one?.bp;
+   const tone=!num(week)?'neutral':week>.05?'up':week<-.05?'down':'flat';
+   const source=r.week?.method==='VARIAZIONE FONTE UFFICIALE'||r.one?.method==='VARIAZIONE FONTE UFFICIALE'?'official':m.kind==='PROXY FUTURES'?'proxy':m.kind==='FUTURES SECONDARI'?'secondary':'unverified';
+   return {ccy,asof:r.asof,rate:r.rate,one,week,tone,source,sourceType:m.sourceType,kind:m.kind};
+  });
+  const official=rows.filter(r=>r.source==='official'&&num(r.week));
+  const down=official.filter(r=>r.tone==='down'),up=official.filter(r=>r.tone==='up'),flat=official.filter(r=>r.tone==='flat');
+  return {rows,official,down,up,flat,weekly:rows.filter(r=>num(r.week)).length,daily:rows.filter(r=>num(r.one)).length};
+ }
+ function renderOverview(inputs){
+  const o=overviewModel(inputs),safe=cap;
+  const bank={USD:'Fed',EUR:'BCE',GBP:'BoE',JPY:'BoJ',CHF:'SNB',AUD:'RBA',NZD:'RBNZ',CAD:'BoC'};
+  const flags={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',AUD:'🇦🇺',NZD:'🇳🇿',CAD:'🇨🇦'};
+  const level=n=>num(n)?n.toFixed(3).replace('.',',')+'%':'—';
+  const desc={up:'Tassi attesi in rialzo',down:'Tassi attesi in calo',flat:'Quasi invariati',neutral:'Variazione non verificata'};
+  const quality={official:'Fonte ufficiale',secondary:'Futures secondari',proxy:'Proxy bank-bill',unverified:'Non verificata'};
+  const list=a=>a.map(r=>r.ccy+' '+sign(r.week)).join(', ');
+  const reading=o.official.length?
+   'Tra i '+o.official.length+' riferimenti settimanali con variazioni ufficiali disponibili'+
+   (o.down.length?', scendono '+list(o.down):'')+(o.up.length?', salgono '+list(o.up):'')+
+   (o.flat.length?', restano quasi fermi '+list(o.flat):'')+
+   '. '+(o.down.length>o.up.length?'Prevale il calo dei tassi impliciti nel campione ufficiale.':o.up.length>o.down.length?'Prevale il rialzo dei tassi impliciti nel campione ufficiale.':'Non emerge una direzione prevalente.')+
+   ' Le date sono indicate per valuta.':'Non ci sono variazioni settimanali ufficiali utilizzabili; non attribuiamo una direzione alle banche centrali.';
+  const fx=o.up.length&&o.down.length?
+   'Controlla se il differenziale monetario tra una valuta con tassi impliciti in rialzo e una con tassi in calo si muove nella stessa direzione su date e strumenti comparabili. Poi verifica il cambio.':
+   'Cerca un cambiamento relativo tra le due valute della coppia: il solo movimento dei tassi domestici non basta a spiegare il cambio.';
+  const tone=n=>!num(n)?'neutral':n>.05?'up':n<-.05?'down':'flat';
+  const cell=(label,n)=>'<span class="rates-first-cell '+tone(n)+'"><small>'+label+'</small><strong>'+safe(sign(n))+'</strong></span>';
+  const rows=o.rows.map(r=>'<article class="rates-first-row"><span class="rates-first-name"><strong>'+flags[r.ccy]+' '+r.ccy+'</strong><small>'+bank[r.ccy]+'</small></span>'+
+   '<span class="rates-first-source"><strong>'+safe(quality[r.source])+'</strong><small>'+safe(labelDate(r.asof))+'</small></span>'+
+   '<span class="rates-first-level"><small>Livello 6M</small><strong>'+safe(level(r.rate))+'</strong></span>'+
+   cell('1 seduta',r.one)+cell('1 settimana',r.week)+
+   '<span class="rates-first-direction '+r.tone+'">'+safe(desc[r.tone])+'</span></article>').join('');
+  return '<section class="rates-first-read" aria-label="Panoramica G8 dei riferimenti monetari a sei mesi"><div class="rates-first-head"><div><span class="chapter-kicker">01 / ASPETTATIVE MONETARIE G8</span><h2>Come stanno cambiando i tassi attesi?</h2><p>Riferimento a 6 mesi per valuta. Le variazioni sono in punti base, non probabilità di rialzo o taglio.</p></div><small>1D '+o.daily+'/8 · 1W '+o.weekly+'/8 confronti</small></div>'+
+   '<div class="rates-first-reading"><strong>Cosa vedo davvero</strong><p>'+safe(reading)+'</p><strong>Perché conta per il Forex</strong><p>'+safe(fx)+'</p></div>'+
+   '<div class="rates-first-rows">'+rows+'</div>'+
+   '<p class="rates-first-note">Verde = riferimento in rialzo; rosso = in calo; ambra = quasi fermo. Non indicano automaticamente una valuta forte o debole. Futures secondari e proxy sono indicativi, non OIS ufficiali. Date e contratti possono differire: nessuna classifica omogenea dei tassi assoluti.</p><a class="rates-first-link" href="#pairs">Confronta le coppie Forex ↗</a></section>';
+ }
  function render(inputs){
   const {currency,window,plot,esc,fmt,sign:appSign,date,snapshot,operational,research,nzd,today}=inputs;
   const data=model({snapshot,operational,research,nzd,today}),m=data[currency]||data.USD;
@@ -181,7 +224,7 @@
    '<p class="ois-moves-footer">Le variazioni 1D/1W non sono probabilità di rialzo/taglio. Le rilevazioni secondarie riguardano <strong>lo stesso contratto quotato</strong> e restano ricerca informativa; non entrano nei segnali, nelle tesi automatiche o nei backtest OIS ufficiali.</p>'+
    '</section>';
  }
- const api={model,readCurrency,verifiedSecondary,render};
+ const api={model,readCurrency,verifiedSecondary,overviewModel,renderOverview,render};
  root.FXQuantPricingMoves=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
