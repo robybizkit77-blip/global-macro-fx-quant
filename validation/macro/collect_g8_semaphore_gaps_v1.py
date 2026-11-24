@@ -31,8 +31,8 @@ MAX_BYTES=3_000_000
 # Several historical OECD/BIS feeds have stopped updating: retain status WITHHELD;
 # never use today's fetch time to make an old observation look current.
 REGISTRY=[
- dict(ccy="CAD",area="demand",key="CAN_RETAIL_VOLUME_CHAINED",method="statcan_detail",
-      name="Indice Fisher del volume reale retail Canada (SA)",unit="indice 2017=100",
+ dict(ccy="CAD",area="demand",key="CAN_RETAIL_REAL_LASPEYRES",method="statcan_detail",
+      name="Vendite retail reali a prezzi costanti 2017 Canada (SA)",unit="mln CAD reali 2017 SA",
       frequency="M",kind="percent",max_age_days=115,
       origin="Statistics Canada / 20-10-0067-01",
       source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=2010006701"),
@@ -186,17 +186,18 @@ def fetch(url:str)->bytes:
     return data
 
 STATCAN_DETAIL={
- "CAN_RETAIL_VOLUME_CHAINED":{
+ "CAN_RETAIL_REAL_LASPEYRES":{
   "url":"https://www150.statcan.gc.ca/n1/tbl/csv/20100067-eng.zip",
   "file":"20100067.csv","category":"North American Industry Classification System (NAICS)",
   "value":"Retail trade [44-45]","other":"Sales, price and volume",
-  "selection":"Retail sales Chained Fisher volume index (scaled to equal 100 in 2017)",
-  "unit":"Index","scale":"millions"}, # Source cube carries a table-wide scalar even on Index rows
+  "selection":"Retail sales at 2017 constant prices (Unchained Laspeyres Index)",
+  "unit":"Dollars","scale":"millions"},
  "CAN_HOUSEHOLD_MORTGAGES_SA":{
   "url":"https://www150.statcan.gc.ca/n1/tbl/csv/36100639-eng.zip",
   "file":"36100639.csv","category":"Credit liabilities of households",
   "value":"Residential mortgages","other":"Seasonality",
-  "selection":"Seasonally adjusted data","unit":"Dollars","scale":"millions"},
+  "selection":"Seasonally adjusted data","unit":"Dollars","scale":"millions",
+  "vector":"v1231415621"},
  "CAN_NFC_NONMORTGAGE_LOANS_SA":{
   "url":"https://www150.statcan.gc.ca/n1/tbl/csv/36100640-eng.zip",
   "file":"36100640.csv","category":"Credit liabilities of private non-financial corporations",
@@ -226,10 +227,13 @@ def parse_statcan_detail(raw,now,identifier):
         with archive.open(spec["file"]) as src:
             reader=csv.DictReader(io.TextIOWrapper(src,encoding="utf-8-sig"))
             fields={"REF_DATE","GEO","VALUE","UOM","SCALAR_FACTOR",spec["category"],spec["other"]}
+            if "vector" in spec:fields.add("VECTOR")
             if not fields.issubset(set(reader.fieldnames or [])):
                 raise ValueError("StatCan required dimensions absent")
             for row in reader:
                 if row["GEO"]!="Canada" or row[spec["category"]]!=spec["value"] or row[spec["other"]]!=spec["selection"]:
+                    continue
+                if "vector" in spec and row.get("VECTOR")!=spec["vector"]:
                     continue
                 if row["UOM"]!=spec["unit"] or row["SCALAR_FACTOR"]!=spec["scale"]:
                     raise ValueError("StatCan selected unit/scale mismatch: "+row["UOM"]+"/"+row["SCALAR_FACTOR"])
