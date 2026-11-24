@@ -371,6 +371,25 @@
     '<strong>'+name+'</strong><span>Apri tesi ›</span></button>'+watchPriceReading(key,market,esc,sign,date)+watchThesisReading(key,history,market.today,esc,date)+'</div>'+catalyst+'</li>';
   }).join('')+'</ul>';
  }
+ // Display-only interpretation of the existing thesis and daily timing fields.
+ function pairEvidenceView(x){
+  const thesis={
+   COERENTE:['green','Coerente'],PARZIALE:['amber','Parziale'],
+   CONTRASTATA:['red','Contrastata'],'NON DISTINTA':['neutral','Non distinta']
+  }[x.thesisStrength]||['neutral','Non valutabile'];
+  const timing={
+   'DA VALIDARE':['amber','Da validare'],'IN ATTESA':['amber','In attesa'],
+   'BASSA ORA':['red','Sfavorevole ora'],'NON SUPPORTATA':['red','Non supportato'],
+   'NON VALUTABILE':['neutral','Non valutabile']
+  }[x.tradeAttractiveness]||['neutral','Non valutabile'];
+  const dir=x.favored===x.base?1:x.favored===x.quote?-1:0;
+  const price=(n,threshold)=>{
+   if(!dir||!finite(n))return ['neutral','Non valutabile'];
+   if(Math.abs(n)<threshold)return ['amber','Indeciso'];
+   return n*dir>0?['green','A favore']:['red','Contrario'];
+  };
+  return {thesis,timing,five:price(x.move5Percent,.05),twenty:price(x.pricePercent,.15)};
+ }
  function render(api){
   const {get,FLAGS,state,esc,sign,date,dayNow}=api;
   const saved=[...state.watch];
@@ -434,7 +453,11 @@
     return 'Tassi a favore di '+fav+'; la macro non conferma ancora.';
    return 'Vantaggio stimato per '+fav+', ma i driver fondamentali restano poco distinti.';
   };
-  const row=(x,i,featured=false)=>'<button class="fx-rank-pair '+
+  const row=(x,i,featured=false)=>{
+   const ev=pairEvidenceView(x);
+   const axis=(label,entry,detail='')=>'<span class="fx-rank-axis '+entry[0]+'"><small>'+label+'</small><strong>'+esc(entry[1])+'</strong>'+(detail?'<small>'+esc(detail)+'</small>':'')+'</span>';
+   const val=n=>finite(n)?sign(n,2,'%'):'—';
+   return '<button class="fx-rank-pair '+
    (featured?'featured ':'')+(state.pair===x.key&&state.pairDetailOpen?'selected ':'')+
    'tier-'+x.tier+'" type="button" data-pair="'+esc(x.key)+'" aria-pressed="'+String(state.pair===x.key&&state.pairDetailOpen)+'" aria-label="Apri tesi '+esc(x.name)+'">'+
    '<span class="fx-rank-number">'+(i+1)+'</span>'+
@@ -442,10 +465,21 @@
    (x.bias==='NESSUNO'?'NESSUN BIAS':'STIMA '+esc(x.bias))+'</small></span>'+
    '<span class="fx-rank-pair-copy"><strong>'+esc(shortReading(x))+'</strong>'+
    '<small>'+esc((x.risk?'Fonti parziali · ':'')+x.priceText)+'</small></span>'+
-   '<span class="fx-rank-pair-badges"><span class="fx-rank-pill tier-'+x.tier+'">'+
-   'TESI · '+esc(x.thesisStrength)+'</span><span class="fx-rank-minor">'+
-   'TRADE · '+esc(x.tradeAttractiveness)+'</span></span>'+
+   '<span class="fx-rank-pair-badges fx-rank-evidence-grid">'+
+   axis('Tesi',ev.thesis)+axis('Prezzo · 5 sedute',ev.five,val(x.move5Percent))+
+   axis('Prezzo · 20 sedute',ev.twenty,val(x.pricePercent))+axis('Timing',ev.timing)+'</span>'+
    '<span class="fx-rank-open">Apri tesi ›</span></button>';
+  };
+  const groups=[
+   ['Da validare','DA VALIDARE','amber','Prezzo coerente; manca il trigger'],
+   ['In attesa','IN ATTESA','amber','Conferma daily incompleta'],
+   ['Sfavorevole ora','BASSA ORA','red','Prezzo contrario alla tesi'],
+   ['Non supportate / non valutabili',null,'neutral','Tesi contrastata o non distinta']
+  ];
+  const summary=active?'<div class="fx-rank-stage-summary" aria-label="Distribuzione delle 28 coppie per timing">'+groups.map(([label,key,tone,note])=>{
+   const n=items.filter(x=>key?x.tradeAttractiveness===key:!['DA VALIDARE','IN ATTESA','BASSA ORA'].includes(x.tradeAttractiveness)).length;
+   return '<div class="fx-rank-stage '+tone+'"><small>'+label+'</small><strong>'+n+'</strong><span>'+note+'</span></div>';
+  }).join('')+'</div>':'';
   const worst=active?Math.max(...est.currencies.map(x=>Math.abs(x.score)),.0001):1;
   const currencyBody=active?'<div class="fx-rank-currency-list">'+est.currencies.map((x,i)=>{
     const tone=x.score>.04?'positive':x.score<-.04?'negative':'neutral';
@@ -482,8 +516,8 @@
    '<section class="fx-rank-box fx-rank-all" id="fx-rank-all" tabindex="-1" aria-label="Classifica completa delle ventotto coppie">'+
    '<div class="fx-rank-head"><div>'+
    '<h2>Classifica completa · '+items.length+' coppie</h2></div><small>STIMA DI RICERCA</small></div>'+
-   '<p class="fx-rank-sub">28 confronti relativi, ordinati per priorità di ricerca. Leggi prima il contrasto fra macro e tassi; apri la coppia per verificare prezzo, conferme e invalidazioni.</p>'+
-   (items.length?'<div class="fx-rank-all-list">'+items.map((x,i)=>row(x,i)).join('')+'</div>':
+   '<p class="fx-rank-sub">28 confronti relativi, ordinati per priorità di ricerca. Leggi prima la tesi fondamentale, poi il prezzo su 5 e 20 sedute e infine il timing. I colori del prezzo sono relativi al bias, non al semplice segno del cambio.</p>'+
+   summary+(items.length?'<div class="fx-rank-all-list">'+items.map((x,i)=>row(x,i)).join('')+'</div>':
     '<p class="fx-rank-unavailable">Ranking sospeso per fonti non aggiornate o incoerenti.</p>')+
    '<p class="fx-rank-source">'+esc(active?('Stima '+date(est.asof)+
     ' · fixing BCE '+date(est.priceFrom)+' → '+date(est.priceAsOf)):
@@ -494,7 +528,7 @@
    '<p>'+esc(est?.warning||'Le osservazioni non consentono oggi una valutazione affidabile.')+'</p>'+
    '</details></section></div>';
  }
- const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,pairRiskReading,pairDriverReading,pairCatalystWatch,estimatedSessionChange,render};
+ const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,pairRiskReading,pairDriverReading,pairCatalystWatch,estimatedSessionChange,pairEvidenceView,render};
  root.FXQuantPairRankings=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
