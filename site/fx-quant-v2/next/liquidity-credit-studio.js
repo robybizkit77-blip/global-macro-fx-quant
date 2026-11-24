@@ -787,11 +787,30 @@
      '<div class="drivers-empty">Storico numerico insufficiente: nessuna curva inventata.</div>')+'</article>';
   };
   // Reuse the source-specific dossier validators instead of presenting stale feed directions as current.
+  const jpyTankan=()=>{
+   const x=root.FXQuantJPYBankCreditResearch?.tankan;
+   if(!x||x.frequency!=='Q'||x.unit!=='diffusion_index_points'||
+    x.scope!=='all enterprises, all industries'||x.positive_lending_means!=='accommodative'||x.positive_loan_rate_means!=='rise'||
+    x.first_release_pit_verified!==false||x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+    !/^https:\/\/www\.boj\.or\.jp\/en\/statistics\/tk\/yoshi\/tk[0-9]{4}\.htm$/.test(x.source_url)||
+    !Array.isArray(x.dates)||x.dates.length<2||x.dates.at(-1)!==x.latest_observation||
+    !x.dates.every(d=>/^20[0-9]{2}-Q[1-4]$/.test(d)))return null;
+   const keys=['lending_attitude','financial_position','loan_rate_change'];
+   if(!keys.every(k=>Array.isArray(x[k])&&x[k].length===x.dates.length&&x[k].every(v=>Number.isInteger(v)&&Math.abs(v)<=100)))return null;
+   const s=researchCreditSeries({dates:x.dates,values:x.lending_attitude},'BoJ Tankan · Disponibilità bancaria','punti DI',today,true);
+   if(!s||!x.dates.every((d,i)=>i===0||Number(d.slice(0,4))*4+Number(d.at(-1))-(Number(x.dates[i-1].slice(0,4))*4+Number(x.dates[i-1].at(-1)))===1))return null;
+   const [a,b,z]=keys.map(k=>x[k].at(-1)),[pa,pb,pz]=keys.map(k=>x[k].at(-2));
+   const sign=v=>(v>0?'+':'')+fmt(v,0);
+   const opening='Nel '+x.latest_observation+' la disponibilità bancaria '+movement(a-pa,'è migliorata','è peggiorata','è rimasta stabile')+'; la diffusione dei rialzi dei tassi sui prestiti '+movement(z-pz,'è aumentata','è diminuita','è rimasta stabile')+'.';
+   return {opening,conditionsSeries:s,html:'<section class="drivers-cad-official" aria-label="Indagine Tankan Giappone"><span class="mini-overline">BANK OF JAPAN · TANKAN</span><h3>'+esc(opening)+'</h3>'+
+   '<p>Disponibilità delle banche: '+esc(sign(a))+' punti (prima '+esc(sign(pa))+'); situazione finanziaria: '+esc(sign(b))+' (prima '+esc(sign(pb))+'); diffusione dei rialzi dei tassi sui prestiti: '+esc(sign(z))+' (prima '+esc(sign(pz))+'). Il DI misura il saldo delle risposte, non il livello dei tassi o il volume dei prestiti.</p>'+
+   '<div class="drivers-cad-source"><span>'+esc(x.latest_observation)+' · tutte le imprese, tutti i settori · osservazioni effettive</span><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">BoJ · Tankan ↗</a></div></section>'};
+  };
   const jpyReading=()=>{
    const credit=jpyBOJCreditResearch(esc,fmt,today),reserves=jpyReserveResearch(get('residualResearch'),today,esc,fmt);
-   if(!credit)return reserves;
-   if(!reserves)return credit;
-   return {...credit,opening:credit.opening+' '+reserves.opening,html:credit.html+reserves.html};
+   const survey=jpyTankan(),available=[credit,reserves,survey].filter(Boolean);
+   if(!available.length)return null;
+   return {...available[0],conditionsSeries:survey?.conditionsSeries,opening:available.map(x=>x.opening).join(' '),html:available.map(x=>x.html).join('')};
   };
   const usReading=()=>{
    const credit=usFedCreditResearch(esc,fmt,today),money=usM2Research(esc,fmt,today);
