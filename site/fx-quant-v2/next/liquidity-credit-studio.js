@@ -511,6 +511,54 @@
    '<div class="drivers-cad-source"><span>Prestiti commerciali e industriali · DRTSCILM</span>'+
    '<a href="'+url+'" target="_blank" rel="noopener noreferrer">Fonte: Federal Reserve / FRED ↗</a></div></section>';
  }
+ function cadLynxResearch(esc,fmt,now){
+  const parent=root.FXQuantCADCreditResearch,x=parent?.settlement_balances;
+  if(parent?.schema!=='GMFQ_NEXT_CAD_BUSINESS_CREDIT_OFFICIAL_RESEARCH_V1'||
+     parent.publisher!=='Bank of Canada'||x?.series_id!=='BOC_LYNX_ACTUAL_DAILY'||
+     x.source_url!=='https://www.bankofcanada.ca/rates/indicators/market-operations-indicators/'||
+     x.frequency!=='D'||x.unit!=='milioni CAD'||x.preliminary_may_be_revised!==true||
+     x.canonical_monthly_equivalence_verified!==false||x.eligible_for_fx_core!==false||
+     x.eligible_for_backtest!==false||!Array.isArray(x.dates)||x.latest_observation!==x.dates.at(-1)||
+     !x.dates.every(d=>/^20[0-9]{2}-[0-9]{2}-[0-9]{2}$/.test(d)&&new Date(d+'T12:00:00Z').getUTCDay()%6!==0))return null;
+  const s=researchCreditSeries(x,'BoC · Saldi Lynx osservati','milioni CAD',now);
+  if(!s||!s.values.every(v=>v<=1000000))return null;
+  // Do not connect observations across an unverified gap in the issuer history.
+  let start=s.dates.length-1;
+  while(start>0&&dateMs(s.dates[start])-dateMs(s.dates[start-1])<=4*864e5)start--;
+  s.dates=s.dates.slice(start);s.values=s.values.slice(start);
+  if(s.dates.length<2)return null;
+  const delta=s.last_value-s.values.at(-2),previous=s.dates.at(-2);
+  const age=(dateMs(observationDate(now))-dateMs(s.last_date))/864e5;
+  const opening='Al '+dated(s.last_date)+' i saldi di regolamento Lynx '+movement(delta,'sono aumentati','sono diminuiti','sono rimasti stabili')+' rispetto alla rilevazione precedente'+(age>7?' (periodo storico)':'')+'.';
+  return {headline:'Saldi di regolamento Lynx',opening,liquiditySeries:s,keepOriginalLiquidity:true,
+   html:'<section class="drivers-cad-official" aria-label="Saldi di regolamento Lynx"><span class="mini-overline">BANK OF CANADA · SALDI LYNX GIORNALIERI</span><h3>'+esc(opening)+'</h3>'+
+   '<p>Saldo '+esc(fmt(s.last_value/1000,3))+' miliardi CAD · rispetto al '+esc(previous)+' '+esc((delta>0?'+':'')+fmt(delta/1000,3))+' miliardi CAD. Sono saldi effettivi Lynx, esclusi i saldi RTR: non rappresentano nuovi prestiti o flussi valutari.</p>'+
+   '<div class="drivers-cad-source"><span>'+esc(s.last_date)+' · '+(age>7?'periodo storico':'osservazione datata')+' · dati preliminari, equivalenza con lo storico mensile non verificata</span><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Bank of Canada · Market operations ↗</a></div></section>'};
+ }
+ function cadSLOSResearch(esc,fmt,now){
+  const parent=root.FXQuantCADCreditResearch,x=parent?.lending_conditions;
+  if(parent?.schema!=='GMFQ_NEXT_CAD_BUSINESS_CREDIT_OFFICIAL_RESEARCH_V1'||
+     parent.publisher!=='Bank of Canada'||x?.series_id!=='SLOS_BUS_LEND'||
+     x.source_url!=='https://www.bankofcanada.ca/publications/slos/'||
+     x.frequency!=='Q'||x.unit!=='net_balance_pct_points'||x.positive_means!=='tightening'||x.negative_means!=='easing'||
+     x.first_release_pit_verified!==false||x.eligible_for_fx_core!==false||x.eligible_for_backtest!==false||
+     !Array.isArray(x.dates)||x.latest_observation!==x.dates.at(-1)||
+     !x.dates.every(d=>/^20[0-9]{2}-(01|04|07|10)-01$/.test(d)))return null;
+  const s=researchCreditSeries(x,'BoC SLOS · Condizioni credito imprese','saldo netto, punti',now,true);
+  if(!s||s.dates.length<4||!s.values.every(v=>Math.abs(v)<=100))return null;
+  const serial=d=>Number(d.slice(0,4))*12+Number(d.slice(5,7));
+  if(!s.dates.every((d,i)=>i===0||serial(d)-serial(s.dates[i-1])===3))return null;
+  const latest=s.last_value,prior=s.values.at(-2),delta=latest-prior;
+  const q=d=>d.slice(0,4)+'-Q'+(Math.floor((Number(d.slice(5,7))-1)/3)+1);
+  const signed=v=>(v>0?'+':'')+fmt(v,2);
+  const state=latest<0?'in allentamento':latest>0?'in irrigidimento':'stabili';
+  const change=delta<0?'Il saldo è sceso, in direzione di condizioni meno restrittive.':delta>0?'Il saldo è salito, in direzione di condizioni più restrittive.':'Il saldo è invariato.';
+  const opening='Nel '+q(s.last_date)+' le condizioni di credito alle imprese sono '+state+'. '+change;
+  const age=(dateMs(observationDate(now))-dateMs(s.last_date))/864e5;
+  return {opening,conditionsSeries:s,html:'<section class="drivers-cad-official" aria-label="Indagine SLOS Canada"><span class="mini-overline">BANK OF CANADA · CONDIZIONI DI CREDITO SLOS</span><h3>'+esc(opening)+'</h3>'+
+    '<p>Saldo netto '+esc(signed(latest))+' punti nel '+esc(q(s.last_date))+' contro '+esc(signed(prior))+' nel '+esc(q(s.dates.at(-2)))+'. Variazione '+esc(signed(delta))+' punti. Negativo = allentamento, positivo = irrigidimento. Non è una variazione percentuale dello stock di prestiti.</p>'+
+    '<div class="drivers-cad-source"><span>'+esc(q(s.last_date))+' · '+(age>220?'periodo storico':'indagine trimestrale datata')+'</span><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">BoC · Senior Loan Officer Survey ↗</a></div></section>'};
+ }
  function cadIssuerResearch(esc,fmt,now){
   const x=root.FXQuantCADCreditResearch;
   if(!x||x.schema!=='GMFQ_NEXT_CAD_BUSINESS_CREDIT_OFFICIAL_RESEARCH_V1'||
@@ -757,6 +805,14 @@
    if(!liquidity)return credit;
    return {...credit,liquiditySeries:liquidity.liquiditySeries,opening:credit.opening+' '+liquidity.opening,html:credit.html+liquidity.html};
   };
+  const cadReading=()=>{
+   const credit=cadIssuerResearch(esc,fmt,today),liquidity=cadLynxResearch(esc,fmt,today),conditions=cadSLOSResearch(esc,fmt,today);
+   const available=[credit,liquidity,conditions].filter(Boolean);
+   if(!available.length)return null;
+   return {...available[0],liquiditySeries:liquidity?.liquiditySeries,keepOriginalLiquidity:!!liquidity,
+    conditionsSeries:conditions?.conditionsSeries,
+    opening:available.map(x=>x.opening).join(' '),html:available.map(x=>x.html).join('')};
+  };
   const issuerFor=ccy=>ccy==='CHF'?chfSNBResearch(get('residualResearch'),today,esc,fmt):
    ccy==='NZD'&&nzd?nzdReleaseContext(nzd,today,esc,fmt):
    ccy==='JPY'?jpyReading():
@@ -764,7 +820,7 @@
    ccy==='AUD'?audRBAAdjustedCredit(esc,fmt,today):
    ccy==='EUR'?eurReading():
    ccy==='USD'?usReading():
-   ccy==='CAD'?cadIssuerResearch(esc,fmt,today):null;
+   ccy==='CAD'?cadReading():null;
   const cards=FX.map(ccy=>{
     const issuer=issuerFor(ccy),active=ccy===selected;
     return '<button class="drivers-country" type="button" data-liq-country="'+ccy+'" aria-controls="liquidity-dossier" aria-label="'+
@@ -781,7 +837,7 @@
    (selected==='AUD'?audRBAAdjustedCredit(esc,fmt,today):null)||
    (selected==='EUR'?eurReading():null)||
    (selected==='USD'?usReading():null)||
-   (selected==='CAD'?cadIssuerResearch(esc,fmt,today):null);
+   (selected==='CAD'?cadReading():null);
   const sloos=selected==='USD'?usSloosResearch(esc,fmt,today):'';
   const headline=official?.headline||'La lettura del credito resta aperta';
   const opening=official?.opening||'Le rilevazioni disponibili non permettono di stabilire se il credito stia accelerando o frenando. Per capire come si finanziano famiglie e imprese servono osservazioni confrontabili sui prestiti e sui costi.';
@@ -821,6 +877,8 @@
    (selected==='CHF'?'':'<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
    '<div class="drivers-chart-grid">'+chart(official?.liquidityRecent||official?.liquiditySeries||row?.liquidity,official?.liquidityRecent?'Liquidità · ultima settimana':official?.liquiditySeries?'Liquidità · fonte ufficiale separata':'Liquidità','#69d5ad')+chart(official?.creditSeries||row?.credit,official?.creditSeries?'Credito · fonte ufficiale separata':'Credito','#95c6e9')+'</div>'+
    (official?.liquidityRecent?'<p class="drivers-source-note">Confronto delle ultime due settimane dalla fonte ufficiale separata. '+(selected==='AUD'?'Il saldo precedente è ricavato dal movimento settimanale pubblicato. ':'Entrambi i saldi sono pubblicati dalla BoE. ')+'Lo storico precedente rimane distinto: nessuna interpolazione fra periodi mancanti.</p><div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità · storico originario','#69d5ad')+'</div>':'')+
+   (official?.keepOriginalLiquidity?'<p class="drivers-source-note">Saldi Lynx giornalieri e storico mensile originario rimangono separati: nessuna equivalenza o interpolazione presunta.</p><div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità · storico originario','#69d5ad')+'</div>':'')+
+   (official?.conditionsSeries?'<div class="drivers-chart-grid">'+chart(official.conditionsSeries,'Condizioni di credito · fonte ufficiale separata','#95c6e9')+'</div>':'')+
    '<p class="drivers-source-note">I grafici conservano i valori originali nelle rispettive unità (livelli o tassi di crescita esplicitamente indicati); non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>');
  }
  const api={series,direction,interpret,observationDate,sourceEvidence,creditMarket,marketFirstRead,render};
