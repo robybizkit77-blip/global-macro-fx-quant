@@ -272,17 +272,17 @@
     "WTI.market_proxy": {
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
       "confidence": "B_FOR_DIRECTION_ONLY",
-      "proxy_as_of": "2026-11-20",
-      "value": 83.62,
-      "change_1d_pct": 0.4927,
-      "change_1w_pct": -5.5781,
+      "proxy_as_of": "2026-11-24",
+      "value": 79.67,
+      "change_1d_pct": -0.6237,
+      "change_1w_pct": -7.3712,
       "source": "Yahoo Finance public chart JSON · WTI Crude Oil Last Day Financial Futures (CL=F)",
       "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "vendor_symbol": "CL=F",
       "currency": "USD",
       "exchange_name": "NYM",
       "instrument_type": "FUTURE",
-      "fetched_at_utc": "2026-11-21T03:25:33.453228Z",
+      "fetched_at_utc": "2026-11-24T06:20:40.920402Z",
       "official_canonical_untouched": true,
       "same_date_source_vintages": [
         {
