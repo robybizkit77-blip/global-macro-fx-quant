@@ -362,3 +362,28 @@ invalid = inspect(sample, asof)
 assert invalid["evidence"]["NEXT_RATES_RESEARCH"]["status"] == "RESEARCH_EVIDENCE_INVALID"
 assert invalid["critical_daily_problems"] == before["critical_daily_problems"]
 print("NEXT_RATES_RESEARCH_READINESS_ISOLATION_PASS")
+
+# Calendar-consistency is a separate explanatory classification, never a
+# promotion or a claim that the issuer was live-checked.
+from check_morning_readiness_v1 import rate_cadence_context
+def dated_rate(day, source):
+    return {"date":day,"quality":"FULL_CURRENT_OFFICIAL","source":source,"2Y":2.0,"10Y":3.0,
+            "tenors":[{"tenor":"2Y","date":day,"value":2.0},{"tenor":"10Y","date":day,"value":3.0}]}
+jp = dated_rate("2026-11-20","Japan Ministry of Finance · JGB Interest Rate")
+au = dated_rate("2026-11-18","Reserve Bank of Australia · F2 Capital Market Yields")
+current = dt.datetime.fromisoformat("2026-11-24T08:00:00+01:00")
+j = rate_cadence_context("JPY",jp,current,"2026-11-23")
+assert j["status"] == "HOLIDAY_CALENDAR_CONSISTENT" and j["live_issuer_verified"] is False
+assert j["holiday_dates"] == ["2026-11-23"]
+assert rate_cadence_context("JPY",jp,current,"2026-11-24") is None
+assert rate_cadence_context("JPY",jp,current,"2028-11-23") is None
+wrong = copy.deepcopy(jp); wrong["tenors"][0]["date"] = "2026-11-19"
+assert rate_cadence_context("JPY",wrong,current,"2026-11-23") is None
+a = rate_cadence_context("AUD",au,current,"2026-11-23")
+assert a["status"] == "NORMAL_WEEKLY_CADENCE_CONSISTENT"
+assert a["next_regular_release_sydney"] == "2026-11-27T14:00"
+assert rate_cadence_context("AUD",au,dt.datetime.fromisoformat("2026-11-27T13:59:00+11:00"),"2026-11-26")
+assert rate_cadence_context("AUD",au,dt.datetime.fromisoformat("2026-11-27T14:00:00+11:00"),"2026-11-26") is None
+assert rate_cadence_context("AUD",dated_rate("2026-11-11",au["source"]),current,"2026-11-23") is None
+assert rate_cadence_context("AUD",dict(au,quality="ESTIMATED"),current,"2026-11-23") is None
+print("RATES_SOURCE_CALENDAR_CADENCE_PASS")
