@@ -33,7 +33,7 @@ MAX_BYTES=3_000_000
 # never use today's fetch time to make an old observation look current.
 BOJ_CREDIT_URL="https://www.stat-search.boj.or.jp/ssi/mtshtml/md13_m_1_en.html"
 RBNZ_CREDIT_URL="https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/Registered-banks-and-non-bank-lending-institutions-sector-lending"
-SNB_CREDIT_URL="https://data.snb.ch/api/cube/bakredinausbm/data/csv/en?fromDate=2025-01"
+SNB_CREDIT_URL="https://data.snb.ch/api/cube/bakredinausbm/data/csv/en?fromDate=2023-01"
 SNB_CREDIT_META="https://data.snb.ch/api/cube/bakredinausbm/dimensions/en"
 REGISTRY=[
  dict(ccy="CHF",area="credit",key="SNB_BAKREDINAUSBM_AV1_I_T1_F",method="snb_credit",
@@ -948,7 +948,7 @@ def parse_fred(raw:bytes,key:str,frequency:str,now:date):
 
 EUROSTAT_SERVICES_URL=(
  "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/teibs020?"
- "geo=EA21&s_adj=SA&indic=BS-SCI-BAL&freq=M&sinceTimePeriod=2025-01"
+ "geo=EA21&s_adj=SA&indic=BS-SCI-BAL&freq=M&sinceTimePeriod=2023-01"
 )
 EUROSTAT_EXTRA={
  "eurostat_house_price":("prc_hpi_q",{"freq":"Q","geo":"EA21","purchase":"TOTAL","unit":"RCH_A"}),
@@ -962,7 +962,7 @@ def euro_extra_url(method):
     dataset,filters=EUROSTAT_EXTRA[method]
     from urllib.parse import urlencode
     return "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/"+dataset+"?"+urlencode({
-      **filters,"sinceTimePeriod":"2020-Q1" if filters["freq"]=="Q" else "2024-01"})
+      **filters,"sinceTimePeriod":"2020-Q1" if filters["freq"]=="Q" else "2023-01"})
 
 def parse_euro_extra(raw,now,method):
     """Exact dimension selectors and one time series per Eurostat requested category."""
@@ -1093,6 +1093,37 @@ def contiguous_last_two(obs,frequency):
         if ny*4+nq-y*4-q!=1:raise ValueError("quarterly gap in latest observations")
     return [list(a),list(b)]
 
+def contiguous_history(observations,frequency,now):
+    """Retain at most 36 months / 12 quarters from a single revised source vintage.
+    Never bridge a gap, mix different release vintages or fill missing points."""
+    if frequency not in {"M","Q"}:raise ValueError("unsupported history frequency")
+    if len(observations)<2:raise ValueError("insufficient observations")
+    limit=36 if frequency=="M" else 12
+    def index(p):
+        if not re.fullmatch(r"\d{4}-\d{2}" if frequency=="M" else r"\d{4}-Q[1-4]",p):
+            raise ValueError("history frequency mismatch")
+        period_end(p)
+        return int(p[:4])*(12 if frequency=="M" else 4)+int(p[5:] if frequency=="M" else p[-1])
+    ordered=[]
+    previous=None
+    for p,v in observations:
+        ix=index(p)
+        if previous is not None and ix<=previous:raise ValueError("history not strictly ascending")
+        if period_end(p)>now or isinstance(v,bool) or not isinstance(v,(int,float)) or not math.isfinite(v):
+            raise ValueError("invalid history observation")
+        ordered.append((ix,p,v));previous=ix
+    tail=[ordered[-1]]
+    for row in reversed(ordered[:-1]):
+        if len(tail)>=limit or tail[-1][0]-row[0]!=1:break
+        tail.append(row)
+    if len(tail)<2:raise ValueError("latest history gap")
+    tail.reverse()
+    return {"schema":"GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+            "frequency":frequency,"dates":[x[1] for x in tail],"values":[x[2] for x in tail],
+            "observations":len(tail),"max_observations":limit,
+            "quality":"SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT"}
+
+
 def candidate(spec,observations,now):
     newest=observations[-1][0]
     age=(now-period_end(newest)).days
@@ -1100,6 +1131,7 @@ def candidate(spec,observations,now):
         return None,{"status":"WITHHELD_STALE","last_observation":newest,"days_since_period_end":age}
     if age<0:raise ValueError("future period")
     points=contiguous_last_two(observations,spec["frequency"])
+    history=contiguous_history(observations,spec["frequency"],now)
     payload={"ccy":spec["ccy"],"area":spec["area"],
       "id":"SEM_G8_"+spec["ccy"]+"_"+spec["area"].upper(),
       "label":spec["name"],"frequency":spec["frequency"],"unit":spec["unit"],
@@ -1109,8 +1141,10 @@ def candidate(spec,observations,now):
       "metric_kind":spec["kind"],"observation_as_of":newest,
       "diffusion_threshold":50 if spec["method"]=="biznz" else None,
       "up_good":spec.get("up_good",True),
-      "quality":"SOURCE_REVISED_RESEARCH_NOT_PIT"}
-    return payload,{"status":"READY_DESCRIPTIVE_REVISED","last_observation":newest,"days_since_period_end":age}
+      "quality":"SOURCE_REVISED_RESEARCH_NOT_PIT",
+      "history":{**history,"source_series_id":spec["key"]}}
+    return payload,{"status":"READY_DESCRIPTIVE_REVISED","last_observation":newest,"days_since_period_end":age,
+                    "history_observations":history["observations"]}
 
 def curated_official_businessnz(spec,now):
     """Source-verified, manual fallback; NEVER label this as a fetched update."""
@@ -1140,6 +1174,7 @@ def curated_official_businessnz(spec,now):
     if obs!=sorted(obs):raise ValueError("manual PSI dates not ascending")
     item,status=candidate(spec,obs,now)
     if item is None:return None,{"status":"WITHHELD_STALE","reason":"Manually verified PSI snapshot expired"}
+    item["history"]["quality"]="MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT"
     item.update({"quality":"SOURCE_VERIFIED_MANUAL_NONPIT",
         "source_file":"BusinessNZ · verifica manuale "+doc["verified_on"]+" (accesso automatico bloccato)",
         "source_page":uri,
@@ -1175,6 +1210,7 @@ def curated_statsnz_house(spec,now):
         raise ValueError("Stats NZ release values implausible")
     item,status=candidate(spec,list(zip(dates,values)),now)
     if item is None:return None,{"status":"WITHHELD_STALE","reason":"Verified snapshot expired"}
+    item["history"]["quality"]="MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT"
     item.update({"quality":"SOURCE_VERIFIED_MANUAL_NONPIT","source_page":page,
         "source_file":"Stats NZ · verifica manuale "+d["verified_on"]+" (accesso automatico bloccato)",
         "manual_verified_on":d["verified_on"],"official_release_date":d["official_release_date"]})
@@ -1237,6 +1273,7 @@ def curated_rbnz_credit(spec,now):
     if (now-release).days>38:return None,{"status":"WITHHELD_STALE","reason":"RBNZ verified release expired"}
     item,status=candidate(spec,list(zip(periods,values)),now)
     if item is None:return None,status
+    item["history"]["quality"]="MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT"
     item.update({"quality":"SOURCE_VERIFIED_MANUAL_NONPIT","source_page":d["source_url"],
         "source_file":"RBNZ C5 · verifica manuale "+d["verified_on"]+" (download automatico bloccato)",
         "manual_verified_on":d["verified_on"],"official_release_date":d["official_release_date"]})
@@ -1384,6 +1421,7 @@ def main():
     if not x.dry_run: Path(x.output).write_text(content,encoding="utf-8")
     print(json.dumps({"status":"CAPTURED_REVISED_NOT_PIT",
       "ready":len(out["series"]),"total":len(REGISTRY),
+      "history_observations":{s["ccy"]+"_"+s["area"]:s.get("history",{}).get("observations",0) for s in out["series"]},
       "audit":{k:v["status"] for k,v in out["audit"].items()},
       "withheld_reasons":{k:v.get("reason","") for k,v in out["audit"].items() if v["status"]=="WITHHELD_FETCH_OR_VALIDATION"}},ensure_ascii=False))
 if __name__=="__main__":main()
