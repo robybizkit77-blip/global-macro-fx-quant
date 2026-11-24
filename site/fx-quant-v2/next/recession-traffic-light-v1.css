@@ -145,3 +145,33 @@
 .sem-method .sem-foot{margin-top:8px;font-size:11px;color:#a6bfce}
 @media(max-width:830px){.sem-overview{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.sem-overview-coverage{grid-column:1/-1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 14px}.sem-coverage-track{grid-column:1/-1}.sem-overview-kpi{padding:9px 8px;gap:7px}.sem-overview-kpi>span{font-size:10px}.sem-overview-kpi>strong{font-size:22px}.recession-light .sem-row{padding:13px}.recession-light .sem-signal{flex-direction:row;align-items:center;flex-wrap:wrap;justify-content:flex-start}.recession-light .sem-g8-title{margin-top:14px}}
 @media(max-width:400px){.sem-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.recession-light .sem-head{margin-bottom:14px}.recession-light .sem-country-caption strong{font-size:17px}.recession-light .sem-country-count{padding:5px 7px}}
+
+/* Evidence hierarchy: the latest pair and economic direction, not raw price sign. */
+.recession-light .sem-row{position:relative}
+.recession-light .sem-row.green{box-shadow:inset 3px 0 #4cbd8a}.recession-light .sem-row.red{box-shadow:inset 3px 0 #e06f7e}.recession-light .sem-row.amber{box-shadow:inset 3px 0 #d6ad63}.recession-light .sem-row.neutral{box-shadow:inset 3px 0 #6e9dbb}
+.recession-light .sem-area{padding-left:17px}
+.recession-light .sem-area-reading{display:inline-block;margin:7px 0 2px;font-size:11px;font-weight:800}
+.recession-light .sem-row.green .sem-area-reading{color:var(--sem-green)}.recession-light .sem-row.red .sem-area-reading{color:var(--sem-red)}.recession-light .sem-row.amber .sem-area-reading{color:var(--sem-amber)}.recession-light .sem-row.neutral .sem-area-reading{color:var(--sem-blue)}
+.sem-area-judgment{padding:10px 12px;border-left:2px solid #6b9fb9;background:#20364b;border-radius:0 7px 7px 0}
+.sem-area-judgment>span{font-size:10px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:#a5d8eb}
+.sem-area-judgment p{margin:5px 0 0;color:#e0ebf5;font-size:12px;line-height:1.6}
+.recession-light .sem-measure{padding:11px;border:1px solid #365065;border-radius:9px;background:#0c2030;min-width:0}
+.recession-light .sem-measure-title{margin-bottom:9px}
+.recession-light .sem-measure-title strong{font-size:12px;line-height:1.45;color:#dfeaf4}
+.sem-value-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.sem-value-grid.sem-value-hidden{grid-template-columns:1fr 1fr}
+.recession-light .sem-value{min-width:0;background:#162c40;border:1px solid #2c445a;border-radius:6px;padding:8px}
+.recession-light .sem-value>small{font-size:10px;line-height:1.4;margin:0 0 5px;color:#abc4d7}
+.recession-light .sem-value>strong{display:block;font-size:clamp(13px,1.3vw,19px);font-weight:800;line-height:1.15;letter-spacing:-.02em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;color:#edf6fc}
+.recession-light .sem-value>span{display:block;margin:4px 0 0;font-size:10px;line-height:1.35;color:#afc4d4;overflow-wrap:anywhere}
+.recession-light .sem-value>strong.sem-period-pair{font-size:12px;line-height:1.5}
+.recession-light .sem-value>strong.green{color:var(--sem-green)}.recession-light .sem-value>strong.red{color:var(--sem-red)}.recession-light .sem-value>strong.amber{color:var(--sem-amber)}.recession-light .sem-value>strong.neutral{color:var(--sem-blue)}
+.recession-light .sem-source-note{margin-top:9px;font-size:10px;line-height:1.5}
+.recession-light .sem-history{border:1px solid #354e61;border-radius:7px;padding:8px 10px;background:#13283a}
+.recession-light .sem-history summary{font-size:11px;font-weight:700;cursor:pointer;color:#b1d3e7}
+.recession-light .sem-history[open] .sem-measure{margin-top:8px}
+.recession-light .sem-signal{justify-content:flex-start;padding-top:16px}
+.recession-light .sem-pill{white-space:normal;line-height:1.25}
+.recession-light .sem-pill i{flex-shrink:0}
+@media(max-width:830px){.recession-light .sem-area{padding-left:3px}.recession-light .sem-signal{padding-top:7px}.recession-light .sem-value>strong{font-size:17px}.recession-light .sem-value{padding:8px 6px}.recession-light .sem-measure{padding:9px}.sem-area-judgment p{font-size:12px}}
+@media(max-width:380px){.recession-light .sem-value>strong{font-size:14px}.recession-light .sem-value>small{font-size:9px}}
