@@ -714,6 +714,59 @@ class _PlainText(HTMLParser):
     def handle_data(self,data):
         if not self.skip:self.parts.append(data)
 
+
+ANZ_OUTLOOK_URL="https://www.anz.co.nz/about-us/economic-markets-research/business-outlook/"
+
+def parse_anz_outlook(raw,now):
+    """Rounded own-activity net balances in the issuer's dated release summaries.
+    Use only adjacent monthly releases; do not present as a single revised vintage.
+    """
+    p=_PlainText();p.feed(raw.decode("utf-8","replace"))
+    txt=" ".join(" ".join(p.parts).split())
+    if "ANZ Business Outlook" not in txt or "Expected own activity" not in txt:
+        raise ValueError("ANZ survey identity absent")
+    months={date(2000,m,1).strftime("%B"):m for m in range(1,13)}
+    heading=re.compile(r"(?<![\w-])("+"|".join(months)+r")\s+(20\d{2})\s+(?=Business confidence\b)",re.I)
+    values={}
+    for hit in heading.finditer(txt):
+        year=int(hit[2]);month=months[hit[1].title()]
+        period=f"{year}-{month:02d}"
+        if date(year,month,1)>now:continue
+        body=txt[hit.end():hit.end()+550]
+        # Only the first sentence on forward own activity, never past activity,
+        # headline confidence or a change expressed in points.
+        m=re.search(r"\bExpected own activity\b[^.]{0,130}?\b(?:to|at)\s+([+\-−]?\d{1,3}(?:\.\d+)?)\b",body,re.I)
+        if not m:continue
+        value=float(m[1].replace("−","-"))
+        if not -100<=value<=100:raise ValueError("ANZ net balance range")
+        if period in values and values[period]!=value:raise ValueError("ANZ conflicting release summaries")
+        values[period]=value
+    obs=sorted(values.items())
+    # Reject stale headings, skipped months and ambiguous/partial source extraction.
+    if len(obs)<2:raise ValueError("ANZ adjacent release summaries missing")
+    latest=obs[-2:]
+    contiguous_last_two(latest,"M")
+    if period_end(latest[-1][0])>now:raise ValueError("ANZ observation month not closed")
+    if (now-period_end(latest[-1][0])).days>65:raise ValueError("ANZ release summaries stale")
+    return latest
+
+def collect_anz_outlook(spec,now):
+    req=Request(ANZ_OUTLOOK_URL,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
+    with urlopen(req,timeout=18) as r:
+        if r.geturl().rstrip("/")!=ANZ_OUTLOOK_URL.rstrip("/"):raise ValueError("ANZ unexpected redirect")
+        raw=r.read(3_000_001)
+        if not raw or len(raw)>3_000_000:raise ValueError("ANZ source size")
+    alt={**spec,"key":"ANZ_NZD_OWN_ACTIVITY_OUTLOOK_ROUNDED",
+         "name":"ANZ attese attività propria (proxy anticipatore; saldi arrotondati da comunicati)",
+         "unit":"saldo netto %","kind":"points","origin":"ANZ Business Outlook / release summaries",
+         "source_page":ANZ_OUTLOOK_URL,"max_age_days":65}
+    item,status=candidate(alt,parse_anz_outlook(raw,now),now)
+    if item:
+        item["history"]["quality"]="ROUNDED_RELEASE_SUMMARIES_NOT_SINGLE_VINTAGE"
+        status["history_quality"]=item["history"]["quality"]
+    return item,status
+
+
 def parse_bnz_psi(raw,now):
     """Co-publisher's dated press release, taking the latest vintage's revised prior."""
     p=_PlainText();p.feed(raw.decode("utf-8","replace"))
@@ -1421,6 +1474,17 @@ def collect(now=None,fetcher=fetch):
                 except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
                     pass # retain verified latest release if archive is not validated
             item,status=candidate(spec,observations,now)
+            if item is None and spec["key"]=="NZLLOLITOAASTSAM" and fetcher is fetch:
+                try:
+                    proxy,proxy_status=collect_anz_outlook(spec,now)
+                    if proxy:
+                        out["series"].append(proxy)
+                        out["audit"][code]={**proxy_status,"proxy":True,"source_page":proxy["source_page"],
+                            "origin":proxy["source_file"],"primary_status":status["status"],
+                            "primary_last_observation":status.get("last_observation")}
+                        continue
+                except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as proxy_exc:
+                    status["proxy_error"]=str(proxy_exc)[:180]
             if item is not None:
                 if fetched is not None:item["source_page"]=fetched[1]
                 if history_page:
@@ -1431,6 +1495,16 @@ def collect(now=None,fetcher=fetch):
                                  "origin":spec["origin"]}
             out["audit"][code].pop("...")
         except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+            if spec["key"]=="NZLLOLITOAASTSAM" and fetcher is fetch:
+                try:
+                    proxy,proxy_status=collect_anz_outlook(spec,now)
+                    if proxy:
+                        out["series"].append(proxy)
+                        out["audit"][code]={**proxy_status,"proxy":True,"source_page":proxy["source_page"],
+                            "origin":proxy["source_file"],"primary_error":str(exc)[:160]}
+                        continue
+                except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as proxy_exc:
+                    exc=ValueError(str(exc)[:80]+"; ANZ: "+str(proxy_exc)[:90])
             if spec["method"]=="rbnz_credit":
                 if fetcher is fetch:
                     try:
