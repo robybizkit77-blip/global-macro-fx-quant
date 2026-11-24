@@ -155,6 +155,7 @@ const WAVE3_FRED_FALLBACK={
   }
 };
 const VERIFIED_FRESH_FALLBACK={
+ CHF:{credit:['SNB_BAKREDINAUSBM_AV1_I_T1_F','https://data.snb.ch/en/topics/banken/cube/bakredinausbm']},
  JPY:{credit:['BOJ_MD13_FAAPOBAL1_YOY','https://www.stat-search.boj.or.jp/ssi/mtshtml/md13_m_1_en.html']},
  NZD:{credit:['RBNZ_C5_BUSINESS_YOY','https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/Registered-banks-and-non-bank-lending-institutions-sector-lending']},
  CAD:{
@@ -224,7 +225,7 @@ function supplementary(overlay,country,key,today){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz)\//.test(x.source_page)&&
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz|data\.snb\.ch)\//.test(x.source_page)&&
    (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
     x.metric_kind==='points'&&/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page))));
  return matches.length===1?matches[0]:null;
