@@ -26,6 +26,7 @@ assert not r["official_ois_created"]
 def denied(url):
     raise OSError("fixture")
 assert probe(feed,denied)["status"]=="REFERENCE_UNAVAILABLE"
-ambiguous=probe(feed,lambda _:report(contracts+[contracts[1]]))
+duplicate=next(x for x in contracts if x[0]==feed['horizons']['6m']['expiry_label'])
+ambiguous=probe(feed,lambda _:report(contracts+[duplicate]))
 assert "6m" not in ambiguous["horizons"]
 print("NZD_ASX_EXACT_20D_REFERENCE_PROBE_PASS")
