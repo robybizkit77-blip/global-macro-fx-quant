@@ -7,6 +7,21 @@ from zipfile import ZipFile
 from openpyxl import load_workbook
 
 URLS={
+ "NZALT_BNZ_PSI":"https://www.bnz.co.nz/institutional-banking/research/publications",
+ "NZALT_BNZ_ECONOMY":"https://www.bnz.co.nz/institutional-banking/research/publications/economy-watch",
+ "NZALT_STAT_HOUSE":"https://www.stats.govt.nz/topics/building/",
+ "NZALT_STAT_RELEASE":"https://www.stats.govt.nz/information-releases/building-consents-issued-September-2026/",
+ "NZALT_STAT_ALT":"https://stats.govt.nz/information-releases/building-consents-issued-september-2026/",
+ "NZALT_STAT_BULK":"https://www.stats.govt.nz/large-datasets/csv-files-for-download/",
+ "NZALT_INFOSHARE":"https://infoshare.stats.govt.nz/",
+ "NZALT_RBNZ_EN":"https://www.rbnz.govt.nz/en/statistics/series/lending-and-monetary/registered-banks-and-non-bank-lending-institutions-sector-lending",
+ "NZALT_RBNZ_C50":"https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/depository-corporations-money-and-credit-aggregates",
+ "NZALT_TE_HOUSE":"https://tradingeconomics.com/new-zealand/building-permits-mom",
+ "NZALT_TE_CREDIT":"https://tradingeconomics.com/new-zealand/private-sector-credit",
+ "NZALT_FRED_HOUSE":"https://fred.stlouisfed.org/graph/fredgraph.csv?id=NZLODCNPI03GPSAM",
+ "NZALT_FRED_HOUSE2":"https://fred.stlouisfed.org/graph/fredgraph.csv?id=ODCNPI03NZM657S",
+ "NZALT_FRED_PRICE":"https://fred.stlouisfed.org/graph/fredgraph.csv?id=QNZR368BIS",
+ "NZALT_FRED_CREDIT":"https://fred.stlouisfed.org/graph/fredgraph.csv?id=QNZPBMXDCA",
  "EUROSTAT_EA21":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA21&indic_bt=BPRM_DW&cpa2_1=CPA_F41001&s_adj=SCA&unit=I21&lang=EN",
  "EUROSTAT_EA20":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA20&indic_bt=BPRM_DW&cpa2_1=CPA_F41001&s_adj=SCA&unit=I21&lang=EN",
  "EUROSTAT_EA21_ALL_RESIDENTIAL_CODES":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_m?geo=EA21&indic_bt=BPRM_DW&s_adj=SCA&unit=I21&lang=EN",
@@ -48,6 +63,19 @@ def call(name,url):
   with urllib.request.urlopen(r,timeout=18) as x:
    data=x.read(28_000_000+1)
    if len(data)>28_000_000: return {"error":"file above 28MB budget"}
+   if name.startswith("NZALT_"):
+    import re
+    from html.parser import HTMLParser
+    class Plain(HTMLParser):
+     def __init__(self):super().__init__();self.parts=[]
+     def handle_data(self,s):self.parts.append(s)
+    raw=data.decode("utf-8","replace");parser=Plain();parser.feed(raw)
+    plain=" ".join(" ".join(parser.parts).split())
+    terms=["The PSI for", "New dwellings consented", "Seasonally adjusted", "Annual growth rate", "Private sector credit","Building Permits","Private Sector Credit","BLDM.SFTZ1100A1S"]
+    return {"bytes":len(data),"url":x.geturl(),"type":x.headers.get("Content-Type"),
+     "matches":{k:plain[max(0,plain.find(k)-50):plain.find(k)+600] for k in terms if k in plain},
+     "links":[m for m in re.findall(r'href=["\x27]([^"\x27]+)',raw,re.I) if "building-consents" in m.lower() or "bld" in m.lower() or "psi" in m.lower()][:12],
+     "tail":raw[-400:] if name.startswith("NZALT_FRED") else ""}
    if name.startswith("BUSINESSNZ") or name.startswith("ABS_"):
     txt=data.decode("utf-8","replace")
     terms=["PSI Time Series Table","BNZ – BusinessNZ PSI",
