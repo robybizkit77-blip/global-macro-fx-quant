@@ -106,6 +106,10 @@ const VERIFIED_FRESH_FALLBACK={
   demand:['PCEC96','https://fred.stlouisfed.org/series/PCEC96'],
   credit:['DRTSCILM','https://fred.stlouisfed.org/series/DRTSCILM']
  },
+ GBP:{
+  house:['BOE_LPMVTVX','https://www.bankofengland.co.uk/boeapps/database/BankStats.asp'],
+  industry:['ONS_K222_DIOP','https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop']
+ },
  EUR:{
   services:['TEIBS020_BS-SCI-BAL_SA_EA21','https://ec.europa.eu/eurostat/databrowser/view/teibs020/default/table?lang=en'],
   industry:['STS_INPR_M_EA21_PRD_B-D_SCA_I21','https://ec.europa.eu/eurostat/databrowser/view/sts_inpr_m/default/table?lang=en'],
@@ -114,6 +118,11 @@ const VERIFIED_FRESH_FALLBACK={
  }
 };
 function verifiedFreshAlternative(x,c,key){
+ if(c==='NZD'&&key==='house'){
+   return !!x&&x.source_series_id==='STATSNZ_NEWDWELLINGS_SA'&&
+     x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
+     /^https:\/\/www\.stats\.govt\.nz\/information-releases\/building-consents-issued-(?:january|february|march|april|may|june|july|august|september|october|november|december)-20\d{2}\/$/.test(x.source_page);
+ }
  const expected=VERIFIED_FRESH_FALLBACK[c]?.[key];
  return !!expected&&x?.source_series_id===expected[0]&&x?.source_page===expected[1]&&
    x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&x.up_good!==null;
@@ -133,7 +142,7 @@ function supplementary(overlay,country,key,today){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au)\//.test(x.source_page)&&
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz)\//.test(x.source_page)&&
    (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
     x.metric_kind==='points'&&/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page))));
  return matches.length===1?matches[0]:null;
