@@ -4386,6 +4386,67 @@
           "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
           "source_series_id": "STATCAN_14100063_HOURLY_WAGE_YOY"
         }
+      },
+      {
+        "ccy": "JPY",
+        "area": "wages",
+        "id": "SEM_G8_JPY_WAGES",
+        "label": "Retribuzioni orarie manifatturiere nominali (proxy settoriale OECD, SA)",
+        "frequency": "Q",
+        "unit": "% a/a",
+        "dates": [
+          "2026-Q1",
+          "2026-Q2"
+        ],
+        "values": [
+          4.58083832335252,
+          4.99854693402999
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "OECD tramite FRED / LCEAMN01JPQ659S",
+        "source_page": "https://fred.stlouisfed.org/series/LCEAMN01JPQ659S",
+        "source_series_id": "LCEAMN01JPQ659S",
+        "metric_kind": "points",
+        "observation_as_of": "2026-Q2",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "Q",
+          "dates": [
+            "2023-Q3",
+            "2023-Q4",
+            "2024-Q1",
+            "2024-Q2",
+            "2024-Q3",
+            "2024-Q4",
+            "2025-Q1",
+            "2025-Q2",
+            "2025-Q3",
+            "2025-Q4",
+            "2026-Q1",
+            "2026-Q2"
+          ],
+          "values": [
+            2.11606284065442,
+            1.78913738019271,
+            1.52332592827691,
+            2.27769110764573,
+            3.32810047095731,
+            4.14312617702424,
+            4.40762738355769,
+            4.9725442342887,
+            3.85900941962845,
+            4.0687160940325,
+            4.58083832335252,
+            4.99854693402999
+          ],
+          "observations": 12,
+          "max_observations": 12,
+          "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+          "source_series_id": "LCEAMN01JPQ659S"
+        }
       }
     ],
     "audit": {
@@ -4401,6 +4462,13 @@
         "days_since_period_end": 25,
         "history_observations": 36,
         "coordinate": "1.2.1.1.1.1.0.0.0.0"
+      },
+      "JPY": {
+        "status": "READY_DESCRIPTIVE_REVISED",
+        "last_observation": "2026-Q2",
+        "days_since_period_end": 148,
+        "history_observations": 12,
+        "proxy_scope": "manufacturing hourly earnings only"
       }
     }
   }
