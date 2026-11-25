@@ -727,9 +727,13 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    ' · '+esc(x.periods.join(' / '))+(x.structural?'':' · segnale direzionale, livello ciclico non determinato')+'</p>').join('')+
    '<small>Soglie descrittive non calibrate: una prima inversione non conferma una svolta economica; due variazioni indicano persistenza locale, non una previsione. Nessun punteggio o segnale Forex.</small>';
  const narrative=macroNarrative(rows,inflation,wages,external,turning);
- const narrativeNote='<p><strong>Cosa vedo davvero · giudizio macro</strong></p>'+
-   [['Economia',narrative.growth],['Svolta',narrative.turning],['Prezzi e salari',narrative.prices],['Domanda estera',narrative.trade],['Implicazioni per i tassi',narrative.policy],['Cosa controllare',narrative.watch]].map(([label,value])=>'<p><strong>'+esc(label)+'</strong> · '+esc(value)+'</p>').join('')+
-   '<small>Lettura descrittiva automatica delle osservazioni disponibili, non previsione o segnale operativo.</small>';
+ const narrativeTone=!narrative.aligned?'neutral':rows.filter(x=>x.signal.tone==='green').length>=3&&rows.filter(x=>x.signal.tone==='green').length>rows.filter(x=>x.signal.tone==='red').length?'green':rows.filter(x=>x.signal.tone==='red').length>=3&&rows.filter(x=>x.signal.tone==='red').length>rows.filter(x=>x.signal.tone==='green').length?'red':'amber';
+ const narrativeNote='<section class="sem-desk-reading" aria-label="Giudizio macro">'+
+   '<header><span class="sem-desk-eyebrow">LETTURA IN 30 SECONDI</span><h3>Cosa vedo davvero · giudizio macro</h3></header>'+
+   '<div class="sem-desk-lead '+narrativeTone+'"><span>ECONOMIA</span><p>'+esc(narrative.growth)+'</p></div>'+
+   '<div class="sem-desk-grid">'+[['Svolta','neutral',narrative.turning],['Prezzi e salari','neutral',narrative.prices],['Domanda estera','neutral',narrative.trade],['Implicazioni per i tassi','neutral',narrative.policy]].map(([label,tone,value])=>'<div class="sem-desk-card '+tone+'"><h4>'+esc(label)+'</h4><p>'+esc(value)+'</p></div>').join('')+'</div>'+
+   '<div class="sem-desk-watch"><h4>Cosa controllare</h4><p>'+esc(narrative.watch)+'</p></div>'+
+   '<small>Lettura descrittiva automatica delle osservazioni disponibili, non previsione o segnale operativo.</small></section>';
  const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
  const svcPrices=servicePriceContext?recentTwo(servicePriceContext,today):null;
  const svcPriceNote=svcPrices?'<p class="sem-services-price"><strong>Inflazione servizi (contesto, fuori dal semaforo):</strong> '+esc(fmt(svcPrices.cur.value,1))+'% YoY · '+esc(svcPrices.cur.period)+' (prima '+esc(fmt(svcPrices.pre.value,1))+'%). Prezzi e attività sono fenomeni diversi.</p>':'';
@@ -791,6 +795,12 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     sectorSummary('industry','Manifattura')+sectorSummary('services','Servizi')+'</div>'+
     '<small>La direzione non è il livello: un PSI sopra 50 può rallentare pur restando in espansione. Non confrontare i livelli di serie differenti.</small></div>'+
   '<div class="sem-country-caption"><div>'+FLAGS[selected]+' <strong>'+esc(NAMES[selected])+'</strong><small>Dettaglio per indicatore</small></div><div class="sem-country-counts">'+['green','amber','red','neutral'].map(t=>'<span class="sem-country-count '+t+'" title="'+tones[t]+'">'+symbols[t]+' '+tally(rows,t)+'</span>').join('')+'</div></div>'+
+  narrativeNote+
+  '<section class="sem-desk-turn" aria-label="Punti di svolta">'+turningNote+'</section>'+
+  '<div class="sem-desk-context"><details class="sem-desk-detail"><summary>Inflazione · dettaglio dei dati</summary><div>'+inflationNote+'</div></details>'+
+  '<details class="sem-desk-detail"><summary>Salari · dettaglio dei dati</summary><div>'+wageNote+'</div></details>'+
+  '<details class="sem-desk-detail"><summary>Domanda estera · dettaglio dei dati</summary><div>'+externalNote+'</div></details></div>'+
+  '<details class="sem-desk-evidence" open><summary>Sette aree del ciclo · dettaglio per indicatore</summary>'+
   '<div class="sem-table" role="table" aria-label="Semaforo economico '+esc(NAMES[selected])+'">'+
   '<div class="sem-columns" role="row"><span role="columnheader">Area</span><span role="columnheader">Ultima evidenza disponibile</span><span role="columnheader">Segnale</span></div>'+
   rows.map(r=>'<div class="sem-row '+r.signal.tone+'" role="row"><div role="cell" class="sem-area"><strong>'+esc(r.name)+'</strong><span class="sem-area-reading">'+esc(tones[r.signal.tone])+'</span><small>'+esc(r.why)+'</small></div>'+
@@ -800,11 +810,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     (r.signalSource==='fallback'?'<small>Segnale da fonte supplementare aggiornata; serie precedenti nel dettaglio</small>':'')+
     (r.proxy?'<small>Proxy/sondaggio, non misura esaustiva del ciclo</small>':'')+
     (r.items.some(x=>x?.stale)?'<small>Osservazioni datate</small>':'')+'</div></div>').join('')+'</div>'+
-  '<div class="sem-policy"><div>'+narrativeNote+'</div></div>'+
-  '<div class="sem-policy"><div>'+inflationNote+'</div></div>'+
-  '<div class="sem-policy"><div>'+wageNote+'</div></div>'+
-  '<div class="sem-policy"><div>'+externalNote+'</div></div>'+
-  '<div class="sem-policy"><div>'+turningNote+'</div></div>'+ 
+  '</details>'+ 
   '<div class="sem-policy"><div><span>POLITICA MONETARIA · DA LEGGERE A PARTE</span>'+
   '<p>'+bank+' e aspettative sui tassi possono amplificare o attenuare le pressioni cicliche: non sono però un indicatore diretto di recessione né una prova di movimento del cambio.</p></div>'+
   '<a href="#rates">Apri tassi & OIS ↗</a></div>'+
