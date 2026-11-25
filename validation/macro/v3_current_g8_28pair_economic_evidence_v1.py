@@ -29,6 +29,7 @@ from validation.macro.v3_gdp_q3_official_overlay_v1 import observed_q3_updates
 from validation.macro.ons_quarterly_gdp_v1 import latest_growth as latest_uk_growth
 from validation.macro.esri_quarterly_gdp_v1 import latest_growth as latest_jp_growth
 from validation.macro.seco_quarterly_gdp_v1 import latest_growth as latest_ch_growth
+from validation.macro.abs_quarterly_gdp_v1 import latest_growth as latest_au_growth
 
 FX = ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD")
 SCHEMA = "GMFQ_MACRO_V3_CURRENT_G8_28PAIR_OBSERVED_ECONOMIC_CONTEXT_V1"
@@ -139,7 +140,7 @@ def build(observed, heat, legacy, setup, *, as_of, issuer_releases=()):
          "28 pair observational overlay must remain source-dated")
 
     growth_updates = observed_q3_updates(as_of)
-    for currency, latest in (("GBP", latest_uk_growth), ("JPY", latest_jp_growth), ("CHF", latest_ch_growth)):
+    for currency, latest in (("GBP", latest_uk_growth), ("JPY", latest_jp_growth), ("CHF", latest_ch_growth), ("AUD", latest_au_growth)):
         growth = latest(as_of)
         if growth is not None:
             growth_updates[currency] = growth
