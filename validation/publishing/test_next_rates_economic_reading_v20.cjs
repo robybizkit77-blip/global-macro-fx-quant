@@ -41,6 +41,12 @@ assert.match(mk(3,12).meaning,/bear steepening/);
 assert.match(mk(-12,-3).headline,/2Y guida/);
 assert.match(mk(-3,-12).headline,/10Y guida/);
 assert.match(mk(-3,-12,'2026-09-30').headline,/storica/);
+assert.match(mk(-3,-12,'2026-09-30').friction,/storica/);
+assert.match(mk(-12,-3).support,/tratto breve/);
+assert.match(mk(-3,-12).nextCheck,/tratto lungo/);
+assert.match(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-11-06',change_1d_bp:17}}).friction,/date diverse/);
+assert.match(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-11-09'}}).friction,/Manca una variazione verificata/);
+
 assert.match(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-11-06',change_1d_bp:17}}).pricingEvidence,
  /non sono simultanee/);
 assert.doesNotMatch(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-11-06',change_1d_bp:17}}).pricingEvidence,
@@ -53,7 +59,7 @@ assert.match(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-12-01',change_1d_bp:
 const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const rates=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/rates-studio.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
-assert(page.includes('rates-economic-reading.js?v=20'));
+assert(page.includes('rates-economic-reading.js?v=21'));
 assert.match(page,/rates-studio\.js\?v=\d+/);
 assert(page.indexOf('rates-working-model-v1.js')<page.indexOf('rates-studio.js'));
 assert(page.includes('rates-relative-pricing-v1.js?v=1'));

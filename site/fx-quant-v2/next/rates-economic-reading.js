@@ -11,6 +11,9 @@
   const good6=h6&&isDay(h6.as_of)&&h6.as_of<=now&&finite(h6.rate);
   let headline='Non abbiamo abbastanza prove per leggere la curva.';
   let meaning='Servono almeno due osservazioni 2Y e 10Y su date comuni per classificare il movimento.';
+  let support='La curva è leggibile quando i rendimenti a breve e a lungo hanno rilevazioni su date comuni.';
+  let friction='Il movimento dei governativi resta da verificare.';
+  let nextCheck='Prima di collegare tassi e cambio, cerca osservazioni confrontabili.';
   let watch='Recuperare fonti con date comparabili e poi verificare aspettative monetarie e prezzo.';
   if(valid){
    const age=Math.floor((Date.parse(now+'T12:00:00Z')-Date.parse(asof+'T12:00:00Z'))/864e5);
@@ -24,6 +27,18 @@
      :bull?(front?'Rendimenti in calo: il 2Y guida.':long?'Rendimenti in calo: il 10Y guida.':'Rendimenti in calo, causa da verificare.')
      :bear?(front?'Rendimenti in rialzo: il 2Y guida.':long?'Rendimenti in rialzo: il 10Y guida.':'Rendimenti in rialzo, causa da verificare.')
      :'2Y e 10Y non raccontano lo stesso movimento.';
+   support=old?'Lo storico permette di ricostruire l’ultimo movimento osservato.':
+     front?'Il tratto breve si muove di più. È il primo punto da confrontare con le attese sulla banca centrale.':
+     long?'Il tratto lungo si muove di più. La lettura passa da crescita, inflazione attesa e premio per la scadenza.':
+     'Le due scadenze permettono di leggere la curva senza attribuire il movimento a un solo tratto.';
+   friction=old?'L’ultima osservazione è storica e non descrive la seduta corrente.':
+     !good6?'Manca un riferimento monetario datato da affiancare ai governativi.':
+     h6.as_of!==asof?'Governativi e tassi attesi hanno date diverse. Il confronto resta indicativo.':
+     !finite(h6.change_1d_bp)?'Il livello dei tassi attesi è disponibile. Manca una variazione verificata per la stessa seduta.':
+     'La variazione dei tassi attesi è confrontabile per data. La curva governativa può riflettere anche premi per il rischio.';
+   nextCheck=front?'Verifica se anche i tassi attesi si muovono. Poi confronta il differenziale con l’altra valuta e la risposta del cambio.':
+     long?'Controlla se il movimento del tratto lungo è accompagnato da rendimenti reali, inflazione attesa o credito.':
+     'Verifica se la prossima rilevazione chiarisce quale tratto guida, poi confronta le attese monetarie e il cambio.';
    meaning='Tra '+previous+' e '+asof+' il 2Y '+country+' varia '+fmt(bp2)+' e il 10Y '+fmt(bp10)+': '+curve+'. '+
      (front?'Il breve si muove di più: è compatibile con una revisione monetaria, ma non la dimostra.':
        long?'Il lungo si muove di più: crescita, inflazione attesa, rendimenti reali e term premium sono spiegazioni alternative.':
@@ -44,7 +59,7 @@
        ' nella stessa seduta dei governativi: confronto datato, non prova causale né curva OIS universale.'
      :intro+'Manca una variazione 1D validata: il livello da solo non dimostra un cambiamento delle aspettative.';
   }
-  return {headline,meaning,pricingEvidence:pricing,watch};
+  return {headline,meaning,pricingEvidence:pricing,watch,support,friction,nextCheck};
  }
  root.FXQuantRatesEconomic={read};
  if(typeof module!=='undefined'&&module.exports)module.exports={read};

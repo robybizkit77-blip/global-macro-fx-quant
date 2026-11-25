@@ -412,19 +412,20 @@ function make(api){
     +'<div class="rates-jumps pill-controls" role="group" aria-label="Vai ai grafici dei tassi">'
     +'<button type="button" class="pill" data-section-jump="rates-government">Governativi 2Y / 10Y</button>'
     +'<button type="button" class="pill" data-section-jump="rates-expected">Attese 3M / 6M / 12M</button></div>'
+    +'<section class="rates-hero"><div class="rates-hero-title"><span class="chapter-kicker">'+FLAGS[c]+' '+esc(NAMES[c])+'</span>'
+    +'<h2>'+esc(m.headline)+'</h2>'
+    +'<p class="rates-economic-observation"><strong>Cosa va.</strong> '+esc(r?.scenario_only?'La stima offre un riferimento per leggere la direzione dei rendimenti.':m.support||'Le osservazioni disponibili sono consultabili nei grafici.')+'</p>'
+    +'<p class="rates-economic-pricing"><strong>Cosa frena.</strong> '+esc(r?.scenario_only?'I rendimenti aggiornati sono stimati dai futures. Lo storico mostra le osservazioni governative effettive.':m.friction||'Il confronto tra governativi e attese monetarie va verificato.')+'</p>'
+    +'<p class="rates-economic-watch"><strong>Cosa guardare.</strong> '+esc(r?.scenario_only?'Cerca una nuova rilevazione ufficiale prima di usare la stima per leggere il differenziale e il cambio.':m.nextCheck||m.watch)+'</p>'
+    +'<details class="rates-method-detail"><summary>Apri variazioni, date e strumento</summary>'
+    +'<p>'+esc(m.meaning)+'</p><p><strong>Cosa è prezzato.</strong> '+esc(m.pricingEvidence)+'</p></details></div>'
+    +'<div class="rates-hero-side"><div class="rates-hero-orbit"><span>'+(spot?'PENDENZA STORICA':r?.scenario_only?'PENDENZA STIMATA':'PENDENZA')+'</span><strong>'+sign(r?(r['10Y']-r['2Y'])*100:null,1)+'</strong><small>punti base · '+date(r?.date)+'</small></div></div></section>'
     +(root.FXQuantPricingMoves?.renderOverview?.({snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),today:dayNow()})||'')
     +govCard(c)
     +latestGovernmentReading(c)
     +'<section class="rates-chapter rates-government" id="rates-government" tabindex="-1" aria-label="Storico dei rendimenti governativi">'
     +'<div class="rates-research-grid"><div class="rates-primary-plot">'+govPlot(c)+'</div>'+historicalSovereign(c)+'</div></section>'
     +(editorial?.()||'')
-    +'<section class="rates-hero"><div class="rates-hero-title"><span class="chapter-kicker">01 / '+FLAGS[c]+' '+esc(NAMES[c])+' · FRONT-END VS LONG-END</span>'
-    +'<h2>'+esc(m.headline)+'</h2>'
-    +'<p class="rates-economic-observation"><strong>Cosa vediamo.</strong> '+esc(m.meaning)+'</p>'
-    +'<p class="rates-economic-pricing"><strong>Cosa è prezzato.</strong> '+esc(m.pricingEvidence)+'</p>'
-    +'<p class="rates-economic-watch"><strong>Cosa monitorare.</strong> '+esc(m.watch)+'</p>'
-    +'<div class="rates-chipline"><span class="badge '+(freshness(r?.date)==='STORICO'?'warning':'info')+'">'+esc(freshness(r?.date))+'</span><span>'+esc(r?.quality||'QUALITÀ DA VERIFICARE')+'</span></div></div>'
-    +'<div class="rates-hero-side"><div class="rates-hero-orbit"><span>'+(spot?'PENDENZA STORICA':'PENDENZA')+'</span><strong>'+sign(r?(r['10Y']-r['2Y'])*100:null,1)+'</strong><small>punti base · '+date(r?.date)+'</small></div></div></section>'
     +fxRelativeEvidence(c,other)
     +(root.FXQuantPricingMoves?.render?.({
        currency:c,window:state.rsPricingWindow||'1d',plot,esc,fmt,sign,date,
