@@ -98,7 +98,7 @@
    description:'Nessun confronto 2Y di ricerca sufficientemente documentato.',
    eligibleForCore:false});
  const pctLevel=v=>num(v)?v.toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3})+'%':'—';
-  function researchRatesAxis(ccy,chf,nzd,rates,now){
+  function researchRatesAxis(ccy,chf,nzd,rates,now,nzdReconciled){
   if(!day(now))return withheld();
   const permitted=s=>s?.eligible_for_core===false&&
     s?.eligible_for_backtests===false&&s?.eligible_for_automatic_promotion===false&&
@@ -135,6 +135,20 @@
      eligibleForCore:false};
   }
   if(ccy==='NZD'){
+   // Reuse the same strict B2 source contract as Tassi and Coppie FX.
+   const bridge=root.FXQuantRatesBridge||(typeof module!=='undefined'&&module.exports?require('./fx-rates-bridge.js'):null);
+   const verified=bridge?.nzdResearchRates?.({},nzdReconciled,now)?.NZD;
+   const latestVerified=nzdReconciled?.observations?.at?.(-1);
+   if(verified?.researchOnly===true&&latestVerified?.date===verified.date&&
+      days(verified.date,now)>=0&&days(verified.date,now)<=5&&
+      verified.date>=(rates?.NZD?.date||'')&&verified.date>=(nzd?.daily_observations?.at?.(-1)?.date||'')){
+    return {status:'RICERCA_RBNZ_RICONCILIATA',quality:'RBNZ_B2_HTML_XLSX_RECONCILED',
+     asof:verified.date,label:pctLevel(latestVerified['2Y'])+' · ricerca',
+     description:'RBNZ B2: 2Y '+pctLevel(latestVerified['2Y'])+' e 10Y '+pctLevel(latestVerified['10Y'])+
+       ' al '+verified.date+'. Chiusure indicative dei benchmark April 2029/2037, tabella ed Excel riconciliati; pubblicazione '+nzdReconciled.publication_date+
+       '. Non collegare le variazioni attraverso il roll del 30 ottobre. Dato osservato di ricerca, non OIS, non Core e non prova di repricing monetario.',
+     eligibleForCore:false};
+   }
    const s=nzd,observations=s?.daily_observations;
    if(s?.schema!=='GMFQ_NZD_RBNZ_B2_POSTROLL_WEB_RESEARCH_V1'||
       s?.status!=='PUBLIC_OFFICIAL_WEB_RESEARCH_NOT_XLSX_RECONCILED'||
@@ -174,11 +188,11 @@
     num(r['2Y'])&&num(r['10Y'])&&
     r['2Y']>=-5&&r['2Y']<=25&&r['10Y']>=-5&&r['10Y']<=25);
  }
-  function evaluate({macroSeries,estimated,rates,chfResearch,nzdResearch,now}){
+  function evaluate({macroSeries,estimated,rates,chfResearch,nzdResearch,nzdReconciled,now}){
   if(!day(now))return {currencies:{},status:'DATA_NON_VALIDA',asof:now};
   const currencies=Object.fromEntries(FX.map(ccy=>[ccy,{
    growth:growthAxis(macroSeries,ccy,now),pricingProxy:pricingProxy(estimated,ccy,now),
-   ratesResearch:researchRatesAxis(ccy,chfResearch,nzdResearch,rates,now)
+   ratesResearch:researchRatesAxis(ccy,chfResearch,nzdResearch,rates,now,nzdReconciled)
   }]));
   return {currencies,status:'CONTESTO_INFORMATIVO',asof:now,
    policy:'Non modificare le serie ufficiali, le view operative, gli score o i backtest'};
