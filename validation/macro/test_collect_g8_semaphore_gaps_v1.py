@@ -108,6 +108,27 @@ class G8SemaphoreSources(unittest.TestCase):
         with self.assertRaises(ValueError):
             mod.parse_ons_wage(raw.replace(b"Whole Economy",b"Private Sector"),NOW)
 
+    def test_nz_lci_exact_series_and_quarterly_growth(self):
+        import io
+        from zipfile import ZipFile
+        rows="Series_reference,Period,Data_value,UNITS,MAGNTUDE\n"
+        for y in (2022,2023,2024,2025):
+            for m in (3,6,9,12):
+                rows+=f"LCIQ.SG53Z9,{y}.{m:02d},{1000*(1.03**(y-2022))},Index,0\n"
+                rows+=f"LCIQ.SG33Z9,{y}.{m:02d},9999,Index,0\n"
+        def archive(value):
+            out=io.BytesIO()
+            with ZipFile(out,"w") as z:z.writestr("lci.csv",value)
+            return out.getvalue()
+        obs=mod.parse_nz_lci_zip(archive(rows),NOW)
+        self.assertEqual(len(obs),12)
+        self.assertEqual(obs[-1],("2025-Q4",3.0))
+        self.assertEqual(mod.nz_lci_release(date(2026,11,25))[:2],(2026,9))
+        with self.assertRaises(ValueError):
+            mod.parse_nz_lci_zip(archive(rows.replace("LCIQ.SG53Z9","OTHER")),NOW)
+        with self.assertRaises(ValueError):
+            mod.parse_nz_lci_zip(archive(rows.replace("Index,0","Dollars,0")),NOW)
+
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
