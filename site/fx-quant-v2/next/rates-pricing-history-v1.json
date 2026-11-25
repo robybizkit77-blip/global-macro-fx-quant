@@ -1403,6 +1403,13 @@
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
+          },
+          {
+            "date": "2026-11-24",
+            "rate": 4.3487,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
           }
         ],
         "6m": [
@@ -1577,6 +1584,13 @@
           {
             "date": "2026-11-23",
             "rate": 4.6261,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-24",
+            "rate": 4.6224,
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
@@ -1757,11 +1771,18 @@
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
+          },
+          {
+            "date": "2026-11-24",
+            "rate": 4.8482,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
           }
         ]
       },
-      "latest_date": "2026-11-23",
-      "observed_dates": 25,
+      "latest_date": "2026-11-24",
+      "observed_dates": 26,
       "derived_reference_points": 0
     },
     "JPY": {
@@ -1937,6 +1958,13 @@
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
+          },
+          {
+            "date": "2026-11-25",
+            "rate": 1.44,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
           }
         ],
         "6m": [
@@ -2104,6 +2132,13 @@
           {
             "date": "2026-11-24",
             "rate": 1.648,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-25",
+            "rate": 1.585,
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
@@ -2277,11 +2312,18 @@
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
+          },
+          {
+            "date": "2026-11-25",
+            "rate": 1.822,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
           }
         ]
       },
-      "latest_date": "2026-11-24",
-      "observed_dates": 24,
+      "latest_date": "2026-11-25",
+      "observed_dates": 25,
       "derived_reference_points": 0
     },
     "CHF": {
@@ -3619,7 +3661,7 @@
         "current_rate": 3.67,
         "change_bp": -44.0,
         "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261027ZFT.htm",
-        "source_sha256": "73f30212eefd7d6d66622c76ee093602a6ec14a3d8c724922abdf68ffd2eb8bf",
+        "source_sha256": "0b0185b0e9365fa5b837c9f209d5afca76c8e050856e4898709fbd6368e002b0",
         "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"
       }
     },
