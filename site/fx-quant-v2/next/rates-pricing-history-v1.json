@@ -3578,7 +3578,7 @@
         "current_rate": 3.67,
         "change_bp": -44.0,
         "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261027ZFT.htm",
-        "source_sha256": "887fb0a9f5f42416f82b3705de40b39c02d557965acc75eb5ebab90630222e98",
+        "source_sha256": "6ec20bb58cabcb24cb1bbe2edce1fadaaf5dbb3577ad97ff333b0471a4624330",
         "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"
       }
     },
