@@ -99,10 +99,11 @@
    sourceDates,quality:stale?'STORICO ALLINEATO':'DATE ALLINEATE',regime,stale,changes:vals,spanDays:span};
  }
  // Latest observations are NOT a matched-session regime.
- const titles={SP500:'S&P 500',NASDAQCOM:'Nasdaq Composite',VIX:'VIX',HY_OAS:'Credito HY',IG_OAS:'Credito IG'};
+ const titles={SP500:'S&P 500',NASDAQCOM:'Nasdaq Composite',DJIA:'Dow Jones',SX5E:'Euro Stoxx 50',VIX:'VIX',HY_OAS:'Credito HY',IG_OAS:'Credito IG'};
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function latestObservations(streams,now){
-  return K.map(key=>{
+  // Extra equity observations do not alter the five-series common-session regime.
+  return ['SP500','NASDAQCOM','DJIA','SX5E','VIX','HY_OAS','IG_OAS'].map(key=>{
    const x=streams?.[key],history=Array.isArray(x?.history)?x.history:[],age=isDay(now)&&isDay(x?.date)?(Date.parse(now)-Date.parse(x.date))/864e5:NaN;
    const dates=history.filter(r=>Array.isArray(r)&&isDay(r[0])&&r[0]<=x.date&&finite(r[1])).sort((a,b)=>a[0].localeCompare(b[0]));
    const a=dates.at(-2),b=dates.at(-1);
