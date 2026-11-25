@@ -397,3 +397,25 @@ console.log('ECONOMIC_CYCLE_INFLATION_CONTEXT_PASS');
  assert.equal(wageContext(eurWages,wageDay,'EUR')[0].direction,'rallenta');
 }
 console.log('ECONOMIC_CYCLE_WAGE_CONTEXT_PASS');
+
+{
+ const wageDay='2026-11-25';
+ const wageCases=[
+ ['GBP','KAC3','https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kac3/lms','M',['2026-08','2026-09'],[3.8,3.6]],
+ ['CAD','STATCAN_14100063_HOURLY_WAGE_YOY','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410006301','M',['2026-09','2026-10'],[3.1,3.4]],
+ ['JPY','LCEAMN01JPQ659S','https://fred.stlouisfed.org/series/LCEAMN01JPQ659S','Q',['2026-Q1','2026-Q2'],[4.58,5.0]]
+ ];
+ for(const [ccy,id,page,freq,dates,values] of wageCases){
+   const record={ccy,area:'wages',source_series_id:id,source_page:page,source_file:'test fixture',frequency:freq,unit:'% a/a',metric_kind:'points',quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',dates,values,
+   history:{schema:'GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1',source_series_id:id,frequency:freq,dates,values,observations:2,max_observations:freq==='M'?36:12,quality:'SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT'}};
+   const ov={schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',series:[],wage_context:{schema:'GMFQ_G8_WAGE_CONTEXT_V1',series:[record]}};
+   const row=wageContext({},wageDay,ccy,ov)[0];
+   assert.equal(row.available,true);
+   assert.equal(row.value,values[1]);
+   assert.equal(row.direction,values[1]>values[0]?'accelera':'rallenta');
+   assert.equal(wageContext({},wageDay,ccy,{...ov,wage_context:{...ov.wage_context,series:[{...record,source_page:'https://wrong.example/'}]}})[0].available,false);
+   assert.equal(wageContext({},wageDay,ccy,{...ov,wage_context:{...ov.wage_context,series:[{...record,history:{...record.history,values:[0,0]}}]}})[0].available,false);
+   assert.equal(wageContext({},'2028-01-01',ccy,ov)[0].direction,null);
+ }
+}
+console.log('ECONOMIC_CYCLE_WAGE_SUPPLEMENT_PASS');

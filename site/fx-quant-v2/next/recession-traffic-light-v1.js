@@ -483,8 +483,26 @@ const WAGE_MAP={
 function inflationContext(catalog,today,country){
  return annualRateContext(catalog,today,country,INFLATION_MAP);
 }
-function wageContext(catalog,today,country){
- return annualRateContext(catalog,today,country,WAGE_MAP);
+const WAGE_SUPPLEMENT={
+ GBP:['KAC3','https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kac3/lms','M','Retribuzioni medie settimanali nominali (totale, media 3 mesi a/a)'],
+ CAD:['STATCAN_14100063_HOURLY_WAGE_YOY','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410006301','M','Salari orari medi nominali (LFS, NSA)'],
+ JPY:['LCEAMN01JPQ659S','https://fred.stlouisfed.org/series/LCEAMN01JPQ659S','Q','Salari orari manifatturieri (proxy settoriale OECD, SA)']
+};
+function wageContext(catalog,today,country,overlay=null){
+ const canonical=annualRateContext(catalog,today,country,WAGE_MAP);
+ if(canonical.some(x=>x.available&&!x.stale)||!WAGE_SUPPLEMENT[country]||
+    overlay?.schema!==SUPPLEMENT_SCHEMA||overlay.wage_context?.schema!=='GMFQ_G8_WAGE_CONTEXT_V1'||
+    !Array.isArray(overlay.wage_context.series))return canonical;
+ const [id,page,freq,label]=WAGE_SUPPLEMENT[country];
+ const matches=overlay.wage_context.series.filter(x=>x.ccy===country&&x.area==='wages'&&
+   x.source_series_id===id&&x.source_page===page&&x.frequency===freq&&x.unit==='% a/a'&&
+   x.metric_kind==='points'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
+   Array.isArray(x.dates)&&Array.isArray(x.values)&&x.dates.length===2&&x.values.length===2&&x.values.every(finite));
+ if(matches.length!==1)return canonical;
+ const x=matches[0],validated=cycleHistory(x,today,freq);
+ if(validated===x)return canonical;
+ const result=annualRateContext({[country]:[{...validated,id}]},today,country,{[country]:[[id,label,freq]]});
+ return result[0]?.available?result:canonical;
 }
 function annualRateContext(catalog,today,country,mapping){
  const rows=Array.isArray(catalog?.[country])?catalog[country]:[];
@@ -570,7 +588,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     (x.stale?' · dato datato, giudizio sospeso':x.direction?' · '+esc(x.direction):' · direzione non determinabile')+
     ' <small>'+esc(x.source)+'</small>':'dato non disponibile')+'</p>').join('')+
    '<small>Pressioni sui prezzi in aumento o diminuzione: non sono un giudizio positivo/negativo sulla crescita. Headline e core possono riferirsi a periodi diversi; le misure core nazionali non sono omogenee.</small>';
- const wages=wageContext(catalog,today,selected);
+ const wages=wageContext(catalog,today,selected,overlay);
  const wageNote='<p><strong>Salari · crescita nominale effettiva</strong></p>'+
    wages.map(x=>'<p><strong>'+esc(x.label)+'</strong> · '+(x.available?
     esc(fmt(x.value,2))+'% a/a · '+esc(x.period)+
