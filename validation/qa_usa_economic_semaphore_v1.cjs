@@ -660,6 +660,10 @@ console.log('ECONOMIC_CYCLE_RELATIVE_DIVERGENCES_PASS');
  ov.inflation_context={schema:'GMFQ_G8_INFLATION_CONTEXT_V1',series:[us,uk]};
  const u=inflationContext(catalog,today,'USD',ov).find(x=>/core/i.test(x.label));
  const k=inflationContext(catalog,today,'GBP',ov).find(x=>/core/i.test(x.label));
+ const gapDates=dates.filter(p=>p!=='2025-10'),gapValues=dates.map((p,i)=>({p,v:values[i]})).filter(x=>x.p!=='2025-10').map(x=>x.v);
+ const gap={...us,exact_lag_history:{schema:'GMFQ_US_CORE_EXACT_LAG_V1',source_series_id:'CPILFESL',dates:gapDates,values:gapValues}};
+ const gapCore=inflationContext(catalog,today,'USD',{...ov,inflation_context:{...ov.inflation_context,series:[gap]}}).find(x=>/core/i.test(x.label));
+ assert.equal(gapCore.period,'2026-09');assert.equal(gapCore.latestIndexPeriod,'2026-10');assert.equal(gapCore.annualGap,true);assert.equal(gapCore.direction,null);
  assert.equal(u.period,'2026-10');assert.equal(k.period,'2026-10');assert.ok(Math.abs(u.value-(323/311-1)*100)<1e-9);assert.equal(k.value,2.23);
  assert.equal(inflationContext(catalog,today,'USD',{...ov,inflation_context:{...ov.inflation_context,series:[{...us,source_page:'https://example.com'}]}}).find(x=>/core/i.test(x.label)).period,inflationContext(catalog,today,'USD').find(x=>/core/i.test(x.label)).period);
 }

@@ -765,7 +765,21 @@ def collect_inflation_context(now,fred_fetcher=fetch,ons_fetcher=None):
             spec=dict(**definition,ccy=ccy,area="core",frequency="M",kind="points",max_age_days=85)
             item,status=candidate(spec,obs,now)
             if item:
-                if ccy=="USD" and item["history"]["observations"]<14:raise ValueError("US core index lacks exact annual lags")
+                if ccy=="USD":
+                    # Exact annual comparisons need their own base, not a
+                    # contiguous 14-month run. Never impute a missing index.
+                    latest=obs[-1][0]
+                    def ix(p):return int(p[:4])*12+int(p[5:])
+                    records={ix(p):v for p,v in obs}
+                    recent=[(p,v) for p,v in obs if ix(latest)-ix(p)<36]
+                    valid=[p for p,v in recent if ix(p)-12 in records]
+                    if not valid:raise ValueError("US core index has no exact annual comparison")
+                    item["exact_lag_history"]={"schema":"GMFQ_US_CORE_EXACT_LAG_V1",
+                        "source_series_id":key,"dates":[p for p,v in recent],
+                        "values":[v for p,v in recent]}
+                    status={**status,"latest_index_period":latest,
+                            "latest_yoy_period":valid[-1],
+                            "annual_status":"EXACT_LAG_AVAILABLE" if valid[-1]==latest else "SOURCE_BASE_PERIOD_MISSING"}
                 result["series"].append(item)
             result["audit"][ccy]=status
         except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:

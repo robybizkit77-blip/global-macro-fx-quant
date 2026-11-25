@@ -494,13 +494,25 @@ function inflationCatalog(catalog,today,country,overlay){
  const [id,target,page,unit,index]=cfg;
  const matches=overlay.inflation_context.series.filter(x=>x.ccy===country&&x.area==='core'&&x.source_series_id===id&&x.source_page===page&&x.unit===unit&&x.frequency==='M'&&x.metric_kind==='points'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT');
  if(matches.length!==1)return catalog;
- const raw=matches[0],src=cycleHistory(raw,today,'M');
+ const raw=matches[0];let src=cycleHistory(raw,today,'M');
+ if(index&&raw.exact_lag_history){
+   const h=raw.exact_lag_history;
+   if(h.schema!=='GMFQ_US_CORE_EXACT_LAG_V1'||h.source_series_id!==id||
+      !Array.isArray(h.dates)||!Array.isArray(h.values)||h.dates.length!==h.values.length||
+      h.dates.length<2||h.dates.length>36||!h.values.every(v=>finite(v)&&v>0)||
+      h.dates.at(-1)!==raw.dates?.at(-1)||h.values.at(-1)!==raw.values?.at(-1)||
+      h.dates.at(-2)!==raw.dates?.at(-2)||h.values.at(-2)!==raw.values?.at(-2)||
+      !h.dates.every((p,i)=>/^\d{4}-\d{2}$/.test(p)&&parsePeriod(p)&&parsePeriod(p)<=today&&(!i||p>h.dates[i-1])))return catalog;
+   const monthIndex=p=>Number(p.slice(0,4))*12+Number(p.slice(5));
+   if(monthIndex(h.dates.at(-1))-monthIndex(h.dates[0])>=36)return catalog;
+   src={...raw,dates:h.dates,values:h.values,exactLagRecovery:true};
+ }
  if(src===raw||src.values.some(v=>index?v<=0:Math.abs(v)>50))return catalog;
  const replacement={...src,id:target};
  const old=annualRateContext(catalog,today,country,INFLATION_MAP).find(x=>x.id===target);
  const next=annualRateContext({[country]:[replacement]},today,country,INFLATION_MAP).find(x=>x.id===target);
  if(!next?.available||next.stale||!finite(next.previous)||!next.prior||old?.available&&next.period<old.period)return catalog;
- if(old?.available&&next.period===old.period&&old.direction&&old.stale===false)return catalog;
+ if(old?.available&&next.period===old.period&&old.direction&&old.stale===false&&!next.annualGap)return catalog;
  return {...catalog,[country]:[...(catalog[country]||[]).filter(x=>x.id!==target),replacement]};
 }
 function inflationContext(catalog,today,country,overlay=null){
@@ -587,7 +599,9 @@ function annualRateContext(catalog,today,country,mapping){
      records.set(k,{v,end,period:freq==='Q'?y+'-Q'+endMonth/3:y+'-'+String(endMonth).padStart(2,'0')});
    }
    const keys=[...records.keys()].sort((a,b)=>a-b);
-   const k=keys.at(-1);if(k===undefined)return missing;
+   const latest=keys.at(-1);if(latest===undefined)return missing;
+   const k=index&&src.exactLagRecovery===true?keys.findLast(j=>records.has(j-12)):latest;
+   if(k===undefined)return missing;
    const current=records.get(k),prior=records.get(k-months);
    const rate=j=>{
      const v=records.get(j)?.v;
@@ -601,8 +615,10 @@ function annualRateContext(catalog,today,country,mapping){
    const age=Math.floor((now-Date.parse(current.end+'T12:00:00Z'))/864e5);
    const stale=age>(freq==='Q'?175:85);
    const change=prior&&finite(previous)?value-previous:null;
-   const direction=stale||!finite(change)?null:Math.abs(change)<.1?'stabile':change>0?'accelera':'rallenta';
+   const annualGap=k!==latest;
+   const direction=stale||annualGap||!finite(change)?null:Math.abs(change)<.1?'stabile':change>0?'accelera':'rallenta';
    return {id,label,freq,available:true,period:current.period,prior:prior?.period||null,value,
+     latestIndexPeriod:records.get(latest).period,annualGap,
      previous:finite(previous)?previous:null,change,direction,stale,age,
      basis:index?'YOY_EXACT_INDEX_LAG':'REPORTED_YOY',source:src.source_file||'MACRO_SERIES'};
  });
@@ -826,7 +842,9 @@ function countryHistories(catalog,today,country,overlay,rows,context){
  const inflationLocal=inflationCatalog(catalog,today,country,overlay)[country]||[];
  const inflation=(INFLATION_MAP[country]||[]).filter(([,label])=>/headline|core|trimmed|median|trim/i.test(label)).map(([id,label,freq,index])=>{
    const x=context.inflation.find(z=>z.id===id);
-   return x?.available?series(label,inflationLocal.find(z=>z.id===id),freq,'% a/a',{annualize:index,expected:x.value,period:x.period,stale:x.stale,source:x.source}):null;
+   let src=inflationLocal.find(z=>z.id===id);
+   if(x?.annualGap&&src){const n=src.dates.findIndex(p=>p>x.period);if(n>=0)src={...src,dates:src.dates.slice(0,n),values:src.values.slice(0,n)};}
+   return x?.available?series(label,src,freq,'% a/a',{annualize:index,expected:x.value,period:x.period,stale:x.stale,source:x.source}):null;
  }).filter(Boolean);
  const wages=context.wages.filter(x=>x.available).map(x=>{
    let src=local.find(z=>z.id===x.id),index=(WAGE_MAP[country]||[]).find(z=>z[0]===x.id)?.[3],manual=false;
@@ -985,7 +1003,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    inflation.map(x=>'<p><strong>'+esc(x.label)+'</strong> · '+(x.available?
     esc(fmt(x.value,2))+'% a/a · '+esc(x.period)+
     (finite(x.change)?' · variazione '+esc(d(x.change,' p.p.'))+' rispetto a '+esc(x.prior):' · confronto non disponibile')+
-    (x.stale?' · dato datato, giudizio sospeso':x.direction?' · '+esc(x.direction):' · direzione non determinabile')+
+    (x.annualGap?' · indice disponibile fino a '+esc(x.latestIndexPeriod)+', confronto annuo non calcolabile (base mancante)':x.stale?' · dato datato, giudizio sospeso':x.direction?' · '+esc(x.direction):' · direzione non determinabile')+
     ' <small>'+esc(x.source)+'</small>':'dato non disponibile')+'</p>').join('')+
    '<small>Pressioni sui prezzi in aumento o diminuzione: non sono un giudizio positivo/negativo sulla crescita. Headline e core possono riferirsi a periodi diversi; le misure core nazionali non sono omogenee.</small>';
  const wages=wageContext(catalog,today,selected,overlay);

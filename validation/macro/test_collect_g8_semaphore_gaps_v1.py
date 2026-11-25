@@ -665,5 +665,13 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertRaises(ValueError,mod.parse_ons_core,raw.replace(b"DKO8",b"DKC6"),NOW)
         bad=mod.collect_inflation_context(NOW,fred_fetcher=lambda _:fixture("WRONG"),ons_fetcher=lambda _:raw.replace(b"DKO8",b"DKC6"))
         self.assertEqual(bad["series"],[])
+        # October 2025 absent: October 2026 index still valid, annual rate not.
+        gap=fixture("CPILFESL",end=(2026,10))
+        gap=b"\n".join(line for line in gap.splitlines() if not line.startswith(b"2025-10-"))
+        partial=mod.collect_inflation_context(NOW,fred_fetcher=lambda _:gap,ons_fetcher=lambda _:raw)
+        self.assertEqual(partial["audit"]["USD"]["latest_index_period"],"2026-10")
+        self.assertEqual(partial["audit"]["USD"]["latest_yoy_period"],"2026-09")
+        self.assertEqual(partial["audit"]["USD"]["annual_status"],"SOURCE_BASE_PERIOD_MISSING")
+        self.assertNotIn("2025-10",partial["series"][0]["exact_lag_history"]["dates"])
 
 if __name__=="__main__":unittest.main()
