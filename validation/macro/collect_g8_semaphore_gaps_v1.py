@@ -1095,6 +1095,76 @@ def parse_real_ca_mfg(raw,now):
             if len(vectors)!=1 or len(obs)<12:raise ValueError("Real manufacturing series ambiguous or incomplete")
             return sorted(obs.items())
 
+CAD_STARTS_URL="https://www150.statcan.gc.ca/n1/tbl/csv/34100158-eng.zip"
+CAD_STARTS_PAGE="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410015801"
+ABS_APPROVALS_PAGE="https://www.abs.gov.au/statistics/industry/building-and-construction/building-approvals-australia/latest-release"
+CAD_STARTS_SPEC=dict(ccy="CAD",area="house",key="STATCAN_34100158_STARTS_SAAR",method="official_housing",
+    name="Nuovi cantieri residenziali CMHC (tutte le aree, SAAR)",unit="migliaia abitazioni SAAR",frequency="M",kind="percent",max_age_days=85,
+    origin="CMHC / Statistics Canada 34-10-0158-01",source_page=CAD_STARTS_PAGE)
+ABS_APPROVALS_SPEC=dict(ccy="AUD",area="house",key="ABS_TOTAL_DWELLING_APPROVALS_SA",method="official_housing",
+    name="Abitazioni autorizzate totali (ABS, SA)",unit="numero abitazioni SA",frequency="M",kind="percent",max_age_days=85,
+    origin="Australian Bureau of Statistics",source_page=ABS_APPROVALS_PAGE)
+
+def fetch_housing_upgrade(url):
+    if url not in {CAD_STARTS_URL,ABS_APPROVALS_PAGE}:raise ValueError("housing source not registered")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"application/zip,text/html"})
+    with urlopen(req,timeout=25) as r:
+        if not r.geturl().startswith("https://") or urlsplit(r.geturl()).hostname!=urlsplit(url).hostname:raise ValueError("housing source redirected off issuer")
+        raw=r.read(12_000_001)
+        if not raw or len(raw)>12_000_000:raise ValueError("housing response size")
+        return raw
+
+def parse_cad_starts(raw,now):
+    with ZipFile(io.BytesIO(raw)) as z:
+        info=z.getinfo("34100158.csv")
+        if info.file_size>100_000_000:raise ValueError("housing archive size")
+        with z.open(info) as f:
+            rdr=csv.DictReader(io.TextIOWrapper(f,encoding="utf-8-sig"))
+            if not {"REF_DATE","GEO","UOM","SCALAR_FACTOR","VECTOR","VALUE"}.issubset(rdr.fieldnames or []):raise ValueError("CMHC columns changed")
+            obs={};vectors=set()
+            for row in rdr:
+                if row["GEO"]!="Canada":continue
+                if row["UOM"] not in {"Number","Units"} or row["SCALAR_FACTOR"]!="thousands":raise ValueError("CMHC units changed")
+                p=row["REF_DATE"]
+                if not re.fullmatch(r"\d{4}-\d{2}",p):raise ValueError("CMHC period")
+                if period_end(p)>now or not row["VALUE"]:continue
+                v=float(row["VALUE"])
+                if not math.isfinite(v) or not 10<v<1000 or p in obs or not row["VECTOR"]:raise ValueError("CMHC ambiguous or invalid national starts")
+                obs[p]=v;vectors.add(row["VECTOR"])
+            if len(obs)<12 or len(vectors)!=1:raise ValueError("CMHC exact series missing")
+            return sorted(obs.items())
+
+def parse_abs_approvals(raw,now):
+    p=_ReportTables();p.feed(raw.decode("utf-8","replace"))
+    matches=[rows for rows in p.tables if any(row==["","Seasonally adjusted (no.)","Trend (no.)"] for row in rows)]
+    if len(matches)!=1:raise ValueError("ABS total dwelling approvals chart identity")
+    months={m:i+1 for i,m in enumerate(("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))}
+    obs={}
+    for row in matches[0]:
+        if len(row)!=3:continue
+        m=re.fullmatch(r"([A-Z][a-z]{2})-(\d{2})",row[0])
+        if not m or m[1] not in months:continue
+        period=f"{2000+int(m[2])}-{months[m[1]]:02d}"
+        if period_end(period)>now:continue
+        v=float(row[1].replace(",",""))
+        if not math.isfinite(v) or not 1000<v<100000 or v!=int(v) or period in obs:raise ValueError("ABS invalid/duplicate approval count")
+        obs[period]=v
+    if len(obs)<12:raise ValueError("ABS insufficient approval history")
+    return sorted(obs.items())
+
+def upgrade_housing_activity(out,now,fetcher=fetch_housing_upgrade):
+    for spec,url,parser in [(CAD_STARTS_SPEC,CAD_STARTS_URL,parse_cad_starts),(ABS_APPROVALS_SPEC,ABS_APPROVALS_PAGE,parse_abs_approvals)]:
+        key=spec["ccy"]+"_house"
+        try:
+            item,status=candidate(spec,parser(fetcher(url),now),now)
+            if item and item["history"]["observations"]>=12:
+                out["series"]=[x for x in out["series"] if (x["ccy"],x["area"])!=(spec["ccy"],"house")]
+                out["series"].append(item)
+                out["audit"][key]={**status,"source_page":spec["source_page"],"origin":spec["origin"],"quality_upgrade":"HOUSING_ACTIVITY"}
+            else:out["audit"][key]["quality_upgrade_attempt"]=status
+        except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError,__import__("zipfile").BadZipFile) as exc:
+            out["audit"][key]["quality_upgrade_attempt"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+
 def upgrade_real_activity(out,now,fred_fetch=fetch,ca_fetch=fetch_real_ca_mfg):
     for spec,load in [(REAL_US_SERVICES,lambda:parse_fred(fred_fetch(FRED+"PCESC96"),"PCESC96","M",now)),
                       (REAL_CA_MFG,lambda:parse_real_ca_mfg(ca_fetch(),now))]:
@@ -2366,6 +2436,7 @@ def collect(now=None,fetcher=fetch):
         out["audit"]["CAD_jobs"]=status
         out["source_count"]+=1
         upgrade_real_activity(out,now)
+        upgrade_housing_activity(out,now)
         out["wage_context"]=collect_wage_context(now)
         out["external_context"]=collect_external_context(now)
         out["inflation_context"]=collect_inflation_context(now)

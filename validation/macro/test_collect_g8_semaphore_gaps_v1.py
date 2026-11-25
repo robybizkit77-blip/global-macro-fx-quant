@@ -803,4 +803,21 @@ class G8SemaphoreSources(unittest.TestCase):
         mod.upgrade_real_activity(out,NOW,fred_fetch=lambda u:b"invalid",ca_fetch=lambda:b"invalid")
         self.assertEqual(len(out["series"]),2)
 
+    def test_housing_activity_upgrade(self):
+        out={"series":[{"ccy":"AUD","area":"house","source_series_id":"RBA_HOUSING_CREDIT_GROWTH_MM"},{"ccy":"CAD","area":"house","source_series_id":"CAN_HOUSEHOLD_MORTGAGES_SA"}],"audit":{"AUD_house":{},"CAD_house":{}}}
+        b=io.BytesIO();f=StringIO();w=csv.writer(f)
+        w.writerow(["REF_DATE","GEO","UOM","SCALAR_FACTOR","VECTOR","VALUE"])
+        page="<table><tr><th></th><th>Seasonally adjusted (no.)</th><th>Trend (no.)</th></tr>"
+        for i in range(24):
+            y,m=divmod(2026*12+8-23+i,12)
+            w.writerow([f"{y}-{m+1:02d}","Canada","Number","thousands","v1",220+i])
+            mon=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m]
+            page+=f"<tr><td>{mon}-{y%100:02d}</td><td>{15000+i}</td><td>16000</td></tr>"
+        page+="</table>"
+        with ZipFile(b,"w") as z:z.writestr("34100158.csv",f.getvalue())
+        mod.upgrade_housing_activity(out,NOW,fetcher=lambda u:b.getvalue() if u==mod.CAD_STARTS_URL else page.encode())
+        self.assertEqual({x["source_series_id"] for x in out["series"]},{"STATCAN_34100158_STARTS_SAAR","ABS_TOTAL_DWELLING_APPROVALS_SA"})
+        mod.upgrade_housing_activity(out,NOW,fetcher=lambda u:b"invalid")
+        self.assertEqual(len(out["series"]),2)
+
 if __name__=="__main__":unittest.main()
