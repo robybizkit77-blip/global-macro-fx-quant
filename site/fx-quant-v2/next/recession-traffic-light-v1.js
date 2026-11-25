@@ -735,6 +735,21 @@ function overviewCountry(rows,inflation,wages,external,turning,narrative){
   turning,reading,summary:reading.economy,
   coverage:rows.length-missing.length};
 }
+// Categorical activity-breadth / headline-inflation map, not a GDP regime model.
+function regimePosition(o){
+ const missing=reason=>({quadrant:null,reason});
+ if(!o.reading.aligned)return missing('Attività: periodi non allineati o copertura insufficiente');
+ const h=o.head;
+ if(!h?.available||h.stale||!finite(h.value)||!h.direction)return missing('Inflazione headline: confronto corrente non disponibile');
+ if(!o.reading.breadth)return missing('Attività: segnali misti o variazioni contenute');
+ if(h.direction==='stabile')return missing('Inflazione headline: sostanzialmente stabile');
+ if(!['accelera','rallenta'].includes(h.direction))return missing('Inflazione headline: direzione non determinabile');
+ const dates=[h.period,...o.cells.flatMap(c=>c.periods)].map(parsePeriod).map(x=>x?Date.parse(x):NaN);
+ if(dates.some(x=>!Number.isFinite(x))||dates.length<2||Math.max(...dates)-Math.min(...dates)>120*864e5)
+   return missing('Attività e inflazione: periodi troppo distanti');
+ const quadrant=(o.reading.breadth>0?'up':'down')+'_'+(h.direction==='accelera'?'up':'down');
+ return {quadrant,reason:null};
+}
 function exportSparkline(today,country,overlay,external,esc){
  if(!external?.available||external.stale||!overlay?.external_context?.series)return '';
  const matches=overlay.external_context.series.filter(x=>x.ccy===country&&x.source_series_id===EXTERNAL_KEYS[country]);
@@ -870,6 +885,22 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    return '<span class="sem-mini sem-cell '+q.tone+'" title="'+esc(area.name+' · '+tones[q.tone])+'" aria-label="'+esc(tones[q.tone])+'"><span aria-hidden="true">'+symbols[q.tone]+'</span></span>';
  };
  const marketCount=t=>FX.filter(ccy=>overview[ccy].reading.aggregateTone===t).length;
+ const regimeRows=FX.map(ccy=>({ccy,...regimePosition(overview[ccy])}));
+ const quadrant=(id,title,sub,tone)=>{
+   const members=regimeRows.filter(x=>x.quadrant===id);
+   return '<div class="sem-regime-quadrant '+tone+'"><h4>'+esc(title)+'</h4><p>'+esc(sub)+'</p><div class="sem-regime-members">'+(members.map(({ccy})=>'<button type="button" data-ms-country="'+ccy+'" aria-pressed="'+String(ccy===selected)+'" title="'+esc(NAMES[ccy]+' · '+overview[ccy].head.period)+'">'+FLAGS[ccy]+' '+ccy+'</button>').join('')||'<small>Nessuna economia classificata</small>')+'</div></div>';
+ };
+ const regimeMap='<section class="sem-regime" aria-label="Mappa attività e inflazione">'+
+  '<div class="sem-dashboard-title"><div><span>MACRO REGIME WATCH</span><h3>Mappa attività / inflazione</h3></div><small>'+regimeRows.filter(x=>x.quadrant).length+'/8 economie classificabili · lettura direzionale</small></div>'+
+  '<div class="sem-regime-axis">Inflazione headline ↑ accelera</div><div class="sem-regime-grid">'+
+  quadrant('down_up','Pressione stagflazionistica','Attività peggiora · inflazione accelera','amber')+
+  quadrant('up_up','Reflazione possibile','Attività migliora · inflazione accelera','amber')+
+  quadrant('down_down','Rallentamento disinflazionistico','Attività peggiora · inflazione rallenta','red')+
+  quadrant('up_down','Goldilocks possibile','Attività migliora · inflazione rallenta','green')+
+  '</div><div class="sem-regime-axis">Inflazione headline ↓ rallenta</div><div class="sem-regime-horizontal"><span>← Attività peggiora</span><span>Attività migliora →</span></div>'+
+  '<div class="sem-regime-unplaced"><strong>Fuori mappa · evidenze insufficienti o neutre</strong><div>'+ (regimeRows.filter(x=>!x.quadrant).map(x=>'<button type="button" data-ms-country="'+x.ccy+'" title="'+esc(x.reason)+'"><b>'+FLAGS[x.ccy]+' '+x.ccy+'</b><span>'+esc(x.reason)+'</span></button>').join('')||'<small>Tutte le economie classificabili</small>')+'</div></div>'+
+  '<small>Asse attività: prevalenza direzionale di almeno tre aree su almeno quattro valide, con periodi allineati entro 120 giorni. Asse prezzi: ultima variazione dell’inflazione headline a/a, soglia 0,1 p.p. Non misura l’accelerazione del PIL né conferma un regime. Core e salari restano nel dettaglio.</small></section>';
+
  const turningCountries=FX.filter(ccy=>overview[ccy].turning.up.length||overview[ccy].turning.down.length);
  const turnList=turningCountries.map(ccy=>{
    const t=overview[ccy].turning;
@@ -915,6 +946,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<div class="sem-global-verdict"><div><span>QUADRO G8 · DIFFUSIONE DELLE DIREZIONI</span><h3>'+marketCount('green')+' migliorano · '+marketCount('red')+' peggiorano</h3><p>'+marketCount('amber')+' quadri misti · '+marketCount('neutral')+' letture non allineate o insufficienti. Regole descrittive, non un confronto del livello di crescita.</p></div><div class="sem-global-turn"><span>PUNTI DI SVOLTA · LOCALI</span><strong>'+turningCountries.length+' economie</strong><small>Non equivalgono a inversioni confermate del ciclo.</small></div></div>'+
   '<section class="sem-turn-radar" aria-label="Radar delle svolte"><h3>Radar delle svolte</h3><div class="sem-turn-chips">'+(turnList||'<p>Nessuna nuova inversione rilevata con evidenza sufficiente.</p>')+'</div></section>'+
   '<div class="sem-dashboard-title"><div><span>COUNTRY BOARD</span><h3>Le otto economie in 30 secondi</h3></div><small>Seleziona una scheda per il dettaglio. Prezzi, salari ed export sono contesto separato.</small></div>'+
+  regimeMap+
   '<div class="sem-country-board">'+cards+'</div>'+
   '<div class="sem-g8-title"><strong>Matrice del ciclo · sette aree</strong><span>Fase soltanto se gli indicatori attivi concordano su una soglia definita.</span></div>'+
   '<div class="sem-g8-scroll"><table class="sem-g8-table"><thead><tr><th scope="col">Paese</th>'+
@@ -955,6 +987,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,exportSparkline,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,exportSparkline,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,exportSparkline,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,exportSparkline,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
