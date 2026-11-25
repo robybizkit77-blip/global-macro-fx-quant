@@ -22,7 +22,12 @@ OUTPUT = ROOT / "site/fx-quant-v2/cross-asset-live-data.json"
 SCHEMA = "GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1"
 FRED_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id="
 VIX_URL = "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
+STOXX_URL = "https://www.stoxx.com/document/Indices/Current/HistoricalData/h_3msx5e.txt"
 SOURCES = {
+    "DJIA": {"url": FRED_URL + "DJIA", "kind": "INDEX", "max_days": 6,
+             "source": "S&P Dow Jones Indices via FRED", "unit": "index"},
+    "SX5E": {"url": STOXX_URL, "kind": "INDEX", "max_days": 6,
+             "source": "STOXX Ltd. official EUR price index", "unit": "index"},
     "SP500": {"url": FRED_URL + "SP500", "kind": "INDEX", "max_days": 6,
               "source": "S&P Dow Jones Indices via FRED", "unit": "index"},
     "NASDAQCOM": {"url": FRED_URL + "NASDAQCOM", "kind": "INDEX", "max_days": 6,
@@ -37,7 +42,7 @@ SOURCES = {
 
 
 def as_date(raw: str) -> dt.date:
-    for fmt in ("%Y-%m-%d", "%m/%d/%Y"):
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d.%m.%Y"):
         try:
             return dt.datetime.strptime(raw.strip(), fmt).date()
         except ValueError:
@@ -46,11 +51,15 @@ def as_date(raw: str) -> dt.date:
 
 
 def parse_csv(source: str, payload: str, cutoff: dt.date) -> list[tuple[str, float]]:
-    rows = csv.DictReader(io.StringIO(payload.lstrip("\ufeff")))
+    rows = csv.DictReader(io.StringIO(payload.lstrip("\ufeff")), delimiter=";" if source == "SX5E" else ",")
     if not rows.fieldnames:
         raise ValueError("Empty source CSV")
     names = {x.strip().upper(): x for x in rows.fieldnames}
-    if source == "VIX":
+    if source == "SX5E":
+        key_date, key_value = names.get("DATE"), names.get("INDEXVALUE")
+        if not names.get("SYMBOL"):
+            raise ValueError("Missing official STOXX symbol column")
+    elif source == "VIX":
         key_date, key_value = names.get("DATE"), names.get("CLOSE")
     else:
         key_date = names.get("OBSERVATION_DATE") or names.get("DATE")
@@ -63,6 +72,8 @@ def parse_csv(source: str, payload: str, cutoff: dt.date) -> list[tuple[str, flo
     parsed: list[tuple[str, float]] = []
     seen: set[str] = set()
     for item in rows:
+        if source == "SX5E" and (item.get(names["SYMBOL"]) or "").strip() != "SX5E":
+            raise ValueError("Wrong official STOXX price index symbol")
         raw_date = (item.get(key_date) or "").strip()
         raw_value = (item.get(key_value) or "").strip()
         if not raw_date or raw_value in ("", ".", "NA", "N/A"):
@@ -73,7 +84,7 @@ def parse_csv(source: str, payload: str, cutoff: dt.date) -> list[tuple[str, flo
         value = float(raw_value)
         if not math.isfinite(value) or value <= 0:
             raise ValueError("Invalid non-positive market level")
-        if source in ("SP500", "NASDAQCOM") and not (0 < value <= 100000):
+        if source in ("SP500", "NASDAQCOM", "DJIA", "SX5E") and not (0 < value <= 100000):
             raise ValueError("Index level out of accepted bounds")
         if source == "VIX" and not (5 <= value <= 150):
             raise ValueError("VIX level out of accepted bounds")
@@ -101,7 +112,7 @@ def validate_series(key: str, rows: list[tuple[str, float]], asof: dt.date,
     today = rows[-1][1]
     previous = rows[-2][1]
     pct = 100 * (today / previous - 1)
-    if key in ("SP500", "NASDAQCOM") and abs(pct) > 25:
+    if key in ("SP500", "NASDAQCOM", "DJIA", "SX5E") and abs(pct) > 25:
         raise ValueError("Single close-to-close index move > 25%: source review required")
     if key == "VIX" and abs(pct) > 75:
         raise ValueError("Single close-to-close VIX move > 75%: source review required")
@@ -160,7 +171,7 @@ def produce(asof: dt.date, previous: dict[str, Any],
         raise ValueError("No independently validated fresh feed: " + str(errors))
     return {
         "schema": SCHEMA,
-        "status": "FIVE_STREAMS_VERIFIED" if len(accepted) == 5 else "PARTIAL_SOURCE_SUCCESS",
+        "status": "SEVEN_STREAMS_VERIFIED" if len(accepted) == len(SOURCES) else "PARTIAL_SOURCE_SUCCESS",
         "collected_on": asof.isoformat(),
         "attempted_sources": list(SOURCES),
         "verified_on_attempt": accepted,
@@ -169,6 +180,7 @@ def produce(asof: dt.date, previous: dict[str, Any],
         "source_tiers": {
             "FRED": "Public disseminator of index and ICE OAS observations",
             "CBOE": "Official VIX closing-value CSV",
+            "STOXX": "Official SX5E EUR price index historical closes",
         },
         "source_dates_independent": True,
         "eligible_for_fx_core": False,
