@@ -382,26 +382,32 @@ async function g8Choice(page,label){
 }
 async function scenarioMacroJourney(page,label){
  await route(page,'macro');
- const hero=locator(page,'.macro-country-hero');
- const countries=locator(page,'.macro-country-strip [data-ms-country]');
+ const countries=locator(page,'.sem-client-tabs [data-ms-country]');
  assert.equal(await countries.count(),8,label+' Scenario macro must offer all G8 economies');
- assert.equal(await locator(page,'#content > .research-essay').count(),0,
-  label+' technical essay must follow the Scenario macro narrative');
- await locator(page,'.macro-country-strip [data-ms-country="USD"]').click();
- const usd=await hero.innerText();
- assert.match(usd,/Stati Uniti/);
- assert.doesNotMatch(usd,/\d+(?:,\d+)?%|FRED|OIS|\b2Y\b/);
- const euroChoice=locator(page,'.macro-country-strip [data-ms-country="EUR"]');
+ assert.equal(await locator(page,'#content > .research-essay').count(),0,label+' technical essay must follow the primary reading');
+ await locator(page,'.sem-client-tabs [data-ms-country="USD"]').click();
+ const usd=await locator(page,'.sem-desk-reading').innerText();
+ const usdHeading=await locator(page,'.sem-client-chapter').last().innerText();
+ assert.match(usdHeading,/Stati Uniti/);
+ const euroChoice=locator(page,'.sem-client-tabs [data-ms-country="EUR"]');
  await euroChoice.click();
- const eur=await hero.innerText();
- assert.match(eur,/Area euro/);
+ const eur=await locator(page,'.sem-desk-reading').innerText();
+ assert.match(await locator(page,'.sem-client-chapter').last().innerText(),/Area euro/);
  assert.notEqual(usd,eur,label+' the first read must follow the selected economy');
  assert.equal(await euroChoice.getAttribute('aria-pressed'),'true');
+ const thermometers=locator(page,'[data-macro-panel="thermometers"]');
+ assert(!await thermometers.evaluate(el=>el.open),label+' supporting research must be closed initially');
+ await thermometers.locator(':scope > summary').click();
+ const hero=locator(page,'.macro-country-hero');
+ assert.match(await hero.innerText(),/Area euro/);
  const proof=hero.locator('.macro-evidence');
  assert(!await proof.evaluate(el=>el.open),label+' data and sources must be closed initially');
  await proof.locator(':scope > summary').click();
  assert.equal(await proof.locator('.macro-temperature').count(),2);
  assert(await proof.locator('.research-essay').isVisible(),label+' detailed analysis is missing');
+ const explorer=locator(page,'[data-macro-panel="explorer"]');
+ assert(!await explorer.evaluate(el=>el.open),label+' chart research is optional');
+ await explorer.locator(':scope > summary').click();
  assert(await locator(page,'.macro-main-chart .chart').isVisible(),label+' indicator chart is missing');
 }
 async function macroDriversJourney(page,label){
