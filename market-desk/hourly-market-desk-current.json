@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-25T14:31:42.616659Z",
-  "edition_time_rome": "2026-11-25 15:31",
-  "material_digest": "20f0624ac796212744b19b4569c6b0ff6b01eae37bc28189e68da46c3935a4e3",
+  "generated_at_utc": "2026-11-25T15:41:27.798249Z",
+  "edition_time_rome": "2026-11-25 16:41",
+  "material_digest": "d8140c527176eaca4e5dc21130e79afd0ab2719d537ab6d77cefde8efce04034",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
@@ -22,16 +22,16 @@
       "evidence": "Al fixing BCE del 24 novembre, EUR/USD ha segnato +0,22% e USD/JPY −0,00%."
     },
     {
-      "headline": "Sono usciti i dati sui prezzi in Giappone",
-      "analysis": "Il punto da seguire è se cambiano le attese sui tassi in Giappone.",
+      "headline": "Aggiornamento macro negli Stati Uniti",
+      "analysis": "Il punto da seguire è se cambiano le attese sui tassi negli Stati Uniti.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-20",
-      "event_date": "2026-11-20",
+      "published_date": "2026-11-25",
+      "event_date": "2026-11-25",
       "market_area": "MACRO",
       "sources": [
-        "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html"
+        "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-3rd-quarter-2026"
       ],
-      "evidence": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
+      "evidence": "PIL reale USA annualizzato: 4,3% (periodo precedente 2,2%)"
     },
     {
       "headline": "Il Nasdaq Composite scende",
@@ -96,14 +96,14 @@
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bankofcanada.ca/2026/11/bank-of-canada-media-interview-the-logic/",
+      "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-3rd-quarter-2026",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "https://www.eia.gov/todayinenergy/detail.php?id=68504",
-      "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html"
+      "https://www.eia.gov/todayinenergy/detail.php?id=68504"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
-      "news": "2026-11-24",
-      "rss_checked_at_utc": "2026-11-25T14:31:42.616659Z",
+      "news": "2026-11-25",
+      "rss_checked_at_utc": "2026-11-25T15:41:27.798249Z",
       "commodities": "2026-11-24"
     },
     "no_paid_api": true,
@@ -111,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-25T14:31:42.616659Z",
+      "headline": "Dollaro misto",
+      "material_digest": "20f0624ac796212744b19b4569c6b0ff6b01eae37bc28189e68da46c3935a4e3"
+    },
     {
       "generated_at_utc": "2026-11-25T13:55:03.188558Z",
       "headline": "Dollaro misto",
@@ -225,11 +230,6 @@
       "generated_at_utc": "2026-11-23T02:51:59.089468Z",
       "headline": "Volatilità in rialzo, dollaro misto",
       "material_digest": "813b2744f960b22d97d8454c25136c0940443f0959653684d0ef6b7c6c5160d7"
-    },
-    {
-      "generated_at_utc": "2026-11-21T21:23:59.803112Z",
-      "headline": "Volatilità in rialzo, dollaro misto",
-      "material_digest": "d8bd9f1d72f994ac03b0ce597373a4629bbb05fe1312e895016b9cb85c3523ac"
     }
   ]
 }
