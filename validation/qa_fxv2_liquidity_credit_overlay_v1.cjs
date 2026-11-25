@@ -43,8 +43,11 @@ assert.equal(merge(snap,broken,today).applied.length,1,'out-of-order data must b
 broken.streams.IG_OAS=copy(live.streams.IG_OAS);
 broken.streams.IG_OAS.date='2026-10-01';
 assert.equal(merge(snap,broken,today).applied.length,1,'older than snapshot must be rejected');
-const stale=merge(snap,live,'2026-12-01');
+// Age the actual latest source by eight calendar days, independent of releases.
+const staleDay=new Date(Date.parse(today+'T12:00:00Z')+8*86400000).toISOString().slice(0,10);
+const stale=merge(snap,live,staleDay);
 assert.equal(stale.source_status,'SNAPSHOT_ONLY','never rebrand old data as live');
+assert.deepEqual(stale.rejected.map(x=>x.reason),['SOURCE_PUBLICATION_TOO_OLD','SOURCE_PUBLICATION_TOO_OLD']);
 const shape=copy(live);shape.eligible_for_fx_core=true;
 assert.equal(merge(snap,shape,today).source_status,'SNAPSHOT_ONLY','no core eligible source');
 assert.equal(merge(snap,null,today).source_status,'SNAPSHOT_ONLY');
