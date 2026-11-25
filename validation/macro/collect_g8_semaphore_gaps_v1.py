@@ -786,6 +786,22 @@ def collect_inflation_context(now,fred_fetcher=fetch,ons_fetcher=None):
             result["audit"][ccy]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
     return result
 
+EUR_CORE_KEY="EUROSTAT_EA21_HICP_CORE_YOY"
+EUR_CORE_PAGE="https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_minr/default/table?lang=en"
+def collect_eur_core(now,fetcher=fetch):
+    """ECOICOP v2, fixed EA21, official annual rate; do not stitch legacy series."""
+    try:
+        method="eurostat_core_hicp"
+        obs=parse_euro_extra(fetcher(euro_extra_url(method)),now,method)
+        if any(abs(v)>50 for _,v in obs):raise ValueError("HICP annual rate implausible")
+        spec=dict(ccy="EUR",area="core",key=EUR_CORE_KEY,method=method,
+            name="HICP core (esclusi energia, alimentari, alcol e tabacco)",
+            unit="% a/a",frequency="M",kind="points",max_age_days=85,
+            origin="Eurostat / prc_hicp_minr / EA21",source_page=EUR_CORE_PAGE)
+        return candidate(spec,obs,now)
+    except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError) as exc:
+        return None,{"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+
 def collect_external_context(now,fetcher=fetch):
     result={"schema":"GMFQ_G8_EXTERNAL_CONTEXT_V1","series":[],"audit":{}}
     for ccy,key in EXPORT_KEYS.items():
@@ -1439,6 +1455,7 @@ EUROSTAT_SERVICES_URL=(
  "geo=EA21&s_adj=SA&indic=BS-SCI-BAL&freq=M&sinceTimePeriod=2023-01"
 )
 EUROSTAT_EXTRA={
+ "eurostat_core_hicp":("prc_hicp_minr",{"freq":"M","geo":"EA21","unit":"RCH_A","coicop18":"TOT_X_NRG_FOOD"}),
  "eurostat_exports_real":("namq_10_gdp",{"freq":"Q","geo":"EA21","na_item":"P6","s_adj":"SCA","unit":"CLV_PCH_SM"}),
  "eurostat_house_price":("prc_hpi_q",{"freq":"Q","geo":"EA21","purchase":"TOTAL","unit":"RCH_A"}),
  "eurostat_industry":("sts_inpr_m",{"freq":"M","geo":"EA21","indic_bt":"PRD",
@@ -1987,6 +2004,9 @@ def collect(now=None,fetcher=fetch):
         out["wage_context"]=collect_wage_context(now)
         out["external_context"]=collect_external_context(now)
         out["inflation_context"]=collect_inflation_context(now)
+        item,status=collect_eur_core(now)
+        out["inflation_context"]["audit"]["EUR"]=status
+        if item:out["inflation_context"]["series"].append(item)
     return out
 
 def main():

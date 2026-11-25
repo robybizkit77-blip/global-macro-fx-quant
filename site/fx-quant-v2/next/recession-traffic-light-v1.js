@@ -485,6 +485,7 @@ const WAGE_MAP={
  CAD:[['CA_AVERAGE_HOURLY_WAGES_YOY','Salari orari medi','M']]
 };
 const CORE_RECOVERY={
+ EUR:['EUROSTAT_EA21_HICP_CORE_YOY','EA_HICP_CORE_YOY_history_value','https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_minr/default/table?lang=en','% a/a',false],
  USD:['CPILFESL','US_CPILFESL_history_value','https://fred.stlouisfed.org/series/CPILFESL','Index 1982-1984=100',true],
  GBP:['DKO8','UK_CPI_CORE_YOY_history_value','https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/dko8/mm23','% a/a',false]
 };

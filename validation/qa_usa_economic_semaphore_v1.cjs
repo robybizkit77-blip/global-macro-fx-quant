@@ -664,6 +664,9 @@ console.log('ECONOMIC_CYCLE_RELATIVE_DIVERGENCES_PASS');
  const gap={...us,exact_lag_history:{schema:'GMFQ_US_CORE_EXACT_LAG_V1',source_series_id:'CPILFESL',dates:gapDates,values:gapValues}};
  const gapCore=inflationContext(catalog,today,'USD',{...ov,inflation_context:{...ov.inflation_context,series:[gap]}}).find(x=>/core/i.test(x.label));
  assert.equal(gapCore.period,'2026-09');assert.equal(gapCore.latestIndexPeriod,'2026-10');assert.equal(gapCore.annualGap,true);assert.equal(gapCore.direction,null);
+ const eur=make('EUR','EUROSTAT_EA21_HICP_CORE_YOY','https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_minr/default/table?lang=en','% a/a',dates.map((_,i)=>2+i/100));
+ const e=inflationContext(catalog,today,'EUR',{...ov,inflation_context:{...ov.inflation_context,series:[eur]}}).find(x=>/core/i.test(x.label));
+ assert.equal(e.period,'2026-10');assert.equal(e.value,2.23);
  assert.equal(u.period,'2026-10');assert.equal(k.period,'2026-10');assert.ok(Math.abs(u.value-(323/311-1)*100)<1e-9);assert.equal(k.value,2.23);
  assert.equal(inflationContext(catalog,today,'USD',{...ov,inflation_context:{...ov.inflation_context,series:[{...us,source_page:'https://example.com'}]}}).find(x=>/core/i.test(x.label)).period,inflationContext(catalog,today,'USD').find(x=>/core/i.test(x.label)).period);
 }
