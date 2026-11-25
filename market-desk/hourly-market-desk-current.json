@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-25T08:58:10.175873Z",
-  "edition_time_rome": "2026-11-25 09:58",
-  "material_digest": "c901634bb55781ac54786d2fb4f45f808a6864e9cc1b9ed2127d38ac392b2c60",
+  "generated_at_utc": "2026-11-25T13:55:03.188558Z",
+  "edition_time_rome": "2026-11-25 14:55",
+  "material_digest": "ca68963f359a6bd2c60a6364b16b65ba4f383386cef31517b1116cdd1d52047d",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
@@ -11,7 +11,7 @@
   "news": [
     {
       "headline": "Dollaro misto",
-      "analysis": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. Il 25 novembre alle 14:30 italiane è in programma GDP (Second Estimate) and Corporate Profits (USD). Da verificare la risposta dei tassi e di USD.",
+      "analysis": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. La prossima verifica è capire se il movimento si estende agli altri cambi.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-24",
       "event_date": "2026-11-24",
@@ -85,7 +85,7 @@
     }
   ],
   "desk_judgment": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. Alla chiusura del 24 novembre, il Nasdaq Composite ha perso terreno.",
-  "fx_implications": "Il 25 novembre alle 14:30 italiane è in programma GDP (Second Estimate) and Corporate Profits (USD). Da verificare la risposta dei tassi e di USD.",
+  "fx_implications": "Il 30 novembre alle 09:00 italiane è in programma Swiss quarterly GDP (CHF). Da verificare la risposta dei tassi e di CHF.",
   "what_changed": "Nei proxy futures del 24 novembre l’oro scende e il WTI sale.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
@@ -103,7 +103,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-24",
-      "rss_checked_at_utc": "2026-11-25T08:58:10.175873Z",
+      "rss_checked_at_utc": "2026-11-25T13:55:03.188558Z",
       "commodities": "2026-11-24"
     },
     "no_paid_api": true,
@@ -111,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-25T08:58:10.175873Z",
+      "headline": "Dollaro misto",
+      "material_digest": "c901634bb55781ac54786d2fb4f45f808a6864e9cc1b9ed2127d38ac392b2c60"
+    },
     {
       "generated_at_utc": "2026-11-25T06:04:24.414808Z",
       "headline": "Dollaro misto",
@@ -225,11 +230,6 @@
       "generated_at_utc": "2026-11-21T20:28:24.036385Z",
       "headline": "Volatilità in rialzo, dollaro misto",
       "material_digest": "28f2aa20b9c396f7e3fc73ce0719112bc25de44de7658783b1a14076743ef81e"
-    },
-    {
-      "generated_at_utc": "2026-11-21T19:44:25.457193Z",
-      "headline": "Volatilità in rialzo, dollaro misto",
-      "material_digest": "3eade66ea26d7a0665d44270c747aca69033a74f1cea927fe3585d260baed335"
     }
   ]
 }
