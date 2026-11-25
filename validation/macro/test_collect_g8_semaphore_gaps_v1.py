@@ -130,6 +130,13 @@ class G8SemaphoreSources(unittest.TestCase):
         with self.assertRaises(ValueError):mod.curated_nz_wage(date(2027,2,4))
         with self.assertRaises(ValueError):mod.curated_nz_wage(date(2026,11,24))
 
+    def test_ch_annual_wage_context_not_quarterly(self):
+        item=mod.ch_wage_annual_context(date(2026,11,25))
+        self.assertEqual(item["frequency"],"A")
+        self.assertEqual(item["values"],[1.7,1.8,1.8])
+        self.assertEqual(item["scope"],"ANNUAL_ACTUAL_NOT_QUARTERLY")
+        with self.assertRaises(ValueError):mod.ch_wage_annual_context(date(2027,4,30))
+
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
