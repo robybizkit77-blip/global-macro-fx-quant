@@ -7,6 +7,9 @@ from zipfile import ZipFile
 from openpyxl import load_workbook
 
 URLS={
+ "CH_SECO_GDP_CSV":"https://scheduler.swissdatas.ch/scheduled/ch-seco-gdp.csv",
+ "CH_SECO_GDP_META":"https://scheduler.swissdatas.ch/scheduled/ch-seco-gdp.json",
+ "ABS_REAL_HOUSEHOLD_TABLE15":"https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/sep-2026/5682015.xlsx",
  "NZALT_BNZ_PSI":"https://www.bnz.co.nz/institutional-banking/research/publications",
  "NZALT_BNZ_ECONOMY":"https://www.bnz.co.nz/institutional-banking/research/publications/economy-watch",
  "NZALT_STAT_HOUSE":"https://www.stats.govt.nz/topics/building/",
@@ -63,6 +66,36 @@ def call(name,url):
   with urllib.request.urlopen(r,timeout=18) as x:
    data=x.read(28_000_000+1)
    if len(data)>28_000_000: return {"error":"file above 28MB budget"}
+   if name=="CH_SECO_GDP_META":
+    doc=json.loads(data)
+    return {"source":doc.get("source_name"),"unit":doc.get("units"),"dim_order":doc.get("dim_order"),"seas_adj":doc.get("labels",{}).get("seas_adj"),"structure":{k:v.get("en") for k,v in doc.get("labels",{}).get("structure",{}).items()}}
+   if name=="CH_SECO_GDP_CSV":
+    decoded=data.decode("utf-8-sig")
+    delim=csv.Sniffer().sniff(decoded[:4096],delimiters=",;\t").delimiter
+    rows=list(csv.DictReader(io.StringIO(decoded),delimiter=delim))
+    fields=list(rows[0]) if rows else []
+    if not fields:return {"error":"empty CSV"}
+    dims={k:sorted({str(row.get(k,"")) for row in rows})[:75] for k in fields if k.lower() in {"type","structure","seas_adj"}}
+    groups={}
+    for row in rows:
+     key=tuple(row.get(k) for k in fields if k.lower() in {"type","structure","seas_adj"})
+     if not key:continue
+     groups[key]=row
+    sample=[v for k,v in groups.items() if "gc_q" in k and any(x in k for x in ("trade","transp","com","findl","b_serv","health","admin","hotel","edu","entertain","other_serv","hh_prod"))]
+    return {"bytes":len(data),"fields":fields,"dims":dims,"head":rows[:3],"tail":rows[-3:],"contribution_sample":sample[:20]}
+   if name=="ABS_REAL_HOUSEHOLD_TABLE15":
+    book=load_workbook(io.BytesIO(data),read_only=True,data_only=True)
+    sheets=[]
+    for ws in book.worksheets:
+     rows=list(ws.iter_rows(min_row=1,max_row=12,values_only=True))
+     columns=[]
+     for j,col in enumerate(zip(*rows),1):
+      labels=[str(v) for v in col if v is not None]
+      if j==1 or any("seasonally adjusted" in v.lower() or "series id" in v.lower() for v in labels):
+       columns.append({"col":j,"meta":labels})
+     sheets.append({"name":ws.title,"rows":ws.max_row,"cols":ws.max_column,"series":columns[:30],
+       "last":[[str(v) if v is not None else None for v in row[:8]] for row in ws.iter_rows(min_row=max(1,ws.max_row-3),max_row=ws.max_row,values_only=True)]})
+    return {"bytes":len(data),"sheets":sheets}
    if name.startswith("NZALT_"):
     import re
     from html.parser import HTMLParser
