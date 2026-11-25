@@ -254,3 +254,25 @@
 .recession-light .sem-country-comment>strong{font-size:11px;color:var(--sem-amber)}
 .recession-light .sem-country-comment.watch>strong{color:var(--sem-blue)}
 .recession-light .sem-country-comment p{font-size:12px;line-height:1.55;color:#d0e0ec;margin:4px 0 0;overflow-wrap:anywhere}
+
+/* Directional macro regime watch, separate from the FX signal engine. */
+.recession-light .sem-regime{margin:18px 0;padding:14px;border:1px solid #365064;border-radius:12px;background:#102637}
+.recession-light .sem-regime-axis{text-align:center;color:#b9d4e3;font-size:11px;padding:8px 0;font-weight:600}
+.recession-light .sem-regime-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.recession-light .sem-regime-quadrant{padding:12px;border-radius:9px;min-height:100px;border:1px solid #365064;background:#152b3c}
+.recession-light .sem-regime-quadrant.amber{border-color:#806940;background:#322c23}
+.recession-light .sem-regime-quadrant.red{border-color:#754550;background:#342732}
+.recession-light .sem-regime-quadrant.green{border-color:#316657;background:#193b36}
+.recession-light .sem-regime-quadrant h4{margin:0 0 5px;font-size:14px;color:#f0f6fa}
+.recession-light .sem-regime-quadrant p{margin:0 0 10px;font-size:11px;color:#bdccd7}
+.recession-light .sem-regime-members{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.recession-light .sem-regime-members button,.recession-light .sem-regime-unplaced button{border:1px solid #517083;border-radius:6px;padding:6px 9px;background:#193346;color:#e3edf3;cursor:pointer;font-size:12px}
+.recession-light .sem-regime-members button[aria-pressed=true]{outline:1px solid #91d1e7}
+.recession-light .sem-regime-horizontal{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#b9d4e3;margin:0 0 12px}
+.recession-light .sem-regime-unplaced{border-top:1px solid #365064;padding:12px 0;color:#d8e5ef}
+.recession-light .sem-regime-unplaced>strong{font-size:12px}
+.recession-light .sem-regime-unplaced>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;margin-top:8px}
+.recession-light .sem-regime-unplaced button{text-align:left;display:flex;flex-direction:column;gap:4px}
+.recession-light .sem-regime-unplaced button span{font-size:10px;line-height:1.35;color:#b3c8d5}
+.recession-light .sem-regime>small{display:block;line-height:1.55;color:#99b5c5;font-size:11px}
+@media(max-width:480px){.recession-light .sem-regime{padding:10px}.recession-light .sem-regime-quadrant{padding:8px}.recession-light .sem-regime-quadrant h4{font-size:12px}.recession-light .sem-regime-quadrant p{font-size:10px}}
