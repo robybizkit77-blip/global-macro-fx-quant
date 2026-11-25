@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -374,3 +374,26 @@ assert.equal(nzInflation.period,'2026-Q3');
 assert.equal(nzInflation.direction,'rallenta');
 assert.equal(nzInflation.basis,'REPORTED_YOY');
 console.log('ECONOMIC_CYCLE_INFLATION_CONTEXT_PASS');
+
+ // Wage context uses actual nominal earnings, never expectations or employment.
+{
+ const wageDay='2026-11-25';
+ for(const ccy of coverage){
+   const row=wageContext(catalog,wageDay,ccy)[0];
+   assert.ok(row);
+   assert.equal(row.available,['USD','EUR','AUD'].includes(ccy),'Current catalog wage coverage '+ccy);
+   assert.equal(model(catalog,wageDay,ccy).length,7);
+   assert.match(render({catalog,esc,dayNow:()=>wageDay,country:ccy}),/Salari · crescita nominale effettiva/);
+ }
+ const wageFixture={USD:[{id:'US_AHE_TOTAL_PRIVATE_history_value',frequency:'M',dates:['2025-08','2025-09','2026-08','2026-09'],values:[30,30,31.2,31.5]}]};
+ const w=wageContext(wageFixture,wageDay,'USD')[0];
+ assert.ok(Math.abs(w.value-5)<1e-8);
+ assert.ok(Math.abs(w.change-1)<1e-8);
+ assert.equal(w.direction,'accelera');
+ assert.equal(wageContext(wageFixture,'2027-04-01','USD')[0].direction,null);
+ const expectationsOnly={NZD:[{id:'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Wage_1Y',frequency:'Q',dates:['2026-Q2','2026-Q3'],values:[2.81,2.82]}]};
+ assert.equal(wageContext(expectationsOnly,wageDay,'NZD')[0].available,false);
+ const eurWages={EUR:[{id:'EA_NEGOTIATED_WAGES_YOY_history_value',frequency:'Q',dates:['2026-Q1','2026-Q2'],values:[2.57,2.45]}]};
+ assert.equal(wageContext(eurWages,wageDay,'EUR')[0].direction,'rallenta');
+}
+console.log('ECONOMIC_CYCLE_WAGE_CONTEXT_PASS');
