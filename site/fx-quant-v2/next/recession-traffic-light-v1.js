@@ -1203,7 +1203,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,feedStatus=null,es
  return '<section class="recession-light" aria-labelledby="recession-light-title" data-semaphore-feed="'+esc(feedMode)+'" data-semaphore-coverage="'+covered+'">'+
   '<header class="sem-head"><div><span class="sem-kicker">GLOBAL MACRO / G8 / LETTURA CICLICA</span>'+
   '<h2 id="recession-light-title">01 · Quadro economico globale <small>G8</small></h2>'+
-  '<p>Come cambiano attività, prezzi e rischi economici nelle otto economie. I segnali descrivono le ultime osservazioni, non una previsione di recessione.</p></div>'+
+  '<p>Il semaforo economico descrive come cambiano attività, prezzi e rischi nelle otto economie. I segnali non sono un ranking di forza FX né una previsione di recessione.</p></div>'+
   '<span class="sem-date">Consultazione '+esc(today)+' · periodi originali in tabella</span></header>'+
   (feedMessage?'<p class="sem-source-note" role="status">'+feedMessage+(feedMode==='network'?'':' <button type="button" class="ghost-btn small" data-sem-feed-retry>Riprova</button>')+'</p>':'')+
   '<div class="sem-overview"><div class="sem-overview-coverage"><span>Copertura dati G8</span><strong>'+covered+'<small>/56</small></strong><div class="sem-coverage-track" role="progressbar" aria-label="Copertura G8" aria-valuenow="'+covered+'" aria-valuemin="0" aria-valuemax="56"><i style="width:'+(covered/56*100)+'%"></i></div></div>'+['green','amber','red','neutral'].map(t=>'<div class="sem-overview-kpi '+t+'"><span>'+tones[t]+'</span><strong>'+tally(allRows,t)+'</strong></div>').join('')+'</div>'+
