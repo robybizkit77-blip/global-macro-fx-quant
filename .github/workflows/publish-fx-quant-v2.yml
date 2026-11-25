@@ -307,6 +307,7 @@ jobs:
           github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'workflow_run' &&
           (github.event.workflow_run.name == 'FX Quant Next Estimated Thesis History' ||
+           github.event.workflow_run.name == 'FX Quant V2 Cross-Asset Published Source Refresh' ||
            github.event.workflow_run.name == 'FX Quant V2 AUD Official RBA F2 Research Refresh' ||
            github.event.workflow_run.name == 'CHF SNB 10Y Informational Context V1' ||
            github.event.workflow_run.name == 'FX Quant V2 CHF NZD Same-Basis Research Refresh' ||
@@ -378,6 +379,15 @@ jobs:
                   "semaphore-supplement-v1.json", "recession-traffic-light-v1.js",
                   "recession-traffic-light-v1.css", "macro-studio.js",
               )) + ("live_data/sections/MACRO_SERIES.json",)
+              paths += ("site/fx-quant-v2/cross-asset-live-data.json", "site/fx-quant-v2/cross-asset.html")
+          elif source_workflow == "FX Quant V2 Cross-Asset Published Source Refresh":
+              label = "CROSS_ASSET_PUBLIC_HTTP"
+              paths = (
+                  "site/fx-quant-v2/cross-asset-live-data.json",
+                  "site/fx-quant-v2/cross-asset.html",
+                  "site/fx-quant-v2/next/app.js",
+                  "site/fx-quant-v2/next/index.html",
+              )
           elif source_workflow in research_sources:
               label = "NEXT_MACRO_LIQUIDITY_PUBLIC_HTTP"
               base = "site/fx-quant-v2/next/"

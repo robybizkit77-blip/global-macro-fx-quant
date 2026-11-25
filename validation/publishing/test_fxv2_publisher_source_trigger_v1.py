@@ -109,3 +109,10 @@ for file in ("recession-traffic-light-v1.js","recession-traffic-light-v1.css","m
     assert '"'+file+'"' in semaphore_branch,file
 assert "live_data/sections/MACRO_SERIES.json; do" in s
 print("NEXT_G8_ECONOMIC_MONITOR_PUBLIC_DELIVERY_CONTRACT_PASS")
+
+# Market-source updates must verify both consumers and the public feed.
+assert "'FX Quant V2 Cross-Asset Published Source Refresh'" in proof_if
+market_block=s.split('label = "CROSS_ASSET_PUBLIC_HTTP"',1)[1].split("elif source_workflow in research_sources:",1)[0]
+for file in ("cross-asset-live-data.json","cross-asset.html","next/app.js","next/index.html"):
+    assert '"site/fx-quant-v2/'+file+'"' in market_block,file
+print("CROSS_ASSET_PUBLIC_DELIVERY_CONTRACT_PASS")

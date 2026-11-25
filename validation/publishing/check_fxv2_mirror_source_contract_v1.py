@@ -10,6 +10,8 @@ data-only mirror of main.
 from __future__ import annotations
 
 import json
+import math
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -44,10 +46,42 @@ def validate(root: Path = ROOT) -> dict:
         raise ValueError("RESEARCH_OIS_SCOPE_OR_G8_INVALID")
 
     cross = items["cross-asset-live-data.json"]
+    streams = cross.get("streams")
+    required = {"SP500", "NASDAQCOM", "IG_OAS", "HY_OAS", "VIX"}
+    optional = {"DJIA": ("https://fred.stlouisfed.org/graph/fredgraph.csv?id=DJIA",
+                         "S&P Dow Jones Indices via FRED"),
+                "SX5E": ("https://www.stoxx.com/document/Indices/Current/HistoricalData/h_3msx5e.txt",
+                         "STOXX Ltd. official EUR price index")}
     if (cross.get("eligible_for_fx_core") is not False or
-            set(cross.get("streams", {})) !=
-            {"SP500", "NASDAQCOM", "IG_OAS", "HY_OAS", "VIX"}):
+            cross.get("eligible_for_backtest") is not False or
+            cross.get("source_dates_independent") is not True or
+            cross.get("contains_market_estimates") is not False or
+            not isinstance(streams, dict) or not required <= set(streams) <= required | set(optional)):
         raise ValueError("CROSS_ASSET_SOURCE_SCOPE_INVALID")
+    # Independently collected extensions may arrive on different days.
+    # Reject unknown instruments and wrong provenance, not an honest partial feed.
+    for key, (url, publisher) in optional.items():
+        if key not in streams:
+            continue
+        row = streams[key]
+        if (not isinstance(row, dict) or row.get("source_url") != url or
+                row.get("publisher") != publisher or row.get("kind") != "INDEX" or
+                row.get("unit") != "index" or row.get("quality") != "PUBLISHED_SOURCE_RESEARCH_ONLY" or
+                row.get("no_core_or_backtest_effect") is not True or row.get("not_intraday") is not True or
+                not isinstance(row.get("value"), (int, float)) or isinstance(row["value"], bool) or
+                not math.isfinite(row["value"]) or row["value"] <= 0):
+            raise ValueError("CROSS_ASSET_EXTENSION_PROVENANCE_INVALID:" + key)
+        history = row.get("history")
+        if (not isinstance(history, list) or len(history) < 10 or
+                not all(isinstance(x, list) and len(x) == 2 for x in history) or
+                history[-1] != [row.get("date"), row["value"]]):
+            raise ValueError("CROSS_ASSET_EXTENSION_HISTORY_INVALID:" + key)
+        try:
+            days = [date.fromisoformat(x[0]) for x in history]
+        except (ValueError, TypeError) as exc:
+            raise ValueError("CROSS_ASSET_EXTENSION_DATE_INVALID:" + key) from exc
+        if days != sorted(set(days)):
+            raise ValueError("CROSS_ASSET_EXTENSION_DATE_ORDER_INVALID:" + key)
 
     pricing = items["pricing-relative-28pairs-research.json"]
     quant = items["quant-temporal-readiness-v1.json"]
