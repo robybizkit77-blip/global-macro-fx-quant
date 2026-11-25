@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-24T21:17:51Z",
+  "generated_at_utc": "2026-11-25T04:18:06Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-afc9437d49d627f78d73",
+      "observed_at_utc": "2026-11-25T00:49:00Z",
+      "headline": "Gold holds steady ahead of US inflation data",
+      "summary": "Reuters riporta: Gold holds steady ahead of US inflation data. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOV1p3ZkduX2FrdGJhMEMtbmNXNTgxN05HeDFsX2xxNDBkWXZQVkFWS3NzNFpITzZ2RnRyYXVZQ1k5bmthekYzdG9aSDVxcGZGS1RxMnNTTHNRRkQyQWFoWm1zNXVfd2hVQW96VHQ1ZFd4eU04cXNTRWk0cFJ4LS1PLUd1eUFmN3Y4ZjJQbXZpVkd3UQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-7deb540d891e498325fd",
+      "observed_at_utc": "2026-11-25T00:05:00Z",
+      "headline": "Japan's key services inflation gauge hits 36-year high",
+      "summary": "Reuters riporta: Japan's key services inflation gauge hits 36-year high. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "JPY"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxObmQyUGZ2bG00UVFlbzFVMEZpdGt1ZzV0Y0ZxX21VLVZfSFEtNl8zeldrZ1NtSXhpSGhLaVNtSkxFR1Zvc3FVeHFBNGctWVVMZlhQb2lhbkNnMUdoQTdaWndqSEktMmZpUXJKWU81bFRHQmJTSGlhZ1IxcEF6N25wV3FIbDhWbmVIV241SW84RWlEN1FTRmgxaF91SQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-d0ffc8f3045ce2af7550",
+      "observed_at_utc": "2026-11-24T13:08:09Z",
+      "headline": "Mexico's inflation hits six-month high but core measure undershoots forecasts",
+      "summary": "Reuters riporta: Mexico's inflation hits six-month high but core measure undershoots forecasts. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQcldRaUVWak5KdEVRemN1Z3BJUGdUTkpxMkRRWUNTMGVDWVp4RWxGUjdTcGMteW1pN1NkUmRNM0RicWRxSDJNV2kwSmN0RHhRTlNPSTUzcElMTGFMczZ1U1FfYXBJRzc0MkZPbzZVZlFmWVZ1V1RlUlpKNkxhNFhkUlFvbldsMzNNY0ZySlgwZHR3cmtxYXhMZXliZ3pTa013U2F1T1FjN0FvNWRlV3NHX0h4Sm5HLXdLRGN5SWxLai0?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-5e083a52259a5f5b8ee1",
       "observed_at_utc": "2026-11-24T14:37:09Z",
@@ -1370,47 +1413,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOaHBuM0FNRHlsWlNrX090Q3F6R2VZUTFYRkF3bFZwbDNQMUwxZXpiYmROVUJWWTVKZHRoOExqUkxpcktRYUZodDVncmNVSEdIMDktTDYxMXlWM1hvdXVKRmVfMmtvbTBUd1MyWkxFR3RqTlNJNVk1WFNtc2pnQ0w4QjRTdjlmcFdPUkVUZFVndGdCRWRPMEw3cFZHcjBlc3lhdDY2Vw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-02c9c7c80487d9fe432b",
-      "observed_at_utc": "2026-11-13T15:33:00Z",
-      "headline": "Wholesale inflation declined last month yet remains stubbornly elevated",
-      "summary": "AP News riporta: Wholesale inflation declined last month yet remains stubbornly elevated. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxOM1ZTN0RaNnBTTjB4VmFCQ1JUUndtcWlycGFrNG1FMzZGUFdWMnV0STRUaWRQR3JVbEZHWjN0Y2RVQUxBcVpTZEIyWGw5T2NSSUd4ajFaVGxlY3pCUFJVdElDX19QUGltWEd3ZEJRRW9nSTlCVnBnVlZjMzQzRTZReE5PZmg4bjNzbm1Vd09kZVR4R0VITzg5WHVjWGlCcFk?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-8ae8da9f5dcd9a664476",
-      "observed_at_utc": "2026-11-13T21:14:55Z",
-      "headline": "Iran's IRGC says two tankers hit sea mines in Hormuz",
-      "summary": "Reuters riporta: Iran's IRGC says two tankers hit sea mines in Hormuz. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOWVUydG1mRVVtRzVScWR6N19NejF5VXVuUDlqaGxSSHdJN1hmYlBtZHRJMDNWbUJVSUMyRTBRM252dzFjSmtZOHlLYmg4Y2pqLXVrSndiS3dVLWVBa0tESWJtZW05MUprVkpXTE5sQXV0aXJRR1dQQ3FmWHk0SHpoSmQzRUZmRFZCaXdjLURicWxtRk1tSnZ1dEM2UTI1b1RmTzdwRw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-ead66f6c63586da442b9",
-      "observed_at_utc": "2026-11-13T17:46:45Z",
-      "headline": "US producer prices rise moderately in October, but inflation broadens out",
-      "summary": "Reuters riporta: US producer prices rise moderately in October, but inflation broadens out. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNZTNDTVIxbVNEWDkyN3QzVk9YR2stVjFURXFqcDNXeGZ2S3FUcmhJNzJqcEp5R3JMY0dDdnl3MDEyRXVKRnB1ZGhMVHpQeTRYNnZwZDQ3UlpnTG5mR1o0akdxWDRhWDU1dm1CY2M3bFZQNHhNRHZyaUZFU1VPODZIdFJrbXBaM2UzTnRXOA?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
