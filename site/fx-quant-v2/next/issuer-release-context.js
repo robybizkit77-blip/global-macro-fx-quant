@@ -18,6 +18,9 @@
   const data=rows(s,codes,day);if(!data.length)return '';
   return '<div class="'+esc(cls)+'" data-issuer-release-context="'+esc(data.map(r=>r.event_key).join(';'))+'">'+data.map(r=>'<p><strong>'+esc(r.ccy+' · '+r.reference_period+' · '+r.as_of)+'</strong> '+esc(r.metrics.map(m=>labels[m.id]+' '+fmt(m.value_percent)+(Number.isFinite(m.previous_period_percent)?' da '+fmt(m.previous_period_percent):'')).join('; '))+'. '+esc(meaning(r))+' <a href="'+esc(/^https:\/\/(?:www\.)?(?:bea\.gov|abs\.gov\.au)\//.test(r.source_url)?r.source_url:'#news')+'" target="_blank" rel="noopener noreferrer">'+esc(r.source)+'</a></p>').join('')+'</div>';
  }
- root.FXQuantIssuerContext={rows,meaning,render};
+ function narrative(s,codes,day){
+  return rows(s,codes,day).map(r=>r.ccy+' · '+meaning(r)).join(' ');
+ }
+ root.FXQuantIssuerContext={rows,meaning,render,narrative};
  if(typeof module!=='undefined')module.exports=root.FXQuantIssuerContext;
 })(typeof window!=='undefined'?window:{});

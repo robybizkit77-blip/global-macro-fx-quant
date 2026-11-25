@@ -377,3 +377,17 @@ assert.equal(librarySummary.daily.status.state,'previous');
 assert.equal(libraryDesk.catalogSummary(libraryFixture,[],'2026-11-24').confirmed,0);
 require('./publishing/test_next_home_thesis_recalc_v1.cjs');
 console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
+
+// All consumers use the same source-dated issuer context; exact figures stay in evidence.
+const issuer=require('../site/fx-quant-v2/next/issuer-release-context.js');
+const release={ccy:'AUD',quality:'OFFICIAL_RECURRING_RELEASE_OBSERVED_NOT_EVENT_REACTION',as_of:'2026-11-25',reference_period:'October 2026',source:'ABS',source_url:'https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/oct-2026',event_key:'AUD|2026-11-25|INFLATION|Consumer Price Index, Australia',metrics:[{id:'AU_CPI_HEADLINE_YOY',value_percent:4.9,previous_period_percent:4.3},{id:'AU_CPI_TRIMMED_MEAN_YOY',value_percent:3.8,previous_period_percent:3.6}]};
+const releaseSnapshot={schema:'GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1',countries:{AUD:{issuer_releases:[release]}}};
+assert.equal(issuer.rows(releaseSnapshot,['AUD','AUD'],'2026-11-25').length,1);
+assert.equal(issuer.rows(releaseSnapshot,['AUD'],'2026-11-24').length,0);
+assert.equal(issuer.rows(releaseSnapshot,['USD'],'2026-11-25').length,0);
+assert.match(issuer.narrative(releaseSnapshot,['AUD'],'2026-11-25'),/accelera/);
+assert.doesNotMatch(issuer.narrative(releaseSnapshot,['AUD'],'2026-11-25'),/%/);
+assert.match(issuer.render(releaseSnapshot,['AUD'],'2026-11-25'),/4,9%/);
+assert.match(issuer.render(releaseSnapshot,['AUD'],'2026-11-25'),/3,8%/);
+for(const path of ['macro-approved-layout.js','central-bank-studio.js','currency-studio.js','rates-studio.js','app.js'])assert.match(read('site/fx-quant-v2/next/'+path),/FXQuantIssuerContext/);
+console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
