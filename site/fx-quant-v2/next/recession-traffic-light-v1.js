@@ -486,6 +486,7 @@ function inflationContext(catalog,today,country){
 const WAGE_SUPPLEMENT={
  GBP:['KAC3','https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kac3/lms','M','Retribuzioni medie settimanali nominali (totale, media 3 mesi a/a)'],
  CAD:['STATCAN_14100063_HOURLY_WAGE_YOY','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410006301','M','Salari orari medi nominali (LFS, NSA)'],
+ NZD:['STATSNZ_LCI_ALL_RATES_YOY','https://www.stats.govt.nz/information-releases/labour-market-statistics-september-2026-quarter/','Q','Labour Cost Index nominale (tutti i settori)'],
  JPY:['LCEAMN01JPQ659S','https://fred.stlouisfed.org/series/LCEAMN01JPQ659S','Q','Salari orari manifatturieri (proxy settoriale OECD, SA)']
 };
 function wageContext(catalog,today,country,overlay=null){
@@ -495,12 +496,14 @@ function wageContext(catalog,today,country,overlay=null){
     !Array.isArray(overlay.wage_context.series))return canonical;
  const [id,page,freq,label]=WAGE_SUPPLEMENT[country];
  const matches=overlay.wage_context.series.filter(x=>x.ccy===country&&x.area==='wages'&&
-   x.source_series_id===id&&x.source_page===page&&x.frequency===freq&&x.unit==='% a/a'&&
-   x.metric_kind==='points'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
+   x.source_series_id===id&&(country==='NZD'?/^https:\/\/www\.stats\.govt\.nz\/(?:information-releases\/labour-market-statistics-|news\/unemployment-rate-)[a-z0-9-]+-quarter\/$/.test(x.source_page):x.source_page===page)&&x.frequency===freq&&x.unit==='% a/a'&&
+   x.metric_kind==='points'&&(x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'||country==='NZD'&&x.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'&&x.source_page===page&&x.manual_verified_on==='2026-11-25'&&x.official_release_date==='2026-11-04'&&x.manual_expires_on==='2027-02-04'&&today>=x.manual_verified_on&&today<x.manual_expires_on)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&x.dates.length===2&&x.values.length===2&&x.values.every(finite));
  if(matches.length!==1)return canonical;
- const x=matches[0],validated=cycleHistory(x,today,freq);
- if(validated===x)return canonical;
+ const x=matches[0],manual=x.quality==='SOURCE_VERIFIED_MANUAL_NONPIT';
+ const validated=manual?x:cycleHistory(x,today,freq);
+ if(!manual&&validated===x)return canonical;
+ if(manual&&(x.dates[0]!=='2026-Q2'||x.dates[1]!=='2026-Q3'||x.values[0]!==2||x.values[1]!==2.1))return canonical;
  const result=annualRateContext({[country]:[{...validated,id}]},today,country,{[country]:[[id,label,freq]]});
  return result[0]?.available?result:canonical;
 }
