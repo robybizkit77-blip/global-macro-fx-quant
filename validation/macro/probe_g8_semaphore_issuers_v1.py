@@ -7,6 +7,8 @@ from zipfile import ZipFile
 from openpyxl import load_workbook
 
 URLS={
+ "EUROSTAT_EA21_QUARTERLY_RESIDENTIAL":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_q?geo=EA21&indic_bt=BPRM_DW&s_adj=SCA&unit=I21&lang=EN",
+ "EUROSTAT_EA21_QUARTERLY_RESIDENTIAL_NSA":"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_cobp_q?geo=EA21&indic_bt=BPRM_DW&s_adj=NSA&unit=I21&lang=EN",
  "NZALT_BNZ_PSI":"https://www.bnz.co.nz/institutional-banking/research/publications",
  "NZALT_BNZ_ECONOMY":"https://www.bnz.co.nz/institutional-banking/research/publications/economy-watch",
  "NZALT_STAT_HOUSE":"https://www.stats.govt.nz/topics/building/",
