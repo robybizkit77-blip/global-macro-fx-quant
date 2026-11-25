@@ -7,6 +7,7 @@ from zipfile import ZipFile
 from openpyxl import load_workbook
 
 URLS={
+ "JAPAN_CORE_2025_YOY":"https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=1&statInfId=000040482953",
  "NZALT_BNZ_PSI":"https://www.bnz.co.nz/institutional-banking/research/publications",
  "NZALT_BNZ_ECONOMY":"https://www.bnz.co.nz/institutional-banking/research/publications/economy-watch",
  "NZALT_STAT_HOUSE":"https://www.stats.govt.nz/topics/building/",
@@ -63,6 +64,14 @@ def call(name,url):
   with urllib.request.urlopen(r,timeout=18) as x:
    data=x.read(28_000_000+1)
    if len(data)>28_000_000: return {"error":"file above 28MB budget"}
+   if name=="JAPAN_CORE_2025_YOY":
+    for encoding in ("utf-8-sig","cp932"):
+     try:decoded=data.decode(encoding);break
+     except UnicodeDecodeError:continue
+    else:raise ValueError("unrecognized Japanese CSV encoding")
+    rows=list(csv.reader(io.StringIO(decoded)))
+    labels=[{"row":i,"columns":[{"index":j,"text":v} for j,v in enumerate(row) if "fresh food" in v.lower() or "生鮮食品" in v][:20]} for i,row in enumerate(rows[:35])]
+    return {"bytes":len(data),"url":x.geturl(),"encoding":encoding,"rows":len(rows),"head":[row[:12] for row in rows[:15]],"labels":[v for v in labels if v["columns"]],"tail":[row[:12] for row in rows[-8:]]}
    if name.startswith("NZALT_"):
     import re
     from html.parser import HTMLParser
