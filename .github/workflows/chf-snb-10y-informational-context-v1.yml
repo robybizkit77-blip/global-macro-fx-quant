@@ -21,6 +21,8 @@ on:
   schedule:
     # 18:40 CET / 19:40 CEST: after SNB close, business days only.
     - cron: '40 17 * * 1-5'
+    # Independent late retry after the official daily page is updated.
+    - cron: '30 20 * * 1-5'
   workflow_dispatch:
 permissions:
   contents: write
@@ -62,6 +64,8 @@ jobs:
               print('WITHHELD_OLDER_SOURCE_DATE',new['as_of'],old['as_of'])
           elif new['as_of']==old['as_of'] and new['value_percent']!=old['value_percent']:
               raise SystemExit('SNB same-date 10Y revision needs independent review')
+          elif new['as_of']==old['as_of']:
+              print('SNB_10Y_NO_NEW_DATED_OBSERVATION',old['as_of'])
           else:
               Path('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json').write_text(json.dumps(new,indent=2,ensure_ascii=False,sort_keys=True)+'\n')
               print('SNB_10Y_INFO_UPDATED',new['as_of'])
