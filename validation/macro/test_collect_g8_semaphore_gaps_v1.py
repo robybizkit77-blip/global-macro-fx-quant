@@ -831,4 +831,20 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertAlmostEqual(obs[-1][1],.12)
         self.assertRaises(ValueError,mod.parse_seco_services,f.getvalue().encode().replace(b"cssa",b"csa"),meta,NOW)
 
+    def test_abs_service_breadth_exact_sectors(self):
+        header=["","Mar 25 to Jun 25","Jun 25 to Sep 25","Sep 25 to Dec 25","Dec 25 to Mar 26","Mar 26 to Jun 26","Through the year, Jun 25 to Jun 26","Contribution to growth, Mar 26 to Jun 26"]
+        def html(rows):
+            return ("<table>"+"".join("<tr>"+"".join("<td>"+str(v)+"</td>" for v in row)+"</tr>" for row in rows)+"</table>").encode()
+        rows=[header]+[[k,1,1,1,"-",1 if i<11 else -1,1,0] for i,k in enumerate(mod.ABS_SERVICE_SECTORS)]
+        data=mod.parse_abs_service_breadth_page(html(rows),NOW)
+        self.assertEqual(len(data),5)
+        self.assertEqual(data[-2],("2026-Q1",50))
+        self.assertAlmostEqual(data[-1][1],1100/14)
+        self.assertRaises(ValueError,mod.parse_abs_service_breadth_page,html(rows[:-1]),NOW)
+        out={"series":[{"ccy":"AUD","area":"services","source_series_id":"ABS_MHSI_SERVICES_MONTHLY_SA"}],"audit":{"AUD_services":{}}}
+        mod.upgrade_aus_service_activity(out,NOW,fetcher=lambda u:html(rows))
+        self.assertEqual(out["series"][0]["source_series_id"],mod.ABS_SERVICES_BREADTH_KEY)
+        self.assertEqual(out["series"][0]["history"]["observations"],5)
+        self.assertEqual(out["series"][0]["diffusion_threshold"],50)
+
 if __name__=="__main__":unittest.main()
