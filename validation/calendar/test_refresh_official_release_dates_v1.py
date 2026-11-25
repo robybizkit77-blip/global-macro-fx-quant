@@ -8,6 +8,7 @@ from validation.calendar.refresh_official_release_dates_v1 import (
     ABS, BEA, BEA_NEXT, FSO_CPI, ROME, SECO_FLASH, SECO_GDP,
     apply_rows, parse_abs, parse_bea, parse_fso, parse_seco, refresh, scheduled,
     ONS_CPI, JP_CPI, eurostat_urls, parse_ons_cpi, parse_jp_cpi, parse_eurostat_flash,
+    EU_NEWS, ons_release_urls, parse_ons_release, parse_eurostat_bulletin, eurostat_inflation_links,
 )
 
 NOW = datetime.fromisoformat("2026-11-21T20:00:00+01:00")
@@ -104,7 +105,9 @@ class OfficialReleaseDatesTest(unittest.TestCase):
                    SECO_GDP: SECO_DATES, SECO_FLASH: "<html>Maintenance</html>",
                    FSO_CPI: "<rss>", ONS_CPI: "<html>Maintenance</html>",
                    JP_CPI: "<html>Maintenance</html>",
-                   **{url: "<html>Maintenance</html>" for url in eurostat_urls(NOW)}}
+                   **{url: "<html>Maintenance</html>" for url in eurostat_urls(NOW)},
+                   **{url: "<html>Maintenance</html>" for _,url in ons_release_urls(NOW)},
+                   EU_NEWS: "<html>Maintenance</html>"}
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "seed.json"
             path.write_text(json.dumps({"schema": "GMFQ_MACRO_RELEASE_OFFICIAL_SEED_V1",
@@ -117,7 +120,7 @@ class OfficialReleaseDatesTest(unittest.TestCase):
             self.assertEqual(seco_result["changed"], 1)
             self.assertEqual(seco_flash["status"], "SOURCE_BLOCKED_RETAINED")
             self.assertEqual(fso["status"], "SOURCE_BLOCKED_RETAINED")
-            self.assertEqual(len(new_sources), 4)
+            self.assertEqual(len(new_sources), 8)
             self.assertTrue(all(x["status"] == "SOURCE_BLOCKED_RETAINED" for x in new_sources))
             saved = path.read_bytes()
             events = json.loads(saved)["events"]
@@ -165,3 +168,19 @@ class OfficialReleaseDatesTest(unittest.TestCase):
         self.assertEqual(apply_rows([row], [row], NOW), ([row], 0))
         with self.assertRaises(ValueError):
             parse_eurostat_flash("<html>Loading calendar...</html>", url)
+
+
+    def test_independent_ons_bulletin_and_eurostat_next_flash_date(self):
+        period = "November 2026"
+        url = dict(ons_release_urls(NOW))[period]
+        row = parse_ons_release("<h1>Consumer price inflation, UK: November 2026</h1>"
+                                "<p>Release date: 16 December 2026 7:00am</p>"
+                                "<p>This release is not yet published</p>",period,url)
+        self.assertEqual(row["date"], "2026-12-16")
+        self.assertEqual(row["quality"], "OFFICIAL_CALENDAR")
+        euro = "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-18112026-ap"
+        self.assertEqual(eurostat_inflation_links(f'<a href="{euro}">Annual inflation up in the euro area</a>'),[euro])
+        row = parse_eurostat_bulletin("<p>The next flash estimate of euro area inflation with data for November 2026 is scheduled for 1 December 2026.</p>",euro)
+        self.assertEqual((row["date"],row["time_local"]),("2026-12-01",None))
+        with self.assertRaises(ValueError):
+            parse_eurostat_bulletin("Inflation might be published next month",euro)
