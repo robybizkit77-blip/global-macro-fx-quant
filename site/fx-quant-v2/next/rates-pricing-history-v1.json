@@ -3532,6 +3532,13 @@
             "derived": false
           },
           {
+            "date": "2026-11-18",
+            "rate": 3.57,
+            "contract": "Mar 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
             "date": "2026-11-20",
             "rate": 3.52,
             "contract": "Mar 2027",
@@ -3550,6 +3557,14 @@
           {
             "date": "2026-11-24",
             "rate": 3.48,
+            "contract": "Mar 2027",
+            "expiration": "2027-03-10",
+            "source_class": "BANK_BILL_PROXY",
+            "derived": false
+          },
+          {
+            "date": "2026-11-25",
+            "rate": 3.49,
             "contract": "Mar 2027",
             "expiration": "2027-03-10",
             "source_class": "BANK_BILL_PROXY",
@@ -3582,6 +3597,13 @@
             "derived": false
           },
           {
+            "date": "2026-11-18",
+            "rate": 3.78,
+            "contract": "Jun 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
             "date": "2026-11-20",
             "rate": 3.72,
             "contract": "Jun 2027",
@@ -3600,6 +3622,14 @@
           {
             "date": "2026-11-24",
             "rate": 3.67,
+            "contract": "Jun 2027",
+            "expiration": "2027-06-16",
+            "source_class": "BANK_BILL_PROXY",
+            "derived": false
+          },
+          {
+            "date": "2026-11-25",
+            "rate": 3.68,
             "contract": "Jun 2027",
             "expiration": "2027-06-16",
             "source_class": "BANK_BILL_PROXY",
@@ -3632,6 +3662,13 @@
             "derived": false
           },
           {
+            "date": "2026-11-18",
+            "rate": 3.97,
+            "contract": "Dec 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
             "date": "2026-11-20",
             "rate": 3.88,
             "contract": "Dec 2027",
@@ -3654,22 +3691,30 @@
             "expiration": "2027-12-15",
             "source_class": "BANK_BILL_PROXY",
             "derived": false
+          },
+          {
+            "date": "2026-11-25",
+            "rate": 3.83,
+            "contract": "Dec 2027",
+            "expiration": "2027-12-15",
+            "source_class": "BANK_BILL_PROXY",
+            "derived": false
           }
         ]
       },
-      "latest_date": "2026-11-24",
-      "observed_dates": 6,
-      "derived_reference_points": 0,
+      "latest_date": "2026-11-25",
+      "observed_dates": 7,
+      "derived_reference_points": 3,
       "fixed_contract_20d": {
-        "from": "2026-10-27",
-        "to": "2026-11-24",
+        "from": "2026-10-28",
+        "to": "2026-11-25",
         "contract": "Jun 2027",
         "expiration": "2027-06-16",
-        "reference_rate": 4.11,
-        "current_rate": 3.67,
-        "change_bp": -44.0,
-        "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261027ZFT.htm",
-        "source_sha256": "ae29e6be5b521e5dca9538d4fdee4e820afdad3808821695ec4edf6aabc8b22f",
+        "reference_rate": 4.03,
+        "current_rate": 3.68,
+        "change_bp": -35.0,
+        "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261028ZFT.htm",
+        "source_sha256": "4ff90a7aba5858a9c373d587f60f3b2147e09947962b78af06c60edf0291e15c",
         "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"
       }
     },
