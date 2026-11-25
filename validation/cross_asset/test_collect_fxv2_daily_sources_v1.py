@@ -17,22 +17,28 @@ def source_csv(code, vals, *, dates=None):
     if dates is None:
         dates=["2026-10-"+str(i).zfill(2) for i in range(19,29)]+["2026-11-02","2026-11-03"]
     assert len(vals)==len(dates)
+    if code=="SX5E":
+        return "Date;Symbol;Indexvalue;\n"+"\n".join(dt.date.fromisoformat(d).strftime("%d.%m.%Y")+";SX5E;"+str(v)+";" for d,v in zip(dates,vals))+"\n"
     name={"IG_OAS":"BAMLC0A0CM","HY_OAS":"BAMLH0A0HYM2"}.get(code,code)
     headers=("DATE,OPEN,HIGH,LOW,CLOSE" if code=="VIX" else "observation_date,"+name)
     rows = [d+","+("0,0,0," if code=="VIX" else "")+str(v) for d,v in zip(dates,vals)]
     return "\n".join([headers,*rows])+"\n"
 
 class FxV2CrossAssetDatedCollector(unittest.TestCase):
-    def test_five_independently_dated_feeds(self):
-        vals={"SP500":7541.4,"NASDAQCOM":25164.3,"IG_OAS":0.94,"HY_OAS":3.43,"VIX":21.15}
+    def test_seven_independently_dated_feeds(self):
+        vals={"DJIA":51983.98,"SX5E":6176.06,"SP500":7541.4,"NASDAQCOM":25164.3,"IG_OAS":0.94,"HY_OAS":3.43,"VIX":21.15}
         payloads={key:source_csv(key,[v*.97]*11+[v]) for key,v in vals.items()}
         out=module.produce(DAY,BASE,payloads)
-        self.assertEqual(out["status"],"FIVE_STREAMS_VERIFIED")
-        self.assertEqual(len(out["streams"]),5)
+        self.assertEqual(out["status"],"SEVEN_STREAMS_VERIFIED")
+        self.assertEqual(len(out["streams"]),7)
         self.assertEqual(out["streams"]["VIX"]["date"],"2026-11-03")
         self.assertFalse(out["eligible_for_fx_core"])
         self.assertFalse(out["eligible_for_backtest"])
         self.assertEqual(out["streams"]["IG_OAS"]["unit"],"percent")
+    def test_reject_wrong_stoxx_instrument(self):
+        raw=source_csv("SX5E",[6176.06]*12).replace(";SX5E;",";SX5T;")
+        with self.assertRaises(ValueError):
+            module.parse_csv("SX5E",raw,DAY)
     def test_prevent_future_and_stale_dates(self):
         vals=[19.5]*12
         future=source_csv("VIX",vals,dates=["2026-10-"+str(i).zfill(2) for i in range(18,29)]+["2026-11-05"])
