@@ -7,7 +7,6 @@ from datetime import datetime,timezone
 from pathlib import Path
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
-from validation.macro.capture_g8_prospective_v1 import build_receipt
 from validation.macro.score_g8_prospective_v1 import (
     evaluate, score_pair, publish_outcome, valid_receipt, SCHEMA,
 )
@@ -18,9 +17,30 @@ ROOT=Path(__file__).resolve().parents[2]
 class FirstSeenScoring(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        m=(ROOT/"live_data/sections/MACRO_SERIES.json").read_bytes()
-        s=(ROOT/"site/fx-quant-v2/next/g8-growth-shadow.js").read_bytes()
-        cls.issue=build_receipt(m,s,"a"*40,datetime(2026,11,12,8,58,tzinfo=timezone.utc))
+        # Scoring is tested against a deterministic synthetic frozen receipt,
+        # not the moving production series or a newly revised historical vintage.
+        from validation.macro.capture_g8_prospective_v1 import FX
+        cls.issue = {
+            "schema": "GMFQ_G8_GROWTH_PROSPECTIVE_CAPTURE_V1",
+            "capture_rome_date": "2026-11-12",
+            "captured_at_utc": "2026-11-12T08:58:00Z",
+            "captured_at_rome": "2026-11-12T09:58:00+01:00",
+            "source_main_commit": "a"*40,
+            "source_macro_sha256": "a"*64,
+            "source_model_sha256": "c"*64,
+            "issuer_release_vintage_verified": False,
+            "affects_fx_rankings_or_signals": False,
+            "selected_macro_vintage": {
+                c: {"series_id": "US_PCEC96_history_value" if c=="USD" else "synthetic_"+c,
+                    "latest_observation_period": "2026-09",
+                    "observations": [{"period": "2026-09", "value": 17000.0}]}
+                for c in FX},
+            "forecast_evidence": {"currencies": {
+                c: {"candidate": c=="USD",
+                    "nextObservationPeriod": "2026-10",
+                    "forecast": {"nextChange": 0.25, "unit": "%"} if c=="USD" else None}
+                for c in FX}},
+        }
 
     def seen(self,value=17060.0,baseline_revision=0.0,day="2026-11-14"):
         r=copy.deepcopy(self.issue)
