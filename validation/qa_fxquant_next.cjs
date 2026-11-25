@@ -255,7 +255,11 @@ async function inspectRoute(page,label,key){
    label+' government yield comparison is incorrectly labeled as OIS');
   assert((await locator(page,'.rates-country-strip button').allTextContents()).every(text=>text.includes('2Y')),
    label+' the eight country tiles must identify the quoted maturity');
-  await firstScreenJumps(page,label,['rates-government','rates-expected']);
+  assert.equal(await locator(page,'#rates-expected #rates-pricing-history, #rates-expected #rates-pricing-moves').count(),2,
+   label+' monetary moves and history must share a section');
+  assert.equal(await locator(page,'#rates-fx #rates-relative-pricing, #rates-fx .rates-fx-handoff').count(),2,
+   label+' relative monetary and FX evidence must share a section');
+  await firstScreenJumps(page,label,['rates-government','rates-expected','rates-fx']);
  }else if(key==='cot'){
   assert.equal(await locator(page,'.cot-desk-overview').count(),1,'COT G8 overview missing');
   assert.equal(await locator(page,'.cot-desk-card').count(),4,'COT evidence cards missing');
