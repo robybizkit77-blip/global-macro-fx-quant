@@ -859,6 +859,63 @@ def collect_cad_core(now,fetcher=fetch_cad_core):
             audit[key]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
     return items,audit
 
+JP_CORE_URL="https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=1&statInfId=000040482953"
+JP_CORE_KEY="ESTAT_JP_2025_CORE_0161_YOY"
+ABS_CORE_URL="https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/latest-release"
+ABS_CORE_KEY="ABS_MONTHLY_TRIMMED_MEAN_YOY"
+def parse_jp_core(raw,now):
+    for encoding in ("utf-8-sig","cp932"):
+        try:rows=list(csv.reader(io.StringIO(raw.decode(encoding))));break
+        except UnicodeDecodeError:continue
+    else:raise ValueError("Japan CPI encoding")
+    if len(rows)<18 or rows[1][0]!="Group/Item" or rows[2][0]!="類・品目符号(Group/Item code)":raise ValueError("Japan CPI metadata changed")
+    cols=[i for i,v in enumerate(rows[1]) if v=="All items, less fresh food" and i<len(rows[2]) and rows[2][i]=="0161"]
+    if len(cols)!=1:raise ValueError("Japan CPI exact national core missing")
+    out={};col=cols[0]
+    for row in rows[6:]:
+        if not row or not re.fullmatch(r"\d{4}(?:0[1-9]|1[0-2])",row[0]):continue
+        p=row[0][:4]+"-"+row[0][4:]
+        if period_end(p)>now or col>=len(row) or row[col] in ("","-",".."):continue
+        v=float(row[col])
+        if not math.isfinite(v) or abs(v)>50 or p in out:raise ValueError("Japan CPI invalid rate")
+        out[p]=v
+    if len(out)<12:raise ValueError("Japan CPI history missing")
+    return sorted(out.items())
+
+def parse_abs_core(raw,now):
+    t=_ReportTables();t.feed(raw.decode("utf-8","replace"))
+    matches=[rows for rows in t.tables if any(len(row)==3 and row[1]=="All groups CPI (%)" and row[2]=="Trimmed mean (%)" for row in rows)]
+    if len(matches)!=1:raise ValueError("ABS annual trimmed mean table identity changed")
+    months={m:i+1 for i,m in enumerate(("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))}
+    out={}
+    for row in matches[0]:
+        if len(row)!=3:continue
+        m=re.fullmatch(r"([A-Z][a-z]{2})-(\d{2})",row[0])
+        if not m or m[1] not in months or not row[2]:continue
+        p=f"{2000+int(m[2]):04d}-{months[m[1]]:02d}"
+        if period_end(p)>now:continue
+        v=float(row[2])
+        if not math.isfinite(v) or abs(v)>50 or p in out:raise ValueError("ABS core invalid rate")
+        out[p]=v
+    if len(out)<12:raise ValueError("ABS core history missing")
+    return sorted(out.items())
+
+def collect_asia_core(now,fetcher=None):
+    result=[];audit={}
+    for ccy,key,url,parser,origin in [
+      ("JPY",JP_CORE_KEY,JP_CORE_URL,parse_jp_core,"Statistics Bureau Japan / e-Stat 0161 (2025 base)"),
+      ("AUD",ABS_CORE_KEY,ABS_CORE_URL,parse_abs_core,"ABS / monthly trimmed mean annual movement")]:
+        try:
+            obs=parser((fetcher or fetch_issuer)(url),now)
+            spec=dict(ccy=ccy,area="core",key=key,method="official_core",name=origin,
+                unit="% a/a",frequency="M",kind="points",max_age_days=85,origin=origin,source_page=url)
+            item,status=candidate(spec,obs,now)
+            if item:result.append(item)
+            audit[ccy]=status
+        except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError) as exc:
+            audit[ccy]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    return result,audit
+
 def collect_external_context(now,fetcher=fetch):
     result={"schema":"GMFQ_G8_EXTERNAL_CONTEXT_V1","series":[],"audit":{}}
     for ccy,key in EXPORT_KEYS.items():
@@ -1406,7 +1463,7 @@ def parse_snb_credit(raw,now):
     return sorted(out.items())
 
 def fetch_issuer(url):
-    if url not in {ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,ONS_CORE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
+    if url not in {JP_CORE_URL,ABS_CORE_URL,ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,ONS_CORE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
     accept=("application/json" if url==SNB_CREDIT_META else "text/csv" if url==SNB_CREDIT_URL else "text/html,application/zip")
     req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":accept})
     with urlopen(req,timeout=35) as response:
@@ -2066,6 +2123,9 @@ def collect(now=None,fetcher=fetch):
         if item:out["inflation_context"]["series"].append(item)
         items,status=collect_cad_core(now)
         out["inflation_context"]["audit"]["CAD"]=status
+        out["inflation_context"]["series"].extend(items)
+        items,status=collect_asia_core(now)
+        out["inflation_context"]["audit"].update(status)
         out["inflation_context"]["series"].extend(items)
     return out
 

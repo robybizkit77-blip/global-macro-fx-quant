@@ -708,4 +708,22 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(len(items),1)
         self.assertEqual(audit["STATCAN_18100256_TRIM_YOY"]["status"],"WITHHELD_FETCH_OR_VALIDATION")
 
+    def test_japan_and_abs_core_exact_identity(self):
+        rows=[["類・品目","総合","生鮮食品を除く総合"],["Group/Item","All items","All items, less fresh food"],
+              ["類・品目符号(Group/Item code)","0001","0161"],["Serial"],["Weight"],["Weight ratio"]]
+        months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+        table="<table><tr><th></th><th>All groups CPI (%)</th><th>Trimmed mean (%)</th></tr>"
+        for i in range(20):
+            y,m=divmod(2026*12+9-19+i,12)
+            rows.append([f"{y}{m+1:02d}","4.9",str(1+i/10)])
+            table+=f"<tr><td>{months[m]}-{y%100:02d}</td><td>4.9</td><td>{1+i/10}</td></tr>"
+        table+="</table>"
+        out=StringIO();csv.writer(out).writerows(rows)
+        jp=out.getvalue().encode("cp932");au=table.encode()
+        items,audit=mod.collect_asia_core(NOW,fetcher=lambda u:jp if u==mod.JP_CORE_URL else au)
+        self.assertEqual(len(items),2)
+        self.assertTrue(all(x["dates"]==["2026-09","2026-10"] for x in items))
+        self.assertRaises(ValueError,mod.parse_jp_core,jp.replace(b"0161",b"0178"),NOW)
+        self.assertRaises(ValueError,mod.parse_abs_core,au.replace(b"Trimmed mean (%)",b"Weighted median (%)"),NOW)
+
 if __name__=="__main__":unittest.main()
