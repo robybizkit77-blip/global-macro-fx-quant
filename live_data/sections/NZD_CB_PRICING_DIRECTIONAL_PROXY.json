@@ -3,7 +3,7 @@
   "basis_warning": "Bank-bill/FRA rates contain bank-credit and term/basis components. Do not treat these levels as OCR OIS and do not compute OCR policy deltas from them.",
   "confidence_grade": "B_FOR_DIRECTION_C_FOR_POLICY_LEVEL",
   "currency": "NZD",
-  "generated_at_utc": "2026-11-25T22:25:48.145112Z",
+  "generated_at_utc": "2026-11-25T22:26:24.328309Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
@@ -54,7 +54,7 @@
   "monthly_reference": {
     "as_of": "2026-11-25",
     "current_source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261125ZFT.htm",
-    "decoded_source_sha256": "70ea75989b91dfb8416f50fde3c6c43169abb9b9ee7c668d79772e576ae58d17",
+    "decoded_source_sha256": "38239a1f1d3a34f6ddab429efda04ea64947e4197a4fdcf07f8fcb0f3e5876c8",
     "fx_engine_effect": "NONE",
     "horizons": {
       "12m": {
