@@ -379,12 +379,14 @@ jobs:
                   "semaphore-supplement-v1.json", "recession-traffic-light-v1.js",
                   "recession-traffic-light-v1.css", "macro-studio.js",
               )) + ("live_data/sections/MACRO_SERIES.json",)
-              paths += ("site/fx-quant-v2/cross-asset-live-data.json", "site/fx-quant-v2/cross-asset.html")
+              paths += ("site/fx-quant-v2/cross-asset-live-data.json", "site/fx-quant-v2/cross-asset.html",
+                        base + "risk-evidence-reading.js")
           elif source_workflow == "FX Quant V2 Cross-Asset Published Source Refresh":
               label = "CROSS_ASSET_PUBLIC_HTTP"
               paths = (
                   "site/fx-quant-v2/cross-asset-live-data.json",
                   "site/fx-quant-v2/cross-asset.html",
+                  "site/fx-quant-v2/next/risk-evidence-reading.js",
                   "site/fx-quant-v2/next/app.js",
                   "site/fx-quant-v2/next/index.html",
               )
