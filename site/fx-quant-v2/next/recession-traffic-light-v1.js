@@ -511,7 +511,7 @@ function inflationCatalog(catalog,today,country,overlay){
  const replacement={...src,id:target};
  const old=annualRateContext(catalog,today,country,INFLATION_MAP).find(x=>x.id===target);
  const next=annualRateContext({[country]:[replacement]},today,country,INFLATION_MAP).find(x=>x.id===target);
- if(!next?.available||next.stale||!finite(next.previous)||!next.prior||old?.available&&next.period<old.period)return catalog;
+ if(!next?.available||next.stale||(!index&&(!finite(next.previous)||!next.prior))||old?.available&&next.period<old.period)return catalog;
  if(old?.available&&next.period===old.period&&old.direction&&old.stale===false&&!next.annualGap)return catalog;
  return {...catalog,[country]:[...(catalog[country]||[]).filter(x=>x.id!==target),replacement]};
 }
