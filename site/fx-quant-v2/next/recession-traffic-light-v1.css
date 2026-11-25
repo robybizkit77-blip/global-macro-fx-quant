@@ -204,3 +204,44 @@
 .recession-light .sem-desk-detail>summary:focus-visible,.recession-light .sem-desk-evidence>summary:focus-visible{outline:2px solid var(--sem-blue);outline-offset:-3px}
 @media(max-width:830px){.recession-light .sem-desk-context{grid-template-columns:1fr}.recession-light .sem-desk-reading{padding:14px}}
 @media(max-width:550px){.recession-light .sem-desk-grid{grid-template-columns:1fr}.recession-light .sem-desk-lead p{font-size:14px}.recession-light .sem-desk-card p{font-size:13px}}
+
+/* G8 cycle dashboard: distinct visual hierarchy, scoped to the existing monitor. */
+.recession-light .sem-head h2{font-size:clamp(27px,3.5vw,38px);letter-spacing:-.04em}
+.recession-light .sem-head h2 small{font-size:.52em;letter-spacing:.05em;color:var(--sem-blue);margin-left:5px}
+.recession-light .sem-global-verdict{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:18px;align-items:center;background:#0a1d2c;border:1px solid #3c586e;border-left:4px solid #79d3c1;padding:20px;border-radius:10px;margin:16px 0}
+.recession-light .sem-global-verdict span,.recession-light .sem-dashboard-title span{font-size:10px;letter-spacing:.12em;font-weight:800;color:#8ec9da}
+.recession-light .sem-global-verdict h3{font-size:clamp(20px,2.4vw,29px);margin:7px 0;color:#f0f7fa;letter-spacing:-.035em}
+.recession-light .sem-global-verdict p,.recession-light .sem-global-turn small{font-size:12px;color:#a9c3d4;line-height:1.55;margin:0}
+.recession-light .sem-global-turn{border-left:1px solid #3c586e;padding-left:20px}
+.recession-light .sem-global-turn strong{display:block;font-size:26px;color:#edc67c;margin:7px 0}
+.recession-light .sem-turn-radar{margin:18px 0 24px}
+.recession-light .sem-turn-radar h3,.recession-light .sem-dashboard-title h3{font-size:19px;color:#edf6fc;margin:0 0 10px;letter-spacing:-.02em}
+.recession-light .sem-turn-chips{display:flex;gap:8px;flex-wrap:wrap}
+.recession-light .sem-turn-chip{display:flex;flex-direction:column;gap:4px;text-align:left;min-width:120px;flex:1 1 150px;max-width:260px;border:1px solid #3b5267;border-radius:8px;background:#142a3b;color:#d9e8f3;padding:10px 12px;cursor:pointer}
+.recession-light .sem-turn-chip strong{font-size:14px}.recession-light .sem-turn-chip span{font-size:11px;line-height:1.5}
+.recession-light .sem-turn-chip.green{border-left:3px solid var(--sem-green)}.recession-light .sem-turn-chip.red{border-left:3px solid var(--sem-red)}.recession-light .sem-turn-chip.amber{border-left:3px solid var(--sem-amber)}
+.recession-light .sem-dashboard-title{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:20px 0 10px}
+.recession-light .sem-dashboard-title h3{margin:5px 0 0}.recession-light .sem-dashboard-title small{max-width:48ch;font-size:11px;color:#a9c3d4;line-height:1.5}
+.recession-light .sem-country-board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:25px}
+.recession-light .sem-country-card{display:flex;flex-direction:column;min-width:0;background:#0d2233;border:1px solid #385166;border-top:3px solid var(--sem-blue);border-radius:10px;overflow:hidden}
+.recession-light .sem-country-card.green{border-top-color:var(--sem-green)}.recession-light .sem-country-card.red{border-top-color:var(--sem-red)}.recession-light .sem-country-card.amber{border-top-color:var(--sem-amber)}
+.recession-light .sem-country-card.selected{outline:1px solid #83d4f6;outline-offset:1px}
+.recession-light .sem-country-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;width:100%;text-align:left;background:#1b354a;color:#edf6fc;border:0;border-bottom:1px solid #3a5064;cursor:pointer}
+.recession-light .sem-country-card-head span{font-size:13px;min-width:0;overflow-wrap:anywhere}.recession-light .sem-country-card-head strong{font-size:11px;color:#9bc9df;white-space:nowrap}
+.recession-light .sem-country-card-body{padding:12px;display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.recession-light .sem-country-status{font-size:14px;font-weight:800;line-height:1.35}
+.recession-light .sem-country-status.green,.recession-light .sem-country-breadth-label .green{color:var(--sem-green)}.recession-light .sem-country-status.red,.recession-light .sem-country-breadth-label .red{color:var(--sem-red)}.recession-light .sem-country-status.amber,.recession-light .sem-country-breadth-label .amber{color:var(--sem-amber)}.recession-light .sem-country-status.neutral{color:var(--sem-blue)}
+.recession-light .sem-country-breadth{display:flex;height:7px;overflow:hidden;border-radius:5px;background:#31465a}
+.recession-light .sem-country-breadth i.green{background:#5ac996}.recession-light .sem-country-breadth i.red{background:#e47785}.recession-light .sem-country-breadth i.amber{background:#d2a657}.recession-light .sem-country-breadth i.neutral{background:#66849b}
+.recession-light .sem-country-breadth-label{display:flex;gap:9px;font-size:12px;font-weight:800;align-items:center}.recession-light .sem-country-breadth-label small{margin-left:auto;color:#a5bdce;font-size:10px;font-weight:500}
+.recession-light .sem-country-quick{font-size:12px;line-height:1.6;color:#dceaf3;margin:0;min-height:4.8em;overflow-wrap:anywhere}
+.recession-light .sem-country-turn{font-size:11px;line-height:1.5;color:#e8c47f;margin:0;padding:8px 0;border-top:1px solid #30475a}
+.recession-light .sem-context-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:auto}
+.recession-light .sem-context-metric{min-width:0;padding:8px;background:#172d40;border:1px solid #32495d;border-radius:6px}
+.recession-light .sem-context-metric>span{display:block;font-size:10px;color:#b2c9d9}.recession-light .sem-context-metric>strong{display:block;font-size:19px;color:#eaf4fb;margin:3px 0;font-variant-numeric:tabular-nums}.recession-light .sem-context-metric>small{display:block;color:#adc3d3;font-size:10px;line-height:1.4;overflow-wrap:anywhere}
+.recession-light .sem-export-trend{padding:6px 0 0}.recession-light .sem-export-trend svg{display:block;width:100%;height:45px}.recession-light .sem-export-trend small{display:flex;justify-content:space-between;gap:4px;font-size:9px;color:#9db7ca}.recession-light .sem-export-trend small span{text-align:center}
+.recession-light .sem-matrix-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:44px;border-radius:6px;border:1px solid #415a70;padding:4px 2px;text-align:center;font-size:10px;line-height:1.2}
+.recession-light .sem-matrix-cell b{font-size:16px}.recession-light .sem-matrix-cell.green{background:#194d3b;color:#b0f7cf;border-color:#326d50}.recession-light .sem-matrix-cell.red{background:#552c38;color:#ffb0b7;border-color:#854651}.recession-light .sem-matrix-cell.amber{background:#51432b;color:#ffe1a5;border-color:#7a653f}.recession-light .sem-matrix-cell.neutral{background:#253c50;color:#b7d3eb}
+.recession-light .sem-country-card-head:focus-visible,.recession-light .sem-turn-chip:focus-visible{outline:2px solid #9bdeff;outline-offset:-3px}
+@media(max-width:1240px){.recession-light .sem-country-board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.recession-light .sem-country-board,.recession-light .sem-global-verdict{grid-template-columns:1fr}.recession-light .sem-global-turn{border-left:0;border-top:1px solid #3c586e;padding:12px 0 0}.recession-light .sem-dashboard-title{display:block}.recession-light .sem-dashboard-title small{display:block;margin-top:6px}.recession-light .sem-country-quick{min-height:0}}
