@@ -20,20 +20,20 @@
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3Z2027",
           "contract_description": "Dec 2027",
           "expiration": "2028-03-14",
-          "futures_price": 99.485,
+          "futures_price": 99.5,
           "mapping": "nearest ICE SARON accrual start to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-24T14:59:22Z",
-          "quote_as_of": "2026-11-24",
+          "price_valid_until": "2026-11-25T15:11:03Z",
+          "quote_as_of": "2026-11-25",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.515,
+          "rate": 0.5,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 51.5,
+          "raw_level_minus_spot_policy_bp": 50.0,
           "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
