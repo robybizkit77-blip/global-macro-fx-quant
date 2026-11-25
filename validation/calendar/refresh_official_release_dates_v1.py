@@ -3,7 +3,7 @@
 
 import json
 import re
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
 from html import unescape
 from pathlib import Path
@@ -25,6 +25,13 @@ SYDNEY = ZoneInfo("Australia/Sydney")
 NEW_YORK = ZoneInfo("America/New_York")
 ZURICH = ZoneInfo("Europe/Zurich")
 ROME = ZoneInfo("Europe/Rome")
+LONDON = ZoneInfo("Europe/London")
+TOKYO = ZoneInfo("Asia/Tokyo")
+LUXEMBOURG = ZoneInfo("Europe/Luxembourg")
+ONS_CPI = "https://www.ons.gov.uk/releasecalendar?keywords=consumer+price+inflation&limit=100&release-type=type-upcoming"
+JP_CPI = "https://www.stat.go.jp/english/data/cpi/1582.html"
+EU_CAL = "https://ec.europa.eu/eurostat/news/euro-indicators/release-calendar"
+MONTH = r"(?:January|February|March|April|May|June|July|August|September|October|November|December)"
 
 GDP = re.compile(r"GDP \((Advance|Second|Third) Estimate\)(?:, .+| and .+)?")
 PERIOD = re.compile(r"(?:[1-4](?:st|nd|rd|th) Quarter(?: and Year)?|[A-Z][a-z]+) \d{4}")
@@ -174,6 +181,82 @@ def parse_fso(document):
     return rows
 
 
+
+def parse_ons_cpi(document):
+    # Only the main bulletin, not time series, PPI or CPIH contribution releases.
+    rows = []
+    pattern = (r"Consumer price inflation, UK:\s*("+MONTH+r" \d{4})\s*"
+               r"Release date:\s*(\d{1,2} "+MONTH+r" \d{4})\s*(\d{1,2}:\d{2})\s*(am|pm)\s*\|\s*Confirmed")
+    for period, day, clock, meridiem in re.findall(pattern, plain(document), re.I):
+        when = datetime.strptime(f"{day} {clock}{meridiem.upper()}", "%d %B %Y %I:%M%p").replace(tzinfo=LONDON)
+        if when.date().replace(day=1) <= datetime.strptime(period, "%B %Y").date():
+            raise ValueError("ONS release precedes its reference month")
+        rows.append(event("GBP", when, "INFLATION", "Consumer price inflation, UK",
+                          period, "ONS", ONS_CPI, quality="OFFICIAL_CONFIRMED"))
+    if not rows:
+        raise ValueError("ONS confirmed headline CPI schedule missing")
+    return rows
+
+
+def parse_jp_cpi(document):
+    # The first two columns are national CPI; never substitute Tokyo CPI.
+    rows, reference_year, release_year = [], None, None
+    for table in re.findall(r"<table\b[^>]*>(.*?)</table>", document, re.S | re.I):
+        if not all(x in plain(table) for x in ("Survey month", "Date of release", "Tokyo")):
+            continue
+        for tr in re.findall(r"<tr\b[^>]*>(.*?)</tr>", table, re.S | re.I):
+            cells = [plain(c) for c in re.findall(r"<t[dh]\b[^>]*>(.*?)</t[dh]>", tr, re.S | re.I)]
+            if len(cells) < 4:
+                continue
+            ref = re.fullmatch(r"("+MONTH+r")(?:,?\s+(20\d{2}))?", cells[0])
+            rel = re.fullmatch(r"("+MONTH+r")\s+(\d{1,2})(?:,?\s+(20\d{2}))?", cells[1])
+            if not ref or not rel:
+                continue
+            if ref[2]:
+                reference_year = int(ref[2])
+            if rel[3]:
+                release_year = int(rel[3])
+            if reference_year is None or release_year is None:
+                raise ValueError("Japan schedule year not explicit")
+            period = f"{ref[1]} {reference_year}"
+            when = datetime.strptime(f"{rel[1]} {rel[2]} {release_year} 08:30", "%B %d %Y %H:%M").replace(tzinfo=TOKYO)
+            refday = datetime.strptime(period, "%B %Y").date()
+            if not 0 < (when.date()-refday).days <= 92:
+                raise ValueError("Japan CPI month/year relationship invalid")
+            rows.append(event("JPY", when, "INFLATION", "Japan Consumer Price Index",
+                              period, "Statistics Bureau of Japan", JP_CPI,
+                              quality="OFFICIAL_CONFIRMED"))
+    if not rows:
+        raise ValueError("Japan national CPI schedule missing")
+    return rows
+
+
+def parse_eurostat_flash(document, source):
+    # A date-only release is deliberate: no fabricated time when the
+    # issuer calendar does not provide one. Client-side shells fail closed.
+    rows = []
+    pattern = (r"Flash estimate inflation euro area,\s*("+MONTH+r" \d{4})\s*"
+               r"(\d{1,2} "+MONTH+r" \d{4})\s*(?:ECFIN\s*)?Data release")
+    for period, day in re.findall(pattern, plain(document), re.I):
+        when = datetime.strptime(day, "%d %B %Y").replace(tzinfo=LUXEMBOURG)
+        refday = datetime.strptime(period, "%B %Y").date()
+        if not 0 <= (when.date()-refday).days <= 62:
+            raise ValueError("Eurostat flash date disagrees with reference month")
+        row = event("EUR", when, "INFLATION", "Euro area flash inflation",
+                    period, "Eurostat", source)
+        row["time_local"] = None
+        rows.append(row)
+    if not rows:
+        raise ValueError("Eurostat flash CPI calendar rows missing")
+    return rows
+
+
+def eurostat_urls(now):
+    start = now.astimezone(LUXEMBOURG).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    following = (start + timedelta(days=32)).replace(day=1)
+    return [f"{EU_CAL}?start={int(x.timestamp()*1000)}&type=listMonth" for x in (start, following)]
+
+
 def identity(row):
     title = row.get("title", "")
     period = row.get("reference_period", "")
@@ -203,7 +286,7 @@ def upcoming(row, now):
 def apply_rows(events, rows, now):
     incoming = {}
     for new in rows:
-        if scheduled(new) <= now:
+        if not upcoming(new, now):
             continue
         key = identity(new)
         if key in incoming and incoming[key] != new:
@@ -240,7 +323,9 @@ def refresh(path, now, read=fetch):
     events = payload["events"]
     receipts = []
     for name, url in (("BEA", BEA), ("BEA_NEXT", BEA_NEXT), ("ABS", ABS),
-                      ("SECO_GDP", SECO_GDP), ("SECO_FLASH", SECO_FLASH), ("FSO_CPI", FSO_CPI)):
+                      ("SECO_GDP", SECO_GDP), ("SECO_FLASH", SECO_FLASH), ("FSO_CPI", FSO_CPI),
+                      ("ONS_CPI", ONS_CPI), ("JP_CPI", JP_CPI),
+                      *((f"EU_FLASH_{i}", url) for i, url in enumerate(eurostat_urls(now)))):
         try:
             document = read(url)
             if name.startswith("BEA"):
@@ -252,6 +337,12 @@ def refresh(path, now, read=fetch):
                 rows = parse_abs(document)
             elif name == "FSO_CPI":
                 rows = parse_fso(document)
+            elif name == "ONS_CPI":
+                rows = parse_ons_cpi(document)
+            elif name == "JP_CPI":
+                rows = parse_jp_cpi(document)
+            elif name.startswith("EU_FLASH_"):
+                rows = parse_eurostat_flash(document, url)
             else:
                 rows = parse_seco(document, url)
             events, count = apply_rows(events, rows, now)
