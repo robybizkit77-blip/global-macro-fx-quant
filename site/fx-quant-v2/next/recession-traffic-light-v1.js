@@ -1186,23 +1186,27 @@ function render({catalog={},dayNow,country='USD',overlay=null,feedStatus=null,es
    const label=phase?overview[ccy].phaseLabels[phase]:tones[a.signal.tone];
    return '<span class="sem-matrix-cell '+a.signal.tone+'" title="'+esc(a.name+' · '+label+(cell?.periods?.length?' · '+cell.periods.join(' / '):''))+'"><b>'+symbols[a.signal.tone]+'</b><span>'+esc(label)+'</span></span>';
  };
+ const byTone=t=>FX.filter(ccy=>overview[ccy].reading.aggregateTone===t).map(ccy=>NAMES[ccy]).join(', ');
+ const globalSummary=[marketCount('green')?'Miglioramento diffuso: '+byTone('green')+'.':'',marketCount('red')?'Deterioramento diffuso: '+byTone('red')+'.':'',marketCount('amber')?'Quadro misto: '+byTone('amber')+'.':'',marketCount('neutral')?'Lettura non sufficientemente allineata: '+byTone('neutral')+'.':''].filter(Boolean).join(' ');
+ const priceGroup=dir=>FX.filter(ccy=>{const h=overview[ccy].head;return h?.available&&!h.stale&&h.direction===dir;}).map(ccy=>NAMES[ccy]).join(', ');
+ const priceSummary=[priceGroup('accelera')?'Inflazione headline in accelerazione: '+priceGroup('accelera')+'.':'',priceGroup('rallenta')?'In rallentamento: '+priceGroup('rallenta')+'.':'',priceGroup('stabile')?'Stabile: '+priceGroup('stabile')+'.':''].filter(Boolean).join(' ')||'Direzione dei prezzi non sufficientemente documentata.';
+ const countryTabs='<nav class="sem-client-tabs" aria-label="Seleziona economia da approfondire">'+FX.map(ccy=>'<button type="button" data-ms-country="'+ccy+'" aria-pressed="'+String(ccy===selected)+'">'+FLAGS[ccy]+' '+esc(ccy)+'</button>').join('')+'</nav>';
+ const fold=(title,subtitle,body)=>'<details class="sem-client-fold"><summary><span><strong>'+title+'</strong><small>'+subtitle+'</small></span></summary><div class="sem-client-fold-body">'+body+'</div></details>';
  const feedMode=feedStatus?.mode||(overlay?'provided':'missing');
  const feedMessage=feedMode==='network'?'Fonti supplementari caricate · '+esc(feedStatus.as_of):feedMode==='retained'?'ATTENZIONE — aggiornamento non riuscito. Ultimo archivio disponibile: '+esc(feedStatus.as_of)+'. Periodi originali invariati.':feedMode==='missing'?'ATTENZIONE — feed supplementare non caricato. Copertura parziale: non interpretare le aree mancanti come deterioramento economico.':'';
  const hasStale=rows.some(x=>x.items.some(z=>z?.stale));
  const hasManual=rows.some(x=>x.items.some(z=>z?.source?.includes('verificato manualmente')));
  return '<section class="recession-light" aria-labelledby="recession-light-title" data-semaphore-feed="'+esc(feedMode)+'" data-semaphore-coverage="'+covered+'">'+
   '<header class="sem-head"><div><span class="sem-kicker">GLOBAL MACRO / G8 / LETTURA CICLICA</span>'+
-  '<h2 id="recession-light-title">Economic Cycle Monitor <small>G8</small></h2>'+
-  '<p>Il semaforo economico: direzione, fase degli indicatori e segnali di svolta. I colori non sono un ranking di forza FX né una probabilità di recessione.</p></div>'+
+  '<h2 id="recession-light-title">01 · Quadro economico globale <small>G8</small></h2>'+
+  '<p>Come cambiano attività, prezzi e rischi economici nelle otto economie. I segnali descrivono le ultime osservazioni, non una previsione di recessione.</p></div>'+
   '<span class="sem-date">Consultazione '+esc(today)+' · periodi originali in tabella</span></header>'+
   (feedMessage?'<p class="sem-source-note" role="status">'+feedMessage+(feedMode==='network'?'':' <button type="button" class="ghost-btn small" data-sem-feed-retry>Riprova</button>')+'</p>':'')+
   '<div class="sem-overview"><div class="sem-overview-coverage"><span>Copertura dati G8</span><strong>'+covered+'<small>/56</small></strong><div class="sem-coverage-track" role="progressbar" aria-label="Copertura G8" aria-valuenow="'+covered+'" aria-valuemin="0" aria-valuemax="56"><i style="width:'+(covered/56*100)+'%"></i></div></div>'+['green','amber','red','neutral'].map(t=>'<div class="sem-overview-kpi '+t+'"><span>'+tones[t]+'</span><strong>'+tally(allRows,t)+'</strong></div>').join('')+'</div>'+
   '<div class="sem-global-verdict"><div><span>QUADRO G8 · DIFFUSIONE DELLE DIREZIONI</span><h3>'+marketCount('green')+' migliorano · '+marketCount('red')+' peggiorano</h3><p>'+marketCount('amber')+' quadri misti · '+marketCount('neutral')+' letture non allineate o insufficienti. Regole descrittive, non un confronto del livello di crescita.</p></div><div class="sem-global-turn"><span>PUNTI DI SVOLTA · LOCALI</span><strong>'+turningCountries.length+' economie</strong><small>Non equivalgono a inversioni confermate del ciclo.</small></div></div>'+
+  '<div class="sem-client-world"><article><h3>Attività economica</h3><p>'+esc(globalSummary)+'</p></article><article><h3>Pressioni sui prezzi</h3><p>'+esc(priceSummary)+'</p><small>Periodi nazionali non necessariamente coincidenti; non è un confronto sincrono.</small></article></div>'+
   '<section class="sem-turn-radar" aria-label="Radar delle svolte"><h3>Radar delle svolte</h3><div class="sem-turn-chips">'+(turnList||'<p>Nessuna nuova inversione rilevata con evidenza sufficiente.</p>')+'</div></section>'+
-  '<div class="sem-dashboard-title"><div><span>COUNTRY BOARD</span><h3>Le otto economie in 30 secondi</h3></div><small>Seleziona una scheda per il dettaglio. Prezzi, salari ed export sono contesto separato.</small></div>'+
-  regimeMap+
-  '<div class="sem-country-board">'+cards+'</div>'+
-  divergencePanel+
+  '<div class="sem-dashboard-title sem-client-chapter"><div><span>02 / CONFRONTO G8</span><h3>Le otto economie a confronto</h3></div><small>Seleziona un paese nella matrice per approfondire.</small></div>'+
   '<div class="sem-g8-title"><strong>Matrice del ciclo · sette aree</strong><span>Fase soltanto se gli indicatori attivi concordano su una soglia definita.</span></div>'+
   '<div class="sem-g8-scroll"><table class="sem-g8-table"><thead><tr><th scope="col">Paese</th>'+
   AREAS.map(a=>'<th scope="col">'+esc(a.short)+'</th>').join('')+'</tr></thead><tbody>'+
@@ -1210,17 +1214,21 @@ function render({catalog={},dayNow,country='USD',overlay=null,feedStatus=null,es
    FLAGS[c]+' '+c+'</button></th>'+universe[c].map(a=>'<td>'+phaseDot(c,a)+'</td>').join('')+'</tr>').join('')+
   '</tbody></table></div>'+
   '<div class="sem-legend">'+['green','amber','red','neutral'].map(t=>'<span class="sem-legend-item"><span class="sem-mini sem-cell '+t+'" aria-hidden="true">'+symbols[t]+'</span>'+tones[t]+'</span>').join('')+'</div>'+
+  fold('Mappa dei regimi e divergenze','Confronti relativi, attività e inflazione',regimeMap+divergencePanel)+
+  fold('Schede comparative G8','Dettagli, contesto prezzi, salari ed esportazioni delle otto economie','<div class="sem-country-board">'+cards+'</div>')+
+  '<div class="sem-dashboard-title sem-client-chapter"><div><span>03 / ANALISI PAESE</span><h3>'+FLAGS[selected]+' '+esc(NAMES[selected])+'</h3></div><small>Scegli l’economia da analizzare.</small></div>'+countryTabs+
+  narrativeNote+
+  '<div class="sem-client-context"><div class="sem-context-metrics">'+rateTile('Inflazione',overview[selected].head)+rateTile('Core',overview[selected].core)+rateTile('Salari',overview[selected].wage)+rateTile('Export reale',overview[selected].external)+'</div></div>'+
   '<div class="sem-sector-compare" aria-label="Industria e servizi a confronto"><p>Industria e servizi · direzione del ciclo</p><div class="sem-sector-compare-grid">'+
     sectorSummary('industry','Manifattura')+sectorSummary('services','Servizi')+'</div>'+
     '<small>La direzione non è il livello: un PSI sopra 50 può rallentare pur restando in espansione. Non confrontare i livelli di serie differenti.</small></div>'+
   '<div class="sem-country-caption"><div>'+FLAGS[selected]+' <strong>'+esc(NAMES[selected])+'</strong><small>Dettaglio per indicatore</small></div><div class="sem-country-counts">'+['green','amber','red','neutral'].map(t=>'<span class="sem-country-count '+t+'" title="'+tones[t]+'">'+symbols[t]+' '+tally(rows,t)+'</span>').join('')+'</div></div>'+
-  narrativeNote+
-  historyPanel+
-  '<section class="sem-desk-turn" aria-label="Punti di svolta">'+turningNote+'</section>'+
+  fold('Grafici storici','Attività, inflazione, salari e domanda estera',historyPanel)+
+  fold('Segnali di svolta','Persistenza e periodi di osservazione','<section class="sem-desk-turn" aria-label="Punti di svolta">'+turningNote+'</section>')+
   '<div class="sem-desk-context"><details class="sem-desk-detail"><summary>Inflazione · dettaglio dei dati</summary><div>'+inflationNote+'</div></details>'+
   '<details class="sem-desk-detail"><summary>Salari · dettaglio dei dati</summary><div>'+wageNote+'</div></details>'+
   '<details class="sem-desk-detail"><summary>Domanda estera · dettaglio dei dati</summary><div>'+externalNote+'</div></details></div>'+
-  '<details class="sem-desk-evidence" open><summary>Sette aree del ciclo · dettaglio per indicatore</summary>'+
+  '<details class="sem-desk-evidence"><summary>Sette aree del ciclo · dettaglio per indicatore</summary>'+
   '<div class="sem-table" role="table" aria-label="Semaforo economico '+esc(NAMES[selected])+'">'+
   '<div class="sem-columns" role="row"><span role="columnheader">Area</span><span role="columnheader">Ultima evidenza disponibile</span><span role="columnheader">Segnale</span></div>'+
   rows.map(r=>'<div class="sem-row '+r.signal.tone+'" role="row"><div role="cell" class="sem-area"><strong>'+esc(r.name)+'</strong><span class="sem-area-reading">'+esc(tones[r.signal.tone])+'</span><small>'+esc(r.why)+'</small></div>'+
