@@ -68,3 +68,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.rd-root .rd-country-body .rd-lead + .rd-lead {
+  margin-top: 14px;
+}
