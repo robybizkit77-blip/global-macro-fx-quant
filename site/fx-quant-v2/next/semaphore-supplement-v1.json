@@ -4447,6 +4447,70 @@
           "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
           "source_series_id": "LCEAMN01JPQ659S"
         }
+      },
+      {
+        "ccy": "NZD",
+        "area": "wages",
+        "id": "SEM_G8_NZD_WAGES",
+        "label": "Labour Cost Index nominale (tutti i settori, inclusi straordinari)",
+        "frequency": "Q",
+        "unit": "% a/a",
+        "dates": [
+          "2026-Q2",
+          "2026-Q3"
+        ],
+        "values": [
+          2.0,
+          2.1
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "Stats NZ / tabella LCI annual percentage change · verificato manualmente, non acquisito automaticamente",
+        "source_page": "https://www.stats.govt.nz/information-releases/labour-market-statistics-september-2026-quarter/",
+        "source_series_id": "STATSNZ_LCI_ALL_RATES_YOY",
+        "metric_kind": "points",
+        "observation_as_of": "2026-Q3",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "Q",
+          "dates": [
+            "2023-Q4",
+            "2024-Q1",
+            "2024-Q2",
+            "2024-Q3",
+            "2024-Q4",
+            "2025-Q1",
+            "2025-Q2",
+            "2025-Q3",
+            "2025-Q4",
+            "2026-Q1",
+            "2026-Q2",
+            "2026-Q3"
+          ],
+          "values": [
+            4.3,
+            4.1,
+            4.3,
+            3.8,
+            3.3,
+            2.9,
+            2.4,
+            2.1,
+            2.0,
+            2.0,
+            2.0,
+            2.1
+          ],
+          "observations": 12,
+          "max_observations": 12,
+          "quality": "MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT",
+          "source_series_id": "STATSNZ_LCI_ALL_RATES_YOY"
+        },
+        "manual_verified_on": "2026-11-25",
+        "official_release_date": "2026-11-04",
+        "manual_expires_on": "2027-02-04"
       }
     ],
     "audit": {
@@ -4469,6 +4533,13 @@
         "days_since_period_end": 148,
         "history_observations": 12,
         "proxy_scope": "manufacturing hourly earnings only"
+      },
+      "NZD": {
+        "status": "READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+        "last_observation": "2026-Q3",
+        "days_since_period_end": 56,
+        "history_observations": 12,
+        "automatic_fetch": "FAILED"
       }
     }
   }
