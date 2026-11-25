@@ -108,6 +108,20 @@ class G8SemaphoreSources(unittest.TestCase):
         with self.assertRaises(ValueError):
             mod.parse_ons_wage(raw.replace(b"Whole Economy",b"Private Sector"),NOW)
 
+    def test_can_wage_wds_coordinate_and_exact_annual_rates(self):
+        meta={"productId":mod.CAN_WAGE_PID,"cubeTitleEn":"Employee wages by industry, monthly, unadjusted for seasonality",
+              "dimension":[{"dimensionNameEn":name,"dimensionPositionId":i+1,"member":[{"memberNameEn":value,"memberId":i+1},{"memberNameEn":"Other","memberId":99}]} for i,(name,value) in enumerate(mod.CAN_WAGE_MEMBERS.items())]}
+        coord=mod.can_wage_coordinate(meta)
+        self.assertEqual(coord,"1.2.3.4.5.6.0.0.0.0")
+        obj={"productId":mod.CAN_WAGE_PID,"coordinate":coord,
+             "vectorDataPoint":[{"refPer":f"{y}-{m:02d}-01","value":30*(1.04**(y-2023)),"scalarFactorCode":0} for y in (2023,2024,2025) for m in range(1,13)]}
+        obs=mod.parse_can_wage_wds(obj,coord,NOW)
+        self.assertEqual(len(obs),24)
+        self.assertAlmostEqual(obs[-1][1],4.0)
+        with self.assertRaises(ValueError):mod.parse_can_wage_wds(obj,"9.2.3.4.5.6.0.0.0.0",NOW)
+        meta["dimension"][0]["member"][0]["memberNameEn"]="Ontario"
+        with self.assertRaises(ValueError):mod.can_wage_coordinate(meta)
+
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
