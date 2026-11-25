@@ -84,3 +84,18 @@ assert.doesNotMatch(riskView,/researchBridge\(['"]risk['"]\)/,'Keep one risk rea
 assert.match(riskView,/<summary>Dati del confronto<\/summary>/,'Keep matched observations available');
 assert(app.includes('Variazione dello spread'),'OAS displayed as bps, not OAS percent changes');
 console.log('NEXT_RISK_V23_PASS: 5/5 real common-session Nov 04-05 observations, equity/VIX/HY/IG units, Nov 10 historical caveat, missing/future/duplicate guards.');
+
+const {latestObservations,renderFirstRead}=require(path.join(root,next+'risk-evidence-reading.js'));
+const extended=structuredClone(feed.streams);
+extended.DJIA={date:today,previous:50000,value:50500,history:[['2026-11-09',50000],[today,50500]],quality:'PUBLISHED_SOURCE_RESEARCH_ONLY',not_intraday:true};
+extended.SX5E={date:today,previous:5900,value:5841,history:[['2026-11-09',5900],[today,5841]],quality:'PUBLISHED_SOURCE_RESEARCH_ONLY',not_intraday:true};
+const equityRows=latestObservations(extended,today);
+assert.equal(equityRows.length,7);
+assert(close(equityRows.find(x=>x.key==='DJIA').delta,1));
+assert(close(equityRows.find(x=>x.key==='SX5E').delta,-1));
+const rendered=renderFirstRead(extended,today);
+assert.match(rendered,/Dow Jones/);
+assert.match(rendered,/Euro Stoxx 50/);
+assert.deepEqual(read(extended,today),actual,'Extra observations must not change the matched five-way regime');
+assert.equal(latestObservations(feed.streams,today).find(x=>x.key==='SX5E').ok,false);
+console.log('NEXT_VISIBLE_EQUITY_OBSERVATIONS_PASS');
