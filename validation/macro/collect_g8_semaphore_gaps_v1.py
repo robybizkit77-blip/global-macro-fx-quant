@@ -1095,6 +1095,85 @@ def parse_real_ca_mfg(raw,now):
             if len(vectors)!=1 or len(obs)<12:raise ValueError("Real manufacturing series ambiguous or incomplete")
             return sorted(obs.items())
 
+ABS_VOLUME_KEY="ABS_A130271111R_HOUSEHOLD_REAL"
+SECO_SERVICES_KEY="SECO_SERVICES_GDP_CONTRIBUTION_CSSA"
+SECO_CSV="https://scheduler.swissdatas.ch/scheduled/ch-seco-gdp.csv"
+SECO_META="https://scheduler.swissdatas.ch/scheduled/ch-seco-gdp.json"
+SECO_SECTORS=("trade","transp","hotel","com","findl","b_serv","admin","edu","health","entertain","other_serv","hh_prod")
+def parse_abs_volume(raw,now):
+    from openpyxl import load_workbook
+    book=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
+    try:
+        ws=book["Data1"];rows=list(ws.values)
+        matches=[]
+        for i,col in enumerate(zip(*rows[:10])):
+            if col[9]=="A130271111R" and col[0]=="Household spending ;  Total (Household Spending Categories) ;  Australia ;  Chain Volume Measures ;" and col[1:5]==("$ Millions","Seasonally Adjusted","FLOW","Quarter"):matches.append(i)
+        if len(matches)!=1:raise ValueError("ABS real total identity changed")
+        col=matches[0];out={}
+        for row in rows[10:]:
+            d=row[0]
+            if not hasattr(d,"year") or not hasattr(d,"month"):continue
+            if d.month not in (3,6,9,12):raise ValueError("ABS volume quarter date")
+            p=f"{d.year}-Q{d.month//3}";v=row[col]
+            if period_end(p)>now or v is None:continue
+            if not isinstance(v,(int,float)) or isinstance(v,bool) or not math.isfinite(v) or v<=0 or p in out:raise ValueError("ABS real total invalid value")
+            out[p]=v
+        if len(out)<12:raise ValueError("ABS volume history insufficient")
+        return sorted(out.items())
+    finally:book.close()
+
+def fetch_abs_volume():
+    from urllib.parse import urljoin
+    page=abs_services_fetch(ABS_MHSI_SERVICES).decode("utf-8","replace")
+    links={urljoin(ABS_MHSI_SERVICES,unescape(x)) for x in re.findall(r'href=["\']([^"\']*5682015\.xlsx(?:\?[^"\']*)?)["\']',page,re.I)}
+    links={x for x in links if urlsplit(x).hostname=="www.abs.gov.au" and x.startswith("https://")}
+    if len(links)!=1:raise ValueError("ABS latest real table link missing or ambiguous")
+    return fetch_real_context(next(iter(links)))
+
+def fetch_real_context(url):
+    if url not in {SECO_CSV,SECO_META} and not (url.startswith("https://www.abs.gov.au/") and re.search(r"/5682015\.xlsx(?:\?|$)",url,re.I)):raise ValueError("real context URL not registered")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0"})
+    with urlopen(req,timeout=25) as r:
+        if not r.geturl().startswith("https://") or urlsplit(r.geturl()).hostname!=urlsplit(url).hostname:raise ValueError("real context redirect")
+        raw=r.read(12_000_001)
+        if not raw or len(raw)>12_000_000:raise ValueError("real context response size")
+        return raw
+
+def parse_seco_services(raw,meta,now):
+    if meta.get("source_name",{}).get("en")!="State Secretariat for Economic Affairs (SECO)" or meta.get("units",{}).get("type",{}).get("gc_q",{}).get("en")!="Percentage points" or meta.get("labels",{}).get("seas_adj",{}).get("cssa",{}).get("en")!="Seasonally, calendar and sports event adjusted":raise ValueError("SECO contribution metadata identity")
+    labels=meta["labels"]["structure"]
+    if not all(k in labels for k in SECO_SECTORS):raise ValueError("SECO sector identity missing")
+    decoded=raw.decode("utf-8-sig");dialect=csv.Sniffer().sniff(decoded[:4096],delimiters=",;\t")
+    reader=csv.DictReader(io.StringIO(decoded),dialect=dialect)
+    if not {"structure","type","seas_adj","date","value"}.issubset(reader.fieldnames or []):raise ValueError("SECO columns changed")
+    values={}
+    for row in reader:
+        if row["type"]!="gc_q" or row["seas_adj"]!="cssa" or row["structure"] not in SECO_SECTORS:continue
+        p=period(row["date"],"Q")
+        if period_end(p)>now or not row["value"]:continue
+        v=float(row["value"]);group=values.setdefault(p,{})
+        if not math.isfinite(v) or abs(v)>20 or row["structure"] in group:raise ValueError("SECO contribution invalid")
+        group[row["structure"]]=v
+    obs=[(p,sum(v.values())) for p,v in sorted(values.items()) if set(v)==set(SECO_SECTORS)]
+    if len(obs)<12 or obs[-1][0]!=max(values):raise ValueError("SECO service contributions incomplete")
+    return obs
+
+def upgrade_quarterly_activity(out,now,abs_fetch=fetch_abs_volume,source_fetch=fetch_real_context):
+    specs=[
+      (dict(ccy="AUD",area="demand",key=ABS_VOLUME_KEY,method="official_real",name="Spesa reale famiglie (volumi concatenati, SA)",unit="mln AUD reali SA",frequency="Q",kind="percent",max_age_days=175,origin="ABS / A130271111R",source_page=ABS_MHSI_SERVICES),lambda:parse_abs_volume(abs_fetch(),now)),
+      (dict(ccy="CHF",area="services",key=SECO_SERVICES_KEY,method="official_contribution",name="Contributo dei servizi alla crescita reale del PIL (SA, corretto eventi sportivi)",unit="p.p. q/q",frequency="Q",kind="points",max_age_days=175,origin="SECO via Swissdatas / somma contributi settoriali",source_page=SECO_CSV),lambda:parse_seco_services(source_fetch(SECO_CSV),json.loads(source_fetch(SECO_META)),now))]
+    for spec,load in specs:
+        key=spec["ccy"]+"_"+spec["area"]
+        try:
+            item,status=candidate(spec,load(),now)
+            if item and item["history"]["observations"]>=12:
+                out["series"]=[x for x in out["series"] if (x["ccy"],x["area"])!=(spec["ccy"],spec["area"])]
+                out["series"].append(item)
+                out["audit"][key]={**status,"source_page":spec["source_page"],"origin":spec["origin"],"quality_upgrade":"REAL_ACTIVITY"}
+            else:out["audit"][key]["quality_upgrade_attempt"]=status
+        except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError,ImportError,__import__("zipfile").BadZipFile) as exc:
+            out["audit"][key]["quality_upgrade_attempt"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+
 def upgrade_real_activity(out,now,fred_fetch=fetch,ca_fetch=fetch_real_ca_mfg):
     for spec,load in [(REAL_US_SERVICES,lambda:parse_fred(fred_fetch(FRED+"PCESC96"),"PCESC96","M",now)),
                       (REAL_CA_MFG,lambda:parse_real_ca_mfg(ca_fetch(),now))]:
@@ -2366,6 +2445,7 @@ def collect(now=None,fetcher=fetch):
         out["audit"]["CAD_jobs"]=status
         out["source_count"]+=1
         upgrade_real_activity(out,now)
+        upgrade_quarterly_activity(out,now)
         out["wage_context"]=collect_wage_context(now)
         out["external_context"]=collect_external_context(now)
         out["inflation_context"]=collect_inflation_context(now)

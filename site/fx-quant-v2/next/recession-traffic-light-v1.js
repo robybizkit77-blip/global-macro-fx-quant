@@ -189,6 +189,8 @@ const VERIFIED_FRESH_FALLBACK={
  }
 };
 function verifiedFreshAlternative(x,c,key){
+ if(c==='AUD'&&key==='demand'&&x?.source_series_id==='ABS_A130271111R_HOUSEHOLD_REAL')return x.source_page==='https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release'&&x.frequency==='Q'&&x.metric_kind==='percent'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT';
+
  if(c==='AUD'&&['house','credit'].includes(key)){
    return !!x&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
      x.source_series_id===(key==='house'?'RBA_HOUSING_CREDIT_GROWTH_MM':'RBA_BUSINESS_CREDIT_GROWTH_MM')&&
@@ -241,7 +243,7 @@ function supplementary(overlay,country,key,today){
    ['percent','points'].includes(x.metric_kind)&&
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
-   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz|data\.snb\.ch|www\.bnz\.co\.nz|www\.anz\.co\.nz|tradingeconomics\.com)\//.test(x.source_page)&&
+   typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz|data\.snb\.ch|www\.bnz\.co\.nz|www\.anz\.co\.nz|tradingeconomics\.com|scheduler\.swissdatas\.ch)\//.test(x.source_page)&&
    (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
     x.metric_kind==='points'&&(/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page)||x.source_series_id==='BNZ_BUSINESSNZ_PSI'&&x.source_page==='https://www.bnz.co.nz/institutional-banking/research/publications'))));
  return matches.length===1?matches[0]:null;
@@ -290,7 +292,7 @@ const REAL_ACTIVITY_LEVELS=new Set([
  'UK_PRODUCTION_history_value','ONS_K222_DIOP','ONS_S2KU_IOS1','UK_RETAIL_VOL_history_value','ONS_J5EK_RETAIL_VOL',
  'JP_IIP_history_value','CH_PRODUCTION_history_value','CH_RETAIL_REAL_history_value',
  'NZ_RETAIL_VOLUME_Q_history_value','CA_RETAIL_VOLUME_history_value','CAN_RETAIL_REAL_LASPEYRES',
- '36100434_SERVICES_T003','JPNRGDPPRI','PCESC96','STATCAN_16100013_REAL_MFG_SALES'
+ '36100434_SERVICES_T003','JPNRGDPPRI','PCESC96','STATCAN_16100013_REAL_MFG_SALES','ABS_A130271111R_HOUSEHOLD_REAL'
 ]);
 const REAL_ACTIVITY_GROWTH=new Set([
  'JPNPRMNTO01GPSAM','SLRTTO01JPQ657S','PRMNTO01CHQ657S','SLRTTO01CHQ657S',
@@ -441,9 +443,10 @@ function model(catalog,today,country='USD',overlay=null){
    const officialAlternative=verifiedFreshAlternative(extra,c,area.key);
    const missingOriginal=metrics.length===0;
    const strictProxy=c==='NZD'&&['house','leading'].includes(area.key)||c==='AUD'&&['house','credit'].includes(area.key);
+   const preferRealDemand=c==='AUD'&&area.key==='demand'&&extra?.source_series_id==='ABS_A130271111R_HOUSEHOLD_REAL'&&officialAlternative;
    const preferNewer=(c==='EUR'&&area.key==='services'||c==='NZD'&&area.key==='leading'||
       c==='AUD'&&['house','credit'].includes(area.key))&&latestExtra>originalLatest;
-   const newerValid=(!strictProxy&&missingOriginal||officialAlternative&&(missingOriginal||baseline.tone==='neutral'||preferNewer));
+   const newerValid=(!strictProxy&&missingOriginal||officialAlternative&&(missingOriginal||baseline.tone==='neutral'||preferNewer||preferRealDemand));
    let supplement=null;
    if(extra&&newerValid){
      const src={...extra,source_file:extra.source_file+
