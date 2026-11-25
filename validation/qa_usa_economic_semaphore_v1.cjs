@@ -667,4 +667,10 @@ console.log('ECONOMIC_CYCLE_RELATIVE_DIVERGENCES_PASS');
  assert.equal(u.period,'2026-10');assert.equal(k.period,'2026-10');assert.ok(Math.abs(u.value-(323/311-1)*100)<1e-9);assert.equal(k.value,2.23);
  assert.equal(inflationContext(catalog,today,'USD',{...ov,inflation_context:{...ov.inflation_context,series:[{...us,source_page:'https://example.com'}]}}).find(x=>/core/i.test(x.label)).period,inflationContext(catalog,today,'USD').find(x=>/core/i.test(x.label)).period);
 }
+{
+ const aud=inflationContext(catalog,'2026-11-25','AUD');
+ const filtered=aud.filter(x=>/core|trimmed|median|\btrim\b/i.test(x.label));
+ assert.equal(filtered.length,1);
+ assert.match(filtered[0].id,/TRIMMED_MEAN/);
+}
 console.log('ECONOMIC_CYCLE_CORE_RECOVERY_PASS');

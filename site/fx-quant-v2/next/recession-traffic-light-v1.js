@@ -671,7 +671,7 @@ function macroNarrative(rows,inflation,wages,external,turning){
  const structural=valid.flatMap(r=>active(r)).filter(x=>x.cycle?.level!==null&&x.cycle?.level!==undefined);
  if(structural.length)growth+=' Tra gli indicatori con soglia definita, '+structural.filter(x=>x.cycle.level>0).length+' sopra e '+structural.filter(x=>x.cycle.level<0).length+' sotto soglia. Non equivale al livello del PIL.';
  const current=a=>a.filter(x=>x.available&&!x.stale&&x.freq!=='A'&&x.direction&&finite(x.value));
- const core=current(inflation.filter(x=>/core|trimmed|median|trim/i.test(x.label)));
+ const core=current(inflation.filter(x=>/core|trimmed|median|\btrim\b/i.test(x.label)));
  const head=current(inflation.filter(x=>/headline/i.test(x.label)));
  const w=current(wages);
  const describe=x=>x.label+' '+fmt(x.value,2)+'% a/a ('+x.period+', '+x.direction+')';
@@ -708,7 +708,7 @@ function countryInterpretation(rows,inflation,wages,external,narrative){
  const current=x=>x?.available&&!x.stale&&x.freq!=='A'&&finite(x.value)&&x.direction;
  const exp=current(external);
  const head=inflation.find(x=>/headline/i.test(x.label)&&current(x));
- const core=inflation.filter(x=>/core|trimmed|median|trim/i.test(x.label)&&current(x));
+ const core=inflation.filter(x=>/core|trimmed|median|\btrim\b/i.test(x.label)&&current(x));
  const wage=wages.find(current);
  const phase=x=>x?.direction;
  let label=!enough?'Evidenza parziale':breadth<0?'Segnali di rallentamento':breadth>0?'Segnali di recupero': 'Economia a due velocità';
@@ -764,7 +764,7 @@ function overviewCountry(rows,inflation,wages,external,turning,narrative){
  const cells=rows.map(r=>({key:r.key,name:r.name,tone:r.signal.tone,phase:phase(r),periods:active(r).filter(x=>x&&!x.stale&&!x.invalid&&x.verdict!==null).map(x=>x.period)}));
  const current=x=>x?.available&&!x.stale&&finite(x.value);
  const head=inflation.find(x=>/headline/i.test(x.label));
- const core=inflation.find(x=>/core|trimmed|median|trim/i.test(x.label));
+ const core=inflation.find(x=>/core|trimmed|median|\btrim\b/i.test(x.label));
  const wage=wages.find(current)||wages.find(x=>x.available);
  return {tone,label,up,down,mixed,missing,cells,phaseLabels,head,core,wage,external,
   turning,reading,summary:reading.economy,
@@ -840,7 +840,7 @@ function countryHistories(catalog,today,country,overlay,rows,context){
    if(activity.length>=2)break;
  }
  const inflationLocal=inflationCatalog(catalog,today,country,overlay)[country]||[];
- const inflation=(INFLATION_MAP[country]||[]).filter(([,label])=>/headline|core|trimmed|median|trim/i.test(label)).map(([id,label,freq,index])=>{
+ const inflation=(INFLATION_MAP[country]||[]).filter(([,label])=>/headline|core|trimmed|median|\btrim\b/i.test(label)).map(([id,label,freq,index])=>{
    const x=context.inflation.find(z=>z.id===id);
    let src=inflationLocal.find(z=>z.id===id);
    if(x?.annualGap&&src){const n=src.dates.findIndex(p=>p>x.period);if(n>=0)src={...src,dates:src.dates.slice(0,n),values:src.values.slice(0,n)};}
@@ -1124,7 +1124,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    const ok=x?.available&&finite(x.value);
    const direction=ok&&!x.stale&&x.freq!=='A'?x.direction:null;
    const mark={accelera:'↗',rallenta:'↘',stabile:'→'}[direction]||'—';
-   return '<div class="sem-context-metric"><span>'+esc(label)+'</span><strong>'+ (ok?esc(fmt(x.value,1))+'%':'—')+'</strong><small>'+esc(ok?x.period+(x.stale||x.freq==='A'?' · datato':' · '+mark+(direction?' '+direction:'')):'Non disponibile')+'</small></div>';
+   return '<div class="sem-context-metric"><span>'+esc(label)+'</span><strong>'+ (ok?esc(fmt(x.value,1))+'%':'—')+'</strong><small>'+esc(ok?x.period+(x.annualGap?' · base annua mancante':x.stale||x.freq==='A'?' · datato':' · '+mark+(direction?' '+direction:'')):'Non disponibile')+'</small></div>';
  };
  const cards=FX.map(ccy=>{
    const o=overview[ccy],t=o.turning,active=ccy===selected;

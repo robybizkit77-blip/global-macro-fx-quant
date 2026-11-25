@@ -21,7 +21,7 @@ if(missing.length||manual.length)console.log('::warning title=G8 source continui
 
  // Separate the dashboard's usable annual rates from confirmed source freshness.
  const core=Object.fromEntries(coverage.map(c=>{
-   const rows=inflationContext(catalog,today,c,overlay).filter(x=>/core|trimmed|median|trim/i.test(x.label));
+   const rows=inflationContext(catalog,today,c,overlay).filter(x=>/core|trimmed|median|\btrim\b/i.test(x.label));
    const sourceAudit=overlay.inflation_context?.audit?.[c]||null;
    return [c,{status:rows.length&&rows.every(x=>x.available&&!x.stale&&x.direction&&!x.annualGap)?'USABLE_MOMENTUM':'REVIEW_REQUIRED',
     series:rows.map(x=>({id:x.id,period:x.period||null,age:x.age??null,source:x.source||null,
