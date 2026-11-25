@@ -7,6 +7,7 @@ from zipfile import ZipFile
 from openpyxl import load_workbook
 
 URLS={
+ "SWISS_CORE_FSO_2025":"https://dam-api.bfs.admin.ch/hub/api/dam/assets/36970583/master",
  "JAPAN_CORE_2025_YOY":"https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=1&statInfId=000040482953",
  "NZALT_BNZ_PSI":"https://www.bnz.co.nz/institutional-banking/research/publications",
  "NZALT_BNZ_ECONOMY":"https://www.bnz.co.nz/institutional-banking/research/publications/economy-watch",
@@ -64,6 +65,19 @@ def call(name,url):
   with urllib.request.urlopen(r,timeout=18) as x:
    data=x.read(28_000_000+1)
    if len(data)>28_000_000: return {"error":"file above 28MB budget"}
+   if name=="SWISS_CORE_FSO_2025":
+    book=load_workbook(io.BytesIO(data),read_only=True,data_only=True)
+    ret={"bytes":len(data),"source":x.geturl(),"sheets":[]}
+    for ws in book.worksheets:
+     matches=[]
+     for i,row in enumerate(ws.iter_rows(values_only=True),1):
+      for j,v in enumerate(row,1):
+       if isinstance(v,str) and "core inflation 1" in v.casefold():
+        matches.append({"row":i,"column":j,"label":v,"head":[str(z)[:70] if z is not None else None for z in row[:12]],"tail":[str(z)[:70] if z is not None else None for z in row[-18:]]})
+      if i>2500:break
+     head=[[str(v)[:80] if v is not None else None for v in row] for row in ws.iter_rows(min_row=1,max_row=10,max_col=12,values_only=True)]
+     ret["sheets"].append({"name":ws.title,"rows":ws.max_row,"cols":ws.max_column,"head":head,"core_matches":matches[:8]})
+    return ret
    if name=="JAPAN_CORE_2025_YOY":
     for encoding in ("utf-8-sig","cp932"):
      try:decoded=data.decode(encoding);break
