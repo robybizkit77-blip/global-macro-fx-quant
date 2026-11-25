@@ -1,23 +1,23 @@
 {
   "schema": "GMFQ_NEXT_ESTIMATED_FX_RECALC_RECEIPT_V1",
-  "status": "RECALCULATED_WITH_CHANGES",
-  "checkedAtUtc": "2026-11-25T16:04:40.800Z",
+  "status": "NO_MATERIAL_THESIS_CHANGE",
+  "checkedAtUtc": "2026-11-25T16:06:06.567Z",
   "checkedDay": "2026-11-25",
-  "sourceCommit": "60e1ad0a657756e8d97cfbf2378c6503c4675529",
+  "sourceCommit": "2468d97b4bbcb7b3f3350897e3c3107dbfc990da",
   "method": "c54bb6f6a2fa76470e8c616c72b478e70735166b10c36cd32f35dddcf8cd0379",
   "sourceHashes": {
     "observed": "4d7eb076b90aa7334e64403cc3b25b35e7c7d629490535a24bfae2c8d073e309",
     "prices": "f1fd66c377d15e5710a54c60eb4ec4ded141b239c064046fcdea6e1703679ccb",
     "ois": "aa3b003dab2c1d6f9690be3ad1d1623fce9dc7b7b784ad8215045212d55b80a6",
     "rates": "d344c40f69c7f5415fd505a9dcf55f0d930f6b64fe5519465341cdb8fc7f075f",
-    "model": "a54d00c9fedf8f55cbcc05aa2cab1e0ac91065711384f73a1b7b245038449ad5"
+    "model": "f2abc30ccb080683c0105d22167c611a18a920ce98b8e0c1b67d7b30ca865413"
   },
   "inputChanges": [
-    "prices"
+    "model"
   ],
   "methodChanged": false,
   "comparisonBasis": "PREVIOUS_RECEIPT",
-  "previousFixingAsOf": "2026-11-24",
+  "previousFixingAsOf": "2026-11-25",
   "previousMacroAsOf": "2026-11-25",
   "fixingAsOf": "2026-11-25",
   "macroAsOf": "2026-11-25",
@@ -28,210 +28,9 @@
     "official6M": 4,
     "withGDPAcceleration": 5
   },
-  "changedPairs": [
-    {
-      "key": "EURCAD",
-      "previous": {
-        "favored": "CAD",
-        "thesis": "PARZIALE",
-        "timing": "BASSA ORA"
-      },
-      "current": {
-        "favored": "CAD",
-        "thesis": "PARZIALE",
-        "timing": "DA VALIDARE"
-      }
-    }
-  ],
-  "changedRanks": [
-    {
-      "ccy": "CAD",
-      "previous": 4,
-      "current": 3
-    },
-    {
-      "ccy": "CHF",
-      "previous": 3,
-      "current": 4
-    },
-    {
-      "ccy": "EUR",
-      "previous": 6,
-      "current": 7
-    },
-    {
-      "ccy": "NZD",
-      "previous": 7,
-      "current": 6
-    }
-  ],
-  "factorChanges": [
-    {
-      "ccy": "CAD",
-      "rank": {
-        "previous": 4,
-        "current": 3
-      },
-      "changes": {
-        "score": {
-          "previous": -0.160714,
-          "current": -0.046429,
-          "delta": 0.114285
-        },
-        "macroScore": {
-          "previous": -0.15,
-          "current": -0.15,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": 0,
-          "current": 0,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": -0.428571,
-          "current": 0.142857,
-          "delta": 0.571428
-        }
-      },
-      "monetaryQuality": {
-        "previous": "UFFICIALE",
-        "current": "UFFICIALE"
-      }
-    },
-    {
-      "ccy": "CHF",
-      "rank": {
-        "previous": 3,
-        "current": 4
-      },
-      "changes": {
-        "score": {
-          "previous": -0.139286,
-          "current": -0.082143,
-          "delta": 0.057143
-        },
-        "macroScore": {
-          "previous": -0.45,
-          "current": -0.45,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": 0,
-          "current": 0,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": 0.428571,
-          "current": 0.714286,
-          "delta": 0.285715
-        }
-      },
-      "monetaryQuality": {
-        "previous": "ASSENTE",
-        "current": "ASSENTE"
-      }
-    },
-    {
-      "ccy": "EUR",
-      "rank": {
-        "previous": 6,
-        "current": 7
-      },
-      "changes": {
-        "score": {
-          "previous": -0.421429,
-          "current": -0.535714,
-          "delta": -0.114285
-        },
-        "macroScore": {
-          "previous": -0.6,
-          "current": -0.6,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": -0.5,
-          "current": -0.5,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": 0.142857,
-          "current": -0.428571,
-          "delta": -0.571428
-        }
-      },
-      "monetaryQuality": {
-        "previous": "PROXY",
-        "current": "PROXY"
-      }
-    },
-    {
-      "ccy": "JPY",
-      "rank": {
-        "previous": 5,
-        "current": 5
-      },
-      "changes": {
-        "score": {
-          "previous": -0.207143,
-          "current": -0.264286,
-          "delta": -0.057143
-        },
-        "macroScore": {
-          "previous": -0.1,
-          "current": -0.1,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": -1,
-          "current": -1,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": 0.714286,
-          "current": 0.428571,
-          "delta": -0.285715
-        }
-      },
-      "monetaryQuality": {
-        "previous": "UFFICIALE",
-        "current": "UFFICIALE"
-      }
-    },
-    {
-      "ccy": "NZD",
-      "rank": {
-        "previous": 7,
-        "current": 6
-      },
-      "changes": {
-        "score": {
-          "previous": -0.422857,
-          "current": -0.422857,
-          "delta": 0
-        },
-        "macroScore": {
-          "previous": -0.35,
-          "current": -0.35,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": -0.35,
-          "current": -0.35,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": -0.714286,
-          "current": -0.714286,
-          "delta": 0
-        }
-      },
-      "monetaryQuality": {
-        "previous": "PROXY",
-        "current": "PROXY"
-      }
-    }
-  ],
+  "changedPairs": [],
+  "changedRanks": [],
+  "factorChanges": [],
   "currencies": [
     {
       "ccy": "AUD",
