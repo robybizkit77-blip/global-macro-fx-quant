@@ -485,6 +485,8 @@ const WAGE_MAP={
  CAD:[['CA_AVERAGE_HOURLY_WAGES_YOY','Salari orari medi','M']]
 };
 const CORE_RECOVERY={
+ CAD:[['STATCAN_18100256_MEDIAN_YOY','CA_CPI_MEDIAN_YOY_history_value','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810025601','% a/a',false],
+      ['STATCAN_18100256_TRIM_YOY','CA_CPI_TRIM_YOY_history_value','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810025601','% a/a',false]],
  EUR:['EUROSTAT_EA21_HICP_CORE_YOY','EA_HICP_CORE_YOY_history_value','https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_minr/default/table?lang=en','% a/a',false],
  USD:['CPILFESL','US_CPILFESL_history_value','https://fred.stlouisfed.org/series/CPILFESL','Index 1982-1984=100',true],
  GBP:['DKO8','UK_CPI_CORE_YOY_history_value','https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/dko8/mm23','% a/a',false]
@@ -492,6 +494,10 @@ const CORE_RECOVERY={
 function inflationCatalog(catalog,today,country,overlay){
  const cfg=CORE_RECOVERY[country];
  if(!cfg||overlay?.schema!==SUPPLEMENT_SCHEMA||overlay.inflation_context?.schema!=='GMFQ_G8_INFLATION_CONTEXT_V1'||!Array.isArray(overlay.inflation_context.series))return catalog;
+ const configs=Array.isArray(cfg[0])?cfg:[cfg];
+ return configs.reduce((current,definition)=>recoverInflationSeries(current,today,country,overlay,definition),catalog);
+}
+function recoverInflationSeries(catalog,today,country,overlay,cfg){
  const [id,target,page,unit,index]=cfg;
  const matches=overlay.inflation_context.series.filter(x=>x.ccy===country&&x.area==='core'&&x.source_series_id===id&&x.source_page===page&&x.unit===unit&&x.frequency==='M'&&x.metric_kind==='points'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT');
  if(matches.length!==1)return catalog;
