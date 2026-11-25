@@ -150,7 +150,7 @@
   return !Number.isFinite(hourlyTime)||hourlyTime>now||morningTime>hourlyTime;
  }
 
- function render({feed,check,risk,currencyPrices,calendar,news:calendarNews,references='',esc,date,dayNow,nowUtc}={}){
+ function render({feed,check,risk,currencyPrices,calendar,news:calendarNews,references='',marketChart='',esc,date,dayNow,nowUtc}={}){
   if(feed?.schema!==SCHEMA||feed.status!=='ACTIVE'||typeof esc!=='function'||
      !goodDay(feed.generated_at_utc?.slice(0,10))||!goodDay(dayNow?.())||
      feed.generated_at_utc.slice(0,10)>dayNow()||
@@ -235,10 +235,13 @@
     '<div class="hourly-hero-actions"><button type="button" class="hourly-hero-sources-button" data-hourly-open-sources aria-controls="hourly-desk-news" aria-expanded="false">Notizie e fonti <span aria-hidden="true">↘</span></button>'+
     '<a href="#currencies">Esplora le valute <span aria-hidden="true">↗</span></a></div></div>'+
     '</header>'+
-    renderCatalyst({calendar,news:calendarNews,today,nowMs,esc,date})+
+    (marketChart?'<section class="hourly-opening-chart" aria-label="Evidenze di mercato">'+marketChart+'</section>':
+      renderCatalyst({calendar,news:calendarNews,today,nowMs,esc,date}))+
     '</div>'+references+
-    '<section class="home-fx-meaning" aria-label="Implicazioni per il Forex"><span class="morning-section-label">PERCHÉ CONTA PER IL FOREX</span><p>'+safe(feed.fx_implications)+'</p><a href="#currencies">Verifica sulle valute ↗</a></section>'+
     (root.FXQuantHomePulse?.render?.({feed,risk,currencyPrices,esc,date,dayNow})||'')+
+    (marketChart?'<div class="hourly-reading-context">'+renderCatalyst({calendar,news:calendarNews,today,nowMs,esc,date}):'')+
+    '<section class="home-fx-meaning" aria-label="Implicazioni per il Forex"><span class="morning-section-label">PERCHÉ CONTA PER IL FOREX</span><p>'+safe(feed.fx_implications)+'</p><a href="#currencies">Verifica sulle valute ↗</a></section>'+
+    (marketChart?'</div>':'')+
     '<section class="hourly-decision-section" aria-label="Le tre verifiche del desk">'+
     '<div class="hourly-section-head"><div><span class="morning-section-label">LETTURA DEL DESK</span>'+
     '<h2>Cosa cambia e cosa monitorare</h2></div>'+

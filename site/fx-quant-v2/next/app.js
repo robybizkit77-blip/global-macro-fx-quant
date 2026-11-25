@@ -278,10 +278,25 @@ function atlasEvidence(key){
  };
  return info[key]||info.rates;
 }
-function homeScreenChart(){
- let keys=state.homeChart||'fx',w=Number(state.homeWindow||20),lines=[],label='',unit='',result='',asof='';
+function homeScreenChart(defaultChart='fx'){
+ let keys=state.homeChart||defaultChart,w=Number(state.homeWindow||20),lines=[],label='',unit='',result='',asof='';
  const u=get('rates')?.USD,d=get('dxy'),r=get('risk')?.streams||{};
- if(keys==='fx'){
+ if(keys==='usd-comparison'){
+  const history=get('currencyPrices');
+  const rows=history?.schema==='GMFQ_ECB_G8_PRICE_HISTORY_V1'&&history.base==='EUR'
+   ? (history.rows||[]).filter(row=>validDay(row?.Date)&&row.Date<=dayNow()&&
+     finite(row.USD)&&row.USD>0&&finite(row.JPY)&&row.JPY>0).slice().sort((a,b)=>a.Date.localeCompare(b.Date))
+   : [];
+  const subset=rows.slice(-w),base=subset[0];
+  if(subset.length<2)return '<div class="empty"><strong>Confronto dollaro in attesa dei fixing BCE</strong></div>';
+  const indexed=(name,color,rate)=>({name,color,values:subset.map(row=>({
+   label:row.Date,value:(rate(row)/rate(base)-1)*100
+  }))});
+  lines=[indexed('USD contro EUR','#65cfff',row=>1/row.USD),
+   indexed('USD contro JPY','#ffc77f',row=>row.JPY/row.USD)];
+  label='Dollaro contro euro e yen';unit='%';asof=subset.at(-1).Date;
+  result='Variazioni dal primo fixing BCE del periodo. Sopra zero il dollaro si è rafforzato contro la valuta indicata.';
+ }else if(keys==='fx'){
   const h=fxHomeDesk(),rows=(get('currencyPrices')?.rows||[])
     .filter(x=>validDay(x?.Date)&&x.Date<=dayNow()&&FX.every(c=>c==='EUR'||finite(x[c])&&x[c]>0))
     .sort((a,b)=>a.Date.localeCompare(b.Date));
@@ -317,7 +332,7 @@ function homeScreenChart(){
  }
  if(!observationOn(asof))asof=lines[0]?.values.at(-1)?.label;
  return '<div class="analysis-chart-head"><div><span class="micro-over">LAB / DATI DATATI</span><h3>'+esc(label)+'</h3></div><span class="time-label">Ultimo '+date(asof)+'</span></div>'
- +'<div class="analyst-toolbar"><div class="chart-tabset">'+choose('',[{label:'Forza G8 FX',value:'fx'},{label:'Nasdaq',value:'nasdaq'},{label:'2Y / 10Y',value:'rates'},{label:'USD proxy',value:'dxy'},{label:'VIX',value:'vix'},{label:'HY',value:'hy'}],keys,'data-hchart')+'</div><div class="chart-tabset">'+choose('',[{label:'5',value:5},{label:'20',value:20},{label:'60',value:60}],w,'data-hwindow')+'</div></div>'
+ +'<div class="analyst-toolbar"><div class="chart-tabset">'+choose('',[{label:'USD / EUR e JPY',value:'usd-comparison'},{label:'Forza G8 FX',value:'fx'},{label:'Nasdaq',value:'nasdaq'},{label:'2Y / 10Y',value:'rates'},{label:'USD proxy',value:'dxy'},{label:'VIX',value:'vix'},{label:'HY',value:'hy'}],keys,'data-hchart')+'</div><div class="chart-tabset">'+choose('',[{label:'5',value:5},{label:'20',value:20},{label:'60',value:60}],w,'data-hwindow')+'</div></div>'
  +plot({lines,unit,label:'Storico '+label,window:w})
  +'<div class="chart-footnote"><span class="footnote-dot"></span>'+esc(result)+' <strong>Le date delle serie restano indipendenti.</strong></div>';
 }
@@ -584,8 +599,10 @@ function overview(){
  const today=dayNow(),calendar=get('calendar'),news=get('news');
  const references=overviewReferences(today);
  const currentContext=()=> (desk?.renderCatalyst?.({calendar,news,today,esc,date})||'')+references;
- const renderedHourly=desk?.render?.({feed:hourlyFeed,check:get('hourlyCheck'),risk:get('risk'),
-  currencyPrices:get('currencyPrices'),calendar,news,references,esc,date,dayNow});
+ const dollarTheme=/^dollaro\b/i.test(hourlyFeed?.headline||'')&&
+  hourlyFeed?.provenance?.web_source_urls?.includes('https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml');
+ const renderedHourly=desk?.render?desk.render({feed:hourlyFeed,check:get('hourlyCheck'),risk:get('risk'),
+  currencyPrices:get('currencyPrices'),calendar,news,references,esc,date,dayNow,marketChart:homeScreenChart(dollarTheme?'usd-comparison':'fx')}):null;
  const fxRankStrip=homeFxRankStrip();
  const hourly=renderedHourly?renderedHourly.replace('<section class="hourly-decision-section"',
    fxRankStrip+recalcProof+moneyProof+'<section class="hourly-decision-section"'):renderedHourly;
