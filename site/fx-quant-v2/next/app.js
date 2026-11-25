@@ -1664,7 +1664,8 @@ async function loadAll(){
   }finally{clearTimeout(timer)}
  })());
  try{
-  await Promise.allSettled([semaphoreJob,...jobs]);
+  jobs.push(semaphoreJob);
+  await Promise.allSettled(jobs);
   // Rebuild from the same fetch cycle. A failed source is never reused as current.
   nextData.thesisSourceHashes=receiptHashes;
   state.data=nextData;
