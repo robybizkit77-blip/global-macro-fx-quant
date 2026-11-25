@@ -189,6 +189,10 @@ const VERIFIED_FRESH_FALLBACK={
  }
 };
 function verifiedFreshAlternative(x,c,key){
+ if(key==='house'&&x?.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&x.frequency==='M'&&x.metric_kind==='percent'){
+   if(c==='AUD'&&x.source_series_id==='ABS_TOTAL_DWELLING_APPROVALS_SA')return x.source_page==='https://www.abs.gov.au/statistics/industry/building-and-construction/building-approvals-australia/latest-release'&&x.unit==='numero abitazioni SA';
+   if(c==='CAD'&&x.source_series_id==='STATCAN_34100158_STARTS_SAAR')return x.source_page==='https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410015801'&&x.unit==='migliaia abitazioni SAAR';
+ }
  if(c==='AUD'&&['house','credit'].includes(key)){
    return !!x&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&
      x.source_series_id===(key==='house'?'RBA_HOUSING_CREDIT_GROWTH_MM':'RBA_BUSINESS_CREDIT_GROWTH_MM')&&
@@ -290,7 +294,7 @@ const REAL_ACTIVITY_LEVELS=new Set([
  'UK_PRODUCTION_history_value','ONS_K222_DIOP','ONS_S2KU_IOS1','UK_RETAIL_VOL_history_value','ONS_J5EK_RETAIL_VOL',
  'JP_IIP_history_value','CH_PRODUCTION_history_value','CH_RETAIL_REAL_history_value',
  'NZ_RETAIL_VOLUME_Q_history_value','CA_RETAIL_VOLUME_history_value','CAN_RETAIL_REAL_LASPEYRES',
- '36100434_SERVICES_T003','JPNRGDPPRI','PCESC96','STATCAN_16100013_REAL_MFG_SALES'
+ '36100434_SERVICES_T003','JPNRGDPPRI','PCESC96','STATCAN_16100013_REAL_MFG_SALES','ABS_TOTAL_DWELLING_APPROVALS_SA','STATCAN_34100158_STARTS_SAAR'
 ]);
 const REAL_ACTIVITY_GROWTH=new Set([
  'JPNPRMNTO01GPSAM','SLRTTO01JPQ657S','PRMNTO01CHQ657S','SLRTTO01CHQ657S',
@@ -441,9 +445,10 @@ function model(catalog,today,country='USD',overlay=null){
    const officialAlternative=verifiedFreshAlternative(extra,c,area.key);
    const missingOriginal=metrics.length===0;
    const strictProxy=c==='NZD'&&['house','leading'].includes(area.key)||c==='AUD'&&['house','credit'].includes(area.key);
+   const preferDirectHousing=area.key==='house'&&['AUD','CAD'].includes(c)&&['ABS_TOTAL_DWELLING_APPROVALS_SA','STATCAN_34100158_STARTS_SAAR'].includes(extra?.source_series_id)&&officialAlternative;
    const preferNewer=(c==='EUR'&&area.key==='services'||c==='NZD'&&area.key==='leading'||
       c==='AUD'&&['house','credit'].includes(area.key))&&latestExtra>originalLatest;
-   const newerValid=(!strictProxy&&missingOriginal||officialAlternative&&(missingOriginal||baseline.tone==='neutral'||preferNewer));
+   const newerValid=(!strictProxy&&missingOriginal||officialAlternative&&(missingOriginal||baseline.tone==='neutral'||preferNewer||preferDirectHousing));
    let supplement=null;
    if(extra&&newerValid){
      const src={...extra,source_file:extra.source_file+
