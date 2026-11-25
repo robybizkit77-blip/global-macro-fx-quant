@@ -71,6 +71,46 @@ def load(name):
                       .read_text(encoding="utf-8"))
 
 
+# Prior-quarter values reported in the SAME Q2 release, not earlier first
+# estimates. This fills descriptive acceleration only, not historical PIT.
+Q2_SAME_EDITION_PRIOR = {
+    "CAD": ("2026-08-28", 0.8, 0.1, "PERCENT_QOQ_SA",
+            "https://www150.statcan.gc.ca/n1/daily-quotidien/260828/dq260828a-eng.htm",
+            "Opening paragraph: Q1 revised from 0.0% to 0.1%; Q2 +0.8%."),
+    "AUD": ("2026-09-02", 0.4, 0.3, "PERCENT_QOQ_SA_CHAIN_VOLUME",
+            "https://www.abs.gov.au/statistics/economy/national-accounts/australian-national-accounts-national-income-expenditure-and-product/jun-2026",
+            "June quarter key figures, chain volume GDP, Dec 25–Mar 26 and Mar 26–Jun 26."),
+    "NZD": ("2026-09-17", 0.2, 0.9, "PERCENT_QOQ_SA_CHAIN_VOLUME_PRODUCTION",
+            "https://www.stats.govt.nz/information-releases/gross-domestic-product-june-2026-quarter/",
+            "Stats NZ companion release: https://www.stats.govt.nz/news/gdp-increases-0-2-percent-in-the-june-2026-quarter/"),
+}
+
+
+def attach_q2_prior(currency, growth, as_of):
+    if currency not in Q2_SAME_EDITION_PRIOR or growth.get("reference_quarter") != "2026Q2":
+        return growth
+    published, current, prior, unit, url, locator = Q2_SAME_EDITION_PRIOR[currency]
+    # Only attach to the exact documented Q2 edition; a revised or later
+    # quarter needs its own prior evidence. Never backdate the revised Q1.
+    if (growth.get("publisher_release_day"), growth.get("reported_value"),
+            growth.get("reported_unit"), growth.get("publisher_source")) != (published, current, unit, url):
+        return growth
+    if date.fromisoformat(as_of) <= date.fromisoformat(published):
+        return growth
+    return {**growth, "prior_value_from_same_publisher_edition": True,
+            "prior_documented_quarter": {
+                "reference_quarter": "2026Q1",
+                "publisher_release_day": published, "publisher_source": url,
+                "publication_stage": "PRIOR_QUARTER_AS_REPORTED_IN_Q2_EDITION",
+                "reported_value": prior, "reported_unit": unit,
+                "nonannualized_qoq_descriptive_pct": prior,
+                "source_locator": locator,
+                "is_growth_strength_score": False,
+                "historical_pit_training_vintages_certified": False,
+                "later_revisions_not_identical_to_first_release": True,
+            }}
+
+
 def build(observed, heat, legacy, setup, *, as_of, issuer_releases=()):
     cutoff = date.fromisoformat(as_of)
     need(observed.get("schema") == OBSERVED_SCHEMA and
@@ -188,6 +228,7 @@ def build(observed, heat, legacy, setup, *, as_of, issuer_releases=()):
             "country_relative_rank": None,
             "not_a_trade_or_policy_signal": True,
         }
+        countries[c]["growth"] = attach_q2_prior(c, countries[c]["growth"], as_of)
         if c in growth_updates:
             # An update can supply its own comparable prior issuer statement.
             previous = countries[c]["growth"]
