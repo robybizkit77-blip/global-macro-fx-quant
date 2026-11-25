@@ -6,6 +6,7 @@ on:
     paths:
       - 'validation/macro/collect_g8_semaphore_gaps_v1.py'
       - 'validation/macro/test_collect_g8_semaphore_gaps_v1.py'
+      - 'validation/qa_usa_economic_semaphore_v1.cjs'
       - 'validation/macro/probe_g8_semaphore_issuers_v1.py'
       - 'validation/macro/check_g8_semaphore_live_coverage_v1.cjs'
       - 'site/fx-quant-v2/next/semaphore-supplement-v1.json'
@@ -18,6 +19,7 @@ on:
     paths:
       - 'validation/macro/collect_g8_semaphore_gaps_v1.py'
       - 'validation/macro/test_collect_g8_semaphore_gaps_v1.py'
+      - 'validation/qa_usa_economic_semaphore_v1.cjs'
       - 'validation/macro/probe_g8_semaphore_issuers_v1.py'
       - '.github/workflows/g8-economic-semaphore-source-recovery-v1.yml'
   schedule:
@@ -71,6 +73,7 @@ jobs:
            | tee /tmp/semaphore-source-intake.txt
           cat /tmp/semaphore-source-intake.txt >> "$GITHUB_STEP_SUMMARY"
           node validation/macro/check_g8_semaphore_live_coverage_v1.cjs site/fx-quant-v2/next/semaphore-supplement-v1.json | tee -a "$GITHUB_STEP_SUMMARY"
+          node validation/qa_usa_economic_semaphore_v1.cjs
       - name: Persist only dated source supplement, never canonical Macro or FX
         if: github.event_name != 'pull_request'
         env:
