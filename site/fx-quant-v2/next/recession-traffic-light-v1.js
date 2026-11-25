@@ -455,6 +455,60 @@ function model(catalog,today,country='USD',overlay=null){
           extra.label.toLowerCase().includes('fiducia'))};
  });
 }
+
+/* Phase 3A: inflation is policy context, not a growth traffic light.
+ * Explicit IDs only; US CPI index levels converted to annual rates using
+ * exact calendar lags. All other series already report annual inflation.
+ */
+const INFLATION_MAP={
+ USD:[['US_CPIAUCSL_history_value','CPI headline','M',true],['US_CPILFESL_history_value','CPI core','M',true]],
+ EUR:[['EA_HICP_HEADLINE_YOY_history_value','HICP headline','M'],['EA_HICP_CORE_YOY_history_value','HICP core','M'],['EA_HICP_SERVICES_YOY_history_value','HICP servizi','M']],
+ GBP:[['UK_CPI_HEADLINE_YOY_history_value','CPI headline','M'],['UK_CPI_CORE_YOY_history_value','CPI core','M']],
+ JPY:[['JP_CPI_HEADLINE_YOY_history_value','CPI headline','M'],['JP_CPI_CORE_YOY_history_value','CPI core (definizione nazionale)','M']],
+ CHF:[['CH_CPI_HEADLINE_YOY_history_value','CPI headline','M'],['CH_CPI_CORE1_YOY_history_value','CPI core 1','M']],
+ AUD:[['AU_CPI_HEADLINE_Q_YOY_history_value','CPI headline trimestrale','Q'],['AU_CPI_TRIMMED_MEAN_Q_YOY_history_value','CPI trimmed mean trimestrale','Q']],
+ NZD:[['NZ_CPI_HEADLINE_YOY_history_value','CPI headline','Q'],['NZ_CORE_INFLATION_SFM_Q_history_value','Core inflation SFM','Q']],
+ CAD:[['CA_CPI_HEADLINE_YOY_history_value','CPI headline','M'],['CA_CPI_MEDIAN_YOY_history_value','CPI median','M'],['CA_CPI_TRIM_YOY_history_value','CPI trim','M']]
+};
+function inflationContext(catalog,today,country){
+ const rows=Array.isArray(catalog?.[country])?catalog[country]:[];
+ const now=Date.parse(today+'T12:00:00Z');
+ return (INFLATION_MAP[country]||[]).map(([id,label,freq,index])=>{
+   const src=rows.find(r=>r.id===id),missing={id,label,freq,available:false};
+   if(!src||src.frequency!==freq||!Array.isArray(src.dates)||!Array.isArray(src.values)||src.dates.length!==src.values.length||!Number.isFinite(now))return missing;
+   const months=freq==='Q'?3:1,records=new Map();
+   for(let i=0;i<src.dates.length;i++){
+     const d=parsePeriod(src.dates[i]),v=src.values[i];
+     if(!d||!finite(v)||index&&v<=0)continue;
+     const y=Number(d.slice(0,4)),m=Number(d.slice(5,7)),endMonth=Math.ceil(m/months)*months;
+     const end=new Date(Date.UTC(y,endMonth,0)).toISOString().slice(0,10);
+     if(end>today)continue;
+     const k=y*12+endMonth-1;
+     if(records.has(k)&&records.get(k).v!==v)return missing;
+     records.set(k,{v,end,period:freq==='Q'?y+'-Q'+endMonth/3:y+'-'+String(endMonth).padStart(2,'0')});
+   }
+   const keys=[...records.keys()].sort((a,b)=>a-b);
+   const k=keys.at(-1);if(k===undefined)return missing;
+   const current=records.get(k),prior=records.get(k-months);
+   const rate=j=>{
+     const v=records.get(j)?.v;
+     if(!finite(v))return null;
+     if(!index)return v;
+     const base=records.get(j-12)?.v;
+     return finite(base)&&base>0?100*(v/base-1):null;
+   };
+   const value=rate(k),previous=rate(k-months);
+   if(!finite(value))return missing;
+   const age=Math.floor((now-Date.parse(current.end+'T12:00:00Z'))/864e5);
+   const stale=age>(freq==='Q'?175:85);
+   const change=prior&&finite(previous)?value-previous:null;
+   const direction=stale||!finite(change)?null:Math.abs(change)<.1?'stabile':change>0?'accelera':'rallenta';
+   return {id,label,freq,available:true,period:current.period,prior:prior?.period||null,value,
+     previous:finite(previous)?previous:null,change,direction,stale,age,
+     basis:index?'YOY_EXACT_INDEX_LAG':'REPORTED_YOY',source:src.source_file||'MACRO_SERIES'};
+ });
+}
+
 function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x??'')}={}){
  const today=dayNow?.()||'';
  if(!/^\d{4}-\d{2}-\d{2}$/.test(today))return '';
@@ -491,6 +545,15 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    '<small class="sem-source-note">'+esc(x.source)+(x.stale?' · dato datato':'')+(x.invalid?' · confronto sospeso':'')+'</small>'+diffusion+cycleText+
    (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
  };
+
+ const inflation=inflationContext(catalog,today,selected);
+ const inflationNote='<p><strong>Inflazione · pressioni sui prezzi (separate dal ciclo)</strong></p>'+
+   inflation.map(x=>'<p><strong>'+esc(x.label)+'</strong> · '+(x.available?
+    esc(fmt(x.value,2))+'% a/a · '+esc(x.period)+
+    (finite(x.change)?' · variazione '+esc(d(x.change,' p.p.'))+' rispetto a '+esc(x.prior):' · confronto non disponibile')+
+    (x.stale?' · dato datato, giudizio sospeso':x.direction?' · '+esc(x.direction):' · direzione non determinabile')+
+    ' <small>'+esc(x.source)+'</small>':'dato non disponibile')+'</p>').join('')+
+   '<small>Pressioni sui prezzi in aumento o diminuzione: non sono un giudizio positivo/negativo sulla crescita. Headline e core possono riferirsi a periodi diversi; le misure core nazionali non sono omogenee.</small>';
  const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
  const svcPrices=servicePriceContext?recentTwo(servicePriceContext,today):null;
  const svcPriceNote=svcPrices?'<p class="sem-services-price"><strong>Inflazione servizi (contesto, fuori dal semaforo):</strong> '+esc(fmt(svcPrices.cur.value,1))+'% YoY · '+esc(svcPrices.cur.period)+' (prima '+esc(fmt(svcPrices.pre.value,1))+'%). Prezzi e attività sono fenomeni diversi.</p>':'';
@@ -561,6 +624,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     (r.signalSource==='fallback'?'<small>Segnale da fonte supplementare aggiornata; serie precedenti nel dettaglio</small>':'')+
     (r.proxy?'<small>Proxy/sondaggio, non misura esaustiva del ciclo</small>':'')+
     (r.items.some(x=>x?.stale)?'<small>Osservazioni datate</small>':'')+'</div></div>').join('')+'</div>'+
+  '<div class="sem-policy"><div>'+inflationNote+'</div></div>'+ 
   '<div class="sem-policy"><div><span>POLITICA MONETARIA · DA LEGGERE A PARTE</span>'+
   '<p>'+bank+' e aspettative sui tassi possono amplificare o attenuare le pressioni cicliche: non sono però un indicatore diretto di recessione né una prova di movimento del cambio.</p></div>'+
   '<a href="#rates">Apri tassi & OIS ↗</a></div>'+
@@ -573,6 +637,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
