@@ -689,4 +689,23 @@ class G8SemaphoreSources(unittest.TestCase):
         obj["dimension"]["coicop18"]["category"]["index"]={"TOTAL":0}
         self.assertIsNone(mod.collect_eur_core(NOW,fetcher=lambda _:encode())[0])
 
+    def test_cad_core_exact_labels_and_independent_validation(self):
+        def archive(invalid=False):
+            out=StringIO();w=csv.writer(out)
+            w.writerow(["REF_DATE","GEO","Alternative measures","UOM","SCALAR_FACTOR","VALUE","VECTOR"])
+            for i in range(24):
+                y,m=divmod(2026*12+9-23+i,12)
+                for j,label in enumerate(mod.CAD_CORE_LABELS.values()):
+                    w.writerow([f"{y}-{m+1:02d}","Canada",label,"Index" if invalid and j==1 else "Percent","units",2+i/100,f"v{j+1}"])
+                w.writerow([f"{y}-{m+1:02d}","Canada","CPI-trim (index)","Index","units",130,"v9"])
+            buf=io.BytesIO()
+            with ZipFile(buf,"w") as z:z.writestr("18100256.csv",out.getvalue())
+            return buf.getvalue()
+        items,audit=mod.collect_cad_core(NOW,fetcher=archive)
+        self.assertEqual(len(items),2)
+        self.assertTrue(all(x["dates"]==["2026-09","2026-10"] for x in items))
+        items,audit=mod.collect_cad_core(NOW,fetcher=lambda:archive(True))
+        self.assertEqual(len(items),1)
+        self.assertEqual(audit["STATCAN_18100256_TRIM_YOY"]["status"],"WITHHELD_FETCH_OR_VALIDATION")
+
 if __name__=="__main__":unittest.main()
