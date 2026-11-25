@@ -178,3 +178,7 @@ after the requested task is complete.
 - Check all eight dossiers, the matrix, keyboard and mobile navigation,
   partial-data behaviour and unchanged source semantics. Capture before and
   after at desktop and mobile widths and verify the published Next route.
+
+## Next — approved editorial reference (25 November 2026)
+
+The owner approved the editorial approach currently published in **Tassi & OIS, Banche centrali, Liquidità & Credito** as the reference for general judgments in the other Next sections. Preserve their existing design language and the approved page hierarchy. Start with a meaningful conclusion based on actual inputs; explain what supports it, what contradicts or limits it, and what specific next evidence could confirm or weaken it. Use simple Italian and the existing visual components. The labels “Cosa va”, “Cosa frena”, “Cosa guardare” are a useful pattern, not compulsory if the subject calls for a more natural phrasing. Avoid treating missing inputs as negative facts or price/positioning agreement as causal evidence. Keep detailed data, source quality and dates available. Discuss and approve any material design, layout or analytical-method change before implementation; editorial refinements inside the approved structure may proceed. No new scheduled automation.

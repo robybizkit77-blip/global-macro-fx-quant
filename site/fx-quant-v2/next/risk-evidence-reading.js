@@ -115,8 +115,21 @@
     tone:!finite(supportive)?'neutral':Math.abs(supportive)<.000001?'neutral':supportive>0?'up':'down'};
   });
  }
+ function editorial(aligned){
+  if(!aligned.ready)return {support:'Le singole osservazioni datate restano consultabili.',friction:aligned.judgement,watch:aligned.monitor};
+  const m=aligned.changes,positive=[],negative=[];
+  for(const k of ['SP500','NASDAQCOM']){
+   const v=m[k].change;if(v>0)positive.push(titles[k]+' in rialzo');else if(v<0)negative.push(titles[k]+' in calo');
+  }
+  for(const k of ['VIX','HY_OAS','IG_OAS']){
+   const v=m[k].change;if(v<0)positive.push(titles[k]+(k==='VIX'?' in calo':' in restringimento'));else if(v>0)negative.push(titles[k]+(k==='VIX'?' in rialzo':' in allargamento'));
+  }
+  const when=aligned.stale?'Nell’ultima finestra storica comune: ':'Nell’ultima finestra comune: ';
+  const sentence=(items,empty)=>items.length?when+new Intl.ListFormat('it',{type:'conjunction'}).format(items)+'.':empty;
+  return {support:sentence(positive,'Nessun miglioramento direzionale nei cinque indicatori.'),friction:sentence(negative,'Nessun deterioramento direzionale nei cinque indicatori.')+(aligned.stale?' Il confronto è storico: non descrive il rischio di oggi.':''),watch:aligned.monitor};
+ }
  function renderFirstRead(streams,now,aligned=read(streams,now)){
-  const rows=latestObservations(streams,now);
+  const rows=latestObservations(streams,now),desk=editorial(aligned);
   const unit=k=>k.endsWith('_OAS')?' pb':k==='VIX'?' punti':'%';
   const number=(k,v)=>finite(v)?sign(v,k.endsWith('_OAS')?1:2,unit(k)):'—';
   const names={stress:'Pressione diffusa',distensione:'Distensione','concentrazione tech':'Pressione sul Nasdaq',misto:'Segnali contrastanti'};
@@ -128,10 +141,11 @@
   const latest=rows.map(x=>'<div class="risk-first-latest-item '+x.tone+'"><span><strong>'+esc(x.label)+'</strong><small>'+esc(x.ok?x.previousDate+' → '+x.date:'Confronto da verificare')+'</small></span><span><strong>'+esc(number(x.key,x.delta))+'</strong><small>'+esc(x.ok?fmt(x.value,2)+(x.key.endsWith('_OAS')?'%':''):'—')+'</small></span></div>').join('');
   return '<section class="risk-first-read" aria-label="Rischio di mercato, finestra comune e ultime osservazioni"><div class="risk-first-head"><div><span class="mini-overline">01 / CONFERME TRA MERCATI</span><h2>'+esc(aligned.ready?names[aligned.regime]:'Quadro non risolto')+'</h2></div><small>'+esc(label+(aligned.ready?' · '+aligned.previousAsOf+' → '+aligned.asof:''))+'</small></div>'+
    '<p class="risk-first-judgment">'+esc(aligned.judgement||aligned.opening)+'</p>'+
+   '<div class="risk-first-fx"><strong>Cosa va</strong><p>'+esc(desk.support)+'</p><strong>Cosa frena</strong><p>'+esc(desk.friction)+'</p><strong>Cosa guardare</strong><p>'+esc(desk.watch)+'</p></div>'+
    (common?'<div class="risk-first-common">'+common+'</div>':'')+
    '<h3>Le rilevazioni più recenti, separatamente</h3><p class="risk-first-note">Date diverse: non sono una conferma simultanea e non aggiornano automaticamente il regime comune.</p><div class="risk-first-latest">'+latest+'</div>'+
-   '<div class="risk-first-fx"><strong>Per il Forex</strong><p>'+esc(aligned.fx)+'</p><strong>Cosa monitorare</strong><p>'+esc(aligned.monitor)+'</p><a href="#pairs">Verifica le coppie FX ↗</a></div></section>';
+   '<div class="risk-first-fx"><strong>Per il Forex</strong><p>'+esc(aligned.fx)+'</p><a href="#pairs">Verifica le coppie FX ↗</a></div></section>';
  }
- root.FXQuantRiskEvidence={read,latestObservations,renderFirstRead};
- if(typeof module!=='undefined'&&module.exports)module.exports={read,latestObservations,renderFirstRead};
+ root.FXQuantRiskEvidence={read,latestObservations,renderFirstRead,editorial};
+ if(typeof module!=='undefined'&&module.exports)module.exports={read,latestObservations,renderFirstRead,editorial};
 })(typeof window!=='undefined'?window:{});

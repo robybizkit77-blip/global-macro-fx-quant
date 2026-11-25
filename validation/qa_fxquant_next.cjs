@@ -151,7 +151,9 @@ async function inspectRoute(page,label,key){
   assert.equal(await locator(page,'#orient-strength-board .strength-row').count(),8,
    'Exactly eight estimated G8 first-read choices required');
   assert.equal(await locator(page,'.strength-first-reading > p').count(),3,
-   'Country first read must connect macro, monetary references and price');
+   'Country first read must connect supporting evidence, opposing evidence and price');
+  assert.match(await locator(page,'.strength-first-reading').innerText(),/Cosa va\.[\s\S]*Cosa frena\./);
+  assert.match(await locator(page,'.strength-first-watch').innerText(),/Cosa guardare\./);
   assert.equal(await locator(page,'#g8-pricing-proof').count(),1,
    label+' source-first G8 monetary evidence missing');
   assert.equal(await locator(page,'#g8-pricing-proof .g8-pricing-metric').count(),2,
@@ -391,7 +393,7 @@ async function g8Choice(page,label){
   label+' currency analysis does not support keyboard focus');
  assert.equal(await locator(page,'#orient-strength-board .strength-row.selected').count(),1,
   label+' jumping to country analysis must preserve original selection');
- assert(note.includes('Che cosa monitorare.') &&
+ assert(note.includes('Cosa guardare.') &&
    note.includes('NZD/USD') && note.includes('AUD/NZD'),
   label+' NZD macro/rates proxy must lead to two FX monitoring instruments');
 }
@@ -702,6 +704,7 @@ async function chosenPair(page,key,label){
  const p=locator(page,'.pairs-reading-compact');
  assert.equal(await p.count(),1,label+' '+key+' first-read missing');
  const firstRead=await p.innerText();
+ assert.match(firstRead,/Cosa va\.[\s\S]*Cosa frena\.[\s\S]*Cosa guardare\./);
  assert.match(await p.locator('.pairs-reading-head h2').innerText(),/nelle ultime settimane/i,
   label+' '+key+' must open on the observed move');
  assert.doesNotMatch(firstRead,/fixing|futures|\d+(?:,\d+)?\s*%|TRADE ATTRACTIVENESS/i,

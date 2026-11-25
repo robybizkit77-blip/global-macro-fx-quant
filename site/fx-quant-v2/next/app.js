@@ -1020,10 +1020,30 @@ function pairs(){
     '<strong>'+esc(sign(move,2,'%'))+'</strong><span>'+esc(label)+'</span></li>';
   }).join('')+'</ul><small>Fixing BCE al '+date(estimate.priceAsOf)+'</small>':
   '<small>Serve un confronto omogeneo dei fixing BCE sulle due finestre.</small>';
+ const pairSupport=fav&&activePair?[
+  macroState==='FAVOREVOLE'?'Il quadro macro relativo sostiene '+fav+'.':'',
+  policyState==='FAVOREVOLE'?'Il movimento relativo dei tassi sostiene '+fav+'.':'',
+  activePair.aligned?'Il cambio nelle ultime settimane è coerente con la tesi.':''
+ ].filter(Boolean).join(' '):'';
+ const pairFriction=fav&&activePair?[
+  macroState==='CONTRARIA'?'La macro relativa contrasta la tesi.':macroState!=='FAVOREVOLE'?'La macro non distingue un vantaggio netto.':'',
+  policyState==='CONTRARIA'?'I tassi si muovono contro la tesi.':policyState!=='FAVOREVOLE'?'Dai tassi manca una conferma netta.':'',
+  activePair.opposite?'Il cambio nelle ultime settimane contrasta la tesi.':!activePair.aligned?'Il cambio non conferma in modo netto.':'',
+  activePair.aligned&&activePair.fiveState==='CONTRARIO'?'Nelle ultime sedute il movimento si è però indebolito.':'',
+  activePair.risk?'Le fonti sono parziali.':''
+ ].filter(Boolean).join(' '):'La direzione fondamentale non è sufficientemente distinta.';
+ const pairWatch=!fav?'Prima di scegliere un verso serve una divergenza economica o monetaria tra le due valute.':
+  macroState==='CONTRARIA'?'La tesi si rafforzerebbe se l’economia relativa tornasse a favorire '+fav+'.':
+  policyState==='CONTRARIA'||policyState==='ASSENTE'?'Conta se le attese sui tassi tornano a sostenere '+fav+' rispetto all’altra valuta.':
+  activePair?.opposite||activePair?.fiveState==='CONTRARIO'?'Prima di valutare un ingresso, cerca un ritorno del prezzo nella direzione della tesi.':
+  'Conta se il vantaggio relativo persiste e il cambio conferma senza inseguire il movimento.';
  const main='<section class="panel pairs-reading-compact" aria-label="Sintesi operativa della coppia selezionata">'+
   '<div class="pairs-reading-head"><div><span class="mini-overline">'+esc(getPairName(state.pair))+'</span><h2>'+
   esc(opening?.headline||'Il quadro di '+getPairName(state.pair))+'</h2></div></div>'+
   '<p class="pairs-primary-story">'+esc([opening?.lead,favMeaning].filter(Boolean).join(' '))+'</p>'+
+  '<p class="pairs-primary-story"><strong>Cosa va.</strong> '+esc(pairSupport||'Nessuna conferma direzionale netta nelle componenti disponibili.')+'</p>'+
+  '<p class="pairs-primary-story"><strong>Cosa frena.</strong> '+esc(pairFriction||'Nessuna contraddizione netta tra le componenti considerate; il timing resta da verificare.')+'</p>'+
+  '<p class="pairs-timing-reading"><strong>Cosa guardare.</strong> '+esc(pairWatch)+'</p>'+
   (pairProfile?.closes?.length>=22?
    '<button type="button" class="ghost-btn small pairs-chart-jump" data-pair-chart-jump aria-controls="fx-pair-price-chart">Vedi il grafico del cambio</button>':'')+
   '<details class="pairs-optional-panel pairs-evidence"><summary><strong>Apri numeri, stime e cosa monitorare</strong><span class="pairs-open-icon" aria-hidden="true">+</span></summary><div class="pairs-details-body">'+
@@ -1124,6 +1144,12 @@ function news(){
  const list=state.newsMode==='pulse'?evidence.pulse:evidence.official;
  const priority=state.newsMode==='pulse'?(window.FXQuantNewsEvidence?.focusPulse?.(evidence.pulse,dayNow())||[]):[];
  const focusIds=new Set(priority.map(x=>x.id));
+ const first=state.newsMode==='pulse'?(priority[0]||list[0]):list[0];
+ const firstTitle=first?(state.newsMode==='pulse'?'Il fatto da approfondire':'L’ultima comunicazione da leggere'):'Nessun fatto verificabile nella vista';
+ const firstFact=first?date(first.asof)+' · '+(first.displayTitle||first.title):'Manca una voce datata utilizzabile.';
+ const firstWhy=first?.why||'Senza nuove evidenze non ricaviamo una direzione del mercato.';
+ const firstLimit=first?.impact||'Impatto non valutabile.';
+ const firstWatch=first?.verify||'Verificare la prossima pubblicazione e confrontarla con le aspettative.';
  const regular=list.filter(x=>!focusIds.has(x.id));
  const type=state.newsMode==='pulse'?'MERCATI / OSSERVAZIONI DATATE':'COMUNICAZIONI UFFICIALI';
  const newsCard=x=>'<article class="timeline-item news-evidence-item" data-news-kind="'+esc(state.newsMode)+'" data-news-asof="'+esc(x.asof)+'">'
@@ -1155,9 +1181,12 @@ function news(){
     '<div class="empty"><strong>Nessuna voce con data verificabile</strong><p>Non sostituiamo eventi mancanti con notizie presunte.</p></div>')
   +'</div></section>'
   +'<aside class="panel glow news-research-reading"><span class="mini-overline">IL GIUDIZIO DEL DESK / NOTIZIE</span>'
-  +'<h2 class="focus-headline">Dalla fonte ai prezzi, senza scorciatoie.</h2>'
-  +'<p class="focus-subtitle">'+esc(evidence.gap)+'</p>'
-  +'<p>Un comunicato non dimostra da solo una sorpresa macro o una reazione FX: servono confronto con le attese e variazioni misurate sulla stessa finestra.</p>'
+  +'<h2 class="focus-headline">'+esc(firstTitle)+'</h2>'
+  +'<p class="focus-subtitle">'+esc(firstFact)+'</p>'
+  +'<p><strong>Perché conta.</strong> '+esc(firstWhy)+'</p>'
+  +'<p><strong>Cosa frena il giudizio.</strong> '+esc(firstLimit)+'</p>'
+  +'<p><strong>Cosa guardare.</strong> '+esc(firstWatch)+'</p>'
+  +'<p class="source-caption">'+esc(evidence.gap)+'</p>'
   +'<div class="news-research-links"><a href="#rates">Tassi & OIS <span aria-hidden="true">↗</span></a>'
   +'<a href="#currencies">Valute G8 <span aria-hidden="true">↗</span></a>'
   +'<a href="#pairs">Coppie FX <span aria-hidden="true">↗</span></a></div>'

@@ -467,20 +467,44 @@ function build(api){
    country==='NZD'&&cur?.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?
    'Da seguire se il dollaro neozelandese conferma la direzione sia contro il dollaro USA sia contro quello australiano.':
    'Guarda se le prossime notizie cambiano le attese sui tassi e se la valuta reagisce nella stessa direzione.';
+  // Editorial synthesis of existing directional components, never a new score.
+  const positive=[],negative=[],limits=[];
+  if(cur){
+   if(cur.growthTrend===1)positive.push('Il PIL accelera.');
+   if(cur.growthTrend===-1)negative.push('Il PIL rallenta.');
+   if(cur.labourDirection===1)positive.push('La disoccupazione scende.');
+   if(cur.labourDirection===-1)negative.push('La disoccupazione sale.');
+   if(cur.growthTrend!==1&&cur.growthTrend!==-1&&cur.labourDirection!==1&&cur.labourDirection!==-1)limits.push('Crescita e lavoro non offrono un segnale direzionale netto.');
+   if(cur.rate.quality==='ASSENTE')limits.push('Manca una variazione monetaria verificabile: il contributo dei tassi è neutro per assunzione.');
+   else if(cur.rate.score>0)positive.push(cur.rate.quality==='UFFICIALE'?'Il riferimento monetario sale.':'Il riferimento indicativo sui tassi sale; è un proxy o una stima.');
+   else if(cur.rate.score<0)negative.push(cur.rate.quality==='UFFICIALE'?'Il riferimento monetario scende.':'Il riferimento indicativo sui tassi scende; è un proxy o una stima.');
+   else limits.push('Il movimento del riferimento sui tassi non è decisivo.');
+  }else limits.push('La stima integrata non è disponibile.');
+  if(x.price.ok&&validDay(result.asof)&&Date.parse(dayNow())-Date.parse(result.asof)>=0&&Date.parse(dayNow())-Date.parse(result.asof)<=7){
+   if(x.price.change>.005)positive.push('Il cambio guadagna terreno in media contro le altre sette valute.');
+   else if(x.price.change<-.005)negative.push('Il cambio perde terreno in media contro le altre sette valute.');
+   else limits.push('La forza relativa del cambio cambia poco.');
+  }else limits.push('Manca una lettura recente della forza relativa del cambio.');
+  const verdict=positive.length&&negative.length?'Le conferme non sono univoche: '+country+' tra sostegno e pressioni contrarie':
+   positive.length&&!negative.length?'Emergono elementi a sostegno di '+country:
+   negative.length&&!positive.length?'Emergono elementi di pressione su '+country:
+   'Il vantaggio valutario di '+country+' resta da chiarire';
+  const support=positive.join(' ')||'Tra le componenti osservabili non emerge un sostegno direzionale netto.';
+  const friction=[...negative,...limits].join(' ')||'Non emergono contrasti nelle componenti considerate. Verifica comunque i differenziali rispetto alla valuta opposta.';
   return '<section class="strength-focus" id="orient-strength-focus" tabindex="-1">'+
    '<div class="strength-focus-head"><div>'+
    '<span class="chapter-kicker">02 / LA LETTURA DEL DESK · '+FLAGS[country]+' '+country+'</span>'+
-   '<h2>Che cosa sta succedendo a '+country+'?</h2>'+
+   '<h2>'+esc(verdict)+'</h2>'+
    '</div></div>'+
    '<div class="strength-first-reading">'+
-   '<p><strong>Il quadro economico.</strong> '+esc(estimatedEconomic)+'</p>'+
-   '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(chfRankingDetail||plainRates(sixProof))+'</p>'+
+   '<p><strong>Cosa va.</strong> '+esc(support)+'</p>'+
+   '<p><strong>Cosa frena.</strong> '+esc(friction)+'</p>'+
    '<p><strong>Che cosa mostra il Forex.</strong> '+esc(opening.lead)+'</p>'+
    '</div>'+
-   '<p class="strength-first-watch"><strong>Che cosa monitorare.</strong> '+esc(nextCheck)+'</p>'+
+   '<p class="strength-first-watch"><strong>Cosa guardare.</strong> '+esc(sourceRelease?nextCheck:cur?.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?'Verifica se NZD/USD e AUD/NZD confermano la direzione del riferimento neozelandese. Il proxy non sostituisce le attese RBNZ.':cur?.rate.quality==='ASSENTE'?'La prossima variazione verificabile dei tassi chiarirà se il prezzo relativo è sostenuto anche dalle aspettative monetarie.':positive.length&&negative.length?'Verifica quale dei segnali contrari cambia per primo e se le attese sui tassi e la valuta si riallineano.':nextCheck)+'</p>'+
    '<details class="strength-evidence-fold"><summary><strong>Apri numeri, date, stime e fonti di '+country+'</strong>'+
    '<span>Quattro pilastri · Macro / 2Y / attese 6M / prezzo · ricerca Quant separata</span></summary>'+
-   '<div class="strength-evidence-body">'+(root.FXQuantG8PricingEvidence?.render?.(sixProof)||'')+
+   '<div class="strength-evidence-body"><p>'+esc(estimatedEconomic)+' '+esc(chfRankingDetail||plainRates(sixProof))+'</p><p>'+esc(opening.lead)+'</p>'+(root.FXQuantG8PricingEvidence?.render?.(sixProof)||'')+
    '<div class="strength-cards">'+
     cards.map(([label,main,note],i)=>'<article class="strength-card"><span>0'+(i+1)+
      ' / '+esc(label)+'</span><p>'+esc(main)+'</p><small>'+esc(note)+'</small></article>').join('')+

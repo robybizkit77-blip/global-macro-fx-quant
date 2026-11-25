@@ -304,6 +304,12 @@ for(const ccy of cbFx){
 }
 
 const riskView=require('../site/fx-quant-v2/next/risk-evidence-reading.js');
+const riskDeskTest=riskView.editorial({ready:true,stale:false,changes:{SP500:{change:1},NASDAQCOM:{change:-1},VIX:{change:1},HY_OAS:{change:-1},IG_OAS:{change:0}},monitor:'Controlla la diffusione'});
+assert.match(riskDeskTest.support,/S&P 500 in rialzo/);
+assert.match(riskDeskTest.support,/Credito HY in restringimento/);
+assert.match(riskDeskTest.friction,/Nasdaq Composite in calo/);
+assert.match(riskDeskTest.friction,/VIX in rialzo/);
+assert.equal(riskDeskTest.watch,'Controlla la diffusione');
 const riskDate=Object.values(initial.risk.streams).map(x=>x.date).filter(Boolean).sort().at(-1);
 const riskAlignedView=riskView.read(initial.risk.streams,riskDate);
 const riskLatestView=riskView.latestObservations(initial.risk.streams,riskDate);
