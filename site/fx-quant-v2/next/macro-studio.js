@@ -342,7 +342,7 @@ function build(api){
     +entries.map(([x,y])=>'<details><summary>'+esc(x)+'<span>＋</span></summary><p>'+esc(y)+'</p></details>').join('')+'</div></section>';
  }
  function render(){
-   return pageHero('GLOBAL MACRO','Scenario macro','Dal quadro globale al singolo paese: direzione economica, inflazione e implicazioni monetarie.')
+   return '<div class="macro-compact-hero">' + pageHero('GLOBAL MACRO','Scenario macro','Dal quadro globale al singolo paese: direzione economica, inflazione e implicazioni monetarie.') + '</div>'
     +(root.FXQuantMacroDesk?.render?root.FXQuantMacroDesk.render({catalog,esc,dayNow,country,overlay:get('semaphoreExtra'),feedStatus:get('semaphoreFeedStatus')}):root.FXQuantRecessionLight?.render?root.FXQuantRecessionLight.render({catalog,esc,dayNow,country,overlay:get('semaphoreExtra'),feedStatus:get('semaphoreFeedStatus')}):countryStrip()+countryHero())
     +'<details class="macro-advanced" data-macro-panel="explorer" '+(state.msExplorer?'open':'')+'><summary><span><strong>Esplora gli indicatori</strong><small>Grafici, variazioni e singole serie del paese selezionato.</small></span><b>Apri ↗</b></summary><div class="macro-advanced-content">'+macroResearch()+'</div></details>'
     +'<details class="macro-advanced" data-macro-panel="thermometers"><summary><span><strong>Termometri e contesto monetario</strong><small>Percentili storici e lettura di prezzi e lavoro.</small></span><b>Apri ↗</b></summary><div class="macro-advanced-content">'+countryHero()+'</div></details>'

@@ -149,3 +149,19 @@ which data limitations or blockers remain**. Distinguish designed,
 implemented, tested, merged, deployed and publicly verified. Do not
 start indefinite redesign cycles or introduce unrequested improvements
 after the requested task is complete.
+
+
+## Scenario Macro in Next
+
+- Keep the existing Next DARK DESK theme, navigation and public route. The
+  Research preview is the reference for content order.
+- Lead with the global judgment and its limits, then growth, inflation, labour
+  and monetary implications. Follow with the G8 matrix, selectable country
+  dossiers, monitoring points, indicators, historical charts and sources.
+- Share the editorial reading between Next and Research. Preserve the existing
+  calculation engine and expose classified-area coverage separately from the
+  evidence required for an aggregate judgment. Distinguish the prevailing
+  direction across areas from the main development highlighted in each dossier.
+- Check all eight dossiers, the matrix, keyboard and mobile navigation,
+  partial-data behaviour and unchanged source semantics. Capture before and
+  after at desktop and mobile widths and verify the published Next route.
