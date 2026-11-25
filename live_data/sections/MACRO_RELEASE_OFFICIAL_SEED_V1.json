@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_MACRO_RELEASE_OFFICIAL_SEED_V1",
   "status": "ACTIVE_VERIFIED_SEED",
-  "as_of": "2026-11-21",
+  "as_of": "2026-11-25",
   "consensus": "NOT_INCLUDED",
   "events": [
     {
@@ -1125,6 +1125,19 @@
       "quality": "OFFICIAL_CALENDAR",
       "source_family": "FSO",
       "source_url": "https://statistik.admin.ch/en/agenda/2028-7"
+    },
+    {
+      "ccy": "AUD",
+      "date": "2027-05-26",
+      "time_local": "11:30",
+      "timezone": "Australia/Sydney",
+      "event_type": "INFLATION",
+      "title": "Consumer Price Index, Australia",
+      "reference_period": "April 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "ABS",
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia"
     }
   ]
 }

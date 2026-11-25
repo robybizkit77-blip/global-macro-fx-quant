@@ -3,28 +3,12 @@
     "cb_schedule_available": 8,
     "consensus_available_events": 0,
     "g8_total": 8,
-    "macro_ccy_coverage": 6,
+    "macro_ccy_coverage": 5,
     "previous_only_events": 0,
     "upcoming_macro_events": 60,
     "upcoming_total_events": 68
   },
   "events": [
-    {
-      "ccy": "JPY",
-      "consensus_status": "NOT_PRESENT",
-      "date": "2026-11-24",
-      "event_type": "PMI",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_PROVISIONAL",
-      "reference_period": "November 2026",
-      "source_family": "S&P Global",
-      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
-      "source_url": "https://www.pmi.spglobal.com/Public/Home/PDF/UK_Rel_Dates",
-      "status": "UPCOMING",
-      "time_local": "09:30",
-      "timezone": "Asia/Tokyo",
-      "title": "PMI flash Giappone"
-    },
     {
       "ccy": "USD",
       "consensus_status": "NOT_PRESENT",
@@ -617,6 +601,22 @@
       "title": "Swiss GDP flash"
     },
     {
+      "ccy": "AUD",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-05-26",
+      "event_type": "INFLATION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "reference_period": "April 2027",
+      "source_family": "ABS",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia",
+      "status": "UPCOMING",
+      "time_local": "11:30",
+      "timezone": "Australia/Sydney",
+      "title": "Consumer Price Index, Australia"
+    },
+    {
       "ccy": "USD",
       "consensus_status": "NOT_PRESENT",
       "date": "2027-05-27",
@@ -1081,8 +1081,8 @@
       "title": "Swiss Consumer Price Index"
     }
   ],
-  "generated_at_utc": "2026-11-24T00:57:55.481900Z",
-  "last_checked_at_utc": "2026-11-24T00:57:55.481900Z",
+  "generated_at_utc": "2026-11-25T01:31:00.211778Z",
+  "last_checked_at_utc": "2026-11-25T01:31:00.211778Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
@@ -1095,7 +1095,6 @@
       "AUD",
       "CAD",
       "CHF",
-      "JPY",
       "NZD",
       "USD"
     ],
