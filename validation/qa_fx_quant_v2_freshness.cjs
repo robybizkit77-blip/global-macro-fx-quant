@@ -170,7 +170,7 @@ for(const name of ['GOLD.market_proxy','WTI.market_proxy','BRENT.market_proxy'])
 const cross=JSON.parse(file('design-studio-cross-asset-v1-data.json'));
 const crossLive=JSON.parse(file('cross-asset-live-data.json'));
 requireValid(crossLive.schema==='GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1','Unexpected V2 Cross-Asset source-feed schema');
-const sourceIds={SP500:'S&P 500',NASDAQCOM:'Nasdaq Composite',IG_OAS:'IG OAS',HY_OAS:'HY OAS',VIX:'VIX Cboe'};
+const sourceIds={SP500:'S&P 500',NASDAQCOM:'Nasdaq Composite',DJIA:'Dow Jones Industrial Average',SX5E:'Euro Stoxx 50',IG_OAS:'IG OAS',HY_OAS:'HY OAS',VIX:'VIX Cboe'};
 const stored=crossLive.streams||{};
 for(const [id,label] of Object.entries(sourceIds)){
  const s=stored[id];
@@ -181,7 +181,9 @@ for(const [id,label] of Object.entries(sourceIds)){
  }
 }
 for(const [idx,x] of (cross.equity?.indices||[]).entries()){
- if(idx<2&&stored[idx===0?'SP500':'NASDAQCOM'])continue;
+ const key={0:'SP500',1:'NASDAQCOM',3:'DJIA',4:'SX5E'}[idx];
+ const z=key&&stored[key];
+ if(z&&iso(z.date)&&Number.isFinite(z.value)&&z.value>0&&z.quality==='PUBLISHED_SOURCE_RESEARCH_ONLY'&&z.kind==='INDEX')continue;
  if(iso(x.as_of))check('cross_asset','Snapshot equity '+x.name,x.as_of,2,'STATIC_SNAPSHOT');
 }
 for(const name of ['HY','IG']){
@@ -191,7 +193,7 @@ for(const name of ['HY','IG']){
 }
 if(!stored.VIX&&cross.volatility?.VIX?.date)
  check('cross_asset','Snapshot VIX',cross.volatility.VIX.date,2,'STATIC_SNAPSHOT');
-note('cross_asset','Copertura a frequenze diverse','S&P 500, Nasdaq, IG/HY OAS e VIX hanno un feed V2 di ricerca con date proprie; Russell, Dow, Euro Stoxx, partecipazione, Cina e alcuni dati spot rimangono snapshot, senza attribuzione a sedute attuali.');
+note('cross_asset','Copertura a frequenze diverse','S&P 500, Nasdaq, Dow, Euro Stoxx, IG/HY OAS e VIX hanno fonti V2 di ricerca con date proprie; Russell, partecipazione, Cina e alcuni dati spot rimangono snapshot, senza attribuzione a sedute attuali.');
 const bench=JSON.parse(file('chf-nzd-benchmark-research.json'));
 requireValid(bench.schema==='GMFQ_FXV2_CHF_NZD_BENCHMARK_RESEARCH_V1'&&
   bench.eligible_for_fx_pair_engine===false&&
