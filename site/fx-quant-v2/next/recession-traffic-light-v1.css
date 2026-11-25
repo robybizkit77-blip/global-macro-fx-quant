@@ -175,3 +175,32 @@
 .recession-light .sem-pill i{flex-shrink:0}
 @media(max-width:830px){.recession-light .sem-area{padding-left:3px}.recession-light .sem-signal{padding-top:7px}.recession-light .sem-value>strong{font-size:17px}.recession-light .sem-value{padding:8px 6px}.recession-light .sem-measure{padding:9px}.sem-area-judgment p{font-size:12px}}
 @media(max-width:380px){.recession-light .sem-value>strong{font-size:14px}.recession-light .sem-value>small{font-size:9px}}
+
+/* Economic Cycle Monitor: editorial hierarchy, scoped to this monitor. */
+.recession-light .sem-desk-reading{margin:0 0 14px;padding:18px;border:1px solid var(--sem-line);border-radius:12px;background:#0d2132;min-width:0}
+.recession-light .sem-desk-eyebrow{font-size:10px;letter-spacing:.12em;color:var(--sem-blue);font-weight:800}
+.recession-light .sem-desk-reading h3{font-size:clamp(19px,2.1vw,24px);line-height:1.25;color:var(--sem-ink);margin:7px 0 14px}
+.recession-light .sem-desk-lead{padding:14px 15px;border-left:3px solid var(--sem-blue);border-radius:0 8px 8px 0;background:#182e40}
+.recession-light .sem-desk-lead.green{border-left-color:var(--sem-green)}.recession-light .sem-desk-lead.red{border-left-color:var(--sem-red)}.recession-light .sem-desk-lead.amber{border-left-color:var(--sem-amber)}
+.recession-light .sem-desk-lead>span{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--sem-blue)}
+.recession-light .sem-desk-lead.green>span{color:var(--sem-green)}.recession-light .sem-desk-lead.red>span{color:var(--sem-red)}.recession-light .sem-desk-lead.amber>span{color:var(--sem-amber)}
+.recession-light .sem-desk-lead p{font-size:15px;line-height:1.65;color:#edf5fc;margin:6px 0 0;overflow-wrap:anywhere}
+.recession-light .sem-desk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.recession-light .sem-desk-card{min-width:0;background:#132a3c;border:1px solid var(--sem-line);border-radius:8px;padding:12px}
+.recession-light .sem-desk-card h4,.recession-light .sem-desk-watch h4{font-size:12px;font-weight:800;color:var(--sem-blue);margin:0 0 6px}
+.recession-light .sem-desk-card p,.recession-light .sem-desk-watch p{font-size:13px;line-height:1.65;color:#d7e6f1;margin:0;overflow-wrap:anywhere}
+.recession-light .sem-desk-watch{background:#172b3b;border-left:3px solid var(--sem-amber);padding:12px 15px;border-radius:0 8px 8px 0}
+.recession-light .sem-desk-watch h4{color:var(--sem-amber)}
+.recession-light .sem-desk-reading>small,.recession-light .sem-desk-turn small,.recession-light .sem-desk-detail small{display:block;color:var(--sem-muted);font-size:11px;line-height:1.55;margin-top:10px;overflow-wrap:anywhere}
+.recession-light .sem-desk-turn{background:#132a3c;border:1px solid var(--sem-line);border-radius:9px;padding:14px;margin:0 0 12px}
+.recession-light .sem-desk-turn p,.recession-light .sem-desk-detail p{font-size:13px;line-height:1.6;color:#d7e6f1;margin:0 0 8px;overflow-wrap:anywhere}
+.recession-light .sem-desk-turn p:first-child{color:var(--sem-blue);font-size:14px}
+.recession-light .sem-desk-context{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px;align-items:start}
+.recession-light .sem-desk-detail,.recession-light .sem-desk-evidence{min-width:0;border:1px solid var(--sem-line);background:#102638;border-radius:8px}
+.recession-light .sem-desk-detail>summary,.recession-light .sem-desk-evidence>summary{cursor:pointer;color:#cce4f3;font-size:12px;font-weight:750;padding:12px;line-height:1.5}
+.recession-light .sem-desk-detail[open]>summary,.recession-light .sem-desk-evidence[open]>summary{border-bottom:1px solid var(--sem-line)}
+.recession-light .sem-desk-detail>div{padding:12px}
+.recession-light .sem-desk-evidence .sem-table{border:0;border-radius:0 0 8px 8px}
+.recession-light .sem-desk-detail>summary:focus-visible,.recession-light .sem-desk-evidence>summary:focus-visible{outline:2px solid var(--sem-blue);outline-offset:-3px}
+@media(max-width:830px){.recession-light .sem-desk-context{grid-template-columns:1fr}.recession-light .sem-desk-reading{padding:14px}}
+@media(max-width:550px){.recession-light .sem-desk-grid{grid-template-columns:1fr}.recession-light .sem-desk-lead p{font-size:14px}.recession-light .sem-desk-card p{font-size:13px}}
