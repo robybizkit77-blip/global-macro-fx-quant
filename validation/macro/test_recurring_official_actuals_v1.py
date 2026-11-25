@@ -14,6 +14,7 @@ class Tests(unittest.TestCase):
     def test_exact_metrics(self):
         self.assertEqual([m[2] for m in metrics(ABS,HTML_ABS)],[4.9,3.8])
         self.assertEqual(metrics(GDP,HTML_GDP)[0][2:],(4.3,2.2))
+        self.assertEqual(metrics(GDP,HTML_GDP.replace('product (GDP)','product (<b>GDP</b>)'))[0][2:],(4.3,2.2))
         self.assertEqual([m[2] for m in metrics(PCE,HTML_PCE)],[.3,.3,3.8,3.3])
         self.assertEqual(metrics(GDP,HTML_GDP.replace("increased at an annual rate","decreased at an annual rate"))[0][2],-4.3)
     def test_next_period_url_and_wrong_identity(self):
