@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-24T17:30:05Z",
-  "evaluation_date_europe_rome": "2026-11-24",
+  "generated_at_utc": "2026-11-25T02:16:46Z",
+  "evaluation_date_europe_rome": "2026-11-25",
   "reference_only": true,
   "policy": {
     "fail_closed": true,
@@ -15,12 +15,12 @@
     "ois_official": {
       "USD": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-23",
+        "as_of": "2026-11-24",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "EUR": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-20",
+        "as_of": "2026-11-23",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "GBP": {
@@ -77,7 +77,7 @@
       },
       "CHF": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-23",
+        "as_of": "2026-11-24",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "CAD": {
@@ -141,13 +141,13 @@
     "government_rates": {
       "USD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-23",
-        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-23",
+        "as_of": "2026-11-24",
+        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-24",
         "government_2y_pct": 4.63,
-        "government_10y_pct": 4.92,
-        "10y_minus_2y_bp": 29.0,
-        "change_2y_bp": -20.0,
-        "change_10y_bp": -20.0
+        "government_10y_pct": 4.91,
+        "10y_minus_2y_bp": 28.0,
+        "change_2y_bp": -17.0,
+        "change_10y_bp": -19.0
       },
       "EUR": {
         "state": "AVAILABLE_CERTIFIED",
@@ -170,14 +170,19 @@
         "change_10y_bp": -14.1
       },
       "JPY": {
-        "state": "STALE",
-        "as_of": "2026-11-20",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-11-24",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-24",
+        "government_2y_pct": 1.783,
+        "government_10y_pct": 2.781,
+        "10y_minus_2y_bp": 99.8,
+        "change_2y_bp": -9.5,
+        "change_10y_bp": -14.4
       },
       "CHF": {
         "state": "STALE",
         "as_of": "2026-09-30",
-        "reason": "Age 55d exceeds the 3d alert limit."
+        "reason": "Age 56d exceeds the 3d alert limit."
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
@@ -192,12 +197,12 @@
       "AUD": {
         "state": "STALE",
         "as_of": "2026-11-18",
-        "reason": "Age 6d exceeds the 3d alert limit."
+        "reason": "Age 7d exceeds the 3d alert limit."
       },
       "NZD": {
         "state": "STALE",
         "as_of": "2026-10-16",
-        "reason": "Age 39d exceeds the 3d alert limit."
+        "reason": "Age 40d exceeds the 3d alert limit."
       }
     },
     "cot_weekly": {
