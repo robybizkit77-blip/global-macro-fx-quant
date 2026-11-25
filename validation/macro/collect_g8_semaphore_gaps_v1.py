@@ -552,6 +552,78 @@ def parse_ons_wage(raw,now):
     if len(out)<12:raise ValueError("ONS KAC3 history unavailable")
     return sorted(out.items())
 
+NZ_LCI_KEY="LCIQ.SG53Z9"
+NZ_LCI_BASE="https://www.stats.govt.nz/information-releases/labour-market-statistics-"
+
+def nz_lci_release(now):
+    # Labour-market release normally occurs in the second month after quarter end.
+    q=(now.year*4+(now.month-1)//3)-1
+    y,n=divmod(q,4)
+    m=(n+1)*3
+    return y,m,NZ_LCI_BASE+date(y,m,1).strftime("%B").lower()+f"-{y}-quarter/"
+
+def parse_nz_lci_zip(raw,now):
+    levels={}
+    with ZipFile(io.BytesIO(raw)) as z:
+        members=[x for x in z.infolist() if x.filename.lower().endswith(".csv") and not x.is_dir()]
+        if not members or sum(x.file_size for x in members)>350_000_000:raise ValueError("NZ labour archive invalid")
+        for member in members:
+            with z.open(member) as stream:
+                reader=csv.DictReader(io.TextIOWrapper(stream,encoding="utf-8-sig"))
+                fields=set(reader.fieldnames or [])
+                if not {"Series_reference","Period","Data_value","UNITS"}.issubset(fields):continue
+                mag="MAGNTUDE" if "MAGNTUDE" in fields else "MAGNITUDE"
+                if mag not in fields:continue
+                for row in reader:
+                    if row["Series_reference"]!=NZ_LCI_KEY:continue
+                    if row["UNITS"].strip().lower() not in {"index","index number","index numbers"} or row[mag]!="0":
+                        raise ValueError("LCI index unit/scale mismatch")
+                    m=re.fullmatch(r"(\d{4})[.-](03|06|09|12)",row["Period"])
+                    if not m:raise ValueError("LCI quarterly date invalid")
+                    p=f"{m[1]}-Q{int(m[2])//3}"
+                    if period_end(p)>now:continue
+                    if row["Data_value"] in ("","..","."):continue
+                    v=float(row["Data_value"])
+                    if p in levels or not math.isfinite(v) or not 100<=v<=10000:raise ValueError("LCI invalid/duplicate level")
+                    levels[p]=v
+    rates=[]
+    for p,v in sorted(levels.items()):
+        prior=str(int(p[:4])-1)+p[4:]
+        if prior in levels:rates.append((p,round(100*(v/levels[prior]-1),1)))
+    if len(rates)<12:raise ValueError("LCI annual history unavailable")
+    return rates
+
+def fetch_nz_lci(now):
+    y,m,page=nz_lci_release(now)
+    name=date(y,m,1).strftime("%B")
+    expected=f"labour-market-statistics-{name.lower()}-{y}-quarter"
+    def get(url,limit):
+        req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0"})
+        with urlopen(req,timeout=35) as r:
+            if urlsplit(r.geturl()).hostname not in {"www.stats.govt.nz","stats.govt.nz"}:raise ValueError("NZ LCI redirect")
+            raw=r.read(limit+1)
+            if not raw or len(raw)>limit:raise ValueError("NZ LCI response size")
+        return raw
+    from urllib.parse import urljoin
+    urls=[]
+    try:
+        html=get(page,4_000_000).decode("utf-8","replace")
+        for link in re.findall(r'href=["\']([^"\']+)',html,re.I):
+            url=urljoin(page,unescape(link))
+            parts=urlsplit(url)
+            if parts.scheme=="https" and parts.hostname in {"www.stats.govt.nz","stats.govt.nz"} and expected in parts.path.lower() and parts.path.lower().endswith(".zip"):
+                if url not in urls:urls.append(url)
+    except (ValueError,OSError,TimeoutError):pass
+    urls.append("https://www.stats.govt.nz/assets/Uploads/Labour-market-statistics/"+f"Labour-market-statistics-{name}-{y}-quarter/Download-data/{expected}.zip")
+    errors=[]
+    for url in urls[:4]:
+        try:
+            obs=parse_nz_lci_zip(get(url,45_000_000),now)
+            if obs[-1][0]!=f"{y}-Q{m//3}":raise ValueError("LCI latest quarter mismatch")
+            return obs,page
+        except (ValueError,KeyError,UnicodeError,OSError,TimeoutError) as exc:errors.append(str(exc)[:80])
+    raise ValueError("No validated NZ LCI archive: "+"; ".join(errors))
+
 def collect_wage_context(now):
     """Independent context feed, not counted as an activity indicator."""
     result={"schema":"GMFQ_G8_WAGE_CONTEXT_V1","series":[],"audit":{}}
@@ -567,6 +639,17 @@ def collect_wage_context(now):
         result["audit"]["GBP"]=status
     except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
         result["audit"]["GBP"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    try:
+        obs,page=fetch_nz_lci(now)
+        spec=dict(ccy="NZD",area="wages",key=NZ_LCI_KEY,method="statsnz_lci",
+            name="Labour Cost Index nominale (tutti i settori, inclusi straordinari)",
+            unit="% a/a",frequency="Q",kind="points",max_age_days=175,
+            origin="Stats NZ / LCIQ.SG53Z9",source_page=page)
+        item,status=candidate(spec,obs,now)
+        if item:result["series"].append(item)
+        result["audit"]["NZD"]=status
+    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+        result["audit"]["NZD"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
     return result
 
 def parse_ons_industry(raw,now):
