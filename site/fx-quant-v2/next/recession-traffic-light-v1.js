@@ -995,7 +995,7 @@ function exportSparkline(today,country,overlay,external,esc){
  const desc='Esportazioni reali a/a, '+h.dates[0]+' – '+h.dates.at(-1)+': '+h.values.map(v=>fmt(v,2)+'%').join(', ');
  return '<div class="sem-export-trend"><svg role="img" aria-label="'+esc(desc)+'" viewBox="0 0 240 45" preserveAspectRatio="none"><line x1="4" x2="236" y1="'+py(0).toFixed(2)+'" y2="'+py(0).toFixed(2)+'" stroke="#6a8296" stroke-dasharray="3 3"/><polyline points="'+points+'" fill="none" stroke="#81c9e8" stroke-width="1.8" vector-effect="non-scaling-stroke"/><circle cx="236" cy="'+py(h.values.at(-1)).toFixed(2)+'" r="2.6" fill="#81c9e8"/></svg><small>'+esc(h.dates[0])+' <span>Export reale · '+h.values.length+' trim.</span> '+esc(h.dates.at(-1))+'</small></div>';
 }
-function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x??'')}={}){
+function render({catalog={},dayNow,country='USD',overlay=null,feedStatus=null,esc=(x)=>String(x??'')}={}){
  const today=dayNow?.()||'';
  if(!/^\d{4}-\d{2}-\d{2}$/.test(today))return '';
  const selected=FX.includes(country)?country:'USD';
@@ -1186,13 +1186,16 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    const label=phase?overview[ccy].phaseLabels[phase]:tones[a.signal.tone];
    return '<span class="sem-matrix-cell '+a.signal.tone+'" title="'+esc(a.name+' · '+label+(cell?.periods?.length?' · '+cell.periods.join(' / '):''))+'"><b>'+symbols[a.signal.tone]+'</b><span>'+esc(label)+'</span></span>';
  };
+ const feedMode=feedStatus?.mode||(overlay?'provided':'missing');
+ const feedMessage=feedMode==='network'?'Fonti supplementari caricate · '+esc(feedStatus.as_of):feedMode==='retained'?'ATTENZIONE — aggiornamento non riuscito. Ultimo archivio disponibile: '+esc(feedStatus.as_of)+'. Periodi originali invariati.':feedMode==='missing'?'ATTENZIONE — feed supplementare non caricato. Copertura parziale: non interpretare le aree mancanti come deterioramento economico.':'';
  const hasStale=rows.some(x=>x.items.some(z=>z?.stale));
  const hasManual=rows.some(x=>x.items.some(z=>z?.source?.includes('verificato manualmente')));
- return '<section class="recession-light" aria-labelledby="recession-light-title">'+
+ return '<section class="recession-light" aria-labelledby="recession-light-title" data-semaphore-feed="'+esc(feedMode)+'" data-semaphore-coverage="'+covered+'">'+
   '<header class="sem-head"><div><span class="sem-kicker">GLOBAL MACRO / G8 / LETTURA CICLICA</span>'+
   '<h2 id="recession-light-title">Economic Cycle Monitor <small>G8</small></h2>'+
   '<p>Il semaforo economico: direzione, fase degli indicatori e segnali di svolta. I colori non sono un ranking di forza FX né una probabilità di recessione.</p></div>'+
   '<span class="sem-date">Consultazione '+esc(today)+' · periodi originali in tabella</span></header>'+
+  (feedMessage?'<p class="sem-source-note" role="status">'+feedMessage+(feedMode==='network'?'':' <button type="button" class="ghost-btn small" data-sem-feed-retry>Riprova</button>')+'</p>':'')+
   '<div class="sem-overview"><div class="sem-overview-coverage"><span>Copertura dati G8</span><strong>'+covered+'<small>/56</small></strong><div class="sem-coverage-track" role="progressbar" aria-label="Copertura G8" aria-valuenow="'+covered+'" aria-valuemin="0" aria-valuemax="56"><i style="width:'+(covered/56*100)+'%"></i></div></div>'+['green','amber','red','neutral'].map(t=>'<div class="sem-overview-kpi '+t+'"><span>'+tones[t]+'</span><strong>'+tally(allRows,t)+'</strong></div>').join('')+'</div>'+
   '<div class="sem-global-verdict"><div><span>QUADRO G8 · DIFFUSIONE DELLE DIREZIONI</span><h3>'+marketCount('green')+' migliorano · '+marketCount('red')+' peggiorano</h3><p>'+marketCount('amber')+' quadri misti · '+marketCount('neutral')+' letture non allineate o insufficienti. Regole descrittive, non un confronto del livello di crescita.</p></div><div class="sem-global-turn"><span>PUNTI DI SVOLTA · LOCALI</span><strong>'+turningCountries.length+' economie</strong><small>Non equivalgono a inversioni confermate del ciclo.</small></div></div>'+
   '<section class="sem-turn-radar" aria-label="Radar delle svolte"><h3>Radar delle svolte</h3><div class="sem-turn-chips">'+(turnList||'<p>Nessuna nuova inversione rilevata con evidenza sufficiente.</p>')+'</div></section>'+
