@@ -335,7 +335,7 @@ jobs:
             git checkout --detach origin/main
           fi
           if [[ "$EVENT_NAME" == "push" || "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            for f in live_data/sections/NATIVE_LIQ_DATA.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json; do
+            for f in live_data/sections/NATIVE_LIQ_DATA.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json live_data/sections/MACRO_SERIES.json; do
               git show "origin/gh-pages:$f" > "$f"
             done
           fi
@@ -374,6 +374,10 @@ jobs:
                     if name != "G8 Economic Semaphore Source Recovery V1"),
               )) + ("live_data/sections/NATIVE_LIQ_DATA.json",
                     "live_data/sections/ESTIMATED_RESIDUAL_GAPS.json")
+              paths += tuple(base + f for f in (
+                  "semaphore-supplement-v1.json", "recession-traffic-light-v1.js",
+                  "recession-traffic-light-v1.css", "macro-studio.js",
+              )) + ("live_data/sections/MACRO_SERIES.json",)
           elif source_workflow in research_sources:
               label = "NEXT_MACRO_LIQUIDITY_PUBLIC_HTTP"
               base = "site/fx-quant-v2/next/"
@@ -383,7 +387,7 @@ jobs:
                   base + "app.js",
               )
               if source_workflow == "G8 Economic Semaphore Source Recovery V1":
-                  paths += (base + "recession-traffic-light-v1.js", base + "macro-studio.js",
+                  paths += (base + "recession-traffic-light-v1.js", base + "recession-traffic-light-v1.css", base + "macro-studio.js",
                             "live_data/sections/MACRO_SERIES.json")
               else:
                   paths += (base + "liquidity-credit-studio.js",
