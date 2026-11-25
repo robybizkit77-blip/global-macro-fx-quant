@@ -89,12 +89,13 @@ def source_web_attestations(core_dir, filename=WEB_EVIDENCE_FILE):
         for row in items:
             key = row.get("key")
             require(isinstance(key, str) and len(key.split(".")) == 2 and
-                    key.split(".")[0] in OFFICIAL_HOSTS and
+                    (key.split(".")[0] in OFFICIAL_HOSTS or key == "CHF.inflation") and
                     key.split(".")[1] in DIMS and
                     key not in seen, "unknown/duplicate official source key")
             seen.add(key)
             url = urlsplit(str(row.get("url", "")))
-            root = OFFICIAL_HOSTS[key.split(".")[0]]
+            # FSO is the issuer of Swiss CPI, not the precise SECO/SNB labour series.
+            root = "bfs.admin.ch" if key == "CHF.inflation" else OFFICIAL_HOSTS[key.split(".")[0]]
             require(url.scheme == "https" and url.hostname and
                     (url.hostname == root or url.hostname.endswith("."+root)) and
                     not url.username and not url.password,

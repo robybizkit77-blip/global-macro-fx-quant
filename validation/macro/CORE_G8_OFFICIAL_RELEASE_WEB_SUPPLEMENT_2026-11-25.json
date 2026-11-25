@@ -1,0 +1,21 @@
+{
+  "schema": "GMFQ_G8_CORE_OFFICIAL_WEB_RELEASE_ATTESTATIONS_V1",
+  "review_as_of": "2026-11-25",
+  "evidence_class": "OFFICIAL_PUBLISHER_RELEASE_WEB_VALUE_DATE_NOT_IMMUTABLE_BYTES",
+  "historical_full_PIT_vintage_certified": false,
+  "attestations": [
+    {
+      "key": "CHF.inflation",
+      "observation_period": "2026-10",
+      "release_date": "2026-11-03",
+      "release_timestamp_local": null,
+      "published_value": 1.5,
+      "raw_series_value": 1.5,
+      "transform": "reported_yoy_rate",
+      "publisher": "Swiss Federal Statistical Office",
+      "url": "https://www.bfs.admin.ch/en/newnsb/UA8hylpLYO6i",
+      "source_locator": "FSO press release dated 3 November 2026, opening paragraph: October CPI annual inflation +1.5%; no independently attested exact release clock."
+    }
+  ],
+  "contradictions": []
+}
