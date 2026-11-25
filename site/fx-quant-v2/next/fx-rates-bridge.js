@@ -298,7 +298,9 @@
  }
  function snapshot(rateData,prices,pair,modelDate,now,audHistory,chfHistory,nzdPostroll,nzdReconciled,chfEstimate){
   const aud=String(pair||'').includes('AUD')?researchRates(rateData,audHistory,modelDate,now):rateData;
-  const eff=pair==='AUDNZD'&&aud?.AUD?.researchOnly?nzdResearchRates(aud,nzdReconciled,now):aud;
+  const nzLeg=String(pair||'').includes('NZD')&&!String(pair||'').includes('CHF');
+  const candidate=nzLeg?nzdResearchRates(aud,nzdReconciled,now):aud;
+  const eff=candidate?.NZD?.researchOnly&&(!isGovSource(aud?.NZD)||candidate.NZD.date>=aud.NZD.date)?candidate:aud;
   const base=String(pair||'').slice(0,3),quote=String(pair||'').slice(3,6);
   const a=eff?.[base],b=eff?.[quote],rows=commonObservations(eff,prices,pair,modelDate,now),latest=rows.at(-1);
   const lag=latest?days(latest.date,modelDate):null,age=latest?days(latest.date,now):null;
@@ -326,12 +328,12 @@
     :!ready?'Ultima osservazione FX/2Y comune troppo vecchia per confrontare i movimenti recenti.'
     :!short?'Storico troppo discontinuo: 5 intervalli fra date comuni coprono più di 12 giorni o sono insufficienti.'
     :'';
-  const nzdResearch=b?.quality==='OFFICIAL_RBNZ_B2_RECONCILED_RESEARCH_ONLY';
+  const nzdResearch=[a,b].some(x=>x?.quality==='OFFICIAL_RBNZ_B2_RECONCILED_RESEARCH_ONLY');
   return {pair,base,quote,rows,latest,age,lag,ready:ready&&Boolean(short),researchOnly:!!(a?.researchOnly||b?.researchOnly),context,nzdResearch,historical,estimate,
    short,medium,reason,
    firstSource:a?.source||'',secondSource:b?.source||'',
    // This series is a relative sovereign yield difference; never an OIS spread.
-   kind:nzdResearch?'2Y GOV · RBA F2 / RBNZ B2 RICERCA':(a?.researchOnly||b?.researchOnly)?'2Y GOV · RBA F2 RICERCA (NON CORE / NON OIS)':'2Y GOV · DIFFERENZIALE INDICATIVO (NON OIS)'};
+   kind:nzdResearch?'2Y GOV · RBNZ B2 RICERCA (NON CORE / NON OIS)':(a?.researchOnly||b?.researchOnly)?'2Y GOV · RBA F2 RICERCA (NON CORE / NON OIS)':'2Y GOV · DIFFERENZIALE INDICATIVO (NON OIS)'};
  }
  // A short, source-dated research observation, never a trade decision.
  function brief(r){
@@ -349,10 +351,10 @@
   const tone=r.medium&&r.short.direction!==r.medium.direction?'mixed':
     r.short.direction==='SEGNO OPPOSTO'?'divergent':
     r.short.direction==='STESSO SEGNO'?'aligned':'uncertain';
-  const label='5 intervalli '+short+' · 20 '+long+(r.nzdResearch?' · RBA F2 / RBNZ B2 ricerca':r.researchOnly?' · RBA F2 ricerca':'');
+  const label='5 intervalli '+short+' · 20 '+long+(r.nzdResearch?' · RBNZ B2 ricerca':r.researchOnly?' · RBA F2 ricerca':'');
   return {ready:true,asof:r.latest.date,tone,label,
    researchOnly:!!r.researchOnly,
-   explanation:'Confronto di segno su fixing BCE e governativi 2Y con le stesse date; non OIS, non causalità né segnale.'+(r.nzdResearch?' Confronto di ricerca tra RBA F2 e RBNZ B2 dopo il cambio di benchmark NZD.':r.researchOnly?' RBA F2 AUD è ricerca, non Core né backtest.':'')};
+   explanation:'Confronto di segno su fixing BCE e governativi 2Y con le stesse date; non OIS, non causalità né segnale.'+(r.nzdResearch?' Confronto di ricerca con RBNZ B2 dopo il cambio di benchmark NZD; non Core né backtest.':r.researchOnly?' RBA F2 AUD è ricerca, non Core né backtest.':'')};
  }
  function build(api){
   const {get,state,plot,fmt,sign,date,esc,dayNow}=api;
@@ -403,13 +405,13 @@
    const recentDifferent=r.lag>0?' Attenzione: il grafico si ferma al '+date(r.latest.date)+', mentre lo snapshot FX arriva al '+date(doc?.price_asof)+'. Il fixing più recente NON è stato abbinato a un tasso di un altro giorno.':'';
    return '<section class="decision-rates-bridge" aria-label="Prezzo e repricing 2Y" data-rate-asof="'+esc(r.latest.date)+'" data-aud-research="'+String(r.researchOnly)+'">'
     +'<div class="decision-rates-heading"><div><span>PREZZO FX / PRICING RELATIVO</span><h2>'+esc(r.base+'/'+r.quote)+' · i tassi confermano il prezzo?</h2><p>Due evidenze sullo stesso calendario, senza mischiare scale: fixing BCE e differenziale governativo 2Y.</p></div><a href="#rates" class="decision-rates-link">Apri Tassi & OIS</a></div>'
-    +'<div class="decision-rates-body"><div class="decision-rates-visual"><span>GRAFICO · '+esc(r.base)+' 2Y − '+esc(r.quote)+' 2Y</span>'+figure+'<small>Rendimenti governativi 2Y ufficiali. Spread espresso in punti base, non OIS né differenziale di carry. Visualizzazione sulle ultime '+line.length+' date comuni.'+(r.researchOnly?' AUD RBA F2: osservazioni giornaliere pubblicate settimanalmente; ricerca non canonica, non benchmark amministrato.':'')+'</small></div>'
+    +'<div class="decision-rates-body"><div class="decision-rates-visual"><span>GRAFICO · '+esc(r.base)+' 2Y − '+esc(r.quote)+' 2Y</span>'+figure+'<small>Rendimenti governativi 2Y ufficiali. Spread espresso in punti base, non OIS né differenziale di carry. Visualizzazione sulle ultime '+line.length+' date comuni.'+(r.nzdResearch?' NZD RBNZ B2: chiusure indicative post-roll riconciliate tra tabella ed Excel; ricerca non canonica.':r.researchOnly?' AUD RBA F2: osservazioni giornaliere pubblicate settimanalmente; ricerca non canonica, non benchmark amministrato.':'')+'</small></div>'
     +'<div class="decision-rates-analysis"><span>COSA CONFERMANO I DATI?</span><h3>'+esc(r.medium&&r.medium.direction!==short.direction?'Segnali diversi tra breve e medio periodo.':short.direction==='STESSO SEGNO'?'Movimenti concordi, ma non prova causale.':short.direction==='SEGNO OPPOSTO'?'Prezzo e spread 2Y divergono.':'Confronto direzionale non conclusivo.')+'</h3>'
     +pill(short)
     +(r.medium?pill(r.medium):'<p class="decision-rate-data-gap">'+(r.nzdResearch&&r.rows.length<21?'Orizzonte 20 intervalli in attesa: '+r.rows.length+' delle 21 date comuni richieste dopo il cambio del benchmark NZD del 30/10/2026.':'Orizzonte 20 intervalli (21 date comuni) non comparabile: osservazioni troppo rade o intervallo superiore a 45 giorni.')+'</p>')
     +'<p class="decision-rates-verdict">'+esc(verdict+recentDifferent)+'</p></div></div>'
     +'<details class="decision-rates-method"><summary>Fonti, date e limiti del confronto</summary><p>'+esc(read(short))+' '+esc(read(r.medium))+'</p>'
-    +'<p>'+esc(r.base)+': '+esc(r.firstSource)+'; '+esc(r.quote)+': '+esc(r.secondSource)+'. I benchmark governativi e le metodologie possono differire (par, spot, zero-coupon): lo spread è indicativo. '+(r.researchOnly?'RBA F2: pubblicazione settimanale di osservazioni giornaliere, valutazioni di ricerca non benchmark amministrati; nessuna idoneità point-in-time per backtest. ':'')+'Non stiamo confrontando curve OIS e non inferiamo che i tassi causino il movimento FX.</p></details></section>';
+    +'<p>'+esc(r.base)+': '+esc(r.firstSource)+'; '+esc(r.quote)+': '+esc(r.secondSource)+'. I benchmark governativi e le metodologie possono differire (par, spot, zero-coupon): lo spread è indicativo. '+(r.nzdResearch?'RBNZ B2: benchmark post-roll del 30/10/2026, ricerca non idonea al Core o ai backtest. ':r.researchOnly?'RBA F2: pubblicazione settimanale di osservazioni giornaliere, valutazioni di ricerca non benchmark amministrati; nessuna idoneità point-in-time per backtest. ':'')+'Non stiamo confrontando curve OIS e non inferiamo che i tassi causino il movimento FX.</p></details></section>';
   }
   return {data:r,render};
  }
