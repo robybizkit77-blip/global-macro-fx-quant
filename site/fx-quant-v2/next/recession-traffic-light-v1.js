@@ -484,8 +484,27 @@ const WAGE_MAP={
  NZD:[['NZ_LCI_WAGE_YOY','Labour Cost Index','Q']],
  CAD:[['CA_AVERAGE_HOURLY_WAGES_YOY','Salari orari medi','M']]
 };
-function inflationContext(catalog,today,country){
- return annualRateContext(catalog,today,country,INFLATION_MAP);
+const CORE_RECOVERY={
+ USD:['CPILFESL','US_CPILFESL_history_value','https://fred.stlouisfed.org/series/CPILFESL','Index 1982-1984=100',true],
+ GBP:['DKO8','UK_CPI_CORE_YOY_history_value','https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/dko8/mm23','% a/a',false]
+};
+function inflationCatalog(catalog,today,country,overlay){
+ const cfg=CORE_RECOVERY[country];
+ if(!cfg||overlay?.schema!==SUPPLEMENT_SCHEMA||overlay.inflation_context?.schema!=='GMFQ_G8_INFLATION_CONTEXT_V1'||!Array.isArray(overlay.inflation_context.series))return catalog;
+ const [id,target,page,unit,index]=cfg;
+ const matches=overlay.inflation_context.series.filter(x=>x.ccy===country&&x.area==='core'&&x.source_series_id===id&&x.source_page===page&&x.unit===unit&&x.frequency==='M'&&x.metric_kind==='points'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT');
+ if(matches.length!==1)return catalog;
+ const raw=matches[0],src=cycleHistory(raw,today,'M');
+ if(src===raw||src.values.some(v=>index?v<=0:Math.abs(v)>50))return catalog;
+ const replacement={...src,id:target};
+ const old=annualRateContext(catalog,today,country,INFLATION_MAP).find(x=>x.id===target);
+ const next=annualRateContext({[country]:[replacement]},today,country,INFLATION_MAP).find(x=>x.id===target);
+ if(!next?.available||next.stale||!finite(next.previous)||!next.prior||old?.available&&next.period<old.period)return catalog;
+ if(old?.available&&next.period===old.period&&old.direction&&old.stale===false)return catalog;
+ return {...catalog,[country]:[...(catalog[country]||[]).filter(x=>x.id!==target),replacement]};
+}
+function inflationContext(catalog,today,country,overlay=null){
+ return annualRateContext(inflationCatalog(catalog,today,country,overlay),today,country,INFLATION_MAP);
 }
 const WAGE_SUPPLEMENT={
  GBP:['KAC3','https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kac3/lms','M','Retribuzioni medie settimanali nominali (totale, media 3 mesi a/a)'],
@@ -804,9 +823,10 @@ function countryHistories(catalog,today,country,overlay,rows,context){
    }
    if(activity.length>=2)break;
  }
+ const inflationLocal=inflationCatalog(catalog,today,country,overlay)[country]||[];
  const inflation=(INFLATION_MAP[country]||[]).filter(([,label])=>/headline|core|trimmed|median|trim/i.test(label)).map(([id,label,freq,index])=>{
    const x=context.inflation.find(z=>z.id===id);
-   return x?.available?series(label,local.find(z=>z.id===id),freq,'% a/a',{annualize:index,expected:x.value,period:x.period,stale:x.stale,source:x.source}):null;
+   return x?.available?series(label,inflationLocal.find(z=>z.id===id),freq,'% a/a',{annualize:index,expected:x.value,period:x.period,stale:x.stale,source:x.source}):null;
  }).filter(Boolean);
  const wages=context.wages.filter(x=>x.available).map(x=>{
    let src=local.find(z=>z.id===x.id),index=(WAGE_MAP[country]||[]).find(z=>z[0]===x.id)?.[3],manual=false;
@@ -926,7 +946,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
  const universe=Object.fromEntries(FX.map(ccy=>[ccy,model(catalog,today,ccy,overlay)]));
  const rows=universe[selected];
  const overview=Object.fromEntries(FX.map(ccy=>{
-   const r=universe[ccy],i=inflationContext(catalog,today,ccy),w=wageContext(catalog,today,ccy,overlay),e=externalContext(today,ccy,overlay),t=turningPointMonitor(r),n=macroNarrative(r,i,w,e,t);
+   const r=universe[ccy],i=inflationContext(catalog,today,ccy,overlay),w=wageContext(catalog,today,ccy,overlay),e=externalContext(today,ccy,overlay),t=turningPointMonitor(r),n=macroNarrative(r,i,w,e,t);
    return [ccy,overviewCountry(r,i,w,e,t,n)];
  }));
  const d=(v,suffix='')=>finite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),2)+suffix:'—';
@@ -960,7 +980,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
  };
 
- const inflation=inflationContext(catalog,today,selected);
+ const inflation=inflationContext(catalog,today,selected,overlay);
  const inflationNote='<p><strong>Inflazione · pressioni sui prezzi (separate dal ciclo)</strong></p>'+
    inflation.map(x=>'<p><strong>'+esc(x.label)+'</strong> · '+(x.available?
     esc(fmt(x.value,2))+'% a/a · '+esc(x.period)+
@@ -1163,6 +1183,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,matchedActivityWindows,relativeActivity,comparableExports,exportSparkline,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,matchedActivityWindows,relativeActivity,comparableExports,exportSparkline,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationCatalog,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,matchedActivityWindows,relativeActivity,comparableExports,exportSparkline,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationCatalog,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,matchedActivityWindows,relativeActivity,comparableExports,exportSparkline,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
