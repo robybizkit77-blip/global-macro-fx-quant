@@ -485,6 +485,8 @@ const WAGE_MAP={
  CAD:[['CA_AVERAGE_HOURLY_WAGES_YOY','Salari orari medi','M']]
 };
 const CORE_RECOVERY={
+ CHF:['FSO_LIK25B25_CORE1_YOY','CH_CPI_CORE1_YOY_history_value','https://dam-api.bfs.admin.ch/hub/api/dam/assets/36970583/master','% a/a',false],
+ NZD:['RBNZ_M1_SFM_YOY','NZ_CORE_INFLATION_SFM_Q_history_value','https://www.rbnz.govt.nz/en/statistics/series/economic-indicators/prices','% a/a',false,'Q'],
  JPY:['ESTAT_JP_2025_CORE_0161_YOY','JP_CPI_CORE_YOY_history_value','https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=1&statInfId=000040482953','% a/a',false],
  AUD:['ABS_MONTHLY_TRIMMED_MEAN_YOY','AU_CPI_TRIMMED_MEAN_M_YOY_context_value','https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/latest-release','% a/a',false],
  CAD:[['STATCAN_18100256_MEDIAN_YOY','CA_CPI_MEDIAN_YOY_history_value','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810025601','% a/a',false],
@@ -500,10 +502,10 @@ function inflationCatalog(catalog,today,country,overlay){
  return configs.reduce((current,definition)=>recoverInflationSeries(current,today,country,overlay,definition),catalog);
 }
 function recoverInflationSeries(catalog,today,country,overlay,cfg){
- const [id,target,page,unit,index]=cfg;
- const matches=overlay.inflation_context.series.filter(x=>x.ccy===country&&x.area==='core'&&x.source_series_id===id&&x.source_page===page&&x.unit===unit&&x.frequency==='M'&&x.metric_kind==='points'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT');
+ const [id,target,page,unit,index,freq='M']=cfg;
+ const matches=overlay.inflation_context.series.filter(x=>x.ccy===country&&x.area==='core'&&x.source_series_id===id&&x.source_page===page&&x.unit===unit&&x.frequency===freq&&x.metric_kind==='points'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT');
  if(matches.length!==1)return catalog;
- const raw=matches[0];let src=cycleHistory(raw,today,'M');
+ const raw=matches[0];let src=cycleHistory(raw,today,freq);
  if(index&&raw.exact_lag_history){
    const h=raw.exact_lag_history;
    if(h.schema!=='GMFQ_US_CORE_EXACT_LAG_V1'||h.source_series_id!==id||

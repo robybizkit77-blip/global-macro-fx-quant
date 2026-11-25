@@ -45,6 +45,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install official workbook parser
+        run: python -m pip install --disable-pip-version-check openpyxl==3.1.5
       - name: Validate source identities, time series, recency and quarantine (offline)
         run: python -m unittest validation.macro.test_collect_g8_semaphore_gaps_v1 -v
       - name: Validate G8 semaphore JavaScript with optional supplement
@@ -54,7 +56,6 @@ jobs:
       - name: Probe alternate official publishers for currently withheld groups (PR only)
         if: github.event_name == 'pull_request'
         run: |
-          python -m pip install --disable-pip-version-check openpyxl
           python validation/macro/probe_g8_semaphore_issuers_v1.py | tee /tmp/g8-issuers-probe.txt
       - name: Probe eight publishers and record which series are actually fresh (PR only)
         if: github.event_name == 'pull_request'
