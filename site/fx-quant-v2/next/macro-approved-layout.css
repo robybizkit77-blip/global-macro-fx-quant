@@ -34,3 +34,37 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+.rd-root .rd-country-access {
+  margin-top: 14px;
+}
+.rd-root .rd-country-access h3 {
+  margin-bottom: 7px;
+  font-size: 14px;
+}
+.rd-root .rd-country-access-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.rd-root .rd-country-access-grid button {
+  min-height: 44px;
+  padding: 5px;
+  border: 1px solid var(--line2);
+  border-radius: 6px;
+  background: var(--layer);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.rd-root .rd-country-access-grid button:hover,
+.rd-root .rd-country-access-grid button:focus-visible {
+  border-color: var(--blue);
+}
+@media (max-width: 370px) {
+  .rd-root .rd-country-access-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

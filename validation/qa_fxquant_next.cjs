@@ -387,6 +387,14 @@ async function g8Choice(page,label){
 }
 async function scenarioMacroJourney(page,label){
  await route(page,'macro');
+ const shortcuts=locator(page,'.rd-country-access [data-ms-country]');
+ assert.equal(await shortcuts.count(),8,label+' Macro opening must link to all eight dossiers');
+ for(const code of ['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD']){
+  await locator(page,'.rd-country-access [data-ms-country="'+code+'"]').press('Enter');
+  assert.equal(await page.evaluate(()=>document.activeElement?.id),'rd-country',
+   label+' the dossier shortcut must move keyboard focus to the dossier');
+  assert.equal(await locator(page,'.rd-country-tabs [data-ms-country="'+code+'"]').getAttribute('aria-pressed'),'true');
+ }
  const countries=locator(page,'.rd-country-tabs [data-ms-country]');
  assert.equal(await countries.count(),8,label+' Scenario macro must offer all G8 economies');
  assert.equal(await locator(page,'#content > .research-essay').count(),0,label+' technical essay must follow the primary reading');

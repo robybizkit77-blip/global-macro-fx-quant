@@ -158,6 +158,8 @@ after the requested task is complete.
 - Lead with the global judgment and its limits, then growth, inflation, labour
   and monetary implications. Follow with the G8 matrix, selectable country
   dossiers, monitoring points, indicators, historical charts and sources.
+- Offer direct access to all eight country dossiers in the Next opening. Keep
+  the matrix and the local dossier selector available.
 - Share the editorial reading between Next and Research. Preserve the existing
   calculation engine and expose classified-area coverage separately from the
   evidence required for an aggregate judgment. Distinguish the prevailing
