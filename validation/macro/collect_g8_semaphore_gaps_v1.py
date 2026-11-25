@@ -642,6 +642,19 @@ def collect_wage_context(now):
         result["audit"]["CAD"]={**status,"coordinate":coord}
     except (ValueError,KeyError,TypeError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
         result["audit"]["CAD"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    try:
+        key="LCEAMN01JPQ659S"
+        obs=parse_fred(fetch(FRED+key),key,"Q",now)
+        spec=dict(ccy="JPY",area="wages",key=key,method="fred",
+            name="Retribuzioni orarie manifatturiere nominali (proxy settoriale OECD, SA)",
+            unit="% a/a",frequency="Q",kind="points",max_age_days=175,
+            origin="OECD tramite FRED / LCEAMN01JPQ659S",
+            source_page="https://fred.stlouisfed.org/series/LCEAMN01JPQ659S")
+        item,status=candidate(spec,obs,now)
+        if item:result["series"].append(item)
+        result["audit"]["JPY"]={**status,"proxy_scope":"manufacturing hourly earnings only"}
+    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+        result["audit"]["JPY"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
     return result
 
 def parse_ons_industry(raw,now):
