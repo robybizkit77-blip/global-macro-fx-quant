@@ -380,11 +380,15 @@ function cycleMetric(metric,source,today,frequency,stale=false){
    persistence=0;
    for(let i=moves.length-1;i>=0&&finite(moves[i])&&direction(moves[i],threshold)===dir;i--)persistence++;
  }
+ // A reversal requires a preceding opposite material move, not merely persistence.
+ const priorRun=finite(persistence)&&persistence>0?moves.at(-persistence-1):null;
+ const reversal=finite(priorRun)&&direction(priorRun,threshold)===-dir?
+    (persistence===1?'INITIAL_REVERSAL':persistence===2?'PERSISTENT_REVERSAL':null):null;
  const levelValue=values.at(-1);
  const level=structural&&finite(levelValue)?Math.sign(levelValue-levelThreshold):null;
  return {...result,phase:level!==null&&dir!==null?phaseOf(level,dir):null,level,levelValue:finite(levelValue)?levelValue:null,
    direction:dir,move:finite(last)?last:null,acceleration:finite(last)&&finite(prior)?direction(last-prior,threshold):null,
-   persistence,basis,historySufficient:values.filter(finite).length>=3,quality:dir===null?'INSUFFICIENT':'DESCRIPTIVE_UNCALIBRATED',
+   persistence,reversal,basis,historySufficient:values.filter(finite).length>=3,quality:dir===null?'INSUFFICIENT':'DESCRIPTIVE_UNCALIBRATED',
    threshold,scope:'INDICATOR_NOT_ECONOMY'};
 }
 function inspect(metric,source,today){
@@ -585,6 +589,37 @@ function annualRateContext(catalog,today,country,mapping){
  });
 }
 
+function turningPointMonitor(rows){
+ const areas=[];
+ for(const row of rows){
+   if(row.signal?.tone==='neutral')continue;
+   const active=(row.signalSource==='original'?row.items:row.items.slice(0,1));
+   if(!active.length||active.some(x=>!x||x.stale||x.invalid||x.verdict===null||
+      !x.cycle?.historySufficient||!finite(x.cycle.direction)))continue;
+   const signs=active.map(x=>x.cycle.direction);
+   const dir=signs.every(x=>x===1)?1:signs.every(x=>x===-1)?-1:0;
+   const evidence=active.filter(x=>x.cycle.reversal);
+   const reversal=dir!==0&&evidence.length===active.length?
+      evidence.every(x=>x.cycle.reversal==='PERSISTENT_REVERSAL')?'PERSISTENT_REVERSAL':'INITIAL_REVERSAL':null;
+   areas.push({key:row.key,name:row.name,dir,reversal,
+    structural:active.every(x=>x.cycle.level!==null),
+    dates:active.map(x=>x.date),periods:active.map(x=>x.period),
+    indicators:active.map(x=>({name:x.metric.name,phase:x.cycle.phase,period:x.period,
+      persistence:x.cycle.persistence,reversal:x.cycle.reversal}))});
+ }
+ const improving=areas.filter(x=>x.dir===1),weakening=areas.filter(x=>x.dir===-1);
+ const up=areas.filter(x=>x.dir===1&&x.reversal),down=areas.filter(x=>x.dir===-1&&x.reversal);
+ const dates=areas.flatMap(x=>x.dates).map(x=>Date.parse(x)).filter(Number.isFinite);
+ const aligned=dates.length>0&&Math.max(...dates)-Math.min(...dates)<=120*864e5;
+ const eligible=areas.length>=4&&aligned;
+ const judgment=!eligible?'Copertura storica o allineamento insufficienti per una lettura trasversale.':
+   up.length>=2&&down.length===0&&improving.length>weakening.length?'Segnali di possibile svolta favorevole in più aree.':
+   down.length>=2&&up.length===0&&weakening.length>improving.length?'Segnali di possibile svolta sfavorevole in più aree.':
+   up.length||down.length?'Svolte locali: il quadro complessivo non è ancora concorde.':
+   'Non emergono nuove inversioni concordi; la direzione osservata può essere già in corso.';
+ return {areas,improving,weakening,up,down,aligned,eligible,judgment,coverage:areas.length,
+   total:rows.length,quality:'DESCRIPTIVE_UNCALIBRATED'};
+}
 function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x??'')}={}){
  const today=dayNow?.()||'';
  if(!/^\d{4}-\d{2}-\d{2}$/.test(today))return '';
@@ -646,6 +681,13 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     (external.persistence>1?' · direzione persistente per '+external.persistence+' variazioni trimestrali':'')+
     ' <small>'+esc(external.source)+' · '+external.observations+' trimestri consecutivi</small>':'serie reale non disponibile')+
    '</p><small>I volumi esportati misurano vendite effettive all’estero, non soltanto domanda: contano anche offerta e competitività. Non sono bilancia commerciale o contributo netto al PIL. Nessun contributo ai sette semafori della crescita.</small>';
+ const turning=turningPointMonitor(rows);
+ const turningNote='<p><strong>Turning Point Monitor · segnali di svolta</strong></p><p>'+esc(turning.judgment)+'</p>'+
+   '<p>Copertura storica utile: '+turning.coverage+'/'+turning.total+' aree · '+turning.improving.length+' in miglioramento · '+turning.weakening.length+' in deterioramento.</p>'+
+   [...turning.up,...turning.down].map(x=>'<p><strong>'+esc(x.name)+'</strong> · '+(x.dir>0?'svolta favorevole':'svolta sfavorevole')+
+   ' · '+(x.reversal==='PERSISTENT_REVERSAL'?'due variazioni consecutive dopo inversione':'prima variazione dopo inversione')+
+   ' · '+esc(x.periods.join(' / '))+(x.structural?'':' · segnale direzionale, livello ciclico non determinato')+'</p>').join('')+
+   '<small>Soglie descrittive non calibrate: una prima inversione non conferma una svolta economica; due variazioni indicano persistenza locale, non una previsione. Nessun punteggio o segnale Forex.</small>';
  const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
  const svcPrices=servicePriceContext?recentTwo(servicePriceContext,today):null;
  const svcPriceNote=svcPrices?'<p class="sem-services-price"><strong>Inflazione servizi (contesto, fuori dal semaforo):</strong> '+esc(fmt(svcPrices.cur.value,1))+'% YoY · '+esc(svcPrices.cur.period)+' (prima '+esc(fmt(svcPrices.pre.value,1))+'%). Prezzi e attività sono fenomeni diversi.</p>':'';
@@ -718,7 +760,8 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     (r.items.some(x=>x?.stale)?'<small>Osservazioni datate</small>':'')+'</div></div>').join('')+'</div>'+
   '<div class="sem-policy"><div>'+inflationNote+'</div></div>'+
   '<div class="sem-policy"><div>'+wageNote+'</div></div>'+
-  '<div class="sem-policy"><div>'+externalNote+'</div></div>'+ 
+  '<div class="sem-policy"><div>'+externalNote+'</div></div>'+
+  '<div class="sem-policy"><div>'+turningNote+'</div></div>'+ 
   '<div class="sem-policy"><div><span>POLITICA MONETARIA · DA LEGGERE A PARTE</span>'+
   '<p>'+bank+' e aspettative sui tassi possono amplificare o attenuare le pressioni cicliche: non sono però un indicatore diretto di recessione né una prova di movimento del cambio.</p></div>'+
   '<a href="#rates">Apri tassi & OIS ↗</a></div>'+
@@ -731,6 +774,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
