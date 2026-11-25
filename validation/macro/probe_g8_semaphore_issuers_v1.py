@@ -7,6 +7,7 @@ from zipfile import ZipFile
 from openpyxl import load_workbook
 
 URLS={
+ "RBNZ_M1_CORE":"https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m1/hm1.xlsx",
  "SWISS_CORE_FSO_2025":"https://dam-api.bfs.admin.ch/hub/api/dam/assets/36970583/master",
  "JAPAN_CORE_2025_YOY":"https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=1&statInfId=000040482953",
  "NZALT_BNZ_PSI":"https://www.bnz.co.nz/institutional-banking/research/publications",
@@ -121,6 +122,11 @@ def call(name,url):
       "dims":{k:list(v.get("category",{}).get("index",{}).keys())[:25]
               for k,v in doc.get("dimension",{}).items()},
       "message":str(doc.get("error",""))[:500],"last_periods":list(doc.get("dimension",{}).get("time",{}).get("category",{}).get("index",{}))[-8:],"last_values":list(doc.get("value",{}).items())[-8:]}
+   if name=="RBNZ_M1_CORE":
+    book=load_workbook(io.BytesIO(data),read_only=True,data_only=True)
+    return {"bytes":len(data),"sheets":[{"name":ws.title,"rows":ws.max_row,"cols":ws.max_column,
+     "head":[[str(v)[:110] if v is not None else None for v in row] for row in ws.iter_rows(min_row=1,max_row=15,max_col=min(ws.max_column,22),values_only=True)],
+     "tail":[[str(v)[:60] if v is not None else None for v in row] for row in ws.iter_rows(min_row=max(16,ws.max_row-5),max_row=ws.max_row,max_col=min(ws.max_column,22),values_only=True)]} for ws in book.worksheets[:4]]}
    if name.startswith("RBNZ_"):
     book=load_workbook(io.BytesIO(data),read_only=True,data_only=True)
     ret={"bytes":len(data),"sheets":[]}
