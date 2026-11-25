@@ -613,6 +613,84 @@ def parse_can_wage_wds(obj,coordinate,now):
     if len(rates)<12:raise ValueError("Canada wage annual history insufficient")
     return rates
 
+NZ_WAGE_KEY="STATSNZ_LCI_ALL_RATES_YOY"
+NZ_WAGE_RELEASE="https://www.stats.govt.nz/information-releases/labour-market-statistics-"
+NZ_WAGE_FALLBACK="https://www.stats.govt.nz/news/unemployment-rate-at-5-7-percent-in-the-september-2026-quarter/"
+
+def parse_nz_wage_release(raw,now):
+    """Use the full historical LCI table in one official release, not a stitched series."""
+    parser=_ReportTables();parser.feed(raw.decode("utf-8","replace"))
+    candidates=[]
+    months={"mar":1,"jun":2,"sept":3,"sep":3,"dec":4}
+    for table in parser.tables:
+        if not table:continue
+        header=table[0]
+        if len(header)!=3 or header[0].lower()!="quarter":continue
+        if not re.fullmatch(r"LCI\s*[-–—]\s*all salary and wage rates",header[1],re.I):continue
+        if not re.fullmatch(r"(?:QES\s*[-–—]\s*ordinary time hourly earnings|CPI\s*[-–—]\s*all groups)",header[2],re.I):continue
+        values={}
+        for row in table[1:]:
+            if len(row)!=3:raise ValueError("LCI table width")
+            hit=re.fullmatch(r"(Mar|Jun|Sept|Sep|Dec)[- ](\d{2}|\d{4})",row[0],re.I)
+            if not hit:raise ValueError("LCI period invalid")
+            y=int(hit[2]);y=y+2000 if y<100 else y
+            p=f"{y}-Q{months[hit[1].lower()]}"
+            if period_end(p)>now:continue
+            value=float(row[1])
+            if p in values or not math.isfinite(value) or abs(value)>20:raise ValueError("LCI value invalid")
+            values[p]=value
+        if len(values)<12:raise ValueError("LCI insufficient history")
+        candidates.append(sorted(values.items()))
+    if len(candidates)!=1:raise ValueError("LCI exact table missing or ambiguous")
+    return candidates[0]
+
+def fetch_nz_wage_release(now):
+    from urllib.parse import urljoin
+    def get(url):
+        req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/html"})
+        with urlopen(req,timeout=25) as r:
+            final=urlsplit(r.geturl())
+            if final.scheme!="https" or final.hostname not in {"www.stats.govt.nz","stats.govt.nz"}:
+                raise ValueError("LCI untrusted redirect")
+            raw=r.read(5_000_001)
+            if not raw or len(raw)>5_000_000:raise ValueError("LCI response size")
+        return raw
+    urls=[]
+    for back in (1,2):
+        q=now.year*4+(now.month-1)//3-back
+        y,n=divmod(q,4)
+        month=date(y,(n+1)*3,1).strftime("%B").lower()
+        page=NZ_WAGE_RELEASE+f"{month}-{y}-quarter/"
+        try:
+            raw=get(page)
+            try:return parse_nz_wage_release(raw,now),page
+            except ValueError:pass
+            for link in re.findall(r'href=["\']([^"\']+)',raw.decode("utf-8","replace"),re.I):
+                url=urljoin(page,unescape(link))
+                p=urlsplit(url)
+                if p.scheme=="https" and p.hostname in {"www.stats.govt.nz","stats.govt.nz"} and p.path.startswith("/news/unemployment-rate-") and f"{month}-{y}-quarter" in p.path and url not in urls:
+                    urls.append(url)
+        except (ValueError,OSError,TimeoutError):pass
+    if NZ_WAGE_FALLBACK not in urls:urls.append(NZ_WAGE_FALLBACK)
+    for url in urls[:5]:
+        try:return parse_nz_wage_release(get(url),now),url
+        except (ValueError,OSError,TimeoutError):pass
+    raise ValueError("No accessible official LCI historical table")
+
+
+def curated_nz_wage(now):
+    """Manual transcription from ONE official 4 November 2026 release.
+    Not an automated source download. Expire by next expected release.
+    """
+    released=date(2026,11,4)
+    checked=date(2026,11,25)
+    if not released<=checked<=now or now>=date(2027,2,4):
+        raise ValueError("Manual NZ LCI snapshot expired or future")
+    dates=["2023-Q4","2024-Q1","2024-Q2","2024-Q3","2024-Q4","2025-Q1",
+           "2025-Q2","2025-Q3","2025-Q4","2026-Q1","2026-Q2","2026-Q3"]
+    values=[4.3,4.1,4.3,3.8,3.3,2.9,2.4,2.1,2.0,2.0,2.0,2.1]
+    return list(zip(dates,values)),NZ_WAGE_RELEASE+"september-2026-quarter/"
+
 def collect_wage_context(now):
     """Independent context feed, not counted as an activity indicator."""
     result={"schema":"GMFQ_G8_WAGE_CONTEXT_V1","series":[],"audit":{}}
@@ -655,6 +733,29 @@ def collect_wage_context(now):
         result["audit"]["JPY"]={**status,"proxy_scope":"manufacturing hourly earnings only"}
     except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
         result["audit"]["JPY"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    try:
+        manual=False
+        try:
+            obs,page=fetch_nz_wage_release(now)
+        except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError):
+            obs,page=curated_nz_wage(now)
+            manual=True
+        spec=dict(ccy="NZD",area="wages",key=NZ_WAGE_KEY,method="statsnz_lci",
+            name="Labour Cost Index nominale (tutti i settori, inclusi straordinari)",
+            unit="% a/a",frequency="Q",kind="points",max_age_days=175,
+            origin="Stats NZ / tabella LCI annual percentage change",source_page=page)
+        item,status=candidate(spec,obs,now)
+        if item:
+            if manual:
+                item.update(quality="SOURCE_VERIFIED_MANUAL_NONPIT",manual_verified_on="2026-11-25",
+                    official_release_date="2026-11-04",manual_expires_on="2027-02-04")
+                item["source_file"]+=" · verificato manualmente, non acquisito automaticamente"
+                item["history"]["quality"]="MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT"
+                status={**status,"status":"READY_MANUAL_VERIFIED_NOT_AUTOMATIC","automatic_fetch":"FAILED"}
+            result["series"].append(item)
+        result["audit"]["NZD"]=status
+    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+        result["audit"]["NZD"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
     return result
 
 def parse_ons_industry(raw,now):
