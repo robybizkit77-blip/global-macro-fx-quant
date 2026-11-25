@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,overviewCountry,exportSparkline,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,exportSparkline,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -545,3 +545,33 @@ console.log('ECONOMIC_CYCLE_EDITORIAL_HIERARCHY_PASS');
  }
 }
 console.log('ECONOMIC_CYCLE_G8_DASHBOARD_PASS');
+
+{
+ const row=(key,name,tone)=>({key,name,signal:{tone}});
+ const us=[row('house','Immobiliare','red'),row('jobs','Lavoro','amber'),row('industry','Manifattura','red'),row('services','Servizi','amber'),row('leading','Anticipatori','red'),row('demand','Consumi','amber'),row('credit','Credito','green')];
+ const h={label:'CPI headline',available:true,value:3.7,direction:'accelera',freq:'M'};
+ const core={label:'CPI core',available:true,value:2.4,direction:'accelera',freq:'M',stale:true};
+ const exportRate={available:true,value:2,direction:'rallenta',freq:'Q'};
+ const usView=countryInterpretation(us,[h,core],[],exportRate,{aligned:true});
+ assert.equal(usView.label,'Perdita di slancio produttivo');
+ assert.match(usView.economy,/Lavoro e consumi non danno ancora/);
+ assert.match(usView.policy,/manca una conferma corrente dal core/);
+ assert.match(usView.policy,/dilemma/);
+ assert.match(usView.watch,/lavoro e consumi/);
+ const async=countryInterpretation(us,[h,core],[],exportRate,{aligned:false});
+ assert.equal(async.tone,'red');
+ assert.equal(async.aggregateTone,'neutral');
+ assert.match(async.quality,/Periodi non allineati/);
+ assert.equal(countryInterpretation(us.slice(0,2),[],[],{}, {aligned:false}).tone,'neutral');
+ const eu=us.map(r=>({...r,signal:{tone:({house:'red',jobs:'amber',industry:'green',services:'red',leading:'red',demand:'red',credit:'green'})[r.key]}}));
+ const euView=countryInterpretation(eu,[],[],{...exportRate,direction:'accelera'},{aligned:false});
+ assert.equal(euView.label,'Debolezza interna');
+ assert.match(euView.economy,/sostegno esterno/);
+ for(const ccy of coverage){
+   const html=render({catalog,esc,dayNow:()=> '2026-11-25',country:ccy});
+   assert.equal((html.match(/class="sem-country-quality /g)||[]).length,8);
+   assert.equal((html.match(/Il dilemma monetario/g)||[]).length,8);
+   assert.equal((html.match(/class="sem-country-comment watch"/g)||[]).length,8);
+ }
+}
+console.log('ECONOMIC_CYCLE_COUNTRY_INTERPRETATION_PASS');
