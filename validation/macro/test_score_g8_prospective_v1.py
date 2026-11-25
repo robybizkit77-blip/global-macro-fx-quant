@@ -36,7 +36,7 @@ class FirstSeenScoring(unittest.TestCase):
         model["qualified"]=["USD"]
         for ccy,r in model["currencies"].items():
             r["candidate"]=ccy=="USD"
-            r["forecast"]={"nextChange":0.2} if ccy=="USD" else None
+            r["forecast"]={"nextChange":0.2,"unit":"%"} if ccy=="USD" else None
             if ccy=="USD":
                 r["nextObservationPeriod"]="2026-10"
 
