@@ -1211,7 +1211,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,feedStatus=null,es
   '<p>Il semaforo economico descrive come cambiano attività, prezzi e rischi nelle otto economie. I segnali non sono un ranking di forza FX né una previsione di recessione.</p></div>'+
   '<span class="sem-date">Consultazione '+esc(today)+' · periodi originali in tabella</span></header>'+
   (feedMessage?'<p class="sem-source-note" role="status">'+feedMessage+(feedMode==='network'?'':' <button type="button" class="ghost-btn small" data-sem-feed-retry>Riprova</button>')+'</p>':'')+
-  '<div class="sem-editorial-global"><div><span class="sem-editorial-overline">GIUDIZIO G8 · ATTIVITÀ ECONOMICA</span><h3>'+esc(globalHeadline)+'</h3><p>'+esc(globalText)+'</p><small>Direzione delle osservazioni disponibili, non livello del PIL o confronto sincrono.</small></div><aside><span class="sem-editorial-overline">COPERTURA DEL MONITOR</span><strong>'+covered+'<small>/56</small></strong><div class="sem-coverage-track" role="progressbar" aria-label="Copertura G8" aria-valuenow="'+covered+'" aria-valuemin="0" aria-valuemax="56"><i style="width:'+(covered/56*100)+'%"></i></div><small>aree con segnale valido</small></aside></div>'+
+  '<div class="sem-editorial-global"><div><span class="sem-editorial-overline">GIUDIZIO G8 · ATTIVITÀ ECONOMICA</span><h3>'+esc(globalHeadline)+'</h3><p>'+esc(globalText)+'</p><small>Direzione delle osservazioni disponibili, non livello del PIL o confronto sincrono.</small></div><aside><span class="sem-editorial-overline">COPERTURA DEL MONITOR</span><strong class="'+(covered===56?'green':'amber')+'">'+covered+'<small>/56</small></strong><div class="sem-coverage-track" role="progressbar" aria-label="Copertura G8" aria-valuenow="'+covered+'" aria-valuemin="0" aria-valuemax="56"><i style="width:'+(covered/56*100)+'%"></i></div><small>aree con segnale valido</small></aside></div>'+
   '<div class="sem-editorial-breadth">'+economyGroups.map(g=>'<div class="'+g.tone+'"><strong>'+g.items.length+'</strong><span>'+({green:'Migliorano',amber:'Miste',red:'Peggiorano',neutral:'Non allineate'}[g.tone])+'</span></div>').join('')+'</div>'+
   worldRead+
   fold('Radar delle svolte',''+turningCountries.length+' economie con segnali locali · non inversioni confermate','<section class="sem-turn-radar" aria-label="Radar delle svolte"><h3>Radar delle svolte</h3><div class="sem-turn-chips">'+(turnList||'<p>Nessuna nuova inversione rilevata con evidenza sufficiente.</p>')+'</div></section>')+
@@ -1223,8 +1223,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,feedStatus=null,es
    FLAGS[c]+' '+c+'</button></th>'+universe[c].map(a=>'<td>'+phaseDot(c,a)+'</td>').join('')+'<td class="sem-editorial-judgment-col"><span class="'+overview[c].reading.aggregateTone+'">'+esc(overview[c].reading.aligned?overview[c].label:'Quadro parziale')+'</span></td></tr>').join('')+
   '</tbody></table></div>'+
   '<div class="sem-legend">'+['green','amber','red','neutral'].map(t=>'<span class="sem-legend-item"><span class="sem-mini sem-cell '+t+'" aria-hidden="true">'+symbols[t]+'</span>'+tones[t]+'</span>').join('')+'</div>'+
-  fold('Mappa dei regimi e divergenze','Confronti relativi, attività e inflazione',regimeMap+divergencePanel)+
-  fold('Schede comparative G8','Dettagli, contesto prezzi, salari ed esportazioni delle otto economie','<div class="sem-country-board">'+cards+'</div>')+
   '<div class="sem-dashboard-title sem-client-chapter"><div><span>03 / ANALISI PAESE</span><h3>'+FLAGS[selected]+' '+esc(NAMES[selected])+'</h3></div><small>Scegli l’economia da analizzare.</small></div>'+countryTabs+
   narrativeNote+
   compactAreas+
@@ -1252,6 +1250,8 @@ function render({catalog={},dayNow,country='USD',overlay=null,feedStatus=null,es
   '<div class="sem-policy"><div><span>POLITICA MONETARIA · DA LEGGERE A PARTE</span>'+
   '<p>'+bank+' e aspettative sui tassi possono amplificare o attenuare le pressioni cicliche: non sono però un indicatore diretto di recessione né una prova di movimento del cambio.</p></div>'+
   '<a href="#rates">Apri tassi & OIS ↗</a></div>'+
+  fold('Mappa dei regimi e divergenze','Confronti relativi, attività e inflazione',regimeMap+divergencePanel)+
+  fold('Schede comparative G8','Dettagli, contesto prezzi, salari ed esportazioni delle otto economie','<div class="sem-country-board">'+cards+'</div>')+
   '<details class="sem-method"><summary>Metodo, soglie e fonti</summary><p class="sem-foot">Metodo: ogni indicatore confronta le sue ultime due osservazioni disponibili; verde indica miglioramento direzionale, rosso peggioramento, giallo quadro misto o quasi invariato, azzurro dati mancanti, troppo vecchi, non consecutivi o non sufficientemente allineati. '+
   'Lettura ciclica sperimentale per singolo indicatore: soglia 50 per indici di diffusione, zero per crescita reale e crescita a/a per livelli reali con storia consecutiva; gli altri indicatori descrivono solo direzione. Nessun segnale ciclico aggregato o calibrazione storica. '+
   'Le soglie descrittive evitano piccoli movimenti: ±0,15% per i livelli e soglie in punti esplicite per tassi, sondaggi e indicatori compositi. Le osservazioni oltre la soglia di anzianità sono visibili ma non producono semafori direzionali. '+
