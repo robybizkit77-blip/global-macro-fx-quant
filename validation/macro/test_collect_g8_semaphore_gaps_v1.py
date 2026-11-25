@@ -820,4 +820,15 @@ class G8SemaphoreSources(unittest.TestCase):
         mod.upgrade_housing_activity(out,NOW,fetcher=lambda u:b"invalid")
         self.assertEqual(len(out["series"]),2)
 
+    def test_seco_contributions_complete_sectors_only(self):
+        meta={"source_name":{"en":"State Secretariat for Economic Affairs (SECO)"},"units":{"type":{"gc_q":{"en":"Percentage points"}}},"labels":{"seas_adj":{"cssa":{"en":"Seasonally, calendar and sports event adjusted"}},"structure":{k:{"en":k} for k in mod.SECO_SECTORS}}}
+        f=StringIO();w=csv.writer(f);w.writerow(["structure","type","seas_adj","date","value"])
+        for i in range(12):
+            y,q=divmod(2026*4+1-11+i,4)
+            for k in mod.SECO_SECTORS:w.writerow([k,"gc_q","cssa",f"{y}-{q*3+1:02d}-01",.01])
+        obs=mod.parse_seco_services(f.getvalue().encode(),meta,NOW)
+        self.assertEqual(len(obs),12)
+        self.assertAlmostEqual(obs[-1][1],.12)
+        self.assertRaises(ValueError,mod.parse_seco_services,f.getvalue().encode().replace(b"cssa",b"csa"),meta,NOW)
+
 if __name__=="__main__":unittest.main()
