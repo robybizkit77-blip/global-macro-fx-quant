@@ -18,7 +18,7 @@ import argparse
 import hashlib
 import json
 import math
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -71,7 +71,7 @@ def load(name):
                       .read_text(encoding="utf-8"))
 
 
-def build(observed, heat, legacy, setup, *, as_of):
+def build(observed, heat, legacy, setup, *, as_of, issuer_releases=()):
     cutoff = date.fromisoformat(as_of)
     need(observed.get("schema") == OBSERVED_SCHEMA and
          observed.get("checked_as_of") == as_of and
@@ -195,6 +195,11 @@ def build(observed, heat, legacy, setup, *, as_of):
                 "prior_documented_quarter": previous, **growth_updates[c],
             }
 
+    # New issuer observations are separate, exact measures, never patched
+    # into an incompatible quarterly CPI or an index-level time series.
+    from validation.macro.recurring_macro_context_v1 import apply as apply_recurring
+    apply_recurring(countries, issuer_releases, as_of)
+
     pairs = setup.get("pairs")
     need(isinstance(pairs, dict) and len(pairs) == 28, "exact 28 pair setup required")
     results = {}
@@ -216,6 +221,7 @@ def build(observed, heat, legacy, setup, *, as_of):
                   "NO_OPPOSITE_LABOUR_CHANGE")
         results[pair] = {
             "base": a, "quote": b,
+            "issuer_release_keys": {k: [r["event_key"] for r in countries[k].get("issuer_releases", [])] for k in (a, b)},
             "growth": {k: countries[k]["growth"]["nonannualized_qoq_descriptive_pct"]
                        for k in (a, b)},
             "growth_periods": {k: countries[k]["growth"]["reference_quarter"]
@@ -271,9 +277,19 @@ def build(observed, heat, legacy, setup, *, as_of):
 
 
 def run(*, as_of=None):
-    as_of = as_of or datetime.now(ZoneInfo("Europe/Rome")).date().isoformat()
+    explicit = as_of is not None
+    now = datetime.now(timezone.utc)
+    as_of = as_of or now.astimezone(ZoneInfo("Europe/Rome")).date().isoformat()
+    from validation.macro.recurring_official_actuals_v1 import validated_record
+    raw = load("NEWS_PULSE_OPERATIONAL").get("recurring_official_archive", [])
+    releases = [validated_record(row, now) for row in raw]
+    if explicit:
+        # Historical date-only runs may not import same-day later observations.
+        releases = [row for row in releases if row["as_of"] < as_of and
+                    row["first_runner_observed_at_utc"][:10] < as_of]
     return build(observed_run(as_of=as_of), load("MACRO_THERMOMETER_DATA"),
-                 load("D"), load("PAIR_SETUP_OPERATIONAL_VIEW"), as_of=as_of)
+                 load("D"), load("PAIR_SETUP_OPERATIONAL_VIEW"), as_of=as_of,
+                 issuer_releases=releases)
 
 
 def main():
