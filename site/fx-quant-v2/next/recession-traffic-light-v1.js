@@ -620,6 +620,44 @@ function turningPointMonitor(rows){
  return {areas,improving,weakening,up,down,aligned,eligible,judgment,coverage:areas.length,
    total:rows.length,quality:'DESCRIPTIVE_UNCALIBRATED'};
 }
+function macroNarrative(rows,inflation,wages,external,turning){
+ const active=r=>(r.signalSource==='original'?r.items:r.items.slice(0,1)).filter(x=>x&&!x.stale&&!x.invalid&&x.verdict!==null);
+ const valid=rows.filter(r=>r.signal.tone!=='neutral'&&active(r).length);
+ const up=valid.filter(r=>r.signal.tone==='green'),down=valid.filter(r=>r.signal.tone==='red');
+ const names=a=>a.map(r=>r.name.toLowerCase()).join(', ');
+ const dates=valid.flatMap(r=>active(r).map(x=>Date.parse(x.date))).filter(Number.isFinite);
+ const enough=valid.length>=4&&dates.length>0&&Math.max(...dates)-Math.min(...dates)<=120*864e5;
+ let growth=enough?(up.length>down.length&&up.length>=3?'Il miglioramento è più diffuso del deterioramento.':
+    down.length>up.length&&down.length>=3?'Il deterioramento è più diffuso del miglioramento.':'La direzione dell’attività resta mista.'):
+    'Copertura o allineamento dei dati insufficienti per un giudizio complessivo.';
+ if(up.length)growth+=' Migliorano '+names(up)+'.';
+ if(down.length)growth+=' Peggiorano '+names(down)+'.';
+ if(valid.length<rows.length)growth+=' '+(rows.length-valid.length)+' aree non sono classificabili.';
+ const structural=valid.flatMap(r=>active(r)).filter(x=>x.cycle?.level!==null&&x.cycle?.level!==undefined);
+ if(structural.length)growth+=' Tra gli indicatori con soglia definita, '+structural.filter(x=>x.cycle.level>0).length+' sopra e '+structural.filter(x=>x.cycle.level<0).length+' sotto soglia. Non equivale al livello del PIL.';
+ const current=a=>a.filter(x=>x.available&&!x.stale&&x.freq!=='A'&&x.direction&&finite(x.value));
+ const core=current(inflation.filter(x=>/core|trimmed|median|trim/i.test(x.label)));
+ const head=current(inflation.filter(x=>/headline/i.test(x.label)));
+ const w=current(wages);
+ const describe=x=>x.label+' '+fmt(x.value,2)+'% a/a ('+x.period+', '+x.direction+')';
+ const pressures=[...head,...core].map(describe);
+ let prices=pressures.length?pressures.join('; ')+'.':'Direzione delle pressioni inflazionistiche non determinabile con dati correnti comparabili.';
+ if(w.length)prices+=' Salari: '+w.map(describe).join('; ')+'.';
+ else prices+=' Momentum salariale corrente non valutabile.';
+ const coreUp=core.length>0&&core.every(x=>x.direction==='accelera');
+ const coreDown=core.length>0&&core.every(x=>x.direction==='rallenta');
+ const wageUp=w.some(x=>x.direction==='accelera'),wageDown=w.some(x=>x.direction==='rallenta');
+ let policy='La risposta della banca centrale dipende anche da obiettivi, aspettative e dati futuri; il pricing dei tassi va verificato separatamente.';
+ if((coreUp&&wageDown)||(coreDown&&wageUp))policy='Core e salari divergono: manca una conferma univoca delle pressioni interne. '+policy;
+ else if(coreUp&&wageUp)policy='Core e salari accelerano: possibile ostacolo a un allentamento monetario. '+policy;
+ else if(coreDown&&wageDown)policy='Core e salari rallentano: possibile attenuazione delle pressioni interne, non una garanzia di tagli. '+policy;
+ let trade='Domanda estera: evidenza corrente insufficiente.';
+ if(external.available&&!external.stale&&finite(external.value))trade='Esportazioni reali '+fmt(external.value,2)+'% a/a ('+external.period+'). '+(external.value<0?'Volumi inferiori a un anno prima.':external.value>0?'Volumi superiori a un anno prima.':'Volumi invariati su base annua.')+(external.direction?' La crescita '+external.direction+'.':'');
+ let watch='Monitorare le prossime osservazioni di lavoro, consumi e attività produttiva; verificare la persistenza dei segnali e la coerenza dei periodi.';
+ if(enough&&up.length>=3&&up.length>down.length)watch='Il miglioramento perderebbe credibilità se si estendessero i segnali di deterioramento, soprattutto in lavoro e consumi.';
+ else if(enough&&down.length>=3&&down.length>up.length)watch='Il deterioramento perderebbe credibilità se lavoro, consumi e attività tornassero a migliorare in modo persistente.';
+ return {growth,prices,trade,policy,watch,turning:turning.judgment,coverage:valid.length,aligned:enough,quality:'DESCRIPTIVE_UNCALIBRATED'};
+}
 function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x??'')}={}){
  const today=dayNow?.()||'';
  if(!/^\d{4}-\d{2}-\d{2}$/.test(today))return '';
@@ -688,6 +726,10 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    ' · '+(x.reversal==='PERSISTENT_REVERSAL'?'due variazioni consecutive dopo inversione':'prima variazione dopo inversione')+
    ' · '+esc(x.periods.join(' / '))+(x.structural?'':' · segnale direzionale, livello ciclico non determinato')+'</p>').join('')+
    '<small>Soglie descrittive non calibrate: una prima inversione non conferma una svolta economica; due variazioni indicano persistenza locale, non una previsione. Nessun punteggio o segnale Forex.</small>';
+ const narrative=macroNarrative(rows,inflation,wages,external,turning);
+ const narrativeNote='<p><strong>Cosa vedo davvero · giudizio macro</strong></p>'+
+   [['Economia',narrative.growth],['Svolta',narrative.turning],['Prezzi e salari',narrative.prices],['Domanda estera',narrative.trade],['Implicazioni per i tassi',narrative.policy],['Cosa controllare',narrative.watch]].map(([label,value])=>'<p><strong>'+esc(label)+'</strong> · '+esc(value)+'</p>').join('')+
+   '<small>Lettura descrittiva automatica delle osservazioni disponibili, non previsione o segnale operativo.</small>';
  const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
  const svcPrices=servicePriceContext?recentTwo(servicePriceContext,today):null;
  const svcPriceNote=svcPrices?'<p class="sem-services-price"><strong>Inflazione servizi (contesto, fuori dal semaforo):</strong> '+esc(fmt(svcPrices.cur.value,1))+'% YoY · '+esc(svcPrices.cur.period)+' (prima '+esc(fmt(svcPrices.pre.value,1))+'%). Prezzi e attività sono fenomeni diversi.</p>':'';
@@ -758,6 +800,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     (r.signalSource==='fallback'?'<small>Segnale da fonte supplementare aggiornata; serie precedenti nel dettaglio</small>':'')+
     (r.proxy?'<small>Proxy/sondaggio, non misura esaustiva del ciclo</small>':'')+
     (r.items.some(x=>x?.stale)?'<small>Osservazioni datate</small>':'')+'</div></div>').join('')+'</div>'+
+  '<div class="sem-policy"><div>'+narrativeNote+'</div></div>'+
   '<div class="sem-policy"><div>'+inflationNote+'</div></div>'+
   '<div class="sem-policy"><div>'+wageNote+'</div></div>'+
   '<div class="sem-policy"><div>'+externalNote+'</div></div>'+
@@ -774,6 +817,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
