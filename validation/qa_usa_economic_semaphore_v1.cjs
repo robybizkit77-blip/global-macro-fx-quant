@@ -250,7 +250,7 @@ assert.equal(model(catalog,'2026-11-24','NZD',manualDwelling).find(x=>x.key==='h
 assert.match(render({catalog,esc,dayNow:()=>'2026-11-24',country:'NZD',overlay:manualDwelling}),/verificato manualmente/);
 assert.equal(model(catalog,'2027-04-01','NZD',manualDwelling).find(x=>x.key==='house').signal.tone,'neutral');
 const heatmap=render({catalog,esc,dayNow:()=>'2026-11-24',country:'USD',overlay:USfresh});
-assert.equal((heatmap.match(/class="sem-mini sem-cell (?:green|red|amber|neutral)" title=/g)||[]).length,56,'56 accessible direction cells');
+assert.equal((heatmap.match(/class="sem-matrix-cell (?:green|red|amber|neutral)" title=/g)||[]).length,56,'56 accessible direction cells');
 assert.match(heatmap,/role="progressbar" aria-label="Copertura G8" aria-valuenow="\d+" aria-valuemin="0" aria-valuemax="56"/);
 assert.equal((heatmap.match(/class="sem-overview-kpi /g)||[]).length,4);
 assert.match(heatmap,/class="sem-method"><summary>Metodo, soglie e fonti/);
