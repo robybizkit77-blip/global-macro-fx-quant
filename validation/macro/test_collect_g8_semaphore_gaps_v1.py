@@ -122,6 +122,14 @@ class G8SemaphoreSources(unittest.TestCase):
         meta["dimension"][0]["member"][0]["memberNameEn"]="Ontario"
         with self.assertRaises(ValueError):mod.can_wage_coordinate(meta)
 
+    def test_nz_wage_manual_snapshot_expiry(self):
+        obs,page=mod.curated_nz_wage(date(2026,11,25))
+        self.assertEqual(len(obs),12)
+        self.assertEqual(obs[-2:],[("2026-Q2",2.0),("2026-Q3",2.1)])
+        self.assertTrue(page.endswith("september-2026-quarter/"))
+        with self.assertRaises(ValueError):mod.curated_nz_wage(date(2027,2,4))
+        with self.assertRaises(ValueError):mod.curated_nz_wage(date(2026,11,24))
+
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
