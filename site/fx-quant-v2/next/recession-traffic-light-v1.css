@@ -245,3 +245,12 @@
 .recession-light .sem-country-card-head:focus-visible,.recession-light .sem-turn-chip:focus-visible{outline:2px solid #9bdeff;outline-offset:-3px}
 @media(max-width:1240px){.recession-light .sem-country-board{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.recession-light .sem-country-board,.recession-light .sem-global-verdict{grid-template-columns:1fr}.recession-light .sem-global-turn{border-left:0;border-top:1px solid #3c586e;padding:12px 0 0}.recession-light .sem-dashboard-title{display:block}.recession-light .sem-dashboard-title small{display:block;margin-top:6px}.recession-light .sem-country-quick{min-height:0}}
+
+/* Country board interpretation: preserve layout; separate evidence quality and economics. */
+.recession-light .sem-country-quality{font-size:10px;line-height:1.4;margin:0;padding:5px 7px;border-radius:5px;background:#172d40;color:#a9c5d7;border:1px solid #365064}
+.recession-light .sem-country-quality.limited{color:#e9c679;border-color:#69573d;background:#302c27}
+.recession-light .sem-country-quick{min-height:0;font-size:13px;line-height:1.65}
+.recession-light .sem-country-comment{border-top:1px solid #30475a;padding:8px 0 0}
+.recession-light .sem-country-comment>strong{font-size:11px;color:var(--sem-amber)}
+.recession-light .sem-country-comment.watch>strong{color:var(--sem-blue)}
+.recession-light .sem-country-comment p{font-size:12px;line-height:1.55;color:#d0e0ec;margin:4px 0 0;overflow-wrap:anywhere}
