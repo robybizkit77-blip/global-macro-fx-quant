@@ -1684,7 +1684,7 @@
       ],
       "values": [
         1398.0,
-        1295.0
+        1297.0
       ],
       "category": "Semaforo supplementare",
       "source_file": "US Census Bureau via FRED",
@@ -1772,7 +1772,7 @@
           1433.0,
           1403.0,
           1398.0,
-          1295.0
+          1297.0
         ],
         "observations": 36,
         "max_observations": 36,
@@ -2006,19 +2006,19 @@
       "frequency": "M",
       "unit": "mld USD concatenati SAAR",
       "dates": [
-        "2026-08",
-        "2026-09"
+        "2026-09",
+        "2026-10"
       ],
       "values": [
-        16975.0,
-        16977.6
+        17008.8,
+        17003.0
       ],
       "category": "Semaforo supplementare",
       "source_file": "US BEA via FRED",
       "source_page": "https://fred.stlouisfed.org/series/PCEC96",
       "source_series_id": "PCEC96",
       "metric_kind": "percent",
-      "observation_as_of": "2026-09",
+      "observation_as_of": "2026-10",
       "diffusion_threshold": null,
       "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
@@ -2026,7 +2026,6 @@
         "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
         "frequency": "M",
         "dates": [
-          "2023-10",
           "2023-11",
           "2023-12",
           "2024-01",
@@ -2061,10 +2060,10 @@
           "2026-06",
           "2026-07",
           "2026-08",
-          "2026-09"
+          "2026-09",
+          "2026-10"
         ],
         "values": [
-          15680.8,
           15733.4,
           15780.4,
           15744.7,
@@ -2097,9 +2096,10 @@
           16727.4,
           16784.6,
           16854.0,
-          16882.2,
-          16975.0,
-          16977.6
+          16883.6,
+          16989.6,
+          17008.8,
+          17003.0
         ],
         "observations": 36,
         "max_observations": 36,
@@ -2524,14 +2524,14 @@
         51.7
       ],
       "category": "Semaforo supplementare",
-      "source_file": "BNZ / BusinessNZ · pubblicazione ufficiale coautore",
-      "source_page": "https://www.bnz.co.nz/institutional-banking/research/publications",
+      "source_file": "BusinessNZ · verifica manuale 2026-11-24 (accesso automatico bloccato)",
+      "source_page": "https://businessnz.org.nz/psi/pre-election-drinks",
       "source_series_id": "BNZ_BUSINESSNZ_PSI",
       "metric_kind": "points",
       "observation_as_of": "2026-10",
       "diffusion_threshold": 50,
       "up_good": true,
-      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+      "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
       "history": {
         "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
         "frequency": "M",
@@ -2545,9 +2545,11 @@
         ],
         "observations": 2,
         "max_observations": 36,
-        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+        "quality": "MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT",
         "source_series_id": "BNZ_BUSINESSNZ_PSI"
-      }
+      },
+      "manual_verified_on": "2026-11-24",
+      "official_release_date": "2026-11-16"
     },
     {
       "ccy": "GBP",
@@ -3319,19 +3321,19 @@
       "frequency": "M",
       "unit": "mld USD concatenati 2017 SAAR",
       "dates": [
-        "2026-08",
-        "2026-09"
+        "2026-09",
+        "2026-10"
       ],
       "values": [
-        11201.8,
-        11219.3
+        11210.4,
+        11216.6
       ],
       "category": "Semaforo supplementare",
       "source_file": "BEA via FRED",
       "source_page": "https://fred.stlouisfed.org/series/PCESC96",
       "source_series_id": "PCESC96",
       "metric_kind": "percent",
-      "observation_as_of": "2026-09",
+      "observation_as_of": "2026-10",
       "diffusion_threshold": null,
       "up_good": true,
       "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
@@ -3339,7 +3341,6 @@
         "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
         "frequency": "M",
         "dates": [
-          "2023-10",
           "2023-11",
           "2023-12",
           "2024-01",
@@ -3374,10 +3375,10 @@
           "2026-06",
           "2026-07",
           "2026-08",
-          "2026-09"
+          "2026-09",
+          "2026-10"
         ],
         "values": [
-          10361.5,
           10404.2,
           10423.0,
           10436.3,
@@ -3410,9 +3411,10 @@
           11041.5,
           11088.6,
           11124.2,
-          11169.5,
-          11201.8,
-          11219.3
+          11167.1,
+          11196.6,
+          11210.4,
+          11216.6
         ],
         "observations": 36,
         "max_observations": 36,
@@ -4180,8 +4182,8 @@
     },
     "USD_demand": {
       "status": "READY_DESCRIPTIVE_REVISED",
-      "last_observation": "2026-09",
-      "days_since_period_end": 56,
+      "last_observation": "2026-10",
+      "days_since_period_end": 25,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/PCEC96",
       "origin": "US BEA via FRED"
@@ -4246,18 +4248,17 @@
       "history_scope": "ABS published quarterly table (five rounded quarters)"
     },
     "NZD_services": {
-      "status": "READY_DESCRIPTIVE_REVISED",
+      "status": "READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
       "last_observation": "2026-10",
-      "days_since_period_end": 25,
-      "history_observations": 2,
-      "source_page": "https://www.bnz.co.nz/institutional-banking/research/publications",
-      "origin": "BNZ / BusinessNZ · pubblicazione ufficiale coautore",
-      "primary_error": "HTTP Error 403: Forbidden"
+      "verified_on": "2026-11-24",
+      "source_page": "https://businessnz.org.nz/psi/pre-election-drinks",
+      "automatic_fetch": "BLOCKED_OR_UNVALIDATED",
+      "automatic_error": "HTTP Error 403: Forbidden"
     },
     "USD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
-      "last_observation": "2026-09",
-      "days_since_period_end": 56,
+      "last_observation": "2026-10",
+      "days_since_period_end": 25,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/PCESC96",
       "origin": "BEA via FRED",
