@@ -11,6 +11,18 @@ try{
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   const errors=[];
   page.on('pageerror',e=>errors.push(String(e?.message||e)));
+  // The root redirects real visitors to v10. Replay the retained canonical
+  // engine in a private browser response, using the same isolation as the
+  // pair-setup exporter. Never change the published navigation or payload.
+  await page.route(url,async route=>{
+    const response=await route.fetch();
+    if(response.status()!==200)throw new Error('Canonical bootstrap HTTP '+response.status());
+    const original=await response.text();
+    const redirect=/<script\b[^>]*\bdata-gmfq-legacy-redirect=["']v10["'][^>]*>[\s\S]*?<\/script>/i;
+    if(!redirect.test(original))throw new Error('Expected legacy v10 navigation redirect in bootstrap');
+    const modelBootstrap=original.replace(redirect,'<!-- STRUCTURAL_REPLAY_CI_ONLY: navigation isolated -->');
+    await route.fulfill({response,body:modelBootstrap});
+  });
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});
   await page.waitForFunction(()=>
     typeof deriveCurrencyState==='function'&&
