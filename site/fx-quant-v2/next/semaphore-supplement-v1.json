@@ -3021,14 +3021,14 @@
         51.7
       ],
       "category": "Semaforo supplementare",
-      "source_file": "BusinessNZ · verifica manuale 2026-11-24 (accesso automatico bloccato)",
-      "source_page": "https://businessnz.org.nz/psi/pre-election-drinks",
+      "source_file": "BNZ / BusinessNZ · pubblicazione ufficiale coautore",
+      "source_page": "https://www.bnz.co.nz/institutional-banking/research/publications",
       "source_series_id": "BNZ_BUSINESSNZ_PSI",
       "metric_kind": "points",
       "observation_as_of": "2026-10",
       "diffusion_threshold": 50,
       "up_good": true,
-      "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
       "history": {
         "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
         "frequency": "M",
@@ -3042,11 +3042,9 @@
         ],
         "observations": 2,
         "max_observations": 36,
-        "quality": "MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT",
+        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
         "source_series_id": "BNZ_BUSINESSNZ_PSI"
-      },
-      "manual_verified_on": "2026-11-24",
-      "official_release_date": "2026-11-16"
+      }
     },
     {
       "ccy": "USD",
@@ -4072,12 +4070,13 @@
       "origin": "Australian Bureau of Statistics / MHSI"
     },
     "NZD_services": {
-      "status": "READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+      "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "verified_on": "2026-11-24",
-      "source_page": "https://businessnz.org.nz/psi/pre-election-drinks",
-      "automatic_fetch": "BLOCKED_OR_UNVALIDATED",
-      "automatic_error": "HTTP Error 403: Forbidden"
+      "days_since_period_end": 25,
+      "history_observations": 2,
+      "source_page": "https://www.bnz.co.nz/institutional-banking/research/publications",
+      "origin": "BNZ / BusinessNZ · pubblicazione ufficiale coautore",
+      "primary_error": "HTTP Error 403: Forbidden"
     },
     "USD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
@@ -4585,6 +4584,557 @@
           "\"2026-Q2\",\"N\",\"0.4\",\"U\""
         ],
         "rows": 143
+      }
+    }
+  },
+  "external_context": {
+    "schema": "GMFQ_G8_EXTERNAL_CONTEXT_V1",
+    "series": [
+      {
+        "ccy": "USD",
+        "area": "external",
+        "id": "SEM_G8_USD_EXTERNAL",
+        "label": "Esportazioni reali di beni e servizi (crescita annua, SA)",
+        "frequency": "Q",
+        "unit": "% a/a reale",
+        "dates": [
+          "2026-Q2",
+          "2026-Q3"
+        ],
+        "values": [
+          5.83675526074352,
+          1.9555948033
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "OECD tramite FRED / NAEXKP06USQ659S",
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06USQ659S",
+        "source_series_id": "NAEXKP06USQ659S",
+        "metric_kind": "points",
+        "observation_as_of": "2026-Q3",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "Q",
+          "dates": [
+            "2023-Q4",
+            "2024-Q1",
+            "2024-Q2",
+            "2024-Q3",
+            "2024-Q4",
+            "2025-Q1",
+            "2025-Q2",
+            "2025-Q3",
+            "2025-Q4",
+            "2026-Q1",
+            "2026-Q2",
+            "2026-Q3"
+          ],
+          "values": [
+            2.37728787836669,
+            2.26542803351417,
+            4.23585725226798,
+            4.7406623556012,
+            3.09448377668158,
+            3.01765766376838,
+            1.71529722613502,
+            2.31087355962987,
+            1.29817627463062,
+            4.00438293274852,
+            5.83675526074352,
+            1.9555948033
+          ],
+          "observations": 12,
+          "max_observations": 12,
+          "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+          "source_series_id": "NAEXKP06USQ659S"
+        }
+      },
+      {
+        "ccy": "GBP",
+        "area": "external",
+        "id": "SEM_G8_GBP_EXTERNAL",
+        "label": "Esportazioni reali di beni e servizi (crescita annua, SA)",
+        "frequency": "Q",
+        "unit": "% a/a reale",
+        "dates": [
+          "2026-Q2",
+          "2026-Q3"
+        ],
+        "values": [
+          4.16608277015584,
+          4.9823532314
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "OECD tramite FRED / NAEXKP06GBQ659S",
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06GBQ659S",
+        "source_series_id": "NAEXKP06GBQ659S",
+        "metric_kind": "points",
+        "observation_as_of": "2026-Q3",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "Q",
+          "dates": [
+            "2023-Q4",
+            "2024-Q1",
+            "2024-Q2",
+            "2024-Q3",
+            "2024-Q4",
+            "2025-Q1",
+            "2025-Q2",
+            "2025-Q3",
+            "2025-Q4",
+            "2026-Q1",
+            "2026-Q2",
+            "2026-Q3"
+          ],
+          "values": [
+            -9.23741814162978,
+            -2.56624087188602,
+            -0.790845472722024,
+            0.675362028635118,
+            -0.939607073405968,
+            1.7856253311525,
+            -0.484497867670108,
+            0.799663680170504,
+            2.91481671742555,
+            -0.230466004039387,
+            4.16608277015584,
+            4.9823532314
+          ],
+          "observations": 12,
+          "max_observations": 12,
+          "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+          "source_series_id": "NAEXKP06GBQ659S"
+        }
+      },
+      {
+        "ccy": "JPY",
+        "area": "external",
+        "id": "SEM_G8_JPY_EXTERNAL",
+        "label": "Esportazioni reali di beni e servizi (crescita annua, SA)",
+        "frequency": "Q",
+        "unit": "% a/a reale",
+        "dates": [
+          "2026-Q2",
+          "2026-Q3"
+        ],
+        "values": [
+          2.2804798376,
+          3.6759576797
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "OECD tramite FRED / NAEXKP06JPQ659S",
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06JPQ659S",
+        "source_series_id": "NAEXKP06JPQ659S",
+        "metric_kind": "points",
+        "observation_as_of": "2026-Q3",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "Q",
+          "dates": [
+            "2023-Q4",
+            "2024-Q1",
+            "2024-Q2",
+            "2024-Q3",
+            "2024-Q4",
+            "2025-Q1",
+            "2025-Q2",
+            "2025-Q3",
+            "2025-Q4",
+            "2026-Q1",
+            "2026-Q2",
+            "2026-Q3"
+          ],
+          "values": [
+            4.3055685699,
+            2.3287991267,
+            1.7755743863,
+            2.7988025969,
+            1.8226075588,
+            4.2496826318,
+            5.256715131,
+            1.1566131974,
+            0.1304638789,
+            2.5081323146,
+            2.2804798376,
+            3.6759576797
+          ],
+          "observations": 12,
+          "max_observations": 12,
+          "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+          "source_series_id": "NAEXKP06JPQ659S"
+        }
+      },
+      {
+        "ccy": "CHF",
+        "area": "external",
+        "id": "SEM_G8_CHF_EXTERNAL",
+        "label": "Esportazioni reali di beni e servizi (crescita annua, SA)",
+        "frequency": "Q",
+        "unit": "% a/a reale",
+        "dates": [
+          "2026-Q1",
+          "2026-Q2"
+        ],
+        "values": [
+          -7.55448427320686,
+          4.48508327692858
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "OECD tramite FRED / NAEXKP06CHQ659S",
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06CHQ659S",
+        "source_series_id": "NAEXKP06CHQ659S",
+        "metric_kind": "points",
+        "observation_as_of": "2026-Q2",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "Q",
+          "dates": [
+            "2023-Q3",
+            "2023-Q4",
+            "2024-Q1",
+            "2024-Q2",
+            "2024-Q3",
+            "2024-Q4",
+            "2025-Q1",
+            "2025-Q2",
+            "2025-Q3",
+            "2025-Q4",
+            "2026-Q1",
+            "2026-Q2"
+          ],
+          "values": [
+            -8.69820050461573,
+            -7.66199038449586,
+            1.0315577433792,
+            0.608717383449342,
+            0.111742350252686,
+            5.13253177873529,
+            12.1116079116157,
+            1.63170142997779,
+            8.09443541076988,
+            2.21423352206245,
+            -7.55448427320686,
+            4.48508327692858
+          ],
+          "observations": 12,
+          "max_observations": 12,
+          "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+          "source_series_id": "NAEXKP06CHQ659S"
+        }
+      },
+      {
+        "ccy": "CAD",
+        "area": "external",
+        "id": "SEM_G8_CAD_EXTERNAL",
+        "label": "Esportazioni reali di beni e servizi (crescita annua, SA)",
+        "frequency": "Q",
+        "unit": "% a/a reale",
+        "dates": [
+          "2026-Q1",
+          "2026-Q2"
+        ],
+        "values": [
+          -3.65549859897216,
+          6.67809570760058
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "OECD tramite FRED / NAEXKP06CAQ659S",
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06CAQ659S",
+        "source_series_id": "NAEXKP06CAQ659S",
+        "metric_kind": "points",
+        "observation_as_of": "2026-Q2",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "Q",
+          "dates": [
+            "2023-Q3",
+            "2023-Q4",
+            "2024-Q1",
+            "2024-Q2",
+            "2024-Q3",
+            "2024-Q4",
+            "2025-Q1",
+            "2025-Q2",
+            "2025-Q3",
+            "2025-Q4",
+            "2026-Q1",
+            "2026-Q2"
+          ],
+          "values": [
+            4.62382004531334,
+            6.03017336537535,
+            1.83026433530609,
+            0.328612490761548,
+            0.329676972990689,
+            1.25987844162245,
+            2.93400717400332,
+            -3.45878191305202,
+            -2.32988180536298,
+            -2.91588794838766,
+            -3.65549859897216,
+            6.67809570760058
+          ],
+          "observations": 12,
+          "max_observations": 12,
+          "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+          "source_series_id": "NAEXKP06CAQ659S"
+        }
+      },
+      {
+        "ccy": "AUD",
+        "area": "external",
+        "id": "SEM_G8_AUD_EXTERNAL",
+        "label": "Esportazioni reali di beni e servizi (crescita annua, SA)",
+        "frequency": "Q",
+        "unit": "% a/a reale",
+        "dates": [
+          "2026-Q1",
+          "2026-Q2"
+        ],
+        "values": [
+          3.46132329144526,
+          2.91444167556658
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "OECD tramite FRED / NAEXKP06AUQ659S",
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06AUQ659S",
+        "source_series_id": "NAEXKP06AUQ659S",
+        "metric_kind": "points",
+        "observation_as_of": "2026-Q2",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "Q",
+          "dates": [
+            "2023-Q3",
+            "2023-Q4",
+            "2024-Q1",
+            "2024-Q2",
+            "2024-Q3",
+            "2024-Q4",
+            "2025-Q1",
+            "2025-Q2",
+            "2025-Q3",
+            "2025-Q4",
+            "2026-Q1",
+            "2026-Q2"
+          ],
+          "values": [
+            8.11052274624415,
+            3.46684468179839,
+            3.78958642075331,
+            0.041315284223753,
+            -0.235853324567037,
+            1.59822542290595,
+            -0.268172110101705,
+            2.35885725391196,
+            3.36961122196022,
+            5.15047416295771,
+            3.46132329144526,
+            2.91444167556658
+          ],
+          "observations": 12,
+          "max_observations": 12,
+          "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+          "source_series_id": "NAEXKP06AUQ659S"
+        }
+      },
+      {
+        "ccy": "NZD",
+        "area": "external",
+        "id": "SEM_G8_NZD_EXTERNAL",
+        "label": "Esportazioni reali di beni e servizi (crescita annua, SA)",
+        "frequency": "Q",
+        "unit": "% a/a reale",
+        "dates": [
+          "2026-Q1",
+          "2026-Q2"
+        ],
+        "values": [
+          4.31826631964747,
+          9.4927145169988
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "OECD tramite FRED / NAEXKP06NZQ659S",
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06NZQ659S",
+        "source_series_id": "NAEXKP06NZQ659S",
+        "metric_kind": "points",
+        "observation_as_of": "2026-Q2",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "Q",
+          "dates": [
+            "2023-Q3",
+            "2023-Q4",
+            "2024-Q1",
+            "2024-Q2",
+            "2024-Q3",
+            "2024-Q4",
+            "2025-Q1",
+            "2025-Q2",
+            "2025-Q3",
+            "2025-Q4",
+            "2026-Q1",
+            "2026-Q2"
+          ],
+          "values": [
+            2.74285045909091,
+            7.5453504489845,
+            7.48861730170169,
+            0.490790779750516,
+            2.25409836065602,
+            4.23087699635813,
+            4.9325604726342,
+            1.68468419030945,
+            7.57626363838795,
+            3.29569892473085,
+            4.31826631964747,
+            9.4927145169988
+          ],
+          "observations": 12,
+          "max_observations": 12,
+          "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+          "source_series_id": "NAEXKP06NZQ659S"
+        }
+      },
+      {
+        "ccy": "EUR",
+        "area": "external",
+        "id": "SEM_G8_EUR_EXTERNAL",
+        "label": "Esportazioni reali di beni e servizi (crescita annua, SA)",
+        "frequency": "Q",
+        "unit": "% a/a reale",
+        "dates": [
+          "2026-Q1",
+          "2026-Q2"
+        ],
+        "values": [
+          -0.1,
+          4.1
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "Eurostat / namq_10_gdp",
+        "source_page": "https://ec.europa.eu/eurostat/databrowser/view/namq_10_gdp/default/table?lang=en",
+        "source_series_id": "EUROSTAT_EA21_P6_REAL_EXPORTS_YOY",
+        "metric_kind": "points",
+        "observation_as_of": "2026-Q2",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "Q",
+          "dates": [
+            "2023-Q3",
+            "2023-Q4",
+            "2024-Q1",
+            "2024-Q2",
+            "2024-Q3",
+            "2024-Q4",
+            "2025-Q1",
+            "2025-Q2",
+            "2025-Q3",
+            "2025-Q4",
+            "2026-Q1",
+            "2026-Q2"
+          ],
+          "values": [
+            -2.7,
+            -1.9,
+            -0.2,
+            2.3,
+            1.7,
+            1.5,
+            2.6,
+            0.3,
+            2.2,
+            2.0,
+            -0.1,
+            4.1
+          ],
+          "observations": 12,
+          "max_observations": 12,
+          "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+          "source_series_id": "EUROSTAT_EA21_P6_REAL_EXPORTS_YOY"
+        }
+      }
+    ],
+    "audit": {
+      "USD": {
+        "status": "READY_DESCRIPTIVE_REVISED",
+        "last_observation": "2026-Q3",
+        "days_since_period_end": 56,
+        "history_observations": 12,
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06USQ659S"
+      },
+      "GBP": {
+        "status": "READY_DESCRIPTIVE_REVISED",
+        "last_observation": "2026-Q3",
+        "days_since_period_end": 56,
+        "history_observations": 12,
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06GBQ659S"
+      },
+      "JPY": {
+        "status": "READY_DESCRIPTIVE_REVISED",
+        "last_observation": "2026-Q3",
+        "days_since_period_end": 56,
+        "history_observations": 12,
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06JPQ659S"
+      },
+      "CHF": {
+        "status": "READY_DESCRIPTIVE_REVISED",
+        "last_observation": "2026-Q2",
+        "days_since_period_end": 148,
+        "history_observations": 12,
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06CHQ659S"
+      },
+      "CAD": {
+        "status": "READY_DESCRIPTIVE_REVISED",
+        "last_observation": "2026-Q2",
+        "days_since_period_end": 148,
+        "history_observations": 12,
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06CAQ659S"
+      },
+      "AUD": {
+        "status": "READY_DESCRIPTIVE_REVISED",
+        "last_observation": "2026-Q2",
+        "days_since_period_end": 148,
+        "history_observations": 12,
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06AUQ659S"
+      },
+      "NZD": {
+        "status": "READY_DESCRIPTIVE_REVISED",
+        "last_observation": "2026-Q2",
+        "days_since_period_end": 148,
+        "history_observations": 12,
+        "source_page": "https://fred.stlouisfed.org/series/NAEXKP06NZQ659S"
+      },
+      "EUR": {
+        "status": "READY_DESCRIPTIVE_REVISED",
+        "last_observation": "2026-Q2",
+        "days_since_period_end": 148,
+        "history_observations": 12,
+        "source_page": "https://ec.europa.eu/eurostat/databrowser/view/namq_10_gdp/default/table?lang=en"
       }
     }
   }
