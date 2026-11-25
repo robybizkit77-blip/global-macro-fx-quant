@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,overviewCountry,exportSparkline,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -519,3 +519,29 @@ console.log('ECONOMIC_CYCLE_MACRO_NARRATIVE_PASS');
  }
 }
 console.log('ECONOMIC_CYCLE_EDITORIAL_HIERARCHY_PASS');
+
+{
+ const today='2026-11-25';
+ const fixture=(tone,phase)=>({key:'industry',name:'Manifattura',signal:{tone},signalSource:'original',items:[{period:'2026-10',verdict:1,cycle:{phase}}]});
+ const t={up:[],down:[]};
+ const o=overviewCountry([fixture('green','recovery')],[],[],{},t,{aligned:false});
+ assert.equal(o.tone,'neutral');assert.equal(o.cells[0].phase,'recovery');
+ assert.equal(overviewCountry([fixture('neutral','recovery')],[],[],{},t,{aligned:false}).cells[0].phase,null);
+ const mixed=fixture('amber','recovery');mixed.items.push({period:'2026-10',verdict:-1,cycle:{phase:'slowdown'}});
+ assert.equal(overviewCountry([mixed],[],[],{},t,{aligned:false}).cells[0].phase,null);
+ const ov=JSON.parse(fs.readFileSync(path.join(base,'site/fx-quant-v2/next/semaphore-supplement-v1.json'),'utf8'));
+ for(const ccy of coverage){
+   const e=externalContext(today,ccy,ov);
+   assert.ok(e.available,'Missing validated export series '+ccy);
+   assert.match(exportSparkline(today,ccy,ov,e,esc),/<polyline points=/);
+   assert.equal(exportSparkline(today,ccy,ov,{...e,stale:true},esc),'');
+   const html=render({catalog,esc,dayNow:()=>today,country:ccy,overlay:ov});
+   assert.equal((html.match(/class="sem-country-card (?:green|red|amber|neutral)/g)||[]).length,8);
+   assert.equal((html.match(/class="sem-matrix-cell /g)||[]).length,56);
+   assert.equal((html.match(/class="sem-export-trend"/g)||[]).length,8);
+   assert.ok(html.indexOf('class="sem-country-board"')<html.indexOf('class="sem-g8-table"'));
+   assert.match(html,/Radar delle svolte/);
+   assert.equal(model(catalog,today,ccy,ov).length,7);
+ }
+}
+console.log('ECONOMIC_CYCLE_G8_DASHBOARD_PASS');
