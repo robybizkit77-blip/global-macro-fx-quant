@@ -122,6 +122,17 @@ class G8SemaphoreSources(unittest.TestCase):
         meta["dimension"][0]["member"][0]["memberNameEn"]="Ontario"
         with self.assertRaises(ValueError):mod.can_wage_coordinate(meta)
 
+    def test_nz_lci_single_release_table(self):
+        rows="".join(f"<tr><td>{m}-{str(y)[2:]}</td><td>{2+i/10:.1f}</td><td>4.5</td></tr>" for i,(y,m) in enumerate((y,m) for y in (2023,2024,2025) for m in ("Mar","Jun","Sept","Dec")))
+        raw=("<table><tr><th>Quarter</th><th>LCI – all salary and wage rates</th><th>QES – ordinary time hourly earnings</th></tr>"+rows+"</table>").encode()
+        obs=mod.parse_nz_wage_release(raw,NOW)
+        self.assertEqual(len(obs),12)
+        self.assertEqual(obs[-1],("2025-Q4",3.1))
+        with self.assertRaises(ValueError):
+            mod.parse_nz_wage_release(raw.replace(b"all salary and wage rates",b"private sector"),NOW)
+        with self.assertRaises(ValueError):
+            mod.parse_nz_wage_release(raw+raw,NOW)
+
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
