@@ -12,6 +12,11 @@ class Tests(unittest.TestCase):
         records=archive([],items,NOW)
         self.assertEqual(len(records),3)
         self.assertEqual(archive(records,items,NOW),records)
+        import copy
+        invalid=copy.deepcopy(records[0]); invalid['source_url']='https://example.com/wrong'
+        with self.assertRaises(ValueError): archive([], [invalid], NOW)
+        invalid=copy.deepcopy(records[0]); invalid['issuer_html_sha256']=''
+        with self.assertRaises(ValueError): archive([], [invalid], NOW)
         later=datetime(2026,12,10,tzinfo=timezone.utc)
         self.assertEqual(archive(records,[],later),records)
         countries={"USD":{"growth":{"reference_quarter":"2026Q3","publisher_release_day":"2026-10-29"},"inflation":{"observation_period":"2026-09"}},"AUD":{"inflation":{"observation_period":"2026Q3"}}}

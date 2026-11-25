@@ -1044,6 +1044,7 @@ function pairs(){
   '<p class="pairs-primary-story"><strong>Cosa va.</strong> '+esc(pairSupport||'Nessuna conferma direzionale netta nelle componenti disponibili.')+'</p>'+
   '<p class="pairs-primary-story"><strong>Cosa frena.</strong> '+esc(pairFriction||'Nessuna contraddizione netta tra le componenti considerate; il timing resta da verificare.')+'</p>'+
   '<p class="pairs-timing-reading"><strong>Cosa guardare.</strong> '+esc(pairWatch)+'</p>'+
+  (window.FXQuantIssuerContext?.render(get('macroObserved'),[state.pair.slice(0,3),state.pair.slice(3)],dayNow())||'')+
   (pairProfile?.closes?.length>=22?
    '<button type="button" class="ghost-btn small pairs-chart-jump" data-pair-chart-jump aria-controls="fx-pair-price-chart">Vedi il grafico del cambio</button>':'')+
   '<details class="pairs-optional-panel pairs-evidence"><summary><strong>Apri numeri, stime e cosa monitorare</strong><span class="pairs-open-icon" aria-hidden="true">+</span></summary><div class="pairs-details-body">'+

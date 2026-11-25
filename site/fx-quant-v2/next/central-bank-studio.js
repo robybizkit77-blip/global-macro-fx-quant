@@ -219,6 +219,7 @@
    '<article class="bank-first-axis"><h3>Cosa va</h3><p>'+esc(reading.support)+'</p></article>'+
    '<article class="bank-first-axis"><h3>Cosa frena</h3><p>'+esc(reading.constraint)+'</p></article>'+
    '<article class="bank-first-axis"><h3>Cosa guardare</h3><p>'+esc(reading.watch)+'</p></article>'+
+   (root.FXQuantIssuerContext?.render(get('macroObserved'),[selected],today)||'')+
    '</div></div>'+
    '<div class="drivers-links"><button type="button" data-bank-open="rates" data-bank-target="'+selected+'">Vedi i tassi attesi ↗</button>'+
    '<button type="button" data-bank-open="currencies" data-bank-target="'+selected+'">Valuta '+selected+' ↗</button><a href="#macro">Scenario macro ↗</a><a href="#news">Calendario e Notizie ↗</a></div>'+
