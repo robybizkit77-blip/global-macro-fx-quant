@@ -721,6 +721,33 @@ def probe_ch_wage_estimate():
     return {"status":"SCHEMA_INSPECTION_ONLY","source_page":"https://statistik.admin.ch/en/asset/36791145",
       "header":lines[0][:500],"sample":lines[1][:500],"last_rows":lines[-3:],"rows":len(lines)}
 
+# Real exports of goods and services, quarterly YoY, seasonally adjusted.
+# Explicit OECD identities; no obsolete EA19 or nominal trade balance proxy.
+EXPORT_KEYS={"USD":"NAEXKP06USQ659S","GBP":"NAEXKP06GBQ659S","JPY":"NAEXKP06JPQ659S",
+ "CHF":"NAEXKP06CHQ659S","CAD":"NAEXKP06CAQ659S","AUD":"NAEXKP06AUQ659S",
+ "NZD":"NAEXKP06NZQ659S","EUR":"EUROSTAT_EA21_P6_REAL_EXPORTS_YOY"}
+
+def collect_external_context(now,fetcher=fetch):
+    result={"schema":"GMFQ_G8_EXTERNAL_CONTEXT_V1","series":[],"audit":{}}
+    for ccy,key in EXPORT_KEYS.items():
+        euro=ccy=="EUR"
+        method="eurostat_exports_real" if euro else "fred"
+        page="https://ec.europa.eu/eurostat/databrowser/view/namq_10_gdp/default/table?lang=en" if euro else "https://fred.stlouisfed.org/series/"+key
+        try:
+            obs=(parse_euro_extra(fetcher(euro_extra_url(method)),now,method) if euro
+                else parse_fred(fetcher(FRED+key),key,"Q",now))
+            spec=dict(ccy=ccy,area="external",key=key,method=method,
+                name="Esportazioni reali di beni e servizi (crescita annua, SA)",
+                unit="% a/a reale",frequency="Q",kind="points",max_age_days=175,
+                origin="Eurostat / namq_10_gdp" if euro else "OECD tramite FRED / "+key,
+                source_page=page)
+            item,status=candidate(spec,obs,now)
+            if item:result["series"].append(item)
+            result["audit"][ccy]={**status,"source_page":page}
+        except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+            result["audit"][ccy]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180],"source_page":page}
+    return result
+
 def collect_wage_context(now):
     """Independent context feed, not counted as an activity indicator."""
     result={"schema":"GMFQ_G8_WAGE_CONTEXT_V1","series":[],"audit":{}}
@@ -1353,6 +1380,7 @@ EUROSTAT_SERVICES_URL=(
  "geo=EA21&s_adj=SA&indic=BS-SCI-BAL&freq=M&sinceTimePeriod=2023-01"
 )
 EUROSTAT_EXTRA={
+ "eurostat_exports_real":("namq_10_gdp",{"freq":"Q","geo":"EA21","na_item":"P6","s_adj":"SCA","unit":"CLV_PCH_SM"}),
  "eurostat_house_price":("prc_hpi_q",{"freq":"Q","geo":"EA21","purchase":"TOTAL","unit":"RCH_A"}),
  "eurostat_industry":("sts_inpr_m",{"freq":"M","geo":"EA21","indic_bt":"PRD",
       "nace_r2":"B-D","s_adj":"SCA","unit":"I21"}),
@@ -1898,6 +1926,7 @@ def collect(now=None,fetcher=fetch):
                                  "source_page":spec["source_page"],"origin":spec["origin"]}
     if fetcher is fetch:
         out["wage_context"]=collect_wage_context(now)
+        out["external_context"]=collect_external_context(now)
     return out
 
 def main():
@@ -1911,6 +1940,7 @@ def main():
     print(json.dumps({"status":"CAPTURED_REVISED_NOT_PIT",
       "ready":len(out["series"]),"total":len(REGISTRY),
       "wage_context":out.get("wage_context",{}).get("audit",{}),
+      "external_context":out.get("external_context",{}).get("audit",{}),
       "history_observations":{s["ccy"]+"_"+s["area"]:s.get("history",{}).get("observations",0) for s in out["series"]},
       "audit":{k:v["status"] for k,v in out["audit"].items()},
       "withheld_reasons":{k:v.get("reason","") for k,v in out["audit"].items() if v["status"]=="WITHHELD_FETCH_OR_VALIDATION"}},ensure_ascii=False))
