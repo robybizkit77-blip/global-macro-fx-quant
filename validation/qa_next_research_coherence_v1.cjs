@@ -226,7 +226,9 @@ assert.match(app,/cache:'no-store'/);
 assert.match(app,/visibilitychange/);
 const page=read('site/fx-quant-v2/next/index.html');
 assert.match(page,/editorial-v4\.css\?v=18/);
-assert.match(page,/app\.js\?v=18\.91-macro-client/);
+assert.match(page,/<script\b[^>]*src="\.\/app\.js\?v=18(?:\.[^"]+)?"/);
+assert.match(page,/<script\b[^>]*src="\.\/macro-approved-layout\.js\?v=[^"]+"/);
+assert(page.indexOf('macro-approved-layout.js?v=')<page.indexOf('macro-studio.js?v='),'Approved layout must load before Macro Studio');
 
 const momentumApi=require('../site/fx-quant-v2/next/currency-strength-reading.js');
 const momentumDate=initial.currencyPrices.last_as_of;
