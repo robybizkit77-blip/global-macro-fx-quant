@@ -787,4 +787,20 @@ class G8SemaphoreSources(unittest.TestCase):
         obj["coordinate"]="wrong"
         self.assertIsNone(mod.collect_cad_lfs(NOW,wds=lambda method,payload:meta if method=="getCubeMetadata" else obj)[0])
 
+    def test_real_activity_upgrade_and_fallback(self):
+        out={"series":[{"ccy":"USD","area":"services","source_series_id":"CES0800000001"},
+                       {"ccy":"CAD","area":"industry","source_series_id":"16100047_MANUFACTURING_SA"}],
+             "audit":{"USD_services":{},"CAD_industry":{}}}
+        table=StringIO();w=csv.writer(table)
+        w.writerow(["REF_DATE","GEO","Principal statistics","North American Industry Classification System (NAICS)","VALUE","UOM","SCALAR_FACTOR","VECTOR"])
+        for i in range(24):
+            y,m=divmod(2026*12+8-23+i,12)
+            w.writerow([f"{y}-{m+1:02d}","Canada","Sales of goods manufactured (shipments)","Manufacturing [31-33]",53000+i,"Dollars","millions","v1"])
+        b=io.BytesIO()
+        with ZipFile(b,"w") as z:z.writestr("16100013.csv",table.getvalue())
+        mod.upgrade_real_activity(out,NOW,fred_fetch=lambda u:fixture("PCESC96",end=(2026,9)).encode() if isinstance(fixture("PCESC96",end=(2026,9)),str) else fixture("PCESC96",end=(2026,9)),ca_fetch=b.getvalue)
+        self.assertEqual({x["source_series_id"] for x in out["series"]},{"PCESC96","STATCAN_16100013_REAL_MFG_SALES"})
+        mod.upgrade_real_activity(out,NOW,fred_fetch=lambda u:b"invalid",ca_fetch=lambda:b"invalid")
+        self.assertEqual(len(out["series"]),2)
+
 if __name__=="__main__":unittest.main()
