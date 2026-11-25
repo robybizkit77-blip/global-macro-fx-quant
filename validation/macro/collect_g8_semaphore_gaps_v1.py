@@ -691,6 +691,36 @@ def curated_nz_wage(now):
     values=[4.3,4.1,4.3,3.8,3.3,2.9,2.4,2.1,2.0,2.0,2.0,2.1]
     return list(zip(dates,values)),NZ_WAGE_RELEASE+"september-2026-quarter/"
 
+
+CH_WAGE_ANNUAL_PAGE="https://statistik.admin.ch/en/asset/36503589"
+CH_WAGE_ESTIMATE_CSV="https://dam-api.bfs.admin.ch/hub/api/dam/assets/36791145/master"
+
+def ch_wage_annual_context(now):
+    """Published actual annual rates, not quarterly observations or estimates.
+    Single FSO release, 21 April 2026; manual verification, expiry at next annual release."""
+    checked=date(2026,11,25)
+    if now<checked or now>=date(2027,4,30):
+        raise ValueError("Swiss annual wage snapshot expired or future")
+    return {"ccy":"CHF","area":"wages","source_series_id":"FSO_SWI_NOMINAL_ANNUAL",
+       "label":"Swiss Wage Index nominale (dato annuale definitivo)",
+       "frequency":"A","unit":"% a/a","dates":["2023","2024","2025"],"values":[1.7,1.8,1.8],
+       "source_page":CH_WAGE_ANNUAL_PAGE,"source_file":"FSO / Swiss Wage Index · verifica manuale",
+       "quality":"SOURCE_VERIFIED_MANUAL_NONPIT","manual_verified_on":checked.isoformat(),
+       "official_release_date":"2026-04-21","manual_expires_on":"2027-04-30",
+       "observation_as_of":"2025","scope":"ANNUAL_ACTUAL_NOT_QUARTERLY"}
+
+def probe_ch_wage_estimate():
+    """Bounded source inspection. Never publish unvalidated estimate values."""
+    req=Request(CH_WAGE_ESTIMATE_CSV,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"text/csv"})
+    with urlopen(req,timeout=15) as r:
+        if r.geturl()!=CH_WAGE_ESTIMATE_CSV:raise ValueError("Swiss wage CSV redirected")
+        raw=r.read(65537)
+    if not raw or len(raw)>65536:raise ValueError("Swiss wage CSV size")
+    lines=raw.decode("utf-8-sig").splitlines()
+    if len(lines)<2:raise ValueError("Swiss wage CSV missing rows")
+    return {"status":"SCHEMA_INSPECTION_ONLY","source_page":"https://statistik.admin.ch/en/asset/36791145",
+      "header":lines[0][:500],"sample":lines[1][:500],"last_rows":lines[-3:],"rows":len(lines)}
+
 def collect_wage_context(now):
     """Independent context feed, not counted as an activity indicator."""
     result={"schema":"GMFQ_G8_WAGE_CONTEXT_V1","series":[],"audit":{}}
@@ -756,6 +786,17 @@ def collect_wage_context(now):
         result["audit"]["NZD"]=status
     except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
         result["audit"]["NZD"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    try:
+        item=ch_wage_annual_context(now)
+        result["series"].append(item)
+        result["audit"]["CHF"]={"status":"READY_MANUAL_ANNUAL_CONTEXT_ONLY","last_observation":"2025",
+            "history_observations":3,"scope":"ANNUAL_ACTUAL_NOT_QUARTERLY"}
+    except (ValueError,KeyError) as exc:
+        result["audit"]["CHF"]={"status":"WITHHELD_STALE","reason":str(exc)}
+    try:
+        result["audit"]["CHF_estimate"]=probe_ch_wage_estimate()
+    except (ValueError,UnicodeError,TimeoutError,OSError) as exc:
+        result["audit"]["CHF_estimate"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
     return result
 
 def parse_ons_industry(raw,now):
