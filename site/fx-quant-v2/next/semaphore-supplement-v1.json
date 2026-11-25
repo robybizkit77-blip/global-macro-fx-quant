@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1",
-  "as_of": "2026-11-24",
+  "as_of": "2026-11-25",
   "source_count": 43,
   "series": [
     {
@@ -3813,7 +3813,7 @@
     "CHF_credit": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://data.snb.ch/en/topics/banken/cube/bakredinausbm",
       "origin": "Swiss National Bank / bakredinausbm"
@@ -3821,7 +3821,7 @@
     "JPY_credit": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "days_since_period_end": 24,
+      "days_since_period_end": 25,
       "history_observations": 36,
       "source_page": "https://www.stat-search.boj.or.jp/ssi/mtshtml/md13_m_1_en.html",
       "origin": "Bank of Japan / MD13'FAAPOBAL1@"
@@ -3829,7 +3829,7 @@
     "GBP_leading": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "days_since_period_end": 24,
+      "days_since_period_end": 25,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/GBRLOLITOAASTSAM",
       "origin": "OECD tramite FRED"
@@ -3837,7 +3837,7 @@
     "JPY_jobs": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/LRUNTTTTJPM156S",
       "origin": "OECD tramite FRED"
@@ -3845,7 +3845,7 @@
     "JPY_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/JPNPRMNTO01GPSAM",
       "origin": "OECD tramite FRED"
@@ -3853,7 +3853,7 @@
     "JPY_demand": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q2",
-      "days_since_period_end": 147,
+      "days_since_period_end": 148,
       "history_observations": 12,
       "source_page": "https://fred.stlouisfed.org/series/SLRTTO01JPQ657S",
       "origin": "OECD tramite FRED"
@@ -3861,7 +3861,7 @@
     "CHF_house": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q2",
-      "days_since_period_end": 147,
+      "days_since_period_end": 148,
       "history_observations": 12,
       "source_page": "https://fred.stlouisfed.org/series/QCHR368BIS",
       "origin": "BIS tramite FRED"
@@ -3869,7 +3869,7 @@
     "CHF_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q2",
-      "days_since_period_end": 147,
+      "days_since_period_end": 148,
       "history_observations": 12,
       "source_page": "https://fred.stlouisfed.org/series/PRMNTO01CHQ657S",
       "origin": "OECD tramite FRED"
@@ -3877,7 +3877,7 @@
     "CHF_demand": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q3",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 12,
       "source_page": "https://fred.stlouisfed.org/series/SLRTTO01CHQ657S",
       "origin": "OECD tramite FRED"
@@ -3885,7 +3885,7 @@
     "AUD_jobs": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/LRUNTTTTAUM156S",
       "origin": "OECD tramite FRED"
@@ -3893,7 +3893,7 @@
     "AUD_leading": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "days_since_period_end": 24,
+      "days_since_period_end": 25,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/AUSLOLITOAASTSAM",
       "origin": "OECD tramite FRED"
@@ -3901,7 +3901,7 @@
     "NZD_demand": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q2",
-      "days_since_period_end": 147,
+      "days_since_period_end": 148,
       "history_observations": 12,
       "source_page": "https://fred.stlouisfed.org/series/SLRTTO01NZQ657S",
       "origin": "OECD tramite FRED"
@@ -3909,7 +3909,7 @@
     "CAD_demand": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=2010006701",
       "origin": "Statistics Canada / 20-10-0067-01"
@@ -3917,7 +3917,7 @@
     "CAD_house": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610063901",
       "origin": "Statistics Canada / 36-10-0639-01"
@@ -3925,7 +3925,7 @@
     "CAD_credit": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610064001",
       "origin": "Statistics Canada / 36-10-0640-01"
@@ -3933,7 +3933,7 @@
     "AUD_house": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://www.rba.gov.au/statistics/frequency/fin-agg/",
       "origin": "Reserve Bank of Australia / Financial Aggregates"
@@ -3941,7 +3941,7 @@
     "AUD_credit": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://www.rba.gov.au/statistics/frequency/fin-agg/",
       "origin": "Reserve Bank of Australia / Financial Aggregates"
@@ -3949,7 +3949,7 @@
     "AUD_demand": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release",
       "origin": "Australian Bureau of Statistics / MHSI"
@@ -3957,7 +3957,7 @@
     "GBP_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop",
       "origin": "ONS Index of Production"
@@ -3965,7 +3965,7 @@
     "GBP_house": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 33,
       "source_page": "https://www.bankofengland.co.uk/boeapps/database/BankStats.asp",
       "origin": "Bank of England IADB / LPMVTVX"
@@ -3973,7 +3973,7 @@
     "NZD_house": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q2",
-      "days_since_period_end": 147,
+      "days_since_period_end": 148,
       "history_observations": 12,
       "source_page": "https://fred.stlouisfed.org/series/QNZR368BIS",
       "origin": "Fonti nazionali / BIS Residential Property Price database tramite FRED",
@@ -3984,7 +3984,7 @@
     "USD_house": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "days_since_period_end": 24,
+      "days_since_period_end": 25,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/PERMIT",
       "origin": "US Census Bureau via FRED"
@@ -3992,7 +3992,7 @@
     "USD_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "days_since_period_end": 24,
+      "days_since_period_end": 25,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/INDPRO",
       "origin": "Federal Reserve via FRED"
@@ -4000,7 +4000,7 @@
     "USD_leading": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "days_since_period_end": 24,
+      "days_since_period_end": 25,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/UMCSENT",
       "origin": "University of Michigan via FRED"
@@ -4008,7 +4008,7 @@
     "USD_demand": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/PCEC96",
       "origin": "US BEA via FRED"
@@ -4016,7 +4016,7 @@
     "USD_credit": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q3",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 12,
       "source_page": "https://fred.stlouisfed.org/series/DRTSCILM",
       "origin": "Federal Reserve SLOOS via FRED"
@@ -4024,7 +4024,7 @@
     "EUR_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://ec.europa.eu/eurostat/databrowser/view/sts_inpr_m/default/table?lang=en",
       "origin": "Eurostat / sts_inpr_m"
@@ -4032,7 +4032,7 @@
     "EUR_leading": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "days_since_period_end": 24,
+      "days_since_period_end": 25,
       "history_observations": 12,
       "source_page": "https://ec.europa.eu/eurostat/databrowser/view/teibs010/default/table?lang=en",
       "origin": "Eurostat / DG ECFIN teibs010"
@@ -4040,7 +4040,7 @@
     "EUR_demand": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://ec.europa.eu/eurostat/databrowser/view/sts_trtu_m/default/table?lang=en",
       "origin": "Eurostat / sts_trtu_m"
@@ -4048,7 +4048,7 @@
     "EUR_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "days_since_period_end": 24,
+      "days_since_period_end": 25,
       "history_observations": 12,
       "source_page": "https://ec.europa.eu/eurostat/databrowser/view/teibs020/default/table?lang=en",
       "origin": "Eurostat / DG ECFIN teibs020"
@@ -4056,7 +4056,7 @@
     "CHF_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q2",
-      "days_since_period_end": 147,
+      "days_since_period_end": 148,
       "history_observations": 12,
       "source_page": "https://fred.stlouisfed.org/series/LFEASETTCHQ647S",
       "origin": "OECD via FRED"
@@ -4064,7 +4064,7 @@
     "AUD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release",
       "origin": "Australian Bureau of Statistics / MHSI"
@@ -4072,7 +4072,7 @@
     "NZD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "days_since_period_end": 24,
+      "days_since_period_end": 25,
       "history_observations": 2,
       "source_page": "https://www.bnz.co.nz/institutional-banking/research/publications",
       "origin": "BNZ / BusinessNZ · pubblicazione ufficiale coautore",
@@ -4081,7 +4081,7 @@
     "USD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "days_since_period_end": 24,
+      "days_since_period_end": 25,
       "history_observations": 36,
       "source_page": "https://fred.stlouisfed.org/series/CES0800000001",
       "origin": "BLS via FRED"
@@ -4089,7 +4089,7 @@
     "GBP_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/s2ku/ios1",
       "origin": "UK Office for National Statistics"
@@ -4097,7 +4097,7 @@
     "CAD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-08",
-      "days_since_period_end": 85,
+      "days_since_period_end": 86,
       "history_observations": 36,
       "source_page": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610043401",
       "origin": "Statistics Canada table 36-10-0434-01"
@@ -4105,7 +4105,7 @@
     "EUR_house": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q2",
-      "days_since_period_end": 147,
+      "days_since_period_end": 148,
       "history_observations": 12,
       "source_page": "https://ec.europa.eu/eurostat/databrowser/view/prc_hpi_q/default/table?lang=en",
       "origin": "Eurostat / prc_hpi_q"
@@ -4113,7 +4113,7 @@
     "JPY_house": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q3",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 12,
       "source_page": "https://fred.stlouisfed.org/series/JPNRGDPPRI",
       "origin": "Cabinet Office tramite FRED"
@@ -4121,7 +4121,7 @@
     "AUD_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q2",
-      "days_since_period_end": 147,
+      "days_since_period_end": 148,
       "history_observations": 12,
       "source_page": "https://fred.stlouisfed.org/series/PRMNTO01AUQ657S",
       "origin": "OECD tramite FRED"
@@ -4129,7 +4129,7 @@
     "NZD_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-Q2",
-      "days_since_period_end": 147,
+      "days_since_period_end": 148,
       "history_observations": 12,
       "source_page": "https://fred.stlouisfed.org/series/PRMNTO01NZQ657S",
       "origin": "OECD tramite FRED"
@@ -4137,7 +4137,7 @@
     "NZD_leading": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-10",
-      "days_since_period_end": 24,
+      "days_since_period_end": 25,
       "history_observations": 2,
       "history_quality": "ROUNDED_RELEASE_SUMMARIES_NOT_SINGLE_VINTAGE",
       "proxy": true,
@@ -4149,7 +4149,7 @@
     "NZD_credit": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 2,
       "source_page": "https://tradingeconomics.com/new-zealand/private-sector-credit",
       "origin": "RBNZ / Trading Economics",
@@ -4159,11 +4159,133 @@
     "CAD_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
       "last_observation": "2026-09",
-      "days_since_period_end": 55,
+      "days_since_period_end": 56,
       "history_observations": 36,
       "source_page": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610004701",
       "origin": "Statistics Canada table 16-10-0047-01"
     }
   },
-  "notes": "Latest revised observations, not PIT, no FX score."
+  "notes": "Latest revised observations, not PIT, no FX score.",
+  "wage_context": {
+    "schema": "GMFQ_G8_WAGE_CONTEXT_V1",
+    "series": [
+      {
+        "ccy": "GBP",
+        "area": "wages",
+        "id": "SEM_G8_GBP_WAGES",
+        "label": "Retribuzioni medie settimanali nominali (totale, media 3 mesi a/a, SA)",
+        "frequency": "M",
+        "unit": "% a/a",
+        "dates": [
+          "2026-08",
+          "2026-09"
+        ],
+        "values": [
+          3.8,
+          3.6
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "ONS / KAC3",
+        "source_page": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kac3/lms",
+        "source_series_id": "KAC3",
+        "metric_kind": "points",
+        "observation_as_of": "2026-09",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "M",
+          "dates": [
+            "2023-10",
+            "2023-11",
+            "2023-12",
+            "2024-01",
+            "2024-02",
+            "2024-03",
+            "2024-04",
+            "2024-05",
+            "2024-06",
+            "2024-07",
+            "2024-08",
+            "2024-09",
+            "2024-10",
+            "2024-11",
+            "2024-12",
+            "2025-01",
+            "2025-02",
+            "2025-03",
+            "2025-04",
+            "2025-05",
+            "2025-06",
+            "2025-07",
+            "2025-08",
+            "2025-09",
+            "2025-10",
+            "2025-11",
+            "2025-12",
+            "2026-01",
+            "2026-02",
+            "2026-03",
+            "2026-04",
+            "2026-05",
+            "2026-06",
+            "2026-07",
+            "2026-08",
+            "2026-09"
+          ],
+          "values": [
+            7.1,
+            6.6,
+            5.8,
+            5.8,
+            5.7,
+            5.8,
+            5.7,
+            5.7,
+            4.8,
+            4.4,
+            4.1,
+            4.6,
+            5.3,
+            5.5,
+            6.0,
+            5.7,
+            5.7,
+            5.5,
+            5.3,
+            5.0,
+            4.7,
+            4.8,
+            5.0,
+            4.9,
+            4.9,
+            4.6,
+            4.2,
+            4.1,
+            3.9,
+            4.4,
+            4.4,
+            4.4,
+            4.2,
+            3.9,
+            3.8,
+            3.6
+          ],
+          "observations": 36,
+          "max_observations": 36,
+          "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+          "source_series_id": "KAC3"
+        }
+      }
+    ],
+    "audit": {
+      "GBP": {
+        "status": "READY_DESCRIPTIVE_REVISED",
+        "last_observation": "2026-09",
+        "days_since_period_end": 56,
+        "history_observations": 36
+      }
+    }
+  }
 }
