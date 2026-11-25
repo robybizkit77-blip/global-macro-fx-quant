@@ -7,7 +7,7 @@ from datetime import date, datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
 from html import unescape
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urljoin
 from urllib.request import Request, urlopen
 from xml.etree import ElementTree
 from zoneinfo import ZoneInfo
@@ -31,6 +31,7 @@ LUXEMBOURG = ZoneInfo("Europe/Luxembourg")
 ONS_CPI = "https://www.ons.gov.uk/releasecalendar?keywords=consumer+price+inflation&limit=100&release-type=type-upcoming"
 JP_CPI = "https://www.stat.go.jp/english/data/cpi/1582.html"
 EU_CAL = "https://ec.europa.eu/eurostat/news/euro-indicators/release-calendar"
+EU_NEWS = "https://ec.europa.eu/eurostat/news/euro-indicators"
 MONTH = r"(?:January|February|March|April|May|June|July|August|September|October|November|December)"
 
 GDP = re.compile(r"GDP \((Advance|Second|Third) Estimate\)(?:, .+| and .+)?")
@@ -186,7 +187,7 @@ def parse_ons_cpi(document):
     # Only the main bulletin, not time series, PPI or CPIH contribution releases.
     rows = []
     pattern = (r"Consumer price inflation, UK:\s*("+MONTH+r" \d{4})\s*"
-               r"Release date:\s*(\d{1,2} "+MONTH+r" \d{4})\s*(\d{1,2}:\d{2})\s*(am|pm)\s*\|\s*Confirmed")
+               r"Release date\s*:\s*(\d{1,2} "+MONTH+r" \d{4})\s*(\d{1,2}:\d{2})\s*(am|pm)\s*(?:\|\s*)?Confirmed")
     for period, day, clock, meridiem in re.findall(pattern, plain(document), re.I):
         when = datetime.strptime(f"{day} {clock}{meridiem.upper()}", "%d %B %Y %I:%M%p").replace(tzinfo=LONDON)
         if when.date().replace(day=1) <= datetime.strptime(period, "%B %Y").date():
@@ -255,6 +256,105 @@ def eurostat_urls(now):
     start = now.astimezone(LUXEMBOURG).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     following = (start + timedelta(days=32)).replace(day=1)
     return [f"{EU_CAL}?start={int(x.timestamp()*1000)}&type=listMonth" for x in (start, following)]
+
+
+
+def parse_ons_release(document, period, source):
+    t = plain(document)
+    m = re.search(r"Consumer price inflation, UK:\s*"+re.escape(period)+
+                  r"\s*Release date\s*:\s*(\d{1,2} "+MONTH+r" \d{4})\s*(\d{1,2}:\d{2})\s*(am|pm)", t, re.I)
+    if not m or "This release is not yet published" not in t:
+        raise ValueError("ONS exact upcoming headline bulletin missing")
+    when = datetime.strptime(f"{m[1]} {m[2]}{m[3].upper()}", "%d %B %Y %I:%M%p").replace(tzinfo=LONDON)
+    if not 0 < (when.date()-datetime.strptime(period,"%B %Y").date()).days <= 92:
+        raise ValueError("ONS bulletin reference date mismatch")
+    # A listed date is official; do not assert a confirmed status not shown.
+    return event("GBP", when, "INFLATION", "Consumer price inflation, UK", period,
+                 "ONS", source)
+
+
+def ons_release_urls(now):
+    local = now.astimezone(LONDON)
+    start = local.replace(day=1)
+    previous = (start - timedelta(days=1)).replace(day=1)
+    following = (start + timedelta(days=32)).replace(day=1)
+    for dt in (previous, start, following):
+        period = dt.strftime("%B %Y")
+        yield period, "https://www.ons.gov.uk/releases/consumerpriceinflationuk"+dt.strftime("%B%Y").lower()
+
+
+def eurostat_inflation_links(document):
+    links = []
+    for url, inner in re.findall(r'<a\b[^>]*\bhref=["\']([^"\']+)["\'][^>]*>(.*?)</a>', document, re.S|re.I):
+        url = urljoin(EU_NEWS, unescape(url))
+        parsed = urlsplit(url)
+        if (parsed.scheme, parsed.netloc) != ("https","ec.europa.eu"):
+            continue
+        if not re.search(r"/products-euro-indicators/w/2-\d{8}-ap/?$", parsed.path):
+            continue
+        if not re.search(r"(?:annual inflation|inflation rate)", plain(inner), re.I):
+            continue
+        if url not in links:
+            links.append(url)
+    return links[:4]
+
+
+def parse_eurostat_bulletin(document, source):
+    t = plain(document)
+    match = re.search(r"The next flash estimate of euro area inflation with data for ("+MONTH+
+                      r" \d{4}) is scheduled for (\d{1,2} "+MONTH+r" \d{4})", t, re.I)
+    if not match:
+        raise ValueError("Eurostat next flash date not explicitly announced")
+    period, day = match.groups()
+    when = datetime.strptime(day,"%d %B %Y").replace(tzinfo=LUXEMBOURG)
+    if not 0 <= (when.date()-datetime.strptime(period,"%B %Y").date()).days <= 62:
+        raise ValueError("Eurostat bulletin period mismatch")
+    row = event("EUR", when, "INFLATION", "Euro area flash inflation",
+                period, "Eurostat", source)
+    row["time_local"] = None
+    return row
+
+
+def refresh_bulletin_fallbacks(events, now, read, receipts):
+    # Use independent official pages when calendar markup is inaccessible.
+    if not any(r["source"]=="ONS_CPI" and r["status"]=="VERIFIED" for r in receipts):
+        for period, url in ons_release_urls(now):
+            try:
+                row = parse_ons_release(read(url), period, url)
+                # Existing confirmed provenance must not be downgraded; apply_rows
+                # preserves that status while refreshing the publisher date.
+                events, count = apply_rows(events,[row],now)
+                receipts.append({"source":"ONS_BULLETIN","period":period,"status":"VERIFIED","rows":1,"changed":count})
+            except (OSError, ValueError) as error:
+                receipts.append({"source":"ONS_BULLETIN","period":period,"status":"SOURCE_BLOCKED_RETAINED","reason":str(error)[:160]})
+    if not any(r["source"].startswith("EU_FLASH_") and r["status"]=="VERIFIED" for r in receipts):
+        candidates = []
+        try:
+            candidates.extend(eurostat_inflation_links(read(EU_NEWS)))
+        except (OSError,ValueError):
+            pass
+        # Prior verified bulletin URL is a bounded backup, never a guessed date.
+        candidates.extend(r["source_url"] for r in reversed(events)
+                          if r.get("source_family")=="Eurostat" and r.get("title")=="Euro area flash inflation"
+                          and "/products-euro-indicators/w/" in r.get("source_url",""))
+        verified = []
+        for url in list(dict.fromkeys(candidates))[:5]:
+            parsed = urlsplit(url)
+            if (parsed.scheme,parsed.netloc)!=("https","ec.europa.eu"):
+                continue
+            try:
+                row = parse_eurostat_bulletin(read(url),url)
+                if upcoming(row,now):
+                    verified.append(row)
+            except (OSError,ValueError):
+                continue
+        if verified:
+            newest = max(verified,key=lambda r:datetime.strptime(r["reference_period"],"%B %Y"))
+            events,count=apply_rows(events,[newest],now)
+            receipts.append({"source":"EU_BULLETIN","status":"VERIFIED","rows":1,"changed":count})
+        else:
+            receipts.append({"source":"EU_BULLETIN","status":"SOURCE_BLOCKED_RETAINED","reason":"No explicitly announced future flash date found"})
+    return events
 
 
 def identity(row):
@@ -351,6 +451,7 @@ def refresh(path, now, read=fetch):
                              "reason": str(error).replace("\n", " ")[:240]})
             continue
         receipts.append({"source": name, "status": "VERIFIED", "rows": len(rows), "changed": count})
+    events = refresh_bulletin_fallbacks(events, now, read, receipts)
     if events != payload["events"]:
         payload["events"] = events
         payload["as_of"] = max(payload.get("as_of") or "", now.astimezone(ROME).date().isoformat())
