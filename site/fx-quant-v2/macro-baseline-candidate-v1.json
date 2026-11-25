@@ -191,8 +191,8 @@
         "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
         "period": "2026Q2",
         "publisher_release_day": "2026-08-28",
-        "gdp_acceleration_pp": null,
-        "acceleration_quality": "UNAVAILABLE_NO_MATCHED_PRIOR",
+        "gdp_acceleration_pp": 0.7,
+        "acceleration_quality": "TWO_CONTIGUOUS_QUARTERS",
         "level_does_not_measure_relative_fx_strength": true
       },
       "inflation_change_pp": {
@@ -226,8 +226,8 @@
         "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
         "period": "2026Q2",
         "publisher_release_day": "2026-09-02",
-        "gdp_acceleration_pp": null,
-        "acceleration_quality": "UNAVAILABLE_NO_MATCHED_PRIOR",
+        "gdp_acceleration_pp": 0.1,
+        "acceleration_quality": "TWO_CONTIGUOUS_QUARTERS",
         "level_does_not_measure_relative_fx_strength": true
       },
       "inflation_change_pp": {
@@ -261,8 +261,8 @@
         "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
         "period": "2026Q2",
         "publisher_release_day": "2026-09-17",
-        "gdp_acceleration_pp": null,
-        "acceleration_quality": "UNAVAILABLE_NO_MATCHED_PRIOR",
+        "gdp_acceleration_pp": -0.7,
+        "acceleration_quality": "TWO_CONTIGUOUS_QUARTERS",
         "level_does_not_measure_relative_fx_strength": true
       },
       "inflation_change_pp": {
@@ -307,9 +307,9 @@
           "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "growth_acceleration_pp": {
-          "same_quarter_and_historical_depth": false,
-          "delta_base_minus_quote_pp": null,
-          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+          "same_quarter_and_historical_depth": true,
+          "delta_base_minus_quote_pp": -0.6,
+          "reason": "WITHIN_COUNTRY_ACCELERATIONS_SAME_QUARTER"
         }
       },
       "macro_fx_signal": null,
@@ -382,9 +382,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
-          "same_quarter_and_historical_depth": false,
-          "delta_base_minus_quote_pp": null,
-          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+          "same_quarter_and_historical_depth": true,
+          "delta_base_minus_quote_pp": 0.8,
+          "reason": "WITHIN_COUNTRY_ACCELERATIONS_SAME_QUARTER"
         }
       },
       "macro_fx_signal": null,
@@ -832,9 +832,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
-          "same_quarter_and_historical_depth": false,
-          "delta_base_minus_quote_pp": null,
-          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+          "same_quarter_and_historical_depth": true,
+          "delta_base_minus_quote_pp": -1.4,
+          "reason": "WITHIN_COUNTRY_ACCELERATIONS_SAME_QUARTER"
         }
       },
       "macro_fx_signal": null,
@@ -997,8 +997,8 @@
     "currencies": 8,
     "features": 24,
     "pairs": 28,
-    "gdp_accelerations_calculable": 5,
-    "pair_gdp_acceleration_contrasts": 10,
+    "gdp_accelerations_calculable": 8,
+    "pair_gdp_acceleration_contrasts": 13,
     "estimated_macro_scores": 0,
     "trading_signals_generated": 0
   },
@@ -1013,5 +1013,5 @@
   "eligible_for_backtests": false,
   "eligible_for_automatic_core_rebase": false,
   "canonical_fx_core_untouched": true,
-  "source_content_sha256": "7863dfe2f8fe41055cc4a7c703c92812f630c12070cfdf4a15cf230b486894ca"
+  "source_content_sha256": "ac6362ccb44613a2ed8ffebd6e46cc8bebb1ec5d110f43acd05195bcae5180c3"
 }
