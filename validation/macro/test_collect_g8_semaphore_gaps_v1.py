@@ -137,6 +137,27 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(item["scope"],"ANNUAL_ACTUAL_NOT_QUARTERLY")
         with self.assertRaises(ValueError):mod.ch_wage_annual_context(date(2027,4,30))
 
+    def test_external_context_exact_real_exports_and_stale_guard(self):
+        self.assertEqual(set(mod.EXPORT_KEYS),{"USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"})
+        method="eurostat_exports_real"
+        _,selectors=mod.EUROSTAT_EXTRA[method]
+        periods=[f"{y}-Q{q}" for y in (2023,2024,2025) for q in range(1,5)]+["2026-Q1","2026-Q2"]
+        dims={k:{"category":{"index":{v:0}}} for k,v in selectors.items()}
+        dims["time"]={"category":{"index":{p:i for i,p in enumerate(periods)}}}
+        payload={"class":"dataset","id":list(selectors)+["time"],"size":[1]*len(selectors)+[len(periods)],"dimension":dims,"value":{str(i):(-1 if i==12 else 2.5) for i in range(len(periods))}}
+        def fetcher(url):
+            if url==mod.euro_extra_url(method):return mod.json.dumps(payload).encode()
+            key=url.split("=")[-1]
+            return ("observation_date,"+key+"\n"+"".join(f"{p[:4]}-{(int(p[-1])-1)*3+1:02d}-01,2.5\n" for p in periods)).encode()
+        out=mod.collect_external_context(date(2026,11,25),fetcher)
+        self.assertEqual(len(out["series"]),8)
+        self.assertTrue(all(x["history"]["observations"]==12 and x["unit"]=="% a/a reale" for x in out["series"]))
+        self.assertEqual(out["audit"]["EUR"]["last_observation"],"2026-Q2")
+        self.assertEqual(len(mod.collect_external_context(date(2027,3,1),fetcher)["series"]),0)
+        payload["dimension"]["unit"]["category"]["index"]={"CP_MEUR":0}
+        rejected=mod.collect_external_context(date(2026,11,25),fetcher)
+        self.assertEqual(rejected["audit"]["EUR"]["status"],"WITHHELD_FETCH_OR_VALIDATION")
+
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
