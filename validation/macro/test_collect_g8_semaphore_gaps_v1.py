@@ -726,4 +726,28 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertRaises(ValueError,mod.parse_jp_core,jp.replace(b"0161",b"0178"),NOW)
         self.assertRaises(ValueError,mod.parse_abs_core,au.replace(b"Trimmed mean (%)",b"Weighted median (%)"),NOW)
 
+    def test_uk_activity_exact_period_frequency(self):
+        def page(spec):
+            rows=[]
+            if spec["frequency"]=="Q":
+                for i in range(12):
+                    y,q=divmod(2026*4+2-11+i,4)
+                    rows.append((f"{y} Q{q+1}",4.5+i/100))
+                rows.append(("2026 OCT",99))
+            else:
+                months=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
+                for i in range(12):
+                    y,m=divmod(2026*12+9-11+i,12)
+                    rows.append((f"{y} {months[m]}",100+i/10))
+                rows.append(("2026 Q3",999))
+            return ("<h1>"+spec["title"]+"</h1><p>Series ID: "+spec["code"]+"</p><table>"+
+              "".join(f"<tr><td>{p}</td><td>{v}</td></tr>" for p,v in rows)+"</table>").encode()
+        items,audit=mod.collect_uk_activity(NOW,fetcher=lambda u:page(next(s for s in mod.UK_ACTIVITY.values() if s["source_page"]==u)))
+        self.assertEqual(len(items),2)
+        self.assertEqual(items[0]["dates"][-1],"2026-Q3")
+        self.assertEqual(items[1]["dates"][-1],"2026-10")
+        self.assertFalse(items[0]["up_good"])
+        spec=mod.UK_ACTIVITY["ONS_MGSX_UNEMP_Q"]
+        self.assertRaises(ValueError,mod.parse_ons_activity,page(spec).replace(b"MGSX",b"OTHER"),NOW,spec)
+
 if __name__=="__main__":unittest.main()

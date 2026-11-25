@@ -1015,6 +1015,55 @@ def collect_wage_context(now):
         result["audit"]["CHF_estimate"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
     return result
 
+ONS_UNEMP_URL="https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx"
+ONS_RETAIL_URL="https://www.ons.gov.uk/businessindustryandtrade/retailindustry/timeseries/j5ek/drsi"
+UK_ACTIVITY={
+ "ONS_MGSX_UNEMP_Q":dict(ccy="GBP",area="jobs",key="ONS_MGSX_UNEMP_Q",method="ons_activity",
+  name="Disoccupazione LFS (16+, trimestri non sovrapposti, SA)",unit="%",frequency="Q",kind="points",max_age_days=175,
+  origin="ONS / MGSX",source_page=ONS_UNEMP_URL,up_good=False,
+  code="MGSX",title="Unemployment rate (aged 16 and over, seasonally adjusted): %"),
+ "ONS_J5EK_RETAIL_VOL":dict(ccy="GBP",area="demand",key="ONS_J5EK_RETAIL_VOL",method="ons_activity",
+  name="Volumi reali vendite al dettaglio, carburanti inclusi (SA)",unit="indice reale SA",frequency="M",kind="percent",max_age_days=85,
+  origin="ONS / J5EK",source_page=ONS_RETAIL_URL,up_good=True,
+  code="J5EK",title="RSI:Volume Seasonally Adjusted:All Retailers inc fuel:All Business Index")
+}
+def parse_ons_activity(raw,now,spec):
+    txt=raw.decode("utf-8","replace");p=_PlainText();p.feed(txt)
+    plain=" ".join(" ".join(p.parts).split())
+    if not re.search(r"Series ID:\s*"+spec["code"]+r"\b",plain) or spec["title"].casefold() not in plain.casefold():
+        raise ValueError("ONS activity source identity changed")
+    table=_ReportTables();table.feed(txt);out={}
+    months=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
+    for rows in table.tables:
+        for row in rows:
+            if len(row)!=2:continue
+            if spec["frequency"]=="Q":
+                m=re.fullmatch(r"(\d{4}) Q([1-4])",row[0],re.I)
+                if not m:continue
+                period=f"{m[1]}-Q{m[2]}"
+            else:
+                m=re.fullmatch(r"(\d{4}) ("+"|".join(months)+")",row[0],re.I)
+                if not m:continue
+                period=f"{m[1]}-{months.index(m[2].upper())+1:02d}"
+            if period_end(period)>now or row[1] in ("","..",":","-"):continue
+            v=float(row[1])
+            if not math.isfinite(v) or v<=0 or (spec["frequency"]=="Q" and v>30) or v>10000 or period in out:
+                raise ValueError("ONS activity invalid/duplicate observation")
+            out[period]=v
+    if len(out)<12:raise ValueError("ONS activity history unavailable")
+    return sorted(out.items())
+
+def collect_uk_activity(now,fetcher=None):
+    items=[];audit={}
+    for spec in UK_ACTIVITY.values():
+        try:
+            item,status=candidate(spec,parse_ons_activity((fetcher or fetch_issuer)(spec["source_page"]),now,spec),now)
+            if item:items.append(item)
+            audit["GBP_"+spec["area"]]=status
+        except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError) as exc:
+            audit["GBP_"+spec["area"]]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    return items,audit
+
 def parse_ons_industry(raw,now):
     txt=raw.decode("utf-8","replace")
     if "IOP: B-E: PRODUCTION: CVMSA" not in txt or not re.search(r"Series ID:\s*K222",txt):
@@ -1463,7 +1512,7 @@ def parse_snb_credit(raw,now):
     return sorted(out.items())
 
 def fetch_issuer(url):
-    if url not in {JP_CORE_URL,ABS_CORE_URL,ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,ONS_CORE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
+    if url not in {ONS_UNEMP_URL,ONS_RETAIL_URL,JP_CORE_URL,ABS_CORE_URL,ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,ONS_CORE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
     accept=("application/json" if url==SNB_CREDIT_META else "text/csv" if url==SNB_CREDIT_URL else "text/html,application/zip")
     req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":accept})
     with urlopen(req,timeout=35) as response:
@@ -2115,6 +2164,10 @@ def collect(now=None,fetcher=fetch):
             out["audit"][code]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180],
                                  "source_page":spec["source_page"],"origin":spec["origin"]}
     if fetcher is fetch:
+        items,audit=collect_uk_activity(now)
+        out["series"].extend(items)
+        out["audit"].update(audit)
+        out["source_count"]+=len(UK_ACTIVITY)
         out["wage_context"]=collect_wage_context(now)
         out["external_context"]=collect_external_context(now)
         out["inflation_context"]=collect_inflation_context(now)

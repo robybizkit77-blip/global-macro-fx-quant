@@ -174,6 +174,8 @@ const VERIFIED_FRESH_FALLBACK={
   credit:['DRTSCILM','https://fred.stlouisfed.org/series/DRTSCILM']
  },
  GBP:{
+  jobs:['ONS_MGSX_UNEMP_Q','https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx'],
+  demand:['ONS_J5EK_RETAIL_VOL','https://www.ons.gov.uk/businessindustryandtrade/retailindustry/timeseries/j5ek/drsi'],
   house:['BOE_LPMVTVX','https://www.bankofengland.co.uk/boeapps/database/BankStats.asp'],
   industry:['ONS_K222_DIOP','https://www.ons.gov.uk/economy/economicoutputandproductivity/output/timeseries/k222/diop']
  },
@@ -284,7 +286,7 @@ function recentTwo(series,today){
 const REAL_ACTIVITY_LEVELS=new Set([
  'US_INDPRO_history_value','INDPRO','US_PCEC96_history_value','PCEC96','US_RRSFS_history_value',
  'EA_IP_history_value','STS_INPR_M_EA21_PRD_B-D_SCA_I21','EA_RETAIL_VOL_history_value','STS_TRTU_M_EA21_VOL_SLS_G47_SCA_I21',
- 'UK_PRODUCTION_history_value','ONS_K222_DIOP','ONS_S2KU_IOS1','UK_RETAIL_VOL_history_value',
+ 'UK_PRODUCTION_history_value','ONS_K222_DIOP','ONS_S2KU_IOS1','UK_RETAIL_VOL_history_value','ONS_J5EK_RETAIL_VOL',
  'JP_IIP_history_value','CH_PRODUCTION_history_value','CH_RETAIL_REAL_history_value',
  'NZ_RETAIL_VOLUME_Q_history_value','CA_RETAIL_VOLUME_history_value','CAN_RETAIL_REAL_LASPEYRES',
  '36100434_SERVICES_T003','JPNRGDPPRI'
