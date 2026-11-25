@@ -103,7 +103,21 @@ for(const changed of [
 ]){
  assert(!audNzd(changed).nzdResearch,'Failed provenance must disable the B2 comparison overlay');
 }
-assert(!mod.snapshot(rates,prices,'NZDUSD',liveAsOf,comparisonDay,aud,chf,nzd,reconciled).nzdResearch);
+// Reconciled B2 research is available for every non-CHF NZD cross, independently of AUD.
+for(const pair of ['AUDNZD','NZDUSD','EURNZD','GBPNZD','NZDCAD','NZDJPY']){
+ const live=mod.snapshot(rates,prices,pair,liveAsOf,comparisonDay,aud,chf,nzd,reconciled);
+ const useResearch=reconciled.last_observation_date>=rates.NZD.date;
+ if(useResearch){
+  assert(live.nzdResearch&&live.researchOnly,pair+' must expose reconciled NZD research');
+  assert.match(live.kind,/RBNZ B2 RICERCA/);
+  assert(live.rows.every(row=>row.date>=reconciled.benchmark_roll_date),'No cross-roll stitching');
+  if(live.ready)assert(live.short&&live.lag>=0&&live.lag<=3&&live.age>=0&&live.age<=5);
+  if(live.rows.length<21)assert.equal(live.medium,null);
+ }
+ assert(!mod.snapshot(rates,prices,pair,liveAsOf,'2026-11-06',aud,chf,nzd,reconciled).nzdResearch);
+ assert(!mod.snapshot(rates,prices,pair,liveAsOf,comparisonDay,aud,chf,nzd,{...reconciled,eligible_for_core:true}).nzdResearch);
+}
+assert(!mod.snapshot(rates,prices,'NZDCHF',liveAsOf,comparisonDay,aud,chf,nzd,reconciled).nzdResearch,'CHF remains a separate estimated or observed comparison');
 const chfRead=(data,history,asOf=liveAsOf,clock=comparisonDay)=>
  mod.snapshot(data,prices,'AUDCHF',asOf,clock,aud,history,nzd,reconciled);
 const audChf=chfRead(rates,chf);
