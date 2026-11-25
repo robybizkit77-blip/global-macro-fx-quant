@@ -470,7 +470,7 @@ const INFLATION_MAP={
  GBP:[['UK_CPI_HEADLINE_YOY_history_value','CPI headline','M'],['UK_CPI_CORE_YOY_history_value','CPI core','M']],
  JPY:[['JP_CPI_HEADLINE_YOY_history_value','CPI headline','M'],['JP_CPI_CORE_YOY_history_value','CPI core (definizione nazionale)','M']],
  CHF:[['CH_CPI_HEADLINE_YOY_history_value','CPI headline','M'],['CH_CPI_CORE1_YOY_history_value','CPI core 1','M']],
- AUD:[['AU_CPI_HEADLINE_Q_YOY_history_value','CPI headline trimestrale','Q'],['AU_CPI_TRIMMED_MEAN_Q_YOY_history_value','CPI trimmed mean trimestrale','Q']],
+ AUD:[['AU_CPI_HEADLINE_Q_YOY_history_value','CPI headline trimestrale','Q'],['AU_CPI_TRIMMED_MEAN_M_YOY_context_value','CPI trimmed mean mensile','M']],
  NZD:[['NZ_CPI_HEADLINE_YOY_history_value','CPI headline','Q'],['NZ_CORE_INFLATION_SFM_Q_history_value','Core inflation SFM','Q']],
  CAD:[['CA_CPI_HEADLINE_YOY_history_value','CPI headline','M'],['CA_CPI_MEDIAN_YOY_history_value','CPI median','M'],['CA_CPI_TRIM_YOY_history_value','CPI trim','M']]
 };
@@ -485,6 +485,8 @@ const WAGE_MAP={
  CAD:[['CA_AVERAGE_HOURLY_WAGES_YOY','Salari orari medi','M']]
 };
 const CORE_RECOVERY={
+ JPY:['ESTAT_JP_2025_CORE_0161_YOY','JP_CPI_CORE_YOY_history_value','https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=1&statInfId=000040482953','% a/a',false],
+ AUD:['ABS_MONTHLY_TRIMMED_MEAN_YOY','AU_CPI_TRIMMED_MEAN_M_YOY_context_value','https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/latest-release','% a/a',false],
  CAD:[['STATCAN_18100256_MEDIAN_YOY','CA_CPI_MEDIAN_YOY_history_value','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810025601','% a/a',false],
       ['STATCAN_18100256_TRIM_YOY','CA_CPI_TRIM_YOY_history_value','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810025601','% a/a',false]],
  EUR:['EUROSTAT_EA21_HICP_CORE_YOY','EA_HICP_CORE_YOY_history_value','https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_minr/default/table?lang=en','% a/a',false],

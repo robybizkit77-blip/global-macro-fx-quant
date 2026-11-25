@@ -681,6 +681,6 @@ console.log('ECONOMIC_CYCLE_RELATIVE_DIVERGENCES_PASS');
  const aud=inflationContext(catalog,'2026-11-25','AUD');
  const filtered=aud.filter(x=>/core|trimmed|median|\btrim\b/i.test(x.label));
  assert.equal(filtered.length,1);
- assert.match(filtered[0].id,/TRIMMED_MEAN/);
+ assert.match(filtered[0].id,/TRIMMED_MEAN_M_YOY/);
 }
 console.log('ECONOMIC_CYCLE_CORE_RECOVERY_PASS');
