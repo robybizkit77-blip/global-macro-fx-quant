@@ -1439,7 +1439,13 @@ document.addEventListener('click',e=>{
  const cs_op=e.target.closest('[data-cs-openpair]');if(cs_op){
   openPair(cs_op.dataset.csOpenpair);return;
  }
- const mcc=e.target.closest('[data-ms-country]');if(mcc){const jump=mcc.hasAttribute('data-rd-jump'),tab=!!mcc.closest('.rd-country-tabs');state.ccy=mcc.dataset.msCountry;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();if(jump)$('rd-country')?.scrollIntoView({block:'start',behavior:'instant'});else if(tab)document.querySelector('.rd-country-tabs [aria-pressed=true]')?.focus({preventScroll:true});return;}
+ if(e.target.closest('[data-rd-compare-jump]')){
+   const matrix=$('rd-compare');
+   matrix?.focus({preventScroll:true});
+   matrix?.scrollIntoView({block:'start',behavior:'instant'});
+   return;
+ }
+ const mcc=e.target.closest('[data-ms-country]');if(mcc){const jump=mcc.hasAttribute('data-rd-jump'),tab=!!mcc.closest('.rd-country-tabs');state.ccy=mcc.dataset.msCountry;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();if(jump){const dossier=$('rd-country');dossier?.focus({preventScroll:true});dossier?.scrollIntoView({block:'start',behavior:'instant'});}else if(tab)document.querySelector('.rd-country-tabs [aria-pressed=true]')?.focus({preventScroll:true});return;}
  const mcat=e.target.closest('[data-ms-category]');if(mcat){state.msCategory=mcat.dataset.msCategory;state.msSeriesId=null;render();return;}
  const mv=e.target.closest('[data-ms-view]');if(mv){state.msView=mv.dataset.msView;render();return;}
  const mw=e.target.closest('[data-ms-window]');if(mw){state.msWindow=Number(mw.dataset.msWindow);render();return;}

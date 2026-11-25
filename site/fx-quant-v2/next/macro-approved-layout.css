@@ -7,3 +7,30 @@
 @media(max-width:760px){.rd-root .rd-insights{grid-template-columns:1fr}.rd-root .rd-insights article,.rd-root .rd-insights article:first-child{padding:14px 0;border-right:0;border-bottom:1px solid var(--line)}.rd-root .rd-section-head{display:block}.rd-root .rd-section-head p{margin-top:6px}.rd-root .rd-metrics{grid-template-columns:1fr 1fr}.rd-root .rd-metric:nth-child(odd){padding-left:0}.rd-root .rd-metric:nth-child(even){border:0}.rd-root .rd-metric:nth-child(-n+2){border-bottom:1px solid var(--line)}.rd-root .rd-chart-grid{grid-template-columns:1fr}.rd-root .rd-evidence{grid-template-columns:1fr}.rd-root .rd-global{padding:16px 0}.rd-root .rd-section{margin-top:24px}}
 
 .rd-root .rd-country-tabs{min-width:0;max-width:100%}.rd-root .rd-country-body>div,.rd-root .rd-insights article{min-width:0}.rd-root .rd-country-side p,.rd-root .rd-lead{overflow-wrap:break-word}.rd-root .rd-chart h4{overflow-wrap:anywhere}.rd-root .rd-chart small{overflow-wrap:anywhere}
+
+#content[data-view="macro"] .macro-compact-hero .page-hero {
+  padding: 14px clamp(16px, 2.5vw, 28px);
+  margin-bottom: 14px;
+}
+.macro-compact-hero .page-hero h1 {
+  font-size: clamp(26px, 3vw, 36px);
+  margin-block: 4px;
+}
+.macro-compact-hero .page-hero .lead {
+  margin: 0;
+}
+.rd-root .rd-compare-jump {
+  margin-top: 12px;
+}
+.rd-root #rd-compare {
+  scroll-margin-top: 90px;
+}
+.rd-root .rd-matrix-wrap:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+@media (min-width: 761px) {
+  .rd-root .rd-insights {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
