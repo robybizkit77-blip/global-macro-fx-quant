@@ -726,4 +726,25 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertRaises(ValueError,mod.parse_jp_core,jp.replace(b"0161",b"0178"),NOW)
         self.assertRaises(ValueError,mod.parse_abs_core,au.replace(b"Trimmed mean (%)",b"Weighted median (%)"),NOW)
 
+    def test_ch_nz_core_contracts(self):
+        from openpyxl import Workbook
+        book=Workbook();ws=book.active;ws.title="VAR_m-12"
+        ws.append(["Landesindex der Konsumentenpreise",None,None,None,None,"Veränderungsrate gegenüber Vorjahresmonat in %"])
+        ws.append(["Warenkorbstruktur 2025"])
+        ws.append([None])
+        months=[f"{y:04d}-{m:02d}" for y,m in [divmod(2026*12+9-19+i,12) for i in range(20)]]
+        months=[f"{p[:4]}-{int(p[5:])+1:02d}" for p in months]
+        ws.append(["Code","PosNo"]+[None]*11+months)
+        ws.append(["1170_103","103"]+[None]*10+["Core inflation 1"]+[.2+i/10 for i in range(20)])
+        buf=io.BytesIO();book.save(buf)
+        obs=mod.parse_ch_core(buf.getvalue(),NOW)
+        self.assertEqual(obs[-1][0],"2026-10")
+        rows=[["","Consumers price index (CPI)","Factor model","Sectoral factor model","Tradable inflation","Non-tradable inflation"],
+              ["Date","(Index)","(q/q%)","(y/y%)","(y/y%)","(y/y%)","(Index)","(y/y%)","(Index)","(y/y%)"]]
+        for p,v in [("Dec 2025",2.7),("Mar 2026",2.7),("Jun 2026",2.8),("Sept 2026",2.8)]:
+            rows.append([p,"100","1","3","3",str(v),"100","1","100","3"])
+        page=("<table>"+"".join("<tr>"+"".join("<td>"+v+"</td>" for v in row)+"</tr>" for row in rows)+"</table>").encode()
+        self.assertEqual(mod.parse_nz_core_page(page,NOW)[-1],("2026-Q3",2.8))
+        self.assertRaises(ValueError,mod.parse_nz_core_page,page.replace(b"Sectoral factor model",b"Other model"),NOW)
+
 if __name__=="__main__":unittest.main()

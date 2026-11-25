@@ -916,6 +916,85 @@ def collect_asia_core(now,fetcher=None):
             audit[ccy]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
     return result,audit
 
+CH_CORE_URL="https://dam-api.bfs.admin.ch/hub/api/dam/assets/36970583/master"
+CH_CORE_KEY="FSO_LIK25B25_CORE1_YOY"
+NZ_CORE_URL="https://www.rbnz.govt.nz/en/statistics/series/economic-indicators/prices"
+NZ_CORE_KEY="RBNZ_M1_SFM_YOY"
+def parse_ch_core(raw,now):
+    from openpyxl import load_workbook
+    book=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
+    try:
+        # Select the official annual-rate sheet by its semantic heading,
+        # not by a guessed sheet position or by calculating rounded indices.
+        matches=[]
+        for ws in book.worksheets:
+            top=list(ws.iter_rows(min_row=1,max_row=4,values_only=True))
+            if len(top)!=4 or str(top[1][0]).strip()!="Warenkorbstruktur 2025":continue
+            title=" ".join(str(v) for row in top[:3] for v in row if v is not None).casefold()
+            if not any(x in title for x in ("vorjahresmonat","même mois de l'année précédente","même mois de l’année précédente","stesso mese dell'anno precedente","stesso mese dell’anno precedente")):continue
+            matches.append((ws,top[3]))
+        if len(matches)!=1:raise ValueError("Swiss CPI annual-rate sheet not uniquely identified")
+        ws,header=matches[0]
+        if tuple(header[:2])!=("Code","PosNo"):raise ValueError("Swiss CPI header changed")
+        cols=[]
+        for i,v in enumerate(header):
+            if i<13:continue
+            if hasattr(v,"year") and hasattr(v,"month"):p=f"{v.year:04d}-{v.month:02d}"
+            else:
+                s=str(v).strip().lstrip("'")
+                m=re.fullmatch(r"(\d{4})[-./ ]?(0?[1-9]|1[0-2])(?:-01)?",s)
+                if not m:continue
+                p=f"{int(m[1]):04d}-{int(m[2]):02d}"
+            if period_end(p)<=now:cols.append((i,p))
+        if len(cols)<12 or len({p for _,p in cols})!=len(cols):raise ValueError("Swiss CPI date axis missing/ambiguous")
+        rows=[row for row in ws.iter_rows(min_row=5,values_only=True)
+              if str(row[0]).strip()=="1170_103" and str(row[12]).strip()=="Core inflation 1"]
+        if len(rows)!=1:raise ValueError("Swiss CPI Core 1 identity changed")
+        out={}
+        for i,p in cols:
+            v=rows[0][i] if i<len(rows[0]) else None
+            if v is None or str(v).strip() in ("","..","-","..."):continue
+            v=float(v)
+            if not math.isfinite(v) or abs(v)>50:raise ValueError("Swiss CPI annual rate implausible")
+            out[p]=v
+        if len(out)<12:raise ValueError("Swiss CPI history missing")
+        return sorted(out.items())
+    finally:book.close()
+
+def parse_nz_core_page(raw,now):
+    t=_ReportTables();t.feed(raw.decode("utf-8","replace"))
+    tables=[rows for rows in t.tables if any("Sectoral factor model" in row for row in rows)
+            and any(len(row)==10 and row[0]=="Date" and row[5]=="(y/y%)" for row in rows)]
+    if len(tables)!=1:raise ValueError("RBNZ M1 annual SFM table changed")
+    months={"Mar":1,"Jun":2,"Sept":3,"Sep":3,"Dec":4};out={}
+    for row in tables[0]:
+        if len(row)!=10:continue
+        m=re.fullmatch(r"(Mar|Jun|Sept|Sep|Dec) (\d{4})",row[0])
+        if not m:continue
+        p=f"{m[2]}-Q{months[m[1]]}"
+        if period_end(p)>now or row[5] in ("","..","-"):continue
+        v=float(row[5])
+        if not math.isfinite(v) or abs(v)>50 or p in out:raise ValueError("RBNZ SFM invalid/duplicate rate")
+        out[p]=v
+    if len(out)<4:raise ValueError("RBNZ M1 current quarterly history missing")
+    return sorted(out.items())
+
+def collect_ch_nz_core(now,fetcher=None):
+    items=[];audit={}
+    for ccy,key,url,parser,origin,freq,age in [
+      ("CHF",CH_CORE_KEY,CH_CORE_URL,parse_ch_core,"FSO / LIK25B25 / 1170_103","M",85),
+      ("NZD",NZ_CORE_KEY,NZ_CORE_URL,parse_nz_core_page,"RBNZ / M1 sectoral factor model","Q",175)]:
+        try:
+            obs=parser((fetcher or fetch_issuer)(url),now)
+            spec=dict(ccy=ccy,area="core",key=key,method="official_core",name=origin,
+                unit="% a/a",frequency=freq,kind="points",max_age_days=age,origin=origin,source_page=url)
+            item,status=candidate(spec,obs,now)
+            if item:items.append(item)
+            audit[ccy]=status
+        except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError,ImportError) as exc:
+            audit[ccy]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    return items,audit
+
 def collect_external_context(now,fetcher=fetch):
     result={"schema":"GMFQ_G8_EXTERNAL_CONTEXT_V1","series":[],"audit":{}}
     for ccy,key in EXPORT_KEYS.items():
@@ -1463,7 +1542,7 @@ def parse_snb_credit(raw,now):
     return sorted(out.items())
 
 def fetch_issuer(url):
-    if url not in {JP_CORE_URL,ABS_CORE_URL,ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,ONS_CORE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
+    if url not in {CH_CORE_URL,NZ_CORE_URL,JP_CORE_URL,ABS_CORE_URL,ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,ONS_CORE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
     accept=("application/json" if url==SNB_CREDIT_META else "text/csv" if url==SNB_CREDIT_URL else "text/html,application/zip")
     req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":accept})
     with urlopen(req,timeout=35) as response:
@@ -2125,6 +2204,9 @@ def collect(now=None,fetcher=fetch):
         out["inflation_context"]["audit"]["CAD"]=status
         out["inflation_context"]["series"].extend(items)
         items,status=collect_asia_core(now)
+        out["inflation_context"]["audit"].update(status)
+        out["inflation_context"]["series"].extend(items)
+        items,status=collect_ch_nz_core(now)
         out["inflation_context"]["audit"].update(status)
         out["inflation_context"]["series"].extend(items)
     return out
