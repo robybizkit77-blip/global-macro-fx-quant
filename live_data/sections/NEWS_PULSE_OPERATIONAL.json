@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-24",
-  "generated_at_utc": "2026-11-25T01:31:00.271492Z",
+  "generated_at_utc": "2026-11-25T04:41:07.830169Z",
   "items": [
     {
       "as_of": "2026-11-24",
@@ -27,6 +27,19 @@
       "reference_previous_date": "2026-11-23",
       "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-24",
       "title": "USD: governativo 2Y +0.0 pb, 10Y -1.0 pb"
+    },
+    {
+      "as_of": "2026-11-24",
+      "category": "MARKET_VOLATILITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 26.36; confronto con chiusura 2026-11-23. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-23",
+      "source": "Cboe Global Markets, VIX daily close",
+      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "title": "VIX: -0.26 punti nella chiusura del 2026-11-24"
     },
     {
       "as_of": "2026-11-24",
@@ -91,19 +104,6 @@
       "source": "S&P Dow Jones Indices via FRED",
       "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "title": "S&P 500: +4.73% nella chiusura del 2026-11-23"
-    },
-    {
-      "as_of": "2026-11-23",
-      "category": "MARKET_VOLATILITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 26.62; confronto con chiusura 2026-11-20. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "HIGH",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-20",
-      "source": "Cboe Global Markets, VIX daily close",
-      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "title": "VIX: -9.27 punti nella chiusura del 2026-11-23"
     },
     {
       "as_of": "2026-11-23",
@@ -222,7 +222,7 @@
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
     }
   ],
-  "last_checked_at_utc": "2026-11-25T01:31:00.271492Z",
+  "last_checked_at_utc": "2026-11-25T04:41:07.830169Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
