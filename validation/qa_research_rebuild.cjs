@@ -17,7 +17,7 @@ const base=process.env.RESEARCH_BASE||'http://127.0.0.1:8000/site/fx-quant-v2/re
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'Page overflow: '+name);
   assert.equal(await page.locator('#notice').isVisible(),false);
   await page.screenshot({path:'research-'+name+'.png',fullPage:true});
-  for(const c of engine.coverage){await page.locator('.country-tabs [data-country="'+c+'"]').click();assert.equal(await page.locator('.country-tabs [data-country="'+c+'"]').getAttribute('aria-pressed'),'true');assert(await page.locator('.country-body .lead').innerText());assert.equal(await page.locator('.metrics .metric').count(),4)}
+  for(const c of engine.coverage){await page.locator('.country-tabs [data-country="'+c+'"]').click();assert.equal(await page.locator('.country-tabs [data-country="'+c+'"]').getAttribute('aria-pressed'),'true');const reading=page.locator('.country-body');for(const heading of ['Cosa va','Cosa frena','Cosa guardare'])assert(await reading.getByText(heading,{exact:true}).isVisible());assert.equal(await reading.locator('.lead').count(),2);assert.equal(await page.locator('.metrics .metric').count(),4)}
   assert.deepEqual(errors,[]);await page.close();
  }
  const failure=await browser.newPage();let fail=true;await failure.route('**/semaphore-supplement-v1.json*',r=>fail?r.fulfill({status:503,body:'unavailable'}):r.continue());
