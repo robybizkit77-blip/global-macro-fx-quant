@@ -750,6 +750,103 @@ function regimePosition(o){
  const quadrant=(o.reading.breadth>0?'up':'down')+'_'+(h.direction==='accelera'?'up':'down');
  return {quadrant,reason:null};
 }
+// Historical panels: exact periods, no gap-filling or source stitching.
+function chartTail(source,today,freq,annualize=false){
+ if(!source||!['M','Q','A'].includes(freq)||!Array.isArray(source.dates)||!Array.isArray(source.values)||source.dates.length!==source.values.length)return null;
+ const step={M:1,Q:3,A:12}[freq],records=new Map();
+ for(let i=0;i<source.dates.length;i++){
+   const p=source.dates[i],v=source.values[i];
+   const date=freq==='A'&&/^\d{4}$/.test(p)?p+'-12-31':parsePeriod(p);
+   if(!date||!finite(v)||annualize&&v<=0)continue;
+   const y=Number(date.slice(0,4)),m=Number(date.slice(5,7)),endMonth=Math.ceil(m/step)*step;
+   const end=new Date(Date.UTC(y,endMonth,0)).toISOString().slice(0,10);
+   if(end>today)continue;
+   const key=y*12+endMonth-1,period=freq==='A'?String(y):freq==='Q'?y+'-Q'+endMonth/3:y+'-'+String(endMonth).padStart(2,'0');
+   if(records.has(key)&&records.get(key).value!==v)return null;
+   records.set(key,{key,period,value:v});
+ }
+ const keys=[...records.keys()].sort((a,b)=>a-b),tail=[];
+ for(let k=keys.at(-1);records.has(k)&&tail.length<36;k-=step){
+   const x=records.get(k);
+   const prior=records.get(k-12);
+   if(annualize&&(!prior||prior.value<=0))break;
+   const value=annualize?100*(x.value/prior.value-1):x.value;
+   if(!finite(value))break;
+   tail.unshift({period:x.period,value});
+ }
+ return tail.length>=3?tail.slice(-(freq==='M'?36:freq==='Q'?12:10)):null;
+}
+function countryHistories(catalog,today,country,overlay,rows,context){
+ const local=Array.isArray(catalog?.[country])?catalog[country]:[];
+ const series=(title,source,freq,unit,opts={})=>{
+   const points=chartTail(source,today,freq,opts.annualize===true);
+   if(!points)return null;
+   if(finite(opts.expected)&&Math.abs(points.at(-1).value-opts.expected)>1e-8)return null;
+   if(opts.period&&points.at(-1).period!==opts.period)return null;
+   return {title,unit,freq,points,source:opts.source||source.source_file||'Fonte canonica',stale:!!opts.stale,threshold:opts.threshold,manual:!!opts.manual};
+ };
+ const active=r=>r.signalSource==='original'?r.items:r.items.slice(0,1);
+ const activity=[];
+ for(const key of ['industry','demand','services','leading','jobs','house','credit']){
+   const r=rows.find(x=>x.key===key);if(!r)continue;
+   for(const item of active(r)){
+     if(!item||item.stale||item.invalid||item.verdict===null||item.metric.hideValue)continue;
+     const supplement=r.signalSource!=='original';
+     let src=supplement?supplementary(overlay,country,key,today):local.find(x=>x.id===item.metric.id);
+     if(!src||supplement&&src.id!==item.metric.id)continue;
+     if(supplement)src=cycleHistory(src,today,item.freq);
+     const id=src.source_series_id||item.metric.id,real=REAL_ACTIVITY_LEVELS.has(id)||REAL_ACTIVITY_GROWTH.has(id);
+     const index=REAL_ACTIVITY_LEVELS.has(id),diffusion=item.metric.diffusionThreshold===50;
+     if(!real&&!diffusion)continue;
+     const chart=series(item.metric.name+(index?' · crescita annua':''),src,item.freq,index?'% a/a reale':item.metric.unit||src.unit||'unità fonte',
+       {annualize:index,expected:index?undefined:item.current,source:item.source,threshold:index||REAL_ACTIVITY_GROWTH.has(id)?0:diffusion?50:undefined});
+     if(chart)activity.push(chart);
+   }
+   if(activity.length>=2)break;
+ }
+ const inflation=(INFLATION_MAP[country]||[]).filter(([,label])=>/headline|core|trimmed|median|trim/i.test(label)).map(([id,label,freq,index])=>{
+   const x=context.inflation.find(z=>z.id===id);
+   return x?.available?series(label,local.find(z=>z.id===id),freq,'% a/a',{annualize:index,expected:x.value,period:x.period,stale:x.stale,source:x.source}):null;
+ }).filter(Boolean);
+ const wages=context.wages.filter(x=>x.available).map(x=>{
+   let src=local.find(z=>z.id===x.id),index=(WAGE_MAP[country]||[]).find(z=>z[0]===x.id)?.[3],manual=false;
+   if(!src){
+     const matches=(overlay?.wage_context?.series||[]).filter(z=>z.ccy===country&&z.source_series_id===x.id);
+     if(matches.length!==1)return null;
+     const raw=matches[0];manual=raw.quality==='SOURCE_VERIFIED_MANUAL_NONPIT';
+     if(manual&&country==='NZD'){
+       const expectedDates=['2023-Q4','2024-Q1','2024-Q2','2024-Q3','2024-Q4','2025-Q1','2025-Q2','2025-Q3','2025-Q4','2026-Q1','2026-Q2','2026-Q3'];
+       const expectedValues=[4.3,4.1,4.3,3.8,3.3,2.9,2.4,2.1,2,2,2,2.1];
+       if(raw.history?.quality!=='MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT'||raw.history.source_series_id!==x.id||JSON.stringify(raw.history.dates)!==JSON.stringify(expectedDates)||JSON.stringify(raw.history.values)!==JSON.stringify(expectedValues))return null;
+       src={...raw,dates:raw.history.dates,values:raw.history.values};
+     }else if(manual&&country==='CHF')src=raw;
+     else if(!manual)src=cycleHistory(raw,today,x.freq);
+     else return null;
+   }
+   return series(x.label,src,x.freq,'% a/a nominale',{annualize:index,expected:x.value,period:x.period,stale:x.stale,source:x.source,manual});
+ }).filter(Boolean);
+ const external=context.external;
+ const raw=(overlay?.external_context?.series||[]).filter(x=>x.ccy===country&&x.source_series_id===external.id);
+ const exports=external.available&&raw.length===1?[series(external.label,cycleHistory(raw[0],today,'Q'),'Q','% a/a reale',{expected:external.value,period:external.period,stale:external.stale,source:external.source,threshold:0})].filter(Boolean):[];
+ return {activity,inflation,wages,exports};
+}
+function historyPlot(chart,esc){
+ const pts=chart.points,vals=pts.map(x=>x.value);
+ const bounds=vals.concat(finite(chart.threshold)?[chart.threshold]:[]);
+ let lo=Math.min(...bounds),hi=Math.max(...bounds);
+ if(lo===hi){lo-=.5;hi+=.5;}
+ const pad=(hi-lo)*.08;lo-=pad;hi+=pad;
+ const x=i=>42+i*252/(pts.length-1),y=v=>8+(hi-v)*82/(hi-lo);
+ const path=pts.map((p,i)=>x(i).toFixed(2)+','+y(p.value).toFixed(2)).join(' ');
+ const axis=[hi,(hi+lo)/2,lo].map(v=>'<line x1="42" x2="294" y1="'+y(v).toFixed(2)+'" y2="'+y(v).toFixed(2)+'" stroke="#365064" stroke-dasharray="3 4"/><text x="37" y="'+(y(v)+3).toFixed(2)+'" text-anchor="end" fill="#abc6d7" font-size="9">'+esc(fmt(v,1))+'</text>').join('');
+ const threshold=finite(chart.threshold)?'<line x1="42" x2="294" y1="'+y(chart.threshold).toFixed(2)+'" y2="'+y(chart.threshold).toFixed(2)+'" stroke="#d2a657" stroke-dasharray="5 3"/>':'';
+ const desc=chart.title+' ('+chart.unit+'): '+pts.map(p=>p.period+' '+fmt(p.value,2)).join('; ');
+ return '<div class="sem-history-plot"><div class="sem-history-plot-head"><strong>'+esc(chart.title)+'</strong><span>'+esc(fmt(vals.at(-1),2)+' '+chart.unit)+'</span></div>'+
+  '<svg role="img" aria-label="'+esc(desc)+'" viewBox="0 0 300 108">'+axis+threshold+'<polyline points="'+path+'" fill="none" stroke="#83cde8" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="294" cy="'+y(vals.at(-1)).toFixed(2)+'" r="3" fill="#83cde8"/>'+
+  '<text x="42" y="104" font-size="9" fill="#abc6d7">'+esc(pts[0].period)+'</text><text x="294" y="104" text-anchor="end" font-size="9" fill="#abc6d7">'+esc(pts.at(-1).period)+'</text></svg>'+
+  '<small>'+esc(pts.length+' osservazioni · '+({M:'mensile',Q:'trimestrale',A:'annuale'}[chart.freq])+(chart.manual?' · verifica manuale':'')+(chart.stale?' · dato datato, non momentum corrente':'')+(finite(chart.threshold)?' · soglia '+chart.threshold:''))+'</small>'+
+  '<small>'+esc(chart.source)+'</small></div>';
+}
 function exportSparkline(today,country,overlay,external,esc){
  if(!external?.available||external.stale||!overlay?.external_context?.series)return '';
  const matches=overlay.external_context.series.filter(x=>x.ccy===country&&x.source_series_id===EXTERNAL_KEYS[country]);
@@ -835,6 +932,10 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    ' · '+esc(x.periods.join(' / '))+(x.structural?'':' · segnale direzionale, livello ciclico non determinato')+'</p>').join('')+
    '<small>Soglie descrittive non calibrate: una prima inversione non conferma una svolta economica; due variazioni indicano persistenza locale, non una previsione. Nessun punteggio o segnale Forex.</small>';
  const narrative=macroNarrative(rows,inflation,wages,external,turning);
+ const histories=countryHistories(catalog,today,selected,overlay,rows,{inflation,wages,external});
+ const historyPanel='<section class="sem-history-dashboard" aria-label="Storico del Paese selezionato"><div class="sem-dashboard-title"><div><span>COUNTRY HISTORY</span><h3>Da dove arriva l’economia · '+esc(NAMES[selected])+'</h3></div><small>Serie originali, scale distinte, periodi consecutivi.</small></div><div class="sem-history-dashboard-grid">'+
+  [['Attività reale / indici di diffusione',histories.activity],['Inflazione',histories.inflation],['Salari',histories.wages],['Domanda estera',histories.exports]].map(([label,charts])=>'<div class="sem-history-panel"><h4>'+esc(label)+'</h4>'+(charts.length?charts.map(x=>historyPlot(x,esc)).join(''):'<p>Storico consecutivo insufficiente per un grafico affidabile.</p>')+'</div>').join('')+
+  '</div><small>Non è un indice aggregato di crescita. Le scale e frequenze sono specifiche di ogni serie; la linea tratteggiata color ambra indica una soglia economica soltanto dove definita. Nessuna interpolazione.</small></section>';
  const narrativeTone=!narrative.aligned?'neutral':rows.filter(x=>x.signal.tone==='green').length>=3&&rows.filter(x=>x.signal.tone==='green').length>rows.filter(x=>x.signal.tone==='red').length?'green':rows.filter(x=>x.signal.tone==='red').length>=3&&rows.filter(x=>x.signal.tone==='red').length>rows.filter(x=>x.signal.tone==='green').length?'red':'amber';
  const narrativeNote='<section class="sem-desk-reading" aria-label="Giudizio macro">'+
    '<header><span class="sem-desk-eyebrow">LETTURA IN 30 SECONDI</span><h3>Cosa vedo davvero · giudizio macro</h3></header>'+
@@ -960,6 +1061,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     '<small>La direzione non è il livello: un PSI sopra 50 può rallentare pur restando in espansione. Non confrontare i livelli di serie differenti.</small></div>'+
   '<div class="sem-country-caption"><div>'+FLAGS[selected]+' <strong>'+esc(NAMES[selected])+'</strong><small>Dettaglio per indicatore</small></div><div class="sem-country-counts">'+['green','amber','red','neutral'].map(t=>'<span class="sem-country-count '+t+'" title="'+tones[t]+'">'+symbols[t]+' '+tally(rows,t)+'</span>').join('')+'</div></div>'+
   narrativeNote+
+  historyPanel+
   '<section class="sem-desk-turn" aria-label="Punti di svolta">'+turningNote+'</section>'+
   '<div class="sem-desk-context"><details class="sem-desk-detail"><summary>Inflazione · dettaglio dei dati</summary><div>'+inflationNote+'</div></details>'+
   '<details class="sem-desk-detail"><summary>Salari · dettaglio dei dati</summary><div>'+wageNote+'</div></details>'+
@@ -987,6 +1089,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,exportSparkline,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,exportSparkline,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,exportSparkline,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,exportSparkline,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
