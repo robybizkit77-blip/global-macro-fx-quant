@@ -7,6 +7,7 @@ from zipfile import ZipFile
 from openpyxl import load_workbook
 
 URLS={
+ "ABS_REAL_HOUSEHOLD_TABLE15":"https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/sep-2026/5682015.xlsx",
  "NZALT_BNZ_PSI":"https://www.bnz.co.nz/institutional-banking/research/publications",
  "NZALT_BNZ_ECONOMY":"https://www.bnz.co.nz/institutional-banking/research/publications/economy-watch",
  "NZALT_STAT_HOUSE":"https://www.stats.govt.nz/topics/building/",
@@ -63,6 +64,19 @@ def call(name,url):
   with urllib.request.urlopen(r,timeout=18) as x:
    data=x.read(28_000_000+1)
    if len(data)>28_000_000: return {"error":"file above 28MB budget"}
+   if name=="ABS_REAL_HOUSEHOLD_TABLE15":
+    book=load_workbook(io.BytesIO(data),read_only=True,data_only=True)
+    sheets=[]
+    for ws in book.worksheets:
+     rows=list(ws.iter_rows(min_row=1,max_row=12,values_only=True))
+     columns=[]
+     for j,col in enumerate(zip(*rows),1):
+      labels=[str(v) for v in col if v is not None]
+      if j==1 or any("seasonally adjusted" in v.lower() or "series id" in v.lower() for v in labels):
+       columns.append({"col":j,"meta":labels})
+     sheets.append({"name":ws.title,"rows":ws.max_row,"cols":ws.max_column,"series":columns[:30],
+       "last":[[str(v) if v is not None else None for v in row[:8]] for row in ws.iter_rows(min_row=max(1,ws.max_row-3),max_row=ws.max_row,values_only=True)]})
+    return {"bytes":len(data),"sheets":sheets}
    if name.startswith("NZALT_"):
     import re
     from html.parser import HTMLParser
