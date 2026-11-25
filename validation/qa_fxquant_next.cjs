@@ -174,7 +174,7 @@ async function inspectRoute(page,label,key){
   assert.equal(await locator(page,'.drivers-want-can .drivers-analysis').count(),2,
    label+' official WANT and macro CAN must be separated');
   const story=locator(page,'.drivers-bank-story');
-  assert.match(await story.innerText(),/Cosa seguire/i);
+  assert.deepEqual(await story.locator('h3').allTextContents(),['Cosa va','Cosa frena','Cosa guardare']);
   assert.doesNotMatch(await story.innerText(),/punti base|\d+(?:,\d+)?\s*%|\bOIS\b/,
    label+' technical figures must follow the plain bank first read');
   const policy=locator(page,'.drivers-bank-sources .drivers-lead');
