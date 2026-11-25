@@ -1518,7 +1518,7 @@ document.addEventListener('input',e=>{
  }
  if(e.target.id==='pair-search'){state.pairSearch=e.target.value;const list=$('pair-results');if(!list)return;const keys=pairListKeys();list.innerHTML=keys.length?keys.map(k=>pairRow(k)).join(''):'<div class="empty"><strong>Nessuna coppia trovata</strong><p>Prova un nome o un filtro diverso.</p></div>';}})
 document.addEventListener('toggle',e=>{
- if(e.target?.matches?.('details.macro-advanced'))state.msAdvanced=e.target.open;
+ if(e.target?.matches?.('details.macro-advanced')){const panel=e.target.dataset.macroPanel;if(panel==='explorer')state.msExplorer=e.target.open;else if(!panel||panel==='advanced')state.msAdvanced=e.target.open;}
  if(e.target?.matches?.('details[data-home-evidence]'))state.homeEvidenceOpen=e.target.open;
  if(e.target?.matches?.('details[data-home-dossier]'))state.homeDossierOpen=e.target.open;
 },true);
