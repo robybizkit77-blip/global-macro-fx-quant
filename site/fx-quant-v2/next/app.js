@@ -1196,7 +1196,7 @@ function render(){
  }
  syncRouteChrome(route);
  const requiredSources=Object.keys(SOURCES);
- const ok=requiredSources.filter(key=>Object.hasOwn(state.data,key)).length;
+ const ok=requiredSources.filter(key=>Object.hasOwn(state.data,key)&&!Object.hasOwn(state.errors||{},key)).length;
  const missing=requiredSources.length-ok;
  const caseNow=researchCase(),caseOld=!caseNow.latest||!fresh(caseNow.latest,8);
  const priceDay=get('pairs')?.price_asof;
@@ -1541,6 +1541,40 @@ document.addEventListener('pointerout',e=>{if(e.target.closest('.chart')&&!e.rel
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('app').classList.contains('menu-open'))setMobileMenu(false,true)});
 let refreshInProgress=false;
 let lastResearchRefresh=0;
+// This independent critical feed is needed for most Economic Cycle cells.
+// Do not let a transient CDN/network error silently turn the page into a
+// canonical-only reading, or overwrite an already valid snapshot.
+function validSemaphoreFeed(d){
+ if(d?.schema!=='GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1'||!validDay(d.as_of)||d.as_of>dayNow()||
+    !Array.isArray(d.series)||!d.series.length||!d.audit||typeof d.audit!=='object')return false;
+ const keys=new Set();
+ for(const x of d.series){
+  if(!FX.includes(x?.ccy)||!['house','jobs','industry','services','leading','demand','credit'].includes(x.area)||
+     !Array.isArray(x.dates)||x.dates.length!==2||!Array.isArray(x.values)||x.values.length!==2||
+     !x.values.every(finite))return false;
+  const key=x.ccy+'_'+x.area;if(keys.has(key))return false;keys.add(key);
+ }
+ return true;
+}
+async function loadSemaphoreFeed(path){
+ let failure='Fonte non raggiungibile';
+ for(let attempt=0;attempt<3;attempt++){
+  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),attempt===0?10000:15000);
+  try{
+   const url=attempt===0?path:path+'?retry='+Date.now()+'-'+attempt;
+   const response=await fetch(url,{cache:'no-store',signal:ctl.signal});
+   if(!response.ok)throw Error('HTTP '+response.status);
+   const data=await response.json();
+   if(!validSemaphoreFeed(data))throw Error('Feed economico non valido');
+   return {data,status:{mode:'network',as_of:data.as_of,attempts:attempt+1}};
+  }catch(e){failure=String(e.message||e);}
+  finally{clearTimeout(timer)}
+ }
+ const cached=state.data.semaphoreExtra;
+ if(validSemaphoreFeed(cached)&&fresh(cached.as_of,2))
+  return {data:cached,status:{mode:'retained',as_of:cached.as_of,error:failure,attempts:3}};
+ return {data:null,status:{mode:'missing',error:failure,attempts:3}};
+}
 async function loadAll(){
  if(refreshInProgress)return;
  refreshInProgress=true;
@@ -1550,7 +1584,12 @@ async function loadAll(){
  const receiptFileKeys={rates:'rates',currencyPrices:'prices',
   pairs:'model',macroObserved:'observed',ois:'ois'};
  const receiptHashes={};
- const jobs=Object.entries(SOURCES).map(async([key,path])=>{
+ const semaphoreJob=loadSemaphoreFeed(SOURCES.semaphoreExtra).then(({data,status})=>{
+  if(data)nextData.semaphoreExtra=data;
+  nextData.semaphoreFeedStatus=status;
+  if(status.mode!=='network')nextErrors.semaphoreExtra=status.error||'Feed non aggiornato';
+ });
+ const jobs=Object.entries(SOURCES).filter(([key])=>key!=='semaphoreExtra').map(async([key,path])=>{
   const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),10000);
   try{
    const r=await fetch(path,{cache:'no-store',signal:ctl.signal});
@@ -1625,6 +1664,7 @@ async function loadAll(){
   }finally{clearTimeout(timer)}
  })());
  try{
+  jobs.push(semaphoreJob);
   await Promise.allSettled(jobs);
   // Rebuild from the same fetch cycle. A failed source is never reused as current.
   nextData.thesisSourceHashes=receiptHashes;
@@ -1639,6 +1679,13 @@ async function loadAll(){
   if(initial&&state.route==='pairs'&&state.pairDetailOpen)focusSection('fx-selected-thesis');
  }finally{refreshInProgress=false;}
 }
+document.addEventListener('click',e=>{
+ const button=e.target.closest?.('[data-sem-feed-retry]');
+ if(!button)return;
+ button.disabled=true;button.textContent='Ricaricamento…';
+ if(refreshInProgress){button.disabled=false;button.textContent='Riprova';return;}
+ loadAll();
+});
 // Refresh when the reader returns to a long-open tab, and while the site stays
 // open. This never claims an edition changed unless the underlying feeds did.
 document.addEventListener('visibilitychange',()=>{
