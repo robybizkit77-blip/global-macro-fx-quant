@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-25T20:07:59.593011Z",
-  "edition_time_rome": "2026-11-25 21:07",
-  "material_digest": "2d7ad56a76bc6e7938e91797f5a7ec50d705d814a46584edfcc762d265f92a83",
+  "generated_at_utc": "2026-11-25T23:41:08.767881Z",
+  "edition_time_rome": "2026-11-26 00:41",
+  "material_digest": "7cb657ceb39c5604833c41ab9898ca4e001b95784359c1dfd8ff5d432c9166de",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in rialzo",
@@ -48,17 +48,17 @@
       "evidence": "Alla chiusura del 24 novembre, S&P 500 −0,50%, VIX −0,26 punti e spread high yield +9 pb."
     },
     {
-      "headline": "L’oro scende, il petrolio sale",
-      "analysis": "Se il movimento del petrolio prosegue, guarda come reagisce il dollaro canadese.",
+      "headline": "L’oro sale",
+      "analysis": "Per capire se il movimento dell’oro dura, vale la pena seguire anche la direzione del dollaro.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-24",
-      "event_date": "2026-11-24",
+      "published_date": "2026-11-25",
+      "event_date": "2026-11-25",
       "market_area": "COMMODITIES",
       "sources": [
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
         "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
       ],
-      "evidence": "Proxy futures da fonte secondaria. Oro −2,45% al 24 novembre. WTI +2,35% al 24 novembre."
+      "evidence": "Proxy futures da fonte secondaria. Oro +1,29% al 25 novembre. WTI +2,35% al 24 novembre."
     },
     {
       "headline": "How does EIA compare different types of energy?",
@@ -73,9 +73,9 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 24 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. Nella seduta del 24 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "desk_judgment": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 24 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
   "fx_implications": "Il 30 novembre alle 09:00 italiane è in programma Swiss quarterly GDP (CHF). Da verificare la risposta dei tassi e di CHF.",
-  "what_changed": "Nei proxy futures del 24 novembre l’oro scende e il WTI sale. Nella seduta del 24 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "what_changed": "Nei proxy futures del 25 novembre l’oro sale.",
   "contrary_evidence": "Il VIX è sceso mentre il credito high yield ha chiesto uno spread più ampio. La tensione nel credito merita una verifica a parte.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
@@ -92,14 +92,19 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-25",
-      "rss_checked_at_utc": "2026-11-25T20:07:59.593011Z",
-      "commodities": "2026-11-24"
+      "rss_checked_at_utc": "2026-11-25T23:41:08.767881Z",
+      "commodities": "2026-11-25"
     },
     "no_paid_api": true,
     "no_ai_model": true,
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-25T20:07:59.593011Z",
+      "headline": "Dollaro in rialzo",
+      "material_digest": "2d7ad56a76bc6e7938e91797f5a7ec50d705d814a46584edfcc762d265f92a83"
+    },
     {
       "generated_at_utc": "2026-11-25T17:14:40.248454Z",
       "headline": "Dollaro in rialzo",
@@ -214,11 +219,6 @@
       "generated_at_utc": "2026-11-23T18:07:15.554770Z",
       "headline": "Dollaro in rialzo",
       "material_digest": "3c16c691120b1a56d348b1f872f2e0c26b3c602dc89e3799b9228e1a03625558"
-    },
-    {
-      "generated_at_utc": "2026-11-23T18:05:49.548245Z",
-      "headline": "Dollaro in rialzo",
-      "material_digest": "3723752476181f8e3860c8407ad94fd00c30112d85ea6bd3ee685e1976f9722d"
     }
   ]
 }
