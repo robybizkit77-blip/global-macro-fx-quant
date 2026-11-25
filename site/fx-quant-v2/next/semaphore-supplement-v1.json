@@ -3021,14 +3021,14 @@
         51.7
       ],
       "category": "Semaforo supplementare",
-      "source_file": "BNZ / BusinessNZ · pubblicazione ufficiale coautore",
-      "source_page": "https://www.bnz.co.nz/institutional-banking/research/publications",
+      "source_file": "BusinessNZ · verifica manuale 2026-11-24 (accesso automatico bloccato)",
+      "source_page": "https://businessnz.org.nz/psi/pre-election-drinks",
       "source_series_id": "BNZ_BUSINESSNZ_PSI",
       "metric_kind": "points",
       "observation_as_of": "2026-10",
       "diffusion_threshold": 50,
       "up_good": true,
-      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+      "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
       "history": {
         "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
         "frequency": "M",
@@ -3042,9 +3042,11 @@
         ],
         "observations": 2,
         "max_observations": 36,
-        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+        "quality": "MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT",
         "source_series_id": "BNZ_BUSINESSNZ_PSI"
-      }
+      },
+      "manual_verified_on": "2026-11-24",
+      "official_release_date": "2026-11-16"
     },
     {
       "ccy": "USD",
@@ -4070,13 +4072,12 @@
       "origin": "Australian Bureau of Statistics / MHSI"
     },
     "NZD_services": {
-      "status": "READY_DESCRIPTIVE_REVISED",
+      "status": "READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
       "last_observation": "2026-10",
-      "days_since_period_end": 25,
-      "history_observations": 2,
-      "source_page": "https://www.bnz.co.nz/institutional-banking/research/publications",
-      "origin": "BNZ / BusinessNZ · pubblicazione ufficiale coautore",
-      "primary_error": "HTTP Error 403: Forbidden"
+      "verified_on": "2026-11-24",
+      "source_page": "https://businessnz.org.nz/psi/pre-election-drinks",
+      "automatic_fetch": "BLOCKED_OR_UNVALIDATED",
+      "automatic_error": "HTTP Error 403: Forbidden"
     },
     "USD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
@@ -4511,6 +4512,32 @@
         "manual_verified_on": "2026-11-25",
         "official_release_date": "2026-11-04",
         "manual_expires_on": "2027-02-04"
+      },
+      {
+        "ccy": "CHF",
+        "area": "wages",
+        "source_series_id": "FSO_SWI_NOMINAL_ANNUAL",
+        "label": "Swiss Wage Index nominale (dato annuale definitivo)",
+        "frequency": "A",
+        "unit": "% a/a",
+        "dates": [
+          "2023",
+          "2024",
+          "2025"
+        ],
+        "values": [
+          1.7,
+          1.8,
+          1.8
+        ],
+        "source_page": "https://statistik.admin.ch/en/asset/36503589",
+        "source_file": "FSO / Swiss Wage Index · verifica manuale",
+        "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
+        "manual_verified_on": "2026-11-25",
+        "official_release_date": "2026-04-21",
+        "manual_expires_on": "2027-04-30",
+        "observation_as_of": "2025",
+        "scope": "ANNUAL_ACTUAL_NOT_QUARTERLY"
       }
     ],
     "audit": {
@@ -4540,6 +4567,24 @@
         "days_since_period_end": 56,
         "history_observations": 12,
         "automatic_fetch": "FAILED"
+      },
+      "CHF": {
+        "status": "READY_MANUAL_ANNUAL_CONTEXT_ONLY",
+        "last_observation": "2025",
+        "history_observations": 3,
+        "scope": "ANNUAL_ACTUAL_NOT_QUARTERLY"
+      },
+      "CHF_estimate": {
+        "status": "SCHEMA_INSPECTION_ONLY",
+        "source_page": "https://statistik.admin.ch/en/asset/36791145",
+        "header": "\"PERIOD\",\"WAGE_TYPE\",\"VALUE_P\",\"STATUS_VALUE_P\"",
+        "sample": "\"1991-Q1\",\"N\",\"7.8\",\"A\"",
+        "last_rows": [
+          "\"2025-Q4\",\"N\",\"1.8\",\"A\"",
+          "\"2026-Q1\",\"N\",,\"S\"",
+          "\"2026-Q2\",\"N\",\"0.4\",\"U\""
+        ],
+        "rows": 143
       }
     }
   }
