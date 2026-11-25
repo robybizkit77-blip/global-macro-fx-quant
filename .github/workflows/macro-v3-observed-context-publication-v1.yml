@@ -42,6 +42,7 @@ on:
       - 'validation/publishing/test_verify_pages_http_delivery_v1.py'
       - '.github/workflows/macro-v3-observed-context-publication-v1.yml'
   workflow_run:
+    branches: [main]
     workflows: ['Macro Persistent Daily V1', 'Calendar News Operational Refresh V1']
     types: [completed]
   workflow_dispatch:
@@ -51,7 +52,7 @@ permissions:
   pages: write
 
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('macro-v3-context-validation-pr-{0}', github.event.pull_request.number) || 'publish-dashboard-pages-v1' }}
+  group: ${{ github.event_name == 'pull_request' && format('macro-v3-context-validation-pr-{0}', github.event.pull_request.number) || (github.event_name == 'workflow_run' && (github.event.workflow_run.conclusion != 'success' || github.event.workflow_run.event == 'pull_request') && format('macro-ignored-{0}', github.run_id)) || 'publish-dashboard-pages-v1' }}
   queue: max
   cancel-in-progress: false
 
