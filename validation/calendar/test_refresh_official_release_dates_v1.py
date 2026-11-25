@@ -7,6 +7,7 @@ from pathlib import Path
 from validation.calendar.refresh_official_release_dates_v1 import (
     ABS, BEA, BEA_NEXT, FSO_CPI, ROME, SECO_FLASH, SECO_GDP,
     apply_rows, parse_abs, parse_bea, parse_fso, parse_seco, refresh, scheduled,
+    ONS_CPI, JP_CPI, eurostat_urls, parse_ons_cpi, parse_jp_cpi, parse_eurostat_flash,
 )
 
 NOW = datetime.fromisoformat("2026-11-21T20:00:00+01:00")
@@ -101,12 +102,14 @@ class OfficialReleaseDatesTest(unittest.TestCase):
         html = bea(2026, "Personal Income and Outlays, November 2026", "December 23")
         sources = {BEA: html, BEA_NEXT: html, ABS: AUSTRALIA_CPI,
                    SECO_GDP: SECO_DATES, SECO_FLASH: "<html>Maintenance</html>",
-                   FSO_CPI: "<rss>"}
+                   FSO_CPI: "<rss>", ONS_CPI: "<html>Maintenance</html>",
+                   JP_CPI: "<html>Maintenance</html>",
+                   **{url: "<html>Maintenance</html>" for url in eurostat_urls(NOW)}}
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "seed.json"
             path.write_text(json.dumps({"schema": "GMFQ_MACRO_RELEASE_OFFICIAL_SEED_V1",
                                         "status": "ACTIVE_VERIFIED_SEED", "events": []}))
-            verified, wrong_year, abs_result, seco_result, seco_flash, fso = refresh(
+            verified, wrong_year, abs_result, seco_result, seco_flash, fso, *new_sources = refresh(
                 path, NOW, read=sources.__getitem__)
             self.assertEqual(verified["changed"], 1)
             self.assertEqual(wrong_year["status"], "SOURCE_BLOCKED_RETAINED")
@@ -114,6 +117,8 @@ class OfficialReleaseDatesTest(unittest.TestCase):
             self.assertEqual(seco_result["changed"], 1)
             self.assertEqual(seco_flash["status"], "SOURCE_BLOCKED_RETAINED")
             self.assertEqual(fso["status"], "SOURCE_BLOCKED_RETAINED")
+            self.assertEqual(len(new_sources), 4)
+            self.assertTrue(all(x["status"] == "SOURCE_BLOCKED_RETAINED" for x in new_sources))
             saved = path.read_bytes()
             events = json.loads(saved)["events"]
             self.assertEqual({row["ccy"] for row in events}, {"USD", "AUD", "CHF"})
@@ -121,3 +126,42 @@ class OfficialReleaseDatesTest(unittest.TestCase):
             result = refresh(path, NOW, read=lambda _: "<html>Maintenance</html>")
             self.assertTrue(all(row["status"] == "SOURCE_BLOCKED_RETAINED" for row in result))
             self.assertEqual(path.read_bytes(), saved)
+
+
+    def test_ons_confirmed_cpi_and_no_time_series_or_provisional(self):
+        html = """<a>Consumer price inflation, UK: November 2026 time series</a>
+        <p>Release date: 16 December 2026 7:00am | Confirmed</p>
+        <a>Consumer price inflation, UK: November 2026</a>
+        <p>Release date: 16 December 2026 7:00am | Confirmed</p>
+        <a>Consumer price inflation, UK: December 2026</a>
+        <p>Release date: 20 January 2027 7:00am | Provisional</p>"""
+        row, = parse_ons_cpi(html)
+        self.assertEqual(row["reference_period"], "November 2026")
+        self.assertEqual(scheduled(row).astimezone(ROME).isoformat(), "2026-12-16T08:00:00+01:00")
+        with self.assertRaises(ValueError):
+            parse_ons_cpi(html.replace("| Confirmed", "| Provisional"))
+
+    def test_japan_national_cpi_and_explicit_year_rollover(self):
+        html = """<table><tr><th>Japan</th><th>Tokyo</th></tr>
+        <tr><th>Survey month</th><th>Date of release</th><th>Survey month</th><th>Date of release</th></tr>
+        <tr><td>November, 2026</td><td>December 18, 2026</td><td>December</td><td>December 25</td></tr>
+        <tr><td>December</td><td>January 22, 2027</td><td>January, 2027</td><td>January 29</td></tr>
+        <tr><td>January, 2027</td><td>February 19</td><td>February</td><td>February 26</td></tr></table>"""
+        rows = parse_jp_cpi(html)
+        self.assertEqual([x["reference_period"] for x in rows], ["November 2026", "December 2026", "January 2027"])
+        self.assertEqual([x["date"] for x in rows], ["2026-12-18", "2027-01-22", "2027-02-19"])
+        self.assertTrue(all(x["time_local"] == "08:30" for x in rows))
+        with self.assertRaises(ValueError):
+            parse_jp_cpi(html.replace("January 22, 2027", "January 22, 2026"))
+
+    def test_eurostat_date_only_and_retain_last_verified(self):
+        url = eurostat_urls(NOW)[1]
+        html = """<h3>Flash estimate inflation euro area, November 2026</h3>
+        <p>01 December 2026 ECFIN Data release Euro indicators release</p>"""
+        row, = parse_eurostat_flash(html, url)
+        self.assertEqual((row["date"], row["reference_period"], row["time_local"]),
+                         ("2026-12-01", "November 2026", None))
+        self.assertEqual(apply_rows([], [row], NOW), ([row], 1))
+        self.assertEqual(apply_rows([row], [row], NOW), ([row], 0))
+        with self.assertRaises(ValueError):
+            parse_eurostat_flash("<html>Loading calendar...</html>", url)
