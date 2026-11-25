@@ -161,6 +161,23 @@
   const lead=last?['La decisione risale al '+when(last)+'.',localized?.lead||bias].filter(Boolean).join(' '):'';
   return {title,lead};
  }
+ function editorialReading(can,market,nextCheck){
+  const support=[
+   can.inf==='SCENDE'?'L’inflazione rallenta e lascia più spazio di manovra.':'',
+   can.unemp==='SCENDE'?'La disoccupazione scende, riducendo l’urgenza di sostenere il lavoro.':''
+  ].filter(Boolean);
+  const constraints=[
+   can.inf==='SALE'?'L’inflazione sale e rende più difficile allentare la politica monetaria.':'',
+   can.unemp==='SALE'?'La disoccupazione sale e aumenta il rischio di tenere i tassi restrittivi troppo a lungo.':''
+  ].filter(Boolean);
+  const historical=market.title==='Ultimo riferimento storico a sei mesi';
+  const marketNote=historical?'Serve una quotazione più recente per leggere le aspettative di mercato.':market.plain;
+  return {
+   support:support.join(' ')||'Nei dati disponibili manca un segnale netto di sollievo da prezzi o lavoro.',
+   constraint:constraints.join(' ')||can.text,
+   watch:[marketNote,nextCheck].filter(Boolean).join(' ')
+  };
+ }
  function render(api){
   const {get,FX,FLAGS,NAMES,state,pageHero,esc,fmt,date,dayNow}=api;
   const banks=get('cb')||{},ois=get('ois')?.currencies||{},mac=get('macro')?.currencies||{};
@@ -176,6 +193,7 @@
   const note=ITALIAN_CONTEXT[selected],localized=note?.date===last?note:null;
   const context=localized?.text||b?.context;
   const story=policyOpening(selected,stance,last,b,localized);
+  const reading=editorialReading(can,market,FX_TESTS[selected]);
   const bank=b?.full_name||b?.bank||NAMES[selected]||selected;
   const cards=FX.map(k=>{
    const entry=banks[k],validDate=day(entry?.last_date)&&entry.last_date<=today;
@@ -196,12 +214,12 @@
    '<div class="drivers-head"><div><span class="mini-overline">'+esc(FLAGS[selected]||'')+' '+esc(bank)+'</span>'+
    '<h2>'+esc(story.title)+'</h2></div></div>'+
    '<div class="drivers-bank-story">'+
+   (last&&story.lead?'<p class="drivers-lead">'+esc(story.lead)+'</p>':'')+
    '<div class="bank-first-grid">'+
-   '<article class="bank-first-axis '+stance.tone+'"><span>01 · WANT</span><h3>Cosa vuole fare</h3><strong>'+esc(stanceReading(last?b:null))+'</strong><p>'+esc(story.lead||'Comunicazione ufficiale da verificare.')+'</p></article>'+
-   '<article class="bank-first-axis"><span>02 · CAN</span><h3>Cosa può fare</h3><strong>'+esc(can.title)+'</strong><p>'+esc(can.text)+'</p></article>'+
-   '<article class="bank-first-axis"><span>03 · PRICING</span><h3>Cosa sconta il mercato</h3><strong>'+esc(market.title)+'</strong><p>'+esc(market.plain||market.text)+'</p></article>'+
-   '</div>'+
-   '<p class="drivers-lead"><strong>Cosa seguire.</strong> '+esc(FX_TESTS[selected])+'</p></div>'+
+   '<article class="bank-first-axis"><h3>Cosa va</h3><p>'+esc(reading.support)+'</p></article>'+
+   '<article class="bank-first-axis"><h3>Cosa frena</h3><p>'+esc(reading.constraint)+'</p></article>'+
+   '<article class="bank-first-axis"><h3>Cosa guardare</h3><p>'+esc(reading.watch)+'</p></article>'+
+   '</div></div>'+
    '<div class="drivers-links"><button type="button" data-bank-open="rates" data-bank-target="'+selected+'">Vedi i tassi attesi ↗</button>'+
    '<button type="button" data-bank-open="currencies" data-bank-target="'+selected+'">Valuta '+selected+' ↗</button><a href="#macro">Scenario macro ↗</a><a href="#news">Calendario e Notizie ↗</a></div>'+
    '<details class="drivers-fold drivers-bank-sources"><summary>Apri decisione, tassi attesi e fonti</summary>'+
