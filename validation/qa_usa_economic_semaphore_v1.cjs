@@ -419,3 +419,16 @@ console.log('ECONOMIC_CYCLE_WAGE_CONTEXT_PASS');
  }
 }
 console.log('ECONOMIC_CYCLE_WAGE_SUPPLEMENT_PASS');
+
+{
+ const chAnnual={ccy:'CHF',area:'wages',source_series_id:'FSO_SWI_NOMINAL_ANNUAL',source_page:'https://statistik.admin.ch/en/asset/36503589',frequency:'A',unit:'% a/a',quality:'SOURCE_VERIFIED_MANUAL_NONPIT',scope:'ANNUAL_ACTUAL_NOT_QUARTERLY',manual_verified_on:'2026-11-25',official_release_date:'2026-04-21',manual_expires_on:'2027-04-30',dates:['2023','2024','2025'],values:[1.7,1.8,1.8]};
+ const overlay={schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',series:[],wage_context:{schema:'GMFQ_G8_WAGE_CONTEXT_V1',series:[chAnnual]}};
+ const w=wageContext({},'2026-11-25','CHF',overlay)[0];
+ assert.equal(w.available,true);
+ assert.equal(w.direction,null);
+ assert.equal(w.freq,'A');
+ assert.equal(w.value,1.8);
+ assert.equal(wageContext({},'2027-04-30','CHF',overlay)[0].available,false);
+ assert.match(render({catalog,esc,dayNow:()=> '2026-11-25',country:'CHF',overlay}),/dato annuale: momentum corrente non valutabile/);
+}
+console.log('ECONOMIC_CYCLE_CH_WAGE_ANNUAL_PASS');
