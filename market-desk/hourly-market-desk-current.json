@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-25T04:19:08.033254Z",
-  "edition_time_rome": "2026-11-25 05:19",
-  "material_digest": "7126109fb83f8dda2d18dc79ce6862f4cd57715253ab650d9293989b06fb91a6",
+  "generated_at_utc": "2026-11-25T04:20:21.866200Z",
+  "edition_time_rome": "2026-11-25 05:20",
+  "material_digest": "2ad5d30ecf9d2af353c43f5fed3a180497e5818c2247dff5cfb0fb73f651e490",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
-  "lead": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. Alla chiusura del 23 novembre, Wall Street ha guadagnato terreno e il premio sul debito più rischioso si è ridotto.",
+  "lead": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. La volatilità azionaria è scesa alla chiusura del 24 novembre.",
   "news": [
     {
       "headline": "Dollaro misto",
@@ -34,18 +34,16 @@
       "evidence": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     },
     {
-      "headline": "Si riduce il premio sul debito più rischioso",
-      "analysis": "Alla chiusura del 23 novembre, Wall Street ha guadagnato terreno e il premio sul debito più rischioso si è ridotto. Da seguire se il movimento prosegue anche alla prossima chiusura.",
+      "headline": "Il quadro del rischio",
+      "analysis": "La volatilità azionaria è scesa alla chiusura del 24 novembre. Da seguire se il movimento prosegue anche alla prossima chiusura.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-23",
-      "event_date": "2026-11-23",
+      "published_date": "2026-11-24",
+      "event_date": "2026-11-24",
       "market_area": "RISCHIO",
       "sources": [
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
+        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
       ],
-      "evidence": "Alla chiusura del 23 novembre, S&P 500 +4,73%, VIX −9,27 punti e spread high yield −13 pb."
+      "evidence": "Alla chiusura del 24 novembre, VIX −0,26 punti."
     },
     {
       "headline": "Oro e petrolio in calo",
@@ -85,7 +83,7 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. Alla chiusura del 23 novembre, Wall Street ha guadagnato terreno e il premio sul debito più rischioso si è ridotto.",
+  "desk_judgment": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. La volatilità azionaria è scesa alla chiusura del 24 novembre.",
   "fx_implications": "Il 25 novembre alle 14:30 italiane è in programma GDP (Second Estimate) and Corporate Profits (USD). Da verificare la risposta dei tassi e di USD.",
   "what_changed": "Nei proxy futures del 24 novembre l’oro scende e il WTI scende.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
@@ -93,8 +91,6 @@
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bankofcanada.ca/2026/11/bank-of-canada-media-interview-the-logic/",
@@ -105,7 +101,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-24",
-      "rss_checked_at_utc": "2026-11-25T04:19:08.033254Z",
+      "rss_checked_at_utc": "2026-11-25T04:20:21.866200Z",
       "commodities": "2026-11-24"
     },
     "no_paid_api": true,
@@ -113,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-25T04:19:08.033254Z",
+      "headline": "Dollaro misto",
+      "material_digest": "7126109fb83f8dda2d18dc79ce6862f4cd57715253ab650d9293989b06fb91a6"
+    },
     {
       "generated_at_utc": "2026-11-25T00:42:00.599896Z",
       "headline": "Dollaro misto",
@@ -227,11 +228,6 @@
       "generated_at_utc": "2026-11-21T03:19:55.680886Z",
       "headline": "Dollaro misto",
       "material_digest": "47b957d0c38ec4aa175258ea042d57611440e8887e2725a7e73649a242a4f49e"
-    },
-    {
-      "generated_at_utc": "2026-11-21T02:24:54.274280Z",
-      "headline": "Dollaro misto",
-      "material_digest": "7cf32dce68d62335d865c588cad2caec9dc01a481506a71dc4dcb7c52772218a"
     }
   ]
 }
