@@ -194,3 +194,22 @@ with patch("check_morning_delivery_sla_v1.github_api",side_effect=(
     assert not late_scheduled_guard("premorning","schedule",at("2026-11-20T19:18:46+01:00"),"owner/repo")["skip_obsolete_phase"]
 print("LATE_SCHEDULED_MORNING_GUARD_PASS")
 print("MORNING_0800_DELIVERY_SLA_CET_CEST_PASS")
+
+# Exercise the actual CLI serialization, not only the in-memory guard.
+import tempfile
+import subprocess
+import sys
+from pathlib import Path
+with tempfile.TemporaryDirectory() as tmp:
+    output = Path(tmp) / "guard.json"
+    subprocess.run([sys.executable, str(Path(__file__).with_name("check_morning_delivery_sla_v1.py")),
+                    "--phase", "premorning", "--event", "workflow_dispatch",
+                    "--late-scheduled-guard", "--as-of", "2026-11-25T18:37:19+01:00",
+                    "--output", str(output)], check=True, capture_output=True, text=True)
+    raw = output.read_text(encoding="utf-8")
+    assert raw.endswith("\n"), repr(raw[-20:])
+    state = json.loads(raw)
+    assert state["schema"] == "GMFQ_LATE_SCHEDULED_MORNING_GUARD_V1"
+    assert state["status"] == "NORMAL_PHASE"
+    assert state["skip_obsolete_phase"] is False
+print("LATE_SCHEDULED_GUARD_CLI_JSON_ROUNDTRIP_PASS")
