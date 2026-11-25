@@ -747,4 +747,20 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(mod.parse_nz_core_page(page,NOW)[-1],("2026-Q3",2.8))
         self.assertRaises(ValueError,mod.parse_nz_core_page,page.replace(b"Sectoral factor model",b"Other model"),NOW)
 
+    def test_cad_lfs_contract(self):
+        names=list(mod.CAD_LFS_MEMBERS.items())
+        meta={"productId":mod.CAD_LFS_PID,"cubeTitleEn":"Labour force characteristics, monthly, seasonally adjusted and trend-cycle",
+            "dimension":[{"dimensionNameEn":k,"dimensionPositionId":i+1,"member":[{"memberNameEn":v,"memberId":1}]} for i,(k,v) in enumerate(names)]}
+        coord=mod.cad_lfs_coordinate(meta)
+        obj={"productId":mod.CAD_LFS_PID,"coordinate":coord,"vectorDataPoint":[]}
+        for i in range(24):
+            y,m=divmod(2026*12+9-23+i,12)
+            obj["vectorDataPoint"].append({"refPer":f"{y}-{m+1:02d}-01","value":6+i/100,"scalarFactorCode":0})
+        item,status=mod.collect_cad_lfs(NOW,wds=lambda method,payload:meta if method=="getCubeMetadata" else obj)
+        self.assertEqual(item["dates"][-1],"2026-10")
+        self.assertFalse(item["up_good"])
+        self.assertEqual(status["history_observations"],24)
+        obj["coordinate"]="wrong"
+        self.assertIsNone(mod.collect_cad_lfs(NOW,wds=lambda method,payload:meta if method=="getCubeMetadata" else obj)[0])
+
 if __name__=="__main__":unittest.main()

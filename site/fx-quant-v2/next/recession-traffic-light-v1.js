@@ -159,6 +159,7 @@ const VERIFIED_FRESH_FALLBACK={
  JPY:{credit:['BOJ_MD13_FAAPOBAL1_YOY','https://www.stat-search.boj.or.jp/ssi/mtshtml/md13_m_1_en.html']},
  NZD:{credit:['RBNZ_C5_BUSINESS_YOY','https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/Registered-banks-and-non-bank-lending-institutions-sector-lending']},
  CAD:{
+  jobs:['STATCAN_14100287_UNEMP_SA','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701'],
   house:['CAN_HOUSEHOLD_MORTGAGES_SA','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610063901'],
   demand:['CAN_RETAIL_REAL_LASPEYRES','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=2010006701'],
   credit:['CAN_NFC_NONMORTGAGE_LOANS_SA','https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610064001']
@@ -402,7 +403,11 @@ function inspect(metric,source,today){
  const age=(Date.parse(today+'T12:00:00Z')-Date.parse(pair.cur.date+'T12:00:00Z'))/864e5;
  const gap=(Date.parse(pair.cur.date+'T12:00:00Z')-Date.parse(pair.pre.date+'T12:00:00Z'))/864e5;
  const freq=metric.freq||source.frequency||(/^(\d{4})-?Q[1-4]$/.test(pair.cur.period)?'Q':'M');
- const stale=age>(freq==='Q'?175:freq==='W'?42:85);
+ // Canadian monthly industry GDP is released about two months after period end.
+ const laggedCadServices=source.source_series_id==='36100434_SERVICES_T003'&&
+   source.source_page==='https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610043401'&&
+   source.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&freq==='M';
+ const stale=age>(laggedCadServices?95:freq==='Q'?175:freq==='W'?42:85);
  const invalid=age>(freq==='Q'?300:freq==='W'?100:210)||
    gap>(freq==='Q'?200:freq==='W'?25:78);
  const verdict=invalid||stale||!finite(move)?null:Math.abs(move)<threshold?0:Math.sign(move)*(metric.upGood?1:-1);
