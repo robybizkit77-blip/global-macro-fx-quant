@@ -252,7 +252,7 @@ assert.equal(model(catalog,'2027-04-01','NZD',manualDwelling).find(x=>x.key==='h
 const heatmap=render({catalog,esc,dayNow:()=>'2026-11-24',country:'USD',overlay:USfresh});
 assert.equal((heatmap.match(/class="sem-matrix-cell (?:green|red|amber|neutral)" title=/g)||[]).length,56,'56 accessible direction cells');
 assert.match(heatmap,/role="progressbar" aria-label="Copertura G8" aria-valuenow="\d+" aria-valuemin="0" aria-valuemax="56"/);
-assert.equal((heatmap.match(/class="sem-overview-kpi /g)||[]).length,4);
+assert.match(heatmap,/class="sem-editorial-breadth"/);assert.equal((heatmap.match(/<div class="(?:green|amber|red|neutral)"><strong>\d+<\/strong><span>(?:Migliorano|Miste|Peggiorano|Non allineate)<\/span>/g)||[]).length,4);
 assert.match(heatmap,/class="sem-method"><summary>Metodo, soglie e fonti/);
 assert.equal((heatmap.match(/class="sem-area-judgment"/g)||[]).length,7);
 assert.match(heatmap,/Attuale · 2026-10/);
