@@ -160,11 +160,17 @@ async function audit(browser,name,file,selector,view,viewport){
        !detail.includes('INFORMATIVA'))
       issue(name,view,'rates_per_horizon_provenance_not_visible',detail.slice(0,700));
   }
-  if(name==='cross'&&mode==='public'){
+  if(name==='cross'&&(mode==='public'||mode==='pr-local')){
+    // Check all actually published dated streams, not the pre-STOXX marker.
+    // The two added equity sources are optional only if absent from the approved feed.
+    const approved=sourceJSON('site/fx-quant-v2/cross-asset-live-data.json').streams;
+    const required=['SP500','NASDAQCOM','IG_OAS','HY_OAS','VIX',
+      ...['DJIA','SX5E'].filter(k=>approved[k])];
+    await page.waitForFunction(()=>document.querySelector('#sourceList')?.textContent?.includes('Cross-Asset FRED/Cboe/STOXX:'),null,{timeout:16000});
     const full=((await page.locator('#sourceList').textContent())||'');
-    if(!full.includes('Cross-Asset FRED/Cboe:')||
-       !full.includes('SP500')||!full.includes('NASDAQCOM')||!full.includes('VIX'))
-      issue(name,view,'cross_asset_feed_not_loaded','Expected dated FRED/Cboe five-series source marker not visible: '+full.slice(-450));
+    const missing=required.filter(k=>!approved[k]||!full.includes(k+' '+approved[k].date));
+    if(missing.length)
+      issue(name,view,'cross_asset_feed_not_loaded','Missing dated approved Cross-Asset streams: '+missing.join(', ')+' · '+full.slice(-350));
     const display=((await page.locator('#vixFact').textContent())||'');
     if(!/^VIX\s+[\d,.]+/.test(display))issue(name,view,'vix_render_not_synced','VIX UI value not rendered: '+display);
   }
