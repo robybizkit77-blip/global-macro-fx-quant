@@ -747,4 +747,44 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(mod.parse_nz_core_page(page,NOW)[-1],("2026-Q3",2.8))
         self.assertRaises(ValueError,mod.parse_nz_core_page,page.replace(b"Sectoral factor model",b"Other model"),NOW)
 
+    def test_uk_activity_exact_period_frequency(self):
+        def page(spec):
+            rows=[]
+            if spec["frequency"]=="Q":
+                for i in range(12):
+                    y,q=divmod(2026*4+2-11+i,4)
+                    rows.append((f"{y} Q{q+1}",4.5+i/100))
+                rows.append(("2026 OCT",99))
+            else:
+                months=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
+                for i in range(12):
+                    y,m=divmod(2026*12+9-11+i,12)
+                    rows.append((f"{y} {months[m]}",100+i/10))
+                rows.append(("2026 Q3",999))
+            return ("<h1>"+spec["title"]+"</h1><p>Series ID: "+spec["code"]+"</p><table>"+
+              "".join(f"<tr><td>{p}</td><td>{v}</td></tr>" for p,v in rows)+"</table>").encode()
+        items,audit=mod.collect_uk_activity(NOW,fetcher=lambda u:page(next(s for s in mod.UK_ACTIVITY.values() if s["source_page"]==u)))
+        self.assertEqual(len(items),2)
+        self.assertEqual(items[0]["dates"][-1],"2026-Q3")
+        self.assertEqual(items[1]["dates"][-1],"2026-10")
+        self.assertFalse(items[0]["up_good"])
+        spec=mod.UK_ACTIVITY["ONS_MGSX_UNEMP_Q"]
+        self.assertRaises(ValueError,mod.parse_ons_activity,page(spec).replace(b"MGSX",b"OTHER"),NOW,spec)
+
+    def test_cad_lfs_contract(self):
+        names=list({**mod.CAD_LFS_MEMBERS,"Gender":"Total - Gender","Age group":"15 years and over"}.items())
+        meta={"productId":mod.CAD_LFS_PID,"cubeTitleEn":"Labour force characteristics, monthly, seasonally adjusted and trend-cycle",
+            "dimension":[{"dimensionNameEn":k,"dimensionPositionId":i+1,"member":[{"memberNameEn":v,"memberId":1}]} for i,(k,v) in enumerate(names)]}
+        coord=mod.cad_lfs_coordinate(meta)
+        obj={"productId":mod.CAD_LFS_PID,"coordinate":coord,"vectorDataPoint":[]}
+        for i in range(24):
+            y,m=divmod(2026*12+9-23+i,12)
+            obj["vectorDataPoint"].append({"refPer":f"{y}-{m+1:02d}-01","value":6+i/100,"scalarFactorCode":0})
+        item,status=mod.collect_cad_lfs(NOW,wds=lambda method,payload:meta if method=="getCubeMetadata" else obj)
+        self.assertEqual(item["dates"][-1],"2026-10")
+        self.assertFalse(item["up_good"])
+        self.assertEqual(status["history_observations"],24)
+        obj["coordinate"]="wrong"
+        self.assertIsNone(mod.collect_cad_lfs(NOW,wds=lambda method,payload:meta if method=="getCubeMetadata" else obj)[0])
+
 if __name__=="__main__":unittest.main()
