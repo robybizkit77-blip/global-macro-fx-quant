@@ -42,6 +42,33 @@ class SourceMirrorContractTest(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     validate(Path(dir))
 
+    def test_old_and_extended_cross_asset_universes(self):
+        for variant in ("old", "partial", "full", "unknown", "bad_publisher", "bad_history", "core"):
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
+                def mutate(name, doc):
+                    if name != "cross-asset-live-data.json":
+                        return
+                    streams = doc["streams"]
+                    if variant == "old":
+                        streams.pop("DJIA", None)
+                        streams.pop("SX5E", None)
+                    elif variant == "partial":
+                        streams.pop("SX5E", None)
+                    elif variant == "unknown":
+                        streams["UNVERIFIED"] = {}
+                    elif variant == "bad_publisher":
+                        streams["DJIA"]["publisher"] = "wrong"
+                    elif variant == "bad_history":
+                        streams["SX5E"]["history"][-1][1] += 1
+                    elif variant == "core":
+                        doc["eligible_for_fx_core"] = True
+                self.fixture(Path(directory), mutate)
+                if variant in ("old", "partial", "full"):
+                    self.assertEqual(validate(Path(directory))["status"], "SOURCE_CONTRACT_PASS")
+                else:
+                    with self.assertRaises(ValueError):
+                        validate(Path(directory))
+
     def test_missing_file_fails_closed(self):
         with tempfile.TemporaryDirectory() as dir:
             self.fixture(Path(dir), lambda _name, _data: None)
