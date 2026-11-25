@@ -525,6 +525,50 @@ def parse_boe_mortgage(raw,now):
     if len(out)<2:raise ValueError("BoE series not available in HTML table")
     return sorted(out.items())
 
+ONS_WAGE_URL="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kac3/lms"
+
+def parse_ons_wage(raw,now):
+    """ONS KAC3: whole economy, nominal total pay, SA rolling 3m YoY."""
+    txt=raw.decode("utf-8","replace")
+    p=_PlainText();p.feed(txt)
+    plain=" ".join(" ".join(p.parts).split())
+    if not re.search(r"Series ID:\s*KAC3\b",plain) or not re.search(
+        r"Whole Economy Year on Year Three Month Average Growth \(%\): Seasonally Adjusted Total Pay Excluding Arrears",plain,re.I):
+        raise ValueError("ONS KAC3 identity changed")
+    table=_ReportTables();table.feed(txt)
+    out={}
+    for rows in table.tables:
+        for row in rows:
+            if len(row)!=2:continue
+            mm=re.fullmatch(r"(\d{4}) (JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)",row[0],re.I)
+            if not mm:continue
+            month=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"].index(mm[2].upper())+1
+            period=f"{int(mm[1]):04d}-{month:02d}"
+            if period_end(period)>now:continue
+            if row[1] in ("","..",":","-"):continue
+            v=float(row[1])
+            if not math.isfinite(v) or abs(v)>50 or period in out:raise ValueError("ONS KAC3 invalid/duplicate value")
+            out[period]=v
+    if len(out)<12:raise ValueError("ONS KAC3 history unavailable")
+    return sorted(out.items())
+
+def collect_wage_context(now):
+    """Independent context feed, not counted as an activity indicator."""
+    result={"schema":"GMFQ_G8_WAGE_CONTEXT_V1","series":[],"audit":{}}
+    try:
+        obs=parse_ons_wage(fetch_issuer(ONS_WAGE_URL),now)
+        spec=dict(ccy="GBP",area="wages",key="KAC3",method="ons_wage",
+            name="Retribuzioni medie settimanali nominali (totale, media 3 mesi a/a, SA)",
+            unit="% a/a",frequency="M",kind="points",max_age_days=85,
+            origin="ONS / KAC3",source_page=ONS_WAGE_URL)
+        item,status=candidate(spec,obs,now)
+        if item:
+            result["series"].append(item)
+        result["audit"]["GBP"]=status
+    except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+        result["audit"]["GBP"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    return result
+
 def parse_ons_industry(raw,now):
     txt=raw.decode("utf-8","replace")
     if "IOP: B-E: PRODUCTION: CVMSA" not in txt or not re.search(r"Series ID:\s*K222",txt):
@@ -973,7 +1017,7 @@ def parse_snb_credit(raw,now):
     return sorted(out.items())
 
 def fetch_issuer(url):
-    if url not in {ONS_URL,ONS_INDUSTRY,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
+    if url not in {ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
     accept=("application/json" if url==SNB_CREDIT_META else "text/csv" if url==SNB_CREDIT_URL else "text/html,application/zip")
     req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":accept})
     with urlopen(req,timeout=35) as response:
@@ -1622,6 +1666,8 @@ def collect(now=None,fetcher=fetch):
                     continue
             out["audit"][code]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180],
                                  "source_page":spec["source_page"],"origin":spec["origin"]}
+    if fetcher is fetch:
+        out["wage_context"]=collect_wage_context(now)
     return out
 
 def main():
@@ -1634,6 +1680,7 @@ def main():
     if not x.dry_run: Path(x.output).write_text(content,encoding="utf-8")
     print(json.dumps({"status":"CAPTURED_REVISED_NOT_PIT",
       "ready":len(out["series"]),"total":len(REGISTRY),
+      "wage_context":out.get("wage_context",{}).get("audit",{}),
       "history_observations":{s["ccy"]+"_"+s["area"]:s.get("history",{}).get("observations",0) for s in out["series"]},
       "audit":{k:v["status"] for k,v in out["audit"].items()},
       "withheld_reasons":{k:v.get("reason","") for k,v in out["audit"].items() if v["status"]=="WITHHELD_FETCH_OR_VALIDATION"}},ensure_ascii=False))
