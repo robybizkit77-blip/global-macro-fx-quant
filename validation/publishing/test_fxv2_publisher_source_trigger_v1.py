@@ -97,3 +97,15 @@ assert "research_sources.items()" in block
 assert 'git show "origin/gh-pages:$f" > "$f"' in s
 assert "budget_seconds=480" in s
 print("NEXT_G8_LIQUIDITY_PUBLIC_DELIVERY_CONTRACT_PASS",len(names)-1+6)
+
+# The economic monitor must reach public Pages as an entire reader/data chain
+# on both source completion and approved code changes. CSS is not optional.
+for file in ("semaphore-supplement-v1.json","recession-traffic-light-v1.js",
+             "recession-traffic-light-v1.css","macro-studio.js",
+             "live_data/sections/MACRO_SERIES.json"):
+    assert '"'+file+'"' in block,file
+semaphore_branch=s.split('if source_workflow == "G8 Economic Semaphore Source Recovery V1":',1)[1].split("else:",1)[0]
+for file in ("recession-traffic-light-v1.js","recession-traffic-light-v1.css","macro-studio.js","live_data/sections/MACRO_SERIES.json"):
+    assert '"'+file+'"' in semaphore_branch,file
+assert "live_data/sections/MACRO_SERIES.json; do" in s
+print("NEXT_G8_ECONOMIC_MONITOR_PUBLIC_DELIVERY_CONTRACT_PASS")
