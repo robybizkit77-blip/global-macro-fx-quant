@@ -906,7 +906,11 @@ def collect_asia_core(now,fetcher=None):
       ("JPY",JP_CORE_KEY,JP_CORE_URL,parse_jp_core,"Statistics Bureau Japan / e-Stat 0161 (2025 base)"),
       ("AUD",ABS_CORE_KEY,ABS_CORE_URL,parse_abs_core,"ABS / monthly trimmed mean annual movement")]:
         try:
-            obs=parser((fetcher or fetch_issuer)(url),now)
+            try:
+                obs=parser((fetcher or fetch_issuer)(url),now)
+            except (ValueError,OSError,TimeoutError):
+                if ccy!="NZD" or fetcher is not None:raise
+                obs=parser(fetch_issuer(NZ_CORE_PUBLIC),now)
             spec=dict(ccy=ccy,area="core",key=key,method="official_core",name=origin,
                 unit="% a/a",frequency="M",kind="points",max_age_days=85,origin=origin,source_page=url)
             item,status=candidate(spec,obs,now)
@@ -920,6 +924,7 @@ CH_CORE_URL="https://dam-api.bfs.admin.ch/hub/api/dam/assets/36970583/master"
 CH_CORE_KEY="FSO_LIK25B25_CORE1_YOY"
 NZ_CORE_URL="https://www.rbnz.govt.nz/en/statistics/series/economic-indicators/prices"
 NZ_CORE_KEY="RBNZ_M1_SFM_YOY"
+NZ_CORE_PUBLIC="https://www.rbnz.govt.nz/statistics/series/economic-indicators/prices"
 def parse_ch_core(raw,now):
     from openpyxl import load_workbook
     book=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
@@ -993,6 +998,17 @@ def collect_ch_nz_core(now,fetcher=None):
             audit[ccy]=status
         except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError,ImportError) as exc:
             audit[ccy]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+            # Dated, explicitly manual issuer snapshot; expires at the next
+            # published M1 release. Do not silently mix revised vintages.
+            if ccy=="NZD" and fetcher is None and date(2026,11,25)<=now<date(2026,12,17):
+                points=[("2025-Q3",2.7),("2025-Q4",2.7),("2026-Q1",2.7),("2026-Q2",2.8),("2026-Q3",2.8)]
+                spec=dict(ccy="NZD",area="core",key=NZ_CORE_KEY,method="official_core",name="RBNZ sectoral factor model (verifica manuale)",unit="% a/a",frequency="Q",kind="points",max_age_days=175,origin="RBNZ M1 / verifica manuale 25 novembre 2026",source_page=NZ_CORE_PUBLIC)
+                item,status=candidate(spec,points,now)
+                if item:
+                    item.update(quality="SOURCE_VERIFIED_MANUAL_NONPIT",manual_verified_on="2026-11-25",official_release_date="2026-11-18",manual_expires_on="2026-12-17")
+                    item["history"]["quality"]="MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT"
+                    items.append(item)
+                    audit[ccy]={**status,"status":"READY_MANUAL_VERIFIED_NOT_AUTOMATIC","automatic_fetch":"FAILED","reason":str(exc)[:180],"manual_expires_on":"2026-12-17","source_page":NZ_CORE_PUBLIC}
     return items,audit
 
 CAD_LFS_PID=14100287
@@ -1244,6 +1260,120 @@ def upgrade_quarterly_activity(out,now,abs_fetch=fetch_abs_volume,source_fetch=f
             else:out["audit"][key]["quality_upgrade_attempt"]=status
         except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError,ImportError,__import__("zipfile").BadZipFile) as exc:
             out["audit"][key]["quality_upgrade_attempt"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+
+ABS_GVA_PAGE="https://www.abs.gov.au/statistics/economy/national-accounts/australian-national-accounts-national-income-expenditure-and-product/latest-release"
+ABS_SERVICES_BREADTH_KEY="ABS_SERVICES_REAL_GVA_BREADTH_Q"
+ABS_SERVICE_SECTORS=("Wholesale Trade","Retail Trade","Accommodation and Food Services","Transport, Postal and Warehousing","Information Media and Telecommunications","Financial and Insurance Services","Rental, Hiring and Real Estate Services","Professional, Scientific and Technical Services","Administrative and Support Services","Public Administration and Safety","Education and Training","Health Care and Social Assistance","Arts and Recreation Services","Other Services")
+
+def _service_breadth(growth):
+    if len(growth)!=len(ABS_SERVICE_SECTORS) or any(not math.isfinite(v) or abs(v)>100 for v in growth):raise ValueError("ABS service breadth requires all 14 finite sector growth rates")
+    # Half weight for effectively unchanged sectors (published one-decimal precision).
+    return 100*sum(1 if v>=.05 else 0 if v<=-.05 else .5 for v in growth)/len(growth)
+
+def parse_abs_service_breadth_page(raw,now):
+    parser=_ReportTables();parser.feed(raw.decode("utf-8","replace"))
+    months={"Mar":1,"Jun":2,"Sep":3,"Dec":4};candidates=[]
+    for table in parser.tables:
+        for i,row in enumerate(table):
+            if len(row)!=8 or "Through the year" not in row[6] or "Contribution to growth" not in row[7]:continue
+            pairs=[]
+            for h in row[1:6]:
+                m=re.fullmatch(r"(Mar|Jun|Sep|Dec)\s+(\d{2})\s+to\s+(Mar|Jun|Sep|Dec)\s+(\d{2})",h.strip())
+                if not m:break
+                a,b=2000+int(m[2]),2000+int(m[4])
+                if b*4+months[m[3]]-a*4-months[m[1]]!=1:break
+                pairs.append(f"{b}-Q{months[m[3]]}")
+            if len(pairs)!=5:continue
+            sectors={}
+            for line in table[i+1:]:
+                if len(line)!=8 or line[0] not in ABS_SERVICE_SECTORS:continue
+                if line[0] in sectors:raise ValueError("ABS repeated services sector")
+                vals=[0.0 if v.strip() in {"-","–","—"} else float(v) for v in line[1:6]]
+                sectors[line[0]]=vals
+            if set(sectors)!=set(ABS_SERVICE_SECTORS):continue
+            candidates.append([(p,_service_breadth([sectors[k][j] for k in ABS_SERVICE_SECTORS])) for j,p in enumerate(pairs) if period_end(p)<=now])
+    if len(candidates)!=1 or len(candidates[0])<5:raise ValueError("ABS unique quarterly real industry growth table missing")
+    return candidates[0]
+
+def parse_abs_service_breadth_workbook(raw,now):
+    from openpyxl import load_workbook
+    book=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
+    series={}
+    norm=lambda v:" ".join(str(v or "").split()).casefold()
+    try:
+        for ws in book.worksheets:
+            if not ws.title.startswith("Data"):continue
+            rows=list(ws.values)
+            if len(rows)<15:continue
+            meta={norm(row[0]):i for i,row in enumerate(rows[:12]) if row}
+            if not {"unit","series type","frequency","series id"}.issubset(meta):continue
+            end=meta["series id"]+1
+            for col in range(1,len(rows[0])):
+                name=norm(rows[0][col])
+                if "gross value added" not in name or "chain volume" not in name:continue
+                tokens={norm(x) for x in name.split(";")}
+                sectors=[k for k in ABS_SERVICE_SECTORS if norm(k) in tokens]
+                if len(sectors)!=1:continue
+                if norm(rows[meta["series type"]][col])!="seasonally adjusted" or norm(rows[meta["frequency"]][col])!="quarter" or norm(rows[meta["unit"]][col]) not in {"$ millions","$m","million dollars"}:continue
+                if not rows[meta["series id"]][col] or sectors[0] in series:raise ValueError("ABS ambiguous real GVA series")
+                obs={}
+                for row in rows[end:]:
+                    d=row[0];v=row[col] if len(row)>col else None
+                    if not hasattr(d,"year") or not hasattr(d,"month") or v is None:continue
+                    if d.month not in (3,6,9,12):raise ValueError("ABS GVA quarterly period")
+                    p=f"{d.year}-Q{d.month//3}"
+                    if period_end(p)>now:continue
+                    if not isinstance(v,(int,float)) or isinstance(v,bool) or not math.isfinite(v) or v<=0 or p in obs:raise ValueError("ABS GVA invalid level")
+                    obs[p]=v
+                series[sectors[0]]=obs
+        if set(series)!=set(ABS_SERVICE_SECTORS):raise ValueError("ABS workbook 14-sector metadata incomplete")
+        common=set.intersection(*(set(v) for v in series.values()))
+        obs=[]
+        for p in sorted(common):
+            y,q=int(p[:4]),int(p[-1]);prior=f"{y-1}-Q4" if q==1 else f"{y}-Q{q-1}"
+            if prior not in common:continue
+            obs.append((p,_service_breadth([100*(series[k][p]/series[k][prior]-1) for k in ABS_SERVICE_SECTORS])))
+        if len(obs)<12:raise ValueError("ABS workbook insufficient real GVA history")
+        return obs
+    finally:book.close()
+
+def fetch_abs_gva(url):
+    if urlsplit(url).hostname!="www.abs.gov.au" or not url.startswith("https://") or not (url==ABS_GVA_PAGE or re.search(r"/5206006_Industry_GVA\.xlsx(?:\?|$)",url,re.I)):raise ValueError("unregistered ABS GVA URL")
+    req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0"})
+    with urlopen(req,timeout=25) as r:
+        if urlsplit(r.geturl()).hostname!="www.abs.gov.au" or not r.geturl().startswith("https://"):raise ValueError("ABS GVA redirect")
+        raw=r.read(12_000_001)
+        if not raw or len(raw)>12_000_000:raise ValueError("ABS GVA response size")
+        return raw
+
+def upgrade_aus_service_activity(out,now,fetcher=fetch_abs_gva):
+    from urllib.parse import urljoin
+    key="AUD_services"
+    try:
+        raw=fetcher(ABS_GVA_PAGE);page=raw.decode("utf-8","replace")
+        links={urljoin(ABS_GVA_PAGE,unescape(x)) for x in re.findall(r'href=["\']([^"\']*5206006_Industry_GVA\.xlsx(?:\?[^"\']*)?)["\']',page,re.I)}
+        links={x for x in links if x.startswith("https://www.abs.gov.au/")}
+        scope="ABS published quarterly table (five rounded quarters)"
+        obs=None
+        if len(links)==1:
+            try:
+                obs=parse_abs_service_breadth_workbook(fetcher(next(iter(links))),now)
+                scope="ABS Table 6, single revised vintage of real industry GVA"
+            except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError,ImportError,__import__("zipfile").BadZipFile):pass
+        if obs is None:obs=parse_abs_service_breadth_page(raw,now)
+        spec=dict(ccy="AUD",area="services",key=ABS_SERVICES_BREADTH_KEY,method="official_real_breadth",
+          name="Diffusione crescita reale dei servizi (14 comparti ABS; soglia 50)",unit="% comparti (indice diffusione)",frequency="Q",kind="points",max_age_days=175,
+          origin="ABS national accounts / "+scope,source_page=ABS_GVA_PAGE)
+        item,status=candidate(spec,obs,now)
+        if item:
+            item["diffusion_threshold"]=50
+            item["history_scope"]=scope
+            out["series"]=[x for x in out["series"] if (x["ccy"],x["area"])!=("AUD","services")]
+            out["series"].append(item)
+            out["audit"][key]={**status,"source_page":spec["source_page"],"origin":spec["origin"],"quality_upgrade":"REAL_ACTIVITY_BREADTH","history_scope":scope}
+        else:out["audit"][key]["quality_upgrade_attempt"]=status
+    except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError) as exc:
+        out["audit"][key]["quality_upgrade_attempt"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
 
 def upgrade_real_activity(out,now,fred_fetch=fetch,ca_fetch=fetch_real_ca_mfg):
     for spec,load in [(REAL_US_SERVICES,lambda:parse_fred(fred_fetch(FRED+"PCESC96"),"PCESC96","M",now)),
@@ -1855,7 +1985,7 @@ def parse_snb_credit(raw,now):
     return sorted(out.items())
 
 def fetch_issuer(url):
-    if url not in {ONS_UNEMP_URL,ONS_RETAIL_URL,CH_CORE_URL,NZ_CORE_URL,JP_CORE_URL,ABS_CORE_URL,ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,ONS_CORE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
+    if url not in {ONS_UNEMP_URL,ONS_RETAIL_URL,CH_CORE_URL,NZ_CORE_URL,NZ_CORE_PUBLIC,JP_CORE_URL,ABS_CORE_URL,ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,ONS_CORE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
     accept=("application/json" if url==SNB_CREDIT_META else "text/csv" if url==SNB_CREDIT_URL else "text/html,application/zip")
     req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":accept})
     with urlopen(req,timeout=35) as response:
@@ -2519,6 +2649,7 @@ def collect(now=None,fetcher=fetch):
         upgrade_real_activity(out,now)
         upgrade_housing_activity(out,now)
         upgrade_quarterly_activity(out,now)
+        upgrade_aus_service_activity(out,now)
         out["wage_context"]=collect_wage_context(now)
         out["external_context"]=collect_external_context(now)
         out["inflation_context"]=collect_inflation_context(now)
