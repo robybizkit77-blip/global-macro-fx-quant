@@ -376,6 +376,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-24T10:44:10.472061Z"
+          },
+          {
+            "date": "2026-11-25",
+            "rate": 4.47,
+            "contract": "ZQK2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-25T11:25:11.567067Z"
           }
         ],
         "12m": [
@@ -577,39 +585,19 @@
       "observed_dates": 25,
       "derived_reference_points": 0,
       "estimated_roll_momentum": {
-        "5": {
-          "from": "2026-11-17",
-          "to": "2026-11-24",
-          "roll_date": "2026-11-18",
-          "old_contract": "ZQJ2027",
-          "new_contract": "ZQK2027",
-          "start_rate": 4.47,
-          "old_roll_rate": 4.495,
-          "new_roll_rate": 4.55,
-          "end_rate": 4.475,
-          "old_move_bp": 2.5,
-          "new_move_bp": -7.5,
-          "change_bp": -5.0,
-          "capture_gap_hours": 4.804,
-          "old_capture_utc": "2026-11-18T21:50:30.443447Z",
-          "new_capture_utc": "2026-11-19T02:38:45.888047Z",
-          "basis": "ESTIMATED_SINGLE_ROLL_SAME_SOURCE_NOT_SYNCHRONIZED",
-          "official_ois_created": false,
-          "fx_engine_effect": "NONE"
-        },
         "20": {
-          "from": "2026-10-27",
-          "to": "2026-11-24",
+          "from": "2026-10-28",
+          "to": "2026-11-25",
           "roll_date": "2026-11-18",
           "old_contract": "ZQJ2027",
           "new_contract": "ZQK2027",
-          "start_rate": 4.38,
+          "start_rate": 4.395,
           "old_roll_rate": 4.495,
           "new_roll_rate": 4.55,
-          "end_rate": 4.475,
-          "old_move_bp": 11.5,
-          "new_move_bp": -7.5,
-          "change_bp": 4.0,
+          "end_rate": 4.47,
+          "old_move_bp": 10.0,
+          "new_move_bp": -8.0,
+          "change_bp": 2.0,
           "capture_gap_hours": 4.804,
           "old_capture_utc": "2026-11-18T21:50:30.443447Z",
           "new_capture_utc": "2026-11-19T02:38:45.888047Z",
@@ -3615,7 +3603,7 @@
         "current_rate": 3.67,
         "change_bp": -44.0,
         "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261027ZFT.htm",
-        "source_sha256": "eb57e26d63b3445ce7ae0bee7ed9d76abf30a5a3df7f53985025710a29e85f34",
+        "source_sha256": "4bc9f03946410850f6853107bddde5542a88415530dc1b526cd8c2c774e9db2a",
         "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"
       }
     },
