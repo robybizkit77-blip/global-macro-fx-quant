@@ -321,3 +321,21 @@ assert.equal(mod.withChfCurrencyRanking(original,weeklyFeed,'2026-11-26'),origin
 assert.equal(mod.withChfCurrencyRanking(original,weeklyFeed,'2026-11-19'),original);
 assert.equal(mod.withChfCurrencyRanking(original,{...weeklyFeed,eligible_for_core:true},rankingDay),original);
 console.log('NEXT_V17_SOURCE_PROVENANCE_PASS',JSON.stringify({CHF:chfContext[0].lastDate,NZD:nzdContext[0].lastDate,NZD_intervals:nzdContext[0].intervals,short:shortCount,medium:mediumCount,core_changed:false}));
+
+ // G8 narrative must agree with the already reconciled B2 source without changing scores.
+ const currencyFallback=require('../site/fx-quant-v2/next/currency-data-fallback.js');
+ const legacyNzd={...rates,NZD:{...rates.NZD,date:'2026-10-16'}};
+ const b2Day=reconciled.publication_date;
+ const b2Axis=currencyFallback.researchRatesAxis('NZD',chf,null,legacyNzd,b2Day,reconciled);
+ assert.equal(b2Axis.status,'RICERCA_RBNZ_RICONCILIATA');
+ assert.equal(b2Axis.asof,reconciled.last_observation_date);
+ assert.equal(b2Axis.eligibleForCore,false);
+ assert.match(b2Axis.description,/tabella ed Excel riconciliati/);
+ assert.doesNotMatch(b2Axis.description,/manca la riconciliazione/);
+ for(const bad of [{...reconciled,eligible_for_core:true},{...reconciled,html_xlsx_matched_dates:[]},{...reconciled,benchmark_2Y:'May 2028'}])
+  assert.equal(currencyFallback.researchRatesAxis('NZD',chf,null,legacyNzd,b2Day,bad).status,'NON_DISPONIBILE');
+ assert.equal(currencyFallback.researchRatesAxis('NZD',chf,null,legacyNzd,'2099-01-01',reconciled).status,'NON_DISPONIBILE');
+ assert.equal(currencyFallback.researchRatesAxis('NZD',chf,null,legacyNzd,'2026-11-06',reconciled).status,'NON_DISPONIBILE');
+ assert.equal(currencyFallback.researchRatesAxis('NZD',chf,null,{...legacyNzd,NZD:{date:'2099-01-01'}},b2Day,reconciled).status,'NON_DISPONIBILE');
+ assert.match(require('node:fs').readFileSync('site/fx-quant-v2/next/currency-studio.js','utf8'),/nzdReconciled:get\('nzdReconciled'\)/);
+ console.log('NZD_G8_RECONCILED_CONTEXT_PASS');
