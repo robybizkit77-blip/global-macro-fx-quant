@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-25T04:55:08.221646Z",
-  "edition_time_rome": "2026-11-25 05:55",
-  "material_digest": "f3582c9470e58e12c2c9ac259348e167ac1423d1c3a1c5bbce76ef2c445400d5",
+  "generated_at_utc": "2026-11-25T04:58:18.668404Z",
+  "edition_time_rome": "2026-11-25 05:58",
+  "material_digest": "76f05ccb81c9988d3461a5af88f8a534fe6aa92e2c1abaceb07c29e29fbd569a",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
-  "lead": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. La volatilità azionaria è scesa alla chiusura del 24 novembre.",
+  "lead": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. Alla chiusura del 24 novembre, il Nasdaq Composite ha perso terreno.",
   "news": [
     {
       "headline": "Dollaro misto",
@@ -34,16 +34,17 @@
       "evidence": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     },
     {
-      "headline": "Il quadro del rischio",
-      "analysis": "La volatilità azionaria è scesa alla chiusura del 24 novembre. Da seguire se il movimento prosegue anche alla prossima chiusura.",
+      "headline": "Il Nasdaq Composite scende",
+      "analysis": "Alla chiusura del 24 novembre, il Nasdaq Composite ha perso terreno. Da seguire se il movimento prosegue anche alla prossima chiusura.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-24",
       "event_date": "2026-11-24",
       "market_area": "RISCHIO",
       "sources": [
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
         "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
       ],
-      "evidence": "Alla chiusura del 24 novembre, VIX −0,26 punti."
+      "evidence": "Alla chiusura del 24 novembre, Nasdaq Composite −1,48% e VIX −0,26 punti."
     },
     {
       "headline": "Oro e petrolio in calo",
@@ -83,7 +84,7 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. La volatilità azionaria è scesa alla chiusura del 24 novembre.",
+  "desk_judgment": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. Alla chiusura del 24 novembre, il Nasdaq Composite ha perso terreno.",
   "fx_implications": "Il 25 novembre alle 14:30 italiane è in programma GDP (Second Estimate) and Corporate Profits (USD). Da verificare la risposta dei tassi e di USD.",
   "what_changed": "Nei proxy futures del 24 novembre l’oro scende e il WTI scende.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
@@ -91,6 +92,7 @@
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bankofcanada.ca/2026/11/bank-of-canada-media-interview-the-logic/",
@@ -101,7 +103,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-24",
-      "rss_checked_at_utc": "2026-11-25T04:55:08.221646Z",
+      "rss_checked_at_utc": "2026-11-25T04:58:18.668404Z",
       "commodities": "2026-11-24"
     },
     "no_paid_api": true,
@@ -109,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-25T04:55:08.221646Z",
+      "headline": "Dollaro misto",
+      "material_digest": "f3582c9470e58e12c2c9ac259348e167ac1423d1c3a1c5bbce76ef2c445400d5"
+    },
     {
       "generated_at_utc": "2026-11-25T04:20:21.866200Z",
       "headline": "Dollaro misto",
@@ -223,11 +230,6 @@
       "generated_at_utc": "2026-11-21T19:28:33.417800Z",
       "headline": "Dollaro misto",
       "material_digest": "7ecd32c240a034c592890bb15be827be561c82ddf80e8caebc23e066c9faf209"
-    },
-    {
-      "generated_at_utc": "2026-11-21T11:14:01.335248Z",
-      "headline": "Dollaro misto",
-      "material_digest": "ccdac0a0aa01fbb482f730b1dcc71bce0397a281d9bda7047b0d1359a090e3c7"
     }
   ]
 }
