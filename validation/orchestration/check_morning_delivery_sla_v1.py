@@ -213,7 +213,7 @@ def main() -> int:
     if args.late_scheduled_guard:
         result = late_scheduled_guard(args.phase, args.event, now, os.getenv("GITHUB_REPOSITORY"))
         if args.output:
-            Path(args.output).write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\\n", encoding="utf-8")
+            Path(args.output).write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print("LATE_SCHEDULED_MORNING_GUARD", json.dumps(result, sort_keys=True))
         return 0
     if not args.readiness:
