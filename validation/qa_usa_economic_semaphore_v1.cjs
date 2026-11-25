@@ -667,6 +667,13 @@ console.log('ECONOMIC_CYCLE_RELATIVE_DIVERGENCES_PASS');
  const eur=make('EUR','EUROSTAT_EA21_HICP_CORE_YOY','https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_minr/default/table?lang=en','% a/a',dates.map((_,i)=>2+i/100));
  const e=inflationContext(catalog,today,'EUR',{...ov,inflation_context:{...ov.inflation_context,series:[eur]}}).find(x=>/core/i.test(x.label));
  assert.equal(e.period,'2026-10');assert.equal(e.value,2.23);
+ const cadPage='https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810025601';
+ const median=make('CAD','STATCAN_18100256_MEDIAN_YOY',cadPage,'% a/a',dates.map((_,i)=>2+i/100));
+ const trim=make('CAD','STATCAN_18100256_TRIM_YOY',cadPage,'% a/a',dates.map((_,i)=>1+i/100));
+ const canada=inflationContext(catalog,today,'CAD',{...ov,inflation_context:{...ov.inflation_context,series:[median,trim]}});
+ assert.equal(canada.find(x=>/median/i.test(x.label)).value,2.23);
+ assert.equal(canada.find(x=>/trim/i.test(x.label)).value,1.23);
+ assert.equal(canada.find(x=>/trim/i.test(x.label)).period,'2026-10');
  assert.equal(u.period,'2026-10');assert.equal(k.period,'2026-10');assert.ok(Math.abs(u.value-(323/311-1)*100)<1e-9);assert.equal(k.value,2.23);
  assert.equal(inflationContext(catalog,today,'USD',{...ov,inflation_context:{...ov.inflation_context,series:[{...us,source_page:'https://example.com'}]}}).find(x=>/core/i.test(x.label)).period,inflationContext(catalog,today,'USD').find(x=>/core/i.test(x.label)).period);
 }

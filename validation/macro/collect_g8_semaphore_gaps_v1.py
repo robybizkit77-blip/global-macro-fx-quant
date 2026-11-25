@@ -802,6 +802,63 @@ def collect_eur_core(now,fetcher=fetch):
     except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError) as exc:
         return None,{"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
 
+CAD_CORE_URL="https://www150.statcan.gc.ca/n1/tbl/csv/18100256-eng.zip"
+CAD_CORE_PAGE="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810025601"
+CAD_CORE_LABELS={
+    "STATCAN_18100256_MEDIAN_YOY":"Measure of core inflation based on a weighted median approach, CPI-median (year-over-year percent change)",
+    "STATCAN_18100256_TRIM_YOY":"Measure of core inflation based on a trimmed mean approach, CPI-trim (year-over-year percent change)"
+}
+def fetch_cad_core():
+    req=Request(CAD_CORE_URL,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"application/zip"})
+    with urlopen(req,timeout=25) as r:
+        if r.geturl()!=CAD_CORE_URL:raise ValueError("Canada CPI archive redirected")
+        data=r.read(10_000_001)
+        if not data or len(data)>10_000_000:raise ValueError("Canada CPI archive exceeds budget")
+        return data
+
+def parse_cad_core(raw,now,key):
+    label=CAD_CORE_LABELS[key]
+    with ZipFile(io.BytesIO(raw)) as archive:
+        info=archive.getinfo("18100256.csv")
+        if info.file_size>50_000_000:raise ValueError("Canada CPI uncompressed archive exceeds budget")
+        with archive.open(info) as src:
+            reader=csv.DictReader(io.TextIOWrapper(src,encoding="utf-8-sig"))
+            required={"REF_DATE","GEO","Alternative measures","UOM","SCALAR_FACTOR","VALUE","VECTOR"}
+            if not required.issubset(reader.fieldnames or []):raise ValueError("Canada CPI dimensions changed")
+            values={};vectors=set()
+            for row in reader:
+                if row["GEO"]!="Canada" or row["Alternative measures"]!=label:continue
+                if row["UOM"]!="Percent" or row["SCALAR_FACTOR"]!="units":raise ValueError("Canada core rate unit/scale mismatch")
+                if not row["VECTOR"]:raise ValueError("Canada CPI vector missing")
+                vectors.add(row["VECTOR"])
+                p=row["REF_DATE"]
+                if not re.fullmatch(r"\d{4}-(?:0[1-9]|1[0-2])",p):raise ValueError("Canada CPI invalid month")
+                if period_end(p)>now or row["VALUE"] in ("","..","."):continue
+                v=float(row["VALUE"])
+                if not math.isfinite(v) or abs(v)>50 or p in values:raise ValueError("Canada CPI invalid or duplicate rate")
+                values[p]=v
+            if len(vectors)!=1 or len(values)<12:raise ValueError("Canada CPI ambiguous vector or insufficient history")
+    return sorted(values.items()),next(iter(vectors))
+
+def collect_cad_core(now,fetcher=fetch_cad_core):
+    items=[];audit={}
+    try:raw=fetcher()
+    except (ValueError,KeyError,TypeError,UnicodeError,TimeoutError,OSError) as exc:
+        return items,{k:{"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]} for k in CAD_CORE_LABELS}
+    for key in CAD_CORE_LABELS:
+        try:
+            obs,vector=parse_cad_core(raw,now,key)
+            spec=dict(ccy="CAD",area="core",key=key,method="statcan_core",
+                name="CPI median" if "MEDIAN" in key else "CPI trim",
+                unit="% a/a",frequency="M",kind="points",max_age_days=85,
+                origin="Statistics Canada / 18-10-0256-01 / "+vector,source_page=CAD_CORE_PAGE)
+            item,status=candidate(spec,obs,now)
+            if item:items.append(item)
+            audit[key]={**status,"vector":vector}
+        except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError) as exc:
+            audit[key]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    return items,audit
+
 def collect_external_context(now,fetcher=fetch):
     result={"schema":"GMFQ_G8_EXTERNAL_CONTEXT_V1","series":[],"audit":{}}
     for ccy,key in EXPORT_KEYS.items():
@@ -2007,6 +2064,9 @@ def collect(now=None,fetcher=fetch):
         item,status=collect_eur_core(now)
         out["inflation_context"]["audit"]["EUR"]=status
         if item:out["inflation_context"]["series"].append(item)
+        items,status=collect_cad_core(now)
+        out["inflation_context"]["audit"]["CAD"]=status
+        out["inflation_context"]["series"].extend(items)
     return out
 
 def main():
