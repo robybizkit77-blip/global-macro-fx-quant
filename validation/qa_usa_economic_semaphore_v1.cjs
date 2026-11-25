@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,exportSparkline,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,matchedActivityWindows,relativeActivity,comparableExports,exportSparkline,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -625,3 +625,28 @@ console.log('ECONOMIC_CYCLE_REGIME_MAP_PASS');
  }
 }
 console.log('ECONOMIC_CYCLE_COUNTRY_HISTORY_PASS');
+
+{
+ const row=(tone,period='2026-09',prior='2026-08',freq='M')=>({key:'industry',name:'Manifattura',signal:{tone},signalSource:'original',items:[{period,prior,freq,verdict:tone==='green'?1:-1}]});
+ assert.equal(matchedActivityWindows(row('green')),'M:2026-08→2026-09');
+ assert.equal(matchedActivityWindows(row('green','2026-09','2026-07')),null);
+ assert.equal(matchedActivityWindows(row('green','2026-Q3','2026-Q2','Q')),'Q:2026-Q2→2026-Q3');
+ const peers=relativeActivity({USD:[row('green')],EUR:[row('red')],GBP:[row('red','2026-08','2026-07')],JPY:[row('red','2026-Q3','2026-Q2','Q')]},'USD');
+ assert.equal(peers.find(x=>x.ccy==='EUR').favorsSelected.length,1);
+ assert.equal(peers.find(x=>x.ccy==='GBP').aligned.length,0);
+ assert.equal(peers.find(x=>x.ccy==='JPY').aligned.length,0);
+ const date='2026-11-25',ov=JSON.parse(fs.readFileSync(path.join(base,'site/fx-quant-v2/next/semaphore-supplement-v1.json'),'utf8'));
+ const overview=Object.fromEntries(coverage.map(c=>[c,{external:externalContext(date,c,ov)}]));
+ const common=comparableExports(date,ov,overview);
+ assert.equal(common.rows.length,8);
+ assert.equal(common.period,'2026-Q2');
+ assert.equal(common.prior,'2026-Q1');
+ for(const r of common.rows){
+   const source=ov.external_context.series.find(x=>x.ccy===r.ccy);
+   const i=source.history.dates.indexOf(common.period);
+   assert.equal(r.value,source.history.values[i]);
+   assert.equal(r.change,source.history.values[i]-source.history.values[i-1]);
+ }
+ for(const ccy of coverage)assert.match(render({catalog,esc,dayNow:()=>date,country:ccy,overlay:ov}),/Chi sta cambiando rispetto agli altri/);
+}
+console.log('ECONOMIC_CYCLE_RELATIVE_DIVERGENCES_PASS');
