@@ -18,7 +18,7 @@
  "eligible_for_fx_core": false,
  "eligible_for_backtest": false,
  "observation_is_not_publication_date": true,
- "last_checked_rome": "2026-11-24",
+ "last_checked_rome": "2026-11-25",
  "latest_observation": "2026-09",
  "anchor_revision_pct": -0.0187,
  "dates": [
@@ -98,7 +98,6 @@
   "frequency": "D",
   "unit": "milioni EUR",
   "dates": [
-   "2026-09-05",
    "2026-09-06",
    "2026-09-07",
    "2026-09-08",
@@ -177,10 +176,10 @@
    "2026-11-20",
    "2026-11-21",
    "2026-11-22",
-   "2026-11-23"
+   "2026-11-23",
+   "2026-11-24"
   ],
   "values": [
-   2158707.0,
    2158707.0,
    2159791.0,
    2149575.0,
@@ -259,9 +258,10 @@
    2075156.0,
    2075156.0,
    2075156.0,
-   2072997.0
+   2072997.0,
+   2080726.0
   ],
-  "latest_observation": "2026-11-23",
+  "latest_observation": "2026-11-24",
   "first_release_pit_verified": false,
   "eligible_for_fx_core": false,
   "eligible_for_backtest": false
