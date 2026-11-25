@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,exportSparkline,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,exportSparkline,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -575,3 +575,24 @@ console.log('ECONOMIC_CYCLE_G8_DASHBOARD_PASS');
  }
 }
 console.log('ECONOMIC_CYCLE_COUNTRY_INTERPRETATION_PASS');
+
+{
+ const position=(breadth,direction,extra={})=>regimePosition({reading:{aligned:true,breadth},head:{available:true,value:2.7,direction,period:'2026-10'},cells:[{periods:['2026-09','2026-10']}],...extra});
+ assert.equal(position(-1,'accelera').quadrant,'down_up');
+ assert.equal(position(1,'accelera').quadrant,'up_up');
+ assert.equal(position(-1,'rallenta').quadrant,'down_down');
+ assert.equal(position(1,'rallenta').quadrant,'up_down');
+ assert.equal(position(0,'accelera').quadrant,null);
+ assert.equal(position(1,'stabile').quadrant,null);
+ assert.equal(position(1,'accelera',{reading:{aligned:false,breadth:1}}).quadrant,null);
+ assert.equal(position(1,'accelera',{head:{available:true,value:2.7,direction:'accelera',period:'2026-10',stale:true}}).quadrant,null);
+ assert.equal(position(1,'accelera',{cells:[{periods:['2026-01']}]}).quadrant,null);
+ for(const ccy of coverage){
+  const html=render({catalog,esc,dayNow:()=> '2026-11-25',country:ccy});
+  assert.equal((html.match(/class="sem-regime-quadrant /g)||[]).length,4);
+  assert.match(html,/Mappa attività \/ inflazione/);
+  assert.match(html,/Fuori mappa/);
+  assert.match(html,/Non misura l’accelerazione del PIL/);
+ }
+}
+console.log('ECONOMIC_CYCLE_REGIME_MAP_PASS');
