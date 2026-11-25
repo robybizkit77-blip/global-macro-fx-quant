@@ -1124,7 +1124,7 @@ function cot(){
 }
 function risk(){
  const streams=get('risk')?.streams||{},a=streams[state.riskStream],x=window.FXQuantRiskEvidence?.read?.(streams,dayNow())||{ready:false,asof:null,headline:'Il quadro del rischio resta aperto',opening:'Il confronto tra azioni, volatilità e credito è in attesa delle serie.',fx:'Per collegare questi movimenti ai cambi serve una finestra comune.',observation:'Intervallo comune da verificare.',judgement:'',monitor:'Ricontrolla alla prossima chiusura confrontabile.',sourceDates:'date da verificare',quality:'NON VALIDATO'};
- const streamOpts=[['SP500','S&P 500'],['NASDAQCOM','Nasdaq'],['VIX','VIX'],['IG_OAS','Credito IG'],['HY_OAS','Credito HY']];
+ const streamOpts=[['SP500','S&P 500'],['NASDAQCOM','Nasdaq'],['DJIA','Dow Jones'],['SX5E','Euro Stoxx 50'],['VIX','VIX'],['IG_OAS','Credito IG'],['HY_OAS','Credito HY']].filter(v=>!['DJIA','SX5E'].includes(v[0])||streams[v[0]]?.quality==='PUBLISHED_SOURCE_RESEARCH_ONLY');
  const pts=priceHistory(state.riskStream).slice(-Number(state.riskWindow));
  return pageHero('RISCHIO DI MERCATO',esc(x.headline),esc(x.opening))
  +(window.FXQuantRiskEvidence?.renderFirstRead?.(streams,dayNow(),x)||'')
