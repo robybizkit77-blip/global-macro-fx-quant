@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-25T00:42:00.599896Z",
-  "edition_time_rome": "2026-11-25 01:42",
-  "material_digest": "55f1bc802cc1467c712d11a742241b96f7de8cd8d096399c19769937b82395a8",
+  "generated_at_utc": "2026-11-25T04:19:08.033254Z",
+  "edition_time_rome": "2026-11-25 05:19",
+  "material_digest": "7126109fb83f8dda2d18dc79ce6862f4cd57715253ab650d9293989b06fb91a6",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
@@ -85,9 +85,9 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. Alla chiusura del 23 novembre, Wall Street ha guadagnato terreno e il premio sul debito più rischioso si è ridotto. Nella seduta del 23 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "desk_judgment": "Il 24 novembre il dollaro ha ceduto contro l’euro e tenuto contro lo yen. Alla chiusura del 23 novembre, Wall Street ha guadagnato terreno e il premio sul debito più rischioso si è ridotto.",
   "fx_implications": "Il 25 novembre alle 14:30 italiane è in programma GDP (Second Estimate) and Corporate Profits (USD). Da verificare la risposta dei tassi e di USD.",
-  "what_changed": "Nei proxy futures del 24 novembre l’oro scende e il WTI scende. Nella seduta del 23 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "what_changed": "Nei proxy futures del 24 novembre l’oro scende e il WTI scende.",
   "contrary_evidence": "Un movimento esteso del dollaro richiederebbe conferma sia contro euro sia contro yen.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
@@ -105,7 +105,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-24",
-      "rss_checked_at_utc": "2026-11-25T00:42:00.599896Z",
+      "rss_checked_at_utc": "2026-11-25T04:19:08.033254Z",
       "commodities": "2026-11-24"
     },
     "no_paid_api": true,
@@ -113,6 +113,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-25T00:42:00.599896Z",
+      "headline": "Dollaro misto",
+      "material_digest": "55f1bc802cc1467c712d11a742241b96f7de8cd8d096399c19769937b82395a8"
+    },
     {
       "generated_at_utc": "2026-11-24T21:18:16.063547Z",
       "headline": "Dollaro misto",
@@ -227,11 +232,6 @@
       "generated_at_utc": "2026-11-21T02:24:54.274280Z",
       "headline": "Dollaro misto",
       "material_digest": "7cf32dce68d62335d865c588cad2caec9dc01a481506a71dc4dcb7c52772218a"
-    },
-    {
-      "generated_at_utc": "2026-11-21T02:23:27.580199Z",
-      "headline": "Dollaro misto",
-      "material_digest": "a6bc1802391972ebd555a8a51ea1050f77c2e051915ac453a32b0dfa49a8df24"
     }
   ]
 }
