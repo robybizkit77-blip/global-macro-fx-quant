@@ -5,58 +5,10 @@
     "g8_total": 8,
     "macro_ccy_coverage": 8,
     "previous_only_events": 0,
-    "upcoming_macro_events": 68,
-    "upcoming_total_events": 76
+    "upcoming_macro_events": 65,
+    "upcoming_total_events": 73
   },
   "events": [
-    {
-      "ccy": "USD",
-      "consensus_status": "NOT_PRESENT",
-      "date": "2026-11-25",
-      "event_type": "GROWTH",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CALENDAR",
-      "reference_period": "Q3 2026",
-      "source_family": "BEA",
-      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
-      "source_url": "https://www.bea.gov/news/schedule?output=1",
-      "status": "UPCOMING",
-      "time_local": "08:30",
-      "timezone": "America/New_York",
-      "title": "GDP (Second Estimate) and Corporate Profits"
-    },
-    {
-      "ccy": "USD",
-      "consensus_status": "NOT_PRESENT",
-      "date": "2026-11-25",
-      "event_type": "INFLATION",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CALENDAR",
-      "reference_period": "October 2026",
-      "source_family": "BEA",
-      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
-      "source_url": "https://www.bea.gov/news/schedule?output=1",
-      "status": "UPCOMING",
-      "time_local": "08:30",
-      "timezone": "America/New_York",
-      "title": "Personal Income and Outlays"
-    },
-    {
-      "ccy": "AUD",
-      "consensus_status": "NOT_PRESENT",
-      "date": "2026-11-25",
-      "event_type": "INFLATION",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CALENDAR",
-      "reference_period": "October 2026",
-      "source_family": "ABS",
-      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
-      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia",
-      "status": "UPCOMING",
-      "time_local": "11:30",
-      "timezone": "Australia/Sydney",
-      "title": "Consumer Price Index, Australia"
-    },
     {
       "ccy": "CHF",
       "consensus_status": "NOT_PRESENT",
@@ -1209,8 +1161,8 @@
       "title": "Swiss Consumer Price Index"
     }
   ],
-  "generated_at_utc": "2026-11-25T17:01:30.968094Z",
-  "last_checked_at_utc": "2026-11-25T17:01:30.968094Z",
+  "generated_at_utc": "2026-11-25T23:40:25.488852Z",
+  "last_checked_at_utc": "2026-11-25T23:40:25.488852Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
