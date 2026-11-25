@@ -1138,6 +1138,84 @@
       "quality": "OFFICIAL_CALENDAR",
       "source_family": "ABS",
       "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia"
+    },
+    {
+      "ccy": "EUR",
+      "date": "2026-12-01",
+      "time_local": null,
+      "timezone": "Europe/Luxembourg",
+      "event_type": "INFLATION",
+      "title": "Euro area flash inflation",
+      "reference_period": "November 2026",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "Eurostat",
+      "source_url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-18112026-ap?lang=en"
+    },
+    {
+      "ccy": "GBP",
+      "date": "2026-12-16",
+      "time_local": "07:00",
+      "timezone": "Europe/London",
+      "event_type": "INFLATION",
+      "title": "Consumer price inflation, UK",
+      "reference_period": "November 2026",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "source_family": "ONS",
+      "source_url": "https://www.ons.gov.uk/releases/consumerpriceinflationuknovember2026"
+    },
+    {
+      "ccy": "GBP",
+      "date": "2027-01-20",
+      "time_local": "07:00",
+      "timezone": "Europe/London",
+      "event_type": "INFLATION",
+      "title": "Consumer price inflation, UK",
+      "reference_period": "December 2026",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "source_family": "ONS",
+      "source_url": "https://www.ons.gov.uk/releasecalendar?keywords=consumer+price+inflation&limit=100&release-type=type-upcoming"
+    },
+    {
+      "ccy": "JPY",
+      "date": "2026-12-18",
+      "time_local": "08:30",
+      "timezone": "Asia/Tokyo",
+      "event_type": "INFLATION",
+      "title": "Japan Consumer Price Index",
+      "reference_period": "November 2026",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "source_family": "Statistics Bureau of Japan",
+      "source_url": "https://www.stat.go.jp/english/data/cpi/1582.html"
+    },
+    {
+      "ccy": "JPY",
+      "date": "2027-01-22",
+      "time_local": "08:30",
+      "timezone": "Asia/Tokyo",
+      "event_type": "INFLATION",
+      "title": "Japan Consumer Price Index",
+      "reference_period": "December 2026",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "source_family": "Statistics Bureau of Japan",
+      "source_url": "https://www.stat.go.jp/english/data/cpi/1582.html"
+    },
+    {
+      "ccy": "JPY",
+      "date": "2026-12-01",
+      "time_local": null,
+      "timezone": "Asia/Tokyo",
+      "event_type": "LABOUR",
+      "title": "Labour Force Survey - Basic Tabulation",
+      "reference_period": "October 2026",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "source_family": "Statistics Bureau of Japan",
+      "source_url": "https://www.stat.go.jp/english/data/roudou/1543.htm"
     }
   ]
 }
