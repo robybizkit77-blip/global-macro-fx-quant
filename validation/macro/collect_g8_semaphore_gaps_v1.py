@@ -1054,6 +1054,61 @@ def collect_cad_lfs(now,wds=statcan_lfs_wds):
     except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError) as exc:
         return None,{"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
 
+REAL_US_SERVICES=dict(ccy="USD",area="services",key="PCESC96",method="fred",
+    name="Consumi reali di servizi USA (domanda famiglie, non output totale)",
+    unit="mld USD concatenati 2017 SAAR",frequency="M",kind="percent",max_age_days=85,
+    origin="BEA via FRED",source_page="https://fred.stlouisfed.org/series/PCESC96")
+REAL_CA_MFG=dict(ccy="CAD",area="industry",key="STATCAN_16100013_REAL_MFG_SALES",method="statcan_real_mfg",
+    name="Vendite manifatturiere reali (dollari 2017, SA)",unit="mln CAD reali 2017 SA",
+    frequency="M",kind="percent",max_age_days=85,origin="Statistics Canada / 16-10-0013-01",
+    source_page="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1610001301")
+REAL_CA_MFG_URL="https://www150.statcan.gc.ca/n1/tbl/csv/16100013-eng.zip"
+def fetch_real_ca_mfg():
+    req=Request(REAL_CA_MFG_URL,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":"application/zip"})
+    with urlopen(req,timeout=25) as r:
+        if r.geturl()!=REAL_CA_MFG_URL:raise ValueError("Real manufacturing source redirected")
+        raw=r.read(25_000_001)
+        if not raw or len(raw)>25_000_000:raise ValueError("Real manufacturing archive size")
+        return raw
+
+def parse_real_ca_mfg(raw,now):
+    with ZipFile(io.BytesIO(raw)) as z:
+        info=z.getinfo("16100013.csv")
+        if info.file_size>200_000_000:raise ValueError("Real manufacturing archive size")
+        with z.open(info) as f:
+            rdr=csv.DictReader(io.TextIOWrapper(f,encoding="utf-8-sig"))
+            industry="North American Industry Classification System (NAICS)"
+            required={"REF_DATE","GEO","Principal statistics",industry,"VALUE","UOM","SCALAR_FACTOR","VECTOR"}
+            if not required.issubset(rdr.fieldnames or []):raise ValueError("Real manufacturing dimensions changed")
+            obs={};vectors=set()
+            for row in rdr:
+                if row["GEO"]!="Canada" or row[industry]!="Manufacturing [31-33]" or row["Principal statistics"]!="Sales of goods manufactured (shipments)":continue
+                if row.get("Seasonal adjustment","Seasonally adjusted")!="Seasonally adjusted":continue
+                if row["UOM"] not in {"Dollars","2017 constant dollars","2017 dollars"} or row["SCALAR_FACTOR"]!="millions":raise ValueError("Real manufacturing unit/scale changed")
+                p=row["REF_DATE"]
+                if not re.fullmatch(r"\d{4}-\d{2}",p):raise ValueError("Real manufacturing date")
+                if period_end(p)>now or row["VALUE"] in ("","..","."):continue
+                v=float(row["VALUE"])
+                if not math.isfinite(v) or not 1000<v<200000 or p in obs:raise ValueError("Real manufacturing value invalid")
+                if not row["VECTOR"]:raise ValueError("Real manufacturing vector missing")
+                vectors.add(row["VECTOR"]);obs[p]=v
+            if len(vectors)!=1 or len(obs)<12:raise ValueError("Real manufacturing series ambiguous or incomplete")
+            return sorted(obs.items())
+
+def upgrade_real_activity(out,now,fred_fetch=fetch,ca_fetch=fetch_real_ca_mfg):
+    for spec,load in [(REAL_US_SERVICES,lambda:parse_fred(fred_fetch(FRED+"PCESC96"),"PCESC96","M",now)),
+                      (REAL_CA_MFG,lambda:parse_real_ca_mfg(ca_fetch(),now))]:
+        key=spec["ccy"]+"_"+spec["area"]
+        try:
+            item,status=candidate(spec,load(),now)
+            if item and item["history"]["observations"]>=12:
+                out["series"]=[x for x in out["series"] if (x["ccy"],x["area"])!=(spec["ccy"],spec["area"])]
+                out["series"].append(item)
+                out["audit"][key]={**status,"source_page":spec["source_page"],"origin":spec["origin"],"quality_upgrade":"REAL_ACTIVITY"}
+            else:out["audit"][key]["quality_upgrade_attempt"]=status
+        except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError,__import__("zipfile").BadZipFile) as exc:
+            out["audit"][key]["quality_upgrade_attempt"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+
 def collect_external_context(now,fetcher=fetch):
     result={"schema":"GMFQ_G8_EXTERNAL_CONTEXT_V1","series":[],"audit":{}}
     for ccy,key in EXPORT_KEYS.items():
@@ -2310,6 +2365,7 @@ def collect(now=None,fetcher=fetch):
         if item:out["series"].append(item)
         out["audit"]["CAD_jobs"]=status
         out["source_count"]+=1
+        upgrade_real_activity(out,now)
         out["wage_context"]=collect_wage_context(now)
         out["external_context"]=collect_external_context(now)
         out["inflation_context"]=collect_inflation_context(now)
