@@ -1176,7 +1176,7 @@
       "importance": "HIGH",
       "quality": "OFFICIAL_CONFIRMED",
       "source_family": "ONS",
-      "source_url": "https://www.ons.gov.uk/releasecalendar?keywords=consumer+price+inflation&limit=100&release-type=type-upcoming"
+      "source_url": "https://www.ons.gov.uk/releases/consumerpriceinflationukdecember2026"
     },
     {
       "ccy": "JPY",
@@ -1216,6 +1216,32 @@
       "quality": "OFFICIAL_CALENDAR",
       "source_family": "Statistics Bureau of Japan",
       "source_url": "https://www.stat.go.jp/english/data/roudou/1543.htm"
+    },
+    {
+      "ccy": "JPY",
+      "date": "2027-02-19",
+      "time_local": "08:30",
+      "timezone": "Asia/Tokyo",
+      "event_type": "INFLATION",
+      "title": "Japan Consumer Price Index",
+      "reference_period": "January 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "source_family": "Statistics Bureau of Japan",
+      "source_url": "https://www.stat.go.jp/english/data/cpi/1582.html"
+    },
+    {
+      "ccy": "JPY",
+      "date": "2027-03-19",
+      "time_local": "08:30",
+      "timezone": "Asia/Tokyo",
+      "event_type": "INFLATION",
+      "title": "Japan Consumer Price Index",
+      "reference_period": "February 2027",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "source_family": "Statistics Bureau of Japan",
+      "source_url": "https://www.stat.go.jp/english/data/cpi/1582.html"
     }
   ]
 }
