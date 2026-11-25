@@ -635,6 +635,12 @@ jobs:
                      for e in ev['events'])
           assert news['status']=='ACTIVE_DETERMINISTIC_LAYERS'
           assert news['items']
+          from validation.macro.recurring_official_actuals_v1 import archive
+          records=news['recurring_official_archive']
+          assert archive(records,[],datetime.now(timezone.utc))==records
+          archived={r['event_key'] for r in records}
+          assert all(r['event_key'] in archived for r in news['recurring_release_checks'] if r['status']=='VERIFIED')
+          print('RECURRING_RELEASE_ARCHIVE_PERSISTENCE_PASS',len(records))
           external=news['official_releases']
           assert external['schema']=='GMFQ_OFFICIAL_RSS_HEADLINES_V1'
           assert external['source_count']==9

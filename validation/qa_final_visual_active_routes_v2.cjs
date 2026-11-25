@@ -188,8 +188,13 @@ async function checkPairChartControls(page,label) {
     throw Error(label+' 28-pair ranking provenance missing from method audit');
   if(await page.locator('section.pairs-thesis-pulse').count()!==0)
     throw Error(label+' archived September thesis pulse must not appear in operational ranking');
-  if(await ranking.locator('button.fx-rank-pair').count()!==33)
-    throw Error(label+' estimated ranking must show 5 priority + 28 canonical crosses');
+  const full=await ranking.locator('#fx-rank-all button.fx-rank-pair').evaluateAll(xs=>xs.map(x=>x.dataset.pair));
+  const shortlist=await ranking.locator('#fx-rank-top button.fx-rank-pair').evaluateAll(xs=>xs.map(x=>x.dataset.pair));
+  if(full.length!==28||new Set(full).size!==28||shortlist.length>5||new Set(shortlist).size!==shortlist.length||
+     !shortlist.every(x=>full.includes(x)))
+    throw Error(label+' estimated ranking must show all 28 canonical crosses and at most 5 eligible priority cases');
+  if(shortlist.length<5&&!(await ranking.locator('#fx-rank-top').textContent()).includes('Oggi solo '+shortlist.length+' coppie rispettano il filtro'))
+    throw Error(label+' a short shortlist must explain why it has fewer than five cases');
   const selected=page.locator('#fx-ranking-desk button[data-pair="USDCAD"]').first();
   if (!(await selected.count())) throw Error(label + ' USD/CAD pair not found in ranking');
   await selected.click();

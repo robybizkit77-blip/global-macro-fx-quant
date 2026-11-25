@@ -8,6 +8,7 @@ from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 import re
 import math
+import hashlib
 
 QUALITY = "OFFICIAL_RECURRING_RELEASE_OBSERVED_NOT_EVENT_REACTION"
 ROME = ZoneInfo("Europe/Rome")
@@ -127,17 +128,19 @@ def build(seed,now,previous=(),fetch=retrieve,clock=None):
                 continue
             kind,url,period,stage=target
             old=next((r for r in previous if r.get("quality")==QUALITY and r.get("event_key")==key and r.get("source_url")==url and r.get("as_of")==e["date"]),None)
-            if old and scheduled<=datetime.fromisoformat(old["first_runner_observed_at_utc"].replace("Z","+00:00"))<=now:
-                items.append({**old,"_date":d})
+            if old and scheduled<=datetime.fromisoformat(old["first_runner_observed_at_utc"].replace("Z","+00:00"))<=now and old.get("reference_period")==e["reference_period"] and old.get("issuer_html_sha256"):
+                validated_record(old,now)
+                items.append({**old,"reference_period":e["reference_period"],"publication_stage":stage,"_date":d})
                 checks.append({"event_key":key,"status":"VERIFIED","source_url":url})
                 continue
-            parsed=metrics(e,fetch(url))
+            body=fetch(url)
+            parsed=metrics(e,body)
             seen=(clock or (lambda:datetime.now(timezone.utc)))()
             if seen<now or seen<scheduled:
                 raise ValueError("invalid observation clock")
             fmt=lambda v:f"{v:.1f}".replace(".",",")+"%"
             parts=[label+": "+fmt(v)+(f" (periodo precedente {fmt(p)})" if p is not None else "") for _,label,v,p in parsed]
-            items.append({"category":"MACRO_OFFICIAL_ACTUAL","event_key":key,"event_type":e["event_type"],"ccy":e["ccy"],"as_of":e["date"],"title":parts[0],"detail":"; ".join(parts)+". Periodo: "+period+". Nessuna sorpresa senza consenso pre-evento; reazione FX non misurata.","source":"ABS" if kind=="ABS_CPI" else "BEA","source_url":url,"first_runner_observed_at_utc":seen.astimezone(timezone.utc).isoformat().replace("+00:00","Z"),"quality":QUALITY,"confidence":"A","importance":"HIGH","metrics":[{"id":mid,"value_percent":v,"previous_period_percent":p} for mid,_,v,p in parsed],"_date":d})
+            items.append({"category":"MACRO_OFFICIAL_ACTUAL","event_key":key,"event_type":e["event_type"],"ccy":e["ccy"],"as_of":e["date"],"title":parts[0],"detail":"; ".join(parts)+". Periodo: "+period+". Nessuna sorpresa senza consenso pre-evento; reazione FX non misurata.","source":"ABS" if kind=="ABS_CPI" else "BEA","source_url":url,"reference_period":e["reference_period"],"publication_stage":stage,"issuer_html_sha256":hashlib.sha256(body.encode("utf-8")).hexdigest(),"first_runner_observed_at_utc":seen.astimezone(timezone.utc).isoformat().replace("+00:00","Z"),"quality":QUALITY,"confidence":"A","importance":"HIGH","metrics":[{"id":mid,"value_percent":v,"previous_period_percent":p} for mid,_,v,p in parsed],"_date":d})
             checks.append({"event_key":key,"status":"VERIFIED","source_url":url})
         except Exception as exc:
             checks.append({"event_key":key,"status":"SOURCE_UNVERIFIED","reason":str(exc)[:160]})
@@ -155,3 +158,54 @@ def build(seed,now,previous=(),fetch=retrieve,clock=None):
         except (ValueError,TypeError,KeyError):
             pass
     return items,checks
+
+# Persistent history is not the capped, rolling news display. Every archived
+# release retains its original observation clock and exact metric identity.
+EXPECTED = {
+    "ABS_CPI": {"AU_CPI_HEADLINE_YOY","AU_CPI_TRIMMED_MEAN_YOY"},
+    "BEA_GDP": {"US_REAL_GDP_SAAR"},
+    "BEA_PCE": {"US_PCE_MOM","US_CORE_PCE_MOM","US_PCE_YOY","US_CORE_PCE_YOY"},
+}
+
+def validated_record(row, now):
+    ccy, released, event_type, title = row["event_key"].split("|",3)
+    event={"ccy":ccy,"date":released,"event_type":event_type,"title":title,
+           "source_family":row["source"],"reference_period":row["reference_period"]}
+    kind,url,_,stage=identity(event)
+    seen=datetime.fromisoformat(row["first_runner_observed_at_utc"].replace("Z","+00:00"))
+    if (row.get("quality")!=QUALITY or row.get("confidence")!="A" or
+        row.get("category")!="MACRO_OFFICIAL_ACTUAL" or
+        row.get("ccy")!=ccy or row.get("as_of")!=released or
+        row.get("event_type")!=event_type or
+        event_type!=("GROWTH" if kind=="BEA_GDP" else "INFLATION") or
+        row.get("source_url")!=url or row.get("publication_stage")!=stage or
+        not re.fullmatch(r"[0-9a-f]{64}",row.get("issuer_html_sha256","")) or
+        seen.utcoffset() is None or seen>now or
+        date.fromisoformat(released)>seen.astimezone(ROME).date()):
+        raise ValueError("recurring source identity or clock mismatch")
+    values=row["metrics"]
+    if len(values)!=len(EXPECTED[kind]) or {v["id"] for v in values}!=EXPECTED[kind]:
+        raise ValueError("recurring metric identity mismatch")
+    for v in values:
+        for field in ("value_percent","previous_period_percent"):
+            x=v[field]
+            if field=="previous_period_percent" and x is None:
+                continue
+            if type(x) not in (int,float) or not math.isfinite(x) or abs(x)>=100:
+                raise ValueError("invalid archived metric")
+    return {k:v for k,v in row.items() if k!="_date"}
+
+def archive(previous, additions, now):
+    records={}
+    for row in [*previous,*additions]:
+        if not row.get("reference_period"):
+            continue # legacy display record; enrich through matched seed first
+        clean=validated_record(row,now)
+        key=clean["event_key"]
+        if key in records:
+            if records[key]["metrics"]!=clean["metrics"]:
+                raise ValueError("existing first-observed release changed")
+            # Never reset the first observation clock on a repeated run.
+            continue
+        records[key]=clean
+    return sorted(records.values(),key=lambda x:(x["as_of"],x["event_key"]))

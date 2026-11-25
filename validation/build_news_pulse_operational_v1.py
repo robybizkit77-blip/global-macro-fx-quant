@@ -15,7 +15,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0,str(ROOT))
 from validation.macro.build_macro_event_market_context_v1 import run as macro_event_market_context_run
 from validation.macro.build_g8_official_news_items_v1 import build as g8_issuer_items
-from validation.macro.recurring_official_actuals_v1 import build as recurring_actuals
+from validation.macro.recurring_official_actuals_v1 import build as recurring_actuals, archive as recurring_archive
 from validation.macro.capture_us_cpi_exact_actuals_v10 import (
     OUT as BLS_CPI_LEDGER, validate_actual_log as validate_bls_cpi)
 from validation.macro.freeze_exact_metric_forecasts_v9 import (
@@ -419,9 +419,11 @@ def main():
     items+=g8_issuer_items(now)
     prior=load_market_input(OUT)
     seed=load_market_input(ROOT/'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json')
-    recurring,release_checks=recurring_actuals(seed,now,previous=prior.get('items',[]))
+    old_archive=prior.get('recurring_official_archive',[])
+    recurring,release_checks=recurring_actuals(seed,now,previous=old_archive+prior.get('items',[]))
+    release_archive=recurring_archive(old_archive,recurring,datetime.now(timezone.utc))
     items+=recurring
-    print(json.dumps({'recurring_release_checks':release_checks},ensure_ascii=False))
+    print(json.dumps({'recurring_release_checks':release_checks,'recurring_official_archive':release_archive},ensure_ascii=False))
     items.sort(key=lambda x:(x['_date'] or date.min,x['importance']=='HIGH',-ORDER.index(x['ccy']) if x['ccy'] in ORDER else 0),reverse=True)
     for x in items:x.pop('_date',None)
     items=items[:20]
@@ -438,7 +440,7 @@ def main():
     # news headline items remain independent of macro-event attribution.
     # Anchor journal is written by the preceding Calendar/News workflow step.
     _, macro_context = macro_event_market_context_run(now=now,freeze=False)
-    core={'schema':'GMFQ_NEWS_PULSE_OPERATIONAL_V1','status':'ACTIVE_DETERMINISTIC_LAYERS','content_as_of':iso(latest),'scope':{'external_news_feed':'OFFICIAL_G8_CB_EIA_RSS_SEPARATE_HEADLINE_ONLY','inputs':['OIS_OPERATIONAL_VIEW','MACRO_THERMOMETER_DATA','ECB_G8_PRICE_HISTORY','NATIVE_RATES_DATA','CROSS_ASSET_LIVE_RESEARCH'],'claim':'LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES'},'items':items,'official_releases':official,'macro_event_market_context':macro_context,'recurring_release_checks':release_checks}
+    core={'schema':'GMFQ_NEWS_PULSE_OPERATIONAL_V1','status':'ACTIVE_DETERMINISTIC_LAYERS','content_as_of':iso(latest),'scope':{'external_news_feed':'OFFICIAL_G8_CB_EIA_RSS_SEPARATE_HEADLINE_ONLY','inputs':['OIS_OPERATIONAL_VIEW','MACRO_THERMOMETER_DATA','ECB_G8_PRICE_HISTORY','NATIVE_RATES_DATA','CROSS_ASSET_LIVE_RESEARCH'],'claim':'LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES'},'items':items,'official_releases':official,'macro_event_market_context':macro_context,'recurring_release_checks':release_checks,'recurring_official_archive':release_archive}
     changed=stable_write(core, now=now)
     print(json.dumps({'status':'PASS','changed':changed,'items':len(items),'content_as_of':iso(latest),'official_headlines':len(official['headlines']),'boj_selected_headlines':[{'title':h['title'],'at':h['published_at_utc']} for h in official['headlines'] if h.get('source_id')=='BOJ_NEWS'],'official_source_status':[{'id':x['source_id'],'status':x['status'],'count':x['accepted_items']} for x in official['sources']],'output':str(OUT.relative_to(ROOT))}))
 

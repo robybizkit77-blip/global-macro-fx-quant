@@ -436,6 +436,7 @@ function make(api){
        research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),
        today:dayNow()
      })||'<section class="rates-pricing-moves"><p class="rates-missing">Confronto monetario giornaliero non disponibile: dati da verificare.</p></section>')
+    +(root.FXQuantIssuerContext?.render(get('macroObserved'),[c],dayNow())||'')
     +(root.FXQuantPricingHistory?.render?.({
         history:get('oisHistory'),ccy:c,other,
         window:state.rsHistoryWindow||30
