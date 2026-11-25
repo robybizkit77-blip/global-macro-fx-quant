@@ -650,3 +650,27 @@ console.log('ECONOMIC_CYCLE_COUNTRY_HISTORY_PASS');
  for(const ccy of coverage)assert.match(render({catalog,esc,dayNow:()=>date,country:ccy,overlay:ov}),/Chi sta cambiando rispetto agli altri/);
 }
 console.log('ECONOMIC_CYCLE_RELATIVE_DIVERGENCES_PASS');
+
+{
+ const today='2026-11-25',dates=Array.from({length:24},(_,i)=>new Date(Date.UTC(2024,10+i,1)).toISOString().slice(0,7)),values=dates.map((_,i)=>300+i);
+ const make=(ccy,id,source_page,unit,values)=>({ccy,area:'core',source_series_id:id,source_page,unit,frequency:'M',metric_kind:'points',quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',dates:dates.slice(-2),values:values.slice(-2),source_file:'QA fixture',history:{schema:'GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1',frequency:'M',source_series_id:id,quality:'SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT',dates,values,observations:24,max_observations:36}});
+ const us=make('USD','CPILFESL','https://fred.stlouisfed.org/series/CPILFESL','Index 1982-1984=100',values);
+ const uk=make('GBP','DKO8','https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/dko8/mm23','% a/a',dates.map((_,i)=>2+i/100));
+ const ov=JSON.parse(fs.readFileSync(path.join(base,'site/fx-quant-v2/next/semaphore-supplement-v1.json'),'utf8'));
+ ov.inflation_context={schema:'GMFQ_G8_INFLATION_CONTEXT_V1',series:[us,uk]};
+ const u=inflationContext(catalog,today,'USD',ov).find(x=>/core/i.test(x.label));
+ const k=inflationContext(catalog,today,'GBP',ov).find(x=>/core/i.test(x.label));
+ const gapDates=dates.filter(p=>p!=='2025-10'),gapValues=dates.map((p,i)=>({p,v:values[i]})).filter(x=>x.p!=='2025-10').map(x=>x.v);
+ const gap={...us,exact_lag_history:{schema:'GMFQ_US_CORE_EXACT_LAG_V1',source_series_id:'CPILFESL',dates:gapDates,values:gapValues}};
+ const gapCore=inflationContext(catalog,today,'USD',{...ov,inflation_context:{...ov.inflation_context,series:[gap]}}).find(x=>/core/i.test(x.label));
+ assert.equal(gapCore.period,'2026-09');assert.equal(gapCore.latestIndexPeriod,'2026-10');assert.equal(gapCore.annualGap,true);assert.equal(gapCore.direction,null);
+ assert.equal(u.period,'2026-10');assert.equal(k.period,'2026-10');assert.ok(Math.abs(u.value-(323/311-1)*100)<1e-9);assert.equal(k.value,2.23);
+ assert.equal(inflationContext(catalog,today,'USD',{...ov,inflation_context:{...ov.inflation_context,series:[{...us,source_page:'https://example.com'}]}}).find(x=>/core/i.test(x.label)).period,inflationContext(catalog,today,'USD').find(x=>/core/i.test(x.label)).period);
+}
+{
+ const aud=inflationContext(catalog,'2026-11-25','AUD');
+ const filtered=aud.filter(x=>/core|trimmed|median|\btrim\b/i.test(x.label));
+ assert.equal(filtered.length,1);
+ assert.match(filtered[0].id,/TRIMMED_MEAN/);
+}
+console.log('ECONOMIC_CYCLE_CORE_RECOVERY_PASS');

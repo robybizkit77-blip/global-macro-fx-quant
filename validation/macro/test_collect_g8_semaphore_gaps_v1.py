@@ -650,4 +650,28 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertTrue(all(x["status"]=="WITHHELD_FETCH_OR_VALIDATION" for x in out["audit"].values()))
         self.assertNotIn("status","PASS")
 
+    def test_core_recovery_identity_and_history(self):
+        months=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
+        rows=[]
+        for i in range(24):
+            y,m=divmod(2026*12+9-23+i,12)
+            rows.append(f"<tr><td>{y} {months[m]}</td><td>{2+i/100}</td></tr>")
+        raw=("<h1>CPI 12mth: Excluding Energy, food, alcoholic beverages &amp; tobacco 2015=100</h1><p>Series ID: DKO8</p><table>"+"".join(rows)+"</table>").encode()
+        data=mod.collect_inflation_context(NOW,fred_fetcher=lambda _:fixture("CPILFESL",end=(2026,10)),ons_fetcher=lambda _:raw)
+        self.assertEqual(len(data["series"]),2)
+        for item in data["series"]:
+            self.assertEqual(item["dates"],["2026-09","2026-10"])
+            self.assertEqual(item["history"]["observations"],24)
+        self.assertRaises(ValueError,mod.parse_ons_core,raw.replace(b"DKO8",b"DKC6"),NOW)
+        bad=mod.collect_inflation_context(NOW,fred_fetcher=lambda _:fixture("WRONG"),ons_fetcher=lambda _:raw.replace(b"DKO8",b"DKC6"))
+        self.assertEqual(bad["series"],[])
+        # October 2025 absent: October 2026 index still valid, annual rate not.
+        gap=fixture("CPILFESL",end=(2026,10))
+        gap=b"\n".join(line for line in gap.splitlines() if not line.startswith(b"2025-10-"))
+        partial=mod.collect_inflation_context(NOW,fred_fetcher=lambda _:gap,ons_fetcher=lambda _:raw)
+        self.assertEqual(partial["audit"]["USD"]["latest_index_period"],"2026-10")
+        self.assertEqual(partial["audit"]["USD"]["latest_yoy_period"],"2026-09")
+        self.assertEqual(partial["audit"]["USD"]["annual_status"],"SOURCE_BASE_PERIOD_MISSING")
+        self.assertNotIn("2025-10",partial["series"][0]["exact_lag_history"]["dates"])
+
 if __name__=="__main__":unittest.main()

@@ -727,6 +727,65 @@ EXPORT_KEYS={"USD":"NAEXKP06USQ659S","GBP":"NAEXKP06GBQ659S","JPY":"NAEXKP06JPQ6
  "CHF":"NAEXKP06CHQ659S","CAD":"NAEXKP06CAQ659S","AUD":"NAEXKP06AUQ659S",
  "NZD":"NAEXKP06NZQ659S","EUR":"EUROSTAT_EA21_P6_REAL_EXPORTS_YOY"}
 
+ONS_CORE_URL="https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/dko8/mm23"
+CORE_RECOVERY={
+ "USD":dict(key="CPILFESL",method="fred",name="CPI core USA (indice SA)",unit="Index 1982-1984=100",origin="BLS tramite FRED / CPILFESL",source_page="https://fred.stlouisfed.org/series/CPILFESL"),
+ "GBP":dict(key="DKO8",method="ons_core",name="CPI core UK (esclusi energia, alimentari, alcol e tabacco)",unit="% a/a",origin="ONS / DKO8",source_page=ONS_CORE_URL)
+}
+def parse_ons_core(raw,now):
+    txt=raw.decode("utf-8","replace")
+    p=_PlainText();p.feed(txt)
+    plain=" ".join(" ".join(p.parts).split())
+    if not re.search(r"Series ID:\s*DKO8\b",plain) or not re.search(r"CPI 12mth:\s*Excluding Energy,\s*food,\s*alcoholic beverages\s*&\s*tobacco",plain,re.I):
+        raise ValueError("ONS DKO8 identity changed")
+    table=_ReportTables();table.feed(txt)
+    out={}
+    for rows in table.tables:
+        for row in rows:
+            if len(row)!=2:continue
+            mm=re.fullmatch(r"(\d{4}) (JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)",row[0],re.I)
+            if not mm:continue
+            month=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"].index(mm[2].upper())+1
+            p=f"{int(mm[1]):04d}-{month:02d}"
+            if period_end(p)>now or row[1] in ("","..",":","-"):continue
+            v=float(row[1])
+            if not math.isfinite(v) or abs(v)>50 or p in out:raise ValueError("ONS DKO8 invalid/duplicate value")
+            out[p]=v
+    if len(out)<12:raise ValueError("ONS DKO8 history unavailable")
+    return sorted(out.items())
+
+def collect_inflation_context(now,fred_fetcher=fetch,ons_fetcher=None):
+    result={"schema":"GMFQ_G8_INFLATION_CONTEXT_V1","series":[],"audit":{}}
+    for ccy,definition in CORE_RECOVERY.items():
+        try:
+            key=definition["key"]
+            obs=(parse_fred(fred_fetcher(FRED+key),key,"M",now) if ccy=="USD"
+                 else parse_ons_core((ons_fetcher or fetch_issuer)(ONS_CORE_URL),now))
+            if ccy=="USD" and any(v<=0 for _,v in obs):raise ValueError("non-positive CPI index")
+            spec=dict(**definition,ccy=ccy,area="core",frequency="M",kind="points",max_age_days=85)
+            item,status=candidate(spec,obs,now)
+            if item:
+                if ccy=="USD":
+                    # Exact annual comparisons need their own base, not a
+                    # contiguous 14-month run. Never impute a missing index.
+                    latest=obs[-1][0]
+                    def ix(p):return int(p[:4])*12+int(p[5:])
+                    records={ix(p):v for p,v in obs}
+                    recent=[(p,v) for p,v in obs if ix(latest)-ix(p)<36]
+                    valid=[p for p,v in recent if ix(p)-12 in records]
+                    if not valid:raise ValueError("US core index has no exact annual comparison")
+                    item["exact_lag_history"]={"schema":"GMFQ_US_CORE_EXACT_LAG_V1",
+                        "source_series_id":key,"dates":[p for p,v in recent],
+                        "values":[v for p,v in recent]}
+                    status={**status,"latest_index_period":latest,
+                            "latest_yoy_period":valid[-1],
+                            "annual_status":"EXACT_LAG_AVAILABLE" if valid[-1]==latest else "SOURCE_BASE_PERIOD_MISSING"}
+                result["series"].append(item)
+            result["audit"][ccy]=status
+        except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+            result["audit"][ccy]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    return result
+
 def collect_external_context(now,fetcher=fetch):
     result={"schema":"GMFQ_G8_EXTERNAL_CONTEXT_V1","series":[],"audit":{}}
     for ccy,key in EXPORT_KEYS.items():
@@ -1274,7 +1333,7 @@ def parse_snb_credit(raw,now):
     return sorted(out.items())
 
 def fetch_issuer(url):
-    if url not in {ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
+    if url not in {ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,ONS_CORE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
     accept=("application/json" if url==SNB_CREDIT_META else "text/csv" if url==SNB_CREDIT_URL else "text/html,application/zip")
     req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":accept})
     with urlopen(req,timeout=35) as response:
@@ -1927,6 +1986,7 @@ def collect(now=None,fetcher=fetch):
     if fetcher is fetch:
         out["wage_context"]=collect_wage_context(now)
         out["external_context"]=collect_external_context(now)
+        out["inflation_context"]=collect_inflation_context(now)
     return out
 
 def main():
@@ -1941,6 +2001,7 @@ def main():
       "ready":len(out["series"]),"total":len(REGISTRY),
       "wage_context":out.get("wage_context",{}).get("audit",{}),
       "external_context":out.get("external_context",{}).get("audit",{}),
+      "inflation_context":out.get("inflation_context",{}).get("audit",{}),
       "history_observations":{s["ccy"]+"_"+s["area"]:s.get("history",{}).get("observations",0) for s in out["series"]},
       "audit":{k:v["status"] for k,v in out["audit"].items()},
       "withheld_reasons":{k:v.get("reason","") for k,v in out["audit"].items() if v["status"]=="WITHHELD_FETCH_OR_VALIDATION"}},ensure_ascii=False))
