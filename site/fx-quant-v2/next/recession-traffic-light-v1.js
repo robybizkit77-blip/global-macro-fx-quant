@@ -659,11 +659,64 @@ function macroNarrative(rows,inflation,wages,external,turning){
  return {growth,prices,trade,policy,watch,turning:turning.judgment,coverage:valid.length,aligned:enough,quality:'DESCRIPTIVE_UNCALIBRATED'};
 }
 // Presentation only: retain the approved activity signals and narrative engine.
+// Interpret observable directions without promoting asynchronous releases into a synchronized cycle.
+function countryInterpretation(rows,inflation,wages,external,narrative){
+ const get=key=>rows.find(r=>r.key===key)?.signal?.tone||'neutral';
+ const valid=rows.filter(r=>r.signal.tone!=='neutral'),up=valid.filter(r=>r.signal.tone==='green'),down=valid.filter(r=>r.signal.tone==='red');
+ const names=a=>a.map(r=>r.name.toLowerCase()).join(', ');
+ const enough=valid.length>=4;
+ const breadth=enough&&up.length>=3&&up.length>down.length?1:enough&&down.length>=3&&down.length>up.length?-1:0;
+ const tone=!enough?'neutral':breadth>0?'green':breadth<0?'red':'amber';
+ const demand=['house','demand','jobs','services'];
+ const domesticDown=demand.filter(k=>get(k)==='red').length,domesticUp=demand.filter(k=>get(k)==='green').length;
+ const productionDown=['industry','leading'].filter(k=>get(k)==='red').length;
+ const current=x=>x?.available&&!x.stale&&x.freq!=='A'&&finite(x.value)&&x.direction;
+ const exp=current(external);
+ const head=inflation.find(x=>/headline/i.test(x.label)&&current(x));
+ const core=inflation.filter(x=>/core|trimmed|median|trim/i.test(x.label)&&current(x));
+ const wage=wages.find(current);
+ const phase=x=>x?.direction;
+ let label=!enough?'Evidenza parziale':breadth<0?'Segnali di rallentamento':breadth>0?'Segnali di recupero': 'Economia a due velocità';
+ let economy='';
+ if(!enough) economy='Le evidenze disponibili sono troppo poche per un quadro trasversale.';
+ else if(domesticDown>=2&&domesticDown>domesticUp){
+   label='Debolezza interna';economy='Più indicatori interni perdono slancio ('+names(down.filter(r=>demand.includes(r.key)))+').';
+   if(exp&&external.value>0) economy+=' Le esportazioni crescono ancora su base annua: il sostegno esterno non coincide con il miglioramento interno.';
+ }else if(productionDown>=2){
+   label='Perdita di slancio produttivo';economy='Manifattura e anticipatori si indeboliscono, suggerendo un possibile rallentamento.';
+   if(get('jobs')==='amber'&&get('demand')==='amber')economy+=' Lavoro e consumi non danno ancora un segnale altrettanto netto.';
+   else if(get('jobs')==='green'||get('demand')==='green')economy+=' Parte della domanda o del lavoro regge nei dati disponibili.';
+ }else if(domesticUp>=2&&domesticUp>domesticDown){
+   label='Segnali di tenuta interna';economy='Più indicatori interni migliorano ('+names(up.filter(r=>demand.includes(r.key)))+').';
+   if(get('industry')==='red')economy+=' La manifattura resta un elemento di divergenza.';
+ }else if(breadth<0)economy='Il deterioramento interessa più aree del miglioramento: '+names(down)+'.';
+ else if(breadth>0)economy='Il miglioramento interessa più aree del deterioramento: '+names(up)+'.';
+ else economy='I segnali non indicano una direzione comune.';
+ if(enough&&up.length&&down.length&&!economy.includes('divergenza')&&!economy.includes('sostegno esterno'))economy+=' Il quadro non è uniforme.';
+ if(exp&&external.value<0&&phase(external)==='accelera')economy+=' Export ancora in calo annuo, ma in recupero.';
+ else if(exp&&external.value>0&&phase(external)==='rallenta')economy+=' La crescita dell’export perde slancio.';
+ const coreUp=core.length>0&&core.every(x=>phase(x)==='accelera'),coreDown=core.length>0&&core.every(x=>phase(x)==='rallenta');
+ let policy='Pressioni sottostanti non univoche: verificare core, salari e pricing dei tassi.';
+ if(coreUp&&phase(wage)==='rallenta'||coreDown&&phase(wage)==='accelera')policy='Core e salari divergono: la direzione delle pressioni interne non è univoca.';
+ else if(coreUp&&phase(wage)==='accelera')policy='Core e salari accelerano nelle rilevazioni disponibili: possibile ostacolo all’allentamento.';
+ else if(coreDown&&phase(wage)==='rallenta')policy='Core e salari rallentano: possibile maggiore spazio per allentare, non una garanzia.';
+ else if(phase(head)==='accelera'&&core.length===0)policy='L’inflazione generale accelera; manca una conferma corrente dal core.';
+ else if(phase(head)==='rallenta'&&core.length===0)policy='L’inflazione generale rallenta; manca una conferma corrente dal core.';
+ else if(coreUp)policy='Il core accelera: possibile freno all’allentamento; verificare i salari.';
+ else if(coreDown)policy='Il core rallenta: verificare se la disinflazione si estende alle pressioni salariali.';
+ if(phase(head)==='accelera'&&(breadth<0||domesticDown>=2||productionDown>=2))policy+=' Crescita e prezzi possono porre un dilemma alla banca centrale.';
+ let watch='Cercare conferme concordi da lavoro, consumi e attività produttiva.';
+ if(!enough)watch='Completare le aree mancanti prima di estendere il giudizio.';
+ else if(domesticDown>=2||productionDown>=2||breadth<0)watch='Controllare se la debolezza si estende a lavoro e consumi, oppure se gli anticipatori recuperano.';
+ else if(breadth>0||domesticUp>=2)watch='Verificare se il miglioramento persiste e raggiunge i settori ancora deboli.';
+ const quality=!enough?'Copertura insufficiente':narrative.aligned?'Periodi sufficientemente allineati':'Periodi non allineati · lettura parziale';
+ return {tone,breadth,label,economy,policy,watch,quality,aggregateTone:narrative.aligned?tone:'neutral',aligned:narrative.aligned};
+}
 function overviewCountry(rows,inflation,wages,external,turning,narrative){
  const up=rows.filter(r=>r.signal.tone==='green'),down=rows.filter(r=>r.signal.tone==='red');
  const mixed=rows.filter(r=>r.signal.tone==='amber'),missing=rows.filter(r=>r.signal.tone==='neutral');
- const tone=!narrative.aligned?'neutral':up.length>=3&&up.length>down.length?'green':down.length>=3&&down.length>up.length?'red':'amber';
- const label={green:'Miglioramento diffuso',red:'Deterioramento diffuso',amber:'Quadro misto',neutral:'Giudizio sospeso'}[tone];
+ const reading=countryInterpretation(rows,inflation,wages,external,narrative);
+ const {tone,label}=reading;
  const active=r=>(r.signalSource==='original'?r.items:r.items.slice(0,1));
  const phase=r=>{
    if(r.signal.tone==='neutral')return null;
@@ -679,9 +732,7 @@ function overviewCountry(rows,inflation,wages,external,turning,narrative){
  const core=inflation.find(x=>/core|trimmed|median|trim/i.test(x.label));
  const wage=wages.find(current)||wages.find(x=>x.available);
  return {tone,label,up,down,mixed,missing,cells,phaseLabels,head,core,wage,external,
-  turning,summary:(up.length?'Migliora: '+up.map(r=>r.name.toLowerCase()).join(', ')+'. ':'')+
-   (down.length?'Peggiora: '+down.map(r=>r.name.toLowerCase()).join(', ')+'.':'')||
-   'Nessuna direzione settoriale univoca.',
+  turning,reading,summary:reading.economy,
   coverage:rows.length-missing.length};
 }
 function exportSparkline(today,country,overlay,external,esc){
@@ -818,7 +869,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    const q=area.signal;
    return '<span class="sem-mini sem-cell '+q.tone+'" title="'+esc(area.name+' · '+tones[q.tone])+'" aria-label="'+esc(tones[q.tone])+'"><span aria-hidden="true">'+symbols[q.tone]+'</span></span>';
  };
- const marketCount=t=>FX.filter(ccy=>overview[ccy].tone===t).length;
+ const marketCount=t=>FX.filter(ccy=>overview[ccy].reading.aggregateTone===t).length;
  const turningCountries=FX.filter(ccy=>overview[ccy].turning.up.length||overview[ccy].turning.down.length);
  const turnList=turningCountries.map(ccy=>{
    const t=overview[ccy].turning;
@@ -834,13 +885,17 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
  };
  const cards=FX.map(ccy=>{
    const o=overview[ccy],t=o.turning,active=ccy===selected;
-   const changeText=t.up.length||t.down.length?'Svolte locali: '+t.up.length+' favorevoli / '+t.down.length+' sfavorevoli':'Nessuna nuova svolta rilevata';
+   const changeText=t.up.length||t.down.length?'Svolte locali: '+t.up.length+' favorevoli / '+t.down.length+' sfavorevoli':t.eligible?'Nessuna nuova svolta rilevata':'Nessuna svolta locale rilevata · copertura storica limitata';
    return '<article class="sem-country-card '+o.tone+(active?' selected':'')+'">'+
     '<button type="button" class="sem-country-card-head" data-ms-country="'+ccy+'" aria-pressed="'+active+'"><span>'+FLAGS[ccy]+' <b>'+esc(NAMES[ccy])+'</b></span><strong>'+ccy+' ↗</strong></button>'+
     '<div class="sem-country-card-body"><div class="sem-country-status '+o.tone+'">'+esc(o.label)+'</div>'+
     '<div class="sem-country-breadth" aria-label="'+o.up.length+' aree migliorano, '+o.down.length+' peggiorano, '+o.mixed.length+' miste, '+o.missing.length+' non classificabili">'+['green','amber','red','neutral'].map(k=>'<i class="'+k+'" style="flex:'+({green:o.up.length,amber:o.mixed.length,red:o.down.length,neutral:o.missing.length}[k])+'"></i>').join('')+'</div>'+
     '<div class="sem-country-breadth-label"><span class="green">↗ '+o.up.length+'</span><span class="amber">→ '+o.mixed.length+'</span><span class="red">↘ '+o.down.length+'</span><small>'+o.coverage+'/7 aree valide</small></div>'+
-    '<p class="sem-country-quick">'+esc(o.summary)+'</p><p class="sem-country-turn">'+esc(changeText)+'</p>'+
+    '<p class="sem-country-quality '+(o.reading.aligned?'aligned':'limited')+'">'+esc(o.reading.quality)+'</p>'+
+    '<p class="sem-country-quick">'+esc(o.summary)+'</p>'+
+    '<div class="sem-country-comment"><strong>Il dilemma monetario</strong><p>'+esc(o.reading.policy)+'</p></div>'+
+    '<div class="sem-country-comment watch"><strong>Cosa controllare</strong><p>'+esc(o.reading.watch)+'</p></div>'+
+    '<p class="sem-country-turn">'+esc(changeText)+'</p>'+
     '<div class="sem-context-metrics">'+rateTile('Inflazione',o.head)+rateTile('Core',o.core)+rateTile('Salari',o.wage)+rateTile('Export reale',o.external)+'</div>'+
     exportSparkline(today,ccy,overlay,o.external,esc)+'</div></article>';
  }).join('');
@@ -857,7 +912,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<p>Il semaforo economico: direzione, fase degli indicatori e segnali di svolta. I colori non sono un ranking di forza FX né una probabilità di recessione.</p></div>'+
   '<span class="sem-date">Consultazione '+esc(today)+' · periodi originali in tabella</span></header>'+
   '<div class="sem-overview"><div class="sem-overview-coverage"><span>Copertura dati G8</span><strong>'+covered+'<small>/56</small></strong><div class="sem-coverage-track" role="progressbar" aria-label="Copertura G8" aria-valuenow="'+covered+'" aria-valuemin="0" aria-valuemax="56"><i style="width:'+(covered/56*100)+'%"></i></div></div>'+['green','amber','red','neutral'].map(t=>'<div class="sem-overview-kpi '+t+'"><span>'+tones[t]+'</span><strong>'+tally(allRows,t)+'</strong></div>').join('')+'</div>'+
-  '<div class="sem-global-verdict"><div><span>QUADRO G8 · DIFFUSIONE DELLE DIREZIONI</span><h3>'+marketCount('green')+' migliorano · '+marketCount('red')+' peggiorano</h3><p>'+marketCount('amber')+' quadri misti · '+marketCount('neutral')+' giudizi sospesi. Regole descrittive, non un confronto del livello di crescita.</p></div><div class="sem-global-turn"><span>PUNTI DI SVOLTA · LOCALI</span><strong>'+turningCountries.length+' economie</strong><small>Non equivalgono a inversioni confermate del ciclo.</small></div></div>'+
+  '<div class="sem-global-verdict"><div><span>QUADRO G8 · DIFFUSIONE DELLE DIREZIONI</span><h3>'+marketCount('green')+' migliorano · '+marketCount('red')+' peggiorano</h3><p>'+marketCount('amber')+' quadri misti · '+marketCount('neutral')+' letture non allineate o insufficienti. Regole descrittive, non un confronto del livello di crescita.</p></div><div class="sem-global-turn"><span>PUNTI DI SVOLTA · LOCALI</span><strong>'+turningCountries.length+' economie</strong><small>Non equivalgono a inversioni confermate del ciclo.</small></div></div>'+
   '<section class="sem-turn-radar" aria-label="Radar delle svolte"><h3>Radar delle svolte</h3><div class="sem-turn-chips">'+(turnList||'<p>Nessuna nuova inversione rilevata con evidenza sufficiente.</p>')+'</div></section>'+
   '<div class="sem-dashboard-title"><div><span>COUNTRY BOARD</span><h3>Le otto economie in 30 secondi</h3></div><small>Seleziona una scheda per il dettaglio. Prezzi, salari ed export sono contesto separato.</small></div>'+
   '<div class="sem-country-board">'+cards+'</div>'+
@@ -900,6 +955,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,overviewCountry,exportSparkline,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,overviewCountry,exportSparkline,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,exportSparkline,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,exportSparkline,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
