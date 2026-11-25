@@ -27,6 +27,36 @@ CORE = "live_data/sections/D.json"
 SCHEMA = "GMFQ_NEXT_ESTIMATE_CORE_WEEKLY_COMPARISON_V1"
 G8 = set("USD EUR GBP JPY CHF CAD AUD NZD".split())
 
+MODELS = ("estimate", "core", "momentum")
+COVERAGE_KEYS = (
+    "nonflat_outcomes", "flat_outcomes",
+    *(f"{m}_{k}" for m in MODELS for k in ("directional", "abstained", "correct_all_directional")),
+    "estimate_core_disagree", "estimate_wins_disagreement", "core_wins_disagreement",
+)
+
+def coverage(votes, outcomes):
+    """Separate each model's coverage from the matched three-model sample."""
+    counts = dict.fromkeys(COVERAGE_KEYS, 0)
+    for pair, preds in votes.items():
+        actual = outcomes[pair]
+        if actual not in (-1, 1):
+            counts["flat_outcomes"] += 1
+            continue
+        counts["nonflat_outcomes"] += 1
+        for m, pred in zip(MODELS, preds):
+            if pred in (-1, 1):
+                counts[m + "_directional"] += 1
+                counts[m + "_correct_all_directional"] += int(pred == actual)
+            else:
+                counts[m + "_abstained"] += 1
+        a, b, _ = preds
+        if a in (-1, 1) and b in (-1, 1) and a != b:
+            counts["estimate_core_disagree"] += 1
+            counts["estimate_wins_disagreement"] += int(a == actual)
+            counts["core_wins_disagreement"] += int(b == actual)
+    return counts
+
+
 
 def git(*args):
     return subprocess.check_output(["git", *args], cwd=ROOT)
@@ -111,6 +141,7 @@ def evaluate(entries, official, read_origin, now):
         prepared.append((anchor, captured, method, votes))
 
     windows, summaries, seen_days, last_end = [], {}, set(), {}
+    coverage_summaries = {}
     for anchor, captured, method, votes in sorted(prepared, key=lambda x: (x[0], x[1])):
         capture_day = anchor.astimezone(ROME).date()
         key = (method, capture_day)
@@ -135,23 +166,31 @@ def evaluate(entries, official, read_origin, now):
             row["status"] = "SOURCE_GAP"
             continue
         counts = dict.fromkeys(("comparable_pairs", "estimate_correct", "core_correct", "momentum_correct"), 0)
+        outcomes = {}
         for p, preds in votes.items():
             a, b = p.split("/")
             outcome = direction(cross(current[start], a, b), cross(current[end], a, b))
+            outcomes[p] = outcome
             if outcome in (-1, 1) and all(v in (-1, 1) for v in preds):
                 counts["comparable_pairs"] += 1
                 for label, pred in zip(("estimate_correct", "core_correct", "momentum_correct"), preds):
                     counts[label] += int(pred == outcome)
+        diagnostic = coverage(votes, outcomes)
         selected = bool(counts["comparable_pairs"] and (method not in last_end or start >= last_end[method]))
         if selected:
             last_end[method] = end
             summary["windows"] += 1
             for k, v in counts.items():
                 summary[k] += v
+            total = coverage_summaries.setdefault(method, dict.fromkeys(COVERAGE_KEYS, 0))
+            for k, v in diagnostic.items():
+                total[k] += v
         row.update(counts, status="OBSERVED", start_fixing=start.isoformat(), end_fixing=end.isoformat(),
-                   selected_nonoverlapping=selected)
+                   selected_nonoverlapping=selected, coverage=diagnostic)
     return {"schema": SCHEMA, "checked_at_utc": instant.isoformat(), "source": SOURCE_URL,
             "archive_snapshots": len(entries), "windows": windows, "nonoverlapping_by_method": summaries,
+            "coverage_on_selected_nonoverlapping_windows": coverage_summaries,
+            "coverage_sample_note": "Individual coverage is descriptive; matched sample alone supports like-for-like accuracy comparisons.",
             "pair_rows_are_independent_trials": False, "historical_pit_certified": False,
             "predictive_validation_established": False, "eligible_to_replace_core": False,
             "live_model_changed": False, "reference_prices_not_executable": True}
@@ -166,6 +205,7 @@ def main():
     result = evaluate(read_archive(), json.loads(FX_PATH.read_bytes()), origin, datetime.now(timezone.utc))
     a.receipt.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print("NEXT_ESTIMATE_CORE_WEEKLY", json.dumps(result["nonoverlapping_by_method"], sort_keys=True))
+    print("NEXT_ESTIMATE_CORE_COVERAGE", json.dumps(result["coverage_on_selected_nonoverlapping_windows"], sort_keys=True))
 
 
 if __name__ == "__main__":

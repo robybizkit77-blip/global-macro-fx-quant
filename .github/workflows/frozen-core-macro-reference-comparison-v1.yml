@@ -15,7 +15,10 @@ on:
       - 'validation/forward/*check_frozen_core_macro_directions_v1.py'
       - 'validation/forward/*check_next_estimate_core_comparison_v1.py'
   workflow_run:
-    workflows: ['Forward ECB Reference Outcomes V1 (research only)']
+    workflows:
+      - 'Forward ECB Reference Outcomes V1 (research only)'
+      - 'Price History Persistent Daily V1'
+      - 'FX Quant Next Estimated Thesis History'
     types: [completed]
   schedule:
     - cron: '37 22 * * 1-5'

@@ -56,6 +56,31 @@ class NextEstimateComparisonTests(unittest.TestCase):
         self.assertEqual(report["windows"][0]["comparable_pairs"], 27)
         self.assertEqual(report["nonoverlapping_by_method"]["b"*64]["windows"], 1)
 
+    def test_coverage_keeps_abstentions_and_disagreements_separate(self):
+        votes = {"A": (1,-1,1), "B": (0,1,-1), "C": (-1,1,0), "D": (1,1,1)}
+        counts = m.coverage(votes, {"A":1, "B":-1, "C":1, "D":0})
+        self.assertEqual(counts["nonflat_outcomes"],3)
+        self.assertEqual(counts["flat_outcomes"],1)
+        self.assertEqual(counts["estimate_directional"],2)
+        self.assertEqual(counts["estimate_abstained"],1)
+        self.assertEqual(counts["estimate_correct_all_directional"],1)
+        self.assertEqual(counts["core_directional"],3)
+        self.assertEqual(counts["estimate_core_disagree"],2)
+        self.assertEqual(counts["estimate_wins_disagreement"],1)
+        self.assertEqual(counts["core_wins_disagreement"],1)
+
+    def test_coverage_aggregation_excludes_overlapping_windows(self):
+        self.snap["pairs"]["AUDEUR"]["favored"] = None
+        later = deepcopy(self.snap)
+        later["capturedAt"] = "2026-11-24T08:00:00Z"
+        report = self.evaluate([(self.snap, "2026-11-23T08:00:00Z"),
+                                (later, "2026-11-24T08:01:00Z")], "2026-12-03T22:00:00+01:00")
+        selected = [w for w in report["windows"] if w.get("selected_nonoverlapping")]
+        self.assertEqual(len(selected),1)
+        self.assertEqual(report["coverage_on_selected_nonoverlapping_windows"]["b"*64],selected[0]["coverage"])
+        self.assertEqual(selected[0]["coverage"]["estimate_abstained"],1)
+        self.assertFalse(report["eligible_to_replace_core"])
+
     def test_rejects_future_and_invalid_pair(self):
         with self.assertRaisesRegex(ValueError, "Future"):
             self.evaluate([(self.snap, "2026-12-03T08:00:00Z")], "2026-12-01T22:00:00+01:00")
