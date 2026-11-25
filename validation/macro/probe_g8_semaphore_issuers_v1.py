@@ -7,6 +7,9 @@ from zipfile import ZipFile
 from openpyxl import load_workbook
 
 URLS={
+ "RBNZ_M1_CORE":"https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m1/hm1.xlsx",
+ "SWISS_CORE_FSO_2025":"https://dam-api.bfs.admin.ch/hub/api/dam/assets/36970583/master",
+ "JAPAN_CORE_2025_YOY":"https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=1&statInfId=000040482953",
  "NZALT_BNZ_PSI":"https://www.bnz.co.nz/institutional-banking/research/publications",
  "NZALT_BNZ_ECONOMY":"https://www.bnz.co.nz/institutional-banking/research/publications/economy-watch",
  "NZALT_STAT_HOUSE":"https://www.stats.govt.nz/topics/building/",
@@ -63,6 +66,27 @@ def call(name,url):
   with urllib.request.urlopen(r,timeout=18) as x:
    data=x.read(28_000_000+1)
    if len(data)>28_000_000: return {"error":"file above 28MB budget"}
+   if name=="SWISS_CORE_FSO_2025":
+    book=load_workbook(io.BytesIO(data),read_only=True,data_only=True)
+    ret={"bytes":len(data),"source":x.geturl(),"sheets":[]}
+    for ws in book.worksheets:
+     matches=[]
+     for i,row in enumerate(ws.iter_rows(values_only=True),1):
+      for j,v in enumerate(row,1):
+       if isinstance(v,str) and "core inflation 1" in v.casefold():
+        matches.append({"row":i,"column":j,"label":v,"head":[str(z)[:70] if z is not None else None for z in row[:12]],"tail":[str(z)[:70] if z is not None else None for z in row[-18:]]})
+      if i>2500:break
+     head=[[str(v)[:80] if v is not None else None for v in row] for row in ws.iter_rows(min_row=1,max_row=10,max_col=12,values_only=True)]
+     ret["sheets"].append({"name":ws.title,"rows":ws.max_row,"cols":ws.max_column,"head":head,"core_matches":matches[:8]})
+    return ret
+   if name=="JAPAN_CORE_2025_YOY":
+    for encoding in ("utf-8-sig","cp932"):
+     try:decoded=data.decode(encoding);break
+     except UnicodeDecodeError:continue
+    else:raise ValueError("unrecognized Japanese CSV encoding")
+    rows=list(csv.reader(io.StringIO(decoded)))
+    labels=[{"row":i,"columns":[{"index":j,"text":v} for j,v in enumerate(row) if "fresh food" in v.lower() or "生鮮食品" in v][:20]} for i,row in enumerate(rows[:35])]
+    return {"bytes":len(data),"url":x.geturl(),"encoding":encoding,"rows":len(rows),"head":[row[:12] for row in rows[:15]],"labels":[v for v in labels if v["columns"]],"tail":[row[:12] for row in rows[-8:]]}
    if name.startswith("NZALT_"):
     import re
     from html.parser import HTMLParser
@@ -98,6 +122,11 @@ def call(name,url):
       "dims":{k:list(v.get("category",{}).get("index",{}).keys())[:25]
               for k,v in doc.get("dimension",{}).items()},
       "message":str(doc.get("error",""))[:500],"last_periods":list(doc.get("dimension",{}).get("time",{}).get("category",{}).get("index",{}))[-8:],"last_values":list(doc.get("value",{}).items())[-8:]}
+   if name=="RBNZ_M1_CORE":
+    book=load_workbook(io.BytesIO(data),read_only=True,data_only=True)
+    return {"bytes":len(data),"sheets":[{"name":ws.title,"rows":ws.max_row,"cols":ws.max_column,
+     "head":[[str(v)[:110] if v is not None else None for v in row] for row in ws.iter_rows(min_row=1,max_row=15,max_col=min(ws.max_column,22),values_only=True)],
+     "tail":[[str(v)[:60] if v is not None else None for v in row] for row in ws.iter_rows(min_row=max(16,ws.max_row-5),max_row=ws.max_row,max_col=min(ws.max_column,22),values_only=True)]} for ws in book.worksheets[:4]]}
    if name.startswith("RBNZ_"):
     book=load_workbook(io.BytesIO(data),read_only=True,data_only=True)
     ret={"bytes":len(data),"sheets":[]}
