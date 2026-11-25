@@ -1196,7 +1196,7 @@ function render(){
  }
  syncRouteChrome(route);
  const requiredSources=Object.keys(SOURCES);
- const ok=requiredSources.filter(key=>Object.hasOwn(state.data,key)&&!Object.hasOwn(state.errors,key)).length;
+ const ok=requiredSources.filter(key=>Object.hasOwn(state.data,key)&&!Object.hasOwn(state.errors||{},key)).length;
  const missing=requiredSources.length-ok;
  const caseNow=researchCase(),caseOld=!caseNow.latest||!fresh(caseNow.latest,8);
  const priceDay=get('pairs')?.price_asof;
