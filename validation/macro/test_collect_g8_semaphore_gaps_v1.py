@@ -674,4 +674,19 @@ class G8SemaphoreSources(unittest.TestCase):
         self.assertEqual(partial["audit"]["USD"]["annual_status"],"SOURCE_BASE_PERIOD_MISSING")
         self.assertNotIn("2025-10",partial["series"][0]["exact_lag_history"]["dates"])
 
+    def test_eurostat_core_identity(self):
+        selectors={"freq":"M","geo":"EA21","unit":"RCH_A","coicop18":"TOT_X_NRG_FOOD"}
+        dates=[f"2025-{m:02d}" for m in range(1,13)]+[f"2026-{m:02d}" for m in range(1,11)]
+        dimensions={k:{"category":{"index":{v:0}}} for k,v in selectors.items()}
+        dimensions["time"]={"category":{"index":{p:i for i,p in enumerate(dates)}}}
+        obj={"class":"dataset","id":list(selectors)+["time"],"size":[1]*4+[len(dates)],
+             "dimension":dimensions,"value":{str(i):2+i/100 for i in range(len(dates))}}
+        encode=lambda:json.dumps(obj).encode()
+        item,status=mod.collect_eur_core(NOW,fetcher=lambda _:encode())
+        self.assertEqual(item["source_series_id"],mod.EUR_CORE_KEY)
+        self.assertEqual(item["dates"],["2026-09","2026-10"])
+        self.assertEqual(status["history_observations"],22)
+        obj["dimension"]["coicop18"]["category"]["index"]={"TOTAL":0}
+        self.assertIsNone(mod.collect_eur_core(NOW,fetcher=lambda _:encode())[0])
+
 if __name__=="__main__":unittest.main()
