@@ -164,6 +164,9 @@ after the requested task is complete.
   calculation engine and expose classified-area coverage separately from the
   evidence required for an aggregate judgment. Distinguish the prevailing
   direction across areas from the main development highlighted in each dossier.
+- Open each country dossier with a judgment backed by dated observations and
+  explicit units. State monetary implications conditionally and identify the
+  next observation that could strengthen or weaken the reading.
 - Check all eight dossiers, the matrix, keyboard and mobile navigation,
   partial-data behaviour and unchanged source semantics. Capture before and
   after at desktop and mobile widths and verify the published Next route.
