@@ -292,3 +292,23 @@
 .recession-light .sem-history-plot>small,.recession-light .sem-history-dashboard>small{display:block;font-size:10px;line-height:1.5;color:#a1bacc;overflow-wrap:anywhere}
 .recession-light .sem-history-dashboard>small{margin-top:10px}
 @media(max-width:650px){.recession-light .sem-history-dashboard-grid{grid-template-columns:1fr}.recession-light .sem-history-dashboard{padding:10px}}
+
+/* Relative macro evidence: common windows, not a currency ranking. */
+.recession-light .sem-divergence{margin:18px 0;padding:14px;border:1px solid #365064;border-radius:12px;background:#102637}
+.recession-light .sem-divergence .sem-dashboard-title{margin:0 0 14px}
+.recession-light .sem-divergence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.recession-light .sem-divergence-panel{padding:12px;border-radius:8px;border:1px solid #365064;background:#0d2233;min-width:0}
+.recession-light .sem-divergence-panel h4{font-size:14px;color:#c6dfee;margin:0 0 8px}
+.recession-light .sem-divergence-panel p{font-size:12px;line-height:1.55;color:#cedfea;margin:6px 0 10px}
+.recession-light .sem-divergence-panel small{display:block;color:#a1bacc;font-size:10px;line-height:1.5}
+.recession-light .sem-divergence-scroll{overflow-x:auto}
+.recession-light .sem-divergence table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.recession-light .sem-divergence th,.recession-light .sem-divergence td{text-align:right;border-bottom:1px solid #2f495e;padding:7px 5px;white-space:nowrap}
+.recession-light .sem-divergence th:first-child{text-align:left}
+.recession-light .sem-divergence thead th{font-size:10px;color:#a8c8da}
+.recession-light .sem-divergence button{color:#dcecf5;background:#193346;border:1px solid #45657a;border-radius:5px;padding:4px 6px;cursor:pointer;font-size:11px}
+.recession-light .sem-divergence .green{color:#72d7aa}.recession-light .sem-divergence .red{color:#f38e98}.recession-light .sem-divergence .amber{color:#e9c679}
+.recession-light .sem-divergence-pair{border-top:1px solid #365064;padding:9px 0}
+.recession-light .sem-divergence-pair strong{font-size:12px;color:#e3edf5}
+.recession-light .sem-divergence-pair p{margin:5px 0;font-size:11px}
+@media(max-width:750px){.recession-light .sem-divergence-grid{grid-template-columns:1fr}.recession-light .sem-divergence{padding:10px}}

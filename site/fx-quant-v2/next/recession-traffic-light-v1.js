@@ -830,6 +830,66 @@ function countryHistories(catalog,today,country,overlay,rows,context){
  const exports=external.available&&raw.length===1?[series(external.label,cycleHistory(raw[0],today,'Q'),'Q','% a/a reale',{expected:external.value,period:external.period,stale:external.stale,source:external.source,threshold:0})].filter(Boolean):[];
  return {activity,inflation,wages,exports};
 }
+// Relative evidence: common observation windows, no synthetic macro/FX rank.
+function matchedActivityWindows(row){
+ if(!row||!['green','red'].includes(row.signal?.tone))return null;
+ const items=row.signalSource==='original'?row.items:row.items.slice(0,1);
+ if(!items.length||items.some(x=>!x||x.stale||x.invalid||x.verdict===null||!['M','Q'].includes(x.freq)))return null;
+ const normalized=(p,f)=>{
+   const d=parsePeriod(p);if(!d)return null;
+   const y=d.slice(0,4),m=Number(d.slice(5,7));
+   return f==='Q'?y+'-Q'+Math.ceil(m/3):y+'-'+String(m).padStart(2,'0');
+ };
+ const windows=items.map(x=>{
+   const a=normalized(x.prior,x.freq),b=normalized(x.period,x.freq);
+   if(!a||!b)return null;
+   const key=p=>x.freq==='Q'?Number(p.slice(0,4))*4+Number(p.at(-1)):Number(p.slice(0,4))*12+Number(p.slice(5));
+   return key(b)-key(a)===1?x.freq+':'+a+'→'+b:null;
+ });
+ if(windows.some(x=>!x)||new Set(windows).size!==1)return null;
+ return windows[0];
+}
+function relativeActivity(universe,selected){
+ const reference=universe[selected]||[];
+ return FX.filter(c=>c!==selected).map(ccy=>{
+   const aligned=[],favorsSelected=[],favorsPeer=[];
+   for(const r of reference){
+     const peer=(universe[ccy]||[]).find(x=>x.key===r.key);
+     const w=matchedActivityWindows(r);
+     if(!w||w!==matchedActivityWindows(peer))continue;
+     const item={name:r.name,window:w};
+     aligned.push(item);
+     if(r.signal.tone==='green'&&peer.signal.tone==='red')favorsSelected.push(item);
+     if(r.signal.tone==='red'&&peer.signal.tone==='green')favorsPeer.push(item);
+   }
+   return {ccy,aligned,favorsSelected,favorsPeer};
+ });
+}
+function comparableExports(today,overlay,overview){
+ const eligible=[];
+ for(const ccy of FX){
+   const x=overview[ccy]?.external;
+   if(!x?.available||x.stale||!finite(x.value))continue;
+   const records=(overlay?.external_context?.series||[]).filter(z=>z.ccy===ccy&&z.source_series_id===x.id);
+   if(records.length!==1)continue;
+   const src=cycleHistory(records[0],today,'Q');
+   const pts=chartTail(src,today,'Q');
+   if(!pts||pts.at(-1).period!==x.period||Math.abs(pts.at(-1).value-x.value)>1e-8)continue;
+   eligible.push({ccy,points:pts});
+ }
+ if(eligible.length<2)return {period:null,prior:null,rows:[],eligible:eligible.length};
+ const common=eligible[0].points.slice(1).filter((p,i)=>eligible.every(x=>{
+   const j=x.points.findIndex(z=>z.period===p.period);
+   return j>0&&x.points[j-1].period===eligible[0].points[i].period;
+ })).at(-1);
+ if(!common)return {period:null,prior:null,rows:[],eligible:eligible.length};
+ const rows=eligible.map(x=>{
+   const i=x.points.findIndex(p=>p.period===common.period),previous=x.points[i-1],current=x.points[i];
+   const change=current.value-previous.value;
+   return {ccy:x.ccy,value:current.value,previous:previous.value,prior:previous.period,change,direction:Math.abs(change)<.1?'stabile':change>0?'accelera':'rallenta'};
+ });
+ return {period:common.period,prior:rows[0].prior,rows,eligible:eligible.length};
+}
 function historyPlot(chart,esc){
  const pts=chart.points,vals=pts.map(x=>x.value);
  const bounds=vals.concat(finite(chart.threshold)?[chart.threshold]:[]);
@@ -986,6 +1046,19 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    return '<span class="sem-mini sem-cell '+q.tone+'" title="'+esc(area.name+' · '+tones[q.tone])+'" aria-label="'+esc(tones[q.tone])+'"><span aria-hidden="true">'+symbols[q.tone]+'</span></span>';
  };
  const marketCount=t=>FX.filter(ccy=>overview[ccy].reading.aggregateTone===t).length;
+ const relative=relativeActivity(universe,selected),commonExports=comparableExports(today,overlay,overview);
+ const pairEvidence=relative.filter(r=>r.favorsSelected.length||r.favorsPeer.length);
+ const exportRows=commonExports.rows.map(r=>'<tr><th scope="row"><button type="button" data-ms-country="'+r.ccy+'">'+FLAGS[r.ccy]+' '+r.ccy+'</button></th><td>'+esc(fmt(r.previous,2))+'%</td><td>'+esc(fmt(r.value,2))+'%</td><td class="'+(r.direction==='accelera'?'green':r.direction==='rallenta'?'red':'amber')+'">'+esc(d(r.change,' p.p.'))+'</td></tr>').join('');
+ const divergencePanel='<section class="sem-divergence" aria-label="Divergenze relative G8"><div class="sem-dashboard-title"><div><span>RELATIVE MACRO</span><h3>Chi sta cambiando rispetto agli altri?</h3></div><small>Confronti su finestre comuni, non ranking FX.</small></div>'+
+  '<div class="sem-divergence-grid"><div class="sem-divergence-panel"><h4>Domanda estera · stesso trimestre</h4>'+
+   (commonExports.rows.length?'<p>'+commonExports.rows.length+'/8 economie · '+esc(commonExports.prior)+' → '+esc(commonExports.period)+'. '+commonExports.rows.filter(r=>r.direction==='accelera').length+' accelerano, '+commonExports.rows.filter(r=>r.direction==='rallenta').length+' rallentano. Tassi di crescita a/a, non livelli di export.</p><div class="sem-divergence-scroll"><table><thead><tr><th>Paese</th><th>Prima</th><th>Ultimo comune</th><th>Δ</th></tr></thead><tbody>'+exportRows+'</tbody></table></div>':'<p>Non ci sono almeno due serie valide con due trimestri consecutivi in comune.</p>')+
+   '<small>Ultimo trimestre condiviso dalle serie correnti disponibili; non include rilasci successivi di singoli Paesi.</small></div>'+
+   '<div class="sem-divergence-panel"><h4>'+esc(NAMES[selected])+' · direzioni settoriali opposte</h4><p>Solo settori con indicatori attivi confrontabili per frequenza e coppia di periodi. Le misure nazionali possono differire.</p>'+
+   (pairEvidence.length?pairEvidence.map(r=>'<div class="sem-divergence-pair"><strong>'+FLAGS[selected]+' '+selected+' / '+FLAGS[r.ccy]+' '+r.ccy+'</strong><small>'+r.aligned.length+' aree direzionali allineate</small>'+
+      (r.favorsSelected.length?'<p class="green">'+selected+' migliora, '+r.ccy+' peggiora: '+esc(r.favorsSelected.map(x=>x.name+' ('+x.window.slice(2)+')').join('; '))+'</p>':'')+
+      (r.favorsPeer.length?'<p class="red">'+r.ccy+' migliora, '+selected+' peggiora: '+esc(r.favorsPeer.map(x=>x.name+' ('+x.window.slice(2)+')').join('; '))+'</p>':'')+'</div>').join(''):'<p>Nessuna divergenza direzionale opposta verificabile su finestre identiche.</p>')+
+   '<small>Il confronto non dimostra differenze di crescita del PIL, causalità o vantaggi di trading. Nessun punteggio aggregato.</small></div></div></section>';
+
  const regimeRows=FX.map(ccy=>({ccy,...regimePosition(overview[ccy])}));
  const quadrant=(id,title,sub,tone)=>{
    const members=regimeRows.filter(x=>x.quadrant===id);
@@ -1049,6 +1122,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   '<div class="sem-dashboard-title"><div><span>COUNTRY BOARD</span><h3>Le otto economie in 30 secondi</h3></div><small>Seleziona una scheda per il dettaglio. Prezzi, salari ed export sono contesto separato.</small></div>'+
   regimeMap+
   '<div class="sem-country-board">'+cards+'</div>'+
+  divergencePanel+
   '<div class="sem-g8-title"><strong>Matrice del ciclo · sette aree</strong><span>Fase soltanto se gli indicatori attivi concordano su una soglia definita.</span></div>'+
   '<div class="sem-g8-scroll"><table class="sem-g8-table"><thead><tr><th scope="col">Paese</th>'+
   AREAS.map(a=>'<th scope="col">'+esc(a.short)+'</th>').join('')+'</tr></thead><tbody>'+
@@ -1089,6 +1163,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,exportSparkline,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,exportSparkline,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,matchedActivityWindows,relativeActivity,comparableExports,exportSparkline,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,matchedActivityWindows,relativeActivity,comparableExports,exportSparkline,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
