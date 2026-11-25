@@ -2113,16 +2113,12 @@
       "no_core_or_backtest_effect": true
     },
     "DJIA": {
-      "date": "2026-11-24",
-      "previous_date": "2026-11-23",
-      "value": 50018.7,
-      "previous": 49595.31,
-      "change_1d_pct": 0.8537,
+      "date": "2026-11-25",
+      "previous_date": "2026-11-24",
+      "value": 50182.95,
+      "previous": 50018.7,
+      "change_1d_pct": 0.3284,
       "history": [
-        [
-          "2026-07-07",
-          52925.15
-        ],
         [
           "2026-07-08",
           52348.39
@@ -2518,6 +2514,10 @@
         [
           "2026-11-24",
           50018.7
+        ],
+        [
+          "2026-11-25",
+          50182.95
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -2526,7 +2526,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 0,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
