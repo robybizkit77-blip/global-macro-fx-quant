@@ -382,17 +382,17 @@ async function g8Choice(page,label){
 }
 async function scenarioMacroJourney(page,label){
  await route(page,'macro');
- const countries=locator(page,'.sem-client-tabs [data-ms-country]');
+ const countries=locator(page,'.rd-country-tabs [data-ms-country]');
  assert.equal(await countries.count(),8,label+' Scenario macro must offer all G8 economies');
  assert.equal(await locator(page,'#content > .research-essay').count(),0,label+' technical essay must follow the primary reading');
- await locator(page,'.sem-client-tabs [data-ms-country="USD"]').click();
- const usd=await locator(page,'.sem-desk-reading').innerText();
- const usdHeading=await locator(page,'.sem-client-chapter').last().innerText();
+ await locator(page,'.rd-country-tabs [data-ms-country="USD"]').click();
+ const usd=await locator(page,'.rd-country-body').innerText();
+ const usdHeading=await locator(page,'#rd-country .rd-section-head').innerText();
  assert.match(usdHeading,/Stati Uniti/);
- const euroChoice=locator(page,'.sem-client-tabs [data-ms-country="EUR"]');
+ const euroChoice=locator(page,'.rd-country-tabs [data-ms-country="EUR"]');
  await euroChoice.click();
- const eur=await locator(page,'.sem-desk-reading').innerText();
- assert.match(await locator(page,'.sem-client-chapter').last().innerText(),/Area euro/);
+ const eur=await locator(page,'.rd-country-body').innerText();
+ assert.match(await locator(page,'#rd-country .rd-section-head').innerText(),/Area euro/);
  assert.notEqual(usd,eur,label+' the first read must follow the selected economy');
  assert.equal(await euroChoice.getAttribute('aria-pressed'),'true');
  const thermometers=locator(page,'[data-macro-panel="thermometers"]');
