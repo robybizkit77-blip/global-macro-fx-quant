@@ -484,8 +484,39 @@ const WAGE_MAP={
  NZD:[['NZ_LCI_WAGE_YOY','Labour Cost Index','Q']],
  CAD:[['CA_AVERAGE_HOURLY_WAGES_YOY','Salari orari medi','M']]
 };
-function inflationContext(catalog,today,country){
- return annualRateContext(catalog,today,country,INFLATION_MAP);
+const CORE_RECOVERY={
+ USD:['CPILFESL','US_CPILFESL_history_value','https://fred.stlouisfed.org/series/CPILFESL','Index 1982-1984=100',true],
+ GBP:['DKO8','UK_CPI_CORE_YOY_history_value','https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/dko8/mm23','% a/a',false]
+};
+function inflationCatalog(catalog,today,country,overlay){
+ const cfg=CORE_RECOVERY[country];
+ if(!cfg||overlay?.schema!==SUPPLEMENT_SCHEMA||overlay.inflation_context?.schema!=='GMFQ_G8_INFLATION_CONTEXT_V1'||!Array.isArray(overlay.inflation_context.series))return catalog;
+ const [id,target,page,unit,index]=cfg;
+ const matches=overlay.inflation_context.series.filter(x=>x.ccy===country&&x.area==='core'&&x.source_series_id===id&&x.source_page===page&&x.unit===unit&&x.frequency==='M'&&x.metric_kind==='points'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT');
+ if(matches.length!==1)return catalog;
+ const raw=matches[0];let src=cycleHistory(raw,today,'M');
+ if(index&&raw.exact_lag_history){
+   const h=raw.exact_lag_history;
+   if(h.schema!=='GMFQ_US_CORE_EXACT_LAG_V1'||h.source_series_id!==id||
+      !Array.isArray(h.dates)||!Array.isArray(h.values)||h.dates.length!==h.values.length||
+      h.dates.length<2||h.dates.length>36||!h.values.every(v=>finite(v)&&v>0)||
+      h.dates.at(-1)!==raw.dates?.at(-1)||h.values.at(-1)!==raw.values?.at(-1)||
+      h.dates.at(-2)!==raw.dates?.at(-2)||h.values.at(-2)!==raw.values?.at(-2)||
+      !h.dates.every((p,i)=>/^\d{4}-\d{2}$/.test(p)&&parsePeriod(p)&&parsePeriod(p)<=today&&(!i||p>h.dates[i-1])))return catalog;
+   const monthIndex=p=>Number(p.slice(0,4))*12+Number(p.slice(5));
+   if(monthIndex(h.dates.at(-1))-monthIndex(h.dates[0])>=36)return catalog;
+   src={...raw,dates:h.dates,values:h.values,exactLagRecovery:true};
+ }
+ if(src===raw||src.values.some(v=>index?v<=0:Math.abs(v)>50))return catalog;
+ const replacement={...src,id:target};
+ const old=annualRateContext(catalog,today,country,INFLATION_MAP).find(x=>x.id===target);
+ const next=annualRateContext({[country]:[replacement]},today,country,INFLATION_MAP).find(x=>x.id===target);
+ if(!next?.available||next.stale||(!index&&(!finite(next.previous)||!next.prior))||old?.available&&next.period<old.period)return catalog;
+ if(old?.available&&next.period===old.period&&old.direction&&old.stale===false&&!next.annualGap)return catalog;
+ return {...catalog,[country]:[...(catalog[country]||[]).filter(x=>x.id!==target),replacement]};
+}
+function inflationContext(catalog,today,country,overlay=null){
+ return annualRateContext(inflationCatalog(catalog,today,country,overlay),today,country,INFLATION_MAP);
 }
 const WAGE_SUPPLEMENT={
  GBP:['KAC3','https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kac3/lms','M','Retribuzioni medie settimanali nominali (totale, media 3 mesi a/a)'],
@@ -568,7 +599,9 @@ function annualRateContext(catalog,today,country,mapping){
      records.set(k,{v,end,period:freq==='Q'?y+'-Q'+endMonth/3:y+'-'+String(endMonth).padStart(2,'0')});
    }
    const keys=[...records.keys()].sort((a,b)=>a-b);
-   const k=keys.at(-1);if(k===undefined)return missing;
+   const latest=keys.at(-1);if(latest===undefined)return missing;
+   const k=index&&src.exactLagRecovery===true?keys.findLast(j=>records.has(j-12)):latest;
+   if(k===undefined)return missing;
    const current=records.get(k),prior=records.get(k-months);
    const rate=j=>{
      const v=records.get(j)?.v;
@@ -582,8 +615,10 @@ function annualRateContext(catalog,today,country,mapping){
    const age=Math.floor((now-Date.parse(current.end+'T12:00:00Z'))/864e5);
    const stale=age>(freq==='Q'?175:85);
    const change=prior&&finite(previous)?value-previous:null;
-   const direction=stale||!finite(change)?null:Math.abs(change)<.1?'stabile':change>0?'accelera':'rallenta';
+   const annualGap=k!==latest;
+   const direction=stale||annualGap||!finite(change)?null:Math.abs(change)<.1?'stabile':change>0?'accelera':'rallenta';
    return {id,label,freq,available:true,period:current.period,prior:prior?.period||null,value,
+     latestIndexPeriod:records.get(latest).period,annualGap,
      previous:finite(previous)?previous:null,change,direction,stale,age,
      basis:index?'YOY_EXACT_INDEX_LAG':'REPORTED_YOY',source:src.source_file||'MACRO_SERIES'};
  });
@@ -636,7 +671,7 @@ function macroNarrative(rows,inflation,wages,external,turning){
  const structural=valid.flatMap(r=>active(r)).filter(x=>x.cycle?.level!==null&&x.cycle?.level!==undefined);
  if(structural.length)growth+=' Tra gli indicatori con soglia definita, '+structural.filter(x=>x.cycle.level>0).length+' sopra e '+structural.filter(x=>x.cycle.level<0).length+' sotto soglia. Non equivale al livello del PIL.';
  const current=a=>a.filter(x=>x.available&&!x.stale&&x.freq!=='A'&&x.direction&&finite(x.value));
- const core=current(inflation.filter(x=>/core|trimmed|median|trim/i.test(x.label)));
+ const core=current(inflation.filter(x=>/core|trimmed|median|\btrim\b/i.test(x.label)));
  const head=current(inflation.filter(x=>/headline/i.test(x.label)));
  const w=current(wages);
  const describe=x=>x.label+' '+fmt(x.value,2)+'% a/a ('+x.period+', '+x.direction+')';
@@ -673,7 +708,7 @@ function countryInterpretation(rows,inflation,wages,external,narrative){
  const current=x=>x?.available&&!x.stale&&x.freq!=='A'&&finite(x.value)&&x.direction;
  const exp=current(external);
  const head=inflation.find(x=>/headline/i.test(x.label)&&current(x));
- const core=inflation.filter(x=>/core|trimmed|median|trim/i.test(x.label)&&current(x));
+ const core=inflation.filter(x=>/core|trimmed|median|\btrim\b/i.test(x.label)&&current(x));
  const wage=wages.find(current);
  const phase=x=>x?.direction;
  let label=!enough?'Evidenza parziale':breadth<0?'Segnali di rallentamento':breadth>0?'Segnali di recupero': 'Economia a due velocità';
@@ -729,7 +764,7 @@ function overviewCountry(rows,inflation,wages,external,turning,narrative){
  const cells=rows.map(r=>({key:r.key,name:r.name,tone:r.signal.tone,phase:phase(r),periods:active(r).filter(x=>x&&!x.stale&&!x.invalid&&x.verdict!==null).map(x=>x.period)}));
  const current=x=>x?.available&&!x.stale&&finite(x.value);
  const head=inflation.find(x=>/headline/i.test(x.label));
- const core=inflation.find(x=>/core|trimmed|median|trim/i.test(x.label));
+ const core=inflation.find(x=>/core|trimmed|median|\btrim\b/i.test(x.label));
  const wage=wages.find(current)||wages.find(x=>x.available);
  return {tone,label,up,down,mixed,missing,cells,phaseLabels,head,core,wage,external,
   turning,reading,summary:reading.economy,
@@ -804,9 +839,12 @@ function countryHistories(catalog,today,country,overlay,rows,context){
    }
    if(activity.length>=2)break;
  }
- const inflation=(INFLATION_MAP[country]||[]).filter(([,label])=>/headline|core|trimmed|median|trim/i.test(label)).map(([id,label,freq,index])=>{
+ const inflationLocal=inflationCatalog(catalog,today,country,overlay)[country]||[];
+ const inflation=(INFLATION_MAP[country]||[]).filter(([,label])=>/headline|core|trimmed|median|\btrim\b/i.test(label)).map(([id,label,freq,index])=>{
    const x=context.inflation.find(z=>z.id===id);
-   return x?.available?series(label,local.find(z=>z.id===id),freq,'% a/a',{annualize:index,expected:x.value,period:x.period,stale:x.stale,source:x.source}):null;
+   let src=inflationLocal.find(z=>z.id===id);
+   if(x?.annualGap&&src){const n=src.dates.findIndex(p=>p>x.period);if(n>=0)src={...src,dates:src.dates.slice(0,n),values:src.values.slice(0,n)};}
+   return x?.available?series(label,src,freq,'% a/a',{annualize:index,expected:x.value,period:x.period,stale:x.stale,source:x.source}):null;
  }).filter(Boolean);
  const wages=context.wages.filter(x=>x.available).map(x=>{
    let src=local.find(z=>z.id===x.id),index=(WAGE_MAP[country]||[]).find(z=>z[0]===x.id)?.[3],manual=false;
@@ -926,7 +964,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
  const universe=Object.fromEntries(FX.map(ccy=>[ccy,model(catalog,today,ccy,overlay)]));
  const rows=universe[selected];
  const overview=Object.fromEntries(FX.map(ccy=>{
-   const r=universe[ccy],i=inflationContext(catalog,today,ccy),w=wageContext(catalog,today,ccy,overlay),e=externalContext(today,ccy,overlay),t=turningPointMonitor(r),n=macroNarrative(r,i,w,e,t);
+   const r=universe[ccy],i=inflationContext(catalog,today,ccy,overlay),w=wageContext(catalog,today,ccy,overlay),e=externalContext(today,ccy,overlay),t=turningPointMonitor(r),n=macroNarrative(r,i,w,e,t);
    return [ccy,overviewCountry(r,i,w,e,t,n)];
  }));
  const d=(v,suffix='')=>finite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),2)+suffix:'—';
@@ -960,12 +998,12 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    (x.metric.source_page?'<a class="sem-src-link" href="'+esc(x.metric.source_page)+'" target="_blank" rel="noopener noreferrer">Fonte e metodologia ↗</a>':'')+'</div>';
  };
 
- const inflation=inflationContext(catalog,today,selected);
+ const inflation=inflationContext(catalog,today,selected,overlay);
  const inflationNote='<p><strong>Inflazione · pressioni sui prezzi (separate dal ciclo)</strong></p>'+
    inflation.map(x=>'<p><strong>'+esc(x.label)+'</strong> · '+(x.available?
     esc(fmt(x.value,2))+'% a/a · '+esc(x.period)+
     (finite(x.change)?' · variazione '+esc(d(x.change,' p.p.'))+' rispetto a '+esc(x.prior):' · confronto non disponibile')+
-    (x.stale?' · dato datato, giudizio sospeso':x.direction?' · '+esc(x.direction):' · direzione non determinabile')+
+    (x.annualGap?' · indice disponibile fino a '+esc(x.latestIndexPeriod)+', confronto annuo non calcolabile (base mancante)':x.stale?' · dato datato, giudizio sospeso':x.direction?' · '+esc(x.direction):' · direzione non determinabile')+
     ' <small>'+esc(x.source)+'</small>':'dato non disponibile')+'</p>').join('')+
    '<small>Pressioni sui prezzi in aumento o diminuzione: non sono un giudizio positivo/negativo sulla crescita. Headline e core possono riferirsi a periodi diversi; le misure core nazionali non sono omogenee.</small>';
  const wages=wageContext(catalog,today,selected,overlay);
@@ -1086,7 +1124,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    const ok=x?.available&&finite(x.value);
    const direction=ok&&!x.stale&&x.freq!=='A'?x.direction:null;
    const mark={accelera:'↗',rallenta:'↘',stabile:'→'}[direction]||'—';
-   return '<div class="sem-context-metric"><span>'+esc(label)+'</span><strong>'+ (ok?esc(fmt(x.value,1))+'%':'—')+'</strong><small>'+esc(ok?x.period+(x.stale||x.freq==='A'?' · datato':' · '+mark+(direction?' '+direction:'')):'Non disponibile')+'</small></div>';
+   return '<div class="sem-context-metric"><span>'+esc(label)+'</span><strong>'+ (ok?esc(fmt(x.value,1))+'%':'—')+'</strong><small>'+esc(ok?x.period+(x.annualGap?' · base annua mancante':x.stale||x.freq==='A'?' · datato':' · '+mark+(direction?' '+direction:'')):'Non disponibile')+'</small></div>';
  };
  const cards=FX.map(ccy=>{
    const o=overview[ccy],t=o.turning,active=ccy===selected;
@@ -1163,6 +1201,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,matchedActivityWindows,relativeActivity,comparableExports,exportSparkline,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,matchedActivityWindows,relativeActivity,comparableExports,exportSparkline,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationCatalog,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,matchedActivityWindows,relativeActivity,comparableExports,exportSparkline,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationCatalog,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,matchedActivityWindows,relativeActivity,comparableExports,exportSparkline,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
