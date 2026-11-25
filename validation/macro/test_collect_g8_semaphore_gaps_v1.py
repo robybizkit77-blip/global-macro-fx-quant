@@ -97,6 +97,17 @@ class G8SemaphoreSources(unittest.TestCase):
         same,same_status=mod.candidate(spec,[("2026-09",50.9),("2026-10",51.7)],now)
         self.assertEqual(mod.prefer_current_psi(spec,now,same,same_status),(same,same_status))
 
+    def test_ons_kac3_wage_identity_and_months(self):
+        rows="".join(f"<tr><td>2025 {m}</td><td>{3+i/10:.1f}</td></tr>" for i,m in enumerate(["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]))
+        raw=("<h1>AWE: Whole Economy Year on Year Three Month Average Growth (%): Seasonally Adjusted Total Pay Excluding Arrears</h1><p>Series ID: KAC3</p><table>"+rows+"</table>").encode()
+        obs=mod.parse_ons_wage(raw,NOW)
+        self.assertEqual(len(obs),12)
+        self.assertEqual(obs[-1],("2025-12",4.1))
+        with self.assertRaises(ValueError):
+            mod.parse_ons_wage(raw.replace(b"KAC3",b"KAC6"),NOW)
+        with self.assertRaises(ValueError):
+            mod.parse_ons_wage(raw.replace(b"Whole Economy",b"Private Sector"),NOW)
+
     def test_registry_targets_exactly_eight_gaps(self):
         self.assertEqual(len(mod.REGISTRY),43)
         self.assertEqual(len({(s["ccy"],s["area"]) for s in mod.REGISTRY}),43)
