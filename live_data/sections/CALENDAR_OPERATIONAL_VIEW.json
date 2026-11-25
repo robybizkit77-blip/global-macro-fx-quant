@@ -3,10 +3,10 @@
     "cb_schedule_available": 8,
     "consensus_available_events": 0,
     "g8_total": 8,
-    "macro_ccy_coverage": 5,
+    "macro_ccy_coverage": 8,
     "previous_only_events": 0,
-    "upcoming_macro_events": 60,
-    "upcoming_total_events": 68
+    "upcoming_macro_events": 68,
+    "upcoming_total_events": 76
   },
   "events": [
     {
@@ -72,6 +72,38 @@
       "time_local": "09:00",
       "timezone": "Europe/Zurich",
       "title": "Swiss quarterly GDP"
+    },
+    {
+      "ccy": "EUR",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2026-12-01",
+      "event_type": "INFLATION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "reference_period": "November 2026",
+      "source_family": "Eurostat",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-18112026-ap?lang=en",
+      "status": "UPCOMING",
+      "time_local": null,
+      "timezone": "Europe/Luxembourg",
+      "title": "Euro area flash inflation"
+    },
+    {
+      "ccy": "JPY",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2026-12-01",
+      "event_type": "LABOUR",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CALENDAR",
+      "reference_period": "October 2026",
+      "source_family": "Statistics Bureau of Japan",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.stat.go.jp/english/data/roudou/1543.htm",
+      "status": "UPCOMING",
+      "time_local": null,
+      "timezone": "Asia/Tokyo",
+      "title": "Labour Force Survey - Basic Tabulation"
     },
     {
       "ccy": "CHF",
@@ -176,6 +208,22 @@
       "title": "Consumer Price Index"
     },
     {
+      "ccy": "GBP",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2026-12-16",
+      "event_type": "INFLATION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "reference_period": "November 2026",
+      "source_family": "ONS",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.ons.gov.uk/releases/consumerpriceinflationuknovember2026",
+      "status": "UPCOMING",
+      "time_local": "07:00",
+      "timezone": "Europe/London",
+      "title": "Consumer price inflation, UK"
+    },
+    {
       "bank": "ECB",
       "ccy": "EUR",
       "consensus_status": "NOT_APPLICABLE",
@@ -231,6 +279,22 @@
       "stance": "INVARIATA · rischio hawkish",
       "status": "UPCOMING",
       "title": "BoJ · decisione di politica monetaria"
+    },
+    {
+      "ccy": "JPY",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2026-12-18",
+      "event_type": "INFLATION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "reference_period": "November 2026",
+      "source_family": "Statistics Bureau of Japan",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.stat.go.jp/english/data/cpi/1582.html",
+      "status": "UPCOMING",
+      "time_local": "08:30",
+      "timezone": "Asia/Tokyo",
+      "title": "Japan Consumer Price Index"
     },
     {
       "ccy": "USD",
@@ -295,6 +359,38 @@
       "time_local": "11:30",
       "timezone": "Australia/Sydney",
       "title": "Consumer Price Index, Australia"
+    },
+    {
+      "ccy": "GBP",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-01-20",
+      "event_type": "INFLATION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "reference_period": "December 2026",
+      "source_family": "ONS",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.ons.gov.uk/releases/consumerpriceinflationukdecember2026",
+      "status": "UPCOMING",
+      "time_local": "07:00",
+      "timezone": "Europe/London",
+      "title": "Consumer price inflation, UK"
+    },
+    {
+      "ccy": "JPY",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-01-22",
+      "event_type": "INFLATION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "reference_period": "December 2026",
+      "source_family": "Statistics Bureau of Japan",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.stat.go.jp/english/data/cpi/1582.html",
+      "status": "UPCOMING",
+      "time_local": "08:30",
+      "timezone": "Asia/Tokyo",
+      "title": "Japan Consumer Price Index"
     },
     {
       "ccy": "AUD",
@@ -377,6 +473,22 @@
       "title": "Swiss GDP flash"
     },
     {
+      "ccy": "JPY",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-02-19",
+      "event_type": "INFLATION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "reference_period": "January 2027",
+      "source_family": "Statistics Bureau of Japan",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.stat.go.jp/english/data/cpi/1582.html",
+      "status": "UPCOMING",
+      "time_local": "08:30",
+      "timezone": "Asia/Tokyo",
+      "title": "Japan Consumer Price Index"
+    },
+    {
       "ccy": "AUD",
       "consensus_status": "NOT_PRESENT",
       "date": "2027-02-24",
@@ -455,6 +567,22 @@
       "time_local": "08:30",
       "timezone": "Europe/Zurich",
       "title": "Swiss Consumer Price Index"
+    },
+    {
+      "ccy": "JPY",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2027-03-19",
+      "event_type": "INFLATION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "reference_period": "February 2027",
+      "source_family": "Statistics Bureau of Japan",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "source_url": "https://www.stat.go.jp/english/data/cpi/1582.html",
+      "status": "UPCOMING",
+      "time_local": "08:30",
+      "timezone": "Asia/Tokyo",
+      "title": "Japan Consumer Price Index"
     },
     {
       "ccy": "AUD",
@@ -1081,8 +1209,8 @@
       "title": "Swiss Consumer Price Index"
     }
   ],
-  "generated_at_utc": "2026-11-25T01:31:00.211778Z",
-  "last_checked_at_utc": "2026-11-25T01:31:00.211778Z",
+  "generated_at_utc": "2026-11-25T17:01:30.968094Z",
+  "last_checked_at_utc": "2026-11-25T17:01:30.968094Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
@@ -1095,6 +1223,9 @@
       "AUD",
       "CAD",
       "CHF",
+      "EUR",
+      "GBP",
+      "JPY",
       "NZD",
       "USD"
     ],
