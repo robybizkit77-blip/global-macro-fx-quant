@@ -1399,115 +1399,6 @@
       }
     },
     {
-      "ccy": "AUD",
-      "area": "demand",
-      "id": "SEM_G8_AUD_DEMAND",
-      "label": "Spesa famiglie totale nominale SA (proxy domanda, % m/m)",
-      "frequency": "M",
-      "unit": "% m/m nominale SA",
-      "dates": [
-        "2026-08",
-        "2026-09"
-      ],
-      "values": [
-        -0.1,
-        0.6
-      ],
-      "category": "Semaforo supplementare",
-      "source_file": "Australian Bureau of Statistics / MHSI",
-      "source_page": "https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release",
-      "source_series_id": "ABS_MHSI_TOTAL_MONTHLY_SA",
-      "metric_kind": "points",
-      "observation_as_of": "2026-09",
-      "diffusion_threshold": null,
-      "up_good": true,
-      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
-      "history": {
-        "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
-        "frequency": "M",
-        "dates": [
-          "2023-10",
-          "2023-11",
-          "2023-12",
-          "2024-01",
-          "2024-02",
-          "2024-03",
-          "2024-04",
-          "2024-05",
-          "2024-06",
-          "2024-07",
-          "2024-08",
-          "2024-09",
-          "2024-10",
-          "2024-11",
-          "2024-12",
-          "2025-01",
-          "2025-02",
-          "2025-03",
-          "2025-04",
-          "2025-05",
-          "2025-06",
-          "2025-07",
-          "2025-08",
-          "2025-09",
-          "2025-10",
-          "2025-11",
-          "2025-12",
-          "2026-01",
-          "2026-02",
-          "2026-03",
-          "2026-04",
-          "2026-05",
-          "2026-06",
-          "2026-07",
-          "2026-08",
-          "2026-09"
-        ],
-        "values": [
-          -1.2,
-          0.6,
-          -0.6,
-          1.7,
-          -0.4,
-          -0.5,
-          0.5,
-          0.1,
-          0.1,
-          -0.3,
-          0.9,
-          -0.1,
-          0.9,
-          0.6,
-          0.5,
-          0.6,
-          0.2,
-          0.1,
-          0.2,
-          0.9,
-          0.3,
-          0.2,
-          0.2,
-          0.4,
-          1.1,
-          1.1,
-          -0.5,
-          0.3,
-          0.3,
-          1.7,
-          -1.0,
-          1.2,
-          0.8,
-          1.0,
-          -0.1,
-          0.6
-        ],
-        "observations": 36,
-        "max_observations": 36,
-        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
-        "source_series_id": "ABS_MHSI_TOTAL_MONTHLY_SA"
-      }
-    },
-    {
       "ccy": "GBP",
       "area": "industry",
       "id": "SEM_G8_GBP_INDUSTRY",
@@ -2618,67 +2509,6 @@
       }
     },
     {
-      "ccy": "CHF",
-      "area": "services",
-      "id": "SEM_G8_CHF_SERVICES",
-      "label": "Occupazione nei servizi (proxy, non output)",
-      "frequency": "Q",
-      "unit": "persone SA",
-      "dates": [
-        "2026-Q1",
-        "2026-Q2"
-      ],
-      "values": [
-        3627500.0,
-        3657100.0
-      ],
-      "category": "Semaforo supplementare",
-      "source_file": "OECD via FRED",
-      "source_page": "https://fred.stlouisfed.org/series/LFEASETTCHQ647S",
-      "source_series_id": "LFEASETTCHQ647S",
-      "metric_kind": "percent",
-      "observation_as_of": "2026-Q2",
-      "diffusion_threshold": null,
-      "up_good": true,
-      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
-      "history": {
-        "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
-        "frequency": "Q",
-        "dates": [
-          "2023-Q3",
-          "2023-Q4",
-          "2024-Q1",
-          "2024-Q2",
-          "2024-Q3",
-          "2024-Q4",
-          "2025-Q1",
-          "2025-Q2",
-          "2025-Q3",
-          "2025-Q4",
-          "2026-Q1",
-          "2026-Q2"
-        ],
-        "values": [
-          3527300.0,
-          3575100.0,
-          3527200.0,
-          3562800.0,
-          3577300.0,
-          3617900.0,
-          3607400.0,
-          3611200.0,
-          3616000.0,
-          3636200.0,
-          3627500.0,
-          3657100.0
-        ],
-        "observations": 12,
-        "max_observations": 12,
-        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
-        "source_series_id": "LFEASETTCHQ647S"
-      }
-    },
-    {
       "ccy": "AUD",
       "area": "services",
       "id": "SEM_G8_AUD_SERVICES",
@@ -3044,67 +2874,6 @@
         "max_observations": 36,
         "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
         "source_series_id": "36100434_SERVICES_T003"
-      }
-    },
-    {
-      "ccy": "EUR",
-      "area": "house",
-      "id": "SEM_G8_EUR_HOUSE",
-      "label": "Prezzi residenziali nominali EA21 (variazione annua; proxy immobiliare)",
-      "frequency": "Q",
-      "unit": "% a/a",
-      "dates": [
-        "2026-Q1",
-        "2026-Q2"
-      ],
-      "values": [
-        4.6,
-        4.0
-      ],
-      "category": "Semaforo supplementare",
-      "source_file": "Eurostat / prc_hpi_q",
-      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/prc_hpi_q/default/table?lang=en",
-      "source_series_id": "EA21_PRC_HPI_Q_TOTAL_RCH_A",
-      "metric_kind": "points",
-      "observation_as_of": "2026-Q2",
-      "diffusion_threshold": null,
-      "up_good": true,
-      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
-      "history": {
-        "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
-        "frequency": "Q",
-        "dates": [
-          "2023-Q3",
-          "2023-Q4",
-          "2024-Q1",
-          "2024-Q2",
-          "2024-Q3",
-          "2024-Q4",
-          "2025-Q1",
-          "2025-Q2",
-          "2025-Q3",
-          "2025-Q4",
-          "2026-Q1",
-          "2026-Q2"
-        ],
-        "values": [
-          -2.1,
-          -1.1,
-          -0.1,
-          1.5,
-          2.9,
-          4.3,
-          5.5,
-          5.3,
-          5.2,
-          5.1,
-          4.6,
-          4.0
-        ],
-        "observations": 12,
-        "max_observations": 12,
-        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
-        "source_series_id": "EA21_PRC_HPI_Q_TOTAL_RCH_A"
       }
     },
     {
@@ -4086,6 +3855,189 @@
         "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
         "source_series_id": "ABS_TOTAL_DWELLING_APPROVALS_SA"
       }
+    },
+    {
+      "ccy": "EUR",
+      "area": "house",
+      "id": "SEM_G8_EUR_HOUSE",
+      "label": "Permessi edilizi abitazioni (escluse residenze collettive, EA21, SCA)",
+      "frequency": "Q",
+      "unit": "indice 2021=100 SCA",
+      "dates": [
+        "2026-Q1",
+        "2026-Q2"
+      ],
+      "values": [
+        91.4,
+        92.5
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "Eurostat / sts_cobp_q",
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/sts_cobp_q/default/table?lang=en",
+      "source_series_id": "EA21_STS_COBP_Q_DW_SCA",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-Q2",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+      "history": {
+        "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+        "frequency": "Q",
+        "dates": [
+          "2023-Q3",
+          "2023-Q4",
+          "2024-Q1",
+          "2024-Q2",
+          "2024-Q3",
+          "2024-Q4",
+          "2025-Q1",
+          "2025-Q2",
+          "2025-Q3",
+          "2025-Q4",
+          "2026-Q1",
+          "2026-Q2"
+        ],
+        "values": [
+          79.2,
+          84.5,
+          82.0,
+          79.1,
+          76.5,
+          80.7,
+          81.3,
+          83.9,
+          90.9,
+          88.5,
+          91.4,
+          92.5
+        ],
+        "observations": 12,
+        "max_observations": 12,
+        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+        "source_series_id": "EA21_STS_COBP_Q_DW_SCA"
+      }
+    },
+    {
+      "ccy": "AUD",
+      "area": "demand",
+      "id": "SEM_G8_AUD_DEMAND",
+      "label": "Spesa reale famiglie (volumi concatenati, SA)",
+      "frequency": "Q",
+      "unit": "mln AUD reali SA",
+      "dates": [
+        "2026-Q2",
+        "2026-Q3"
+      ],
+      "values": [
+        232963.4,
+        234559.2
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "ABS / A130271111R",
+      "source_page": "https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release",
+      "source_series_id": "ABS_A130271111R_HOUSEHOLD_REAL",
+      "metric_kind": "percent",
+      "observation_as_of": "2026-Q3",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+      "history": {
+        "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+        "frequency": "Q",
+        "dates": [
+          "2023-Q4",
+          "2024-Q1",
+          "2024-Q2",
+          "2024-Q3",
+          "2024-Q4",
+          "2025-Q1",
+          "2025-Q2",
+          "2025-Q3",
+          "2025-Q4",
+          "2026-Q1",
+          "2026-Q2",
+          "2026-Q3"
+        ],
+        "values": [
+          221616.1,
+          224308.3,
+          222394.1,
+          222323.8,
+          224553.2,
+          225052.9,
+          227367.2,
+          227375.3,
+          229452.1,
+          231257.3,
+          232963.4,
+          234559.2
+        ],
+        "observations": 12,
+        "max_observations": 12,
+        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+        "source_series_id": "ABS_A130271111R_HOUSEHOLD_REAL"
+      }
+    },
+    {
+      "ccy": "CHF",
+      "area": "services",
+      "id": "SEM_G8_CHF_SERVICES",
+      "label": "Contributo dei servizi alla crescita reale del PIL (SA, corretto eventi sportivi)",
+      "frequency": "Q",
+      "unit": "p.p. q/q",
+      "dates": [
+        "2026-Q1",
+        "2026-Q2"
+      ],
+      "values": [
+        0.09486572107467853,
+        0.5225071095352508
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "SECO via Swissdatas / somma contributi settoriali",
+      "source_page": "https://scheduler.swissdatas.ch/scheduled/ch-seco-gdp.csv",
+      "source_series_id": "SECO_SERVICES_GDP_CONTRIBUTION_CSSA",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q2",
+      "diffusion_threshold": null,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+      "history": {
+        "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+        "frequency": "Q",
+        "dates": [
+          "2023-Q3",
+          "2023-Q4",
+          "2024-Q1",
+          "2024-Q2",
+          "2024-Q3",
+          "2024-Q4",
+          "2025-Q1",
+          "2025-Q2",
+          "2025-Q3",
+          "2025-Q4",
+          "2026-Q1",
+          "2026-Q2"
+        ],
+        "values": [
+          0.2047543575110846,
+          0.5069688806485683,
+          0.04104030065636416,
+          0.35786785489910433,
+          0.23822538055229336,
+          0.2997983892369906,
+          0.5711162788642411,
+          0.16537949016761075,
+          0.2732936419554026,
+          0.3529947809885865,
+          0.09486572107467853,
+          0.5225071095352508
+        ],
+        "observations": 12,
+        "max_observations": 12,
+        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+        "source_series_id": "SECO_SERVICES_GDP_CONTRIBUTION_CSSA"
+      }
     }
   ],
   "audit": {
@@ -4229,11 +4181,12 @@
     },
     "AUD_demand": {
       "status": "READY_DESCRIPTIVE_REVISED",
-      "last_observation": "2026-09",
+      "last_observation": "2026-Q3",
       "days_since_period_end": 56,
-      "history_observations": 36,
+      "history_observations": 12,
       "source_page": "https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release",
-      "origin": "Australian Bureau of Statistics / MHSI"
+      "origin": "ABS / A130271111R",
+      "quality_upgrade": "REAL_ACTIVITY"
     },
     "GBP_industry": {
       "status": "READY_DESCRIPTIVE_REVISED",
@@ -4339,8 +4292,9 @@
       "last_observation": "2026-Q2",
       "days_since_period_end": 148,
       "history_observations": 12,
-      "source_page": "https://fred.stlouisfed.org/series/LFEASETTCHQ647S",
-      "origin": "OECD via FRED"
+      "source_page": "https://scheduler.swissdatas.ch/scheduled/ch-seco-gdp.csv",
+      "origin": "SECO via Swissdatas / somma contributi settoriali",
+      "quality_upgrade": "REAL_ACTIVITY"
     },
     "AUD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
@@ -4389,8 +4343,9 @@
       "last_observation": "2026-Q2",
       "days_since_period_end": 148,
       "history_observations": 12,
-      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/prc_hpi_q/default/table?lang=en",
-      "origin": "Eurostat / prc_hpi_q"
+      "source_page": "https://ec.europa.eu/eurostat/databrowser/view/sts_cobp_q/default/table?lang=en",
+      "origin": "Eurostat / sts_cobp_q",
+      "quality_upgrade": "REAL_ACTIVITY"
     },
     "JPY_house": {
       "status": "READY_DESCRIPTIVE_REVISED",
