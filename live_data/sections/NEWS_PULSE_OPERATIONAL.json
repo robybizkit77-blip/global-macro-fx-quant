@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-25",
-  "generated_at_utc": "2026-11-25T15:40:54.531705Z",
+  "generated_at_utc": "2026-11-25T16:20:58.750899Z",
   "items": [
     {
       "as_of": "2026-11-25",
@@ -10,8 +10,9 @@
       "detail": "PIL reale USA annualizzato: 4,3% (periodo precedente 2,2%). Periodo: 3rd quarter 2026. Nessuna sorpresa senza consenso pre-evento; reazione FX non misurata.",
       "event_key": "USD|2026-11-25|GROWTH|GDP (Second Estimate) and Corporate Profits",
       "event_type": "GROWTH",
-      "first_runner_observed_at_utc": "2026-11-25T15:40:54.853800Z",
+      "first_runner_observed_at_utc": "2026-11-25T16:20:59.473142Z",
       "importance": "HIGH",
+      "issuer_html_sha256": "7c89a761bd78a144520f67dcb2ef2f89d2258ddc23c29fb4d9d36b9e9495bf4a",
       "metrics": [
         {
           "id": "US_REAL_GDP_SAAR",
@@ -19,7 +20,9 @@
           "value_percent": 4.3
         }
       ],
+      "publication_stage": "second",
       "quality": "OFFICIAL_RECURRING_RELEASE_OBSERVED_NOT_EVENT_REACTION",
+      "reference_period": "Q3 2026",
       "source": "BEA",
       "source_url": "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-3rd-quarter-2026",
       "title": "PIL reale USA annualizzato: 4,3% (periodo precedente 2,2%)"
@@ -32,8 +35,9 @@
       "detail": "PCE USA m/m: 0,3%; Core PCE USA m/m: 0,3%; PCE USA a/a: 3,8%; Core PCE USA a/a: 3,3%. Periodo: October 2026. Nessuna sorpresa senza consenso pre-evento; reazione FX non misurata.",
       "event_key": "USD|2026-11-25|INFLATION|Personal Income and Outlays",
       "event_type": "INFLATION",
-      "first_runner_observed_at_utc": "2026-11-25T15:40:54.906074Z",
+      "first_runner_observed_at_utc": "2026-11-25T16:20:59.921365Z",
       "importance": "HIGH",
+      "issuer_html_sha256": "0ee89334eb29d29528cca95fdcdd513c581872b896d2df37c18d9592eb301419",
       "metrics": [
         {
           "id": "US_PCE_MOM",
@@ -56,7 +60,9 @@
           "value_percent": 3.3
         }
       ],
+      "publication_stage": null,
       "quality": "OFFICIAL_RECURRING_RELEASE_OBSERVED_NOT_EVENT_REACTION",
+      "reference_period": "October 2026",
       "source": "BEA",
       "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-october-2026",
       "title": "PCE USA m/m: 0,3%"
@@ -80,8 +86,9 @@
       "detail": "CPI Australia a/a: 4,9% (periodo precedente 4,3%); Trimmed mean Australia a/a: 3,8% (periodo precedente 3,6%). Periodo: October 2026. Nessuna sorpresa senza consenso pre-evento; reazione FX non misurata.",
       "event_key": "AUD|2026-11-25|INFLATION|Consumer Price Index, Australia",
       "event_type": "INFLATION",
-      "first_runner_observed_at_utc": "2026-11-25T15:40:54.793629Z",
+      "first_runner_observed_at_utc": "2026-11-25T16:20:59.001398Z",
       "importance": "HIGH",
+      "issuer_html_sha256": "1b0f41e805d60ec46772277467df6ff90b21001d55d8fb74b36afcce9dfbac0d",
       "metrics": [
         {
           "id": "AU_CPI_HEADLINE_YOY",
@@ -94,10 +101,54 @@
           "value_percent": 3.8
         }
       ],
+      "publication_stage": null,
       "quality": "OFFICIAL_RECURRING_RELEASE_OBSERVED_NOT_EVENT_REACTION",
+      "reference_period": "October 2026",
       "source": "ABS",
       "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/oct-2026",
       "title": "CPI Australia a/a: 4,9% (periodo precedente 4,3%)"
+    },
+    {
+      "as_of": "2026-11-25",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "1 USD = 159.32327 JPY al fixing 2026-11-25; variazione vs 2026-11-24. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "USDJPY",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-24",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "USD/JPY: +0.16% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-25",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "EUR",
+      "confidence": "A",
+      "detail": "1 EUR = 1.09350 USD al fixing 2026-11-25; variazione vs 2026-11-24. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "EURUSD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-24",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "EUR/USD: -0.26% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-25",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "1 AUD = 0.93673 CAD al fixing 2026-11-25; variazione vs 2026-11-24. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "AUDCAD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-24",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "AUD/CAD: -1.56% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-24",
@@ -120,20 +171,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
       "title": "AUD: repricing implicito da futures più dovish (-6.5 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-24",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "1 USD = 159.07142 JPY al fixing 2026-11-24; variazione vs 2026-11-23. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "USDJPY",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-23",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "USD/JPY: -0.00% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-24",
@@ -175,20 +212,6 @@
     },
     {
       "as_of": "2026-11-24",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "EUR",
-      "confidence": "A",
-      "detail": "1 EUR = 1.09630 USD al fixing 2026-11-24; variazione vs 2026-11-23. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "EURUSD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-23",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "EUR/USD: +0.22% fra due fixing BCE"
-    },
-    {
-      "as_of": "2026-11-24",
       "category": "OIS_REPRICING",
       "ccy": "GBP",
       "confidence": "A",
@@ -209,20 +232,6 @@
       "reference_previous_date": "2026-11-20",
       "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-24",
       "title": "JPY: governativo 2Y -4.3 pb, 10Y -5.7 pb"
-    },
-    {
-      "as_of": "2026-11-24",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "1 AUD = 0.95154 CAD al fixing 2026-11-24; variazione vs 2026-11-23. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "AUDCAD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-23",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "AUD/CAD: +0.13% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-23",
@@ -308,7 +317,7 @@
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
     }
   ],
-  "last_checked_at_utc": "2026-11-25T15:40:54.531705Z",
+  "last_checked_at_utc": "2026-11-25T16:20:58.750899Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1257,6 +1266,103 @@
     ],
     "status": "VERIFIED_OFFICIAL_RELEASES"
   },
+  "recurring_official_archive": [
+    {
+      "as_of": "2026-11-25",
+      "category": "MACRO_OFFICIAL_ACTUAL",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "CPI Australia a/a: 4,9% (periodo precedente 4,3%); Trimmed mean Australia a/a: 3,8% (periodo precedente 3,6%). Periodo: October 2026. Nessuna sorpresa senza consenso pre-evento; reazione FX non misurata.",
+      "event_key": "AUD|2026-11-25|INFLATION|Consumer Price Index, Australia",
+      "event_type": "INFLATION",
+      "first_runner_observed_at_utc": "2026-11-25T16:20:59.001398Z",
+      "importance": "HIGH",
+      "issuer_html_sha256": "1b0f41e805d60ec46772277467df6ff90b21001d55d8fb74b36afcce9dfbac0d",
+      "metrics": [
+        {
+          "id": "AU_CPI_HEADLINE_YOY",
+          "previous_period_percent": 4.3,
+          "value_percent": 4.9
+        },
+        {
+          "id": "AU_CPI_TRIMMED_MEAN_YOY",
+          "previous_period_percent": 3.6,
+          "value_percent": 3.8
+        }
+      ],
+      "publication_stage": null,
+      "quality": "OFFICIAL_RECURRING_RELEASE_OBSERVED_NOT_EVENT_REACTION",
+      "reference_period": "October 2026",
+      "source": "ABS",
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/oct-2026",
+      "title": "CPI Australia a/a: 4,9% (periodo precedente 4,3%)"
+    },
+    {
+      "as_of": "2026-11-25",
+      "category": "MACRO_OFFICIAL_ACTUAL",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "PIL reale USA annualizzato: 4,3% (periodo precedente 2,2%). Periodo: 3rd quarter 2026. Nessuna sorpresa senza consenso pre-evento; reazione FX non misurata.",
+      "event_key": "USD|2026-11-25|GROWTH|GDP (Second Estimate) and Corporate Profits",
+      "event_type": "GROWTH",
+      "first_runner_observed_at_utc": "2026-11-25T16:20:59.473142Z",
+      "importance": "HIGH",
+      "issuer_html_sha256": "7c89a761bd78a144520f67dcb2ef2f89d2258ddc23c29fb4d9d36b9e9495bf4a",
+      "metrics": [
+        {
+          "id": "US_REAL_GDP_SAAR",
+          "previous_period_percent": 2.2,
+          "value_percent": 4.3
+        }
+      ],
+      "publication_stage": "second",
+      "quality": "OFFICIAL_RECURRING_RELEASE_OBSERVED_NOT_EVENT_REACTION",
+      "reference_period": "Q3 2026",
+      "source": "BEA",
+      "source_url": "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-3rd-quarter-2026",
+      "title": "PIL reale USA annualizzato: 4,3% (periodo precedente 2,2%)"
+    },
+    {
+      "as_of": "2026-11-25",
+      "category": "MACRO_OFFICIAL_ACTUAL",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "PCE USA m/m: 0,3%; Core PCE USA m/m: 0,3%; PCE USA a/a: 3,8%; Core PCE USA a/a: 3,3%. Periodo: October 2026. Nessuna sorpresa senza consenso pre-evento; reazione FX non misurata.",
+      "event_key": "USD|2026-11-25|INFLATION|Personal Income and Outlays",
+      "event_type": "INFLATION",
+      "first_runner_observed_at_utc": "2026-11-25T16:20:59.921365Z",
+      "importance": "HIGH",
+      "issuer_html_sha256": "0ee89334eb29d29528cca95fdcdd513c581872b896d2df37c18d9592eb301419",
+      "metrics": [
+        {
+          "id": "US_PCE_MOM",
+          "previous_period_percent": null,
+          "value_percent": 0.3
+        },
+        {
+          "id": "US_CORE_PCE_MOM",
+          "previous_period_percent": null,
+          "value_percent": 0.3
+        },
+        {
+          "id": "US_PCE_YOY",
+          "previous_period_percent": null,
+          "value_percent": 3.8
+        },
+        {
+          "id": "US_CORE_PCE_YOY",
+          "previous_period_percent": null,
+          "value_percent": 3.3
+        }
+      ],
+      "publication_stage": null,
+      "quality": "OFFICIAL_RECURRING_RELEASE_OBSERVED_NOT_EVENT_REACTION",
+      "reference_period": "October 2026",
+      "source": "BEA",
+      "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-october-2026",
+      "title": "PCE USA m/m: 0,3%"
+    }
+  ],
   "recurring_release_checks": [
     {
       "event_key": "AUD|2026-11-25|INFLATION|Consumer Price Index, Australia",
