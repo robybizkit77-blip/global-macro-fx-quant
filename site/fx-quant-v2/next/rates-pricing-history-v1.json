@@ -1208,11 +1208,19 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-24T15:03:03.041090Z"
+          },
+          {
+            "date": "2026-11-25",
+            "rate": 2.985,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-25T15:13:53.171509Z"
           }
         ]
       },
-      "latest_date": "2026-11-24",
-      "observed_dates": 28,
+      "latest_date": "2026-11-25",
+      "observed_dates": 29,
       "derived_reference_points": 0
     },
     "GBP": {
@@ -3603,7 +3611,7 @@
         "current_rate": 3.67,
         "change_bp": -44.0,
         "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261027ZFT.htm",
-        "source_sha256": "1efd151560981c02c5d746466ecc3c5be5cc044bd40b72eafa9864d5bcd8e9a7",
+        "source_sha256": "ed6bcc76a06ba6216867f6531445355932665827b3cf204d8aa165b97f525e9e",
         "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"
       }
     },
