@@ -2509,115 +2509,6 @@
       }
     },
     {
-      "ccy": "AUD",
-      "area": "services",
-      "id": "SEM_G8_AUD_SERVICES",
-      "label": "Spesa famiglie servizi: variazione mensile nominale (proxy domanda)",
-      "frequency": "M",
-      "unit": "% m/m nominale SA",
-      "dates": [
-        "2026-08",
-        "2026-09"
-      ],
-      "values": [
-        -0.5,
-        1.1
-      ],
-      "category": "Semaforo supplementare",
-      "source_file": "Australian Bureau of Statistics / MHSI",
-      "source_page": "https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release",
-      "source_series_id": "ABS_MHSI_SERVICES_MONTHLY_SA",
-      "metric_kind": "points",
-      "observation_as_of": "2026-09",
-      "diffusion_threshold": null,
-      "up_good": true,
-      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
-      "history": {
-        "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
-        "frequency": "M",
-        "dates": [
-          "2023-10",
-          "2023-11",
-          "2023-12",
-          "2024-01",
-          "2024-02",
-          "2024-03",
-          "2024-04",
-          "2024-05",
-          "2024-06",
-          "2024-07",
-          "2024-08",
-          "2024-09",
-          "2024-10",
-          "2024-11",
-          "2024-12",
-          "2025-01",
-          "2025-02",
-          "2025-03",
-          "2025-04",
-          "2025-05",
-          "2025-06",
-          "2025-07",
-          "2025-08",
-          "2025-09",
-          "2025-10",
-          "2025-11",
-          "2025-12",
-          "2026-01",
-          "2026-02",
-          "2026-03",
-          "2026-04",
-          "2026-05",
-          "2026-06",
-          "2026-07",
-          "2026-08",
-          "2026-09"
-        ],
-        "values": [
-          -0.5,
-          0.8,
-          1.1,
-          1.3,
-          -0.6,
-          -0.5,
-          0.9,
-          0.2,
-          0.0,
-          0.2,
-          0.7,
-          0.6,
-          1.2,
-          0.0,
-          0.6,
-          1.5,
-          0.0,
-          -0.4,
-          1.6,
-          0.9,
-          -0.4,
-          1.1,
-          0.7,
-          -0.1,
-          0.7,
-          0.9,
-          -0.2,
-          0.9,
-          0.5,
-          0.3,
-          -1.8,
-          2.5,
-          0.8,
-          1.6,
-          -0.5,
-          1.1
-        ],
-        "observations": 36,
-        "max_observations": 36,
-        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
-        "source_series_id": "ABS_MHSI_SERVICES_MONTHLY_SA"
-      }
-    },
-    {
       "ccy": "NZD",
       "area": "services",
       "id": "SEM_G8_NZD_SERVICES",
@@ -4038,6 +3929,54 @@
         "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
         "source_series_id": "SECO_SERVICES_GDP_CONTRIBUTION_CSSA"
       }
+    },
+    {
+      "ccy": "AUD",
+      "area": "services",
+      "id": "SEM_G8_AUD_SERVICES",
+      "label": "Diffusione crescita reale dei servizi (14 comparti ABS; soglia 50)",
+      "frequency": "Q",
+      "unit": "% comparti (indice diffusione)",
+      "dates": [
+        "2026-Q1",
+        "2026-Q2"
+      ],
+      "values": [
+        78.57142857142857,
+        78.57142857142857
+      ],
+      "category": "Semaforo supplementare",
+      "source_file": "ABS national accounts / ABS published quarterly table (five rounded quarters)",
+      "source_page": "https://www.abs.gov.au/statistics/economy/national-accounts/australian-national-accounts-national-income-expenditure-and-product/latest-release",
+      "source_series_id": "ABS_SERVICES_REAL_GVA_BREADTH_Q",
+      "metric_kind": "points",
+      "observation_as_of": "2026-Q2",
+      "diffusion_threshold": 50,
+      "up_good": true,
+      "quality": "SOURCE_REVISED_RESEARCH_NOT_PIT",
+      "history": {
+        "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+        "frequency": "Q",
+        "dates": [
+          "2025-Q2",
+          "2025-Q3",
+          "2025-Q4",
+          "2026-Q1",
+          "2026-Q2"
+        ],
+        "values": [
+          92.85714285714286,
+          92.85714285714286,
+          92.85714285714286,
+          78.57142857142857,
+          78.57142857142857
+        ],
+        "observations": 5,
+        "max_observations": 12,
+        "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
+        "source_series_id": "ABS_SERVICES_REAL_GVA_BREADTH_Q"
+      },
+      "history_scope": "ABS published quarterly table (five rounded quarters)"
     }
   ],
   "audit": {
@@ -4298,11 +4237,13 @@
     },
     "AUD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
-      "last_observation": "2026-09",
-      "days_since_period_end": 56,
-      "history_observations": 36,
-      "source_page": "https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release",
-      "origin": "Australian Bureau of Statistics / MHSI"
+      "last_observation": "2026-Q2",
+      "days_since_period_end": 148,
+      "history_observations": 5,
+      "source_page": "https://www.abs.gov.au/statistics/economy/national-accounts/australian-national-accounts-national-income-expenditure-and-product/latest-release",
+      "origin": "ABS national accounts / ABS published quarterly table (five rounded quarters)",
+      "quality_upgrade": "REAL_ACTIVITY_BREADTH",
+      "history_scope": "ABS published quarterly table (five rounded quarters)"
     },
     "NZD_services": {
       "status": "READY_DESCRIPTIVE_REVISED",
@@ -6267,6 +6208,56 @@
           "quality": "SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT",
           "source_series_id": "FSO_LIK25B25_CORE1_YOY"
         }
+      },
+      {
+        "ccy": "NZD",
+        "area": "core",
+        "id": "SEM_G8_NZD_CORE",
+        "label": "RBNZ sectoral factor model (verifica manuale)",
+        "frequency": "Q",
+        "unit": "% a/a",
+        "dates": [
+          "2026-Q2",
+          "2026-Q3"
+        ],
+        "values": [
+          2.8,
+          2.8
+        ],
+        "category": "Semaforo supplementare",
+        "source_file": "RBNZ M1 / verifica manuale 25 novembre 2026",
+        "source_page": "https://www.rbnz.govt.nz/statistics/series/economic-indicators/prices",
+        "source_series_id": "RBNZ_M1_SFM_YOY",
+        "metric_kind": "points",
+        "observation_as_of": "2026-Q3",
+        "diffusion_threshold": null,
+        "up_good": true,
+        "quality": "SOURCE_VERIFIED_MANUAL_NONPIT",
+        "history": {
+          "schema": "GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1",
+          "frequency": "Q",
+          "dates": [
+            "2025-Q3",
+            "2025-Q4",
+            "2026-Q1",
+            "2026-Q2",
+            "2026-Q3"
+          ],
+          "values": [
+            2.7,
+            2.7,
+            2.7,
+            2.8,
+            2.8
+          ],
+          "observations": 5,
+          "max_observations": 12,
+          "quality": "MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT",
+          "source_series_id": "RBNZ_M1_SFM_YOY"
+        },
+        "manual_verified_on": "2026-11-25",
+        "official_release_date": "2026-11-18",
+        "manual_expires_on": "2026-12-17"
       }
     ],
     "audit": {
@@ -6326,8 +6317,14 @@
         "history_observations": 36
       },
       "NZD": {
-        "status": "WITHHELD_FETCH_OR_VALIDATION",
-        "reason": "HTTP Error 403: Forbidden"
+        "status": "READY_MANUAL_VERIFIED_NOT_AUTOMATIC",
+        "last_observation": "2026-Q3",
+        "days_since_period_end": 56,
+        "history_observations": 5,
+        "automatic_fetch": "FAILED",
+        "reason": "HTTP Error 403: Forbidden",
+        "manual_expires_on": "2026-12-17",
+        "source_page": "https://www.rbnz.govt.nz/statistics/series/economic-indicators/prices"
       }
     }
   }

@@ -189,6 +189,7 @@ const VERIFIED_FRESH_FALLBACK={
  }
 };
 function verifiedFreshAlternative(x,c,key){
+ if(c==='AUD'&&key==='services'&&x?.source_series_id==='ABS_SERVICES_REAL_GVA_BREADTH_Q')return x.source_page==='https://www.abs.gov.au/statistics/economy/national-accounts/australian-national-accounts-national-income-expenditure-and-product/latest-release'&&x.frequency==='Q'&&x.metric_kind==='points'&&x.unit==='% comparti (indice diffusione)'&&x.diffusion_threshold===50&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'&&x.values?.every(v=>finite(v)&&v>=0&&v<=100);
  if(c==='AUD'&&key==='demand'&&x?.source_series_id==='ABS_A130271111R_HOUSEHOLD_REAL')return x.source_page==='https://www.abs.gov.au/statistics/economy/finance/monthly-household-spending-indicator/latest-release'&&x.frequency==='Q'&&x.metric_kind==='percent'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT';
  if(c==='EUR'&&key==='house'&&x?.source_series_id==='EA21_STS_COBP_Q_DW_SCA')return x.source_page==='https://ec.europa.eu/eurostat/databrowser/view/sts_cobp_q/default/table?lang=en'&&x.frequency==='Q'&&x.metric_kind==='percent'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT';
 
@@ -249,7 +250,7 @@ function supplementary(overlay,country,key,today){
    Array.isArray(x.dates)&&Array.isArray(x.values)&&
    x.dates.length===2&&x.values.length===2&&x.values.every(v=>typeof v==='number'&&Number.isFinite(v))&&
    typeof x.source_page==='string'&&/^https:\/\/(?:fred\.stlouisfed\.org|ec\.europa\.eu|www150\.statcan\.gc\.ca|www\.ons\.gov\.uk|businessnz\.org\.nz|www\.abs\.gov\.au|www\.bankofengland\.co\.uk|www\.stats\.govt\.nz|www\.rba\.gov\.au|www\.stat-search\.boj\.or\.jp|www\.rbnz\.govt\.nz|data\.snb\.ch|www\.bnz\.co\.nz|www\.anz\.co\.nz|tradingeconomics\.com|scheduler\.swissdatas\.ch)\//.test(x.source_page)&&
-   (x.diffusion_threshold==null||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
+   (x.diffusion_threshold==null||(country==='AUD'&&key==='services'&&verifiedFreshAlternative(x,country,key))||(country==='NZD'&&key==='services'&&x.diffusion_threshold===50&&
     x.metric_kind==='points'&&(/^https:\/\/businessnz\.org\.nz\/psi(?:\/[a-z0-9-]+)?$/.test(x.source_page)||x.source_series_id==='BNZ_BUSINESSNZ_PSI'&&x.source_page==='https://www.bnz.co.nz/institutional-banking/research/publications'))));
  return matches.length===1?matches[0]:null;
 }
@@ -361,7 +362,9 @@ function cycleMetric(metric,source,today,frequency,stale=false){
  const phaseOf=(level,dir)=>level===0||dir===0?null:level>0?(dir>0?'expansion':'slowdown'):(dir>0?'recovery':'contraction');
  let values=[],basis=null,threshold=metric.minimum??.15,levelThreshold=null;
  if(metric.diffusionThreshold===50){
-   values=tail.map(x=>x.value);basis='DIFFUSION_50';levelThreshold=50;
+   values=tail.map(x=>x.value);basis=id==='ABS_SERVICES_REAL_GVA_BREADTH_Q'?'SERVICE_BREADTH_50':'DIFFUSION_50';levelThreshold=50;
+ }else if(id==='SECO_SERVICES_GDP_CONTRIBUTION_CSSA'){
+   values=tail.map(x=>x.value);basis='REAL_GDP_CONTRIBUTION';levelThreshold=0;
  }else if(REAL_ACTIVITY_GROWTH.has(id)){
    values=tail.map(x=>x.value);basis='REAL_ACTIVITY_REPORTED_GROWTH';levelThreshold=0;
  }else if(REAL_ACTIVITY_LEVELS.has(id)&&months){
@@ -519,9 +522,17 @@ function inflationCatalog(catalog,today,country,overlay){
 }
 function recoverInflationSeries(catalog,today,country,overlay,cfg){
  const [id,target,page,unit,index,freq='M']=cfg;
- const matches=overlay.inflation_context.series.filter(x=>x.ccy===country&&x.area==='core'&&x.source_series_id===id&&x.source_page===page&&x.unit===unit&&x.frequency===freq&&x.metric_kind==='points'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT');
+ const isManual=x=>country==='NZD'&&id==='RBNZ_M1_SFM_YOY'&&x.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'&&x.source_page==='https://www.rbnz.govt.nz/statistics/series/economic-indicators/prices'&&x.manual_verified_on==='2026-11-25'&&x.official_release_date==='2026-11-18'&&x.manual_expires_on==='2026-12-17'&&today>=x.manual_verified_on&&today<x.manual_expires_on;
+ const matches=overlay.inflation_context.series.filter(x=>x.ccy===country&&x.area==='core'&&x.source_series_id===id&&x.unit===unit&&x.frequency===freq&&x.metric_kind==='points'&&(x.source_page===page&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT'||isManual(x)));
  if(matches.length!==1)return catalog;
  const raw=matches[0];let src=cycleHistory(raw,today,freq);
+ if(isManual(raw)){
+   const h=raw.history;
+   const dates=['2025-Q3','2025-Q4','2026-Q1','2026-Q2','2026-Q3'],values=[2.7,2.7,2.7,2.8,2.8];
+   if(h?.schema!=='GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1'||h.source_series_id!==id||h.frequency!=='Q'||h.quality!=='MANUALLY_VERIFIED_SNAPSHOT_NOT_PIT'||h.observations!==5||h.max_observations!==12||
+      JSON.stringify(h.dates)!==JSON.stringify(dates)||JSON.stringify(h.values)!==JSON.stringify(values)||JSON.stringify(raw.dates)!==JSON.stringify(dates.slice(-2))||JSON.stringify(raw.values)!==JSON.stringify(values.slice(-2)))return catalog;
+   src={...raw,dates,values,source_file:'RBNZ M1 · verifica manuale 25/11/2026 · aggiornamento automatico non riuscito'};
+ }
  if(index&&raw.exact_lag_history){
    const h=raw.exact_lag_history;
    if(h.schema!=='GMFQ_US_CORE_EXACT_LAG_V1'||h.source_series_id!==id||
@@ -858,10 +869,10 @@ function countryHistories(catalog,today,country,overlay,rows,context){
      if(!src||supplement&&src.id!==item.metric.id)continue;
      if(supplement)src=cycleHistory(src,today,item.freq);
      const id=src.source_series_id||item.metric.id,real=REAL_ACTIVITY_LEVELS.has(id)||REAL_ACTIVITY_GROWTH.has(id);
-     const index=REAL_ACTIVITY_LEVELS.has(id),diffusion=item.metric.diffusionThreshold===50;
-     if(!real&&!diffusion)continue;
+     const index=REAL_ACTIVITY_LEVELS.has(id),diffusion=item.metric.diffusionThreshold===50,contribution=id==='SECO_SERVICES_GDP_CONTRIBUTION_CSSA';
+     if(!real&&!diffusion&&!contribution)continue;
      const chart=series(item.metric.name+(index?' · crescita annua':''),src,item.freq,index?'% a/a reale':item.metric.unit||src.unit||'unità fonte',
-       {annualize:index,expected:index?undefined:item.current,source:item.source,threshold:index||REAL_ACTIVITY_GROWTH.has(id)?0:diffusion?50:undefined});
+       {annualize:index,expected:index?undefined:item.current,source:item.source,threshold:index||REAL_ACTIVITY_GROWTH.has(id)||contribution?0:diffusion?50:undefined});
      if(chart)activity.push(chart);
    }
    if(activity.length>=2)break;
@@ -1003,15 +1014,16 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   const unit=esc(x.metric.unit||'unità della fonte');
   const diff=x.kind==='points'?d(x.diff,' '+(x.metric.pointUnit||'punti')):d(x.pct,'%');
   const tone=x.verdict===null?'neutral':x.verdict>0?'green':x.verdict<0?'red':'amber';
+  const breadth=x.cycle?.basis==='SERVICE_BREADTH_50';
   const diffusion=x.metric.diffusionThreshold===50?
-   '<span class="sem-psi-regime">'+(x.current>50?'Livello: espansione (PSI sopra 50)':x.current<50?'Livello: contrazione (PSI sotto 50)':'Livello: soglia neutrale 50')+
+   '<span class="sem-psi-regime">'+(breadth?(x.current>50?'Maggioranza dei comparti in crescita':x.current<50?'Maggioranza dei comparti in calo':'Diffusione neutrale'):(x.current>50?'Livello: espansione (PSI sopra 50)':x.current<50?'Livello: contrazione (PSI sotto 50)':'Livello: soglia neutrale 50'))+
    ' · Direzione: '+(x.verdict===null?'non classificabile':x.diff>.2?'indice in accelerazione':x.diff<-.2?'indice in rallentamento':'indice stabile')+
    '</span>':'';
   const cycle=x.cycle;
   const cycleLabel=cycle?.phase?{expansion:'Espansione',slowdown:'Rallentamento',contraction:'Contrazione',recovery:'Recupero'}[cycle.phase]:null;
   const cycleText=cycle?.direction!==null&&cycle?.direction!==undefined?
     '<small class="sem-source-note"><strong>Lettura ciclica · </strong>'+esc(cycleLabel||(cycle.level===null?'Solo direzione, livello non determinato':cycle.level===0?'Livello sulla soglia':cycle.direction===0?'Livello '+(cycle.level>0?'sopra':'sotto')+' soglia, momentum stabile':'Livello determinato'))+
-    (cycle.basis==='REAL_ACTIVITY_YOY_GROWTH'?' · crescita a/a '+d(cycle.levelValue,'%'):cycle.basis==='REAL_ACTIVITY_REPORTED_GROWTH'?' · crescita reale della serie':cycle.basis==='DIFFUSION_50'?' · soglia 50':' · variazione descrittiva')+
+    (cycle.basis==='REAL_ACTIVITY_YOY_GROWTH'?' · crescita a/a '+d(cycle.levelValue,'%'):cycle.basis==='REAL_ACTIVITY_REPORTED_GROWTH'?' · crescita reale della serie':cycle.basis==='DIFFUSION_50'||cycle.basis==='SERVICE_BREADTH_50'?' · soglia 50':cycle.basis==='REAL_GDP_CONTRIBUTION'?' · contributo al PIL in p.p.':' · variazione descrittiva')+
     (cycle.observations>2?' · '+cycle.observations+' osservazioni consecutive':'')+
     (cycle.persistence>1?' · '+cycle.persistence+' confronti consecutivi nella stessa direzione':cycle.persistence===1?' · un solo confronto nella direzione attuale':'')+
     (cycle.acceleration!==null?' · '+({1:'momentum in aumento',0:'momentum stabile','-1':'momentum in diminuzione'}[cycle.acceleration]):'')+
