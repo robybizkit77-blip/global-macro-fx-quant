@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_NEXT_G8_PRICING_HISTORY_V1",
-  "as_of": "2026-11-24",
+  "as_of": "2026-11-25",
   "eligible_for_fx_engine": false,
   "eligible_for_backtests_as_official_ois": false,
   "official_ois_created": false,
@@ -198,6 +198,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-24T10:44:10.472061Z"
+          },
+          {
+            "date": "2026-11-25",
+            "rate": 4.275,
+            "contract": "ZQG2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-25T09:51:12.986748Z"
           }
         ],
         "6m": [
@@ -565,8 +573,8 @@
           }
         ]
       },
-      "latest_date": "2026-11-24",
-      "observed_dates": 24,
+      "latest_date": "2026-11-25",
+      "observed_dates": 25,
       "derived_reference_points": 0,
       "estimated_roll_momentum": {
         "5": {
@@ -3599,7 +3607,7 @@
         "current_rate": 3.67,
         "change_bp": -44.0,
         "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261027ZFT.htm",
-        "source_sha256": "39b61df29609102f3d40de947b37a4ed0aba438b030d066d24be7fa2bf29f128",
+        "source_sha256": "4d2c7ae9321c36a75bb6ad77fc4a756adc04eed41044c05066f44409ac0eafd8",
         "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"
       }
     },
