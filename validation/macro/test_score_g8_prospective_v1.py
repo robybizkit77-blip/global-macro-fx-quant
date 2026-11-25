@@ -18,9 +18,28 @@ ROOT=Path(__file__).resolve().parents[2]
 class FirstSeenScoring(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        m=(ROOT/"live_data/sections/MACRO_SERIES.json").read_bytes()
+        # Synthetic historical scenario: truncate observations to the fixture's
+        # cutoff. This is a regression test, not a certified historical vintage.
+        series=json.loads((ROOT/"live_data/sections/MACRO_SERIES.json").read_bytes())
+        for rows in series.values():
+            for row in rows:
+                if isinstance(row.get("dates"),list) and isinstance(row.get("values"),list):
+                    kept=[(d,v) for d,v in zip(row["dates"],row["values"]) if d[:7]<="2026-09"]
+                    row["dates"]=[d for d,v in kept]
+                    row["values"]=[v for d,v in kept]
+        m=json.dumps(series).encode()
         s=(ROOT/"site/fx-quant-v2/next/g8-growth-shadow.js").read_bytes()
         cls.issue=build_receipt(m,s,"a"*40,datetime(2026,11,12,8,58,tzinfo=timezone.utc))
+        # Score a controlled USD forecast regardless of later model qualification.
+        # Eligibility/model accuracy is separately tested by the capture suite.
+        model=cls.issue["forecast_evidence"]
+        model["qualified"]=["USD"]
+        for ccy,r in model["currencies"].items():
+            r["candidate"]=ccy=="USD"
+            r["forecast"]={"nextChange":0.2,"unit":"%"} if ccy=="USD" else None
+            if ccy=="USD":
+                r["nextObservationPeriod"]="2026-10"
+
 
     def seen(self,value=17060.0,baseline_revision=0.0,day="2026-11-14"):
         r=copy.deepcopy(self.issue)

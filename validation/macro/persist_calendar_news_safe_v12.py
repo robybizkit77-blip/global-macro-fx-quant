@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import json
 import subprocess
+import time
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -81,17 +83,25 @@ def persist(repo: Path = ROOT, *, managed=MANAGED, protected=(), max_attempts=MA
     if not git(repo, "diff", "--cached", "--quiet", check=False).returncode:
         return {"status": "NO_STAGED_CHANGE", "attempts": 0}
     git(repo, "commit", "-m", commit_message)
+    rebased_once = False
+    base = before
     for attempt in range(1, max_attempts + 1):
         push = git(repo, "push", "origin", "HEAD:main", check=False)
         if push.returncode == 0:
             return {"status": "PERSISTED", "attempts": attempt,
                     "commit": git(repo, "rev-parse", "HEAD").stdout.strip(),
-                    "rebased_onto_latest_main": attempt > 1}
+                    "rebased_onto_latest_main": rebased_once}
         git(repo, "fetch", "--no-tags", "origin",
             "+refs/heads/main:refs/remotes/origin/main")
         if git(repo, "merge-base", "--is-ancestor", before, "origin/main",
                check=False).returncode != 0:
             raise RuntimeError("REMOTE_MAIN_DIVERGED_FROM_CHECKOUT_NO_REWRITE")
+        local = git(repo, "rev-parse", "HEAD").stdout.strip()
+        if git(repo, "merge-base", "--is-ancestor", local, "origin/main", check=False).returncode == 0:
+            if changed_files(repo, local, "origin/main", "--", *sorted(dirty | protected)):
+                raise RuntimeError("PUSH_ACCEPTED_BUT_REMOTE_INPUTS_OR_OUTPUTS_ADVANCED")
+            return {"status": "PERSISTED", "attempts": attempt, "commit": local,
+                    "rebased_onto_latest_main": rebased_once}
         # A concurrent write to any candidate output or explicitly declared
         # upstream input invalidates the original validation.
         overlap = changed_files(
@@ -107,16 +117,22 @@ def persist(repo: Path = ROOT, *, managed=MANAGED, protected=(), max_attempts=MA
                     "REMOTE_PROTECTED_INPUTS_MOVED_FAIL_CLOSED: "
                     + ", ".join(sorted(changed_inputs)))
         latest = git(repo, "rev-parse", "origin/main").stdout.strip()
-        if latest == before:
-            raise RuntimeError(
-                "GIT_PUSH_FAILED_WITHOUT_REMOTE_ADVANCE: "
-                + push.stderr.strip()[:500])
+        if latest == base:
+            # Retry only transient transport/service failures, not policy denials.
+            if not re.search(r"internal server error|\b(?:500|502|503|504)\b|timed?\s*out|timeout|connection reset|remote end hung up|temporarily unavailable", push.stderr, re.I):
+                raise RuntimeError("GIT_PUSH_FAILED_WITHOUT_REMOTE_ADVANCE: " + push.stderr.strip()[:500])
+            if attempt == max_attempts:
+                raise RuntimeError("TRANSIENT_GIT_PUSH_RETRY_BUDGET_EXHAUSTED: " + push.stderr.strip()[:500])
+            time.sleep(min(2 ** attempt, 30))
+            continue
         rebased = git(repo, "rebase", "origin/main", check=False)
         if rebased.returncode:
             git(repo, "rebase", "--abort", check=False)
             raise RuntimeError(
                 "GIT_REBASE_FAILED_NO_REMOTE_OVERWRITE: "
                 + rebased.stderr.strip()[:500])
+        base = latest
+        rebased_once = True
     raise RuntimeError("MAIN_ADVANCED_REPEATEDLY_MAX_RETRIES_NO_FORCE_PUSH")
 
 

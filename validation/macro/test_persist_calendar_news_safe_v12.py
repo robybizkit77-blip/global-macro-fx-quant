@@ -8,6 +8,8 @@ from __future__ import annotations
 import tempfile
 import unittest
 import subprocess
+from unittest.mock import patch
+from validation.macro import persist_calendar_news_safe_v12 as module
 from pathlib import Path
 
 from validation.macro.persist_calendar_news_safe_v12 import persist
@@ -145,6 +147,63 @@ class CalendarConcurrentPersistenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "UNEXPECTED_WORKTREE_CHANGE"):
             persist(self.a, managed=MANAGED)
         self.assertEqual(run(self.a, "log", "-1", "--format=%s"), "initial")
+
+    def test_transient_500_without_remote_advance_retries_same_commit(self):
+        write(self.a, LEDGER, 'verified release\n')
+        real_git=module.git
+        pushes=[]
+        def flaky(repo,*args,**kwargs):
+            if args[:1]==('push',):
+                pushes.append(real_git(repo,'rev-parse','HEAD').stdout.strip())
+                if len(pushes)==1:
+                    return subprocess.CompletedProcess(args,1,'','remote: Internal Server Error')
+            return real_git(repo,*args,**kwargs)
+        with patch.object(module,'git',side_effect=flaky), patch.object(module.time,'sleep') as delay:
+            result=persist(self.a,managed=MANAGED)
+        self.assertEqual(result['attempts'],2)
+        self.assertFalse(result['rebased_onto_latest_main'])
+        self.assertEqual(pushes[0],pushes[1])
+        delay.assert_called_once()
+        run(self.a,'fetch','origin','main')
+        self.assert_remote(LEDGER,'verified release')
+
+    def test_permission_rejection_is_not_retried(self):
+        write(self.a,LEDGER,'verified release\n')
+        real_git=module.git
+        def reject(repo,*args,**kwargs):
+            if args[:1]==('push',):
+                return subprocess.CompletedProcess(args,1,'','remote: permission denied')
+            return real_git(repo,*args,**kwargs)
+        with patch.object(module,'git',side_effect=reject),patch.object(module.time,'sleep') as delay:
+            with self.assertRaisesRegex(RuntimeError,'GIT_PUSH_FAILED_WITHOUT_REMOTE_ADVANCE'):
+                persist(self.a,managed=MANAGED)
+        delay.assert_not_called()
+
+    def test_retry_budget_remains_bounded(self):
+        write(self.a,LEDGER,'verified release\n')
+        real_git=module.git
+        def reject(repo,*args,**kwargs):
+            if args[:1]==('push',):
+                return subprocess.CompletedProcess(args,1,'','remote: Internal Server Error')
+            return real_git(repo,*args,**kwargs)
+        with patch.object(module,'git',side_effect=reject),patch.object(module.time,'sleep') as delay:
+            with self.assertRaisesRegex(RuntimeError,'TRANSIENT_GIT_PUSH_RETRY_BUDGET_EXHAUSTED'):
+                persist(self.a,managed=MANAGED,max_attempts=3)
+        self.assertEqual(delay.call_count,2)
+
+    def test_lost_ack_after_accepted_push_is_idempotent(self):
+        write(self.a,LEDGER,'verified release\n')
+        real_git=module.git
+        def ack_lost(repo,*args,**kwargs):
+            result=real_git(repo,*args,**kwargs)
+            if args[:1]==('push',) and result.returncode==0:
+                return subprocess.CompletedProcess(args,1,'','connection reset')
+            return result
+        with patch.object(module,'git',side_effect=ack_lost):
+            result=persist(self.a,managed=MANAGED)
+        self.assertEqual(result['status'],'PERSISTED')
+        self.assertEqual(result['attempts'],1)
+        self.assert_remote(LEDGER,'verified release')
 
     def test_requires_valid_paths_and_retry_limit(self):
         with self.assertRaises(ValueError):
