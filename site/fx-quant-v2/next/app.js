@@ -1023,21 +1023,27 @@ function pairs(){
  const pairSupport=fav&&activePair?[
   macroState==='FAVOREVOLE'?'Il quadro macro relativo sostiene '+fav+'.':'',
   policyState==='FAVOREVOLE'?'Il movimento relativo dei tassi sostiene '+fav+'.':'',
-  activePair.aligned?'Il prezzo a 20 sedute è coerente con la tesi.':''
+  activePair.aligned?'Il cambio nelle ultime settimane è coerente con la tesi.':''
  ].filter(Boolean).join(' '):'';
  const pairFriction=fav&&activePair?[
   macroState==='CONTRARIA'?'La macro relativa contrasta la tesi.':macroState!=='FAVOREVOLE'?'La macro non distingue un vantaggio netto.':'',
   policyState==='CONTRARIA'?'I tassi si muovono contro la tesi.':policyState!=='FAVOREVOLE'?'Dai tassi manca una conferma netta.':'',
-  activePair.opposite?'Il prezzo a 20 sedute contrasta la tesi.':!activePair.aligned?'Il prezzo a 20 sedute non conferma in modo netto.':'',
+  activePair.opposite?'Il cambio nelle ultime settimane contrasta la tesi.':!activePair.aligned?'Il cambio non conferma in modo netto.':'',
+  activePair.aligned&&activePair.fiveState==='CONTRARIO'?'Nelle ultime sedute il movimento si è però indebolito.':'',
   activePair.risk?'Le fonti sono parziali.':''
  ].filter(Boolean).join(' '):'La direzione fondamentale non è sufficientemente distinta.';
+ const pairWatch=!fav?'Prima di scegliere un verso serve una divergenza economica o monetaria tra le due valute.':
+  macroState==='CONTRARIA'?'La tesi si rafforzerebbe se l’economia relativa tornasse a favorire '+fav+'.':
+  policyState==='CONTRARIA'||policyState==='ASSENTE'?'Conta se le attese sui tassi tornano a sostenere '+fav+' rispetto all’altra valuta.':
+  activePair?.opposite||activePair?.fiveState==='CONTRARIO'?'Prima di valutare un ingresso, cerca un ritorno del prezzo nella direzione della tesi.':
+  'Conta se il vantaggio relativo persiste e il cambio conferma senza inseguire il movimento.';
  const main='<section class="panel pairs-reading-compact" aria-label="Sintesi operativa della coppia selezionata">'+
   '<div class="pairs-reading-head"><div><span class="mini-overline">'+esc(getPairName(state.pair))+'</span><h2>'+
   esc(opening?.headline||'Il quadro di '+getPairName(state.pair))+'</h2></div></div>'+
   '<p class="pairs-primary-story">'+esc([opening?.lead,favMeaning].filter(Boolean).join(' '))+'</p>'+
   '<p class="pairs-primary-story"><strong>Cosa va.</strong> '+esc(pairSupport||'Nessuna conferma direzionale netta nelle componenti disponibili.')+'</p>'+
   '<p class="pairs-primary-story"><strong>Cosa frena.</strong> '+esc(pairFriction||'Nessuna contraddizione netta tra le componenti considerate; il timing resta da verificare.')+'</p>'+
-  '<p class="pairs-timing-reading"><strong>Cosa guardare.</strong> '+esc(gate.improve)+' '+esc(gate.weaken)+'</p>'+
+  '<p class="pairs-timing-reading"><strong>Cosa guardare.</strong> '+esc(pairWatch)+'</p>'+
   (pairProfile?.closes?.length>=22?
    '<button type="button" class="ghost-btn small pairs-chart-jump" data-pair-chart-jump aria-controls="fx-pair-price-chart">Vedi il grafico del cambio</button>':'')+
   '<details class="pairs-optional-panel pairs-evidence"><summary><strong>Apri numeri, stime e cosa monitorare</strong><span class="pairs-open-icon" aria-hidden="true">+</span></summary><div class="pairs-details-body">'+
