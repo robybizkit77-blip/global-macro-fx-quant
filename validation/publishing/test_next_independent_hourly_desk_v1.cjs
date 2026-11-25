@@ -412,11 +412,12 @@ assert(app.indexOf("fetch('../../../market-desk/hourly-market-desk-check.json'")
  app.indexOf('await Promise.allSettled(jobs);'),
  'The receipt must settle before the first Home render');
 const countBlock=app.slice(app.indexOf(' const requiredSources=Object.keys(SOURCES);'),app.indexOf(' const caseNow=researchCase()'));
-const feedCount=(data)=>vm.runInNewContext(countBlock+'\n[ok,missing]',{
- SOURCES:{rates:'rates.json',pairs:'pairs.json'},state:{data}
+const feedCount=(data,errors={})=>vm.runInNewContext(countBlock+'\n[ok,missing]',{
+ SOURCES:{rates:'rates.json',pairs:'pairs.json'},state:{data,errors}
  });
 assert.equal(JSON.stringify(feedCount({rates:{},pairs:{},hourlyDesk:{},hourlyCheck:{}})),'[2,0]');
 assert.equal(JSON.stringify(feedCount({rates:{},hourlyDesk:{},hourlyCheck:{}})),'[1,1]');
+assert.equal(JSON.stringify(feedCount({rates:{},pairs:{}},{rates:'retained after failure'})),'[1,1]');
 assert(app.includes("document.addEventListener('visibilitychange'")&&
  app.includes('lastResearchRefresh=Date.now()'),
  'Existing in-place refresh behavior must stay intact');
