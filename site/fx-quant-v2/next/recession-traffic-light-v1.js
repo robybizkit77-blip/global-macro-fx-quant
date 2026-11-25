@@ -470,12 +470,28 @@ const INFLATION_MAP={
  NZD:[['NZ_CPI_HEADLINE_YOY_history_value','CPI headline','Q'],['NZ_CORE_INFLATION_SFM_Q_history_value','Core inflation SFM','Q']],
  CAD:[['CA_CPI_HEADLINE_YOY_history_value','CPI headline','M'],['CA_CPI_MEDIAN_YOY_history_value','CPI median','M'],['CA_CPI_TRIM_YOY_history_value','CPI trim','M']]
 };
+const WAGE_MAP={
+ USD:[['US_AHE_TOTAL_PRIVATE_history_value','Salari orari medi nominali (AHE)','M',true]],
+ EUR:[['EA_NEGOTIATED_WAGES_YOY_history_value','Salari negoziati nominali','Q']],
+ AUD:[['AU_WPI_YOY_history_value','Wage Price Index nominale','Q']],
+ GBP:[['UK_AWE_TOTAL_YOY','Retribuzioni medie settimanali','M']],
+ JPY:[['JP_CASH_EARNINGS_YOY','Retribuzioni monetarie','M']],
+ CHF:[['CH_SWISS_WAGE_INDEX_YOY','Indice salari svizzero','A']],
+ NZD:[['NZ_LCI_WAGE_YOY','Labour Cost Index','Q']],
+ CAD:[['CA_AVERAGE_HOURLY_WAGES_YOY','Salari orari medi','M']]
+};
 function inflationContext(catalog,today,country){
+ return annualRateContext(catalog,today,country,INFLATION_MAP);
+}
+function wageContext(catalog,today,country){
+ return annualRateContext(catalog,today,country,WAGE_MAP);
+}
+function annualRateContext(catalog,today,country,mapping){
  const rows=Array.isArray(catalog?.[country])?catalog[country]:[];
  const now=Date.parse(today+'T12:00:00Z');
- return (INFLATION_MAP[country]||[]).map(([id,label,freq,index])=>{
+ return (mapping[country]||[]).map(([id,label,freq,index])=>{
    const src=rows.find(r=>r.id===id),missing={id,label,freq,available:false};
-   if(!src||src.frequency!==freq||!Array.isArray(src.dates)||!Array.isArray(src.values)||src.dates.length!==src.values.length||!Number.isFinite(now))return missing;
+   if(!['M','Q'].includes(freq)||!src||src.frequency!==freq||!Array.isArray(src.dates)||!Array.isArray(src.values)||src.dates.length!==src.values.length||!Number.isFinite(now))return missing;
    const months=freq==='Q'?3:1,records=new Map();
    for(let i=0;i<src.dates.length;i++){
      const d=parsePeriod(src.dates[i]),v=src.values[i];
@@ -554,6 +570,14 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     (x.stale?' · dato datato, giudizio sospeso':x.direction?' · '+esc(x.direction):' · direzione non determinabile')+
     ' <small>'+esc(x.source)+'</small>':'dato non disponibile')+'</p>').join('')+
    '<small>Pressioni sui prezzi in aumento o diminuzione: non sono un giudizio positivo/negativo sulla crescita. Headline e core possono riferirsi a periodi diversi; le misure core nazionali non sono omogenee.</small>';
+ const wages=wageContext(catalog,today,selected);
+ const wageNote='<p><strong>Salari · crescita nominale effettiva</strong></p>'+
+   wages.map(x=>'<p><strong>'+esc(x.label)+'</strong> · '+(x.available?
+    esc(fmt(x.value,2))+'% a/a · '+esc(x.period)+
+    (finite(x.change)?' · variazione '+esc(d(x.change,' p.p.'))+' rispetto a '+esc(x.prior):' · confronto non disponibile')+
+    (x.stale?' · dato datato, giudizio sospeso':x.direction?' · '+esc(x.direction):' · direzione non determinabile')+
+    ' <small>'+esc(x.source)+'</small>':'serie effettiva non ancora disponibile nel database')+'</p>').join('')+
+   '<small>Le retribuzioni nominali non sono salari reali o costo unitario del lavoro. Gli indicatori nazionali hanno definizioni differenti. Le aspettative salariali non sostituiscono i dati effettivi; nessun contributo ai semafori della crescita.</small>';
  const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
  const svcPrices=servicePriceContext?recentTwo(servicePriceContext,today):null;
  const svcPriceNote=svcPrices?'<p class="sem-services-price"><strong>Inflazione servizi (contesto, fuori dal semaforo):</strong> '+esc(fmt(svcPrices.cur.value,1))+'% YoY · '+esc(svcPrices.cur.period)+' (prima '+esc(fmt(svcPrices.pre.value,1))+'%). Prezzi e attività sono fenomeni diversi.</p>':'';
@@ -624,7 +648,8 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     (r.signalSource==='fallback'?'<small>Segnale da fonte supplementare aggiornata; serie precedenti nel dettaglio</small>':'')+
     (r.proxy?'<small>Proxy/sondaggio, non misura esaustiva del ciclo</small>':'')+
     (r.items.some(x=>x?.stale)?'<small>Osservazioni datate</small>':'')+'</div></div>').join('')+'</div>'+
-  '<div class="sem-policy"><div>'+inflationNote+'</div></div>'+ 
+  '<div class="sem-policy"><div>'+inflationNote+'</div></div>'+
+  '<div class="sem-policy"><div>'+wageNote+'</div></div>'+ 
   '<div class="sem-policy"><div><span>POLITICA MONETARIA · DA LEGGERE A PARTE</span>'+
   '<p>'+bank+' e aspettative sui tassi possono amplificare o attenuare le pressioni cicliche: non sono però un indicatore diretto di recessione né una prova di movimento del cambio.</p></div>'+
   '<a href="#rates">Apri tassi & OIS ↗</a></div>'+
@@ -637,6 +662,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
