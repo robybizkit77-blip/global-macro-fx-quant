@@ -470,9 +470,11 @@ function build(api){
   // Editorial synthesis of existing directional components, never a new score.
   const positive=[],negative=[],limits=[];
   if(cur){
-   if(cur.macroScore>=.25)positive.push('Il quadro economico stimato è favorevole.');
-   else if(cur.macroScore<=-.25)negative.push('Il quadro economico stimato è debole.');
-   else limits.push('Il quadro economico non dà una direzione netta.');
+   if(cur.growthTrend===1)positive.push('Il PIL accelera.');
+   if(cur.growthTrend===-1)negative.push('Il PIL rallenta.');
+   if(cur.labourDirection===1)positive.push('La disoccupazione scende.');
+   if(cur.labourDirection===-1)negative.push('La disoccupazione sale.');
+   if(cur.growthTrend!==1&&cur.growthTrend!==-1&&cur.labourDirection!==1&&cur.labourDirection!==-1)limits.push('Crescita e lavoro non offrono un segnale direzionale netto.');
    if(cur.rate.quality==='ASSENTE')limits.push('Manca una variazione monetaria verificabile: il contributo dei tassi è neutro per assunzione.');
    else if(cur.rate.score>0)positive.push(cur.rate.quality==='UFFICIALE'?'Il riferimento monetario sale.':'Il riferimento indicativo sui tassi sale; è un proxy o una stima.');
    else if(cur.rate.score<0)negative.push(cur.rate.quality==='UFFICIALE'?'Il riferimento monetario scende.':'Il riferimento indicativo sui tassi scende; è un proxy o una stima.');
@@ -484,8 +486,8 @@ function build(api){
    else limits.push('La forza relativa del cambio cambia poco.');
   }else limits.push('Manca una lettura recente della forza relativa del cambio.');
   const verdict=positive.length&&negative.length?'Le conferme non sono univoche: '+country+' tra sostegno e pressioni contrarie':
-   positive.length&&!negative.length?'Gli elementi favorevoli a '+country+' prevalgono tra quelli osservabili':
-   negative.length&&!positive.length?'Gli elementi sfavorevoli a '+country+' prevalgono tra quelli osservabili':
+   positive.length&&!negative.length?'Emergono elementi a sostegno di '+country:
+   negative.length&&!positive.length?'Emergono elementi di pressione su '+country:
    'Il vantaggio valutario di '+country+' resta da chiarire';
   const support=positive.join(' ')||'Tra le componenti osservabili non emerge un sostegno direzionale netto.';
   const friction=[...negative,...limits].join(' ')||'Non emergono contrasti nelle componenti considerate. Verifica comunque i differenziali rispetto alla valuta opposta.';
@@ -497,8 +499,9 @@ function build(api){
    '<div class="strength-first-reading">'+
    '<p><strong>Cosa va.</strong> '+esc(support)+'</p>'+
    '<p><strong>Cosa frena.</strong> '+esc(friction)+'</p>'+
+   '<p><strong>Che cosa mostra il Forex.</strong> '+esc(opening.lead)+'</p>'+
    '</div>'+
-   '<p class="strength-first-watch"><strong>Cosa guardare.</strong> '+esc(fxMonitorWatch)+'</p>'+
+   '<p class="strength-first-watch"><strong>Cosa guardare.</strong> '+esc(sourceRelease?nextCheck:cur?.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?'Verifica se NZD/USD e AUD/NZD confermano la direzione del riferimento neozelandese. Il proxy non sostituisce le attese RBNZ.':cur?.rate.quality==='ASSENTE'?'La prossima variazione verificabile dei tassi chiarirà se il prezzo relativo è sostenuto anche dalle aspettative monetarie.':positive.length&&negative.length?'Verifica quale dei segnali contrari cambia per primo e se le attese sui tassi e la valuta si riallineano.':nextCheck)+'</p>'+
    '<details class="strength-evidence-fold"><summary><strong>Apri numeri, date, stime e fonti di '+country+'</strong>'+
    '<span>Quattro pilastri · Macro / 2Y / attese 6M / prezzo · ricerca Quant separata</span></summary>'+
    '<div class="strength-evidence-body"><p>'+esc(estimatedEconomic)+' '+esc(chfRankingDetail||plainRates(sixProof))+'</p><p>'+esc(opening.lead)+'</p>'+(root.FXQuantG8PricingEvidence?.render?.(sixProof)||'')+
