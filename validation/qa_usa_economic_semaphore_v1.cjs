@@ -684,3 +684,10 @@ console.log('ECONOMIC_CYCLE_RELATIVE_DIVERGENCES_PASS');
  assert.match(filtered[0].id,/TRIMMED_MEAN_M_YOY/);
 }
 console.log('ECONOMIC_CYCLE_CORE_RECOVERY_PASS');
+
+{
+ const svc={ccy:'CAD',area:'services',id:'SEM_G8_CAD_SERVICES',label:'PIL reale settore servizi',frequency:'M',unit:'mln CAD reali SAAR',dates:['2026-07','2026-08'],values:[100,99],source_series_id:'36100434_SERVICES_T003',source_page:'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610043401',metric_kind:'percent',quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',up_good:true};
+ const ov={schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',series:[svc]};
+ assert.equal(model({},'2026-11-25','CAD',ov).find(x=>x.key==='services').signal.tone,'red');
+ assert.equal(model({},'2026-12-10','CAD',ov).find(x=>x.key==='services').signal.tone,'neutral');
+}

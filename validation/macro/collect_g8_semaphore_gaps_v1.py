@@ -995,6 +995,65 @@ def collect_ch_nz_core(now,fetcher=None):
             audit[ccy]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
     return items,audit
 
+CAD_LFS_PID=14100287
+CAD_LFS_PAGE="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701"
+CAD_LFS_KEY="STATCAN_14100287_UNEMP_SA"
+CAD_LFS_MEMBERS={"Geography":"Canada","Labour force characteristics":"Unemployment rate","Data type":"Seasonally adjusted","Statistics":"Estimate"}
+def statcan_lfs_wds(method,payload):
+    if method not in {"getCubeMetadata","getDataFromCubePidCoordAndLatestNPeriods"}:raise ValueError("unregistered LFS WDS method")
+    url="https://www150.statcan.gc.ca/t1/wds/rest/"+method
+    req=Request(url,data=json.dumps([payload]).encode(),headers={"Content-Type":"application/json","Accept":"application/json","User-Agent":"GMFQ-Economic-Research/1.0"})
+    with urlopen(req,timeout=25) as r:
+        if r.geturl()!=url:raise ValueError("LFS WDS redirect")
+        raw=r.read(4_000_001)
+        if not raw or len(raw)>4_000_000:raise ValueError("LFS WDS response size")
+    data=json.loads(raw)
+    if len(data)!=1 or data[0].get("status")!="SUCCESS":raise ValueError("LFS WDS query failed")
+    return data[0]["object"]
+
+def cad_lfs_coordinate(meta):
+    if int(meta.get("productId",0))!=CAD_LFS_PID or "Labour force characteristics, monthly, seasonally adjusted and trend-cycle" not in meta.get("cubeTitleEn",""):
+        raise ValueError("LFS cube identity")
+    dims=meta["dimension"];coord=[0]*10;seen=set()
+    expected={**CAD_LFS_MEMBERS,"Gender":"Total - Gender","Age group":"15 years and over"}
+    for dim in dims:
+        name=dim["dimensionNameEn"]
+        if name not in expected or name in seen:raise ValueError("LFS dimension identity")
+        seen.add(name)
+        selected=[m for m in dim["member"] if m["memberNameEn"]==expected[name]]
+        pos=int(dim["dimensionPositionId"])-1
+        if len(selected)!=1 or not 0<=pos<len(dims) or coord[pos]:raise ValueError("LFS dimension ambiguity")
+        coord[pos]=int(selected[0]["memberId"])
+        if coord[pos]<=0:raise ValueError("LFS member invalid")
+    if seen!=set(expected) or not all(coord[:len(dims)]):raise ValueError("LFS missing dimensions")
+    return ".".join(map(str,coord))
+
+def parse_cad_lfs(obj,coordinate,now):
+    if int(obj.get("productId",0))!=CAD_LFS_PID or obj.get("coordinate")!=coordinate:raise ValueError("LFS response coordinate mismatch")
+    obs={}
+    for row in obj["vectorDataPoint"]:
+        p=period(row["refPer"],"M");v=row.get("value")
+        if period_end(p)>now or v is None:continue
+        if row.get("scalarFactorCode")!=0 or not isinstance(v,(int,float)) or isinstance(v,bool) or not math.isfinite(v) or not 0<=v<=30 or p in obs:
+            raise ValueError("LFS invalid rate")
+        obs[p]=v
+    if len(obs)<12:raise ValueError("LFS history insufficient")
+    return sorted(obs.items())
+
+def collect_cad_lfs(now,wds=statcan_lfs_wds):
+    try:
+        meta=wds("getCubeMetadata",{"productId":CAD_LFS_PID})
+        coord=cad_lfs_coordinate(meta)
+        obj=wds("getDataFromCubePidCoordAndLatestNPeriods",{"productId":CAD_LFS_PID,"coordinate":coord,"latestN":36})
+        obs=parse_cad_lfs(obj,coord,now)
+        spec=dict(ccy="CAD",area="jobs",key=CAD_LFS_KEY,method="statcan_lfs",
+            name="Disoccupazione LFS nazionale (SA)",unit="%",frequency="M",kind="points",max_age_days=85,
+            origin="Statistics Canada / 14-10-0287-01",source_page=CAD_LFS_PAGE,up_good=False)
+        item,status=candidate(spec,obs,now)
+        return item,{**status,"coordinate":coord}
+    except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError) as exc:
+        return None,{"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+
 def collect_external_context(now,fetcher=fetch):
     result={"schema":"GMFQ_G8_EXTERNAL_CONTEXT_V1","series":[],"audit":{}}
     for ccy,key in EXPORT_KEYS.items():
@@ -1093,6 +1152,55 @@ def collect_wage_context(now):
     except (ValueError,UnicodeError,TimeoutError,OSError) as exc:
         result["audit"]["CHF_estimate"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
     return result
+
+ONS_UNEMP_URL="https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx"
+ONS_RETAIL_URL="https://www.ons.gov.uk/businessindustryandtrade/retailindustry/timeseries/j5ek/drsi"
+UK_ACTIVITY={
+ "ONS_MGSX_UNEMP_Q":dict(ccy="GBP",area="jobs",key="ONS_MGSX_UNEMP_Q",method="ons_activity",
+  name="Disoccupazione LFS (16+, trimestri non sovrapposti, SA)",unit="%",frequency="Q",kind="points",max_age_days=175,
+  origin="ONS / MGSX",source_page=ONS_UNEMP_URL,up_good=False,
+  code="MGSX",title="Unemployment rate (aged 16 and over, seasonally adjusted): %"),
+ "ONS_J5EK_RETAIL_VOL":dict(ccy="GBP",area="demand",key="ONS_J5EK_RETAIL_VOL",method="ons_activity",
+  name="Volumi reali vendite al dettaglio, carburanti inclusi (SA)",unit="indice reale SA",frequency="M",kind="percent",max_age_days=85,
+  origin="ONS / J5EK",source_page=ONS_RETAIL_URL,up_good=True,
+  code="J5EK",title="RSI:Volume Seasonally Adjusted:All Retailers inc fuel:All Business Index")
+}
+def parse_ons_activity(raw,now,spec):
+    txt=raw.decode("utf-8","replace");p=_PlainText();p.feed(txt)
+    plain=" ".join(" ".join(p.parts).split())
+    if not re.search(r"Series ID:\s*"+spec["code"]+r"\b",plain) or spec["title"].casefold() not in plain.casefold():
+        raise ValueError("ONS activity source identity changed")
+    table=_ReportTables();table.feed(txt);out={}
+    months=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
+    for rows in table.tables:
+        for row in rows:
+            if len(row)!=2:continue
+            if spec["frequency"]=="Q":
+                m=re.fullmatch(r"(\d{4}) Q([1-4])",row[0],re.I)
+                if not m:continue
+                period=f"{m[1]}-Q{m[2]}"
+            else:
+                m=re.fullmatch(r"(\d{4}) ("+"|".join(months)+")",row[0],re.I)
+                if not m:continue
+                period=f"{m[1]}-{months.index(m[2].upper())+1:02d}"
+            if period_end(period)>now or row[1] in ("","..",":","-"):continue
+            v=float(row[1])
+            if not math.isfinite(v) or v<=0 or (spec["frequency"]=="Q" and v>30) or v>10000 or period in out:
+                raise ValueError("ONS activity invalid/duplicate observation")
+            out[period]=v
+    if len(out)<12:raise ValueError("ONS activity history unavailable")
+    return sorted(out.items())
+
+def collect_uk_activity(now,fetcher=None):
+    items=[];audit={}
+    for spec in UK_ACTIVITY.values():
+        try:
+            item,status=candidate(spec,parse_ons_activity((fetcher or fetch_issuer)(spec["source_page"]),now,spec),now)
+            if item:items.append(item)
+            audit["GBP_"+spec["area"]]=status
+        except (ValueError,KeyError,IndexError,TypeError,UnicodeError,TimeoutError,OSError) as exc:
+            audit["GBP_"+spec["area"]]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    return items,audit
 
 def parse_ons_industry(raw,now):
     txt=raw.decode("utf-8","replace")
@@ -1542,7 +1650,7 @@ def parse_snb_credit(raw,now):
     return sorted(out.items())
 
 def fetch_issuer(url):
-    if url not in {CH_CORE_URL,NZ_CORE_URL,JP_CORE_URL,ABS_CORE_URL,ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,ONS_CORE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
+    if url not in {ONS_UNEMP_URL,ONS_RETAIL_URL,CH_CORE_URL,NZ_CORE_URL,JP_CORE_URL,ABS_CORE_URL,ONS_URL,ONS_INDUSTRY,ONS_WAGE_URL,ONS_CORE_URL,STATCAN_GDP_ZIP,BOJ_CREDIT_URL,RBNZ_CREDIT_URL,SNB_CREDIT_URL,SNB_CREDIT_META}:raise ValueError("unregistered official services URL")
     accept=("application/json" if url==SNB_CREDIT_META else "text/csv" if url==SNB_CREDIT_URL else "text/html,application/zip")
     req=Request(url,headers={"User-Agent":"GMFQ-Economic-Research/1.0","Accept":accept})
     with urlopen(req,timeout=35) as response:
@@ -2194,6 +2302,14 @@ def collect(now=None,fetcher=fetch):
             out["audit"][code]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180],
                                  "source_page":spec["source_page"],"origin":spec["origin"]}
     if fetcher is fetch:
+        items,audit=collect_uk_activity(now)
+        out["series"].extend(items)
+        out["audit"].update(audit)
+        out["source_count"]+=len(UK_ACTIVITY)
+        item,status=collect_cad_lfs(now)
+        if item:out["series"].append(item)
+        out["audit"]["CAD_jobs"]=status
+        out["source_count"]+=1
         out["wage_context"]=collect_wage_context(now)
         out["external_context"]=collect_external_context(now)
         out["inflation_context"]=collect_inflation_context(now)
