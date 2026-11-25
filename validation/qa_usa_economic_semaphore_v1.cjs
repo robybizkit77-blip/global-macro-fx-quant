@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,exportSparkline,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,countryInterpretation,overviewCountry,regimePosition,chartTail,countryHistories,exportSparkline,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -596,3 +596,32 @@ console.log('ECONOMIC_CYCLE_COUNTRY_INTERPRETATION_PASS');
  }
 }
 console.log('ECONOMIC_CYCLE_REGIME_MAP_PASS');
+
+{
+ const date='2026-11-25';
+ const sample={dates:['2026-06','2026-07','2026-08','2026-10','2026-11'],values:[1,2,3,4,5]};
+ assert.equal(chartTail(sample,date,'M'),null);
+ assert.equal(chartTail({dates:['2026-Q1','2026-Q2','2026-Q3'],values:[1,2,3]},date,'Q').length,3);
+ assert.equal(chartTail({dates:['2026-Q1','2026-Q2','2026-Q3','2026-Q3'],values:[1,2,3,4]},date,'Q'),null);
+ assert.equal(chartTail({dates:['2023','2024','2025'],values:[1.7,1.8,1.8]},date,'A').length,3);
+ const d=Array.from({length:15},(_,i)=>new Date(Date.UTC(2024,i,1)).toISOString().slice(0,10));
+ const v=Array.from({length:15},(_,i)=>100+i);
+ const yoy=chartTail({dates:d,values:v},date,'M',true);
+ assert.equal(yoy.length,3);assert.ok(Math.abs(yoy[0].value-12)<1e-9);
+ const ov=JSON.parse(fs.readFileSync(path.join(base,'site/fx-quant-v2/next/semaphore-supplement-v1.json'),'utf8'));
+ for(const ccy of coverage){
+   const rows=model(catalog,date,ccy,ov),inflation=inflationContext(catalog,date,ccy),wages=wageContext(catalog,date,ccy,ov),external=externalContext(date,ccy,ov);
+   const h=countryHistories(catalog,date,ccy,ov,rows,{inflation,wages,external});
+   assert.equal(h.exports.length,1,ccy+' export history');
+   assert.equal(h.exports[0].points.length,12);
+   assert.equal(h.exports[0].points.at(-1).value,external.value);
+   assert.ok(h.inflation.length>=1,ccy+' inflation history');
+   for(const x of Object.values(h).flat())assert.ok(x.points.length>=3&&x.unit&&x.source);
+   const html=render({catalog,esc,dayNow:()=>date,country:ccy,overlay:ov});
+   assert.equal((html.match(/class="sem-history-panel"/g)||[]).length,4);
+   assert.match(html,/Da dove arriva l’economia/);
+   if(ccy==='CHF')assert.ok(h.wages.some(x=>x.freq==='A'&&x.stale&&x.manual));
+   if(ccy==='NZD')assert.ok(h.wages.some(x=>x.manual&&x.points.length===12));
+ }
+}
+console.log('ECONOMIC_CYCLE_COUNTRY_HISTORY_PASS');
