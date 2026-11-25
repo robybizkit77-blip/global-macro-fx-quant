@@ -38,6 +38,32 @@ async function expected(page){
   const progress=await page.locator(monitor+' [role="progressbar"][aria-label="Copertura G8"]').getAttribute('aria-valuenow');
   assert.equal(Number(progress),proof.full);
   console.log('ECONOMIC_CYCLE_BROWSER_PASS',JSON.stringify({...proof,rendered:await coverage(page),attempts,public:!!process.env.SEMAPHORE_PUBLIC}));
+  if(await page.locator('.sem-client-world').count()){
+   const assertLayout=async p=>{
+    assert.equal(await p.locator('.sem-client-world').isVisible(),true);
+    assert.equal(await p.locator('.sem-g8-table').isVisible(),true);
+    assert.equal(await p.locator('.sem-desk-reading').isVisible(),true);
+    assert.equal(await p.locator('.sem-country-board').isVisible(),false,'Comparative cards must be collapsed by default');
+    assert.equal(await p.locator('.sem-history-dashboard').isVisible(),false,'History must be collapsed by default');
+    assert.equal(await p.locator('.macro-research').isVisible(),false,'Explorer must be collapsed by default');
+    const order=await p.evaluate(()=>['.sem-client-world','.sem-g8-table','.sem-desk-reading'].map(s=>document.querySelector(s).getBoundingClientRect().top));
+    assert(order[0]<order[1]&&order[1]<order[2],'Client reading order must be global, G8, country');
+   };
+   await assertLayout(page);
+   await page.locator('.sem-client-tabs [data-ms-country="AUD"]').click();
+   assert.equal(await page.locator('.sem-client-tabs [data-ms-country="AUD"]').getAttribute('aria-pressed'),'true');
+   assert.equal(await coverage(page),proof.full);
+   await page.locator('[data-macro-panel="explorer"] > summary').click();
+   const categories=page.locator('[data-macro-panel="explorer"] [data-ms-category]');
+   if(await categories.count()>1){await categories.nth(1).click();assert.equal(await page.locator('[data-macro-panel="explorer"]').getAttribute('open'),'');}
+   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,deviceScaleFactor:2,hasTouch:true});
+   await mobile.goto(BASE+'#macro',{waitUntil:'domcontentloaded',timeout:45000});
+   await mobile.waitForSelector(monitor+'[data-semaphore-feed="network"]',{timeout:70000});
+   await assertLayout(mobile);
+   assert.equal(await coverage(mobile),proof.full);
+   await mobile.close();
+   console.log('MACRO_CLIENT_LAYOUT_PASS desktop/mobile, country selection, explorer persistence');
+  }else if(!process.env.SEMAPHORE_PUBLIC){throw Error('Client macro layout not rendered');}
   if(!process.env.SEMAPHORE_PUBLIC){
    const failed=await browser.newPage();
    let reject=true,failures=0;
