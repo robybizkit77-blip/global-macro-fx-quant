@@ -226,7 +226,7 @@ assert.match(app,/cache:'no-store'/);
 assert.match(app,/visibilitychange/);
 const page=read('site/fx-quant-v2/next/index.html');
 assert.match(page,/editorial-v4\.css\?v=18/);
-assert.match(page,/app\.js\?v=18/);
+assert.match(page,/app\.js\?v=19/);
 
 const momentumApi=require('../site/fx-quant-v2/next/currency-strength-reading.js');
 const momentumDate=initial.currencyPrices.last_as_of;
