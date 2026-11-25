@@ -343,7 +343,7 @@ function build(api){
  }
  function render(){
    return pageHero('GLOBAL MACRO','Scenario macro','Dal quadro globale al singolo paese: direzione economica, inflazione e implicazioni monetarie.')
-    +(root.FXQuantRecessionLight?.render?root.FXQuantRecessionLight.render({catalog,esc,dayNow,country,overlay:get('semaphoreExtra'),feedStatus:get('semaphoreFeedStatus')}):countryStrip()+countryHero())
+    +(root.FXQuantMacroDesk?.render?root.FXQuantMacroDesk.render({catalog,esc,dayNow,country,overlay:get('semaphoreExtra'),feedStatus:get('semaphoreFeedStatus')}):countryStrip()+countryHero())
     +'<details class="macro-advanced" data-macro-panel="explorer" '+(state.msExplorer?'open':'')+'><summary><span><strong>Esplora gli indicatori</strong><small>Grafici, variazioni e singole serie del paese selezionato.</small></span><b>Apri ↗</b></summary><div class="macro-advanced-content">'+macroResearch()+'</div></details>'
     +'<details class="macro-advanced" data-macro-panel="thermometers"><summary><span><strong>Termometri e contesto monetario</strong><small>Percentili storici e lettura di prezzi e lavoro.</small></span><b>Apri ↗</b></summary><div class="macro-advanced-content">'+countryHero()+'</div></details>'
     +'<details class="macro-advanced" data-macro-panel="advanced" '+(state.msAdvanced?'open':'')+'><summary><span><strong>Vuoi andare più a fondo?</strong><small>Tabella storica, heatmap G8, confronto tra economie e definizioni: disponibili quando ti servono.</small></span><b>Apri gli approfondimenti ↗</b></summary><div class="macro-advanced-content">'
