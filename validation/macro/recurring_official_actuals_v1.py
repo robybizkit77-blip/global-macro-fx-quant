@@ -128,7 +128,8 @@ def build(seed,now,previous=(),fetch=retrieve,clock=None):
                 continue
             kind,url,period,stage=target
             old=next((r for r in previous if r.get("quality")==QUALITY and r.get("event_key")==key and r.get("source_url")==url and r.get("as_of")==e["date"]),None)
-            if old and scheduled<=datetime.fromisoformat(old["first_runner_observed_at_utc"].replace("Z","+00:00"))<=now:
+            if old and scheduled<=datetime.fromisoformat(old["first_runner_observed_at_utc"].replace("Z","+00:00"))<=now and old.get("reference_period")==e["reference_period"] and old.get("issuer_html_sha256"):
+                validated_record(old,now)
                 items.append({**old,"reference_period":e["reference_period"],"publication_stage":stage,"_date":d})
                 checks.append({"event_key":key,"status":"VERIFIED","source_url":url})
                 continue
@@ -178,6 +179,7 @@ def validated_record(row, now):
         row.get("event_type")!=event_type or
         event_type!=("GROWTH" if kind=="BEA_GDP" else "INFLATION") or
         row.get("source_url")!=url or row.get("publication_stage")!=stage or
+        not re.fullmatch(r"[0-9a-f]{64}",row.get("issuer_html_sha256","")) or
         seen.utcoffset() is None or seen>now or
         date.fromisoformat(released)>seen.astimezone(ROME).date()):
         raise ValueError("recurring source identity or clock mismatch")
