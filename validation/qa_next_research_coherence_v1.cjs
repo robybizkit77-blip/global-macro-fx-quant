@@ -12,7 +12,7 @@ assert(helperStart>=0&&overviewStart>helperStart&&overviewEnd>overviewStart,'Mis
 new vm.Script(app,{filename:'next-app.js'});
 const functions=app.slice(helperStart,overviewEnd);
 const chartFunctions=app.slice(app.indexOf('function historyRates(c){'),app.indexOf('function plot(opts){'))+
- app.slice(app.indexOf('function homeScreenChart(){'),app.indexOf('function homePairPreview(k){'));
+ app.slice(app.indexOf('function homeScreenChart('),app.indexOf('function homePairPreview(k){'));
 const initial={
  currencyPrices:json('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
  rates:json('live_data/sections/NATIVE_RATES_DATA.json'),

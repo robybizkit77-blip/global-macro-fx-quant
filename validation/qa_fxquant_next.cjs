@@ -86,15 +86,20 @@ async function inspectRoute(page,label,key){
    label+' Home must show the current calendar separately from the archived analysis');
   assert.equal(await locator(page,'.morning-dashboard').count(),1,'Dated morning desk must stay available');
   assert.equal(await locator(page,'.morning-lead h1').count(),1,'Morning lead missing');
-  assert.equal(await locator(page,'.morning-archive-note').count(),1,
-   'Current or archival edition must identify its date/status');
-  assert.equal(await locator(page,'.morning-fx-pulse').count(),1,
-   'Source-dated G8 and pair research must remain attached to Home');
   const hourly=locator(page,'.hourly-market-desk');
+  if(!await hourly.count()){
+   assert.equal(await locator(page,'.morning-archive-note').count(),1,
+    'Current or archival morning edition must identify its date/status');
+   assert.equal(await locator(page,'.morning-fx-pulse').count(),1,
+    'Source-dated G8 and pair research must remain attached to the morning view');
+  }
   if(await hourly.count()){
-   const catalyst=locator(page,'[data-home-catalyst]');
-   const box=await catalyst.boundingBox();
-   assert(box&&box.y<page.viewportSize().height,label+' next catalyst must start in the first screen');
+   const chart=hourly.locator('.hourly-opening-chart');
+   if(await chart.count()){
+    assert(await hourly.evaluate(root=>root.querySelector('.hourly-opening-chart')
+     .compareDocumentPosition(root.querySelector('[data-home-catalyst]'))&Node.DOCUMENT_POSITION_FOLLOWING),
+     label+' the event must follow the opening chart');
+   }
    assert.equal(await hourly.locator('.hourly-edition-time b').innerText(),'Ultima analisi pubblicata');
    assert.equal(await hourly.locator('.hourly-edition-check b').innerText(),'Ultimo controllo delle fonti');
    const fonts=await hourly.evaluate(root=>{
