@@ -311,6 +311,9 @@ jobs:
            github.event.workflow_run.name == 'FX Quant V2 AUD Official RBA F2 Research Refresh' ||
            github.event.workflow_run.name == 'CHF SNB 10Y Informational Context V1' ||
            github.event.workflow_run.name == 'FX Quant V2 CHF NZD Same-Basis Research Refresh' ||
+           github.event.workflow_run.name == 'OIS G8 History Persistent Daily V1' ||
+           github.event.workflow_run.name == 'OIS Estimated Snapshot Repricing V1' ||
+           github.event.workflow_run.name == 'FX Quant V2 Relative Pricing 28-Pair Research' ||
            github.event.workflow_run.name == 'G8 Economic Semaphore Source Recovery V1' ||
            github.event.workflow_run.name == 'FX Quant Next RBNZ Monthly Liquidity Research' ||
            github.event.workflow_run.name == 'BoE GBP Weekly Reserves Research Refresh V1' ||
@@ -364,6 +367,33 @@ jobs:
               "BoE GBP Secured Credit Growth Research Refresh V1": "gbp-boe-secured-credit-research-v1.js",
               "BoJ JPY Bank Credit Research Refresh V1": "jpy-boj-bank-credit-research-v1.js",
           }
+          pricing_paths = (
+              "site/fx-quant-v2/ois-pricing-snapshot.json",
+              "site/fx-quant-v2/ois-same-contract-repricing-research.json",
+              "site/fx-quant-v2/pricing-relative-28pairs-research.json",
+              "site/fx-quant-v2/next/rates-pricing-history-v1.json",
+              "site/fx-quant-v2/next/rates-pricing-history-v1.js",
+              "site/fx-quant-v2/next/rates-pricing-moves-v1.js",
+              "site/fx-quant-v2/next/rates-relative-pricing-v1.js",
+              "site/fx-quant-v2/next/rates-studio.js",
+              "site/fx-quant-v2/next/central-bank-studio.js",
+              "site/fx-quant-v2/next/g8-rates-shadow.js",
+          )
+          government_paths = (
+              "site/fx-quant-v2/chf-2y-estimate-research.json",
+              "site/fx-quant-v2/chf-snb-paired-history.json",
+              "site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json",
+              "site/fx-quant-v2/next/fx-rates-bridge.js",
+              "site/fx-quant-v2/next/decision-journey.js",
+              "site/fx-quant-v2/next/currency-studio.js",
+              "site/fx-quant-v2/next/currency-data-fallback.js",
+              "site/fx-quant-v2/next/rates-studio.js",
+          )
+          rate_workflows = {
+              "OIS G8 History Persistent Daily V1",
+              "OIS Estimated Snapshot Repricing V1",
+              "FX Quant V2 Relative Pricing 28-Pair Research",
+          }
           source_workflow = os.environ["SOURCE_WORKFLOW"]
           if os.environ["EVENT_NAME"] in ("push", "workflow_dispatch"):
               label = "NEXT_G8_LIQUIDITY_PUBLIC_HTTP"
@@ -381,6 +411,13 @@ jobs:
               )) + ("live_data/sections/MACRO_SERIES.json",)
               paths += ("site/fx-quant-v2/cross-asset-live-data.json", "site/fx-quant-v2/cross-asset.html",
                         base + "risk-evidence-reading.js")
+              paths += pricing_paths + government_paths
+          elif source_workflow in rate_workflows:
+              label = "OIS_RATES_PUBLIC_HTTP"
+              paths = pricing_paths + (
+                  "site/fx-quant-v2/next/app.js",
+                  "site/fx-quant-v2/next/index.html",
+              )
           elif source_workflow == "FX Quant V2 Cross-Asset Published Source Refresh":
               label = "CROSS_ASSET_PUBLIC_HTTP"
               paths = (
@@ -412,22 +449,11 @@ jobs:
                   "site/fx-quant-v2/aud-rba-f2-research.json",
                   "site/fx-quant-v2/next/fx-rates-bridge.js",
               )
-          elif os.environ["SOURCE_WORKFLOW"] == "CHF SNB 10Y Informational Context V1":
-              label = "CHF_2Y_ESTIMATE_PUBLIC_HTTP"
-              paths = (
-                  "site/fx-quant-v2/chf-2y-estimate-research.json",
-                  "site/fx-quant-v2/next/fx-rates-bridge.js",
-                  "site/fx-quant-v2/next/decision-journey.js",
-                  "site/fx-quant-v2/next/app.js",
-                  "site/fx-quant-v2/next/index.html",
-              )
-          elif os.environ["SOURCE_WORKFLOW"] == "FX Quant V2 CHF NZD Same-Basis Research Refresh":
-              label = "CHF_NZD_RESEARCH_PUBLIC_HTTP"
-              paths = (
-                  "site/fx-quant-v2/chf-snb-paired-history.json",
-                  "site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json",
-                  "site/fx-quant-v2/next/fx-rates-bridge.js",
-                  "site/fx-quant-v2/next/decision-journey.js",
+          elif source_workflow in ("CHF SNB 10Y Informational Context V1",
+                                   "FX Quant V2 CHF NZD Same-Basis Research Refresh"):
+              label = ("CHF_2Y_ESTIMATE_PUBLIC_HTTP" if source_workflow ==
+                       "CHF SNB 10Y Informational Context V1" else "CHF_NZD_RESEARCH_PUBLIC_HTTP")
+              paths = government_paths + (
                   "site/fx-quant-v2/next/app.js",
                   "site/fx-quant-v2/next/index.html",
               )
@@ -449,6 +475,8 @@ jobs:
                   "site/fx-quant-v2/next/app.js",
                   "site/fx-quant-v2/next/index.html",
               )
+          # Remove overlapping consumers without weakening exact-byte checks.
+          paths = tuple(dict.fromkeys(paths))
           proof = verify(Path("."), BASE_URL, paths, budget_seconds=480, interval_seconds=10)
           print(label, json.dumps(proof, sort_keys=True), flush=True)
           if proof["status"] != "PASS":
