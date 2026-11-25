@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-25T04:20:21.866200Z",
-  "edition_time_rome": "2026-11-25 05:20",
-  "material_digest": "2ad5d30ecf9d2af353c43f5fed3a180497e5818c2247dff5cfb0fb73f651e490",
+  "generated_at_utc": "2026-11-25T04:55:08.221646Z",
+  "edition_time_rome": "2026-11-25 05:55",
+  "material_digest": "f3582c9470e58e12c2c9ac259348e167ac1423d1c3a1c5bbce76ef2c445400d5",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro misto",
@@ -101,7 +101,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-24",
-      "rss_checked_at_utc": "2026-11-25T04:20:21.866200Z",
+      "rss_checked_at_utc": "2026-11-25T04:55:08.221646Z",
       "commodities": "2026-11-24"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-25T04:20:21.866200Z",
+      "headline": "Dollaro misto",
+      "material_digest": "2ad5d30ecf9d2af353c43f5fed3a180497e5818c2247dff5cfb0fb73f651e490"
+    },
     {
       "generated_at_utc": "2026-11-25T04:19:08.033254Z",
       "headline": "Dollaro misto",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-21T11:14:01.335248Z",
       "headline": "Dollaro misto",
       "material_digest": "ccdac0a0aa01fbb482f730b1dcc71bce0397a281d9bda7047b0d1359a090e3c7"
-    },
-    {
-      "generated_at_utc": "2026-11-21T03:19:55.680886Z",
-      "headline": "Dollaro misto",
-      "material_digest": "47b957d0c38ec4aa175258ea042d57611440e8887e2725a7e73649a242a4f49e"
     }
   ]
 }
