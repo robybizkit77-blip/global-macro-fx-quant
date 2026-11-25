@@ -35,7 +35,8 @@ class Page(HTMLParser):
 def plain(markup):
     p=Page()
     p.feed(markup)
-    return re.sub(r"\s+", " ", " ".join(p.parts)).replace("−","-").strip()
+    t=re.sub(r"\s+", " ", " ".join(p.parts)).replace("−","-").strip()
+    return re.sub(r"\s+([,.)])",r"\1",re.sub(r"\(\s+", "(", t))
 
 def identity(e):
     title, period=e.get("title",""), e.get("reference_period","")
@@ -87,10 +88,12 @@ def metrics(e,markup):
         a=match(r"Consumer Price Index \(CPI\) rose "+NUM+r"\s*%,\s*(?:up|down) from "+NUM+r"\s*%",key)
         b=match(r"Trimmed mean inflation was "+NUM+r"\s*%,\s*(?:up|down) from "+NUM+r"\s*%",key)
         return [("AU_CPI_HEADLINE_YOY","CPI Australia a/a",numeric(a[1]),numeric(a[2])),("AU_CPI_TRIMMED_MEAN_YOY","Trimmed mean Australia a/a",numeric(b[1]),numeric(b[2]))]
-    match(r"\b"+MONTHS[day.month-1]+rf" {day.day}, {day.year}\b",t)
+    if not re.search(r"\b"+MONTHS[day.month-1]+rf" {day.day},?\s+{day.year}\b",t,re.I):
+        raise ValueError("BEA release date mismatch")
     if kind=="BEA_GDP":
-        match(r"GDP \("+stage+r" Estimate\).*?"+re.escape(period),t)
-        a=match(r"Real gross domestic product \(GDP\) "+MOVE+r" at an annual rate of "+NUM+r" percent",t)
+        if not re.search(r"GDP\s*\("+stage+r" Estimate\).*?"+re.escape(period),t,re.I):
+            raise ValueError("BEA GDP title mismatch")
+        a=match(r"Real gross domestic product\s*\(GDP\)\s+"+MOVE+r" at an annual rate of "+NUM+r" percent",t)
         b=match(r"In the (?:first|second|third|fourth) quarter, real GDP "+MOVE+r" "+NUM+r" percent",t)
         return [("US_REAL_GDP_SAAR","PIL reale USA annualizzato",numeric(a[2],a[1]),numeric(b[2],b[1]))]
     match(r"Personal Income and Outlays,\s*"+re.escape(period),t)
