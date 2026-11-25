@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 from validation.macro.v2_g8_observed_feature_bridge_v1 import run as observed_run
 from validation.macro.v3_current_g8_28pair_economic_evidence_v1 import (
-    FX, ROOT, SCHEMA, build, load, movement, run,
+    FX, ROOT, SCHEMA, build, load, movement, run, attach_q2_prior, Q2_SAME_EDITION_PRIOR,
 )
 from validation.macro.v3_gdp_q3_official_overlay_v1 import observed_q3_updates, LEDGER
 from validation.macro.ons_quarterly_gdp_v1 import latest_growth, previous_quarter
@@ -162,8 +162,17 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             self.assertEqual(jpy, self.jp_growth)
             self.assertTrue(jpy["prior_value_from_same_esri_edition"])
             self.assertFalse(jpy["is_growth_strength_score"])
-        for c in set(FX)-{"USD", "EUR", "GBP", "JPY", "CHF"}:
-            self.assertNotIn("prior_documented_quarter", countries[c]["growth"])
+        for c, expected in {"CAD": 0.7, "AUD": 0.1, "NZD": -0.7}.items():
+            g = countries[c]["growth"]
+            prior = g["prior_documented_quarter"]
+            self.assertEqual(prior["reference_quarter"], "2026Q1")
+            self.assertEqual(prior["reported_unit"], g["reported_unit"])
+            self.assertEqual(prior["publisher_release_day"], g["publisher_release_day"])
+            self.assertEqual(prior["publisher_source"], g["publisher_source"])
+            self.assertTrue(g["prior_value_from_same_publisher_edition"])
+            self.assertAlmostEqual(g["nonannualized_qoq_descriptive_pct"] -
+                                   prior["nonannualized_qoq_descriptive_pct"], expected)
+            self.assertFalse(prior["historical_pit_training_vintages_certified"])
         for pair, row in self.result["pair_context"].items():
             for c in (row["base"], row["quote"]):
                 self.assertEqual(row["growth_periods"][c], countries[c]["growth"]["reference_quarter"])
@@ -181,6 +190,18 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             change(ledger)
             with self.assertRaisesRegex(ValueError, "MACRO_V3_GDP_Q3"):
                 observed_q3_updates(self.asof, evidence=ledger)
+
+    def test_q2_prior_cannot_be_backdated_or_reused_with_different_edition(self):
+        for c, (day, current, prior, unit, url, _) in Q2_SAME_EDITION_PRIOR.items():
+            g = {"reference_quarter": "2026Q2", "publisher_release_day": day,
+                 "reported_value": current, "reported_unit": unit, "publisher_source": url}
+            self.assertEqual(attach_q2_prior(c,g,day),g)
+            self.assertEqual(attach_q2_prior(c,g,"2026-11-25")["prior_documented_quarter"]["reported_value"],prior)
+            for changed in ({"reference_quarter":"2026Q3"}, {"reported_value":current+1},
+                            {"reported_unit":"PERCENT_YOY"}, {"publisher_source":"https://example.org/"},
+                            {"publisher_release_day":"2026-11-25"}):
+                altered={**g,**changed}
+                self.assertEqual(attach_q2_prior(c,altered,"2026-11-26"),altered)
 
     def test_tampered_sources_and_future_publications_rejected(self):
         self.error("heat", lambda x: x["currencies"]["CHF"]["labour"]
