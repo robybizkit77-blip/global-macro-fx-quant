@@ -39,3 +39,11 @@ jobs:
           SEMAPHORE_PUBLIC: '1'
           SEMAPHORE_BASE: 'https://robybizkit77-blip.github.io/global-macro-fx-quant/site/fx-quant-v2/next/'
         run: node validation/qa_economic_cycle_browser_feed_v1.cjs
+
+      - name: Preserve editorial browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-editorial-browser-review
+          path: macro-v40-*.png
+          if-no-files-found: ignore
