@@ -257,6 +257,71 @@ def resolved_time(item):
     return None
 
 
+def observed_chf_labour_capture(root, period, value, today):
+    """A retained client capture, not an attestation of first publication.
+    
+    Only match the exact current period and value in an edition that was
+    actually collected. Never use the publisher's edition clock as the
+    client's availability instant, and never upgrade the release grade.
+    """
+    from validation.macro.archive_chf_labour_snb_editions_v1 import (
+        SCHEMA as EDITION_SCHEMA, edition_metadata,
+    )
+    from validation.macro.capture_chf_labour_snb_vintage_v1 import (
+        SCHEMA as CAPTURE_SCHEMA, URL, LABEL,
+    )
+    matches = []
+    for path in sorted((Path(root) / "research/chf-labour-snb-vintages").glob("*.json")):
+        row = json.loads(path.read_text(encoding="utf-8"))
+        cap = row.get("source_capture", {})
+        require(row.get("schema") == EDITION_SCHEMA and
+                cap.get("schema") == CAPTURE_SCHEMA and
+                cap.get("identity") == "CHF.labour" and
+                cap.get("source_url") == URL and cap.get("series_label") == LABEL and
+                cap.get("first_release_exact_value_certified") is False and
+                cap.get("first_release_instant_utc") is None and
+                cap.get("historical_vintages_certified") is False and
+                cap.get("safe_to_publish_new_D") is False and
+                cap.get("live_data_written") is False,
+                "invalid CHF observed-edition provenance")
+        edition = edition_metadata(row.get("snb_metadata_as_reported"))
+        require(path.name == "--".join(edition.values()) + ".json",
+                "CHF observed-edition filename mismatch")
+        known = row.get("available_to_research_from_utc")
+        require(isinstance(known, str) and known == cap.get("retrieval_completed_utc") and
+                re.fullmatch(r"[a-f0-9]{64}", str(cap.get("raw_payload_sha256"))) is not None,
+                "CHF observed-edition receipt mismatch")
+        stamp = datetime.fromisoformat(known)
+        start = datetime.fromisoformat(cap["retrieval_started_utc"])
+        require(stamp.tzinfo is not None and start.tzinfo is not None and start <= stamp,
+                "invalid CHF capture clock")
+        if stamp.astimezone(ZoneInfo("Europe/Rome")).date() > today:
+            continue
+        values = row.get("observations_in_this_edition", [])
+        require(isinstance(values, list) and bool(values), "missing CHF edition history")
+        periods = [v.get("period") for v in values]
+        require(all(isinstance(p, str) and re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", p)
+                    for p in periods) and periods == sorted(set(periods)) and
+                all(finite(v.get("value")) for v in values) and
+                values[-1]["period"] == cap.get("latest_period") and
+                values[-1]["value"] == cap.get("latest_value"),
+                "CHF edition values or latest metadata inconsistent")
+        if any(v["period"] == period and v["value"] == value for v in values):
+            matches.append((stamp, path, cap))
+    if not matches:
+        return None
+    stamp, path, cap = min(matches, key=lambda x: x[0])
+    return {"status": "RETAINED_EXACT_VALUE_CLIENT_CAPTURE_NOT_FIRST_RELEASE",
+            "observation_period": period, "value": value,
+            "observed_at_utc": stamp.astimezone(timezone.utc).isoformat(),
+            "archive_path": path.relative_to(Path(root)).as_posix(),
+            "reported_source_payload_sha256": cap["raw_payload_sha256"],
+            "source_bytes_reverified": False,
+            "first_release_exact_value_certified": False,
+            "eligible_for_historical_first_release_backtest": False,
+            "safe_to_publish_new_D": False}
+
+
 def build_ledger(root, today, items=None):
     data = {key: json.loads((root / path).read_text(encoding="utf-8"))
             for key, path in PATHS.items()}
@@ -359,6 +424,9 @@ def build_ledger(root, today, items=None):
                     "source_history_values_are_not_first_release_vintages": True,
                     "historical_backtest_safe_for_all_periods": False,
                 }
+            if key == "CHF.labour":
+                result["observed_exact_value_capture"] = observed_chf_labour_capture(
+                    root, period, actual["latest_value"], today)
             counts[status] += 1
             results[key] = {
                 "currency": c, "dimension": dim,

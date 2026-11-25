@@ -226,6 +226,35 @@ class LatestReleaseLedgerTests(unittest.TestCase):
             self.assertIsNone(rec["release"]["first_release_date"])
             self.assertFalse(rec["release"]["historical_backtest_safe_for_all_periods"])
 
+    def test_chf_observed_capture_is_not_first_release(self):
+        from validation.macro.latest_release_pit_ledger_v1 import observed_chf_labour_capture
+        exact = 3.09398862381848
+        captured = observed_chf_labour_capture(ROOT, "2026-10", exact, date(2026, 11, 25))
+        self.assertEqual(captured["observed_at_utc"], "2026-11-23T21:26:47.345331+00:00")
+        self.assertFalse(captured["first_release_exact_value_certified"])
+        self.assertFalse(captured["eligible_for_historical_first_release_backtest"])
+        self.assertFalse(captured["source_bytes_reverified"])
+        self.assertIsNone(observed_chf_labour_capture(ROOT, "2026-10", exact, date(2026, 11, 22)))
+        self.assertIsNone(observed_chf_labour_capture(ROOT, "2026-10", 3.1, date(2026, 11, 25)))
+        row = self.run_receipt()["observations"]["CHF.labour"]
+        if row["current_observation_period"][:7] == "2026-10":
+            self.assertEqual(row["release"]["observed_exact_value_capture"], captured)
+            self.assertEqual(row["release"]["status"], "WITHHELD_EXACT_PERIOD_EVIDENCE")
+            self.assertIsNone(row["release"]["first_release_timestamp_utc"])
+
+    def test_chf_observed_capture_rejects_false_first_release_claim(self):
+        from validation.macro.latest_release_pit_ledger_v1 import observed_chf_labour_capture
+        name = "20261123_0900--20261123_0900.json"
+        row = json.loads((ROOT / "research/chf-labour-snb-vintages" / name).read_text())
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            directory = root / "research/chf-labour-snb-vintages"
+            directory.mkdir(parents=True)
+            row["source_capture"]["first_release_exact_value_certified"] = True
+            (directory / name).write_text(json.dumps(row))
+            with self.assertRaisesRegex(ValueError, "invalid CHF observed-edition provenance"):
+                observed_chf_labour_capture(root, "2026-10", 3.09398862381848, date(2026, 11, 25))
+
     def test_chf_fso_attestation_is_inflation_only_and_rejects_spoofed_hosts(self):
         from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
         filename = "CORE_G8_OFFICIAL_RELEASE_WEB_SUPPLEMENT_2026-11-25.json"
