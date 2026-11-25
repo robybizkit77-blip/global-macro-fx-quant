@@ -517,7 +517,7 @@ console.log('ECONOMIC_CYCLE_MACRO_NARRATIVE_PASS');
    const indices=order.map(x=>html.indexOf(x));
    assert.ok(indices.every(x=>x>=0)&&indices.every((x,i)=>i===0||x>indices[i-1]),'Narrative must precede detailed evidence: '+ccy);
    assert.equal((html.match(/class="sem-desk-detail"/g)||[]).length,3);
-   assert.match(html,/<details class="sem-desk-evidence" open>/);
+   assert.match(html,/<details class="sem-desk-evidence">/,'Indicator evidence is available but collapsed initially');
    assert.equal((html.match(/Cosa vedo davvero · giudizio macro/g)||[]).length,1);
    assert.equal((html.match(/class="sem-row /g)||[]).length,7);
  }
@@ -543,7 +543,7 @@ console.log('ECONOMIC_CYCLE_EDITORIAL_HIERARCHY_PASS');
    assert.equal((html.match(/class="sem-country-card (?:green|red|amber|neutral)/g)||[]).length,8);
    assert.equal((html.match(/class="sem-matrix-cell /g)||[]).length,56);
    assert.equal((html.match(/class="sem-export-trend"/g)||[]).length,8);
-   assert.ok(html.indexOf('class="sem-country-board"')<html.indexOf('class="sem-g8-table"'));
+   assert.ok(html.indexOf('class="sem-g8-table"')<html.indexOf('class="sem-country-board"'),'The central matrix precedes optional comparative cards');
    assert.match(html,/Radar delle svolte/);
    assert.equal(model(catalog,today,ccy,ov).length,7);
  }
