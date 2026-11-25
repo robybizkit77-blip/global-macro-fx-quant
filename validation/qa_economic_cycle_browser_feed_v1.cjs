@@ -50,6 +50,17 @@ async function expected(page){
     assert(order[0]<order[1]&&order[1]<order[2],'Client reading order must be global, G8, country');
    };
    await assertLayout(page);
+   if(await page.locator('.sem-editorial-v40').count()){
+    assert.equal(await page.locator('.sem-editorial-global h3').isVisible(),true);
+    assert.equal(await page.locator('.sem-editorial-breadth>div').count(),4);
+    assert.equal(await page.locator('.sem-client-world article').count(),3);
+    assert.equal(await page.locator('.sem-g8-table tbody tr').count(),8);
+    assert.equal(await page.locator('.sem-g8-table tbody .sem-matrix-cell').count(),56);
+    assert.equal(await page.locator('.sem-editorial-areas>div').count(),7);
+    assert.equal(await page.locator('.sem-editorial-judgment-col').count(),9);
+    assert.equal(await page.locator('.sem-editorial-v40').evaluate(el=>getComputedStyle(el).borderTopWidth),'0px');
+    await page.screenshot({path:'macro-v40-desktop.png',fullPage:true});
+   }
    await page.locator('.sem-client-tabs [data-ms-country="AUD"]').click();
    assert.equal(await page.locator('.sem-client-tabs [data-ms-country="AUD"]').getAttribute('aria-pressed'),'true');
    assert.equal(await coverage(page),proof.full);
@@ -61,6 +72,11 @@ async function expected(page){
    await mobile.waitForSelector(monitor+'[data-semaphore-feed="network"]',{timeout:70000});
    await assertLayout(mobile);
    assert.equal(await coverage(mobile),proof.full);
+   if(await mobile.locator('.sem-editorial-v40').count()){
+    assert(await mobile.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+2),'Mobile page must not overflow horizontally');
+    await mobile.screenshot({path:'macro-v40-mobile.png',fullPage:true});
+    console.log('MACRO_EDITORIAL_V40_PASS desktop/mobile, 56 cells, 7 area summaries');
+   }
    await mobile.close();
    console.log('MACRO_CLIENT_LAYOUT_PASS desktop/mobile, country selection, explorer persistence');
   }else if(!process.env.SEMAPHORE_PUBLIC){throw Error('Client macro layout not rendered');}
