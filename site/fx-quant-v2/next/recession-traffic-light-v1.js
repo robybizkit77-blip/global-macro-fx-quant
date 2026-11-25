@@ -491,6 +491,18 @@ const WAGE_SUPPLEMENT={
 };
 function wageContext(catalog,today,country,overlay=null){
  const canonical=annualRateContext(catalog,today,country,WAGE_MAP);
+ if(country==='CHF'&&overlay?.schema===SUPPLEMENT_SCHEMA&&overlay.wage_context?.schema==='GMFQ_G8_WAGE_CONTEXT_V1'){
+   const rows=overlay.wage_context.series;
+   const matches=Array.isArray(rows)?rows.filter(x=>x.ccy==='CHF'&&x.area==='wages'&&
+    x.source_series_id==='FSO_SWI_NOMINAL_ANNUAL'&&x.source_page==='https://statistik.admin.ch/en/asset/36503589'&&
+    x.frequency==='A'&&x.unit==='% a/a'&&x.quality==='SOURCE_VERIFIED_MANUAL_NONPIT'&&
+    x.scope==='ANNUAL_ACTUAL_NOT_QUARTERLY'&&x.manual_verified_on==='2026-11-25'&&x.official_release_date==='2026-04-21'&&
+    x.manual_expires_on==='2027-04-30'&&today>=x.manual_verified_on&&today<x.manual_expires_on&&
+    JSON.stringify(x.dates)===JSON.stringify(['2023','2024','2025'])&&JSON.stringify(x.values)===JSON.stringify([1.7,1.8,1.8])):[];
+   if(matches.length===1)return [{id:matches[0].source_series_id,label:'Swiss Wage Index nominale (annuale definitivo)',freq:'A',
+    available:true,period:'2025',prior:'2024',value:1.8,previous:1.8,change:0,direction:null,stale:true,
+    basis:'ANNUAL_ACTUAL_NOT_QUARTERLY',source:'FSO · verifica manuale; dato annuale, non utilizzato per il momentum corrente'}];
+ }
  if(canonical.some(x=>x.available&&!x.stale)||!WAGE_SUPPLEMENT[country]||
     overlay?.schema!==SUPPLEMENT_SCHEMA||overlay.wage_context?.schema!=='GMFQ_G8_WAGE_CONTEXT_V1'||
     !Array.isArray(overlay.wage_context.series))return canonical;
@@ -596,7 +608,7 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    wages.map(x=>'<p><strong>'+esc(x.label)+'</strong> · '+(x.available?
     esc(fmt(x.value,2))+'% a/a · '+esc(x.period)+
     (finite(x.change)?' · variazione '+esc(d(x.change,' p.p.'))+' rispetto a '+esc(x.prior):' · confronto non disponibile')+
-    (x.stale?' · dato datato, giudizio sospeso':x.direction?' · '+esc(x.direction):' · direzione non determinabile')+
+    (x.freq==='A'?' · dato annuale: momentum corrente non valutabile':x.stale?' · dato datato, giudizio sospeso':x.direction?' · '+esc(x.direction):' · direzione non determinabile')+
     ' <small>'+esc(x.source)+'</small>':'serie effettiva non ancora disponibile nel database')+'</p>').join('')+
    '<small>Le retribuzioni nominali non sono salari reali o costo unitario del lavoro. Gli indicatori nazionali hanno definizioni differenti. Le aspettative salariali non sostituiscono i dati effettivi; nessun contributo ai semafori della crescita.</small>';
  const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
