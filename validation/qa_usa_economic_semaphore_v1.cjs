@@ -505,3 +505,17 @@ console.log('ECONOMIC_CYCLE_TURNING_POINT_PASS');
  for(const ccy of coverage)assert.match(render({catalog,esc,dayNow:()=> '2026-11-25',country:ccy}),/Cosa vedo davvero · giudizio macro/);
 }
 console.log('ECONOMIC_CYCLE_MACRO_NARRATIVE_PASS');
+
+{
+ for(const ccy of coverage){
+   const html=render({catalog,esc,dayNow:()=> '2026-11-25',country:ccy});
+   const order=['class="sem-g8-table"','class="sem-desk-reading"','class="sem-desk-turn"','class="sem-desk-context"','class="sem-table"'];
+   const indices=order.map(x=>html.indexOf(x));
+   assert.ok(indices.every(x=>x>=0)&&indices.every((x,i)=>i===0||x>indices[i-1]),'Narrative must precede detailed evidence: '+ccy);
+   assert.equal((html.match(/class="sem-desk-detail"/g)||[]).length,3);
+   assert.match(html,/<details class="sem-desk-evidence" open>/);
+   assert.equal((html.match(/Cosa vedo davvero · giudizio macro/g)||[]).length,1);
+   assert.equal((html.match(/class="sem-row /g)||[]).length,7);
+ }
+}
+console.log('ECONOMIC_CYCLE_EDITORIAL_HIERARCHY_PASS');
