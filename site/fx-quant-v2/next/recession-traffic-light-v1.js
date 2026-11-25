@@ -658,12 +658,54 @@ function macroNarrative(rows,inflation,wages,external,turning){
  else if(enough&&down.length>=3&&down.length>up.length)watch='Il deterioramento perderebbe credibilità se lavoro, consumi e attività tornassero a migliorare in modo persistente.';
  return {growth,prices,trade,policy,watch,turning:turning.judgment,coverage:valid.length,aligned:enough,quality:'DESCRIPTIVE_UNCALIBRATED'};
 }
+// Presentation only: retain the approved activity signals and narrative engine.
+function overviewCountry(rows,inflation,wages,external,turning,narrative){
+ const up=rows.filter(r=>r.signal.tone==='green'),down=rows.filter(r=>r.signal.tone==='red');
+ const mixed=rows.filter(r=>r.signal.tone==='amber'),missing=rows.filter(r=>r.signal.tone==='neutral');
+ const tone=!narrative.aligned?'neutral':up.length>=3&&up.length>down.length?'green':down.length>=3&&down.length>up.length?'red':'amber';
+ const label={green:'Miglioramento diffuso',red:'Deterioramento diffuso',amber:'Quadro misto',neutral:'Giudizio sospeso'}[tone];
+ const active=r=>(r.signalSource==='original'?r.items:r.items.slice(0,1));
+ const phase=r=>{
+   if(r.signal.tone==='neutral')return null;
+   const items=active(r);
+   if(!items.length||items.some(x=>!x||x.stale||x.invalid||x.verdict===null||!x.cycle?.phase))return null;
+   const phases=items.map(x=>x.cycle.phase);
+   return phases.every(p=>p===phases[0])?phases[0]:null;
+ };
+ const phaseLabels={expansion:'Espansione',slowdown:'Rallentamento',contraction:'Contrazione',recovery:'Recupero'};
+ const cells=rows.map(r=>({key:r.key,name:r.name,tone:r.signal.tone,phase:phase(r),periods:active(r).filter(x=>x&&!x.stale&&!x.invalid&&x.verdict!==null).map(x=>x.period)}));
+ const current=x=>x?.available&&!x.stale&&finite(x.value);
+ const head=inflation.find(x=>/headline/i.test(x.label));
+ const core=inflation.find(x=>/core|trimmed|median|trim/i.test(x.label));
+ const wage=wages.find(current)||wages.find(x=>x.available);
+ return {tone,label,up,down,mixed,missing,cells,phaseLabels,head,core,wage,external,
+  turning,summary:(up.length?'Migliora: '+up.map(r=>r.name.toLowerCase()).join(', ')+'. ':'')+
+   (down.length?'Peggiora: '+down.map(r=>r.name.toLowerCase()).join(', ')+'.':'')||
+   'Nessuna direzione settoriale univoca.',
+  coverage:rows.length-missing.length};
+}
+function exportSparkline(today,country,overlay,external,esc){
+ if(!external?.available||external.stale||!overlay?.external_context?.series)return '';
+ const matches=overlay.external_context.series.filter(x=>x.ccy===country&&x.source_series_id===EXTERNAL_KEYS[country]);
+ if(matches.length!==1)return '';
+ const x=matches[0],h=cycleHistory(x,today,'Q');
+ if(h===x||h.values.length<3||h.values.at(-1)!==external.value)return '';
+ const w=240,height=45,pad=4,lo=Math.min(0,...h.values),hi=Math.max(0,...h.values),span=hi-lo||1;
+ const py=v=>height-pad-(v-lo)/span*(height-2*pad);
+ const points=h.values.map((v,i)=>((pad+i*(w-2*pad)/(h.values.length-1)).toFixed(2))+','+py(v).toFixed(2)).join(' ');
+ const desc='Esportazioni reali a/a, '+h.dates[0]+' – '+h.dates.at(-1)+': '+h.values.map(v=>fmt(v,2)+'%').join(', ');
+ return '<div class="sem-export-trend"><svg role="img" aria-label="'+esc(desc)+'" viewBox="0 0 240 45" preserveAspectRatio="none"><line x1="4" x2="236" y1="'+py(0).toFixed(2)+'" y2="'+py(0).toFixed(2)+'" stroke="#6a8296" stroke-dasharray="3 3"/><polyline points="'+points+'" fill="none" stroke="#81c9e8" stroke-width="1.8" vector-effect="non-scaling-stroke"/><circle cx="236" cy="'+py(h.values.at(-1)).toFixed(2)+'" r="2.6" fill="#81c9e8"/></svg><small>'+esc(h.dates[0])+' <span>Export reale · '+h.values.length+' trim.</span> '+esc(h.dates.at(-1))+'</small></div>';
+}
 function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x??'')}={}){
  const today=dayNow?.()||'';
  if(!/^\d{4}-\d{2}-\d{2}$/.test(today))return '';
  const selected=FX.includes(country)?country:'USD';
  const universe=Object.fromEntries(FX.map(ccy=>[ccy,model(catalog,today,ccy,overlay)]));
  const rows=universe[selected];
+ const overview=Object.fromEntries(FX.map(ccy=>{
+   const r=universe[ccy],i=inflationContext(catalog,today,ccy),w=wageContext(catalog,today,ccy,overlay),e=externalContext(today,ccy,overlay),t=turningPointMonitor(r),n=macroNarrative(r,i,w,e,t);
+   return [ccy,overviewCountry(r,i,w,e,t,n)];
+ }));
  const d=(v,suffix='')=>finite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),2)+suffix:'—';
  const measure=x=>{
   if(!x)return '<span class="sem-missing">Serie assente oppure periodi non confrontabili</span>';
@@ -776,19 +818,54 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
    const q=area.signal;
    return '<span class="sem-mini sem-cell '+q.tone+'" title="'+esc(area.name+' · '+tones[q.tone])+'" aria-label="'+esc(tones[q.tone])+'"><span aria-hidden="true">'+symbols[q.tone]+'</span></span>';
  };
+ const marketCount=t=>FX.filter(ccy=>overview[ccy].tone===t).length;
+ const turningCountries=FX.filter(ccy=>overview[ccy].turning.up.length||overview[ccy].turning.down.length);
+ const turnList=turningCountries.map(ccy=>{
+   const t=overview[ccy].turning;
+   const tone=t.up.length&&t.down.length?'amber':t.up.length?'green':'red';
+   const sides=[t.up.length?'↗ '+t.up.map(x=>x.name.toLowerCase()).join(', '):'',t.down.length?'↘ '+t.down.map(x=>x.name.toLowerCase()).join(', '):''].filter(Boolean).join(' · ');
+   return '<button type="button" class="sem-turn-chip '+tone+'" data-ms-country="'+ccy+'"><strong>'+FLAGS[ccy]+' '+ccy+'</strong><span>'+esc(sides)+'</span></button>';
+ }).join('');
+ const rateTile=(label,x)=>{
+   const ok=x?.available&&finite(x.value);
+   const direction=ok&&!x.stale&&x.freq!=='A'?x.direction:null;
+   const mark={accelera:'↗',rallenta:'↘',stabile:'→'}[direction]||'—';
+   return '<div class="sem-context-metric"><span>'+esc(label)+'</span><strong>'+ (ok?esc(fmt(x.value,1))+'%':'—')+'</strong><small>'+esc(ok?x.period+(x.stale||x.freq==='A'?' · datato':' · '+mark+(direction?' '+direction:'')):'Non disponibile')+'</small></div>';
+ };
+ const cards=FX.map(ccy=>{
+   const o=overview[ccy],t=o.turning,active=ccy===selected;
+   const changeText=t.up.length||t.down.length?'Svolte locali: '+t.up.length+' favorevoli / '+t.down.length+' sfavorevoli':'Nessuna nuova svolta rilevata';
+   return '<article class="sem-country-card '+o.tone+(active?' selected':'')+'">'+
+    '<button type="button" class="sem-country-card-head" data-ms-country="'+ccy+'" aria-pressed="'+active+'"><span>'+FLAGS[ccy]+' <b>'+esc(NAMES[ccy])+'</b></span><strong>'+ccy+' ↗</strong></button>'+
+    '<div class="sem-country-card-body"><div class="sem-country-status '+o.tone+'">'+esc(o.label)+'</div>'+
+    '<div class="sem-country-breadth" aria-label="'+o.up.length+' aree migliorano, '+o.down.length+' peggiorano, '+o.mixed.length+' miste, '+o.missing.length+' non classificabili">'+['green','amber','red','neutral'].map(k=>'<i class="'+k+'" style="flex:'+({green:o.up.length,amber:o.mixed.length,red:o.down.length,neutral:o.missing.length}[k])+'"></i>').join('')+'</div>'+
+    '<div class="sem-country-breadth-label"><span class="green">↗ '+o.up.length+'</span><span class="amber">→ '+o.mixed.length+'</span><span class="red">↘ '+o.down.length+'</span><small>'+o.coverage+'/7 aree valide</small></div>'+
+    '<p class="sem-country-quick">'+esc(o.summary)+'</p><p class="sem-country-turn">'+esc(changeText)+'</p>'+
+    '<div class="sem-context-metrics">'+rateTile('Inflazione',o.head)+rateTile('Core',o.core)+rateTile('Salari',o.wage)+rateTile('Export reale',o.external)+'</div>'+
+    exportSparkline(today,ccy,overlay,o.external,esc)+'</div></article>';
+ }).join('');
+ const phaseDot=(ccy,a)=>{
+   const cell=overview[ccy].cells.find(x=>x.key===a.key),phase=cell?.phase;
+   const label=phase?overview[ccy].phaseLabels[phase]:tones[a.signal.tone];
+   return '<span class="sem-matrix-cell '+a.signal.tone+'" title="'+esc(a.name+' · '+label+(cell?.periods?.length?' · '+cell.periods.join(' / '):''))+'"><b>'+symbols[a.signal.tone]+'</b><span>'+esc(label)+'</span></span>';
+ };
  const hasStale=rows.some(x=>x.items.some(z=>z?.stale));
  const hasManual=rows.some(x=>x.items.some(z=>z?.source?.includes('verificato manualmente')));
  return '<section class="recession-light" aria-labelledby="recession-light-title">'+
   '<header class="sem-head"><div><span class="sem-kicker">GLOBAL MACRO / G8 / LETTURA CICLICA</span>'+
-  '<h2 id="recession-light-title">Il semaforo economico</h2>'+
-  '<p>'+esc(NAMES[selected]+': '+intro)+' Segnali direzionali descrittivi, non probabilità di recessione.</p></div>'+
+  '<h2 id="recession-light-title">Economic Cycle Monitor <small>G8</small></h2>'+
+  '<p>Il semaforo economico: direzione, fase degli indicatori e segnali di svolta. I colori non sono un ranking di forza FX né una probabilità di recessione.</p></div>'+
   '<span class="sem-date">Consultazione '+esc(today)+' · periodi originali in tabella</span></header>'+
   '<div class="sem-overview"><div class="sem-overview-coverage"><span>Copertura dati G8</span><strong>'+covered+'<small>/56</small></strong><div class="sem-coverage-track" role="progressbar" aria-label="Copertura G8" aria-valuenow="'+covered+'" aria-valuemin="0" aria-valuemax="56"><i style="width:'+(covered/56*100)+'%"></i></div></div>'+['green','amber','red','neutral'].map(t=>'<div class="sem-overview-kpi '+t+'"><span>'+tones[t]+'</span><strong>'+tally(allRows,t)+'</strong></div>').join('')+'</div>'+
-  '<div class="sem-g8-title"><strong>Otto economie, sette aree</strong><span>Seleziona un Paese. I colori non sono un ranking di forza FX.</span></div>'+
+  '<div class="sem-global-verdict"><div><span>QUADRO G8 · DIFFUSIONE DELLE DIREZIONI</span><h3>'+marketCount('green')+' migliorano · '+marketCount('red')+' peggiorano</h3><p>'+marketCount('amber')+' quadri misti · '+marketCount('neutral')+' giudizi sospesi. Regole descrittive, non un confronto del livello di crescita.</p></div><div class="sem-global-turn"><span>PUNTI DI SVOLTA · LOCALI</span><strong>'+turningCountries.length+' economie</strong><small>Non equivalgono a inversioni confermate del ciclo.</small></div></div>'+
+  '<section class="sem-turn-radar" aria-label="Radar delle svolte"><h3>Radar delle svolte</h3><div class="sem-turn-chips">'+(turnList||'<p>Nessuna nuova inversione rilevata con evidenza sufficiente.</p>')+'</div></section>'+
+  '<div class="sem-dashboard-title"><div><span>COUNTRY BOARD</span><h3>Le otto economie in 30 secondi</h3></div><small>Seleziona una scheda per il dettaglio. Prezzi, salari ed export sono contesto separato.</small></div>'+
+  '<div class="sem-country-board">'+cards+'</div>'+
+  '<div class="sem-g8-title"><strong>Matrice del ciclo · sette aree</strong><span>Fase soltanto se gli indicatori attivi concordano su una soglia definita.</span></div>'+
   '<div class="sem-g8-scroll"><table class="sem-g8-table"><thead><tr><th scope="col">Paese</th>'+
   AREAS.map(a=>'<th scope="col">'+esc(a.short)+'</th>').join('')+'</tr></thead><tbody>'+
   FX.map(c=>'<tr'+(c===selected?' class="selected"':'')+'><th scope="row"><button type="button" class="sem-g8-pick" data-ms-country="'+c+'" aria-pressed="'+String(c===selected)+'">'+
-   FLAGS[c]+' '+c+'</button></th>'+universe[c].map(a=>'<td>'+dots(a)+'</td>').join('')+'</tr>').join('')+
+   FLAGS[c]+' '+c+'</button></th>'+universe[c].map(a=>'<td>'+phaseDot(c,a)+'</td>').join('')+'</tr>').join('')+
   '</tbody></table></div>'+
   '<div class="sem-legend">'+['green','amber','red','neutral'].map(t=>'<span class="sem-legend-item"><span class="sem-mini sem-cell '+t+'" aria-hidden="true">'+symbols[t]+'</span>'+tones[t]+'</span>').join('')+'</div>'+
   '<div class="sem-sector-compare" aria-label="Industria e servizi a confronto"><p>Industria e servizi · direzione del ciclo</p><div class="sem-sector-compare-grid">'+
@@ -823,6 +900,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,overviewCountry,exportSparkline,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,overviewCountry,exportSparkline,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);
