@@ -552,6 +552,67 @@ def parse_ons_wage(raw,now):
     if len(out)<12:raise ValueError("ONS KAC3 history unavailable")
     return sorted(out.items())
 
+CAN_WAGE_PID=14100063
+CAN_WAGE_PAGE="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410006301"
+CAN_WAGE_MEMBERS={
+ "Geography":"Canada","Wages":"Average hourly wage rate",
+ "Type of work":"Both full- and part-time employees","Gender":"Total - Gender",
+ "Age group":"15 years and over",
+ "North American Industry Classification System (NAICS)":"Total employees, all industries"}
+def statcan_wage_wds(method,payload):
+    if method not in {"getCubeMetadata","getDataFromCubePidCoordAndLatestNPeriods"}:
+        raise ValueError("unregistered wage WDS method")
+    url="https://www150.statcan.gc.ca/t1/wds/rest/"+method
+    req=Request(url,data=json.dumps([payload]).encode(),headers={"Content-Type":"application/json","Accept":"application/json","User-Agent":"GMFQ-Economic-Research/1.0"})
+    with urlopen(req,timeout=25) as r:
+        if r.geturl()!=url:raise ValueError("WDS redirect")
+        raw=r.read(4_000_001)
+        if not raw or len(raw)>4_000_000:raise ValueError("WDS response size")
+    result=json.loads(raw)
+    if not isinstance(result,list) or len(result)!=1 or result[0].get("status")!="SUCCESS":raise ValueError("WDS query failed")
+    obj=result[0]["object"]
+    if int(obj.get("productId",0))!=CAN_WAGE_PID or obj.get("responseStatusCode")!=0:
+        raise ValueError("WDS product identity")
+    return obj
+
+def can_wage_coordinate(meta):
+    if int(meta.get("productId",0))!=CAN_WAGE_PID or "Employee wages by industry, monthly" not in meta.get("cubeTitleEn",""):
+        raise ValueError("Canada wage cube identity")
+    dimensions=meta["dimension"]
+    if len(dimensions)!=len(CAN_WAGE_MEMBERS):raise ValueError("Canada wage dimension count")
+    coord=[0]*10;seen=set()
+    for dim in dimensions:
+        name=dim["dimensionNameEn"]
+        if name not in CAN_WAGE_MEMBERS or name in seen:raise ValueError("Canada wage dimension identity")
+        seen.add(name)
+        match=[m for m in dim["member"] if m["memberNameEn"]==CAN_WAGE_MEMBERS[name]]
+        pos=int(dim["dimensionPositionId"])-1
+        if len(match)!=1 or not 0<=pos<6 or coord[pos]:raise ValueError("Canada wage dimension ambiguity")
+        coord[pos]=int(match[0]["memberId"])
+        if coord[pos]<=0:raise ValueError("Canada wage member invalid")
+    if not all(coord[:6]):raise ValueError("Canada wage missing coordinate")
+    return ".".join(map(str,coord))
+
+def parse_can_wage_wds(obj,coordinate,now):
+    if int(obj.get("productId",0))!=CAN_WAGE_PID or obj.get("coordinate")!=coordinate:
+        raise ValueError("Canada wage response coordinate mismatch")
+    obs={}
+    for row in obj["vectorDataPoint"]:
+        p=period(row["refPer"],"M")
+        if period_end(p)>now:continue
+        v=row.get("value")
+        if v is None:continue
+        if row.get("scalarFactorCode")!=0 or not isinstance(v,(float,int)) or isinstance(v,bool) or not math.isfinite(v) or not 5<=v<=150 or p in obs:
+            raise ValueError("Canada wage level/scale/period invalid")
+        obs[p]=v
+    # Same calendar month of the preceding year; no interpolation or splicing.
+    rates=[]
+    for p,v in sorted(obs.items()):
+        prior=str(int(p[:4])-1)+p[4:]
+        if prior in obs:rates.append((p,100*(v/obs[prior]-1)))
+    if len(rates)<12:raise ValueError("Canada wage annual history insufficient")
+    return rates
+
 def collect_wage_context(now):
     """Independent context feed, not counted as an activity indicator."""
     result={"schema":"GMFQ_G8_WAGE_CONTEXT_V1","series":[],"audit":{}}
@@ -567,6 +628,20 @@ def collect_wage_context(now):
         result["audit"]["GBP"]=status
     except (ValueError,KeyError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
         result["audit"]["GBP"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
+    try:
+        meta=statcan_wage_wds("getCubeMetadata",{"productId":CAN_WAGE_PID})
+        coord=can_wage_coordinate(meta)
+        obj=statcan_wage_wds("getDataFromCubePidCoordAndLatestNPeriods",{"productId":CAN_WAGE_PID,"coordinate":coord,"latestN":49})
+        obs=parse_can_wage_wds(obj,coord,now)
+        spec=dict(ccy="CAD",area="wages",key="STATCAN_14100063_HOURLY_WAGE_YOY",method="statcan_wage",
+            name="Salari orari medi nominali LFS (tutti i dipendenti, NSA, crescita annua)",
+            unit="% a/a",frequency="M",kind="points",max_age_days=85,
+            origin="Statistics Canada / 14-10-0063-01",source_page=CAN_WAGE_PAGE)
+        item,status=candidate(spec,obs,now)
+        if item:result["series"].append(item)
+        result["audit"]["CAD"]={**status,"coordinate":coord}
+    except (ValueError,KeyError,TypeError,IndexError,UnicodeError,TimeoutError,OSError) as exc:
+        result["audit"]["CAD"]={"status":"WITHHELD_FETCH_OR_VALIDATION","reason":str(exc)[:180]}
     return result
 
 def parse_ons_industry(raw,now):
