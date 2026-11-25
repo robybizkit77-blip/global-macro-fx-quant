@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -453,3 +453,30 @@ console.log('ECONOMIC_CYCLE_CH_WAGE_ANNUAL_PASS');
  }
 }
 console.log('ECONOMIC_CYCLE_EXTERNAL_CONTEXT_PASS');
+
+{
+ const day='2026-11-25';
+ const metric={id:'fixture_diffusion',name:'Indice attività',kind:'points',upGood:true,diffusionThreshold:50,minimum:.2};
+ const cyc=values=>cycleMetric(metric,{dates:values.map((_,i)=>'2026-'+String(7+i).padStart(2,'0')),values},day,'M');
+ assert.equal(cyc([49,47,48]).reversal,'INITIAL_REVERSAL');
+ assert.equal(cyc([49,47,48,49]).reversal,'PERSISTENT_REVERSAL');
+ assert.equal(cyc([46,47,48,49]).reversal,null);
+ assert.equal(cyc([49,47,47.05,48]).reversal,null);
+ assert.equal(cyc([52,54,53]).reversal,'INITIAL_REVERSAL');
+ assert.equal(cyc([49,47]).historySufficient,false);
+ const row=(key,values,extra={})=>({key,name:key,signal:{tone:'amber'},signalSource:'original',items:[{metric,period:'2026-10',date:'2026-10-31',verdict:1,cycle:cyc(values),...extra}]});
+ const rows=[row('industry',[49,47,48,49]),row('services',[49,47,48]),row('demand',[46,47,48,49]),row('jobs',[49,49,49,49])];
+ const t=turningPointMonitor(rows);
+ assert.equal(t.coverage,4);assert.equal(t.up.length,2);assert.equal(t.improving.length,3);assert.equal(t.eligible,true);
+ assert.match(t.judgment,/possibile svolta favorevole/);
+ assert.equal(turningPointMonitor(rows.slice(0,3)).eligible,false);
+ const conflicting=turningPointMonitor([...rows,row('credit',[52,54,53])]);
+ assert.equal(conflicting.down.length,1);assert.match(conflicting.judgment,/non è ancora concorde/);
+ const nonaligned=turningPointMonitor([...rows,row('leading',[49,47,48],{date:'2026-01-31'})]);
+ assert.equal(nonaligned.eligible,false);
+ assert.equal(turningPointMonitor([row('stale',[49,47,48],{stale:true})]).coverage,0);
+ const mixed={...rows[0],items:[...rows[0].items,...row('industry',[52,54,53]).items]};
+ assert.equal(turningPointMonitor([mixed]).up.length,0);
+ for(const ccy of coverage)assert.match(render({catalog,esc,dayNow:()=>day,country:ccy}),/Turning Point Monitor · segnali di svolta/);
+}
+console.log('ECONOMIC_CYCLE_TURNING_POINT_PASS');
