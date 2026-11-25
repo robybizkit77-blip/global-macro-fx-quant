@@ -387,3 +387,29 @@ assert rate_cadence_context("AUD",au,dt.datetime.fromisoformat("2026-11-27T14:00
 assert rate_cadence_context("AUD",dated_rate("2026-11-11",au["source"]),current,"2026-11-23") is None
 assert rate_cadence_context("AUD",dict(au,quality="ESTIMATED"),current,"2026-11-23") is None
 print("RATES_SOURCE_CALENDAR_CADENCE_PASS")
+
+# An afternoon independent audit must not reject today's verified ECB
+# fixing just because the morning gate correctly expected yesterday.
+late = copy.deepcopy(data)
+late["ECB_G8_PRICE_HISTORY.json"].update(last_as_of="2026-10-23", source="ECB euro foreign exchange reference rates")
+late["ECB_G8_PRICE_HISTORY.json"]["rows"][-1]["Date"] = "2026-10-23"
+late["PAIR_SETUP_OPERATIONAL_VIEW.json"].update(price_asof="2026-10-23")
+late["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"].update(
+    as_of="2026-10-23", history_asof="2026-10-23", overlay_asof="2026-10-22",
+    current_row_source="official history snapshot",
+    history_status="CURRENT_OFFICIAL_HISTORY", source="ECB euro foreign exchange reference rates")
+afternoon = dt.datetime.fromisoformat("2026-10-23T18:00:00+02:00")
+assert not {"FX_OFFICIAL_FIXING", "PAIR_PRICE", "PAIR_SOURCE_INTEGRITY"} & set(
+    inspect(late, afternoon, current_source_audit=True)["critical_daily_problems"])
+assert {"FX_OFFICIAL_FIXING", "PAIR_PRICE"} <= set(
+    inspect(late, asof, current_source_audit=True)["critical_daily_problems"])
+assert {"FX_OFFICIAL_FIXING", "PAIR_PRICE"} <= set(
+    inspect(late, afternoon)["critical_daily_problems"])
+for bad_source in ("canonical overlay", None):
+    invalid = copy.deepcopy(late)
+    invalid["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"]["current_row_source"] = bad_source
+    assert "PAIR_SOURCE_INTEGRITY" in inspect(invalid, afternoon, current_source_audit=True)["critical_daily_problems"]
+invalid = copy.deepcopy(late)
+invalid["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"]["overlay_asof"] = "2026-10-24"
+assert "PAIR_SOURCE_INTEGRITY" in inspect(invalid, afternoon, current_source_audit=True)["critical_daily_problems"]
+print("AFTERNOON_ECB_SOURCE_VINTAGE_INDEPENDENT_OF_MORNING_PASS")

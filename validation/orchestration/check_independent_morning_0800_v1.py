@@ -169,7 +169,7 @@ def live(now: dt.datetime, token: str, repo: str) -> dict:
     except Exception as ex:
         failures.append("GITHUB_PRODUCTION_RUN_EVIDENCE_UNAVAILABLE:" + str(ex)[:140])
     try:
-        readiness = inspect(read_feeds(), now, pipeline_outcome="success")
+        readiness = inspect(read_feeds(), now, pipeline_outcome="success", current_source_audit=True)
     except Exception as ex:
         readiness = {}
         failures.append("SOURCE_READINESS_UNAVAILABLE:" + str(ex)[:140])

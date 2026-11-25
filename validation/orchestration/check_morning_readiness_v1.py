@@ -175,7 +175,7 @@ def research_rates_evidence(feeds: dict, today: dt.date, expected: str) -> dict:
             "scope": "Informational references, not official OIS coverage, current-session source verification or public HTTP proof"}
 
 
-def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") -> dict:
+def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success", *, current_source_audit: bool = False) -> dict:
     now = now.astimezone(ROME)
     today = now.date()
     expected = prior_weekday(today).isoformat()
@@ -186,9 +186,13 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
         # Before the morning briefing, an ECB fixing / VIX CLOSE dated today
         # has not been officially published yet. Require the previous weekday;
         # official market holidays remain an explicit source-review exception.
-        status = "PREVIOUS_SESSION" if actual == expected else "NEEDS_SOURCE_REVIEW"
+        current_ecb = (current_source_audit and name in ("FX_OFFICIAL_FIXING", "PAIR_PRICE")
+                       and today.weekday() < 5 and now.hour >= 17
+                       and actual == today.isoformat())
+        status = ("CURRENT_SESSION_OFFICIAL" if current_ecb else
+                  "PREVIOUS_SESSION" if actual == expected else "NEEDS_SOURCE_REVIEW")
         evidence[name] = {"as_of": actual, "expected_not_before": expected, "status": status}
-        if status != "PREVIOUS_SESSION":
+        if status not in ("PREVIOUS_SESSION", "CURRENT_SESSION_OFFICIAL"):
             problems.append(name)
 
     fx = feeds["ECB_G8_PRICE_HISTORY.json"]
@@ -219,13 +223,23 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
                         if isinstance(key, str) and len(key) == 6 and
                         key[:3] in G8 and key[3:] in G8 and key[:3] != key[3:]}
     audit = pair.get("price_audit", {})
+    # The runtime explicitly selects the freshest official ECB row. A
+    # lagging overlay does not invalidate a newer official history snapshot.
+    overlay_day = valid_date(audit.get("overlay_asof")) if isinstance(audit, dict) else None
+    history_day = valid_date(audit.get("history_asof")) if isinstance(audit, dict) else None
+    overlay_matches = (overlay_day is not None and history_day is not None and
+                       (overlay_day == pair.get("price_asof") or
+                        (overlay_day < history_day == pair.get("price_asof") and
+                         audit.get("current_row_source") == "official history snapshot" and
+                         audit.get("history_status") == "CURRENT_OFFICIAL_HISTORY" and
+                         audit.get("source") == fx.get("source") == "ECB euro foreign exchange reference rates")))
     if (pair.get("status") != "CURRENT_CANONICAL_ENGINE" or
         pair.get("pair_count") != 28 or len(pair_keys) != 28 or
         len(observed_crosses) != 28 or observed_crosses != expected_crosses or
         not isinstance(audit, dict) or audit.get("status") != "PASS" or
         audit.get("as_of") != pair.get("price_asof") or
         audit.get("history_asof") != fx.get("last_as_of") or
-        audit.get("overlay_asof") != pair.get("price_asof") or
+        not overlay_matches or
         audit.get("pair_count") != 28 or
         audit.get("complete_pair_count") != 28 or
         audit.get("no_lookahead") is not True or
