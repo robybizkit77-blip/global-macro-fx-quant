@@ -21,7 +21,7 @@ function build(api){
  const FXDATA=get('currencyPrices'),GOV=get('rates')||{},CB=get('cb')||{};
  const OIS=get('ois')?.currencies||{},M=get('macro')?.currencies||{},COT=get('cotHistory')||{},PAIRS=get('pairs')?.pairs||{};
  const G8CONTEXT=root.FXQuantCurrencyFallback?.evaluate?.({macroSeries:get('macroSeries'),estimated:get('cbEstimated'),
-   rates:GOV,chfResearch:get('chfResearch'),nzdResearch:get('nzdPostroll'),now:dayNow()})||null;
+   rates:GOV,chfResearch:get('chfResearch'),nzdResearch:get('nzdPostroll'),nzdReconciled:get('nzdReconciled'),now:dayNow()})||null;
  const G8SHADOW=root.FXQuantGrowthShadow?.analyze?.({macroSeries:get('macroSeries'),now:dayNow()})||null;
  const G8MACROGAP=root.FXQuantG8MacroGap?.analyze?.({macroSeries:get('macroSeries'),now:dayNow()})||null;
  const G8INFLAB=root.FXQuantInflationLabourShadow?.analyze?.({macroSeries:get('macroSeries'),now:dayNow()})||null;
@@ -329,7 +329,7 @@ function build(api){
   const ratesContext=x.context?.ratesResearch;
   const estRate=G8RATESHADOW?.currencies?.[country];
   const estimated2Y=!x.rates.ok&&isShadowRate(estRate);
-  const dated2Y=!x.rates.ok&&['STORICO_UFFICIALE_NON_OPERATIVO','RICERCA_MANUALE_NON_CERTIFICATA'].includes(ratesContext?.status);
+  const dated2Y=!x.rates.ok&&['STORICO_UFFICIALE_NON_OPERATIVO','RICERCA_MANUALE_NON_CERTIFICATA','RICERCA_RBNZ_RICONCILIATA'].includes(ratesContext?.status);
   const rateEstimateText=estimated2Y?
    ' 2Y · stima (non quotazione): '+fmt(estRate.estimate2Y,3)+'% · STIMA al '+date(estRate.asof)+
    ' (intervallo di sensibilità/errore indicativo '+fmt(estRate.lower2Y,3)+'–'+fmt(estRate.upper2Y,3)+'%). '+
@@ -348,7 +348,7 @@ function build(api){
      (desk.scenarioNotes.length?' '+desk.scenarioNotes.join(' '):''):''),
     'Serie storiche con periodo di osservazione, non nowcast, sorprese macro o pubblicazioni odierne.'],
    ['TASSI 2Y',x.rates.text+(dated2Y?' '+ratesContext.description:'')+rateEstimateText,
-    estimated2Y?'STIMA NON OSSERVATA. La banda non è un intervallo di confidenza e non influenza le 4 conferme operative.':dated2Y?'Storico/lettura manuale non è un tasso live e non aumenta le prove disponibili.':'Movimento di mercato, non prova di decisioni future.'],
+    estimated2Y?'STIMA NON OSSERVATA. La banda non è un intervallo di confidenza e non influenza le 4 conferme operative.':dated2Y?(ratesContext.status==='RICERCA_RBNZ_RICONCILIATA'?'Osservazione RBNZ riconciliata: ricerca non Core, non una quotazione intraday né una nuova conferma operativa.':'Storico/lettura manuale non è un tasso live e non aumenta le prove disponibili.'):'Movimento di mercato, non prova di decisioni future.'],
    ['ASPETTATIVE 6M',desk?
     (desk.market.tier==='NON_VERIFICATO'?pricingText+' ':'')+
      desk.market.text+' '+desk.comparison.text:pricingText,
