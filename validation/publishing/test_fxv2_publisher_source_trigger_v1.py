@@ -57,7 +57,7 @@ print("NEXT_RECALC_PUBLIC_INPUT_PROOF_CONTRACT_PASS",len(paths))
 # Completion-driven recovery must remain available even when the source
 # collector's next run makes no change. Verify every registered producer.
 from ast import literal_eval
-research_block=s.split("research_sources = {",1)[1].split("source_workflow =",1)[0]
+research_block=s.split("research_sources = {",1)[1].split("pricing_paths =",1)[0]
 research_sources=literal_eval("{"+research_block.strip())
 expected_workflows={
     "g8-economic-semaphore-source-recovery-v1.yml",
@@ -116,3 +116,38 @@ market_block=s.split('label = "CROSS_ASSET_PUBLIC_HTTP"',1)[1].split("elif sourc
 for file in ("cross-asset-live-data.json","cross-asset.html","next/app.js","next/index.html"):
     assert '"site/fx-quant-v2/'+file+'"' in market_block,file
 print("CROSS_ASSET_PUBLIC_DELIVERY_CONTRACT_PASS")
+
+# The OIS producers can succeed without any public HTTP proof under the old
+# condition. Both source completion and code pushes must check the data and
+# the readers, not just branch equality. All paths here are owned by V2.
+pricing_block=s.split("pricing_paths = ",1)[1].split("government_paths =",1)[0].strip()
+government_block=s.split("government_paths = ",1)[1].split("rate_workflows =",1)[0].strip()
+pricing_paths=set(literal_eval(pricing_block))
+government_paths=set(literal_eval(government_block))
+expected_pricing={
+    "ois-pricing-snapshot.json","ois-same-contract-repricing-research.json",
+    "pricing-relative-28pairs-research.json","next/rates-pricing-history-v1.json",
+    "next/rates-pricing-history-v1.js","next/rates-pricing-moves-v1.js",
+    "next/rates-relative-pricing-v1.js","next/rates-studio.js",
+    "next/central-bank-studio.js","next/g8-rates-shadow.js",
+}
+expected_government={
+    "chf-2y-estimate-research.json","chf-snb-paired-history.json",
+    "nzd-rbnz-b2-reconciled-research.json","next/fx-rates-bridge.js",
+    "next/decision-journey.js","next/currency-studio.js",
+    "next/currency-data-fallback.js","next/rates-studio.js",
+}
+assert pricing_paths=={"site/fx-quant-v2/"+f for f in expected_pricing}
+assert government_paths=={"site/fx-quant-v2/"+f for f in expected_government}
+for file in pricing_paths|government_paths:
+    assert (root/file).is_file(),file
+for producer in ("OIS G8 History Persistent Daily V1","OIS Estimated Snapshot Repricing V1",
+                 "FX Quant V2 Relative Pricing 28-Pair Research",
+                 "CHF SNB 10Y Informational Context V1","FX Quant V2 CHF NZD Same-Basis Research Refresh"):
+    assert "'"+producer+"'" in triggers and "'"+producer+"'" in proof_if,producer
+assert "paths += pricing_paths + government_paths" in s
+assert 'elif source_workflow in rate_workflows:' in s
+assert 'label = "OIS_RATES_PUBLIC_HTTP"' in s
+assert "paths = pricing_paths + (" in s and "paths = government_paths + (" in s
+assert "paths = tuple(dict.fromkeys(paths))" in s
+print("OIS_GOVERNMENT_READER_PUBLIC_DELIVERY_CONTRACT_PASS",len(pricing_paths|government_paths))
