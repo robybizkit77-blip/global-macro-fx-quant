@@ -519,6 +519,33 @@ function wageContext(catalog,today,country,overlay=null){
  const result=annualRateContext({[country]:[{...validated,id}]},today,country,{[country]:[[id,label,freq]]});
  return result[0]?.available?result:canonical;
 }
+const EXTERNAL_KEYS={USD:'NAEXKP06USQ659S',GBP:'NAEXKP06GBQ659S',JPY:'NAEXKP06JPQ659S',
+ CHF:'NAEXKP06CHQ659S',CAD:'NAEXKP06CAQ659S',AUD:'NAEXKP06AUQ659S',
+ NZD:'NAEXKP06NZQ659S',EUR:'EUROSTAT_EA21_P6_REAL_EXPORTS_YOY'};
+function externalContext(today,country,overlay=null){
+ const id=EXTERNAL_KEYS[country],label='Esportazioni reali di beni e servizi (SA)';
+ const missing={id,label,freq:'Q',available:false};
+ if(!id||overlay?.schema!==SUPPLEMENT_SCHEMA||overlay.external_context?.schema!=='GMFQ_G8_EXTERNAL_CONTEXT_V1'||
+    !Array.isArray(overlay.external_context.series))return missing;
+ const page=country==='EUR'?'https://ec.europa.eu/eurostat/databrowser/view/namq_10_gdp/default/table?lang=en':'https://fred.stlouisfed.org/series/'+id;
+ const matches=overlay.external_context.series.filter(x=>x.ccy===country&&x.area==='external'&&
+    x.source_series_id===id&&x.source_page===page&&x.frequency==='Q'&&x.unit==='% a/a reale'&&
+    x.metric_kind==='points'&&x.quality==='SOURCE_REVISED_RESEARCH_NOT_PIT');
+ if(matches.length!==1)return missing;
+ const x=matches[0],validated=cycleHistory(x,today,'Q');
+ if(validated===x)return missing;
+ const result=annualRateContext({[country]:[{...validated,id}]},today,country,{[country]:[[id,label,'Q']]})[0];
+ if(!result?.available)return missing;
+ const values=validated.values;
+ const deltas=values.slice(1).map((v,i)=>v-values[i]);
+ const sign=v=>Math.abs(v)<.1?0:Math.sign(v);
+ const last=sign(deltas.at(-1));
+ let persistence=0;
+ for(let i=deltas.length-1;i>=0&&sign(deltas[i])===last;i--)persistence++;
+ return {...result,observations:values.length,
+   regime:result.stale?null:result.value>0?'volumi in crescita annua':result.value<0?'volumi in calo annuo':'volumi invariati su base annua',
+   persistence:result.stale?null:persistence};
+}
 function annualRateContext(catalog,today,country,mapping){
  const rows=Array.isArray(catalog?.[country])?catalog[country]:[];
  const now=Date.parse(today+'T12:00:00Z');
@@ -611,6 +638,14 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     (x.freq==='A'?' · dato annuale: momentum corrente non valutabile':x.stale?' · dato datato, giudizio sospeso':x.direction?' · '+esc(x.direction):' · direzione non determinabile')+
     ' <small>'+esc(x.source)+'</small>':'serie effettiva non ancora disponibile nel database')+'</p>').join('')+
    '<small>Le retribuzioni nominali non sono salari reali o costo unitario del lavoro. Gli indicatori nazionali hanno definizioni differenti. Le aspettative salariali non sostituiscono i dati effettivi; nessun contributo ai semafori della crescita.</small>';
+ const external=externalContext(today,selected,overlay);
+ const externalNote='<p><strong>Domanda estera · esportazioni reali</strong></p><p><strong>'+esc(external.label)+'</strong> · '+
+   (external.available?esc(fmt(external.value,2))+'% a/a · '+esc(external.period)+
+    (finite(external.change)?' · variazione '+esc(d(external.change,' p.p.'))+' rispetto a '+esc(external.prior):' · confronto non disponibile')+
+    (external.stale?' · dato datato, giudizio sospeso':' · '+esc(external.regime||'')+(external.direction?' · crescita '+esc(external.direction):''))+
+    (external.persistence>1?' · direzione persistente per '+external.persistence+' variazioni trimestrali':'')+
+    ' <small>'+esc(external.source)+' · '+external.observations+' trimestri consecutivi</small>':'serie reale non disponibile')+
+   '</p><small>I volumi esportati misurano vendite effettive all’estero, non soltanto domanda: contano anche offerta e competitività. Non sono bilancia commerciale o contributo netto al PIL. Nessun contributo ai sette semafori della crescita.</small>';
  const servicePriceContext=selected==='EUR'?(catalog?.EUR||[]).find(x=>x.id==='EA_HICP_SERVICES_YOY_history_value'):null;
  const svcPrices=servicePriceContext?recentTwo(servicePriceContext,today):null;
  const svcPriceNote=svcPrices?'<p class="sem-services-price"><strong>Inflazione servizi (contesto, fuori dal semaforo):</strong> '+esc(fmt(svcPrices.cur.value,1))+'% YoY · '+esc(svcPrices.cur.period)+' (prima '+esc(fmt(svcPrices.pre.value,1))+'%). Prezzi e attività sono fenomeni diversi.</p>':'';
@@ -682,7 +717,8 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
     (r.proxy?'<small>Proxy/sondaggio, non misura esaustiva del ciclo</small>':'')+
     (r.items.some(x=>x?.stale)?'<small>Osservazioni datate</small>':'')+'</div></div>').join('')+'</div>'+
   '<div class="sem-policy"><div>'+inflationNote+'</div></div>'+
-  '<div class="sem-policy"><div>'+wageNote+'</div></div>'+ 
+  '<div class="sem-policy"><div>'+wageNote+'</div></div>'+
+  '<div class="sem-policy"><div>'+externalNote+'</div></div>'+ 
   '<div class="sem-policy"><div><span>POLITICA MONETARIA · DA LEGGERE A PARTE</span>'+
   '<p>'+bank+' e aspettative sui tassi possono amplificare o attenuare le pressioni cicliche: non sono però un indicatore diretto di recessione né una prova di movimento del cambio.</p></div>'+
   '<a href="#rates">Apri tassi & OIS ↗</a></div>'+
@@ -695,6 +731,6 @@ function render({catalog={},dayNow,country='USD',overlay=null,esc=(x)=>String(x?
   'I periodi mostrati NON equivalgono alle date di pubblicazione. Fonti: MACRO_SERIES.json e semaforo supplementare, dati potenzialmente revisionati (non point-in-time); nessuna previsione NBER, sorpresa rispetto al consenso, ranking valutario o segnale di trading.</p></details>'+
   '</section>';
 }
-root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,coverage:FX};
-if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,coverage:FX};
+root.FXQuantRecessionLight={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,coverage:FX};
+if(typeof module!=='undefined'&&module.exports)module.exports={render,model,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,coverage:FX};
 })(typeof window!=='undefined'?window:globalThis);

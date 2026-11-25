@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -432,3 +432,24 @@ console.log('ECONOMIC_CYCLE_WAGE_SUPPLEMENT_PASS');
  assert.match(render({catalog,esc,dayNow:()=> '2026-11-25',country:'CHF',overlay}),/dato annuale: momentum corrente non valutabile/);
 }
 console.log('ECONOMIC_CYCLE_CH_WAGE_ANNUAL_PASS');
+
+{
+ const day='2026-11-25';
+ const keys={USD:'NAEXKP06USQ659S',GBP:'NAEXKP06GBQ659S',JPY:'NAEXKP06JPQ659S',CHF:'NAEXKP06CHQ659S',CAD:'NAEXKP06CAQ659S',AUD:'NAEXKP06AUQ659S',NZD:'NAEXKP06NZQ659S',EUR:'EUROSTAT_EA21_P6_REAL_EXPORTS_YOY'};
+ for(const ccy of coverage){
+   const id=keys[ccy],page=ccy==='EUR'?'https://ec.europa.eu/eurostat/databrowser/view/namq_10_gdp/default/table?lang=en':'https://fred.stlouisfed.org/series/'+id;
+   const record={ccy,area:'external',source_series_id:id,source_page:page,source_file:'fixture',frequency:'Q',unit:'% a/a reale',metric_kind:'points',quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',dates:['2026-Q1','2026-Q2'],values:[-2,-1],
+    history:{schema:'GMFQ_SEMAPHORE_CONTIGUOUS_HISTORY_V1',source_series_id:id,frequency:'Q',dates:['2025-Q4','2026-Q1','2026-Q2'],values:[-3,-2,-1],observations:3,max_observations:12,quality:'SINGLE_SOURCE_REVISED_VINTAGE_NOT_PIT'}};
+   const wrap=x=>({schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',series:[],external_context:{schema:'GMFQ_G8_EXTERNAL_CONTEXT_V1',series:[x]}});
+   const r=externalContext(day,ccy,wrap(record));
+   assert.equal(r.available,true);assert.equal(r.value,-1);assert.equal(r.direction,'accelera');
+   assert.equal(r.regime,'volumi in calo annuo');assert.equal(r.persistence,2);
+   assert.equal(externalContext(day,ccy,wrap({...record,unit:'% a/a nominale'})).available,false);
+   assert.equal(externalContext(day,ccy,wrap({...record,source_page:'https://wrong.example'})).available,false);
+   assert.equal(externalContext(day,ccy,wrap({...record,history:{...record.history,dates:['2025-Q3','2026-Q1','2026-Q2']}})).available,false);
+   assert.equal(externalContext('2028-01-01',ccy,wrap(record)).direction,null);
+   assert.equal(model(catalog,day,ccy,wrap(record)).length,7);
+   assert.match(render({catalog,esc,dayNow:()=>day,country:ccy,overlay:wrap(record)}),/Domanda estera · esportazioni reali/);
+ }
+}
+console.log('ECONOMIC_CYCLE_EXTERNAL_CONTEXT_PASS');
