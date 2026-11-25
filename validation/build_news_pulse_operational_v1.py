@@ -15,7 +15,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0,str(ROOT))
 from validation.macro.build_macro_event_market_context_v1 import run as macro_event_market_context_run
 from validation.macro.build_g8_official_news_items_v1 import build as g8_issuer_items
-from validation.macro.recurring_official_actuals_v1 import build as recurring_actuals
+from validation.macro.recurring_official_actuals_v1 import build as recurring_actuals, archive as recurring_archive
 from validation.macro.capture_us_cpi_exact_actuals_v10 import (
     OUT as BLS_CPI_LEDGER, validate_actual_log as validate_bls_cpi)
 from validation.macro.freeze_exact_metric_forecasts_v9 import (
@@ -419,9 +419,11 @@ def main():
     items+=g8_issuer_items(now)
     prior=load_market_input(OUT)
     seed=load_market_input(ROOT/'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json')
-    recurring,release_checks=recurring_actuals(seed,now,previous=prior.get('items',[]))
+    old_archive=prior.get('recurring_official_archive',[])
+    recurring,release_checks=recurring_actuals(seed,now,previous=old_archive+prior.get('items',[]))
+    release_archive=recurring_archive(old_archive,recurring,datetime.now(timezone.utc))
     items+=recurring
-    print(json.dumps({'recurring_release_checks':release_checks},ensure_ascii=False))
+    print(json.dumps({'recurring_release_checks':release_checks,'recurring_official_archive':release_archive},ensure_ascii=False))
     items.sort(key=lambda x:(x['_date'] or date.min,x['importance']=='HIGH',-ORDER.index(x['ccy']) if x['ccy'] in ORDER else 0),reverse=True)
     for x in items:x.pop('_date',None)
     items=items[:20]
