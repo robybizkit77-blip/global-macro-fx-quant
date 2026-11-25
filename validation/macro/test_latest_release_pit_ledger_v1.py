@@ -132,6 +132,7 @@ class LatestReleaseLedgerTests(unittest.TestCase):
             ("CAD.inflation", "2026-10", "2026-11-16", "2026-11-16T13:30:00+00:00",
              (170.4 / 165.3 - 1) * 100),
             ("JPY.labour", "2026-09", "2026-10-30", None, 2.4),
+            ("CHF.inflation", "2026-10", "2026-11-03", None, 1.5),
         )
         for key, period, day, timestamp, value in examples:
             with self.subTest(key=key):
@@ -219,6 +220,27 @@ class LatestReleaseLedgerTests(unittest.TestCase):
             self.assertEqual(rec["release"]["status"], "WITHHELD_EXACT_PERIOD_EVIDENCE")
             self.assertIsNone(rec["release"]["first_release_date"])
             self.assertFalse(rec["release"]["historical_backtest_safe_for_all_periods"])
+        if rec["current_observation_period"][:7] == "2026-10":
+            self.assertAlmostEqual(rec["latest_transformed_observation"], 3.09398862381848)
+            self.assertEqual(rec["release"]["status"], "WITHHELD_EXACT_PERIOD_EVIDENCE")
+            self.assertIsNone(rec["release"]["first_release_date"])
+            self.assertFalse(rec["release"]["historical_backtest_safe_for_all_periods"])
+
+    def test_chf_fso_attestation_is_inflation_only_and_rejects_spoofed_hosts(self):
+        from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
+        filename = "CORE_G8_OFFICIAL_RELEASE_WEB_SUPPLEMENT_2026-11-25.json"
+        original = json.loads((ROOT / "validation/macro" / filename).read_text())
+        for key, url, error in (
+            ("CHF.inflation", "https://bfs.admin.ch.evil.example/cpi", "unsupported source publisher URL"),
+            ("CHF.labour", "https://www.bfs.admin.ch/en/newnsb/UA8hylpLYO6i", "unknown/duplicate official source key"),
+            ("CHF.inflation", "https://www.seco.admin.ch/example", "unsupported source publisher URL"),
+        ):
+            with self.subTest(key=key, url=url), tempfile.TemporaryDirectory() as tmp:
+                data = copy.deepcopy(original)
+                data["attestations"][0].update(key=key, url=url)
+                (Path(tmp) / filename).write_text(json.dumps(data))
+                with self.assertRaisesRegex(ValueError, error):
+                    source_web_attestations(Path(tmp), filename)
 
     def test_nzd_official_source_url_cannot_use_spoofed_hostname(self):
         from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
