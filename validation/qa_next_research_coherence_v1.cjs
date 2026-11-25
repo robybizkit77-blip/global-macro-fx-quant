@@ -299,8 +299,7 @@ for(const ccy of cbFx){
  pageHero:()=>'',esc,fmt,date,dayNow:()=>cbToday});
  assert.equal((html.match(/class="bank-first-axis/g)||[]).length,3);
  assert.equal((html.match(/data-bank-country=/g)||[]).length,8);
- assert.match(html,/01 · WANT/);assert.match(html,/02 · CAN/);assert.match(html,/03 · PRICING/);
- assert.match(html,/Cosa seguire/);
+ for(const heading of ["Cosa va","Cosa frena","Cosa guardare"])assert(html.includes("<h3>"+heading+"</h3>"));
  assert.doesNotMatch(html,/undefined|NaN/);
 }
 
