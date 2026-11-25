@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,wageContext,externalContext,turningPointMonitor,macroNarrative,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -480,3 +480,28 @@ console.log('ECONOMIC_CYCLE_EXTERNAL_CONTEXT_PASS');
  for(const ccy of coverage)assert.match(render({catalog,esc,dayNow:()=>day,country:ccy}),/Turning Point Monitor · segnali di svolta/);
 }
 console.log('ECONOMIC_CYCLE_TURNING_POINT_PASS');
+
+{
+ const row=(name,tone,date='2026-10-31')=>({name,signal:{tone},signalSource:'original',items:[{date,verdict:tone==='green'?1:tone==='red'?-1:0,cycle:{level:null}}]});
+ const rows=[row('Lavoro','green'),row('Consumi','green'),row('Servizi','green'),row('Credito','red')];
+ const core={label:'CPI core',available:true,value:3.2,direction:'accelera',period:'2026-10',freq:'M'};
+ const wage={label:'Salari orari',available:true,value:2.4,direction:'rallenta',period:'2026-10',freq:'M'};
+ const external={available:true,value:-1.2,direction:'accelera',period:'2026-Q3'};
+ const t={judgment:'Svolte locali.'};
+ const n=macroNarrative(rows,[core],[wage],external,t);
+ assert.match(n.growth,/miglioramento è più diffuso/);
+ assert.match(n.growth,/Peggiorano credito/);
+ assert.match(n.policy,/divergono/);
+ assert.match(n.trade,/Volumi inferiori/);
+ assert.match(n.trade,/accelera/);
+ assert.match(n.watch,/perderebbe credibilità/);
+ assert.match(macroNarrative(rows.slice(0,2),[],[],{},t).growth,/insufficienti/);
+ assert.match(macroNarrative([...rows,row('Manifattura','green','2025-01-01')],[],[],{},t).growth,/insufficienti/);
+ const old=macroNarrative(rows,[{...core,stale:true}],[{...wage,freq:'A'}],{...external,stale:true},t);
+ assert.match(old.prices,/non determinabile/);assert.match(old.prices,/non valutabile/);
+ assert.match(old.trade,/insufficiente/);assert.doesNotMatch(old.policy,/divergono/);
+ const cooling=macroNarrative(rows,[{...core,direction:'rallenta'}],[wage],external,t);
+ assert.match(cooling.policy,/non una garanzia di tagli/);
+ for(const ccy of coverage)assert.match(render({catalog,esc,dayNow:()=> '2026-11-25',country:ccy}),/Cosa vedo davvero · giudizio macro/);
+}
+console.log('ECONOMIC_CYCLE_MACRO_NARRATIVE_PASS');
