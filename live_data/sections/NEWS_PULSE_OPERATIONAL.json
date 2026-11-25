@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-24",
-  "generated_at_utc": "2026-11-25T10:08:40.446200Z",
+  "generated_at_utc": "2026-11-25T14:30:54.534873Z",
   "items": [
     {
       "as_of": "2026-11-24",
@@ -222,7 +222,7 @@
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
     }
   ],
-  "last_checked_at_utc": "2026-11-25T10:08:40.446200Z",
+  "last_checked_at_utc": "2026-11-25T14:30:54.534873Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1062,46 +1062,6 @@
         "source_id": "FED_PRESS",
         "title": "Federal Reserve announces College Fed Challenge winners",
         "url": "https://www.federalreserve.gov/newsevents/pressreleases/other20261120b.htm"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "ENERGY",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "ENERGY_STRUCTURE",
-          "verify_next": "Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
-          "why_watch": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio."
-        },
-        "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-19T14:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "energy_supply_context": {
-            "reason": "La pubblicazione EIA non fornisce in questa pipeline uno snapshot certificato di scorte/produzione prima e dopo.",
-            "status": "ARTICLE_TITLE_ONLY"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "reason": "Titolo EIA validato, ma nessuno snapshot WTI pre/post; nessuna reazione o attribuzione causale dimostrata.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "wti": {
-            "reason": "Assenti prezzi WTI intraday pre/post collegati al rilascio.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          }
-        },
-        "source": "U.S. Energy Information Administration",
-        "source_id": "EIA_ENERGY",
-        "title": "Oil flows through Middle East chokepoints increased in the third quarter",
-        "url": "https://www.eia.gov/todayinenergy/detail.php?id="
       }
     ],
     "last_attempt_day_rome": "2026-11-25",
@@ -1199,10 +1159,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 4,
+        "accepted_items": 5,
         "ccy": "ENERGY",
         "entries_rejected": 27,
-        "feed_entries_seen": 31,
+        "feed_entries_seen": 32,
         "feed_url": "https://www.eia.gov/rss/todayinenergy.xml",
         "source": "U.S. Energy Information Administration",
         "source_id": "EIA_ENERGY",
