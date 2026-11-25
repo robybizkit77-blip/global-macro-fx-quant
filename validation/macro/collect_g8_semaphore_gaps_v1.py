@@ -1082,7 +1082,7 @@ def parse_real_ca_mfg(raw,now):
             if not required.issubset(rdr.fieldnames or []):raise ValueError("Real manufacturing dimensions changed")
             obs={};vectors=set()
             for row in rdr:
-                if row["GEO"]!="Canada" or row[industry]!="Manufacturing [31-33]" or row["Principal statistics"]!="Sales of goods manufactured (shipments)":continue
+                if row["GEO"]!="Canada" or row[industry]!="Total, durable and non-durable goods" or row["Principal statistics"]!="Sales of goods manufactured (shipments)":continue
                 if row.get("Seasonal adjustment","Seasonally adjusted")!="Seasonally adjusted":continue
                 if row["UOM"] not in {"Dollars","2017 constant dollars","2017 dollars"} or row["SCALAR_FACTOR"]!="millions":raise ValueError("Real manufacturing unit/scale changed")
                 p=row["REF_DATE"]
