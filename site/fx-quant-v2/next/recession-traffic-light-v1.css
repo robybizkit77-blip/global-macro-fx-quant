@@ -276,3 +276,19 @@
 .recession-light .sem-regime-unplaced button span{font-size:10px;line-height:1.35;color:#b3c8d5}
 .recession-light .sem-regime>small{display:block;line-height:1.55;color:#99b5c5;font-size:11px}
 @media(max-width:480px){.recession-light .sem-regime{padding:10px}.recession-light .sem-regime-quadrant{padding:8px}.recession-light .sem-regime-quadrant h4{font-size:12px}.recession-light .sem-regime-quadrant p{font-size:10px}}
+
+/* Country History — original single-series charts, independent scales. */
+.recession-light .sem-history-dashboard{margin:16px 0;padding:14px;border:1px solid #365064;border-radius:12px;background:#102637}
+.recession-light .sem-history-dashboard .sem-dashboard-title{margin:0 0 14px}
+.recession-light .sem-history-dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.recession-light .sem-history-panel{min-width:0;border:1px solid #365064;border-radius:8px;padding:12px;background:#0d2233}
+.recession-light .sem-history-panel>h4{font-size:14px;color:#b9dce9;margin:0 0 10px}
+.recession-light .sem-history-panel>p{font-size:12px;color:#a9c5d7;line-height:1.6}
+.recession-light .sem-history-plot{min-width:0;padding:10px 0;border-top:1px solid #2c4356}
+.recession-light .sem-history-plot-head{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.recession-light .sem-history-plot-head strong{font-size:12px;color:#e3eef6;line-height:1.45}
+.recession-light .sem-history-plot-head span{color:#83cde8;font-size:14px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.recession-light .sem-history-plot svg{width:100%;height:auto;display:block;margin:7px 0}
+.recession-light .sem-history-plot>small,.recession-light .sem-history-dashboard>small{display:block;font-size:10px;line-height:1.5;color:#a1bacc;overflow-wrap:anywhere}
+.recession-light .sem-history-dashboard>small{margin-top:10px}
+@media(max-width:650px){.recession-light .sem-history-dashboard-grid{grid-template-columns:1fr}.recession-light .sem-history-dashboard{padding:10px}}
