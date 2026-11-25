@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const base=path.resolve(__dirname,'..');
-const {model,render,parsePeriod,cycleMetric,cycleHistory,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
+const {model,render,parsePeriod,cycleMetric,cycleHistory,inflationContext,coverage}=require(path.join(base,'site/fx-quant-v2/next/recession-traffic-light-v1.js'));
 const catalog=JSON.parse(fs.readFileSync(path.join(base,'live_data/sections/MACRO_SERIES.json'),'utf8'));
 const asof='2026-11-23',dayNow=()=>asof;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -343,3 +343,34 @@ const priorLeading={id:'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_1Y',dates
 assert.equal(model({NZD:[priorLeading]},liveDay,'NZD',{schema:liveOverlay.schema,series:[anz]}).find(r=>r.key==='leading').signalSource,'fallback');
 console.log('ECONOMIC_CYCLE_SOURCE_WIRING_PASS');
 
+
+ // Inflation context must not affect the seven activity rows or convert
+ // an index-level change into a false annual inflation rate.
+const inflationDay='2026-11-25';
+for(const c of coverage){
+ const info=inflationContext(catalog,inflationDay,c);
+ assert.ok(info.length>=2);
+ assert.ok(info[0].available,'Headline source must exist for '+c);
+ assert.ok(info[1].available,'Core source must exist for '+c);
+ assert.ok(info.every(x=>!x.available||Number.isFinite(x.value)));
+ assert.equal(model(catalog,inflationDay,c).length,7);
+ assert.match(render({catalog,esc,dayNow:()=>inflationDay,country:c}),/Inflazione · pressioni sui prezzi/);
+}
+const example={USD:[{id:'US_CPIAUCSL_history_value',frequency:'M',dates:['2025-08','2025-09','2026-08','2026-09'],values:[100,100,102,103]}]};
+const v=inflationContext(example,inflationDay,'USD')[0];
+assert.ok(Math.abs(v.value-3)<1e-8);
+assert.ok(Math.abs(v.change-1)<1e-8);
+assert.equal(v.direction,'accelera');
+assert.equal(v.period,'2026-09');
+assert.equal(inflationContext(example,'2027-04-01','USD')[0].direction,null);
+const missingLag=structuredClone(example);
+missingLag.USD[0].values[1]=null;
+assert.equal(inflationContext(missingLag,inflationDay,'USD')[0].available,false);
+const gap=structuredClone(example);
+gap.USD[0].dates[2]='2026-07';
+assert.equal(inflationContext(gap,inflationDay,'USD')[0].direction,null);
+const nzInflation=inflationContext({NZD:[{id:'NZ_CPI_HEADLINE_YOY_history_value',frequency:'Q',dates:['2026-06','2026-09-01'],values:[4.1,3.7]}]},inflationDay,'NZD')[0];
+assert.equal(nzInflation.period,'2026-Q3');
+assert.equal(nzInflation.direction,'rallenta');
+assert.equal(nzInflation.basis,'REPORTED_YOY');
+console.log('ECONOMIC_CYCLE_INFLATION_CONTEXT_PASS');
