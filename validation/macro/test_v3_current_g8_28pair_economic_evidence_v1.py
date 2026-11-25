@@ -14,6 +14,7 @@ from validation.macro.v3_gdp_q3_official_overlay_v1 import observed_q3_updates, 
 from validation.macro.ons_quarterly_gdp_v1 import latest_growth, previous_quarter
 from validation.macro.esri_quarterly_gdp_v1 import latest_growth as latest_jp_growth
 from validation.macro.seco_quarterly_gdp_v1 import latest_growth as latest_ch_growth
+from validation.macro.abs_quarterly_gdp_v1 import latest_growth as latest_au_growth
 
 
 class CurrentEconomicEvidenceTests(unittest.TestCase):
@@ -26,6 +27,7 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
         cls.setup = load("PAIR_SETUP_OPERATIONAL_VIEW")
         cls.jp_growth = latest_jp_growth(cls.asof)
         cls.ch_growth = latest_ch_growth(cls.asof)
+        cls.au_growth = latest_au_growth(cls.asof)
         cls.result = build(cls.observed, cls.heat, cls.legacy,
                            cls.setup, as_of=cls.asof)
 
@@ -69,6 +71,8 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             )
             if c == "JPY" and self.jp_growth:
                 expected = self.jp_growth["reference_quarter"]
+            if c == "AUD" and self.au_growth:
+                expected = self.au_growth["reference_quarter"]
             if c == "CHF" and self.ch_growth:
                 expected = self.ch_growth["reference_quarter"]
             self.assertEqual(country["growth"]["reference_quarter"], expected)
@@ -120,7 +124,7 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
 
     def test_q3_latest_real_official_releases_no_fictional_g8_growth(self):
         import math
-        self.assertEqual(self.result["summary"]["GDP_later_quarter_official_releases"], 4 + bool(self.jp_growth))
+        self.assertEqual(self.result["summary"]["GDP_later_quarter_official_releases"], 4 + bool(self.jp_growth) + bool(self.au_growth))
         countries = self.result["country_evidence"]
         self.assertEqual(set(observed_q3_updates("2026-10-29")), set())
         self.assertEqual(set(observed_q3_updates("2026-10-30")), {"USD"})
@@ -165,13 +169,16 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
         for c, expected in {"CAD": 0.7, "AUD": 0.1, "NZD": -0.7}.items():
             g = countries[c]["growth"]
             prior = g["prior_documented_quarter"]
-            self.assertEqual(prior["reference_quarter"], "2026Q1")
+            self.assertEqual(prior["reference_quarter"], previous_quarter(g["reference_quarter"]))
             self.assertEqual(prior["reported_unit"], g["reported_unit"])
             self.assertEqual(prior["publisher_release_day"], g["publisher_release_day"])
             self.assertEqual(prior["publisher_source"], g["publisher_source"])
             self.assertTrue(g["prior_value_from_same_publisher_edition"])
-            self.assertAlmostEqual(g["nonannualized_qoq_descriptive_pct"] -
-                                   prior["nonannualized_qoq_descriptive_pct"], expected)
+            if c == "AUD" and self.au_growth:
+                self.assertEqual(g, self.au_growth)
+            else:
+                self.assertAlmostEqual(g["nonannualized_qoq_descriptive_pct"] -
+                                       prior["nonannualized_qoq_descriptive_pct"], expected)
             self.assertFalse(prior["historical_pit_training_vintages_certified"])
         for pair, row in self.result["pair_context"].items():
             for c in (row["base"], row["quote"]):

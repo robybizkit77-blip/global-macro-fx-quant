@@ -17,6 +17,9 @@ on:
       - 'validation/macro/esri_quarterly_gdp_v1.py'
       - 'validation/macro/test_esri_quarterly_gdp_v1.py'
       - 'validation/macro/ESRI_FIRST_QUARTERLY_GDP_V1.json'
+      - 'validation/macro/abs_quarterly_gdp_v1.py'
+      - 'validation/macro/test_abs_quarterly_gdp_v1.py'
+      - 'validation/macro/ABS_QUARTERLY_GDP_V1.json'
       - 'validation/macro/seco_quarterly_gdp_v1.py'
       - 'validation/macro/test_seco_quarterly_gdp_v1.py'
       - 'validation/macro/SECO_FLASH_QUARTERLY_GDP_V1.json'
@@ -28,6 +31,9 @@ on:
     paths:
       - 'validation/macro/esri_quarterly_gdp_v1.py'
       - 'validation/macro/test_esri_quarterly_gdp_v1.py'
+      - 'validation/macro/abs_quarterly_gdp_v1.py'
+      - 'validation/macro/test_abs_quarterly_gdp_v1.py'
+      - 'validation/macro/ABS_QUARTERLY_GDP_V1.json'
       - 'validation/macro/seco_quarterly_gdp_v1.py'
       - 'validation/macro/test_seco_quarterly_gdp_v1.py'
       - 'validation/macro/ons_quarterly_gdp_v1.py'
@@ -82,6 +88,7 @@ jobs:
           python -m unittest validation.macro.test_ons_quarterly_gdp_v1 -v
           python -m unittest validation.macro.test_esri_quarterly_gdp_v1 -v
           python -m unittest validation.macro.test_seco_quarterly_gdp_v1 -v
+          python -m unittest validation.macro.test_abs_quarterly_gdp_v1 -v
       - name: Collect and archive the latest ONS UK quarterly first estimate
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
@@ -110,6 +117,20 @@ jobs:
             echo "::warning::Latest SECO flash GDP was not validated; using prior verified GDP evidence."
           elif grep -q '"prior_fallback_reason"' /tmp/seco-quarterly-gdp-collection.json; then
             echo "::warning::SECO detailed prior quarter was not validated; comparing against its archived flash."
+          fi
+      - name: Verify ABS parser against published June edition (new collector PR)
+        if: github.event_name == 'pull_request' && github.head_ref == 'fix/abs-recurring-quarterly-gdp-20261125'
+        run: |
+          python -m validation.macro.abs_quarterly_gdp_v1 --verify-quarter 2026Q2 > /tmp/abs-q2-proof.json
+          python -c "import json; d=json.load(open('/tmp/abs-q2-proof.json')); assert (d['reported_value'],d['prior_qoq']) == (0.4,0.3)"
+      - name: Collect and archive the next Australian ABS quarterly GDP edition
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          python -m validation.macro.abs_quarterly_gdp_v1 --apply | tee /tmp/abs-quarterly-gdp-collection.json
+          cat /tmp/abs-quarterly-gdp-collection.json >> "$GITHUB_STEP_SUMMARY"
+          if grep -q 'SOURCE_UNAVAILABLE_ARCHIVE_RETAINED' /tmp/abs-quarterly-gdp-collection.json; then
+            echo "::warning::ABS quarterly bulletin not validated; retaining prior verified GDP."
           fi
       - name: Generate verified public Macro V3 context
         run: |
@@ -151,7 +172,8 @@ jobs:
               managed=('site/control-room-preview/macro-v3-current-evidence.json',
                        'validation/macro/ONS_FIRST_QUARTERLY_GDP_V1.json',
                        'validation/macro/ESRI_FIRST_QUARTERLY_GDP_V1.json',
-                       'validation/macro/SECO_FLASH_QUARTERLY_GDP_V1.json'),
+                       'validation/macro/SECO_FLASH_QUARTERLY_GDP_V1.json',
+                       'validation/macro/ABS_QUARTERLY_GDP_V1.json'),
               protected=(
                   'live_data/sections/NEWS_PULSE_OPERATIONAL.json',
                   'live_data/sections/MACRO_SERIES.json',
@@ -165,6 +187,8 @@ jobs:
                   'validation/macro/ONS_FIRST_QUARTERLY_GDP_V1.json',
                   'validation/macro/esri_quarterly_gdp_v1.py',
                   'validation/macro/ESRI_FIRST_QUARTERLY_GDP_V1.json',
+                  'validation/macro/abs_quarterly_gdp_v1.py',
+                  'validation/macro/ABS_QUARTERLY_GDP_V1.json',
                   'validation/macro/seco_quarterly_gdp_v1.py',
                   'validation/macro/SECO_FLASH_QUARTERLY_GDP_V1.json',
                   'validation/macro/capture_uk_ch_gdp_official_firstseen_v11.py',
@@ -262,5 +286,7 @@ jobs:
             /tmp/macro-v3-public-http-delivery-proof.json
             /tmp/ons-quarterly-gdp-collection.json
             /tmp/esri-quarterly-gdp-collection.json
+            /tmp/abs-quarterly-gdp-collection.json
+            /tmp/abs-q2-proof.json
           if-no-files-found: warn
           retention-days: 14
