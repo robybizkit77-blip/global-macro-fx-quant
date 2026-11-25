@@ -187,3 +187,10 @@
  #central-bank-studio .drivers-country{padding:7px 5px;gap:4px}
  #central-bank-studio .bank-first-rate{font-size:12px}
 }
+
+.liq-section-jumps .pill { min-height: 44px; }
+.liq-evidence-region, #liquidity-dossier { scroll-margin-top: 92px; }
+.liq-evidence-region:focus-visible, #liquidity-dossier:focus-visible {
+  outline: 2px solid #9de3ec;
+  outline-offset: 4px;
+}

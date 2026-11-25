@@ -999,19 +999,28 @@
   const historicalCount=audits.filter(x=>x.state==='STORICO').length;
   const sourceStatus='<p class="drivers-source-brief">QUALITÀ TEMPORALE · '+esc(historicalCount)+
    ' serie storiche da ricontrollare · '+esc(3-covered)+' serie assenti o in verifica.</p>';
+  const hasCharts=selected!=='CHF'||Boolean(official?.conditionsSeries);
+  const market=marketFirstRead(get('risk'),today,esc,fmt);
+  const limits=selected==='CHF'
+   ?'Le serie svizzere disponibili hanno perimetri diversi. Verifica quali prestiti coprono prima di estendere il giudizio al credito interno.'
+   :'Riserve, prestiti e criteri di concessione misurano aspetti diversi. La crescita dei prestiti, da sola, lascia aperta la lettura delle condizioni.';
   return pageHero('CONDIZIONI FINANZIARIE G8','Liquidità & Credito',
    'Come si muovono le riserve delle banche e il credito a famiglie e imprese.')+
    '<section class="drivers-panel" id="liquidity-studio"><div class="drivers-head"><div><h2>Liquidità e prestiti nelle otto economie</h2><p class="liq-first-note">Ultime osservazioni delle fonti di ricerca già verificate, con il periodo nella lettura. Non sono una graduatoria delle condizioni finanziarie.</p>'+
    '</div></div>'+
    '<div class="drivers-country-grid">'+cards+'</div></section>'+
-   marketFirstRead(get('risk'),today,esc,fmt)+
-   '<section class="drivers-panel drivers-selection" id="liquidity-dossier" aria-label="Scheda liquidità e credito '+selected+'">'+
+   '<div class="liq-section-jumps pill-controls" role="group" aria-label="Vai alle analisi di liquidità e credito">'+
+   '<button type="button" class="pill" data-section-jump="liquidity-dossier">Dossier paese</button>'+
+   (hasCharts?'<button type="button" class="pill" data-section-jump="liquidity-charts">Grafici e serie</button>':'')+
+   '<button type="button" class="pill" data-section-jump="liquidity-market">Credito di mercato</button></div>'+
+   '<section class="drivers-panel drivers-selection" id="liquidity-dossier" tabindex="-1" aria-label="Scheda liquidità e credito '+selected+'">'+
    '<div class="drivers-head"><div><span class="mini-overline">'+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
    '<h2>'+esc(headline)+'</h2></div></div>'+
    '<p class="drivers-lead drivers-liquidity-opening">'+esc(opening)+'</p>'+
+   '<p class="drivers-lead"><strong>Cosa frena la lettura.</strong> '+esc(limits)+'</p>'+
    (official?.html||'')+sloos+
    '<div class="drivers-story"><div><span>PERCHÉ CONTA PER IL CAMBIO</span><p>'+esc(FX_LENSES[selected]?.fx||read.fx)+'</p></div>'+
-   '<div><span>COSA CONTROLLARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
+   '<div><span>COSA GUARDARE</span><p>'+esc(FX_LENSES[selected]?.watch||read.watch)+'</p></div></div>'+
    liquidityRead+
    (root.FXQuantDriverMarketAudit?.render?.({get,esc,dayNow},selected)||'')+
    '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
@@ -1023,13 +1032,17 @@
    '<ul>'+roles.map(role=>{const g=policyGate(role);return '<li><strong>'+esc(({liquidity:'Liquidità',credit:'Credito',conditions:'Standard e condizioni'})[role])+'</strong>: '+esc(g?.label||'provenienza non verificata')+'. '+esc(g?.narrative||'Verificare il registro fonti.')+'</li>'}).join('')+'</ul>'+
    '<p>Copertura storica e date riferite alle rispettive serie. Se disponibile, il grafico del credito usa la fonte ufficiale separata più recente, senza modificare il feed storico. Frequenze, definizioni e unità possono differire.'+
    (row?.current_note?' '+esc(row.current_note):'')+'</p></details></section>'+
-   (selected==='CHF'?(official?.conditionsSeries?'<details class="drivers-panel drivers-fold"><summary>Apri grafico del costo dei finanziamenti</summary><div class="drivers-chart-grid">'+chart(official.conditionsSeries,official.conditionsChartLabel,'#95c6e9')+'</div><p class="drivers-source-note">Serie SNB separata: non rappresenta lo storico originario di liquidità o credito.</p></details>':''):'<details class="drivers-panel drivers-fold"><summary>Apri grafici, osservazioni e limiti delle fonti</summary>'+
+   (hasCharts?'<section class="liq-evidence-region" id="liquidity-charts" tabindex="-1" aria-label="Grafici di liquidità e credito">'+
+   '<div class="drivers-head"><div><h2>Grafici e serie del paese</h2><p class="liq-first-note">Controlla la direzione di ciascuna serie e verifica unità e periodo prima di confrontarle.</p></div></div>':'')+
+   (selected==='CHF'?(official?.conditionsSeries?'<details class="drivers-panel drivers-fold"><summary>Apri grafico del costo dei finanziamenti</summary><div class="drivers-chart-grid">'+chart(official.conditionsSeries,official.conditionsChartLabel,'#95c6e9')+'</div><p class="drivers-source-note">Serie SNB separata: non rappresenta lo storico originario di liquidità o credito.</p></details>':''):'<details class="drivers-panel drivers-fold"><summary>Apri gli storici di liquidità, credito e condizioni</summary>'+
    '<div class="drivers-chart-grid">'+chart(official?.liquidityRecent||official?.liquiditySeries||row?.liquidity,official?.liquidityRecent?'Liquidità · ultima settimana':official?.liquiditySeries?'Liquidità · fonte ufficiale separata':'Liquidità','#69d5ad')+chart(official?.creditSeries||row?.credit,official?.creditSeries?'Credito · fonte ufficiale separata':'Credito','#95c6e9')+'</div>'+
    (official?.liquidityRecent?'<p class="drivers-source-note">Confronto delle ultime due settimane dalla fonte ufficiale separata. '+(selected==='AUD'?'Il saldo precedente è ricavato dal movimento settimanale pubblicato. ':'Entrambi i saldi sono pubblicati dalla BoE. ')+'Lo storico precedente rimane distinto: nessuna interpolazione fra periodi mancanti.</p><div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità · storico originario','#69d5ad')+'</div>':'')+
    (official?.keepOriginalLiquidity?'<p class="drivers-source-note">Saldi Lynx giornalieri e storico mensile originario rimangono separati: nessuna equivalenza o interpolazione presunta.</p><div class="drivers-chart-grid">'+chart(row?.liquidity,'Liquidità · storico originario','#69d5ad')+'</div>':'')+
    (official?.conditionsSeries?'<div class="drivers-chart-grid">'+chart(official.conditionsSeries,official.conditionsChartLabel||'Condizioni di credito · fonte ufficiale separata','#95c6e9')+'</div>':'')+
    (official?.additionalConditionsSeries?'<div class="drivers-chart-grid">'+chart(official.additionalConditionsSeries,'Condizioni di credito PMI · fonte ufficiale separata','#95c6e9')+'</div>':'')+
-   '<p class="drivers-source-note">I grafici conservano i valori originali nelle rispettive unità (livelli o tassi di crescita esplicitamente indicati); non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>');
+   '<p class="drivers-source-note">I grafici conservano i valori originali nelle rispettive unità (livelli o tassi di crescita esplicitamente indicati); non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>')+
+   (hasCharts?'</section>':'')+
+   '<section class="liq-evidence-region" id="liquidity-market" tabindex="-1" aria-label="Credito di mercato e spread USA">'+market+'</section>';
  }
  const api={series,direction,interpret,observationDate,sourceEvidence,creditMarket,marketFirstRead,render};
  root.FXQuantLiquidityCredit=api;

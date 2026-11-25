@@ -199,6 +199,12 @@ async function inspectRoute(page,label,key){
    label+' liquidity, credit and lending conditions must be separate');
   assert.equal(await locator(page,'.drivers-chart-grid .drivers-chart').count(),2,
    label+' both source-dated trend charts required');
+  for(const id of ['liquidity-dossier','liquidity-charts','liquidity-market']){
+   await locator(page,'.liq-section-jumps [data-section-jump="'+id+'"]').press('Enter');
+   assert.equal(await page.evaluate(()=>document.activeElement?.id),id,label+' liquidity jump must focus its destination');
+  }
+  assert.equal(await locator(page,'#liquidity-charts .drivers-chart').count(),2);
+  assert.equal(await locator(page,'#liquidity-market .liq-first-spread').count(),2);
   const liquidSources=locator(page,'.drivers-source-provenance-fold');
   assert.equal(await liquidSources.getAttribute('open'),null,label+' liquidity sources start collapsed');
   assert.match(await liquidSources.textContent(),/Copertura storica/);
