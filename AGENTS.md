@@ -151,6 +151,15 @@ start indefinite redesign cycles or introduce unrequested improvements
 after the requested task is complete.
 
 
+## Editorial standard for Next
+
+- Open judgments with the main reading, then what is working, what is holding
+  it back, and what to watch next. Use the chart, table or source note for
+  precise figures, units and dates. Keep only figures essential to the argument
+  in the judgment itself.
+- Describe how the next observation would change the reading. Keep the limits
+  and conditional implications visible when they affect interpretation.
+
 ## Scenario Macro in Next
 
 - Keep the existing Next DARK DESK theme, navigation and public route. The
@@ -164,9 +173,8 @@ after the requested task is complete.
   calculation engine and expose classified-area coverage separately from the
   evidence required for an aggregate judgment. Distinguish the prevailing
   direction across areas from the main development highlighted in each dossier.
-- Open each country dossier with a judgment backed by dated observations and
-  explicit units. State monetary implications conditionally and identify the
-  next observation that could strengthen or weaken the reading.
+- Apply the Next editorial standard to each country dossier. Preserve dated
+  observations, explicit units and sources in the evidence below the judgment.
 - Check all eight dossiers, the matrix, keyboard and mobile navigation,
   partial-data behaviour and unchanged source semantics. Capture before and
   after at desktop and mobile widths and verify the published Next route.

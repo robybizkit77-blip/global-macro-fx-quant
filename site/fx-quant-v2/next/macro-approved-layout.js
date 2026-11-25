@@ -53,61 +53,55 @@ function countryScope({reading}) {
 }
 function dossierReading({r, o}) {
  const q = o.reading;
- const labels = {
-  industry:'Manifattura', demand:'Consumi', jobs:'Lavoro',
-  services:'Servizi', house:'Immobiliare', leading:'Indicatori anticipatori', credit:'Credito'
+ const areas = {
+  industry:['Manifattura','la manifattura'], demand:['Consumi','i consumi'],
+  jobs:['Lavoro','il mercato del lavoro'], services:['Servizi','i servizi'],
+  house:['Immobiliare','l’immobiliare'], leading:['Indicatori anticipatori','gli indicatori anticipatori'],
+  credit:['Credito','il credito']
  };
- const priority = Object.keys(labels);
- const periodLabel = value => {
-  const month = /^(\d{4})[-/](0[1-9]|1[0-2])$/.exec(value);
-  if (month) return new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric',timeZone:'UTC'})
-   .format(new Date(Date.UTC(Number(month[1]),Number(month[2])-1,1)));
-  const quarter = /^(\d{4})-?Q([1-4])$/.exec(value);
-  return quarter ? quarter[2]+'º trimestre '+quarter[1] : value;
+ const pick = tone => Object.keys(areas).map(key=>r.find(area=>area.key===key))
+  .filter(area=>area?.signal.tone===tone);
+ const up=pick('green'),down=pick('red'),positive=up[0],negative=down[0];
+ const label=area=>areas[area.key][0];
+ const subject=area=>areas[area.key][1];
+ const join=items=>new Intl.ListFormat('it',{type:'conjunction'}).format(items.map(subject));
+ const observation=(area,pattern)=>{
+  const items=area?.items||[];
+  const active=area?.signalSource==='original'?items:items.slice(0,1);
+  return active.find(x=>x&&!x.stale&&!x.invalid&&x.verdict!==null&&pattern.test(x.metric.name));
  };
- const pick = tone => priority.map(key=>r.find(area=>area.key===key))
-  .filter(area=>area?.signal.tone===tone)
-  .map(area=>{
-   const active=area.signalSource==='original'?area.items:area.items.slice(0,1);
-   const item=active.find(x=>x&&!x.stale&&!x.invalid&&x.verdict!==null&&
-    !x.metric.hideValue&&x.metric.unit&&x.period&&x.prior&&
-    Number.isFinite(x.previous)&&Number.isFinite(x.current));
-   return {label:labels[area.key],item};
-  }).filter(area=>area.item);
- const up=pick('green'),down=pick('red');
- const positive=up[0],negative=down[0];
- const describe=({item})=>{
-  const {metric,previous,current,prior,period}=item;
-  const scale=metric.scale||1;
-  const unit={'% m/m SA':'% sul mese, destagionalizzato','% q/q SA':'% sul trimestre, destagionalizzato','% SA':'%, destagionalizzato','% a/a':'% annuo'}[metric.unit]||metric.unit;
-  const name=metric.name.replace(/ \(SA\)$/,'').replace(/ SA$/,'');
-  return name+' passa da '+num(previous/scale,2)+' a '+num(current/scale,2)+' '+unit+
-   ' ('+periodLabel(prior)+' → '+periodLabel(period)+').';
- };
- let title=q.aligned?q.label:'Segnali da verificare',evidence=q.economy,watch=q.watch;
- if(positive&&negative){
-  title=positive.label+' in miglioramento, '+negative.label.toLowerCase()+' in indebolimento';
-  evidence=[positive,negative,up.find(x=>x.label==='Lavoro')].filter(Boolean)
-   .filter((area,index,list)=>list.indexOf(area)===index).map(describe).join(' ');
-  watch='Il miglioramento acquisterebbe peso se proseguisse e si estendesse alle aree oggi più deboli. '+
-   'La prossima verifica riguarda soprattutto '+negative.label.toLowerCase()+'.';
- }else if(positive||negative){
-  const direction=positive?'miglioramento':'peggioramento';
-  const examples=positive?up:down;
-  title=examples[0].label+' in '+direction;
-  evidence=examples.slice(0,2).map(describe).join(' ');
-  watch='Verificare se il movimento in '+examples[0].label.toLowerCase()+
-   ' persiste alla prossima rilevazione e trova conferma nelle altre aree.';
- }
- const priceLine=(name,x)=>x?.available&&!x.stale&&Number.isFinite(x.previous)&&Number.isFinite(x.value)&&x.prior&&x.period
-  ? name+' da '+num(x.previous,1)+'% a '+num(x.value,1)+'% annuo ('+periodLabel(x.prior)+' → '+periodLabel(x.period)+').' : '';
- const prices=[priceLine('Inflazione generale',o.head),priceLine(o.core?.label||'Inflazione core',o.core)].filter(Boolean);
- const policy=o.head?.direction==='accelera'&&o.core?.direction==='accelera'&&prices.length===2
-  ? 'Se l’accelerazione dei prezzi trovasse conferma in salari e domanda interna, rafforzerebbe il caso per una politica meno accomodante. La verifica resta aperta.'
-  : q.policy;
- const scope=q.aligned?countryScope(o):
-  'Il giudizio sul ciclo complessivo resta parziale. Servono almeno quattro aree valide con periodi sufficientemente allineati.';
- return {title,evidence,prices:prices.join(' '),policy,watch,scope};
+ const production=observation(positive,/crescita produzione manifatturiera/i);
+ const retail=observation(negative,/crescita volumi retail/i);
+ const jobs=observation(up.find(x=>x.key==='jobs'),/disoccupazione/i);
+ const housing=observation(down.find(x=>x.key==='house'),/investimenti residenziali/i);
+ const rebound=positive?.key==='industry'&&production?.previous<0&&production?.current>0;
+ const slowRetail=negative?.key==='demand'&&retail?.current>0&&retail.current<retail.previous;
+ let title=q.aligned?q.label:'Le evidenze disponibili lasciano aperto il giudizio';
+ if(positive&&negative) title=label(positive)+' in miglioramento, '+label(negative).toLowerCase()+' in indebolimento';
+ else if(positive||negative) title=label(positive||negative)+(positive?' in miglioramento':' in indebolimento');
+ if(rebound&&slowRetail) title='La manifattura rimbalza, i consumi restano il punto debole';
+
+ let strength=positive?'Segnali di miglioramento per '+join(up.slice(0,2))+'.':'Nelle osservazioni disponibili non emerge un miglioramento netto.';
+ if(rebound) strength='La produzione manifatturiera torna a crescere dopo il calo della rilevazione precedente.';
+ if(jobs?.current<jobs?.previous&&(rebound||!up.slice(0,2).some(x=>x.key==='jobs'))) strength+=' La disoccupazione scende.';
+ let friction=negative?'Segnali di indebolimento per '+join(down.slice(0,2))+'.':'Nelle aree osservate non emerge un indebolimento netto.';
+ if(slowRetail) friction='I volumi al dettaglio crescono più lentamente.';
+ if(slowRetail&&housing?.current<housing?.previous) friction+=' Gli investimenti residenziali arretrano.';
+ const accelerates=x=>x?.available&&!x.stale&&x.direction==='accelera';
+ const slows=x=>x?.available&&!x.stale&&x.direction==='rallenta';
+ if(accelerates(o.head)&&accelerates(o.core)) friction+=negative
+  ? ' Anche l’inflazione di fondo accelera. Per la banca centrale, valutare i rincari diventa più difficile se l’attività perde slancio.'
+  : ' L’inflazione generale e quella di fondo accelerano. La persistenza dei rincari resta da verificare.';
+ else if(accelerates(o.head)) friction+=' L’inflazione generale accelera.';
+ if(slows(o.head)&&slows(o.core)) strength+=' L’inflazione generale e quella di fondo rallentano.';
+ let watch=q.watch;
+ if(positive&&negative) watch='Il segnale favorevole acquisterebbe peso se persistesse e i prossimi dati mostrassero un recupero anche per '+subject(negative)+'.';
+ else if(positive||negative) watch='Verificare se la direzione si conferma nelle prossime rilevazioni e si estende oltre '+subject(positive||negative)+'.';
+ if(rebound&&slowRetail) watch='Se la produzione cresce ancora e i consumi riprendono slancio, il rimbalzo acquista consistenza. Se resta confinato alla manifattura, la lettura rimane prudente.';
+ const scope=q.aligned?'':(o.coverage<4
+  ?'Le aree classificabili sono ancora troppo poche per un giudizio complessivo.'
+  :'Le rilevazioni coprono periodi diversi. La lettura del ciclo complessivo resta parziale.');
+ return {title,strength,friction,watch,scope};
 }
 function renderDesk({catalog={},overlay=null,feedStatus=null,dayNow,country:selected='USD'}={}){
  if(!E)return '';
@@ -116,7 +110,7 @@ function renderDesk({catalog={},overlay=null,feedStatus=null,dayNow,country:sele
 const codes=cs=>cs.length?cs.join(' · '):'—';
 function metric(label,x){const ok=x?.available&&Number.isFinite(x.value),current=ok&&!x.stale&&x.freq!=='A'&&x.direction;return '<div class="rd-metric"><span>'+esc(label)+'</span><strong>'+ (ok?num(x.value)+'%':'—')+'</strong><small>'+esc(ok?x.period+(current?' · '+x.direction:x.stale||x.freq==='A'?' · dato datato':' · direzione n.d.'):'Non disponibile')+'</small></div>'}
 function chart(s){const p=s.points||[];if(p.length<3||p.some(x=>!Number.isFinite(x.value)))return '';const vals=p.map(x=>x.value),threshold=Number.isFinite(s.threshold)?s.threshold:null;let lo=Math.min(...vals,...(threshold===null?[]:[threshold])),hi=Math.max(...vals,...(threshold===null?[]:[threshold]));if(hi===lo){lo-=1;hi+=1}const y=v=>20+(hi-v)/(hi-lo)*100,x=k=>38+k/(p.length-1)*284,path=p.map((v,k)=>(k?'L':'M')+x(k).toFixed(2)+' '+y(v.value).toFixed(2)).join(' ');return '<article class="rd-chart"><header><h4>'+esc(s.title)+'</h4><strong>'+num(vals.at(-1))+' <small>'+esc(s.unit)+'</small></strong></header><svg viewBox="0 0 345 150" role="img" aria-label="'+esc(s.title+', '+p[0].period+'–'+p.at(-1).period)+'"><g stroke="#354354" stroke-width="0.7">'+[20,70,120].map(v=>'<path d="M38 '+v+' H322"/>').join('')+'</g><g fill="#a3adbc" font-size="9"><text x="0" y="23">'+num(hi)+'</text><text x="0" y="123">'+num(lo)+'</text><text x="38" y="141">'+esc(p[0].period)+'</text><text x="322" y="141" text-anchor="end">'+esc(p.at(-1).period)+'</text></g>'+(threshold===null?'':'<path d="M38 '+y(threshold)+' H322" stroke="#d9b778" stroke-dasharray="4 4" opacity=".7"/>')+'<path d="'+path+'" fill="none" stroke="#a9c9e5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="322" cy="'+y(vals.at(-1))+'" r="3" fill="#a9c9e5"/></svg><small>'+esc(p.at(-1).period+' · '+p.length+' osservazioni · '+(s.stale?'dato datato · ':'')+s.source)+'</small></article>'}
-function country(){const {r,i,w,e,t,n,o}=U[chosen],q=o.reading,d=dossierReading(U[chosen]),h=E.countryHistories(raw,day,chosen,overlay,r,{inflation:i,wages:w,external:e});const charts=[...(h.activity||[]).slice(0,1),...(h.inflation||[]).slice(0,1),...(h.wages||[]).slice(0,1),...(h.exports||[]).slice(0,1)].filter(Boolean);return '<div class="rd-section-head"><div><span class="rd-eyebrow">02 / DOSSIER PAESE</span><h2>'+F[chosen]+' '+esc(N[chosen])+'</h2></div><p>'+esc(o.coverage+'/7 aree classificabili · '+q.quality)+'</p></div><div class="rd-country-tabs" aria-label="Scegli economia">'+FX.map(c=>'<button data-ms-country="'+c+'" aria-pressed="'+(c===chosen)+'">'+F[c]+' '+c+'</button>').join('')+'</div><div class="rd-country-body"><div><span class="rd-eyebrow '+q.aggregateTone+'">GIUDIZIO ECONOMICO</span><h3 class="'+q.aggregateTone+'">'+esc(d.title)+'</h3><p class="rd-lead"><strong>Cosa sta cambiando</strong><br>'+esc(d.evidence)+'</p><p class="rd-fine">'+esc(d.scope)+'</p><p class="rd-fine">'+esc(t.judgment)+'</p></div><div class="rd-country-side"><article><h4>Perché conta per la '+B[chosen]+'</h4><p>'+esc([d.prices,d.policy].filter(Boolean).join(' '))+'</p><a href="#rates">Verifica il pricing dei tassi ↗</a></article><article><h4>Cosa può cambiare il giudizio</h4><p>'+esc(d.watch)+'</p></article></div></div><div class="rd-metrics">'+metric('Inflazione headline',o.head)+metric('Inflazione core / proxy',o.core)+metric(/proxy/i.test(o.wage?.label||'')?'Salari · proxy settoriale':'Salari nominali',o.wage)+metric('Export reale',o.external)+'</div>'+(charts.length?'<div class="rd-chart-grid">'+charts.map(chart).join('')+'</div>':'<p class="rd-empty">Serie storiche confrontabili non disponibili per questa selezione.</p>')+'<details class="rd-detail"><summary>Sette aree · osservazioni, fonti e motivazione del giudizio</summary>'+r.map(a=>'<div class="rd-evidence"><div><h4>'+esc(a.name)+'</h4><span class="'+a.signal.tone+'">'+S[a.signal.tone]+' '+T[a.signal.tone]+'</span></div><ul>'+((a.items||[]).filter(Boolean).map(v=>'<li>'+esc(v.metric.name)+' · '+esc(v.prior)+' → '+esc(v.period)+(v.metric.hideValue?'':' · '+num(v.previous/(v.metric.scale||1),2)+' → '+num(v.current/(v.metric.scale||1),2)+' '+esc(v.metric.unit||'unità fonte'))+' · '+esc(v.source)+(v.stale?' · dato datato':'')+'</li>').join('')||'<li>Non disponibile</li>')+'</ul></div>').join('')+'<p>'+esc(n.growth)+'</p><p>'+esc(n.prices)+'</p><p>'+esc(n.trade)+'</p></details>'}
+function country(){const {r,i,w,e,t,n,o}=U[chosen],q=o.reading,d=dossierReading(U[chosen]),h=E.countryHistories(raw,day,chosen,overlay,r,{inflation:i,wages:w,external:e});const charts=[...(h.activity||[]).slice(0,1),...(h.inflation||[]).slice(0,1),...(h.wages||[]).slice(0,1),...(h.exports||[]).slice(0,1)].filter(Boolean);return '<div class="rd-section-head"><div><span class="rd-eyebrow">02 / DOSSIER PAESE</span><h2>'+F[chosen]+' '+esc(N[chosen])+'</h2></div><p>'+esc(o.coverage+'/7 aree classificabili · '+q.quality)+'</p></div><div class="rd-country-tabs" aria-label="Scegli economia">'+FX.map(c=>'<button data-ms-country="'+c+'" aria-pressed="'+(c===chosen)+'">'+F[c]+' '+c+'</button>').join('')+'</div><div class="rd-country-body"><div><span class="rd-eyebrow '+q.aggregateTone+'">GIUDIZIO ECONOMICO</span><h3 class="'+q.aggregateTone+'">'+esc(d.title)+'</h3><p class="rd-lead"><strong>Cosa va</strong><br>'+esc(d.strength)+'</p><p class="rd-lead"><strong>Cosa frena</strong><br>'+esc(d.friction)+'</p>'+ (d.scope?'<p class="rd-fine">'+esc(d.scope)+'</p>':'') +'</div><div class="rd-country-side"><article><h4>Cosa guardare</h4><p>'+esc(d.watch)+'</p><a href="#rates">Controlla le attese sui tassi ↗</a></article></div></div><div class="rd-metrics">'+metric('Inflazione headline',o.head)+metric('Inflazione core / proxy',o.core)+metric(/proxy/i.test(o.wage?.label||'')?'Salari · proxy settoriale':'Salari nominali',o.wage)+metric('Export reale',o.external)+'</div>'+(charts.length?'<div class="rd-chart-grid">'+charts.map(chart).join('')+'</div>':'<p class="rd-empty">Serie storiche confrontabili non disponibili per questa selezione.</p>')+'<details class="rd-detail"><summary>Sette aree · osservazioni, fonti e motivazione del giudizio</summary>'+r.map(a=>'<div class="rd-evidence"><div><h4>'+esc(a.name)+'</h4><span class="'+a.signal.tone+'">'+S[a.signal.tone]+' '+T[a.signal.tone]+'</span></div><ul>'+((a.items||[]).filter(Boolean).map(v=>'<li>'+esc(v.metric.name)+' · '+esc(v.prior)+' → '+esc(v.period)+(v.metric.hideValue?'':' · '+num(v.previous/(v.metric.scale||1),2)+' → '+num(v.current/(v.metric.scale||1),2)+' '+esc(v.metric.unit||'unità fonte'))+' · '+esc(v.source)+(v.stale?' · dato datato':'')+'</li>').join('')||'<li>Non disponibile</li>')+'</ul></div>').join('')+'<p>'+esc(n.growth)+'</p><p>'+esc(n.prices)+'</p><p>'+esc(n.policy)+'</p><p>'+esc(n.trade)+'</p></details>'}
 function countryAccess() {
  return '<section class="rd-country-access" aria-labelledby="rd-country-access-title">'+
   '<h3 id="rd-country-access-title">Apri un dossier paese</h3><div class="rd-country-access-grid">'+
