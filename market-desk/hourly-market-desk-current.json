@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-25T17:02:15.881049Z",
-  "edition_time_rome": "2026-11-25 18:02",
-  "material_digest": "cf0463098cddff9a8e930293b2d88daa78816149daafeb22c9083a5eea497e68",
+  "generated_at_utc": "2026-11-25T17:14:40.248454Z",
+  "edition_time_rome": "2026-11-25 18:14",
+  "material_digest": "220933420c316b2cd3e0c91f278d6865f7b9249d86f552e9c9eb0dd534b243cf",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in rialzo",
-  "lead": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 24 novembre, il Nasdaq Composite ha perso terreno.",
+  "lead": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 24 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
   "news": [
     {
       "headline": "Dollaro in rialzo",
@@ -34,17 +34,18 @@
       "evidence": "PIL reale USA annualizzato: 4,3% (periodo precedente 2,2%)"
     },
     {
-      "headline": "Il Nasdaq Composite scende",
-      "analysis": "Alla chiusura del 24 novembre, il Nasdaq Composite ha perso terreno. Da seguire se il movimento prosegue anche alla prossima chiusura.",
+      "headline": "Azioni in calo e credito più cauto",
+      "analysis": "Alla chiusura del 24 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. La volatilità in Borsa è scesa. Da seguire se la cautela nel credito si estende alle prossime sedute.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-24",
       "event_date": "2026-11-24",
       "market_area": "RISCHIO",
       "sources": [
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
-        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
       ],
-      "evidence": "Alla chiusura del 24 novembre, Nasdaq Composite −1,48% e VIX −0,26 punti."
+      "evidence": "Alla chiusura del 24 novembre, S&P 500 −0,50%, VIX −0,26 punti e spread high yield +9 pb."
     },
     {
       "headline": "L’oro scende, il petrolio sale",
@@ -84,15 +85,16 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 24 novembre, il Nasdaq Composite ha perso terreno.",
+  "desk_judgment": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 24 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
   "fx_implications": "Il 30 novembre alle 09:00 italiane è in programma Swiss quarterly GDP (CHF). Da verificare la risposta dei tassi e di CHF.",
   "what_changed": "Nei proxy futures del 24 novembre l’oro scende e il WTI sale.",
-  "contrary_evidence": "La tenuta del movimento dipende anche dal sostegno dei tassi a breve.",
+  "contrary_evidence": "Il VIX è sceso mentre il credito high yield ha chiesto uno spread più ampio. La tensione nel credito merita una verifica a parte.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bankofcanada.ca/2026/11/bank-of-canada-media-interview-the-logic/",
@@ -103,7 +105,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-25",
-      "rss_checked_at_utc": "2026-11-25T17:02:15.881049Z",
+      "rss_checked_at_utc": "2026-11-25T17:14:40.248454Z",
       "commodities": "2026-11-24"
     },
     "no_paid_api": true,
@@ -111,6 +113,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-25T17:02:15.881049Z",
+      "headline": "Dollaro in rialzo",
+      "material_digest": "cf0463098cddff9a8e930293b2d88daa78816149daafeb22c9083a5eea497e68"
+    },
     {
       "generated_at_utc": "2026-11-25T16:14:05.811829Z",
       "headline": "Dollaro in rialzo",
@@ -225,11 +232,6 @@
       "generated_at_utc": "2026-11-23T14:49:22.640462Z",
       "headline": "Volatilità in rialzo, dollaro misto",
       "material_digest": "fd26c05bd8b21433476c31d4c2053ec1d93a416b3075f18062273d1c3ad338d1"
-    },
-    {
-      "generated_at_utc": "2026-11-23T09:30:44.181125Z",
-      "headline": "Volatilità in rialzo, dollaro misto",
-      "material_digest": "214b9b3d4b1620ef781ce949bda3b492c5f6de8c10fafce379f1d50342379c76"
     }
   ]
 }
