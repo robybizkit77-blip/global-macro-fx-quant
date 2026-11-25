@@ -1,8 +1,53 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-25T14:34:03Z",
+  "generated_at_utc": "2026-11-25T23:39:48Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-85dcb4a693eb19c48f0c",
+      "observed_at_utc": "2026-11-25T22:06:55Z",
+      "headline": "US economy roars ahead in third quarter, inflation remains high in October",
+      "summary": "Reuters riporta: US economy roars ahead in third quarter, inflation remains high in October. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNalBrRjhRWHdhRDduMzduLU1kN1lGVFpzNFllX0RzdjJXMjdtajRZS1l1dms2MFJFbkhJQmx3Qzgydi1nTTJnQ1JPLUtoa1R5LWZjWjItUXJhXzhoZG51NU9ENzVBQjVSZWFpdHlqbV9PSkVncWtjUlptdXhjd0ZKRXZ6d2Y1dw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-30a6e15df20189b85388",
+      "observed_at_utc": "2026-11-25T20:50:24Z",
+      "headline": "Fed policymakers at odds over causes of high inflation",
+      "summary": "Reuters riporta: Fed policymakers at odds over causes of high inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNZ2Vtdjdia2xUaVF5bWxRSVlPUTZjc1JmWG9Uam1QSHpNcXZuREdQVmRyX2hkNEtMbWhFd1VFb3l6QVJGYkJHZlZXUDJLVlM4cDdDR0RSVTRPMmZaUHAtMlhtSDlQeFF4UGJadUhrQmhlaWlJT1cwSG9IRnF1cC1COEtKdTBsUWVsXzhkYWhUWHNKTjJsUVJuNw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-dd8b0ebbcb4a855da2f8",
+      "observed_at_utc": "2026-11-25T20:42:46Z",
+      "headline": "Fed survey shows continued economic growth, sticky inflation in recent weeks",
+      "summary": "Reuters riporta: Fed survey shows continued economic growth, sticky inflation in recent weeks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQZm5vWXNOWWIxaUVxUEVsRDBCWmpwYmd6eWJMLW1tcnJMVmxvR08ybXFaYWlFcVZ2YU1fYk9hbWotWlBXTzVValBHSFFzNjM1QlpyVWNCXzFPTFRZMUtWeHp0SThmaWxRMTVYVXp3UlM2R3pKQnVNS2hiZ1VERU9EVnFGNlA5dGZEa1NtZ1o5REVxM3ZzX2ZpOXRaN0lydzlDZk1VQ2FlS212U3dw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-1fefb4bc2f32de4c17bb",
       "observed_at_utc": "2026-11-25T11:29:44Z",
@@ -1374,45 +1419,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPbHZfX3JqempNenlnSUpVcTd4dXY4djdJU1c2VkZ2Um5fYXkyVTMtYUxBZlBrcXVqQXJkQ0RjejZRQTdBLWxPYzcyRDBfTGxmdUVTekN0TFFWdHNfZFh6ckt0c1RCTVBwZzZjZ3NacWJWSDhvMVRGVDNpR0o2YTBwdmJILTE4eWs2SlQ5YnVHN0ctMFM3bWJsQkhtblRUMjI0amRHcFZLaXNaWWJz?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-b731dc4ecdf428187f00",
-      "observed_at_utc": "2026-11-13T14:15:43Z",
-      "headline": "Oil releases from IEA emergency stocks to pick up through February, agency says",
-      "summary": "Reuters riporta: Oil releases from IEA emergency stocks to pick up through February, agency says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOWV8yTVMtSGlNa3c4cF9Td3Z2aEhzMHJSSXBidUkyeG9QNkxxTHFYUkQzLW90cy1jMm96eE91VEFGdE1BTW5WRk9MRmVad3ZHbHZUNlRCdHppZTNLMlcxNGlTLXZoTTM5LXB3REp6anZEaXFhNzVmaEtTSW90bnItVC1GUUVURHUtaVBPUXEwclVBUGY5Y0c5YnpRZXVieFZzSG96NHdnZ0ZrUkJ6Nkg4MUNEcmdEV0d5VWRCWjIwaw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-fe3e81eaf03691430b20",
-      "observed_at_utc": "2026-11-13T07:21:00Z",
-      "headline": "South African rand slides to seven-month low ahead of inflation, rate decision",
-      "summary": "Reuters riporta: South African rand slides to seven-month low ahead of inflation, rate decision. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQZHJUYnA3N1BkeU9GR3djUy1pMzFjNHlJNjJXZWVFb3IwVkJFR1NCV0RwVkFhRld3YjNqam9RWWZTMVc1dnY2WHlOWkZNSzZtOHRqUDQyaTY2MXQxdjEwb1J2dm1Xb1ZVaFhrZURLR2xJbG5rRmlHZkdld01FMEFvak5tbG1MWjFDRk5rWlNHUHdjWVNiSWxYaUdfZV9UTUFpWEpnQjdyXy1LcUg2Vm5CRDdsN241clFaMTdoeXBB?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-ab672f7cf1d4659135f1",
-      "observed_at_utc": "2026-11-13T17:52:53Z",
-      "headline": "FTSE 100 closes at 3-month high as energy and defensive stocks rise",
-      "summary": "Reuters riporta: FTSE 100 closes at 3-month high as energy and defensive stocks rise. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQNTAwX1p6UEtzY3lWN0VsRldsalN2TXdhYWxrTlpFbUQwclZILW0tYWVqQjNKMlhRczRVamRyOVJrVERCZW52SDBBZ3dMLWM4aEs2MGQxOXMybFkwc2dfcDVBWGtiWlJCUElKYU4wMGpQd0IwQ3VpaHNEMHZ2eS1hNTd6NmN3SG16dFZZaV9GSVltcENLZHdHaHdkRVUyWGdaY2tqMzhXVUlmazNpM0E?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
