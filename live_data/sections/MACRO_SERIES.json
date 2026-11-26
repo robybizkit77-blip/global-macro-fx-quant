@@ -19738,7 +19738,9 @@
         "2026-04",
         "2026-05",
         "2026-06",
-        "2026-07"
+        "2026-07",
+        "2026-08",
+        "2026-09"
       ],
       "values": [
         6784.0,
@@ -19822,13 +19824,26 @@
         6876.0,
         6882.0,
         6846.0,
-        6831.0
+        6831.0,
+        6834.0,
+        6868.0
       ],
       "unit": "10k persons",
       "frequency": "M",
       "source_file": "JP_EMPLOYED_history.csv",
-      "last_date": "2026-07",
-      "last_value": 6831.0
+      "last_date": "2026-09",
+      "last_value": 6868.0,
+      "current_vintage_provenance": {
+        "status": "OFFICIAL_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "ESTAT_LFS_1A1_EMPLOYED_BOTH_SEXES_SA",
+        "source_url": "https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=0&statInfId=000031831358",
+        "source_workbook_sha256": "c20cdc21e0527b705a47cde516a2a86bfeca3bdadf1fc924fb50d491633377dc",
+        "historical_overlap": 82,
+        "exact_overlap": 82,
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T18:35:04.307713+00:00"
+      }
     },
     {
       "id": "JP_BANK_CREDIT_DOMESTIC_BANKS_history_value",
