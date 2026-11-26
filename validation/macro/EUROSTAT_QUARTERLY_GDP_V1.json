@@ -1,1 +1,15 @@
-{"schema":"GMFQ_EUROSTAT_QUARTERLY_GDP_V1","editions":[]}
+{
+  "editions": [
+    {
+      "first_observed_at_utc": "2026-11-26T06:58:50.187433+00:00",
+      "prior_qoq": 0.6,
+      "publication_stage": "FLASH_ESTIMATE",
+      "publisher_release_day": "2026-11-13",
+      "quarter": "2026Q3",
+      "reported_value": 0.4,
+      "source_html_sha256": "ae472b41d87d5db980fa8a76ef30731809bb4751c078261b23881f5ad08d6a1a",
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-13112026-ap"
+    }
+  ],
+  "schema": "GMFQ_EUROSTAT_QUARTERLY_GDP_V1"
+}
