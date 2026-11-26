@@ -50,7 +50,7 @@
         "value": 0.4,
         "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
         "period": "2026Q3",
-        "publisher_release_day": "2026-10-30",
+        "publisher_release_day": "2026-11-13",
         "gdp_acceleration_pp": -0.2,
         "acceleration_quality": "TWO_CONTIGUOUS_QUARTERS",
         "level_does_not_measure_relative_fx_strength": true
@@ -1013,5 +1013,5 @@
   "eligible_for_backtests": false,
   "eligible_for_automatic_core_rebase": false,
   "canonical_fx_core_untouched": true,
-  "source_content_sha256": "730e20a7d0e93d03ae14cd219d79fa808ddba68d143369fa321822b35a6c4cd5"
+  "source_content_sha256": "d3c8e936f85e05538c149021120cb267ad6b7d6be45a5731d8af01de97de0d90"
 }
