@@ -45,6 +45,15 @@ def seco():
         if segments[-1] and d<=segments[-1][-1][0]:segments.append([])
         segments[-1].append((d,v))
     print("CHF_SECO_LEGACY_SEGMENTS",json.dumps([{"count":len(s),"first":s[0],"last":s[-1]} for s in segments]))
+    for kind in ("index","sd"):
+        for adj in ("na","csa"):
+            obs={r["date"]:float(r["value"]) for r in matches if r["structure"]=="ks_i63_index_q" and r["type"]==kind and r["seas_adj"]==adj and r["value"] not in ("",None)}
+            for i,seg in enumerate(segments):
+                old={d[:10]:v for d,v in seg}
+                if set(old)<=set(obs):
+                    err=[abs(obs[d]-v) for d,v in old.items()]
+                    print("CHF_SECO_EXACT_VARIANT",json.dumps({"kind":kind,"adjustment":adj,"segment":i,"count":len(err),"median_abs":statistics.median(err),"max_abs":max(err),"exact":sum(e<=1e-8 for e in err),"latest_date":max(obs),"latest_value":obs[max(obs)]}))
+
 if __name__=="__main__":
     failed=[]
     for fn in (snb,seco):
