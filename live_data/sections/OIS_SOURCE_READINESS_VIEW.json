@@ -30,7 +30,7 @@
       "currency": "EUR",
       "dates_joinable": false,
       "indicative_quote_dates": {
-        "12m": "2026-11-25",
+        "12m": "2026-11-26",
         "3m": "2026-11-24",
         "6m": "2026-11-25"
       },
@@ -45,7 +45,7 @@
         "kind": "DATED_ESTR_FUTURES_QUOTES_NOT_OIS",
         "policy_delta_allowed": false,
         "quote_dates": {
-          "12m": "2026-11-25",
+          "12m": "2026-11-26",
           "3m": "2026-11-24",
           "6m": "2026-11-25"
         },
