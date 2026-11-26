@@ -1,50 +1,50 @@
 {
   "schema": "GMFQ_MORNING_MACRO_FX_V1",
-  "edition_date": "2026-11-25",
-  "created_at_utc": "2026-11-25T04:19:15.835834Z",
+  "edition_date": "2026-11-26",
+  "created_at_utc": "2026-11-26T05:57:44.783686Z",
   "edition_status": "MORNING_SNAPSHOT",
-  "event_status": "EVENT_TODAY",
+  "event_status": "AFTERMATH_MONTHLY_ONLY_YOY_UNAVAILABLE",
   "editorial_quality": "DATED_RULED_NARRATIVE_NOT_HUMAN_REVIEWED",
-  "observation_cutoff_exclusive": "2026-11-25",
+  "observation_cutoff_exclusive": "2026-11-26",
   "sources": {
-    "fx_fixing": "2026-11-24",
-    "rates": "2026-11-23",
-    "pair_setup": "2026-11-24",
+    "fx_fixing": "2026-11-25",
+    "rates": "2026-11-24",
+    "pair_setup": "2026-11-25",
     "calendar": "OFFICIAL_SEED"
   },
-  "headline": "Stati Uniti: Personal Income and Outlays misura se la lettura macro per USD regge alla prossima prova.",
-  "lead": "Arriviamo a Personal Income and Outlays con un differenziale di tasso USD–EUR di +160 pb e un prezzo EUR/USD da confrontare con il percorso della banca centrale. Non basta sapere che l'evento è importante: il punto è quale parte delle aspettative possa ancora essere sorpresa.",
+  "headline": "Il CPI è passato, ma la direzione del dollaro dipende da ciò che è verificabile nel repricing.",
+  "lead": "La giornata riparte dopo l'inflazione USA. La domanda ora non è ripetere la narrativa pre-CPI: dobbiamo distinguere ciò che sappiamo dal comunicato, ciò che è cambiato nelle attese Fed e la risposta effettiva del dollaro nelle varie coppie.",
   "paragraphs": [
     "Il contesto viene dalla Fed del 28 ottobre: tassi invariati al 3,75–4,00%, con due membri favorevoli a un rialzo. La crescita continua a essere descritta come resistente, ma l'inflazione rimane il vincolo per un eventuale allentamento. Per il dollaro la domanda è quanto di questa prudenza sia già incorporato nei tassi e quanto possa ancora sorprendere il mercato.",
-    "Il differenziale governativo a due anni USD–EUR è +160 punti base al 23/11/2026; rispetto al 16/11/2026 è cambiato di −11,8 pb. Il fixing BCE di EUR/USD è 1,0963 al 24/11/2026, +0,22% sul fixing precedente. Confrontando invece rigorosamente le stesse date (16/11/2026–23/11/2026), lo spread si è mosso di −11,8 pb e il cambio di −0,68%. Nell'intervallo sulle stesse date, il prezzo non segue la direzione suggerita dal differenziale: divergenza da indagare, non automaticamente un'opportunità. Il livello del governativo 2Y non sostituisce un confronto delle variazioni OIS/futures.",
-    "Alle 14:30 italiane è previsto Personal Income and Outlays (October 2026). Non è disponibile un confronto completo con un consenso da survey certificato. Una sorpresa va giudicata per composizione, revisioni, aspettative pre-evento e confronto dei tassi relativi. Se pricing e prezzo non concordano, la tesi resta aperta anche in presenza di un dato economico chiaro.",
-    "Il banco di prova FX è EUR/USD. Nel modello delle coppie del 24/11/2026, USD ha il vantaggio relativo; il quadro resta con rischi. Il prezzo è coerente nell'orizzonte del modello, non necessariamente nell'ultimo fixing. Nel medesimo fixing USD/JPY si muove di 0,00% dal giorno precedente. Una sola controparte non dimostra forza generalizzata della valuta. La tesi economica non è un segnale d'ingresso finché pricing relativo e prezzo non convergono."
+    "Il differenziale governativo a due anni USD–EUR è +161 punti base al 24/11/2026; rispetto al 16/11/2026 è cambiato di −10,8 pb. Il fixing BCE di EUR/USD è 1,0935 al 25/11/2026, −0,26% sul fixing precedente. Confrontando invece rigorosamente le stesse date (16/11/2026–24/11/2026), lo spread si è mosso di −10,8 pb e il cambio di −0,46%. Nell'intervallo sulle stesse date, il prezzo non segue la direzione suggerita dal differenziale: divergenza da indagare, non automaticamente un'opportunità. Il livello del governativo 2Y non sostituisce un confronto delle variazioni OIS/futures.",
+    "Il CPI era atteso ieri alle 14:30 italiane. Il BLS ha pubblicato headline mensile +0,4% e core mensile +0,3%. I tassi annuali ottobre 2026 non sono pubblicabili: manca la base di ottobre 2025. Il registro conserva il primo rilevamento del runner, non l'orario di prima pubblicazione. Un'interpretazione post-evento richiede attese disponibili con qualità dichiarata, composizione, OIS/futures e risposta relativa delle valute nelle medesime finestre temporali.",
+    "Il banco di prova FX è EUR/USD. Nel modello delle coppie del 25/11/2026, USD ha il vantaggio relativo; il quadro resta con rischi. Il prezzo è coerente nell'orizzonte del modello, non necessariamente nell'ultimo fixing. Nel medesimo fixing USD/JPY si muove di +0,16% dal giorno precedente. Una sola controparte non dimostra forza generalizzata della valuta. La tesi economica non è un segnale d'ingresso finché pricing relativo e prezzo non convergono."
   ],
   "catalyst": {
-    "title": "Oggi · Personal Income and Outlays · 14:30",
-    "text": "Alle 14:30 italiane è previsto Personal Income and Outlays (October 2026). Non è disponibile un confronto completo con un consenso da survey certificato. Una sorpresa va giudicata per composizione, revisioni, aspettative pre-evento e confronto dei tassi relativi. Se pricing e prezzo non concordano, la tesi resta aperta anche in presenza di un dato economico chiaro.",
+    "title": "Dopo il CPI · cosa sappiamo e cosa manca",
+    "text": "Il CPI era atteso ieri alle 14:30 italiane. Il BLS ha pubblicato headline mensile +0,4% e core mensile +0,3%. I tassi annuali ottobre 2026 non sono pubblicabili: manca la base di ottobre 2025. Il registro conserva il primo rilevamento del runner, non l'orario di prima pubblicazione. Un'interpretazione post-evento richiede attese disponibili con qualità dichiarata, composizione, OIS/futures e risposta relativa delle valute nelle medesime finestre temporali.",
     "date": "2026-11-25",
     "currency": "USD",
     "time_rome": "14:30"
   },
   "scenarios": [
     {
-      "title": "Sorpresa restrittiva per la banca centrale",
-      "text": "Il segnale su USD sarebbe più solido con aumento del differenziale relativo e conferma su EUR/USD."
+      "title": "Repricing monetario USA verificato",
+      "text": "Se le misure ufficiali confermano pressione core e il front-end USA si rafforza relativamente, rivalutare la tesi USD con EUR/USD e USD/JPY."
     },
     {
-      "title": "Sorpresa più accomodante",
-      "text": "Attese monetarie meno rigide potrebbero pesare su USD; il cambio deve confermarlo senza che il rischio globale domini il movimento."
+      "title": "Dollaro e rendimenti non confermano",
+      "text": "Se il pricing relativo o le coppie non seguono, non attribuire un regime hawkish all'evento: distinguere liquidazioni, rischio e debolezza della controparte."
     }
   ],
-  "verdict": "Al 23/11/2026 lo spread 2Y USD–EUR è +160 pb; il confronto allineato col cambio è divergente. Il dato di oggi può modificare le attese monetarie, ma EUR/USD richiede una conferma specifica. Questa lettura non produce un segnale di ingresso.",
+  "verdict": "Al 24/11/2026 lo spread 2Y USD–EUR è +161 pb; il confronto allineato col cambio è divergente. L'effetto del dato precedente resta da certificare, ma EUR/USD richiede una conferma specifica. Questa lettura non produce un segnale di ingresso.",
   "watch": "Seguire EUR/USD e USD/JPY, aggiornamenti dello spread USD–EUR su date omogenee, eventuali OIS/futures comparabili e pubblicazioni ufficiali rispetto ad attese documentate. Il COT è settimanale, non misura flussi intraday.",
   "relative_evidence": {
     "aligned_from": "2026-11-16",
-    "aligned_to": "2026-11-23",
-    "two_year_spread_bp": 160.286,
-    "spread_change_aligned_bp": -11.806,
-    "pair_change_aligned_pct": -0.681,
+    "aligned_to": "2026-11-24",
+    "two_year_spread_bp": 161.322,
+    "spread_change_aligned_bp": -10.77,
+    "pair_change_aligned_pct": -0.463,
     "alignment": "DIVERGENTE",
     "companion_pair": "USDJPY",
     "pair_model_quality": "CON RISCHI"
@@ -55,13 +55,9 @@
       "label": "Differenziale 2Y USD–EUR",
       "unit": "pb",
       "precision": 0,
-      "as_of": "2026-11-23",
-      "last_value": 160.286,
+      "as_of": "2026-11-24",
+      "last_value": 161.322,
       "points": [
-        {
-          "date": "2026-10-13",
-          "value": 170.8484
-        },
         {
           "date": "2026-10-15",
           "value": 177.7259
@@ -169,6 +165,10 @@
         {
           "date": "2026-11-23",
           "value": 160.2861
+        },
+        {
+          "date": "2026-11-24",
+          "value": 161.3222
         }
       ]
     },
@@ -176,13 +176,9 @@
       "label": "EUR/USD · fixing BCE",
       "unit": "",
       "precision": 4,
-      "as_of": "2026-11-24",
-      "last_value": 1.0963,
+      "as_of": "2026-11-25",
+      "last_value": 1.0935,
       "points": [
-        {
-          "date": "2026-10-16",
-          "value": 1.1253
-        },
         {
           "date": "2026-10-19",
           "value": 1.1225
@@ -290,6 +286,10 @@
         {
           "date": "2026-11-24",
           "value": 1.0963
+        },
+        {
+          "date": "2026-11-25",
+          "value": 1.0935
         }
       ]
     }
