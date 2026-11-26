@@ -197,6 +197,21 @@ env:
   PYTHONDONTWRITEBYTECODE: '1'
 
 jobs:
+  gbp-dmp-monthly-source-proof:
+    if: github.event_name == 'pull_request' && github.head_ref == 'research/gbp-dmp-monthly-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install beautifulsoup4 openpyxl
+      - name: Diagnose official DMP workbook and seven exact historical series
+        run: python -m validation.macro.probe_gbp_dmp_monthly_v1
+
   cad-ceer-source-proof:
     if: github.event_name == 'pull_request' && github.head_ref == 'fix/cad-ceer-monthly-20261126'
     runs-on: ubuntu-24.04
