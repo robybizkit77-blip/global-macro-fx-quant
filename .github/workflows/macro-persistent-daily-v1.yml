@@ -288,7 +288,7 @@ jobs:
           if-no-files-found: warn
 
   us-monthly-source-proof:
-    if: github.event_name == 'pull_request' && (github.head_ref == 'fix/us-monthly-macro-batch-20261126' || github.head_ref == 'fix/us-core-cpi-official-gap-20261126')
+    if: github.event_name == 'pull_request' && (github.head_ref == 'fix/us-monthly-macro-batch-20261126' || github.head_ref == 'fix/us-core-cpi-official-gap-20261126' || github.head_ref == 'fix/us-real-retail-revised-gap-20261126')
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     permissions:
@@ -308,12 +308,13 @@ jobs:
           import json
           d=json.load(open('/tmp/us-proof/receipt.json'))
           for r in d['series']: print(r)
-          assert len(d['series'])==16
+          assert len(d['series'])==17
           # Prove each verified row and require meaningful real-source coverage;
           # independent withheld rows are explicit, never promoted.
           approved=[r for r in d['series'] if r['status'] in ('READY','NO_CHANGE')]
           assert len(approved)>=10,d
           assert any(r['id']=='US_CPILFESL_history_value' and r['status'] in ('READY','NO_CHANGE') for r in d['series']),d
+          assert any(r['id']=='US_RRSFS_history_value' and r['status'] in ('READY','NO_CHANGE') and r['after']>= '2026-10-01' for r in d['series']),d
           assert all(r['after']>=r['before'] for r in approved),d
           assert all(r.get('reason') for r in d['series'] if r['status']=='WITHHELD'),d
           PY
@@ -877,7 +878,7 @@ jobs:
           python - <<'PY'
           import json
           j=json.load(open('/tmp/macro-persistent/us-monthly-revised-receipt.json'))
-          assert len(j['series'])==16 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
+          assert len(j['series'])==17 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
           for row in j['series']:
               if row['status']=='WITHHELD': print('::warning::US monthly '+row['id']+' '+row['reason'])
           PY
