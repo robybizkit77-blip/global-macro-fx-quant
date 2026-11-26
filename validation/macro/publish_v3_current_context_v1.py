@@ -102,6 +102,8 @@ def snapshot(src, momentum=None):
                "invalid activity momentum diagnostic")
         result["activity_momentum_research"] = momentum
         result["activity_momentum_status"] = "RESEARCH_ONLY"
+    else:
+        result["activity_momentum_status"] = "WITHHELD"
     result["snapshot_content_sha256"] = hashlib.sha256(
         json.dumps(result, sort_keys=True, separators=(",", ":"),
                    ensure_ascii=False).encode("utf-8")).hexdigest()
@@ -118,7 +120,12 @@ def main():
            "only fixed public research snapshot or /tmp test output permitted")
     src = run(as_of=args.as_of)
     from validation.macro.v2_current_activity_momentum_v1 import run as activity_run
-    result = snapshot(src, activity_run())
+    try:
+        result = snapshot(src, activity_run())
+    except (ValueError, KeyError, TypeError, OSError) as exc:
+        # Preserve independently verified raw macro observations on diagnostic failure.
+        print("ACTIVITY_MOMENTUM_WITHHELD:", type(exc).__name__, str(exc), flush=True)
+        result = snapshot(src)
     target.parent.mkdir(parents=True, exist_ok=True)
     encoded = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
     target.write_text(encoded, encoding="utf-8")
@@ -131,7 +138,7 @@ def main():
         "output": str(target),
         "replaced_D_scores": 0,
         "new_trade_biases": 0,
-        "activity_momentum_countries": len(result["activity_momentum_research"]["countries"]),
+        "activity_momentum_countries": len(result.get("activity_momentum_research", {}).get("countries", {})),
     }, sort_keys=True))
 
 
