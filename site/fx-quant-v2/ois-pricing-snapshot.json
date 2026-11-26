@@ -9,11 +9,11 @@
       "kind": "FUTURES SECONDARI",
       "quality": "STIMA INDICATIVA",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "as_of": "2026-11-25",
+      "as_of": "2026-11-26",
       "horizons": {
         "3m": {
-          "rate": 4.275,
-          "as_of": "2026-11-25",
+          "rate": 4.28,
+          "as_of": "2026-11-26",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQG2027"
