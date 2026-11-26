@@ -31450,7 +31450,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2025-09",
         "2025-12",
         "2026-03",
-        "2026-06"
+        "2026-06",
+        "2026-09"
       ],
       "values": [
         1.7,
@@ -31484,23 +31485,36 @@ window.__GMFQ_DATA.MACRO_SERIES={
         6.5,
         5.8,
         5.1,
-        4.2,
-        4.0,
+        4.3,
+        4.1,
         4.0,
         3.6,
         3.2,
         2.9,
         2.7,
         2.9,
-        3.3,
+        3.4,
         3.5,
-        3.6
+        3.6,
+        3.7
       ],
       "unit": "percent YoY SA",
       "frequency": "Q",
       "source_file": "AU_CPI_TRIMMED_MEAN_Q_YOY_history.csv",
-      "last_date": "2026-06",
-      "last_value": 3.6
+      "last_date": "2026-09",
+      "last_value": 3.7,
+      "current_vintage_provenance": {
+        "status": "ABS_LEGACY_QUARTERLY_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "A3604511X",
+        "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/sep-2026/64010Appendix1a.xlsx",
+        "source_workbook_sha256": "04e90cb0f631fe2cde71ebcb69b52a1061d86ff95927af5b069874273f1d5a31",
+        "historical_overlap": 42,
+        "median_absolute_revision": 0.0,
+        "max_absolute_revision": 0.10000000000000009,
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T19:22:07.015183+00:00"
+      }
     },
     {
       "id": "AU_UNEMP_RATE_history_value",
