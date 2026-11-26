@@ -691,11 +691,11 @@ jobs:
           import json
           d=json.load(open('/tmp/gbp-boe-iadb-proof/receipt.json'))
           for r in d['series']: print(r)
-          assert len(d['series'])==5
+          assert len(d['series'])==6
           # Prove each verified row and require meaningful real-source coverage;
           # independent withheld rows are explicit, never promoted.
           approved=[r for r in d['series'] if r['status'] in ('READY','NO_CHANGE')]
-          assert len(approved)==5,d
+          assert len(approved)==6,d
           assert all(r['after']>=r['before'] and r['after'][:7]>='2026-09' for r in approved),d
           PY
       - uses: actions/upload-artifact@v4
@@ -2855,7 +2855,7 @@ jobs:
           python - <<'PY'
           import json
           j=json.load(open('/tmp/macro-persistent/gbp-boe-iadb-revised-receipt.json'))
-          assert len(j['series'])==5 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
+          assert len(j['series'])==6 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
           for row in j['series']:
               if row['status']=='WITHHELD': print('::warning::GBP BOE IADB '+row['id']+' '+row['reason'])
           PY

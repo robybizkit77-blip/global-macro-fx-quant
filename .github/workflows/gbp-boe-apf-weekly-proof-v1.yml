@@ -1,0 +1,37 @@
+name: GBP BoE APF weekly exact identity V1
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/prepare_gbp_boe_revised_v1.py'
+      - '.github/workflows/gbp-boe-apf-weekly-proof-v1.yml'
+permissions:
+  contents: read
+jobs:
+  source-proof:
+    if: github.head_ref == 'fix/gbp-boe-apf-weekly-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest validation.macro.test_prepare_gbp_boe_revised_v1 -v
+      - name: Verify official weekly APF history and observed release
+        run: |
+          python - <<'PY'
+          import copy,json
+          from datetime import datetime,timezone
+          from pathlib import Path
+          from validation.macro.prepare_gbp_boe_revised_v1 import prepare_row,fetch
+          ident='UK_BOE_APF_LOAN_history_value'
+          source=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          row=copy.deepcopy(next(x for x in source['GBP'] if x['id']==ident))
+          result=prepare_row(row,ident,datetime.now(timezone.utc),fetch)
+          print(json.dumps(result,sort_keys=True))
+          assert result['source_series_id']=='RPWZ4TM' and result['overlap']['count']>=82
+          assert result['overlap']['exact']==result['overlap']['count'],result
+          assert result['after']>='2026-11-18' and dict(zip(row['dates'],row['values'])).get('2026-11-18')==488149,result
+          # IADB may lag the separately published weekly report by one release.
+          # Preserve actual API dates; never relabel 18 November as 25 November.
+          PY
