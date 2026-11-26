@@ -10,7 +10,8 @@ import calendar
 import json
 import math
 import re
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 from validation.macro.v2_shadow_features_v1 import ROOT, require
@@ -69,7 +70,8 @@ def parse_reference_period(raw, frequency):
     return observed, "day"
 
 
-def inspect(data, *, as_of=AS_OF):
+def inspect(data, *, as_of=None):
+    as_of = as_of or datetime.now(ZoneInfo('Europe/Rome')).date()
     require(set(data) == set(CURRENCIES), "G8 series keys drift")
     rows = []
     for ccy in CURRENCIES:
