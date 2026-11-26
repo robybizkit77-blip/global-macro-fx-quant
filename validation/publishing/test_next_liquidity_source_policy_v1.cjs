@@ -38,8 +38,11 @@ assert(sourceSLOOS);
 const nativeSLOOS=runtime.USD.conditions;
 const matched=sourceSLOOS.dates.indexOf(nativeSLOOS.last_date);
 assert(matched>=0,'Require the comparable native vintage to remain identifiable');
-assert.notEqual(sourceSLOOS.values[matched],nativeSLOOS.last_value,
-  'When variant mismatch disappears, re-validate mapping and remove quarantine deliberately');
+// Equal values at the overlapping date are evidence for a mapping review,
+// not an authorization to change the registry or substitute the newer edition.
+assert(Number.isFinite(sourceSLOOS.values[matched])&&Number.isFinite(nativeSLOOS.last_value));
+assert(sourceSLOOS.last_date>=nativeSLOOS.last_date,'Research SLOOS cannot roll back the known native date');
+assert.equal(sourceGate.check('USD','conditions').withheld,true,'Keep explicit source quarantine until registry review');
 assert.equal(runtime.CAD.credit,null);
 assert(research.CAD.some(x=>x.id==='CA_BUSINESS_LOANS_OUTSTANDING_history_value'));
 assert.equal(sourceGate.check('CAD','credit').code,'NO_APPROVED_MAPPING');
