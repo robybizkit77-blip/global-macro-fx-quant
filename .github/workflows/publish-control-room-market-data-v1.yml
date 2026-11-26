@@ -170,11 +170,32 @@ jobs:
           python validation/publishing/test_verify_control_room_v10_preview_parts_v1.py
           python validation/publishing/test_control_room_v10_0800_public_sla_v1.py
 
+      # A byte-identical mirror needs no write and must not wait for a
+      # deployment merely to discover the no-op. HTTP proof still runs.
+      - name: Check exact market mirror bytes before deployment wait
+        id: market_mirror
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin '+refs/heads/gh-pages:refs/remotes/origin/gh-pages'
+          PYTHONPATH=validation/publishing python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from verify_control_room_market_delivery_v1 import branch_parity
+          result=branch_parity(Path("."))
+          assert len(result["checks"])==5
+          needed=result["status"]!="PASS"
+          with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as f:
+              f.write("publish_needed="+str(needed).lower()+"\n")
+          print("CONTROL_ROOM_MARKET_PREWAIT_PARITY",json.dumps(result,sort_keys=True))
+          PY
+
       # A new gh-pages commit cancels an active GitHub Pages deployment.
       # Shared writer serialization protects git leases, but not the live CDN.
       # Reuse the previously tested FXV2 idle-deployment gate, fail closed.
       - name: Wait for current GitHub Pages deployment before mirror update
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.market_mirror.outputs.publish_needed == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -185,7 +206,7 @@ jobs:
           python3 validation/publishing/wait_gh_pages_idle_before_fxv2_push_v1.py --output /tmp/control-room-pages-idle.json --attempts 108 --delay 10
 
       - name: Publish exact feed scope to gh-pages with lease
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.market_mirror.outputs.publish_needed == 'true'
         shell: bash
         run: |
           set -euo pipefail

@@ -36,4 +36,16 @@ assert "check_live_update_contract.py" in pages
 assert "rebuild_live_data_runtime.py --verify-only" in pages
 assert "git push --force-with-lease=refs/heads/gh-pages:" in market
 assert "git push --force-with-lease=refs/heads/gh-pages:" in pages
+# Identical feed files skip waiting/writing, never the actual public proof.
+pre=market.index("Check exact market mirror bytes before deployment wait")
+wait=market.index("Wait for current GitHub Pages deployment before mirror update")
+write=market.index("Publish exact feed scope to gh-pages with lease")
+verify=market.index("Assert all five gh-pages mirrors and public CDN exact-byte parity")
+assert pre < wait < write < verify
+assert "branch_parity(Path" in market[pre:wait]
+assert "publish_needed" in market[pre:wait]
+assert "steps.market_mirror.outputs.publish_needed == 'true'" in market[wait:write]
+assert "steps.market_mirror.outputs.publish_needed == 'true'" in market[write:verify]
+assert "steps.market_mirror.outputs.publish_needed" not in market[verify:]
+assert "assert receipt['public_http']['status']=='PASS'" in market[verify:]
 print('RATES_PUBLIC_PAGES_THEN_MARKET_FEED_MIRROR_CASCADE_NO_CYCLE_PASS')
