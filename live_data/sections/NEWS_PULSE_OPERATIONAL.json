@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-25",
-  "generated_at_utc": "2026-11-26T01:05:39.267753Z",
+  "generated_at_utc": "2026-11-26T04:12:11.234109Z",
   "items": [
     {
       "as_of": "2026-11-25",
@@ -317,7 +317,7 @@
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
     }
   ],
-  "last_checked_at_utc": "2026-11-26T01:05:39.267753Z",
+  "last_checked_at_utc": "2026-11-26T04:12:11.234109Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1218,9 +1218,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 13,
+        "accepted_items": 12,
         "ccy": "JPY",
-        "entries_rejected": 33,
+        "entries_rejected": 34,
         "feed_entries_seen": 46,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
