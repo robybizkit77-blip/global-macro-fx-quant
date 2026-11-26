@@ -4,7 +4,7 @@ import tempfile
 import json
 import unittest
 from validation.macro.statsnz_quarterly_gdp_v1 import (
-    SCHEMA, UNIT, Pending, collect, latest_growth, parse_bulletin, edition_url,
+    SCHEMA, UNIT, Pending, collect, latest_growth, parse_bulletin, edition_url, official_edition,
 )
 
 
@@ -25,6 +25,18 @@ class StatsNZTests(unittest.TestCase):
                 parse_bulletin(raw,"2026Q2",date(2026,9,17))
         with self.assertRaises(Pending):
             parse_bulletin(fixture(),"2026Q2",date(2026,9,16))
+
+    def test_browser_fallback_keeps_all_source_guards(self):
+        shell = b"<html><title>Gross domestic product: June 2026 quarter | Stats NZ</title></html>"
+        day = date(2026,9,17)
+        fetch = lambda u,h: (shell,u)
+        row, raw = official_edition("2026Q2",day,fetch,lambda u: fixture())
+        self.assertEqual((row["reported_value"],row["prior_qoq"]),(0.2,0.9))
+        self.assertEqual(raw,fixture())
+        with self.assertRaises(Pending):
+            official_edition("2026Q2",day,fetch,lambda u: fixture(headline="GDP rose 0.3 percent"))
+        with self.assertRaises(Pending):
+            official_edition("2026Q2",date(2026,9,16),fetch,lambda u: fixture())
 
     def test_archive_and_no_future_release(self):
         # Synthetic September-quarter values exercise the parser; not actual GDP.
