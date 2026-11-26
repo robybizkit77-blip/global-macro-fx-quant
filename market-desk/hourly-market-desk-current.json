@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-26T19:06:39.450143Z",
-  "edition_time_rome": "2026-11-26 20:06",
-  "material_digest": "4b6f6581acd0e43d0f51ff28bfa006ffc2ee70b6974f08a16bfee57f0226cfc4",
+  "generated_at_utc": "2026-11-26T22:39:07.191877Z",
+  "edition_time_rome": "2026-11-26 23:39",
+  "material_digest": "101fb33016e7336a52b409f33d2e63fbe9c8743f7e7827754d426f8155454cb7",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in calo",
@@ -57,7 +57,7 @@
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
         "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
       ],
-      "evidence": "Proxy futures da fonte secondaria. Oro +2,21% al 26 novembre. WTI +0,81% al 26 novembre."
+      "evidence": "Proxy futures da fonte secondaria. Oro +1,63% al 26 novembre. WTI +0,81% al 26 novembre."
     },
     {
       "headline": "Speech by Board Member TAMURA in Yamanashi (Economic Activity, Prices, and Monetary Policy in Japan)",
@@ -103,7 +103,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-26",
-      "rss_checked_at_utc": "2026-11-26T19:06:39.450143Z",
+      "rss_checked_at_utc": "2026-11-26T22:39:07.191877Z",
       "commodities": "2026-11-26"
     },
     "no_paid_api": true,
@@ -111,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-26T19:06:39.450143Z",
+      "headline": "Dollaro in calo",
+      "material_digest": "4b6f6581acd0e43d0f51ff28bfa006ffc2ee70b6974f08a16bfee57f0226cfc4"
+    },
     {
       "generated_at_utc": "2026-11-26T16:53:16.015307Z",
       "headline": "Dollaro in calo",
@@ -225,11 +230,6 @@
       "generated_at_utc": "2026-11-24T14:57:54.883164Z",
       "headline": "Volatilità in calo, dollaro in rialzo",
       "material_digest": "befe9bb1cfd8bdbe0573f2b73a0882aa49d358f353b99632a1e7e0515be22d11"
-    },
-    {
-      "generated_at_utc": "2026-11-24T12:40:43.793223Z",
-      "headline": "Volatilità in calo, dollaro in rialzo",
-      "material_digest": "693f7a49540ea16079f7628d5a17778c64d262adb84bf29f6eec7f0c1eeaca69"
     }
   ]
 }
