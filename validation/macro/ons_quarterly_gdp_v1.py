@@ -130,12 +130,23 @@ def load_archive(path, *, schema=SCHEMA, minimum=MIN_QUARTER, url_for=edition_ur
     return data
 
 
-def archived_growth(as_of, editions, *, stage, same_edition_field):
+def edition_available(row, as_of, live_cutoff=None):
+    """Date-only research is conservative; live may use an actually captured release."""
     day = date.fromisoformat(as_of)
+    released = date.fromisoformat(row["publisher_release_day"])
+    seen = datetime.fromisoformat(row["first_observed_at_utc"])
+    if seen.utcoffset() is None:
+        raise ValueError("GDP capture timestamp must have a timezone")
+    if live_cutoff is None:
+        return released < day and seen.astimezone(ROME).date() <= day
+    if live_cutoff.utcoffset() is None or live_cutoff.astimezone(ROME).date() != day:
+        raise ValueError("GDP live cutoff must match the research day")
+    return released <= day and seen <= live_cutoff
+
+
+def archived_growth(as_of, editions, *, stage, same_edition_field, live_cutoff=None):
     for row in reversed(editions):
-        released = date.fromisoformat(row["publisher_release_day"])
-        seen = datetime.fromisoformat(row["first_observed_at_utc"]).astimezone(ROME).date()
-        if not released < day or seen > day:
+        if not edition_available(row, as_of, live_cutoff):
             continue
         def observation(quarter, value):
             return {
@@ -160,9 +171,9 @@ def archived_growth(as_of, editions, *, stage, same_edition_field):
     return None
 
 
-def latest_growth(as_of, *, path=ARCHIVE):
+def latest_growth(as_of, *, path=ARCHIVE, live_cutoff=None):
     return archived_growth(as_of, load_archive(path)["editions"], stage="FIRST_QUARTERLY_ESTIMATE",
-                           same_edition_field="prior_value_from_same_ons_edition")
+                           same_edition_field="prior_value_from_same_ons_edition", live_cutoff=live_cutoff)
 
 
 def append_edition(path, data, record, now):
