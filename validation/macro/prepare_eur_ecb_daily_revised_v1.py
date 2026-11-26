@@ -38,29 +38,36 @@ def prepare_row(row,ident,now,fetcher):
     exact=sum(abs(obs[d]-v)<=1e-6 for d,v in old.items())
     overlap_audit={"count":len(old),"exact":exact,"median_scaled_error":statistics.median(errors),"max_scaled_error":max(errors)}
     if ident=="EA_CISS_history_value":
-        # The ECB publishes both legacy CISS and New CISS. A close value
-        # range alone is insufficient to prove the archived variant.
+        # ECB Data Portal documents the retired original daily series through
+        # 2025-05-02. Prove the terminal observation directly from the exact
+        # legacy feed; never accept empty transport as evidence of retirement.
+        legacy_end=date(2025,5,2)
         alternative=key.replace("SS_CIN","SS_CI")
-        alt_url=url.replace("SS_CIN","SS_CI")
+        post_legacy=min(old)>legacy_end
+        alt_start=date(2025,4,1) if post_legacy else min(old)
+        alt_url="https://data-api.ecb.europa.eu/service/data/"+dataset+"/"+alternative.split(".",1)[1]+"?format=csvdata&startPeriod="+alt_start.isoformat()
         alt_raw=fetcher(alt_url);alt={}
         for rec in csv.DictReader(io.StringIO(alt_raw)):
             need((rec.get("KEY") or rec.get("SERIES_KEY"))==alternative,"wrong alternative CISS identity")
             if rec.get("OBS_VALUE") in (None,"","."):continue
             day=date.fromisoformat(rec["TIME_PERIOD"]);v=float(rec["OBS_VALUE"])
-            need(day not in alt and math.isfinite(v) and 0<=v<=1,"invalid alternative CISS observation")
+            need(day not in alt and day<=now.date() and rec.get("UNIT_MULT")==mult and math.isfinite(v) and 0<=v<=1,"invalid alternative CISS observation")
             alt[day]=v
-        # Different variants can have different observation calendars. Compare
-        # paired real dates, never interpolate or fill missing legacy values.
         common=sorted(set(old)&set(alt))
-        need(len(common)>=12 and (common[-1]-common[0]).days>=28,"insufficient paired historical CISS observations: "+str(len(common)))
-        alt_errors=[abs(alt[d]-old[d]) for d in common]
-        paired_errors=[abs(obs[d]-old[d]) for d in common]
         overlap_audit["alternative_overlap_count"]=len(common)
-        overlap_audit["paired_new_median_abs_error"]=statistics.median(paired_errors)
-        overlap_audit["alternative_median_abs_error"]=statistics.median(alt_errors)
-        overlap_audit["alternative_max_abs_error"]=max(alt_errors)
+        if not common and post_legacy:
+            need(len(alt)>=10 and max(alt)==legacy_end,"legacy terminal observation not independently established")
+            need(exact/len(old)>=.95,"post-retirement New CISS exact historical match insufficient")
+            overlap_audit.update({"variant_proof":"POST_LEGACY_TERMINATION_EXACT_OVERLAP","legacy_last_observation":max(alt).isoformat(),"legacy_observations":len(alt),"legacy_source_url":alt_url,"legacy_csv_sha256":sha256(alt_raw.encode()).hexdigest()})
+        else:
+            need(len(common)>=12 and (common[-1]-common[0]).days>=28,"insufficient paired historical CISS observations: "+str(len(common)))
+            alt_errors=[abs(alt[d]-old[d]) for d in common]
+            paired_errors=[abs(obs[d]-old[d]) for d in common]
+            overlap_audit["paired_new_median_abs_error"]=statistics.median(paired_errors)
+            overlap_audit["alternative_median_abs_error"]=statistics.median(alt_errors)
+            overlap_audit["alternative_max_abs_error"]=max(alt_errors)
+            need(statistics.median(errors)<=.001 and statistics.median(alt_errors)>max(3*statistics.median(paired_errors),.0001),"New CISS historical variant not uniquely established")
         print("CISS_VARIANT_COMPARISON",json.dumps(overlap_audit,sort_keys=True))
-        need(statistics.median(errors)<=.001 and statistics.median(alt_errors)>max(3*statistics.median(paired_errors),.0001),"New CISS historical variant not uniquely established")
     vs=[obs[d] for d in ds];ds=[d.isoformat()+suffix for d in ds];before=row["last_date"]
     changed=row["dates"]!=ds or row["values"]!=vs or row.get("current_vintage_provenance",{}).get("source_series_id")!=key
     if changed:

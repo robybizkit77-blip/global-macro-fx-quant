@@ -27,6 +27,25 @@ class ECBTests(unittest.TestCase):
         result=prepare_row(x,i,NOW,lambda u:source(i,alternative="SS_CI." in u,sparse="SS_CI." in u))
         self.assertEqual(result["status"],"READY")
         self.assertEqual(result["overlap_audit"]["alternative_overlap_count"],17)
+    def test_retired_legacy_requires_real_terminal_and_exact_overlap(self):
+        i=IDS[1]
+        def legacy(end=date(2025,5,2),count=24):
+            key=CONFIG[i][0].replace("SS_CIN","SS_CI")
+            return "KEY,TIME_PERIOD,OBS_VALUE,UNIT_MULT\n"+"\n".join(f"{key},{end-timedelta(days=n)},0.1,0" for n in range(count))
+        def fetch(url):
+            if "SS_CI." in url:
+                self.assertIn("startPeriod=2025-04-01",url)
+                return legacy()
+            return source(i)
+        x=row(i);r=prepare_row(x,i,NOW,fetch)
+        self.assertEqual(r["overlap_audit"]["variant_proof"],"POST_LEGACY_TERMINATION_EXACT_OVERLAP")
+        self.assertEqual(r["overlap_audit"]["legacy_last_observation"],"2025-05-02")
+        for bad in (legacy(date(2025,5,1)),legacy(count=0),legacy(date(2025,5,3))):
+            with self.assertRaises(ValueError):
+                prepare_row(row(i),i,NOW,lambda u:bad if "SS_CI." in u else source(i))
+        x=row(i);x["values"]=[v+.0002 for v in x["values"]];x["last_value"]=x["values"][-1]
+        with self.assertRaises(ValueError):
+            prepare_row(x,i,NOW,fetch)
     def test_missing_old_period_wrong_unit(self):
         for i in IDS:
             with self.assertRaises(ValueError):prepare_row(row(i),i,NOW,lambda u:source(i,missing=True,alternative="SS_CI." in u))
