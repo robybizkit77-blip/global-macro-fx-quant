@@ -20,7 +20,9 @@ FIRST_DAY = date(2026,11,13)
 FIRST_QUARTER = "2026Q3"
 ORDINALS = ("first","second","third","fourth")
 MONTHS = "January February March April May June July August September October November December".split()
-LOOKBACK_DAYS = 7
+MAX_SCAN_DAYS = 14
+# Recheck recent negative responses before advancing the durable cursor.
+SETTLEMENT_DAYS = 2
 
 
 def edition_url(day):
@@ -92,6 +94,10 @@ def archive_for(path):
             or any(type(r[k]) not in (int,float) or not -30<r[k]<30 for k in ("reported_value","prior_qoq"))):
             raise ValueError("Eurostat archive provenance")
         prior_day=day
+    cursor = data.get("checked_through")
+    if cursor is not None:
+        if not isinstance(cursor, str) or date.fromisoformat(cursor) < FIRST_DAY:
+            raise ValueError("Eurostat discovery cursor invalid")
     return data
 
 
@@ -129,31 +135,58 @@ def collect(now,*,path=ARCHIVE,fetch=retrieve,apply=False):
     data=archive_for(path)
     today=now.astimezone(ROME).date()
     last=date.fromisoformat(data["editions"][-1]["publisher_release_day"]) if data["editions"] else None
-    start=max(FIRST_DAY,today-timedelta(days=LOOKBACK_DAYS),last+timedelta(days=1) if last else FIRST_DAY)
-    days=[start+timedelta(days=i) for i in range(max(0,(today-start).days+1))]
-    if last is None and FIRST_DAY<=today and FIRST_DAY not in days:
-        days.insert(0,FIRST_DAY)
-    additions=[]; checks=[]
-    for day in days:
+    cursor=date.fromisoformat(data["checked_through"]) if data.get("checked_through") else None
+    if cursor and cursor > today:
+        raise ValueError("Eurostat discovery cursor from the future")
+    # Resume from the last durable checkpoint, not a sliding seven-day window.
+    # Existing archives without a cursor start after the last accepted edition.
+    start=max(FIRST_DAY, (cursor+timedelta(days=1)) if cursor else FIRST_DAY,
+              (last+timedelta(days=1)) if last else FIRST_DAY)
+    end=min(today,start+timedelta(days=MAX_SCAN_DAYS-1))
+    additions=[]; checks=[]; progressed=cursor
+    def confirm(day):
+        nonlocal progressed
+        if day <= today-timedelta(days=SETTLEMENT_DAYS):
+            progressed=day
+    for i in range(max(0,(end-start).days+1)):
+        day=start+timedelta(days=i)
         try:
             row=read_day(day,today,fetch)
         except HTTPError as exc:
-            if exc.code!=404:
-                checks.append({"day":day.isoformat(),"error":str(exc)})
-            continue
-        except (OSError,ValueError,Pending) as exc:
-            if str(exc) not in ("EUROSTAT_NOT_IDENTIFIED_GDP_EDITION","EUROSTAT_RELEASE_DATE_NOT_VERIFIED"):
-                checks.append({"day":day.isoformat(),"error":str(exc)})
-            continue
+            if exc.code==404:
+                confirm(day)
+                continue
+            checks.append({"day":day.isoformat(),"error":str(exc)})
+            break
+        except Pending as exc:
+            # An identified non-GDP release is a negative, not a source error.
+            if str(exc)=="EUROSTAT_NOT_IDENTIFIED_GDP_EDITION":
+                confirm(day)
+                continue
+            checks.append({"day":day.isoformat(),"error":str(exc)})
+            break
+        except (OSError,ValueError) as exc:
+            checks.append({"day":day.isoformat(),"error":str(exc)})
+            break
         if day==FIRST_DAY and (row["quarter"],row["reported_value"],row["prior_qoq"]) != (FIRST_QUARTER,0.4,0.6):
             checks.append({"day":day.isoformat(),"error":"EUROSTAT_SEED_MISMATCH"})
-            continue
+            break
         additions.append(row)
+        # A validated edition itself is conclusive even before settlement.
+        progressed=day
         if apply:
             append_edition(path,data,row,now)
+    if apply and progressed and progressed!=cursor:
+        data["checked_through"]=progressed.isoformat()
+        temporary=path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(data,indent=2,sort_keys=True)+"\n",encoding="utf-8")
+        temporary.replace(path)
     return {"status":"ARCHIVED" if additions and apply else "VERIFIED_PREVIEW" if additions else
             "SOURCE_UNAVAILABLE_ARCHIVE_RETAINED" if checks else "NO_NEW_GDP_EDITION",
-            "additions":additions,"source_warnings":checks,"lookback_days":LOOKBACK_DAYS}
+            "additions":additions,"source_warnings":checks,
+            "checked_through":progressed.isoformat() if progressed else None,
+            "scan_start":start.isoformat(),"scan_end":end.isoformat(),
+            "catchup_pending":bool(checks) or end<today,"max_scan_days":MAX_SCAN_DAYS}
 
 
 def main():

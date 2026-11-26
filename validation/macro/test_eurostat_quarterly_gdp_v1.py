@@ -1,4 +1,5 @@
 from datetime import date, datetime, timezone
+from urllib.error import HTTPError
 from pathlib import Path
 import tempfile
 import json
@@ -42,11 +43,45 @@ class EurostatTests(unittest.TestCase):
             def fetch(u,h):
                 if u==edition_url(day):
                     return revised,u
-                return b"<html>unrelated release</html>",u
-            self.assertEqual(collect(datetime(2026,12,7,12,tzinfo=timezone.utc),path=p,fetch=fetch,apply=True)["status"],"ARCHIVED")
+                raise HTTPError(u,404,"Not found",None,None)
+            now=datetime(2026,12,7,12,tzinfo=timezone.utc)
+            self.assertTrue(collect(now,path=p,fetch=fetch,apply=True)["catchup_pending"])
+            self.assertEqual(collect(now,path=p,fetch=fetch,apply=True)["status"],"ARCHIVED")
             self.assertEqual(latest_growth("2026-12-07",path=p)["reported_value"],0.4)
             self.assertEqual(latest_growth("2026-12-08",path=p)["reported_value"],0.3)
             self.assertEqual(latest_growth("2026-12-08",path=p)["prior_documented_quarter"]["reported_value"],0.5)
+
+    def test_outage_and_transient_failure_never_skip_a_release(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp)/"archive.json"
+            p.write_text(json.dumps({"schema":SCHEMA,"editions":[]}))
+            seed=date(2026,11,13)
+            collect(datetime(2026,11,13,12,tzinfo=timezone.utc),path=p,
+                    fetch=lambda u,h:(fixture(),u),apply=True)
+            release=date(2026,12,7)
+            delayed=fixture(day="7 December 2026",title="GDP and employment estimates for the third quarter of 2026",row="0.2 0.0 0.5 0.3 1.1 0.6 1.2 1.3")
+            outage_day=date(2026,11,20)
+            calls=[]
+            def broken(u,h):
+                calls.append(u)
+                if u==edition_url(outage_day):
+                    raise HTTPError(u,503,"Temporary outage",None,None)
+                raise HTTPError(u,404,"Not found",None,None)
+            now=datetime(2026,12,20,12,tzinfo=timezone.utc)
+            first=collect(now,path=p,fetch=broken,apply=True)
+            self.assertEqual(first["checked_through"],"2026-11-19")
+            self.assertTrue(first["catchup_pending"])
+            self.assertNotIn(edition_url(release),calls)
+            def recovered(u,h):
+                if u==edition_url(release):
+                    return delayed,u
+                raise HTTPError(u,404,"Not found",None,None)
+            for _ in range(4):
+                collect(now,path=p,fetch=recovered,apply=True)
+            self.assertEqual(latest_growth("2026-12-21",path=p)["reported_value"],0.3)
+            data=json.loads(p.read_text())
+            self.assertEqual(len(data["editions"]),2)
+            self.assertEqual(data["checked_through"],"2026-12-18")
 
 
 if __name__=="__main__":
