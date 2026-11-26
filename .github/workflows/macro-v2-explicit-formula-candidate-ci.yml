@@ -6,6 +6,8 @@ on:
       - '.github/workflows/macro-v2-explicit-formula-candidate-ci.yml'
       - 'validation/macro/v2_domestic_candidate_explicit_formula_v1.py'
       - 'validation/macro/v2_uniform_dispersion_comparison_v1.py'
+      - 'validation/macro/v2_current_activity_momentum_v1.py'
+      - 'validation/macro/test_v2_current_activity_momentum_v1.py'
       - 'validation/macro/test_v2_uniform_dispersion_comparison_v1.py'
       - 'validation/macro/v2_g8_observed_feature_bridge_v1.py'
       - 'validation/macro/v2_g8_three_axis_economic_shadow_v1.py'
@@ -56,6 +58,10 @@ jobs:
         run: |
           python -m unittest validation.macro.test_v2_uniform_dispersion_comparison_v1 -v
           python -m validation.macro.v2_uniform_dispersion_comparison_v1
+      - name: Validate separate current activity momentum across G8
+        run: |
+          python -m unittest validation.macro.test_v2_current_activity_momentum_v1 -v
+          python -m validation.macro.v2_current_activity_momentum_v1
       - name: Audit current source availability independently of frozen formula
         id: admission
         run: |
