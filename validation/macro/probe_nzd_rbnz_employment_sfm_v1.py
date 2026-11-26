@@ -45,15 +45,23 @@ def main():
                     assert sum(len(x) for x in rows)<=500000,"unexpected worksheet size"
                     print("RBNZ_LAYOUT",ident,ws.title,ws.max_row,ws.max_column,json.dumps([[str(v)[:100] for v in x[:20]] for x in rows[:15]],ensure_ascii=False))
                     candidates=[]
-                    for k,line in enumerate(zip(*rows)):
-                        nums=[(i,float(v)) for i,v in enumerate(line) if isinstance(v,(float,int)) and not isinstance(v,bool) and math.isfinite(v)]
-                        for start in range(len(nums)-len(old)+1):
-                            part=nums[start:start+len(old)]
+                    if ws.title=="Data":
+                        from datetime import datetime,date
+                        width=max(map(len,rows))
+                        old_dates=dict(zip(row["dates"],row["values"]))
+                        for k in range(1,width):
+                            head=[str(x[k]) if len(x)>k else "" for x in rows[:5]]
+                            print("RBNZ_COLUMN",ident,k+1,json.dumps(head,ensure_ascii=False))
+                            obs={}
+                            for x in rows[5:]:
+                                if len(x)<=k or not isinstance(x[0],(datetime,date)):continue
+                                v=x[k]
+                                if isinstance(v,(float,int)) and not isinstance(v,bool) and math.isfinite(v):obs[x[0].strftime("%Y-%m")]=float(v)
+                            if not set(old_dates)<=set(obs):continue
                             for scale in (1,1000,.001):
-                                errs=[abs(v*scale-o)/max(abs(o),1) for (_,v),o in zip(part,old)]
+                                errs=[abs(obs[d]*scale-v)/max(abs(v),1) for d,v in old_dates.items()]
                                 med=statistics.median(errs)
-                                if med<.1:
-                                    candidates.append({"column":k+1,"first_row":part[0][0]+1,"last_row":part[-1][0]+1,"scale":scale,"median_relative":med,"max_relative":max(errs),"following":[(i+1,v*scale) for i,v in nums[start+len(old):start+len(old)+3]],"header":[str(v)[:80] for v in line[:12]]})
+                                if med<.1:candidates.append({"column":k+1,"scale":scale,"overlap":len(errs),"median_relative":med,"max_relative":max(errs),"following":{d:v*scale for d,v in obs.items() if d>max(old_dates)},"header":head})
                     print("RBNZ_CANDIDATES",ident,ws.title,json.dumps(sorted(candidates,key=lambda x:(x["median_relative"],x["max_relative"]))[:5],ensure_ascii=False))
             finally:book.close()
     ident="NZ_EMPLOYED_history_value"
