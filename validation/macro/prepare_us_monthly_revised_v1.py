@@ -47,7 +47,7 @@ def metadata(raw,fred,title,unit):
     # FRED labels are part of the source metadata; never infer cadence from numbers.
     units=re.search(r"units:\s*(.*?)\s*frequency:",text)
     require(units and norm(unit) in units.group(1) and "seasonally adjusted" in units.group(1)
-            and "not seasonally adjusted" not in units.group(1),"FRED unit or seasonal adjustment mismatch")
+            and "not seasonally adjusted" not in units.group(1),"FRED unit or seasonal adjustment mismatch: "+str(units.group(1) if units else None))
     require(re.search(r"frequency:\s*monthly\b",text),"FRED frequency mismatch")
     return units.group(1)
 
