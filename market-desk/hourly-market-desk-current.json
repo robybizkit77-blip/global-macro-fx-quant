@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-26T04:15:04.028827Z",
-  "edition_time_rome": "2026-11-26 05:15",
-  "material_digest": "93c58f2de66524963c60e78b6b5830c559f08d5819a5d2e7e3f3b86a69340269",
+  "generated_at_utc": "2026-11-26T05:57:38.660376Z",
+  "edition_time_rome": "2026-11-26 06:57",
+  "material_digest": "e5af11b25c1996f2815b9b16b0c62374ae7670f036e25fc82e2380be01708d13",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in rialzo",
@@ -46,22 +46,22 @@
       "evidence": "Alla chiusura del 25 novembre, VIX +1,93 punti."
     },
     {
-      "headline": "L’oro sale",
-      "analysis": "Per capire se il movimento dell’oro dura, vale la pena seguire anche la direzione del dollaro.",
+      "headline": "Oro e petrolio in rialzo",
+      "analysis": "Se il movimento del petrolio prosegue, guarda come reagisce il dollaro canadese.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-25",
-      "event_date": "2026-11-25",
+      "published_date": "2026-11-26",
+      "event_date": "2026-11-26",
       "market_area": "COMMODITIES",
       "sources": [
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
         "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
       ],
-      "evidence": "Proxy futures da fonte secondaria. Oro +1,29% al 25 novembre. WTI +2,35% al 24 novembre."
+      "evidence": "Proxy futures da fonte secondaria. Oro +2,21% al 26 novembre. WTI +0,81% al 26 novembre."
     },
     {
       "headline": "Speech by Board Member TAMURA in Yamanashi (Economic Activity, Prices, and Monetary Policy in Japan)",
       "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-26",
       "event_date": "2026-11-26",
       "market_area": "BANCHE CENTRALI",
@@ -85,7 +85,7 @@
   ],
   "desk_judgment": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. La volatilità azionaria è salita alla chiusura del 25 novembre.",
   "fx_implications": "Il 30 novembre alle 09:00 italiane è in programma Swiss quarterly GDP (CHF). Da verificare la risposta dei tassi e di CHF.",
-  "what_changed": "Nei proxy futures del 25 novembre l’oro sale.",
+  "what_changed": "Nei proxy futures del 26 novembre l’oro sale e il WTI sale.",
   "contrary_evidence": "La tenuta del movimento dipende anche dal sostegno dei tassi a breve.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
@@ -101,14 +101,19 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-25",
-      "rss_checked_at_utc": "2026-11-26T04:15:04.028827Z",
-      "commodities": "2026-11-25"
+      "rss_checked_at_utc": "2026-11-26T05:57:38.660376Z",
+      "commodities": "2026-11-26"
     },
     "no_paid_api": true,
     "no_ai_model": true,
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-26T04:15:04.028827Z",
+      "headline": "Dollaro in rialzo",
+      "material_digest": "93c58f2de66524963c60e78b6b5830c559f08d5819a5d2e7e3f3b86a69340269"
+    },
     {
       "generated_at_utc": "2026-11-25T23:41:08.767881Z",
       "headline": "Dollaro in rialzo",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-24T00:58:07.905723Z",
       "headline": "Dollaro in rialzo",
       "material_digest": "c55572c7a6d89c832d56f9ffedfc02267aebadccbcde0d695baeb1d8889adeca"
-    },
-    {
-      "generated_at_utc": "2026-11-23T23:16:42.626802Z",
-      "headline": "Dollaro in rialzo",
-      "material_digest": "fe6f8a21f173753760a6cfd29ebd813ea2504304b63eca1eeaa3e910f76711ce"
     }
   ]
 }
