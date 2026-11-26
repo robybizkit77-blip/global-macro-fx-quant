@@ -8,6 +8,7 @@ from urllib.request import Request,urlopen
 SOURCE=Path(__file__).resolve().parents[2]/"live_data/sections/MACRO_SERIES.json"
 BASE="https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp"
 CONFIG={
+ "UK_MORTGAGE_RATE_2Y_75LTV_history_value":("IUMBV34","Percent","M",0,20,.005,.03,"%d %b %Y"),
  "UK_SECURED_LENDING_YOY_history_value":("LPMVTYI","Percent","M",-15,25,.12,.6,"%d %b %Y"),
  "UK_MORTGAGE_APPROVALS_HOUSE_PURCHASE_SA_history_value":("LPMVTVX","Number","M",0,150000,.005,.03,"%d %b %Y"),
  "UK_M4_SA_history_value":("LPMAUYN","GBP millions","M",1000000,6000000,.005,.03,"%Y-%m-%d"),
