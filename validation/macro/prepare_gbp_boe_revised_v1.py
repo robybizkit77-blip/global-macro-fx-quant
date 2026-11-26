@@ -13,6 +13,7 @@ CONFIG={
  "UK_MORTGAGE_APPROVALS_HOUSE_PURCHASE_SA_history_value":("LPMVTVX","Number","M",0,150000,.005,.03,"%d %b %Y"),
  "UK_M4_SA_history_value":("LPMAUYN","GBP millions","M",1000000,6000000,.005,.03,"%Y-%m-%d"),
  "UK_BOE_RESERVE_BALANCES_history_value":("RPWB56A","GBP millions","W",300000,1400000,.001,.01,"%Y-%m-%d"),
+ "UK_BOE_APF_LOAN_history_value":("RPWZ4TM","GBP millions","W",0,1200000,.000001,.000001,"%Y-%m-%d"),
 }
 def need(ok,why):
     if not ok:raise ValueError(why)
