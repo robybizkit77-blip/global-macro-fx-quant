@@ -57,9 +57,20 @@ def prepare_row(row,ident,now,fetcher):
         overlap_audit["alternative_overlap_count"]=len(common)
         if not common and post_legacy:
             need(len(alt)>=10 and max(alt)==legacy_end,"legacy terminal observation not independently established: count="+str(len(alt))+" last="+str(max(alt) if alt else None))
-            print("CISS_NEW_VINTAGE_DIAGNOSTIC",json.dumps({"count":len(old),"exact":exact,"median_abs_error":statistics.median(errors),"max_abs_error":max(errors),"within_0_0001":sum(e<=.0001 for e in errors),"within_0_001":sum(e<=.001 for e in errors),"samples":[[d.isoformat(),old[d],obs[d]] for d in sorted(old)[::10]]},sort_keys=True))
-            need(exact/len(old)>=.95,"post-retirement New CISS exact historical match insufficient")
-            overlap_audit.update({"variant_proof":"POST_LEGACY_TERMINATION_EXACT_OVERLAP","legacy_last_observation":max(alt).isoformat(),"legacy_observations":len(alt),"legacy_source_url":alt_url,"legacy_csv_sha256":sha256(alt_raw.encode()).hexdigest()})
+            # The original vintage can be revised at full floating-point
+            # precision. Require a very tight absolute bound on EVERY point
+            # plus same-day shape and direction; do not splice the vintages.
+            days=sorted(old)
+            old_values=[old[d] for d in days];new_values=[obs[d] for d in days]
+            correlation=statistics.correlation(old_values,new_values)
+            old_changes=[b-a for a,b in zip(old_values,old_values[1:])]
+            new_changes=[b-a for a,b in zip(new_values,new_values[1:])]
+            significant=[(a,b) for a,b in zip(old_changes,new_changes) if abs(a)>=.0006]
+            direction_matches=sum(a*b>0 for a,b in significant)
+            overlap_audit.update({"variant_proof":"POST_LEGACY_TERMINATION_TIGHT_REVISED_OVERLAP","legacy_last_observation":max(alt).isoformat(),"legacy_observations":len(alt),"legacy_source_url":alt_url,"legacy_csv_sha256":sha256(alt_raw.encode()).hexdigest(),"same_day_correlation":correlation,"significant_changes":len(significant),"direction_matches":direction_matches})
+            print("CISS_NEW_VINTAGE_DIAGNOSTIC",json.dumps(overlap_audit,sort_keys=True))
+            need(len(old)>=40 and statistics.median(errors)<=.0001 and max(errors)<=.0003 and correlation>=.999 and (exact==len(old) or (len(significant)>=10 and direction_matches==len(significant))),"post-retirement New CISS revised history identity not established")
+
         else:
             need(len(common)>=12 and (common[-1]-common[0]).days>=28,"insufficient paired historical CISS observations: "+str(len(common)))
             alt_errors=[abs(alt[d]-old[d]) for d in common]
