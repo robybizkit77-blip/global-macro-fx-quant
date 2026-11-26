@@ -10,8 +10,23 @@ from validation.macro.v2_source_freshness_aud_eur_v1 import EVIDENCE, SOURCE, au
 class OfficialFreshnessGapTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.series = json.loads((ROOT / SOURCE).read_text(encoding="utf-8"))
+        cls.current = json.loads((ROOT / SOURCE).read_text(encoding="utf-8"))
         cls.evidence = json.loads((ROOT / EVIDENCE).read_text(encoding="utf-8"))
+        # Explicitly synthetic historical review fixture, never an archived PIT snapshot.
+        cls.series = copy.deepcopy(cls.current)
+        for event in cls.evidence["events"]:
+            row = next(x for x in cls.series[event["currency"]] if x["id"] == event["series_id"])
+            row["last_date"] = event["series_reference_period_expected"]
+            row["last_value"] = event["series_value_expected"]
+
+    def test_advanced_current_snapshot_remains_non_pit(self):
+        result = audit(self.current, self.evidence)
+        for row in result["rows"]:
+            if row["observed_period"] > row["official_reference_period"]:
+                self.assertEqual(row["source_freshness"], "CURRENT_OBSERVATION_NEWER_THAN_ARCHIVED_RELEASE_NOT_PIT")
+                self.assertTrue(row["review_snapshot_superseded"])
+            self.assertFalse(row["eligible_for_new_macro_score"])
+        self.assertFalse(result["current_series_snapshot_reconstructed_at_cutoff"])
 
     def test_expected_three_source_lags_and_no_promotion(self):
         result = audit(self.series, self.evidence)
