@@ -160,6 +160,11 @@ jobs:
           if grep -q 'SOURCE_UNAVAILABLE_ARCHIVE_RETAINED' /tmp/statcan-quarterly-gdp-collection.json; then
             echo "::warning::StatCan quarterly bulletin not validated; retaining prior verified GDP."
           fi
+      - name: Set up pinned Stats NZ browser fallback
+        if: github.event_name != 'pull_request' || github.head_ref == 'fix/statsnz-recurring-quarterly-gdp-20261126'
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install chromium
       - name: Verify Stats NZ parser against published June edition (new collector PR)
         if: github.event_name == 'pull_request' && github.head_ref == 'fix/statsnz-recurring-quarterly-gdp-20261126'
         run: |
