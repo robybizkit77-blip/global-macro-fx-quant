@@ -23153,7 +23153,10 @@
         "2026-04",
         "2026-05",
         "2026-06",
-        "2026-07"
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         1022484.0,
@@ -23230,20 +23233,39 @@
         1082514.0,
         1090721.0,
         1101579.0,
-        1101387.0,
-        1104211.0,
-        1106607.0,
-        1114042.0,
-        1116913.0,
-        1118598.0,
-        1116770.0,
-        1117864.0
+        1101477.0,
+        1104303.0,
+        1106700.0,
+        1114135.0,
+        1117008.0,
+        1118693.0,
+        1116864.0,
+        1117959.0,
+        1124963.0,
+        1124570.0,
+        1133871.0
       ],
       "unit": "CHF millions",
       "frequency": "M",
       "source_file": "CH_M2_history.csv",
-      "last_date": "2026-07",
-      "last_value": 1117864.0
+      "last_date": "2026-10",
+      "last_value": 1133871.0,
+      "current_vintage_provenance": {
+        "status": "SNB_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://data.snb.ch/api/cube/snbmonagg/data/json/en?dimSel=D0%28B%29%2CD1%28GM2%29&fromDate=2019-10&toDate=2026-11",
+        "source_series_id": "EPB@SNB.snbmonagg{B,GM2}",
+        "source_metadata": {
+          "key": "EPB@SNB.snbmonagg{B,GM2}",
+          "frequency": "P1M",
+          "scale": "",
+          "unit": "In CHF millions / In percent"
+        },
+        "source_json_sha256": "b4e55af92a84f0aa986d8d91c5e3cd26a800909ff373b732bc62d80f0f0a742e",
+        "historical_overlap_exact": 74,
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T10:40:46.460010+00:00"
+      }
     },
     {
       "id": "CH_M3_history_value",
@@ -23331,7 +23353,10 @@
         "2026-04",
         "2026-05",
         "2026-06",
-        "2026-07"
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         1074823.0,
@@ -23408,20 +23433,39 @@
         1192728.0,
         1202296.0,
         1210928.0,
-        1209269.0,
-        1214529.0,
-        1214794.0,
-        1222466.0,
-        1229816.0,
-        1227770.0,
-        1226404.0,
-        1232174.0
+        1209359.0,
+        1214621.0,
+        1214887.0,
+        1222559.0,
+        1229911.0,
+        1227845.0,
+        1226478.0,
+        1232269.0,
+        1239475.0,
+        1237630.0,
+        1248933.0
       ],
       "unit": "CHF millions",
       "frequency": "M",
       "source_file": "CH_M3_history.csv",
-      "last_date": "2026-07",
-      "last_value": 1232174.0
+      "last_date": "2026-10",
+      "last_value": 1248933.0,
+      "current_vintage_provenance": {
+        "status": "SNB_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://data.snb.ch/api/cube/snbmonagg/data/json/en?dimSel=D0%28B%29%2CD1%28GM3%29&fromDate=2019-10&toDate=2026-11",
+        "source_series_id": "EPB@SNB.snbmonagg{B,GM3}",
+        "source_metadata": {
+          "key": "EPB@SNB.snbmonagg{B,GM3}",
+          "frequency": "P1M",
+          "scale": "",
+          "unit": "In CHF millions / In percent"
+        },
+        "source_json_sha256": "7da27c3e36798ae76fd60772c67c076396a8b907353c175261d97ceb0903bfa5",
+        "historical_overlap_exact": 74,
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T10:40:46.460010+00:00"
+      }
     },
     {
       "id": "CH_SNB_SIGHT_DEPOSITS_DOMESTIC_BANKS_history_value",
