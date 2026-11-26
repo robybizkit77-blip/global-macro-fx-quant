@@ -4,6 +4,8 @@ on:
     paths:
       - 'validation/macro/probe_chf_mona_credit_v1.py'
       - '.github/workflows/chf-mona-credit-proof-v1.yml'
+      - 'validation/macro/prepare_chf_mona_credit_v1.py'
+      - 'validation/macro/test_prepare_chf_mona_credit_v1.py'
 permissions:
   contents: read
 jobs:
@@ -17,3 +19,12 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m validation.macro.probe_chf_mona_credit_v1
+      - run: python -m unittest validation.macro.test_prepare_chf_mona_credit_v1 -v
+      - name: Verify exact SNB candidate histories
+        run: |
+          python -m validation.macro.prepare_chf_mona_credit_v1 --candidate /tmp/chf-mona/candidate.json --receipt /tmp/chf-mona/receipt.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/chf-mona/receipt.json'))
+          assert len(d['series'])==2 and all(r['status'] in ('READY','NO_CHANGE') and r['after']>='2026-09' and r['exact_overlap']>=82 for r in d['series']),d
+          PY
