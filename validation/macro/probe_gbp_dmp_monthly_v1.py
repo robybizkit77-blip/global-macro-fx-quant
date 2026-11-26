@@ -54,6 +54,38 @@ def main():
                     errs=[abs(obs[d]-v) for d,v in prior.items()]
                     candidate={"sheet":sheet.title,"date_col":dc+1,"value_col":col+1,"headers":[h[col] for h in headers if h[col] is not None],"overlap":len(errs),"median_abs":statistics.median(errs),"max_abs":max(errs),"exact_round3":sum(e<=.00051 for e in errs),"latest_date":max(obs),"latest":obs[max(obs)]}
                     candidates[z["id"]].append(candidate)
+    # Explicit semantic identity: high + very high, not either component alone.
+    sheet=book["Overall uncertainty"]
+    rows=list(sheet.iter_rows(values_only=True))
+    header=next(row for row in rows if row[0]=="Survey date/reference period")
+    need(header[4:6]==("High","Very high"),"uncertainty headers changed")
+    uncertainty={}
+    for row in rows:
+        d=month(row[0])
+        if d and all(isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v) for v in row[4:6]):
+            need(d not in uncertainty,"duplicate uncertainty month")
+            need(all(0<=v<=100 for v in row[4:6]) and sum(row[4:6])<=100,"invalid uncertainty shares")
+            uncertainty[d]=round(sum(row[4:6]),3)
+    mapping={"EmploymentExpected":("Employment growth",13),"EmploymentRealised":("Employment growth",2),"PriceExpected":("Price growth",13),"PriceRealised":("Price growth",2),"SalesExpected":("Sales growth",15),"SalesRealised":("Sales growth",3)}
+    for z in old:
+        key=z["id"].split("_")[-1]
+        if key=="HighVeryHighUncertainty":
+            obs=uncertainty
+        else:
+            tab,col=mapping[key]
+            rows=list(book[tab].iter_rows(values_only=True))
+            first=next(i for i,row in enumerate(rows) if month(row[0]))
+            headers=[str(row[col-1]) for row in rows[:first] if row[col-1] is not None]
+            need("Single month" in headers and any(("expected" if key.endswith("Expected") else "realised") in h.casefold() for h in headers),"unexpected monthly header "+key)
+            obs={}
+            for row in rows[first:]:
+                d=month(row[0]);v=row[col-1]
+                if d and isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v):
+                    need(d not in obs,"duplicate month "+key);obs[d]=float(v)
+        prior={month(d):float(v) for d,v in zip(z["dates"],z["values"])}
+        need(None not in prior and set(prior)<=set(obs),"incomplete overlap "+key)
+        changes=[{"month":d,"old":prior[d],"official":obs[d],"delta":round(obs[d]-prior[d],6)} for d in sorted(prior) if abs(obs[d]-prior[d])>.00051]
+        print("DMP_EXPLICIT_OVERLAP",key,json.dumps({"overlap":len(prior),"changed":changes,"latest":max(obs),"new_observations":{d:obs[d] for d in sorted(obs) if d>max(prior)}}))
     for key,vals in candidates.items():
         print("DMP_HISTORY_MATCH",key,json.dumps(sorted(vals,key=lambda x:(x["median_abs"],x["max_abs"]))[:4],default=str))
     need(all(v for v in candidates.values()),"one or more histories not found")
