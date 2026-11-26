@@ -7,7 +7,8 @@ from urllib.parse import urlencode
 from validation.macro.probe_aud_oecd_cli_v1 import ID,BASE,fetch
 
 SOURCE=Path(__file__).resolve().parents[2]/"live_data/sections/MACRO_SERIES.json"
-CONFIG={ID:BASE}
+EXACT_BASE=BASE.rsplit("/",1)[0]+"/AUS.M.LI.IX._Z.AA.IX._Z.H"
+CONFIG={ID:EXACT_BASE}
 META={"DATAFLOW":"OECD.SDD.STES:DSD_STES@DF_CLI(4.1)","REF_AREA":"AUS","FREQ":"M","MEASURE":"LI","UNIT_MEASURE":"IX","ACTIVITY":"_Z","ADJUSTMENT":"AA","TRANSFORMATION":"IX","TIME_HORIZON":"_Z","METHODOLOGY":"H","UNIT_MULT":"0","BASE_PER":""}
 SERIES_KEY="DSD_STES@DF_CLI(4.1)/AUS.M.LI._Z.AA.IX._Z.H"
 def need(ok,msg):
@@ -48,7 +49,7 @@ def prepare(current,*,now,fetcher=fetch):
     out=copy.deepcopy(current)
     try:
         hits=[r for r in out["AUD"] if r["id"]==ID];need(len(hits)==1,"unique row required")
-        row=copy.deepcopy(hits[0]);url=BASE+"?"+urlencode({"startPeriod":row["dates"][0][:7],"dimensionAtObservation":"AllDimensions","format":"csvfile"})
+        row=copy.deepcopy(hits[0]);url=EXACT_BASE+"?"+urlencode({"startPeriod":row["dates"][0][:7],"dimensionAtObservation":"AllDimensions","format":"csvfile"})
         # A transient upstream schema/transport response is retried once; identity guards remain mandatory.
         for attempt in range(2):
             try:
