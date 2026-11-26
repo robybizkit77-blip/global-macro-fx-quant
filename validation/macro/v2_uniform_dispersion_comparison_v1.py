@@ -14,7 +14,7 @@ from validation.macro.v2_g8_observed_feature_bridge_v1 import (
 )
 
 SCHEMA = "GMFQ_MACRO_V2_UNIFORM_DISPERSION_COMPARISON_V1"
-POLICY = "PRIOR_24M_12Q_MEAN_SAMPLE_SD_ALL_CORE_SERIES_V1"
+POLICY = "PRIOR_24M_12Q_MEAN_SAMPLE_SD_ALL_24_AXES_V2"
 
 
 def compare(prior, current):
@@ -41,6 +41,46 @@ def compare(prior, current):
                           else "UP_TO_DOWN" if prior[-1] > prior[-2] and current < prior[-1]
                           else "NONE"),
     }
+
+
+def growth_comparison(rows, *, as_of):
+    """Use exactly the existing GDP first-statement cutoff and 12 prior quarters.
+
+    Do not substitute a later revision or hide country measurement caveats.
+    """
+    from validation.macro.v2_g8_gdp_first_web_growth_features_v1 import (
+        receipt, validate, utc, asof_visible, qidx, nonannualized, TRAIN,
+    )
+    audited = receipt(rows, as_of=as_of)
+    cutoff = utc(as_of)
+    first = {}
+    for row in validate(rows):
+        if row["stage_order"] == 0 and asof_visible(row) <= cutoff:
+            first[(row["currency"], qidx(row["reference_quarter"]))] = row
+    out = {}
+    for c in FX:
+        feat = audited["features"][c]
+        newest = qidx(feat["latest_initial_period"])
+        item = {
+            "period": feat["latest_initial_period"],
+            "value": feat["latest_nonannualized_qoq_pct"],
+            "strict_status": feat["status"],
+            "missing_prior_periods": feat["missing_required_reference_quarters"],
+            "sample_sd_z": None,
+            "strict_mad_z": feat["research_robust_growth_z"],
+            "source_class": "INITIAL_PUBLISHER_WEB_STATEMENTS_NOT_ARCHIVAL_PIT",
+            "growth_definition_caveats": feat.get("growth_definition_caveats", []),
+            "latest_visible_revision": feat["latest_visible_revision"],
+        }
+        if not item["missing_prior_periods"]:
+            prior = [nonannualized(first[(c, i)]) for i in range(newest-TRAIN, newest)]
+            cmp = compare(prior, item["value"])
+            if cmp["strict_mad_z"] != item["strict_mad_z"]:
+                raise ValueError(c + ": strict GDP comparator drift")
+            item.update(cmp)
+            item["economic_polarity_sample_sd_z"] = cmp["sample_sd_z"]
+        out[c + ".growth"] = item
+    return out
 
 
 def run(root=ROOT):
@@ -79,10 +119,22 @@ def run(root=ROOT):
                     -cmp["sample_sd_z"] if dim == "labour" and cmp["sample_sd_z"] is not None
                     else cmp["sample_sd_z"])
             out[key] = result
+    from datetime import timezone
+    from validation.macro.v2_g8_gdp_unified_web_research_v1 import unified_research_rows
+    growth = growth_comparison(unified_research_rows(),
+                               as_of=datetime.now(timezone.utc).isoformat())
+    all_axes = {**out, **growth}
     return {"schema": SCHEMA, "policy": POLICY, "as_of": today.isoformat(),
-            "rows": out, "strict_numeric_count": sum(r["strict_mad_z"] is not None for r in out.values()),
+            "rows": out, "growth_rows": growth,
+            "strict_numeric_count": sum(r["strict_mad_z"] is not None for r in out.values()),
             "alternative_numeric_count": sum(r["sample_sd_z"] is not None for r in out.values()),
-            "current_revised_not_historical_PIT": True, "growth_not_in_scope": True,
+            "all_24_axis_strict_numeric_count": sum(r["strict_mad_z"] is not None for r in all_axes.values()),
+            "all_24_axis_alternative_numeric_count": sum(r["sample_sd_z"] is not None for r in all_axes.values()),
+            "complete_alternative_countries": [c for c in FX if all(
+                all_axes[c+"."+dim]["sample_sd_z"] is not None
+                for dim in ("growth", "labour", "inflation"))],
+            "mixed_evidence_classes_not_synchronized_PIT_panel": True,
+            "current_revised_not_historical_PIT": True, "growth_not_in_scope": False,
             "safe_to_publish_D": False, "safe_to_update_pairs": False,
             "safe_for_beta_forward": False, "writes_live_data": False}
 
