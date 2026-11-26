@@ -54,7 +54,7 @@ assert.match(eur,/non è ancora una sequenza di accelerazione/);
 assert.match(eur,/vintage di prima pubblicazione non verificato/);
 assert.match(eur,/Fonte: BCE/);
 const coreFact=eur.split('data-liq-role="credit"')[1].split('</div>')[0];
-assert(!coreFact.includes('2026-09'),'ECB research must never replace the existing EUR.credit core');
+assert(coreFact.includes('Ultimo '+native.EUR.credit.last_date+' · '+fmt(native.EUR.credit.last_value,2)),'ECB research must preserve current canonical EUR.credit value and date');
 assert(!studio.render(api('USD')).includes('drivers-eur-official'));
 assert(!studio.render(api('CAD')).includes('drivers-eur-official'));
 console.log('EUR_ECB_NFC_RESEARCH_SIDECAR_PASS',JSON.stringify({
