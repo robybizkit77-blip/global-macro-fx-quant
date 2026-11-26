@@ -36,14 +36,33 @@ def prepare_row(row,ident,now,fetcher):
     errors=[abs(obs[d]-v)/max(abs(v),1) for d,v in old.items()]
     need(statistics.median(errors)<=median_limit and max(errors)<=max_limit,"historical identity unproven")
     exact=sum(abs(obs[d]-v)<=1e-6 for d,v in old.items())
+    overlap_audit={"count":len(old),"exact":exact,"median_scaled_error":statistics.median(errors),"max_scaled_error":max(errors)}
+    if ident=="EA_CISS_history_value":
+        # The ECB publishes both legacy CISS and New CISS. A close value
+        # range alone is insufficient to prove the archived variant.
+        alternative=key.replace("SS_CIN","SS_CI")
+        alt_url=url.replace("SS_CIN","SS_CI")
+        alt_raw=fetcher(alt_url);alt={}
+        for rec in csv.DictReader(io.StringIO(alt_raw)):
+            need((rec.get("KEY") or rec.get("SERIES_KEY"))==alternative,"wrong alternative CISS identity")
+            if rec.get("OBS_VALUE") in (None,"","."):continue
+            day=date.fromisoformat(rec["TIME_PERIOD"]);v=float(rec["OBS_VALUE"])
+            need(day not in alt and math.isfinite(v) and 0<=v<=1,"invalid alternative CISS observation")
+            alt[day]=v
+        need(set(old)<=set(alt),"cannot compare historical CISS variants")
+        alt_errors=[abs(alt[d]-v) for d,v in old.items()]
+        overlap_audit["alternative_median_abs_error"]=statistics.median(alt_errors)
+        overlap_audit["alternative_max_abs_error"]=max(alt_errors)
+        print("CISS_VARIANT_COMPARISON",json.dumps(overlap_audit,sort_keys=True))
+        need(statistics.median(errors)<=.001 and statistics.median(alt_errors)>max(3*statistics.median(errors),.0001),"New CISS historical variant not uniquely established")
     vs=[obs[d] for d in ds];ds=[d.isoformat()+suffix for d in ds];before=row["last_date"]
     changed=row["dates"]!=ds or row["values"]!=vs or row.get("current_vintage_provenance",{}).get("source_series_id")!=key
     if changed:
         row.update(dates=ds,values=vs,last_date=ds[-1],last_value=vs[-1],current_vintage_provenance={
          "status":"ECB_CURRENT_REVISED_HISTORY_NOT_PIT","source_url":url,"source_series_id":key,"source_csv_sha256":sha256(raw.encode()).hexdigest(),
-         "historical_overlap_exact":exact,"no_synthetic_dates":True,"source_series_first_release_PIT_certified":False,
+         "historical_overlap_exact":exact,"historical_overlap_audit":overlap_audit,"no_synthetic_dates":True,"source_series_first_release_PIT_certified":False,
          "historical_levels_may_be_revised_again":True,"runner_first_seen_utc":now.isoformat()})
-    return {"id":ident,"status":"READY" if changed else "NO_CHANGE","before":before,"after":ds[-1],"latest":vs[-1],"source_url":url,"exact_overlap":exact}
+    return {"id":ident,"status":"READY" if changed else "NO_CHANGE","before":before,"after":ds[-1],"latest":vs[-1],"source_url":url,"exact_overlap":exact,"overlap_audit":overlap_audit}
 def prepare(current,*,now,fetcher=fetch):
     need(now.utcoffset() is not None,"aware clock required")
     out=copy.deepcopy(current);receipts=[]
