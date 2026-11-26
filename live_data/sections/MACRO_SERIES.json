@@ -20690,7 +20690,9 @@
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         5785322.0,
@@ -20774,13 +20776,26 @@
         6643630.0,
         6395509.0,
         6442957.0,
-        6446620.0
+        6446620.0,
+        6250253.0,
+        6261882.0
       ],
       "unit": "100 million yen",
       "frequency": "M",
       "source_file": "JP_BOJ_TOTAL_ASSETS_history.csv",
-      "last_date": "2026-08",
-      "last_value": 6446620.0
+      "last_date": "2026-10",
+      "last_value": 6261882.0,
+      "current_vintage_provenance": {
+        "status": "FRED_BOJ_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "JPNASSETS",
+        "source_url": "https://fred.stlouisfed.org/series/JPNASSETS",
+        "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=JPNASSETS&cosd=2019-11-01",
+        "source_csv_sha256": "9591e561f30f2178ae2e80b35483027ca741a555483dc776f7e44c45123c4bce",
+        "historical_overlap": 82,
+        "max_absolute_revision": 0.0,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T14:56:34.333982+00:00"
+      }
     },
     {
       "id": "JP_M2_SA_history_value",
