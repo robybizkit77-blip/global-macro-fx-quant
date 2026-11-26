@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-26",
-  "generated_at_utc": "2026-11-26T16:52:25.100412Z",
+  "generated_at_utc": "2026-11-26T18:29:32.025189Z",
   "items": [
     {
       "as_of": "2026-11-26",
@@ -202,6 +202,18 @@
     {
       "as_of": "2026-11-25",
       "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "EUR",
+      "confidence": "A",
+      "detail": "Fra 2026-11-24 e 2026-11-25; 2Y 2.969%, 10Y 3.259%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-24",
+      "source": "European Central Bank · AAA Svensson spot curve · 2026-11-25",
+      "title": "EUR: governativo 2Y -4.8 pb, 10Y -5.3 pb"
+    },
+    {
+      "as_of": "2026-11-25",
+      "category": "MARKET_GOVERNMENT_RATES",
       "ccy": "JPY",
       "confidence": "A",
       "detail": "Fra 2026-11-24 e 2026-11-25; 2Y 1.731%, 10Y 2.713%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
@@ -273,18 +285,6 @@
       "title": "Credito IG OAS: +1.0 pb nella chiusura del 2026-11-24"
     },
     {
-      "as_of": "2026-11-24",
-      "category": "MARKET_GOVERNMENT_RATES",
-      "ccy": "EUR",
-      "confidence": "A",
-      "detail": "Fra 2026-11-23 e 2026-11-24; 2Y 3.017%, 10Y 3.312%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
-      "importance": "MEDIUM",
-      "quality": "FULL_CURRENT_OFFICIAL",
-      "reference_previous_date": "2026-11-23",
-      "source": "European Central Bank · AAA Svensson spot curve · 2026-11-24",
-      "title": "EUR: governativo 2Y -1.0 pb, 10Y -0.9 pb"
-    },
-    {
       "as_of": "2026-11-20",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "JPY",
@@ -317,7 +317,7 @@
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
     }
   ],
-  "last_checked_at_utc": "2026-11-26T16:52:25.100412Z",
+  "last_checked_at_utc": "2026-11-26T18:29:32.025189Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -541,13 +541,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-24",
+            "date": "2026-11-25",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-24",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-25",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.65776494549517
+            "yield_2y_pct": 4.609348281866992
           }
         },
         "source": "Bank of England",
@@ -596,13 +596,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-24",
+            "date": "2026-11-25",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-24",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-25",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.65776494549517
+            "yield_2y_pct": 4.609348281866992
           }
         },
         "source": "Bank of England",
@@ -644,13 +644,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-24",
+            "date": "2026-11-25",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-24",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-25",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0167781426
+            "yield_2y_pct": 2.9686993028
           }
         },
         "source": "Banca centrale europea",
@@ -699,11 +699,11 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-24",
+            "date": "2026-11-25",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-24",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-25",
             "status": "DAILY_CONTEXT_ONLY",
             "yield_2y_pct": 3.24
           }
@@ -898,13 +898,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-24",
+            "date": "2026-11-25",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-24",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-25",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0167781426
+            "yield_2y_pct": 2.9686993028
           }
         },
         "source": "Banca centrale europea",
@@ -953,11 +953,11 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-24",
+            "date": "2026-11-25",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-24",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-25",
             "status": "DAILY_CONTEXT_ONLY",
             "yield_2y_pct": 3.24
           }
