@@ -37,6 +37,22 @@ function reading(r){
 function recent(day,today,max){
  return typeof day==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&day<=today&&Number.isFinite(Date.parse(day))&&(Date.parse(today)-Date.parse(day))/864e5<=max;
 }
+function positionReading(c,market,today,fmt){
+ const p=market?.cot?.[c],dates=p?.dates;
+ if(!Array.isArray(dates)||dates.length<2)return 'COT non disponibile.';
+ const i=dates.length-1,d=dates[i],prev=dates[i-1],n=Number.isFinite;
+ if(!recent(d,today,14)||!recent(prev,d,7)||Date.parse(d)-Date.parse(prev)!==7*864e5||!['net','long','short','netoi','percentile'].every(k=>Array.isArray(p[k])&&p[k].length===dates.length&&n(p[k][i])&&n(p[k][i-1]))||p.long[i]-p.short[i]!==p.net[i]||p.long[i-1]-p.short[i-1]!==p.net[i-1])return 'COT recente e comparabile non validato.';
+ const delta=p.net[i]-p.net[i-1],dl=p.long[i]-p.long[i-1],ds=p.short[i]-p.short[i-1],sign=v=>(v>0?'+':'')+fmt(v,0);
+ return 'COT '+d+': netto '+sign(p.net[i])+' contratti; variazione settimanale '+sign(delta)+' (long '+sign(dl)+', short '+sign(ds)+'); Net/OI '+fmt(p.netoi[i],1)+'%, percentile '+fmt(p.percentile[i],0)+'. '+(p.percentile[i]>=80||p.percentile[i]<=20?'Posizionamento estremo: non implica inversione. ':'')+'Il COT non identifica tutti gli operatori e non è intraday.';
+}
+function priceReading(base,quote,market,today,fmt){
+ const p=market?.prices,rs=p?.rows;
+ if(!Array.isArray(rs)||rs.length<6||p.base!=='EUR'||!recent(p.last_as_of,today,7))return 'Prezzi recenti non validabili.';
+ const last=rs.at(-1),start=rs.at(-6),n=v=>Number.isFinite(v)&&v>0;
+ if(last.Date!==p.last_as_of||!recent(start.Date,last.Date,14)||start.Date>=last.Date||![last[base],last[quote],start[base],start[quote]].every(n))return 'Confronto prezzi non validabile.';
+ const move=100*((last[quote]/last[base])/(start[quote]/start[base])-1);
+ return 'Fixing BCE '+base+'/'+quote+': '+(move>0?'+':'')+fmt(move,2)+'% in cinque osservazioni ('+start.Date+'–'+last.Date+'); variazione del cambio, non flusso osservato.';
+}
 function marketReading(c,market,today,fmt){
  const cb=market?.cb?.[c],o=market?.ois?.currencies?.[c],r=market?.rates?.[c];
  const n=Number.isFinite, bp=v=>(v>0?'+':'')+fmt(v,1)+' pb';
@@ -56,11 +72,13 @@ function marketReading(c,market,today,fmt){
  if(r?.quality==='FULL_CURRENT_OFFICIAL'&&recent(r.date,today,c==='AUD'?14:7)&&w2?.end_date===r.date&&w10?.end_date===r.date&&w2.start_date===w10.start_date&&recent(w2.start_date,r.date,10)&&n(w2.change_bp)&&n(w10.change_bp)){
   lines.push('Governativi 2Y e 10Y: '+bp(w2.change_bp)+' / '+bp(w10.change_bp)+' nel periodo '+w2.start_date+'–'+r.date+'. Il 10Y incorpora anche crescita, inflazione e premio a termine.');
  }else lines.push('Confronto governativo 2Y/10Y recente e omogeneo non validato qui; consultare Tassi per le fonti di ricerca separate.');
+ lines.push(positionReading(c,market,today,fmt));
  return lines.join(' ');
 }
-function narrative(rows,esc,market,today,fmt){
+function narrative(rows,esc,market,today,fmt,route,focusedPair){
  if(!market)return rows.map(r=>'<p><strong>'+esc(r.currency+' · '+r.label)+'</strong> — '+esc(reading(r))+' <small>('+esc(r.reference_period)+')</small></p>').join('');
- return [...new Set(rows.map(r=>r.currency))].map(c=>rows.filter(r=>r.currency===c).map(r=>'<p><strong>'+esc(r.currency+' · '+r.label)+'</strong> — '+esc(reading(r))+' <small>('+esc(r.reference_period)+')</small></p>').join('')+'<p><strong>'+esc(c)+' · politica monetaria e mercato</strong> — '+esc(marketReading(c,market,today,fmt))+'</p>').join('');
+ const currencies=[...new Set(rows.map(r=>r.currency))];
+ return currencies.map(c=>rows.filter(r=>r.currency===c).map(r=>'<p><strong>'+esc(r.currency+' · '+r.label)+'</strong> — '+esc(reading(r))+' <small>('+esc(r.reference_period)+')</small></p>').join('')+'<p><strong>'+esc(c)+' · politica monetaria e mercato</strong> — '+esc(marketReading(c,market,today,fmt))+'</p>').join('')+(route==='pairs'&&focusedPair&&currencies.length===2?'<p><strong>Prezzo relativo</strong> — '+esc(priceReading(currencies[0],currencies[1],market,today,fmt))+'</p>':'');
 }
 function render(x,esc,fmt){
  if(!x)return '';
@@ -69,7 +87,7 @@ function render(x,esc,fmt){
  const colored=(v,u)=>'<span class="badge '+tone(v)+'">'+number(v,u)+'</span>';
  const turn={DOWN_TO_UP:'Da calo a recupero del momentum',UP_TO_DOWN:'Da recupero a calo del momentum',NONE:'Nessuna inversione'};
  const table='<div style="overflow-x:auto"><table><thead><tr><th>Valuta / indicatore</th><th>Periodo</th><th>Livello</th><th>Momentum</th><th>Velocità</th><th>Accelerazione</th><th>Svolta</th></tr></thead><tbody>'+x.rows.map(r=>'<tr><td>'+esc(r.currency+' · '+r.label)+(r.nominal_not_real?' (nominale)':'')+'</td><td>'+esc(r.reference_period)+'</td><td>'+number(r.level,'')+' '+esc(r.unit||'')+'</td><td>'+colored(r.momentum_pct,'%')+'</td><td>'+colored(r.velocity_pp,' pp')+'</td><td>'+colored(r.acceleration_pp,' pp')+'</td><td>'+esc(turn[r.turning_point]||'Non valutabile')+'</td></tr>').join('')+'</tbody></table></div>';
- return '<details class="panel" data-activity-momentum-v1'+(x.route!=='overview'&&(x.route!=='pairs'||x.focusedPair)?' open':'')+'> <summary><strong>Momentum dell’attività economica</strong> · ricerca</summary><p>'+(x.status==='unavailable'?'Diagnostica non ancora pubblicata o non validabile.':(x.status==='historical'?'Elaborazione precedente: ':'Elaborazione del giorno: ')+esc(x.day)+'. Il periodo di ogni indicatore resta distinto dalla data di elaborazione.')+'</p>'+(x.status==='unavailable'?'':narrative(x.rows,esc,x.market,x.today,fmt)+'<details><summary>Dettaglio quantitativo</summary>'+table+'</details>'+'<p>Mensili: ultimi tre mesi rispetto ai tre precedenti. Trimestrali: trimestre su trimestre. Velocità = variazione del momentum; accelerazione = variazione della velocità. Svolta del momentum, non del livello economico. Serie riviste, non point-in-time; nessun ranking o segnale Forex. La spesa AUD nominale e il retail NZD trimestrale non sono confrontabili direttamente con le altre serie reali mensili.</p>')+'</details>';
+ return '<details class="panel" data-activity-momentum-v1'+(x.route!=='overview'&&(x.route!=='pairs'||x.focusedPair)?' open':'')+'> <summary><strong>Momentum dell’attività economica</strong> · ricerca</summary><p>'+(x.status==='unavailable'?'Diagnostica non ancora pubblicata o non validabile.':(x.status==='historical'?'Elaborazione precedente: ':'Elaborazione del giorno: ')+esc(x.day)+'. Il periodo di ogni indicatore resta distinto dalla data di elaborazione.')+'</p>'+(x.status==='unavailable'?'':narrative(x.rows,esc,x.market,x.today,fmt,x.route,x.focusedPair)+'<details><summary>Dettaglio quantitativo</summary>'+table+'</details>'+'<p>Mensili: ultimi tre mesi rispetto ai tre precedenti. Trimestrali: trimestre su trimestre. Velocità = variazione del momentum; accelerazione = variazione della velocità. Svolta del momentum, non del livello economico. Serie riviste, non point-in-time; nessun ranking o segnale Forex. La spesa AUD nominale e il retail NZD trimestrale non sono confrontabili direttamente con le altre serie reali mensili.</p>')+'</details>';
 }
-const api={read,render,reading,marketReading};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FXQuantActivityMomentum=api;
+const api={read,render,reading,marketReading,positionReading,priceReading};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FXQuantActivityMomentum=api;
 })(typeof window==='undefined'?globalThis:window);
