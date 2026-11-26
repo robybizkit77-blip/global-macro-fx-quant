@@ -145,6 +145,19 @@ class G8SixGrowthPublisherBridgeTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             collect_growth_bridges(evidence=changed,current=self.observed)
 
+    def test_current_vintage_advances_without_promoting_archived_events(self):
+        revised=copy.deepcopy(self.observed)
+        row=next(x for x in revised["USD"] if x["id"]==PINS["USD"]["runtime_id"])
+        row["unit"]="Index 2022=100"
+        row["current_vintage_provenance"]={
+            "status":"FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
+            "source_series_id":"INDPRO","source_units_verified":"index 2022=100 , seasonally adjusted",
+            "source_series_first_release_PIT_certified":False,"historical_levels_may_be_revised_again":True}
+        self.assertEqual(collect_growth_bridges(evidence=self.manifest,current=revised),self.growth)
+        row["unit"]="Index 1999=100"
+        with self.assertRaisesRegex(ValueError,"metric unit"):
+            collect_growth_bridges(evidence=self.manifest,current=revised)
+
     def test_prior_sources_nonmutated_and_replay_not_promoted(self):
         raw=copy.deepcopy(self.manifest)
         obs=copy.deepcopy(self.observed)
