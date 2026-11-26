@@ -1235,7 +1235,8 @@ function render(){
  $('content').dataset.view=route;
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,banks,rates,liquidity,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
- $('content').innerHTML=views[route]();
+ const health=window.FXQuantDataHealth?.read(state.data,dayNow());
+ $('content').innerHTML=views[route]()+ (route==='overview'&&health?window.FXQuantDataHealth.render(health,esc):'');
  // Restore after replacing the DOM; nested details must not close when the
  // user changes currency, comparison, return window or research sorting.
  for(const selector of openG8){
@@ -1250,8 +1251,8 @@ function render(){
  const priceDay=get('pairs')?.price_asof;
  $('top-asof').hidden=route==='overview';
  $('top-asof').textContent=observationOn(priceDay)?'Prezzi coppie · '+date(priceDay):'Data prezzi da verificare';
- $('top-quality').classList.toggle('warn',missing>0||caseOld);
- $('top-quality').innerHTML='<span class="live-dot"></span>'+(missing>0?ok+'/'+requiredSources.length+' FEED':caseOld?'DATI STORICI':'FONTI CARICATE');
+ $('top-quality').classList.toggle('warn',missing>0||caseOld||Boolean(health?.attention));
+ $('top-quality').innerHTML='<span class="live-dot"></span>'+(missing>0?ok+'/'+requiredSources.length+' FEED':caseOld?'DATI STORICI':health?.attention?'FONTI DA VERIFICARE':'FONTI CARICATE');
  $('sidebar-feed').textContent=ok+'/'+requiredSources.length+' fonti caricate · dati non intraday';
  const sf=$('sidebar-focus');if(sf)sf.textContent=FLAGS[state.ccy]+' '+state.ccy+' · '+getPairName(state.pair);
  document.title='FX Quant Next — '+ROUTES[route];
