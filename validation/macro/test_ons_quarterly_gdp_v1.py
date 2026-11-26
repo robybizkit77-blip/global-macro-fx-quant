@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 import json
 from pathlib import Path
 import tempfile
@@ -83,6 +83,14 @@ class OnsQuarterlyGDPTests(unittest.TestCase):
         self.assertIsNone(latest_growth("2026-11-19", path=self.archive))
         self.assertEqual(self.run_capture(ROLLOVER, latest=NEXT)["status"], "ARCHIVED")
         self.assertEqual(latest_growth("2027-02-11", path=self.archive)["reference_quarter"], "2026Q3")
+        before_capture = latest_growth("2027-02-11", path=self.archive,
+                                       live_cutoff=ROLLOVER-timedelta(seconds=1))
+        self.assertEqual(before_capture["reference_quarter"],"2026Q3")
+        live = latest_growth("2027-02-11", path=self.archive, live_cutoff=ROLLOVER)
+        self.assertEqual(live["reference_quarter"],"2026Q4")
+        self.assertEqual(live["prior_documented_quarter"]["reported_value"],0.6)
+        with self.assertRaises(ValueError):
+            latest_growth("2027-02-12",path=self.archive,live_cutoff=ROLLOVER)
         matured = latest_growth("2027-02-12", path=self.archive)
         self.assertEqual(matured["reference_quarter"], "2026Q4")
         self.assertEqual(matured["reported_value"], -0.2)
