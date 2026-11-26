@@ -1,14 +1,14 @@
 {
   "schema": "GMFQ_NEXT_ESTIMATED_FX_RECALC_RECEIPT_V1",
   "status": "NO_MATERIAL_THESIS_CHANGE",
-  "checkedAtUtc": "2026-11-26T15:16:52.388Z",
+  "checkedAtUtc": "2026-11-26T15:45:16.510Z",
   "checkedDay": "2026-11-26",
-  "sourceCommit": "ce2ae6eed9e92d012d4424febc79726b7e736a15",
+  "sourceCommit": "1b80c966162fddad5476a28dd7a462a23d050225",
   "method": "c54bb6f6a2fa76470e8c616c72b478e70735166b10c36cd32f35dddcf8cd0379",
   "sourceHashes": {
     "observed": "0b1c92c3ff8c475820997e90e15d11172fc5dc656dfa060f749615ddc52ce478",
     "prices": "f1fd66c377d15e5710a54c60eb4ec4ded141b239c064046fcdea6e1703679ccb",
-    "ois": "3efcda4c79081c30fdd55dfce06219cf6deb109f34fd48c37666831a1ad701d9",
+    "ois": "1ac5b9dc0257beb3417b18bc453cb95da97a103eaf430a7c754573ceca86812a",
     "rates": "fa5e3f1d1e6b3fdffec0d1e3b61abc41d723309ce5fda2b10a8456fe2982cad2",
     "model": "f9f933a7f57cdeceb32b4f0a9baa5a033e5ab830de8dfa1b3fb757d7983a72d8"
   },
@@ -84,7 +84,7 @@
       "policyScore": 0,
       "priceScore": -0.142857,
       "monetaryQuality": "UFFICIALE",
-      "monetaryAsOf": "2026-11-24",
+      "monetaryAsOf": "2026-11-25",
       "partial": false
     },
     {
@@ -95,7 +95,7 @@
       "policyScore": -1,
       "priceScore": 0.428571,
       "monetaryQuality": "UFFICIALE",
-      "monetaryAsOf": "2026-11-25",
+      "monetaryAsOf": "2026-11-26",
       "partial": false
     },
     {
