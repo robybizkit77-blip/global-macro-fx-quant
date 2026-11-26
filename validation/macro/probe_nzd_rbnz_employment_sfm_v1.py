@@ -38,8 +38,11 @@ def main():
             book=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
             try:
                 for ws in book.worksheets:
-                    if ws.max_row*ws.max_column>500000:continue
+                    if ws.max_row==1 and ws.max_column==1:ws.reset_dimensions()
+                    if (ws.max_row or 1)*(ws.max_column or 1)>500000:continue
                     rows=list(ws.iter_rows(values_only=True))
+                    if not rows:continue
+                    assert sum(len(x) for x in rows)<=500000,"unexpected worksheet size"
                     print("RBNZ_LAYOUT",ident,ws.title,ws.max_row,ws.max_column,json.dumps([[str(v)[:100] for v in x[:20]] for x in rows[:15]],ensure_ascii=False))
                     candidates=[]
                     for k,line in enumerate(zip(*rows)):
