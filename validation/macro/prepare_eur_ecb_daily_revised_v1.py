@@ -49,12 +49,18 @@ def prepare_row(row,ident,now,fetcher):
             day=date.fromisoformat(rec["TIME_PERIOD"]);v=float(rec["OBS_VALUE"])
             need(day not in alt and math.isfinite(v) and 0<=v<=1,"invalid alternative CISS observation")
             alt[day]=v
-        need(set(old)<=set(alt),"cannot compare historical CISS variants")
-        alt_errors=[abs(alt[d]-v) for d,v in old.items()]
+        # Different variants can have different observation calendars. Compare
+        # paired real dates, never interpolate or fill missing legacy values.
+        common=sorted(set(old)&set(alt))
+        need(len(common)>=12 and (common[-1]-common[0]).days>=28,"insufficient paired historical CISS observations: "+str(len(common)))
+        alt_errors=[abs(alt[d]-old[d]) for d in common]
+        paired_errors=[abs(obs[d]-old[d]) for d in common]
+        overlap_audit["alternative_overlap_count"]=len(common)
+        overlap_audit["paired_new_median_abs_error"]=statistics.median(paired_errors)
         overlap_audit["alternative_median_abs_error"]=statistics.median(alt_errors)
         overlap_audit["alternative_max_abs_error"]=max(alt_errors)
         print("CISS_VARIANT_COMPARISON",json.dumps(overlap_audit,sort_keys=True))
-        need(statistics.median(errors)<=.001 and statistics.median(alt_errors)>max(3*statistics.median(errors),.0001),"New CISS historical variant not uniquely established")
+        need(statistics.median(errors)<=.001 and statistics.median(alt_errors)>max(3*statistics.median(paired_errors),.0001),"New CISS historical variant not uniquely established")
     vs=[obs[d] for d in ds];ds=[d.isoformat()+suffix for d in ds];before=row["last_date"]
     changed=row["dates"]!=ds or row["values"]!=vs or row.get("current_vintage_provenance",{}).get("source_series_id")!=key
     if changed:
