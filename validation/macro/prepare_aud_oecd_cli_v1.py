@@ -15,9 +15,14 @@ def need(ok,msg):
     if not ok:raise ValueError(msg)
 def parse(raw,now):
     rd=csv.DictReader(io.StringIO(raw.decode("utf-8-sig")))
+    # Normalize only whitespace/BOM in column labels; never infer missing dimensions.
+    fields=rd.fieldnames or []
+    normalized=[v.strip().lstrip("\ufeff") for v in fields]
+    need(len(set(normalized))==len(normalized),"duplicate source columns")
+    rd.fieldnames=normalized
     required=set(META)|{"TIME_PERIOD","OBS_VALUE"}
-    missing=required-set(rd.fieldnames or [])
-    need(not missing,"missing source metadata: "+",".join(sorted(missing)))
+    missing=required-set(normalized)
+    need(not missing,"missing source metadata: "+",".join(sorted(missing))+"; actual columns: "+repr(fields))
     obs={}
     for r in rd:
         if not all(r[k]==v for k,v in META.items()):continue
