@@ -20786,7 +20786,9 @@
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         3523361.0,
@@ -20870,13 +20872,25 @@
         4226650.0,
         4089751.0,
         4020507.0,
-        3905822.0
+        3905822.0,
+        3828930.0,
+        3821699.0
       ],
       "unit": "100 million yen",
       "frequency": "M",
       "source_file": "JP_BOJ_RESERVE_BALANCES_history.csv",
-      "last_date": "2026-08",
-      "last_value": 3905822.0
+      "last_date": "2026-10",
+      "last_value": 3821699.0,
+      "current_vintage_provenance": {
+        "status": "BOJ_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "BOJ_MBLONG_AVERAGE_RESERVE_BALANCES",
+        "source_url": "https://www.boj.or.jp/en/statistics/boj/other/mb/mblong.xlsx",
+        "source_workbook_sha256": "b9eef6f0a4c5fa480935d777e40e32696a4ab4110782a76cc29903bcc6d8fb65",
+        "historical_overlap": 82,
+        "exact_overlap": 82,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T16:32:28.599297+00:00"
+      }
     },
     {
       "id": "JP_BOJ_TOTAL_ASSETS_history_value",
