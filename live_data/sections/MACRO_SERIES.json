@@ -33367,7 +33367,9 @@
         "29-May-2026",
         "30-Jun-2026",
         "31-Jul-2026",
-        "31-Aug-2026"
+        "31-Aug-2026",
+        "30-Sep-2026",
+        "30-Oct-2026"
       ],
       "values": [
         59.0,
@@ -33451,13 +33453,32 @@
         66.6,
         64.6,
         65.5,
-        66.2
+        66.2,
+        64.7,
+        65.2
       ],
       "unit": "Index",
       "frequency": "M",
       "source_file": "AU_AUD_TWI_history.csv",
-      "last_date": "31-Aug-2026",
-      "last_value": 66.2
+      "last_date": "30-Oct-2026",
+      "last_value": 65.2,
+      "current_vintage_provenance": {
+        "status": "RBA_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "FXRTWI",
+        "source_url": "https://www.rba.gov.au/statistics/tables/csv/f11-data.csv",
+        "source_metadata": {
+          "title": "Trade-weighted Index May 1970 = 100",
+          "description": "Australian Dollar Trade-weighted Index",
+          "frequency": "Monthly",
+          "units": "Index",
+          "series id": "FXRTWI"
+        },
+        "source_csv_sha256": "b27fce75b5197ada059a9ece17f128b70582b2a040340ae14ee5d5b428fe1cef",
+        "historical_overlap": 82,
+        "exact_overlap": 82,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T15:54:08.741986+00:00"
+      }
     },
     {
       "id": "AU_FCMYGBAG10D_history_FCMYGBAG10D",
