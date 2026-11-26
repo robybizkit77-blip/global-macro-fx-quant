@@ -21241,7 +21241,10 @@
         "2026-04",
         "2026-05",
         "2026-06",
-        "2026-07"
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         99.76,
@@ -21325,13 +21328,27 @@
         68.46,
         68.73,
         68.03,
-        67.57
+        67.57,
+        68.46,
+        69.49,
+        69.25
       ],
       "unit": "Index 2020=100",
       "frequency": "M",
       "source_file": "JP_YEN_BROAD_NEER_history.csv",
-      "last_date": "2026-07",
-      "last_value": 67.57
+      "last_date": "2026-10",
+      "last_value": 69.25,
+      "current_vintage_provenance": {
+        "status": "FRED_BIS_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "NBJPBIS",
+        "source_url": "https://fred.stlouisfed.org/series/NBJPBIS",
+        "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NBJPBIS&cosd=2019-10-01",
+        "source_csv_sha256": "071c7603a15dc83924e2c1290384354f358d749a03b7fe2a22ac22203bb8955f",
+        "historical_overlap": 82,
+        "max_absolute_revision": 0.0,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T13:51:39.772181+00:00"
+      }
     },
     {
       "id": "JPY_RATES_2016_2026_10Y",
