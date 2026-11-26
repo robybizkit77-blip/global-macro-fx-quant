@@ -175,9 +175,14 @@ jobs:
       - name: Prepare read-only NZD post-roll release review receipt
         if: steps.gate.outputs.should_run == 'true' && github.event_name != 'pull_request'
         run: |
-          python3 validation/rates/check_nzd_postroll_release_readiness_v1.py \
-            --as-of "$(TZ=Pacific/Auckland date +%F)" \
-            --output /tmp/fxv2-nzd-postroll-release-review.json
+          if python3 validation/rates/check_nzd_postroll_release_readiness_v1.py \
+              --as-of "$(TZ=Pacific/Auckland date +%F)" \
+              --output /tmp/fxv2-nzd-postroll-release-review.json; then
+            echo 'NZD post-roll release review receipt produced; no operational promotion' >> "$GITHUB_STEP_SUMMARY"
+          else
+            rm -f /tmp/fxv2-nzd-postroll-release-review.json
+            echo 'NZD post-roll release review WITHHELD; other research paths unaffected' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Use authorized eolas API only when the quota-safe slot is permitted
         if: steps.gate.outputs.should_run == 'true' && github.event_name != 'pull_request'
         shell: bash
