@@ -1620,7 +1620,7 @@
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
           "relation": "Il differenziale 2Y osservato è -160 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
-          "timing": "EUR: TURNING RECENTE · GBP: TURNING RECENTE",
+          "timing": "EUR: TURNING RECENTE · GBP: NESSUN TURNING RECENTE",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
           "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -1650,7 +1650,7 @@
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
         "relation": "Il differenziale 2Y osservato è -160 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
-        "timing": "EUR: TURNING RECENTE · GBP: TURNING RECENTE",
+        "timing": "EUR: TURNING RECENTE · GBP: NESSUN TURNING RECENTE",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
         "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -1697,18 +1697,18 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
+          "positive": 3,
           "negative": 0,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
-            "Crescita: turning point",
+            "Lavoro: migliora",
             "Rates: migliora"
           ],
           "withheld": false
         },
         "aNet": -3,
-        "bNet": 2,
+        "bNet": 3,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "GBP"
       },
@@ -2160,7 +2160,7 @@
           "fav": "AUD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce AUD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "GBP: TURNING RECENTE · AUD: RATES AVANTI",
+          "timing": "GBP: NESSUN TURNING RECENTE · AUD: RATES AVANTI",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di AUD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2190,7 +2190,7 @@
         "fav": "AUD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce AUD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "GBP: TURNING RECENTE · AUD: RATES AVANTI",
+        "timing": "GBP: NESSUN TURNING RECENTE · AUD: RATES AVANTI",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di AUD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2224,12 +2224,12 @@
         "a": "GBP",
         "b": "AUD",
         "A": {
-          "positive": 2,
+          "positive": 3,
           "negative": 0,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
-            "Crescita: turning point",
+            "Lavoro: migliora",
             "Rates: migliora"
           ],
           "withheld": false
@@ -2246,7 +2246,7 @@
           ],
           "withheld": false
         },
-        "aNet": 2,
+        "aNet": 3,
         "bNet": -1,
         "state": "DINAMICA FAVOREVOLE A",
         "fav": "GBP"
@@ -2277,7 +2277,7 @@
           "fav": "—",
           "quality": "PILASTRI DIVISI",
           "relation": "Macro e Tassi/CB favoriscono valute opposte: nessun vantaggio strutturale pulito.",
-          "timing": "GBP: TURNING RECENTE · CAD: RATES AVANTI",
+          "timing": "GBP: NESSUN TURNING RECENTE · CAD: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
           "missing": "Macro e Tassi/CB sono in conflitto: serve convergenza prima di promuovere il pair.",
@@ -2307,7 +2307,7 @@
         "fav": "—",
         "quality": "PILASTRI DIVISI",
         "relation": "Macro e Tassi/CB favoriscono valute opposte: nessun vantaggio strutturale pulito.",
-        "timing": "GBP: TURNING RECENTE · CAD: RATES AVANTI",
+        "timing": "GBP: NESSUN TURNING RECENTE · CAD: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
         "missing": "Macro e Tassi/CB sono in conflitto: serve convergenza prima di promuovere il pair.",
@@ -2341,12 +2341,12 @@
         "a": "GBP",
         "b": "CAD",
         "A": {
-          "positive": 2,
+          "positive": 3,
           "negative": 0,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
-            "Crescita: turning point",
+            "Lavoro: migliora",
             "Rates: migliora"
           ],
           "withheld": false
@@ -2362,7 +2362,7 @@
           ],
           "withheld": false
         },
-        "aNet": 2,
+        "aNet": 3,
         "bNet": -1,
         "state": "DINAMICA FAVOREVOLE A",
         "fav": "GBP"
@@ -2426,7 +2426,7 @@
           "fav": "GBP",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "Tassi/CB favoriscono GBP, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
-          "timing": "GBP: TURNING RECENTE · CHF: TURNING RECENTE",
+          "timing": "GBP: NESSUN TURNING RECENTE · CHF: TURNING RECENTE",
           "priceReading": "DIVERGENZA DA MONITORARE",
           "priceNote": "La struttura Macro + Tassi/CB favorisce GBP, ma il Prezzo favorisce CHF.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2456,7 +2456,7 @@
         "fav": "GBP",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "Tassi/CB favoriscono GBP, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
-        "timing": "GBP: TURNING RECENTE · CHF: TURNING RECENTE",
+        "timing": "GBP: NESSUN TURNING RECENTE · CHF: TURNING RECENTE",
         "priceReading": "DIVERGENZA DA MONITORARE",
         "priceNote": "La struttura Macro + Tassi/CB favorisce GBP, ma il Prezzo favorisce CHF.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2490,12 +2490,12 @@
         "a": "GBP",
         "b": "CHF",
         "A": {
-          "positive": 2,
+          "positive": 3,
           "negative": 0,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
-            "Crescita: turning point",
+            "Lavoro: migliora",
             "Rates: migliora"
           ],
           "withheld": false
@@ -2512,7 +2512,7 @@
           ],
           "withheld": false
         },
-        "aNet": 2,
+        "aNet": 3,
         "bNet": 1,
         "state": "DINAMICA FAVOREVOLE A",
         "fav": "GBP"
@@ -2543,7 +2543,7 @@
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
           "relation": "Il differenziale 2Y osservato è +288 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
-          "timing": "GBP: TURNING RECENTE · JPY: RATES AVANTI",
+          "timing": "GBP: NESSUN TURNING RECENTE · JPY: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
           "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -2573,7 +2573,7 @@
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
         "relation": "Il differenziale 2Y osservato è +288 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
-        "timing": "GBP: TURNING RECENTE · JPY: RATES AVANTI",
+        "timing": "GBP: NESSUN TURNING RECENTE · JPY: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
         "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -2607,12 +2607,12 @@
         "a": "GBP",
         "b": "JPY",
         "A": {
-          "positive": 2,
+          "positive": 3,
           "negative": 0,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
-            "Crescita: turning point",
+            "Lavoro: migliora",
             "Rates: migliora"
           ],
           "withheld": false
@@ -2630,7 +2630,7 @@
           ],
           "withheld": false
         },
-        "aNet": 2,
+        "aNet": 3,
         "bNet": -1,
         "state": "DINAMICA FAVOREVOLE A",
         "fav": "GBP"
@@ -2661,7 +2661,7 @@
           "fav": "—",
           "quality": "NESSUN CONTRASTO",
           "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
-          "timing": "GBP: TURNING RECENTE · NZD: TURNING RECENTE",
+          "timing": "GBP: NESSUN TURNING RECENTE · NZD: TURNING RECENTE",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
           "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -2691,7 +2691,7 @@
         "fav": "—",
         "quality": "NESSUN CONTRASTO",
         "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
-        "timing": "GBP: TURNING RECENTE · NZD: TURNING RECENTE",
+        "timing": "GBP: NESSUN TURNING RECENTE · NZD: TURNING RECENTE",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
         "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -2725,12 +2725,12 @@
         "a": "GBP",
         "b": "NZD",
         "A": {
-          "positive": 2,
+          "positive": 3,
           "negative": 0,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
-            "Crescita: turning point",
+            "Lavoro: migliora",
             "Rates: migliora"
           ],
           "withheld": false
@@ -2746,7 +2746,7 @@
           ],
           "withheld": false
         },
-        "aNet": 2,
+        "aNet": 3,
         "bNet": 0,
         "state": "DINAMICA FAVOREVOLE A",
         "fav": "GBP"
@@ -2810,7 +2810,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "GBP: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
+          "timing": "GBP: NESSUN TURNING RECENTE · USD: NESSUN TIMING CHIARO",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2840,7 +2840,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "GBP: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
+        "timing": "GBP: NESSUN TURNING RECENTE · USD: NESSUN TIMING CHIARO",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2874,12 +2874,12 @@
         "a": "GBP",
         "b": "USD",
         "A": {
-          "positive": 2,
+          "positive": 3,
           "negative": 0,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
-            "Crescita: turning point",
+            "Lavoro: migliora",
             "Rates: migliora"
           ],
           "withheld": false
@@ -2895,7 +2895,7 @@
           ],
           "withheld": false
         },
-        "aNet": 2,
+        "aNet": 3,
         "bNet": 1,
         "state": "DINAMICA FAVOREVOLE A",
         "fav": "GBP"
