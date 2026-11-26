@@ -18,9 +18,9 @@
  "eligible_for_fx_core": false,
  "eligible_for_backtest": false,
  "observation_is_not_publication_date": true,
- "last_checked_rome": "2026-11-25",
- "latest_observation": "2026-09",
- "anchor_revision_pct": -0.0187,
+ "last_checked_rome": "2026-11-26",
+ "latest_observation": "2026-10",
+ "anchor_revision_pct": -0.0079,
  "dates": [
   "2024-01",
   "2024-02",
@@ -54,7 +54,8 @@
   "2026-06",
   "2026-07",
   "2026-08",
-  "2026-09"
+  "2026-09",
+  "2026-10"
  ],
  "values": [
   5097093.0578,
@@ -80,16 +81,17 @@
   5237450.5729,
   5258125.2898,
   5277722.6493,
-  5278322.9424,
+  5278316.9424,
   5294228.4799,
   5323049.6271,
-  5354934.0652,
-  5385612.6461,
-  5409729.1267,
-  5440942.8362,
-  5480057.2127,
-  5463017.0817,
-  5472010.128
+  5355016.0652,
+  5385706.6461,
+  5409772.1267,
+  5441023.8362,
+  5480652.1705,
+  5463287.5944,
+  5472903.888,
+  5506504.0535
  ],
  "inference": "Stock prestiti MFI alle imprese non finanziarie, non nuove erogazioni, non credit impulse corretto per cessioni; ricerca separata.",
  "excess_liquidity": {
