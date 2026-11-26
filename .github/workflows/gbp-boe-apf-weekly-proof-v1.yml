@@ -31,5 +31,7 @@ jobs:
           print(json.dumps(result,sort_keys=True))
           assert result['source_series_id']=='RPWZ4TM' and result['overlap']['count']>=82
           assert result['overlap']['exact']==result['overlap']['count'],result
-          assert result['after']>='2026-11-25' and dict(zip(row['dates'],row['values'])).get('2026-11-25')==488149,result
+          assert result['after']>='2026-11-18' and dict(zip(row['dates'],row['values'])).get('2026-11-18')==488149,result
+          # IADB may lag the separately published weekly report by one release.
+          # Preserve actual API dates; never relabel 18 November as 25 November.
           PY
