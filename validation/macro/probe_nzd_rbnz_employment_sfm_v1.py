@@ -5,7 +5,7 @@ from urllib.parse import urljoin,urlsplit
 from urllib.request import Request,urlopen
 from pathlib import Path
 from openpyxl import load_workbook
-PAGES={"NZ_CORE_INFLATION_SFM_Q_history_value":("prices","Prices - M1 (1988-current)"),"NZ_EMPLOYED_history_value":("labour-market","Labour market")}
+PAGES={"NZ_CORE_INFLATION_SFM_Q_history_value":"https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m1/hm1.xlsx","NZ_EMPLOYED_history_value":"https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m9/hm9.xlsx"}
 class Links(HTMLParser):
     def __init__(self):super().__init__();self.a=None;self.links=[]
     def handle_starttag(self,tag,attrs):
@@ -22,12 +22,9 @@ def fetch(url):
     return data
 def main():
     doc=json.loads(Path("live_data/sections/MACRO_SERIES.json").read_text())
-    for ident,(page,label) in PAGES.items():
-        url="https://www.rbnz.govt.nz/en/statistics/series/economic-indicators/"+page
-        p=Links();p.feed(fetch(url).decode("utf-8",errors="replace"))
-        links=[(urljoin(url,h),t) for h,t in p.links if ".xlsx" in h.lower() and urlsplit(urljoin(url,h)).hostname=="www.rbnz.govt.nz" and label.lower() in t.lower()]
-        print("RBNZ_LINKS",ident,links)
-        assert 1<=len(links)<=5
+    for ident,url in PAGES.items():
+        links=[(url,ident)]
+        print("RBNZ_DIRECT",ident,url)
         row=next(r for r in doc["NZD"] if r["id"]==ident);old=row["values"]
         for link,_ in links:
             book=load_workbook(io.BytesIO(fetch(link)),read_only=True,data_only=True)
