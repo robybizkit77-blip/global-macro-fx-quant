@@ -1,25 +1,25 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-26T08:29:41.467850Z",
-  "edition_time_rome": "2026-11-26 09:29",
-  "material_digest": "b81e8d7e708ea72725592fffe6155a57a9abb2dcf4b3d27fb416008ea6575480",
+  "generated_at_utc": "2026-11-26T16:53:16.015307Z",
+  "edition_time_rome": "2026-11-26 17:53",
+  "material_digest": "865a7383f1316ab212bb68b8ec9a780aed9180af6095a73a8b65b7a6d31cde82",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
-  "headline": "Dollaro in rialzo",
-  "lead": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 25 novembre, il Nasdaq Composite ha perso terreno.",
+  "headline": "Dollaro in calo",
+  "lead": "Il 26 novembre il dollaro ha ceduto contro euro e yen. Alla chiusura del 25 novembre, il Nasdaq Composite ha perso terreno.",
   "news": [
     {
-      "headline": "Dollaro in rialzo",
-      "analysis": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. La prossima verifica è capire se il movimento si estende agli altri cambi.",
+      "headline": "Dollaro in calo",
+      "analysis": "Il 26 novembre il dollaro ha ceduto contro euro e yen. La prossima verifica è capire se il movimento si estende agli altri cambi.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-25",
-      "event_date": "2026-11-25",
+      "published_date": "2026-11-26",
+      "event_date": "2026-11-26",
       "market_area": "FOREX",
       "sources": [
         "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
       ],
-      "evidence": "Al fixing BCE del 25 novembre, EUR/USD ha segnato −0,26% e USD/JPY +0,16%."
+      "evidence": "Al fixing BCE del 26 novembre, EUR/USD ha segnato +0,37% e USD/JPY −0,04%."
     },
     {
       "headline": "Aggiornamento macro negli Stati Uniti",
@@ -84,7 +84,7 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 25 novembre, il Nasdaq Composite ha perso terreno.",
+  "desk_judgment": "Il 26 novembre il dollaro ha ceduto contro euro e yen. Alla chiusura del 25 novembre, il Nasdaq Composite ha perso terreno.",
   "fx_implications": "Il 30 novembre alle 09:00 italiane è in programma Swiss quarterly GDP (CHF). Da verificare la risposta dei tassi e di CHF.",
   "what_changed": "Nei proxy futures del 26 novembre l’oro sale e il WTI sale.",
   "contrary_evidence": "La tenuta del movimento dipende anche dal sostegno dei tassi a breve.",
@@ -102,8 +102,8 @@
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
-      "news": "2026-11-25",
-      "rss_checked_at_utc": "2026-11-26T08:29:41.467850Z",
+      "news": "2026-11-26",
+      "rss_checked_at_utc": "2026-11-26T16:53:16.015307Z",
       "commodities": "2026-11-26"
     },
     "no_paid_api": true,
@@ -111,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-26T08:29:41.467850Z",
+      "headline": "Dollaro in rialzo",
+      "material_digest": "b81e8d7e708ea72725592fffe6155a57a9abb2dcf4b3d27fb416008ea6575480"
+    },
     {
       "generated_at_utc": "2026-11-26T05:58:59.327872Z",
       "headline": "Dollaro in rialzo",
@@ -225,11 +230,6 @@
       "generated_at_utc": "2026-11-24T07:36:28.248064Z",
       "headline": "Volatilità in calo, dollaro in rialzo",
       "material_digest": "77531e4c186ecb5bf1644c368ca26bc8725f6eebeae29ac6ea69f9cf9761fbbc"
-    },
-    {
-      "generated_at_utc": "2026-11-24T06:13:10.259221Z",
-      "headline": "Volatilità in calo, dollaro in rialzo",
-      "material_digest": "46e8c54cc8bcdcf45be486bd1965c0e4a8fe1b6aa3b46c8c3fa008ba67190afe"
     }
   ]
 }
