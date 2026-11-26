@@ -20,6 +20,9 @@ on:
       - 'validation/macro/statsnz_quarterly_gdp_v1.py'
       - 'validation/macro/test_statsnz_quarterly_gdp_v1.py'
       - 'validation/macro/STATSNZ_QUARTERLY_GDP_V1.json'
+      - 'validation/macro/eurostat_quarterly_gdp_v1.py'
+      - 'validation/macro/test_eurostat_quarterly_gdp_v1.py'
+      - 'validation/macro/EUROSTAT_QUARTERLY_GDP_V1.json'
       - 'validation/macro/statcan_quarterly_gdp_v1.py'
       - 'validation/macro/test_statcan_quarterly_gdp_v1.py'
       - 'validation/macro/STATCAN_QUARTERLY_GDP_V1.json'
@@ -40,6 +43,9 @@ on:
       - 'validation/macro/statsnz_quarterly_gdp_v1.py'
       - 'validation/macro/test_statsnz_quarterly_gdp_v1.py'
       - 'validation/macro/STATSNZ_QUARTERLY_GDP_V1.json'
+      - 'validation/macro/eurostat_quarterly_gdp_v1.py'
+      - 'validation/macro/test_eurostat_quarterly_gdp_v1.py'
+      - 'validation/macro/EUROSTAT_QUARTERLY_GDP_V1.json'
       - 'validation/macro/statcan_quarterly_gdp_v1.py'
       - 'validation/macro/test_statcan_quarterly_gdp_v1.py'
       - 'validation/macro/STATCAN_QUARTERLY_GDP_V1.json'
@@ -102,6 +108,7 @@ jobs:
           python -m unittest validation.macro.test_seco_quarterly_gdp_v1 -v
           python -m unittest validation.macro.test_abs_quarterly_gdp_v1 -v
           python -m unittest validation.macro.test_statcan_quarterly_gdp_v1 -v
+          python -m unittest validation.macro.test_eurostat_quarterly_gdp_v1 -v
           python -m unittest validation.macro.test_statsnz_quarterly_gdp_v1 -v
       - name: Collect and archive the latest ONS UK quarterly first estimate
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
@@ -179,6 +186,20 @@ jobs:
           if grep -q 'SOURCE_UNAVAILABLE_ARCHIVE_RETAINED' /tmp/statsnz-quarterly-gdp-collection.json; then
             echo "::warning::Stats NZ quarterly bulletin not validated; retaining prior verified GDP."
           fi
+      - name: Verify Eurostat GDP parser against official November edition
+        if: github.event_name == 'pull_request' && github.head_ref == 'fix/eurostat-recurring-quarterly-gdp-20261126'
+        run: |
+          python -m validation.macro.eurostat_quarterly_gdp_v1 --verify-day 2026-11-13 > /tmp/eurostat-q3-proof.json
+          python -c "import json; d=json.load(open('/tmp/eurostat-q3-proof.json')); assert (d['quarter'],d['reported_value'],d['prior_qoq']) == ('2026Q3',0.4,0.6)"
+      - name: Collect and archive Eurostat GDP releases including revisions
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          python -m validation.macro.eurostat_quarterly_gdp_v1 --apply | tee /tmp/eurostat-quarterly-gdp-collection.json
+          cat /tmp/eurostat-quarterly-gdp-collection.json >> "$GITHUB_STEP_SUMMARY"
+          if grep -q 'SOURCE_UNAVAILABLE_ARCHIVE_RETAINED' /tmp/eurostat-quarterly-gdp-collection.json; then
+            echo "::warning::Eurostat GDP bulletin not validated; retaining prior verified GDP."
+          fi
       - name: Generate verified public Macro V3 context
         run: |
           set -euo pipefail
@@ -222,7 +243,8 @@ jobs:
                        'validation/macro/SECO_FLASH_QUARTERLY_GDP_V1.json',
                        'validation/macro/ABS_QUARTERLY_GDP_V1.json',
                        'validation/macro/STATCAN_QUARTERLY_GDP_V1.json',
-                       'validation/macro/STATSNZ_QUARTERLY_GDP_V1.json'),
+                       'validation/macro/STATSNZ_QUARTERLY_GDP_V1.json',
+                       'validation/macro/EUROSTAT_QUARTERLY_GDP_V1.json'),
               protected=(
                   'live_data/sections/NEWS_PULSE_OPERATIONAL.json',
                   'live_data/sections/MACRO_SERIES.json',
@@ -238,6 +260,8 @@ jobs:
                   'validation/macro/ESRI_FIRST_QUARTERLY_GDP_V1.json',
                   'validation/macro/statsnz_quarterly_gdp_v1.py',
                   'validation/macro/STATSNZ_QUARTERLY_GDP_V1.json',
+                  'validation/macro/eurostat_quarterly_gdp_v1.py',
+                  'validation/macro/EUROSTAT_QUARTERLY_GDP_V1.json',
                   'validation/macro/statcan_quarterly_gdp_v1.py',
                   'validation/macro/STATCAN_QUARTERLY_GDP_V1.json',
                   'validation/macro/abs_quarterly_gdp_v1.py',
@@ -343,6 +367,8 @@ jobs:
             /tmp/abs-q2-proof.json
             /tmp/statcan-quarterly-gdp-collection.json
             /tmp/statcan-q2-proof.json
+            /tmp/eurostat-quarterly-gdp-collection.json
+            /tmp/eurostat-q3-proof.json
             /tmp/statsnz-quarterly-gdp-collection.json
             /tmp/statsnz-q2-proof.json
           if-no-files-found: warn
