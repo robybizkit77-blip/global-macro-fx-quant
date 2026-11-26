@@ -20,18 +20,18 @@ CONFIG={
  "US_CPILFESL_history_value":("CPILFESL","US_CPILFESL_history.csv","Consumer Price Index for All Urban Consumers: All Items Less Food and Energy","Index 1982-1984=100","Index 1982-1984=100"),
  "US_PCEPILFE_history_value":("PCEPILFE","US_PCEPILFE_history.csv","Personal Consumption Expenditures Excluding Food and Energy","Index 2017=100","Index 2017=100"),
  "US_PCEPI_history_value":("PCEPI","US_PCEPI_history.csv","Personal Consumption Expenditures: Chain-type Price Index","Index 2017=100","Index 2017=100 SA"),
- "US_JTSJOL_history_value":("JTSJOL","US_JTSJOL_history.csv","Job Openings: Total Nonfarm","Thousands of Levels","Thousands of job openings, seasonally adjusted"),
+ "US_JTSJOL_history_value":("JTSJOL","US_JTSJOL_history.csv","Job Openings: Total Nonfarm","Level in Thousands","Thousands of job openings, seasonally adjusted"),
  "US_PAYEMS_history_value":("PAYEMS","US_PAYEMS_history.csv","All Employees, Total Nonfarm","Thousands of Persons","Thousands of persons"),
  "US_M2SL_history_value":("M2SL","US_M2SL_history.csv","M2","Billions of Dollars","Billions of U.S. dollars, seasonally adjusted"),
  "US_AHE_TOTAL_PRIVATE_history_value":("CES0500000003","US_AHE_TOTAL_PRIVATE_history.csv","Average Hourly Earnings of All Employees, Total Private","Dollars per Hour","U.S. dollars per hour, seasonally adjusted"),
  "US_NEWORDER_history_NEWORDER":("NEWORDER","US_NEWORDER_history.csv","Manufacturers' New Orders: Nondefense Capital Goods Excluding Aircraft","Millions of Dollars",""),
  "US_PI_history_PI":("PI","US_PI_history.csv","Personal Income","Billions of Dollars",""),
  "US_PSAVERT_history_PSAVERT":("PSAVERT","US_PSAVERT_history.csv","Personal Saving Rate","Percent",""),
- "US_JTSHIR_history_JTSHIR":("JTSHIR","US_JTSHIR_history.csv","Hires: Total Nonfarm","Thousands of Levels",""),
- "US_JTSQUR_history_JTSQUR":("JTSQUR","US_JTSQUR_history.csv","Quits: Total Nonfarm","Thousands of Levels",""),
+ "US_JTSHIR_history_JTSHIR":("JTSHIR","US_JTSHIR_history.csv","Hires: Total Nonfarm","Rate",""),
+ "US_JTSQUR_history_JTSQUR":("JTSQUR","US_JTSQUR_history.csv","Quits: Total Nonfarm","Rate",""),
  "US_HOUST_history_HOUST":("HOUST","US_HOUST_history.csv","New Privately-Owned Housing Units Started: Total Units","Thousands of Units",""),
  "US_PERMIT_history_PERMIT":("PERMIT","US_PERMIT_history.csv","New Privately-Owned Housing Units Authorized","Thousands of Units",""),
- "US_HSN1F_history_HSN1F":("HSN1F","US_HSN1F_history.csv","New One Family Houses Sold","Thousands of Units",""),
+ "US_HSN1F_history_HSN1F":("HSN1F","US_HSN1F_history.csv","New One Family Houses Sold","Thousands",""),
 }
 SCHEMA="GMFQ_US_MONTHLY_REVISED_FRED_RESEARCH_V1"
 def require(ok,message):
@@ -46,7 +46,9 @@ def metadata(raw,fred,title,unit):
     text=norm(soup.get_text(" ",strip=True))
     # FRED labels are part of the source metadata; never infer cadence from numbers.
     units=re.search(r"units:\s*(.*?)\s*frequency:",text)
-    require(units and norm(unit) in units.group(1) and "seasonally adjusted" in units.group(1)
+    accepted_units={norm(unit)}
+    if fred=="INDPRO": accepted_units.add("index 2022=100")
+    require(units and any(u in units.group(1) for u in accepted_units) and "seasonally adjusted" in units.group(1)
             and "not seasonally adjusted" not in units.group(1),"FRED unit or seasonal adjustment mismatch: "+str(units.group(1) if units else None))
     require(re.search(r"frequency:\s*monthly\b",text),"FRED frequency mismatch")
     return units.group(1)
@@ -54,7 +56,7 @@ def metadata(raw,fred,title,unit):
 def prepare_row(row,ident,now,fetcher):
     fred,source,title,unit,old_unit=CONFIG[ident]
     require(row["source_file"]==source and row.get("frequency") in ("","M")
-            and row.get("unit") in (old_unit,unit),"canonical source/unit/frequency mismatch")
+            and row.get("unit") in (old_unit,unit,*({"INDPRO":("Index 2022=100",),"JTSHIR":("Rate, seasonally adjusted",),"JTSQUR":("Rate, seasonally adjusted",),"HSN1F":("Thousands, seasonally adjusted annual rate",)}.get(fred,()))),"canonical source/unit/frequency mismatch")
     require(row["dates"][-1]==row["last_date"] and row["values"][-1]==row["last_value"],"inconsistent local latest")
     metadata_url="https://fred.stlouisfed.org/series/"+fred
     raw_meta,final=fetcher(metadata_url)
@@ -76,6 +78,12 @@ def prepare_row(row,ident,now,fetcher):
     ds=[m+"-01" if len(str(row["dates"][0]))==10 else m for m in months]
     vs=[lookup[m] for m in months]
     new_unit=old_unit or unit
+    if fred=="INDPRO":
+        new_unit="Index 2022=100" if "index 2022=100" in verified_units else "Index 2017=100"
+    if fred in ("JTSHIR","JTSQUR"): new_unit="Rate, seasonally adjusted"
+    if fred=="HSN1F":
+        require("annual rate" in verified_units,"New home sales must be annualized")
+        new_unit="Thousands, seasonally adjusted annual rate"
     provenance={"status":"FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_series_id":fred,"source_url":metadata_url,"source_csv_url":csv_url,
         "source_csv_sha256":sha256(raw_csv).hexdigest(),"source_metadata_sha256":sha256(raw_meta).hexdigest(),
