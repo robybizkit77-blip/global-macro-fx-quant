@@ -916,6 +916,10 @@ jobs:
           python -m unittest validation.macro.test_capture_g8_prospective_v1 -v
           python -m unittest validation.macro.test_score_g8_prospective_v1 -v
 
+      - name: Validate G8 audit period parsing and fail-closed evidence contract
+        if: github.event_name == 'pull_request'
+        run: python -m unittest validation.orchestration.test_audit_g8_source_coverage_v1 -v
+
       # Read-only baseline before issuer collection, including rates and
       # expected-policy source quality; not evidence of a new release.
       - name: Snapshot G8 data before official Macro refresh

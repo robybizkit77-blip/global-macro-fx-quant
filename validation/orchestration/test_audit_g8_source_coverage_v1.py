@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from validation.orchestration.audit_g8_source_coverage_v1 import (
-    FILES, FX, ROOT, age_days, age_months, compare, coverage, latest_periods,
+    FILES, FX, ROOT, age_days, age_months, compare, coverage, latest_periods, observation_date,
 )
 
 class G8CoverageReceiptTests(unittest.TestCase):
@@ -95,6 +95,30 @@ class G8CoverageReceiptTests(unittest.TestCase):
         self.assertEqual(compare(old, same)["rates"]["USD"], "UNCHANGED")
         self.assertEqual(compare(old, changed)["rates"]["USD"], "CHANGED")
         self.assertEqual(compare(old, changed)["macro_series"]["USD"], "UNCHANGED")
+
+    def test_catalogue_period_formats(self):
+        expected = {
+            "2026-10-01T00:00:00Z": "2026-10-01",
+            "2026-11-25 00:00:00+00:00": "2026-11-25",
+            "2026-Q2": "2026-04-01", "2026Q2": "2026-04-01",
+            "2026-W38": "2026-09-14", "30 Sep 2026": "2026-09-30",
+            "Jul-26": "2026-07-01", "2026/8/7": "2026-08-07",
+            "2026/09": "2026-09-01", "30/09/2026": "2026-09-30",
+            "31-Aug-2026": "2026-08-31",
+        }
+        for raw, iso in expected.items():
+            with self.subTest(raw=raw):
+                self.assertEqual(observation_date(raw).isoformat(), iso)
+        for raw in ("2026-Q5", "2026-W54", "31/02/2026", "2026-02-30",
+                    "2026-10-01T99:00:00Z", "nonsense"):
+            self.assertIsNone(observation_date(raw))
+        self.assertEqual(age_months("2026-Q2", "2026-11-26"), 7)
+
+    def test_mixed_period_order_and_future_days(self):
+        rows = [{"id": "mix", "dates": ["30 Sep 2026", "2026-10-01T00:00:00Z",
+                 "2026/8/7", "2026-11-27", "2026-11-25 00:00:00+00:00"],
+                 "values": [1, 2, 3, 999, 4]}]
+        self.assertEqual(latest_periods(rows, "2026-11-26")[0]["value"], 4)
 
     def test_future_and_bad_observations_must_not_be_promoted(self):
         test = [

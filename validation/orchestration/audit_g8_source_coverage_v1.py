@@ -40,12 +40,51 @@ def age_days(s, asof):
         return None
 
 
-def age_months(s, asof):
-    if not isinstance(s, str) or not PERIOD_RE.fullmatch(s):
+def observation_date(s):
+    """Recognize explicit catalogue period formats; never guess ambiguous MDY."""
+    if not isinstance(s, str):
         return None
-    y, m = map(int, s[:7].split("-"))
-    ay, am = map(int, asof[:7].split("-"))
-    return (ay - y) * 12 + am - m
+    try:
+        if re.fullmatch(r"\d{4}-\d{2}", s):
+            return date.fromisoformat(s + "-01")
+        if DATE_RE.fullmatch(s):
+            return date.fromisoformat(s)
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})", s):
+            return datetime.fromisoformat(s.replace("Z", "+00:00")).date()
+        m = re.fullmatch(r"(\d{4})-?Q([1-4])", s)
+        if m:
+            return date(int(m[1]), 3 * int(m[2]) - 2, 1)
+        m = re.fullmatch(r"(\d{4})-W(\d{2})", s)
+        if m:
+            return date.fromisocalendar(int(m[1]), int(m[2]), 1)
+        m = re.fullmatch(r"(\d{4})/(\d{1,2})(?:/(\d{1,2}))?", s)
+        if m:
+            return date(int(m[1]), int(m[2]), int(m[3] or 1))
+        m = re.fullmatch(r"(\d{1,2})/(\d{1,2})/(\d{4})", s)
+        if m:
+            return date(int(m[3]), int(m[2]), int(m[1]))
+        months = {name: i for i, name in enumerate(
+            ("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"), 1)}
+        m = re.fullmatch(r"(\d{1,2})([ -])([A-Za-z]{3})\2(\d{4})", s)
+        if m:
+            return date(int(m[4]), months[m[3].lower()], int(m[1]))
+        m = re.fullmatch(r"([A-Za-z]{3})-(\d{2})", s)
+        if m:
+            return date(2000 + int(m[2]), months[m[1].lower()], 1)
+    except (ValueError, KeyError, OverflowError):
+        return None
+    return None
+
+
+def age_months(s, asof):
+    p = observation_date(s)
+    try:
+        a = date.fromisoformat(asof)
+    except (ValueError, TypeError):
+        return None
+    if p is None:
+        return None
+    return (a.year - p.year) * 12 + a.month - p.month
 
 
 def digest(obj):
@@ -58,10 +97,13 @@ def latest_periods(series, asof):
         dates, vals = s.get("dates"), s.get("values")
         if not isinstance(dates, list) or not isinstance(vals, list) or len(dates) != len(vals):
             continue
-        eligible = [(p, vals[i]) for i, p in enumerate(dates)
-                    if age_months(p, asof) is not None and age_months(p, asof) >= 0 and number(vals[i])]
+        eligible = []
+        for p, v in zip(dates, vals):
+            parsed = observation_date(p)
+            if parsed is not None and parsed <= date.fromisoformat(asof) and number(v):
+                eligible.append((parsed, p, v))
         if eligible:
-            p, v = max(eligible, key=lambda item: item[0])
+            parsed, p, v = max(eligible, key=lambda item: item[0])
             out.append({"id": s.get("id"), "category": s.get("category"),
                         "period": p, "value": v})
     return out
@@ -105,8 +147,10 @@ def coverage(root=ROOT, asof=None):
         rows[c] = {
             "macro_series": {"catalogue": len(all_macro), "observed_with_value": len(observations),
                              "within_5_months": len(recent),
-                             "latest_observation_period": max((x["period"] for x in observations), default=None),
-                             "not_new_release_claim": True},
+                             "latest_observation_period": max((x["period"] for x in observations), key=observation_date, default=None),
+                             "not_new_release_claim": True,
+                             "older_than_5_months": [x for x in observations if age_months(x["period"], asof) > 5],
+                             "without_eligible_observation": [s.get("id") for s in all_macro if s.get("id") not in {x["id"] for x in observations}]},
             "rates_2y": {"status": "RECENT_OFFICIAL" if rates_ok else "STALE_OR_UNALIGNED",
                          "observation_date": r.get("date"), "weekly_change_bp": w.get("change_bp") if rates_ok else None},
             "pricing_6m": {"status": "OFFICIAL_1W" if official else "INDICATIVE_PROXY" if proxy else "WITHHELD",
