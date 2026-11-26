@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -115,6 +116,50 @@ def only_fetch_clock_changed(base_sha: str, changed: set[str], cwd: Path | None)
     return True
 
 
+# A whole-document ASX checksum can change although the selected contracts,
+# dates, provenance URLs, quality, and all derived prices remain identical.
+# Only the paired NZD reference hashes may be ignored, never a history append,
+# a conflicting hash, or any other source/market field.
+NZD_PROXY = ESTIMATED_PATHS[1]
+NEXT_HISTORY = "site/fx-quant-v2/next/rates-pricing-history-v1.json"
+
+
+def only_asx_reference_metadata_changed(base_sha: str, changed: set[str], cwd: Path | None) -> bool:
+    pair = {NZD_PROXY, NEXT_HISTORY}
+    if not pair.issubset(changed) or not changed.issubset(pair | {ESTIMATED_PATHS[0]}):
+        return False
+    root = cwd if cwd is not None else Path.cwd()
+    hashes = []
+    try:
+        for path in sorted(changed):
+            before = json.loads(git("show", f"{base_sha}:{path}", cwd=cwd).stdout)
+            after = json.loads((root / path).read_text(encoding="utf-8"))
+            for obj in (before, after):
+                if path != NEXT_HISTORY:
+                    if not isinstance(obj.pop("generated_at_utc", None), str):
+                        return False
+                if path == NZD_PROXY:
+                    node = obj["monthly_reference"]
+                    if node["schema"] != "GMFQ_NZD_ASX_EXACT_20_WEEKDAY_REFERENCE_V1" or node["status"] != "REFERENCE_PARSED":
+                        return False
+                    value = node.pop("decoded_source_sha256")
+                elif path == NEXT_HISTORY:
+                    node = obj["currencies"]["NZD"]["fixed_contract_20d"]
+                    if node["basis"] != "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS":
+                        return False
+                    value = node.pop("source_sha256")
+                else:
+                    continue
+                if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+                    return False
+                hashes.append(value)
+            if before != after:
+                return False
+    except (OSError, ValueError, LeaseError, KeyError, TypeError, AttributeError):
+        return False
+    return len(hashes) == 4 and hashes[0] == hashes[2] and hashes[1] == hashes[3] and hashes[0] != hashes[1]
+
+
 def persist(base_sha: str, mode: str, *, cwd: Path | None = None, attempts: int = 4) -> dict:
     if mode not in COMMITS:
         raise LeaseError("Invalid writer mode")
@@ -145,6 +190,9 @@ def persist(base_sha: str, mode: str, *, cwd: Path | None = None, attempts: int 
     if not staged and only_fetch_clock_changed(base_sha, set(unstaged), cwd):
         return {"status": "NO_CHANGE", "mode": mode, "attempts": 0,
                 "reason": "FETCH_CLOCK_ONLY"}
+    if not staged and only_asx_reference_metadata_changed(base_sha, set(unstaged), cwd):
+        return {"status": "NO_CHANGE", "mode": mode, "attempts": 0,
+                "reason": "ASX_REFERENCE_METADATA_ONLY"}
     git("add", "--", *paths, cwd=cwd)
     pending = git("diff", "--cached", "--quiet", cwd=cwd, check=False)
     if pending.returncode == 0:
