@@ -1,23 +1,23 @@
 {
   "schema": "GMFQ_NEXT_ESTIMATED_FX_RECALC_RECEIPT_V1",
-  "status": "RECALCULATED_WITH_CHANGES",
-  "checkedAtUtc": "2026-11-26T16:32:37.166Z",
+  "status": "NO_MATERIAL_THESIS_CHANGE",
+  "checkedAtUtc": "2026-11-26T16:35:11.753Z",
   "checkedDay": "2026-11-26",
-  "sourceCommit": "010aa4884b9be7c519c14f352238fd82a2f80087",
+  "sourceCommit": "31fcc1f2cc74d680acda4fb1d70e5f43a3374e64",
   "method": "c54bb6f6a2fa76470e8c616c72b478e70735166b10c36cd32f35dddcf8cd0379",
   "sourceHashes": {
     "observed": "0b1c92c3ff8c475820997e90e15d11172fc5dc656dfa060f749615ddc52ce478",
     "prices": "0a6041dbefd8a5da49aa08e3d2c78d7ea770ce18c938db63dca933aeae7de642",
     "ois": "b9858d8e9cec7b5db32a9f6fdcc317646babe7ebfe79ebf9469e720250f30bdf",
     "rates": "fa5e3f1d1e6b3fdffec0d1e3b61abc41d723309ce5fda2b10a8456fe2982cad2",
-    "model": "f9f933a7f57cdeceb32b4f0a9baa5a033e5ab830de8dfa1b3fb757d7983a72d8"
+    "model": "a18be47dc4833ac73daff2ee8d4d2702dfe9f24b26e69b94a8783749583f9c27"
   },
   "inputChanges": [
-    "prices"
+    "model"
   ],
   "methodChanged": false,
   "comparisonBasis": "PREVIOUS_RECEIPT",
-  "previousFixingAsOf": "2026-11-25",
+  "previousFixingAsOf": "2026-11-26",
   "previousMacroAsOf": "2026-11-26",
   "fixingAsOf": "2026-11-26",
   "macroAsOf": "2026-11-26",
@@ -28,103 +28,9 @@
     "official6M": 4,
     "withGDPAcceleration": 8
   },
-  "changedPairs": [
-    {
-      "key": "EURCAD",
-      "previous": {
-        "favored": "CAD",
-        "thesis": "PARZIALE",
-        "timing": "DA VALIDARE"
-      },
-      "current": {
-        "favored": "CAD",
-        "thesis": "PARZIALE",
-        "timing": "BASSA ORA"
-      }
-    },
-    {
-      "key": "GBPNZD",
-      "previous": {
-        "favored": "GBP",
-        "thesis": "PARZIALE",
-        "timing": "BASSA ORA"
-      },
-      "current": {
-        "favored": "GBP",
-        "thesis": "PARZIALE",
-        "timing": "DA VALIDARE"
-      }
-    }
-  ],
+  "changedPairs": [],
   "changedRanks": [],
-  "factorChanges": [
-    {
-      "ccy": "CAD",
-      "rank": {
-        "previous": 3,
-        "current": 3
-      },
-      "changes": {
-        "score": {
-          "previous": 0.178571,
-          "current": 0.064286,
-          "delta": -0.114285
-        },
-        "macroScore": {
-          "previous": 0.3,
-          "current": 0.3,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": 0,
-          "current": 0,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": 0.142857,
-          "current": -0.428571,
-          "delta": -0.571428
-        }
-      },
-      "monetaryQuality": {
-        "previous": "UFFICIALE",
-        "current": "UFFICIALE"
-      }
-    },
-    {
-      "ccy": "EUR",
-      "rank": {
-        "previous": 7,
-        "current": 7
-      },
-      "changes": {
-        "score": {
-          "previous": -0.535714,
-          "current": -0.421429,
-          "delta": 0.114285
-        },
-        "macroScore": {
-          "previous": -0.6,
-          "current": -0.6,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": -0.5,
-          "current": -0.5,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": -0.428571,
-          "current": 0.142857,
-          "delta": 0.571428
-        }
-      },
-      "monetaryQuality": {
-        "previous": "PROXY",
-        "current": "PROXY"
-      }
-    }
-  ],
+  "factorChanges": [],
   "currencies": [
     {
       "ccy": "AUD",
