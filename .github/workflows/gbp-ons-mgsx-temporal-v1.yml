@@ -75,7 +75,8 @@ jobs:
           assert x['safe_to_persist_gbp_labour'] is True
           assert x['historical_rebase_approved'] is False
           assert x['structural_fx_label_rebase_approved'] is False
-          assert x['canonical_source_latest_period']=='2026-08'
+          assert x['canonical_source_latest_period'] >= '2026-08'
+          assert x['canonical_source_latest_period'] == str(x['heatmap_asof'])[:7]
           assert x['issues']==[]
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
               out.write('## ONS UK LFS first-release source and rolling-month parity\n\n')

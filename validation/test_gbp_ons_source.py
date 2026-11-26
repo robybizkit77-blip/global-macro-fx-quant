@@ -65,10 +65,29 @@ def check_dimension(dimension: str, root: Path) -> dict:
         assert a["prior_rolling_window"]["window_start_month"] == "2026-05-01", a
         assert a["prior_rolling_window"]["canonical_end_month"] == "2026-07-01", a
         assert a["structural_macro_score_promotion"] is False, a
-    run(str(BUILDER), "--candidate", str(candidate), "--output-dir", str(built))
+    # The fixture is a historical source-contract example. It must not
+    # be applied to today's later canonical observation as a revision.
+    # Construct an isolated previous-period baseline using the fixture's
+    # explicit prior observation, leaving all real runtime files untouched.
+    series=json.loads(LIVE_FILES[0].read_text())
+    heat=json.loads(LIVE_FILES[1].read_text())
+    row=next(x for x in series["GBP"] if x["id"]==c["macro_series_id"])
+    prior=a["prior_period"]
+    prior_value=float(a["prior_value"])
+    row.update(dates=[prior],values=[prior_value],last_date=prior,last_value=prior_value)
+    h=heat["currencies"]["GBP"][dimension]
+    h.update(history=[prior_value],latest_value=prior_value,as_of=prior)
+    heat["currencies"]["GBP"]["as_of_detail"]["unemployment" if dimension=="labour" else "inflation"]=prior
+    series_input=root/f"{dimension}-fixture-baseline-series.json"
+    heat_input=root/f"{dimension}-fixture-baseline-heat.json"
+    series_input.write_text(json.dumps(series))
+    heat_input.write_text(json.dumps(heat))
+    run(str(BUILDER), "--candidate", str(candidate), "--output-dir", str(built),
+        "--series-input",str(series_input),"--heatmap-input",str(heat_input))
     summary = json.loads((built / "summary.json").read_text())
     assert summary["status"] == "PASS" and summary["live_data_modified"] is False, summary
     assert summary["currency"] == "GBP" and summary["dimension"] == dimension, summary
+    assert summary["series_action"] == "APPEND_NEW", summary
     assert summary["observation_date"] == c["observation_date"], (summary, c)
     assert abs(float(summary["new_value"]) - float(c["value"])) < 1e-12, (summary, c)
     return {"dimension": dimension, "series": a["upstream_series_id"], "observation_date": c["observation_date"], "value": c["value"], "live_data_modified": False}

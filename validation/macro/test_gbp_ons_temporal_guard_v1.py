@@ -31,27 +31,31 @@ class GBPTemporalGuardTests(unittest.TestCase):
         """Reconstruct OLD broken July center-month import, never a source rewrite."""
         d=copy.deepcopy(self.original)
         row=next(x for x in d["series"]["GBP"] if x["id"]=="UK_UNEMP_RATE_history_value")
-        if str(row["last_date"])[:7]=="2026-08":
-            assert row["dates"][-2:] == ["2026-07-01","2026-08-01"]
-            assert row["values"][-2:] == [4.9,4.7]
-            row["dates"].pop()
-            row["values"].pop()
-            row["values"][-1]=4.7
-            row["last_date"]="2026-07-01"
-            row["last_value"]=4.7
-            h=d["heat"]["currencies"]["GBP"]["labour"]
-            h["history"].pop()
-            h["history"][-1]=4.7
-            h["as_of"]="2026-07-01"
-            h["latest_value"]=4.7
-            d["heat"]["currencies"]["GBP"]["as_of_detail"]["unemployment"]="2026-07-01"
+        months=[str(x)[:7] for x in row["dates"]]
+        i=months.index("2026-07")
+        j=months.index("2026-08")
+        assert j==i+1 and row["values"][i:j+1]==[4.9,4.7]
+        removed=len(months)-i-1
+        row["dates"]=row["dates"][:i+1]
+        row["values"]=row["values"][:i+1]
+        row["values"][-1]=4.7
+        row["last_date"]=row["dates"][-1]
+        row["last_value"]=4.7
+        h=d["heat"]["currencies"]["GBP"]["labour"]
+        h["history"]=h["history"][:-removed]
+        assert h["history"][-1]==4.9
+        h["history"][-1]=4.7
+        h["as_of"]="2026-07-01"
+        h["latest_value"]=4.7
+        d["heat"]["currencies"]["GBP"]["as_of_detail"]["unemployment"]="2026-07-01"
         return d
 
     def test_promoted_canonical_data_allows_GBP_refresh_but_not_FX_rebase(self):
         r=self.run_guard()
         self.assertEqual(r["status"], "ALLOW_GBP_LABOUR_SOURCE_REFRESH")
         self.assertTrue(r["safe_to_persist_gbp_labour"])
-        self.assertEqual(r["canonical_source_latest_period"],"2026-08")
+        self.assertGreaterEqual(r["canonical_source_latest_period"],"2026-08")
+        self.assertEqual(r["canonical_source_latest_period"],str(r["heatmap_asof"])[:7])
         self.assertFalse(r["historical_rebase_approved"])
         self.assertFalse(r["structural_fx_label_rebase_approved"])
         self.assertEqual(r["issues"],[])
