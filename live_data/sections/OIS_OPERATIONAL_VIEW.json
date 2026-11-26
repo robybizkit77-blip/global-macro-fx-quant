@@ -157,7 +157,7 @@
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
     },
     "EUR": {
-      "as_of": "2026-11-24",
+      "as_of": "2026-11-25",
       "backtest_eligible_as_official": false,
       "change_1d_available": false,
       "change_1w_available": false,
@@ -184,7 +184,7 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3X2026",
@@ -193,8 +193,8 @@
           "futures_price": 97.4,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-24T22:45:19Z",
-          "quote_as_of": "2026-11-24",
+          "price_valid_until": "2026-11-25T22:05:22Z",
+          "quote_as_of": "2026-11-25",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
@@ -254,7 +254,7 @@
           },
           "3m": {
             "contract": "FST3X2026",
-            "quote_as_of": "2026-11-24",
+            "quote_as_of": "2026-11-25",
             "rate_indicative": 2.6,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           },
