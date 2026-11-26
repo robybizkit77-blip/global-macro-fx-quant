@@ -16,6 +16,7 @@ from validation.macro.esri_quarterly_gdp_v1 import latest_growth as latest_jp_gr
 from validation.macro.seco_quarterly_gdp_v1 import latest_growth as latest_ch_growth
 from validation.macro.abs_quarterly_gdp_v1 import latest_growth as latest_au_growth
 from validation.macro.statcan_quarterly_gdp_v1 import latest_growth as latest_ca_growth
+from validation.macro.eurostat_quarterly_gdp_v1 import latest_growth as latest_eu_growth
 from validation.macro.statsnz_quarterly_gdp_v1 import latest_growth as latest_nz_growth
 
 
@@ -31,6 +32,7 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
         cls.ch_growth = latest_ch_growth(cls.asof)
         cls.au_growth = latest_au_growth(cls.asof)
         cls.ca_growth = latest_ca_growth(cls.asof)
+        cls.eu_growth = latest_eu_growth(cls.asof)
         cls.nz_growth = latest_nz_growth(cls.asof)
         cls.result = build(cls.observed, cls.heat, cls.legacy,
                            cls.setup, as_of=cls.asof)
@@ -77,6 +79,8 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
                 expected = self.jp_growth["reference_quarter"]
             if c == "NZD" and self.nz_growth:
                 expected = self.nz_growth["reference_quarter"]
+            if c == "EUR" and self.eu_growth:
+                expected = self.eu_growth["reference_quarter"]
             if c == "CAD" and self.ca_growth:
                 expected = self.ca_growth["reference_quarter"]
             if c == "AUD" and self.au_growth:
@@ -155,7 +159,10 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
         self.assertTrue(math.isclose(
             countries["USD"]["growth"]["nonannualized_qoq_descriptive_pct"],
             100*((1+3.4/100)**.25-1), abs_tol=1e-6))
-        self.assertEqual(countries["EUR"]["growth"]["nonannualized_qoq_descriptive_pct"], 0.4)
+        if self.eu_growth:
+            self.assertEqual(countries["EUR"]["growth"], self.eu_growth)
+        else:
+            self.assertEqual(countries["EUR"]["growth"]["nonannualized_qoq_descriptive_pct"], 0.4)
         gbp = countries["GBP"]["growth"]
         self.assertEqual(gbp["publication_stage"], "FIRST_QUARTERLY_ESTIMATE")
         self.assertEqual(observed_q3_updates("2026-11-13")["GBP"]["reported_value"], 0.7)
@@ -167,7 +174,8 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             self.assertEqual(gbp["reported_unit"], prior["reported_unit"])
         self.assertIs(gbp["is_growth_strength_score"], False)
         for c in ("USD", "EUR"):
-            self.assertEqual(countries[c]["growth"]["prior_documented_quarter"]["reference_quarter"], "2026Q2")
+            self.assertEqual(countries[c]["growth"]["prior_documented_quarter"]["reference_quarter"],
+                             previous_quarter(countries[c]["growth"]["reference_quarter"]))
             self.assertIs(countries[c]["growth"]["is_growth_strength_score"], False)
         if self.jp_growth:
             jpy = countries["JPY"]["growth"]
