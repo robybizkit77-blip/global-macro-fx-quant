@@ -245,6 +245,20 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
         self.error("setup", lambda x: x.update(pair_count=27))
         self.error("setup", lambda x: x["pairs"].pop(next(iter(x["pairs"]))))
 
+    def test_live_cutoff_reaches_every_dedicated_producer(self):
+        from unittest.mock import patch
+        from datetime import timezone
+        from contextlib import ExitStack
+        now=datetime.fromisoformat(self.asof+"T12:00:00+01:00")
+        module="validation.macro.v3_current_g8_28pair_economic_evidence_v1."
+        with ExitStack() as stack:
+            producers=[stack.enter_context(patch(module+name,return_value=None))
+                       for name in ("latest_uk_growth","latest_jp_growth","latest_ch_growth",
+                                    "latest_au_growth","latest_ca_growth","latest_nz_growth","latest_eu_growth")]
+            build(self.observed,self.heat,self.legacy,self.setup,as_of=self.asof,live_cutoff=now)
+            for producer in producers:
+                producer.assert_called_once_with(self.asof,live_cutoff=now)
+
     def test_deterministic_snapshot_and_read_only(self):
         paths = [ROOT / "live_data/sections/D.json",
                  ROOT / "live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json",
