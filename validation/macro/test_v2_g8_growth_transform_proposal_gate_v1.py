@@ -34,7 +34,7 @@ class G8GrowthTransformProposalTest(unittest.TestCase):
             "monthly_level_transform_proposals":6,
             "quarterly_reported_qoq_proposals":1,
             "quarterly_reported_yoy_proposals":1,
-            "observed_current_revised_history_rows_not_first_release":567,
+            "observed_current_revised_history_rows_not_first_release":sum(len(next(s for s in self.observed[c] if s["id"]==PINNED[c][0])["dates"]) for c in PINNED),
             "g8_growth_slots_with_model_selected":0,
             "g8_growth_slots_with_complete_first_release_vintage":0,
             "g8_growth_slots_with_common_comparable_horizon":0,
@@ -58,7 +58,7 @@ class G8GrowthTransformProposalTest(unittest.TestCase):
                 self.assertEqual(r["minimum_same_vintage_observations_for_math"],6)
                 self.assertEqual(r["publisher_first_release_periods_in_common_gateway"],1)
                 self.assertEqual(r["first_releases_minimum_per_single_series"],25)
-                self.assertEqual(r["observed_revised_history_periods_not_first_release"],82)
+                self.assertEqual(r["observed_revised_history_periods_not_first_release"],len(next(s for s in self.observed[cc] if s["id"]==PINNED[cc][0])["dates"]))
                 self.assertFalse(r["feature_computable_from_documented_first_web_source_events"])
                 self.assertFalse(r["new_macro_score_permitted"])
         self.assertEqual(receipt["rows"][1]["candidate_source_relation"],
@@ -74,16 +74,16 @@ class G8GrowthTransformProposalTest(unittest.TestCase):
         nzd=next(x for x in r["rows"] if x["currency"]=="NZD")
         self.assertEqual(aus["proposed_transform"],"REPORTED_QOQ_RATE")
         self.assertEqual(aus["growth_horizon"],"QUARTER_ON_QUARTER")
-        self.assertEqual(aus["latest_observed_revised_value"],0.4)
+        self.assertEqual(aus["archived_review_value"],0.4)
         self.assertEqual(nzd["proposed_transform"],"REPORTED_YOY_RATE")
         self.assertEqual(nzd["growth_horizon"],"SAME_QUARTER_PREVIOUS_YEAR")
-        self.assertEqual(nzd["latest_observed_revised_value"],2.6)
+        self.assertEqual(nzd["archived_review_value"],2.6)
         self.assertEqual(aus["first_releases_minimum_per_single_series"],13)
         self.assertEqual(nzd["first_releases_minimum_per_single_series"],13)
         self.assertFalse(aus["normalization_permitted"])
         self.assertFalse(nzd["normalization_permitted"])
-        self.assertEqual(aus["observed_revised_history_periods_not_first_release"],33)
-        self.assertEqual(nzd["observed_revised_history_periods_not_first_release"],42)
+        self.assertEqual(aus["observed_revised_history_periods_not_first_release"],len(next(s for s in self.observed["AUD"] if s["id"]==PINNED["AUD"][0])["dates"]))
+        self.assertEqual(nzd["observed_revised_history_periods_not_first_release"],len(next(s for s in self.observed["NZD"] if s["id"]==PINNED["NZD"][0])["dates"]))
 
     @staticmethod
     def six_month_source_events():

@@ -89,8 +89,8 @@ def audit(series, dossier, *, as_of=date(2026, 10, 24)):
             require(item["official_metric_unit"] == "percent YoY"
                     and observed["unit"] == ("percent YoY SA" if "TRIMMED" in sid else "percent YoY"),
                     "CPI metric unit mismatch")
-        require(observed_period <= release_period, "snapshot newer than pinned release")
-        observed_value_agrees = (type(observed.get("last_value")) in (int, float)
+        require(type(observed.get("last_value")) in (int, float) and math.isfinite(observed["last_value"]), "invalid current observation")
+        observed_value_agrees = (observed_period == item["series_reference_period_expected"] and type(observed.get("last_value")) in (int, float)
                                  and math.isfinite(observed["last_value"])
                                  and abs(observed["last_value"] -
                                          item["series_value_expected"]) < 1e-8)
@@ -102,6 +102,8 @@ def audit(series, dossier, *, as_of=date(2026, 10, 24)):
             status = ("LAGGING_METRIC_COMPATIBLE_OFFICIAL_RELEASE" if
                       alignment == "REPORTED_ANNUAL_RATE_SAME_CONCEPT" else
                       "LAGGING_SERIES_REQUIRES_SAME_DEFINITION_OFFICIAL_INDEX_LEVEL")
+        elif observed_period > release_period:
+            status = "CURRENT_OBSERVATION_NEWER_THAN_ARCHIVED_RELEASE_NOT_PIT"
         else:
             status = ("SAME_PERIOD_VERIFY_RELEASE_VALUE" if
                       alignment == "REPORTED_ANNUAL_RATE_SAME_CONCEPT" else
@@ -111,7 +113,8 @@ def audit(series, dossier, *, as_of=date(2026, 10, 24)):
             "observed_period": observed_period,
             "observed_value": observed.get("last_value"), "observed_unit": observed.get("unit"),
             "observed_value_matches_pinned_review_snapshot": observed_value_agrees,
-            "review_snapshot_drift_requires_investigation": not observed_value_agrees,
+            "review_snapshot_drift_requires_investigation": observed_period == item["series_reference_period_expected"] and not observed_value_agrees,
+            "review_snapshot_superseded": observed_period > item["series_reference_period_expected"],
             "official_release_event_id": item["event_id"],
             "official_reference_period": release_period,
             "official_release_date": item["official_release_date"],

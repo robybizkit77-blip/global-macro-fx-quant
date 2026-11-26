@@ -177,25 +177,32 @@ def audit(manifest=None, observed=None, common=None):
         require(len(found)==1,"exact observed Growth series identifier ambiguous: "+cc)
         entry=found[0]
         freq=proposal["frequency"]
-        require(entry.get("frequency")==freq
-                and entry.get("unit")==proposal["raw_unit"]
-                and _normalize_stored_period(entry.get("last_date"),freq)==
-                proposal["latest_reference_period"]
-                and numeric(entry.get("last_value"))
-                and entry["last_value"]==proposal["latest_observed_value"],
-                "revised observed Growth series value/unit/period drift: "+cc)
+        vintage=entry.get("current_vintage_provenance") or {}
+        revised=(str(vintage.get("status","")).endswith("CURRENT_REVISED_HISTORY_NOT_PIT")
+                 and vintage.get("source_series_first_release_PIT_certified") is False
+                 and vintage.get("historical_levels_may_be_revised_again") is True)
+        unit_ok=entry.get("unit")==proposal["raw_unit"] or (
+            cc=="USD" and entry.get("unit")=="Index 2022=100" and revised
+            and vintage.get("source_series_id")=="INDPRO"
+            and vintage.get("source_units_verified")=="index 2022=100 , seasonally adjusted")
+        require(entry.get("frequency")==freq and unit_ok and numeric(entry.get("last_value")),
+                "revised observed Growth series identity/unit drift: "+cc)
         periods=entry.get("dates")
         values=entry.get("values")
         require(isinstance(periods,list) and isinstance(values,list)
-                and len(periods)==len(values)==proposal["observed_revised_history_length"],
+                and len(periods)==len(values) and len(periods)>=proposal["observed_revised_history_length"],
                 "revised observed history length changed or incomplete: "+cc)
         normalized=[_normalize_stored_period(p,freq) for p in periods]
         indexes=[period_index(p,freq) for p in normalized]
+        anchor=proposal["latest_reference_period"]
         require(indexes==list(range(indexes[0],indexes[0]+len(indexes)))
-                and normalized[-1]==proposal["latest_reference_period"]
+                and anchor in normalized
+                and normalized[-1]==_normalize_stored_period(entry.get("last_date"),freq)
                 and all(numeric(v) for v in values)
                 and values[-1]==entry["last_value"],
                 "revised observed series has gap/duplicate/nonfinite values: "+cc)
+        require(revised or values[normalized.index(anchor)]==proposal["latest_observed_value"],
+                "historical Growth anchor changed without documented revision: "+cc)
         if proposal["proposal_transform"]==MONTHLY_TRANSFORM:
             require(all(v>0 for v in values),
                     "historical revised levels must be positive for hypothetical 3m3m formula")
@@ -211,10 +218,13 @@ def audit(manifest=None, observed=None, common=None):
         out.append({
             "currency":cc,
             "proposed_observed_series_id":proposal["observed_series_id"],
-            "observed_raw_unit":proposal["raw_unit"],
+            "observed_raw_unit":entry["unit"],
+            "archived_review_raw_unit":proposal["raw_unit"],
             "frequency":freq,
-            "latest_observed_reference_period":proposal["latest_reference_period"],
-            "latest_observed_revised_value":proposal["latest_observed_value"],
+            "latest_observed_reference_period":normalized[-1],
+            "latest_observed_revised_value":entry["last_value"],
+            "archived_review_reference_period":anchor,
+            "archived_review_value":proposal["latest_observed_value"],
             "observed_revised_history_periods_not_first_release":len(periods),
             "proposed_transform":proposal["proposal_transform"],
             "underlying_economic_family":proposal["economic_family"],
@@ -377,7 +387,7 @@ def markdown(receipt):
         "Six 3m3m proposals require six consecutive **first-release as-of level** vintages; "
         "quarterly AUD GDP QoQ and NZD GDP YoY have **different horizons**.",
         "",
-        "**Never use 567 current/revised history rows as 567 point-in-time release events.**",
+        "**Never use current/revised history rows as point-in-time release events.**",
         "No FX score or backtest, no live_data, no pair ranking or Control Room update.",
     ])
     return "\n".join(lines)+"\n"

@@ -7,7 +7,8 @@ vintages, and the newest observed series is NOT automatically the economic drive
 import argparse
 import json
 import math
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 from validation.macro.v2_shadow_features_v1 import ROOT, require
@@ -46,7 +47,8 @@ def read_json(root, path):
     return json.loads((root / path).read_text(encoding="utf-8"))
 
 
-def build(series, core, growth, euro, *, as_of=date(2026, 10, 24)):
+def build(series, core, growth, euro, *, as_of=None):
+    as_of = as_of or datetime.now(ZoneInfo('Europe/Rome')).date()
     inventory = inspect(series, as_of=as_of)
     require(core["historical_full_PIT_vintage_certified"] is False
             and growth["attestation_does_not_certify_historical_vintage"] is True
