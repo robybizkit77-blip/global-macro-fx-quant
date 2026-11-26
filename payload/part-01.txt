@@ -26269,7 +26269,10 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-03",
         "2026-04",
         "2026-05",
-        "2026-06"
+        "2026-06",
+        "2026-07",
+        "2026-08",
+        "2026-09"
       ],
       "values": [
         52565.0,
@@ -26350,16 +26353,32 @@ window.__GMFQ_DATA.MACRO_SERIES={
         59345.0,
         60156.0,
         60385.0,
-        60204.0,
-        59976.0,
-        60320.0,
-        61245.0
+        60195.0,
+        59938.0,
+        60247.0,
+        61185.0,
+        60458.0,
+        61311.0,
+        61362.0
       ],
       "unit": "million chained 2017 CAD SA",
       "frequency": "M",
       "source_file": "CA_RETAIL_VOLUME_history.csv",
-      "last_date": "2026-06",
-      "last_value": 61245.0
+      "last_date": "2026-09",
+      "last_value": 61362.0,
+      "current_vintage_provenance": {
+        "status": "STATCAN_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_table": "20100067",
+        "source_vector": "v1446870181",
+        "source_measure": "retail sales chained fisher volume index (scaled to equal 100 in 2017)",
+        "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=2010006701",
+        "source_csv_sha256": "52fe47498bf03a91ed6ad338c35c931a665dd07ddf04b08b8f615bec28a5d809",
+        "historical_overlap": 82,
+        "median_relative_revision": 0.0,
+        "max_relative_revision": 0.001210212201591512,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T14:23:33.809245+00:00"
+      }
     },
     {
       "id": "CA_BOC_BOS_LEAD_INDICATORS_history_BOS_Price_Indicator",
