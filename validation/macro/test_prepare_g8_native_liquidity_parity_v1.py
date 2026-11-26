@@ -1,6 +1,6 @@
 import copy,unittest,calendar
 from datetime import datetime,timezone,date,timedelta
-from validation.macro.prepare_g8_native_liquidity_parity_v1 import CONFIG,prepare
+from validation.macro.prepare_g8_native_liquidity_parity_v1 import CONFIG,prepare,load_us_m2_full
 NOW=datetime(2026,11,26,tzinfo=timezone.utc)
 def fixture():
     m={};n={};feeds={}
@@ -17,6 +17,18 @@ def fixture():
     def load(c,ident,row,now):return dict(row,**feeds[ident])
     return m,n,load
 class Tests(unittest.TestCase):
+    def test_m2_full_window_before_2019(self):
+        ds=[f"{2016+i//12}-{i%12+1:02d}" for i in range(130)]
+        vs=[12000+i for i in range(len(ds))]
+        row=dict(dates=ds[:128],values=vs[:128],last_date=ds[127],last_value=vs[127])
+        def fetch(url):
+            if "/series/" in url:return b"<html><title>M2 (M2SL)</title><body>Units: Billions of Dollars, Seasonally Adjusted Frequency: Monthly</body></html>",url
+            return ("observation_date,M2SL\n"+"\n".join(f"{d}-01,{v}" for d,v in zip(ds,vs))).encode(),url
+        result=load_us_m2_full(row,NOW,fetch)
+        self.assertEqual(result["dates"][0],"2016-01")
+        self.assertEqual(result["last_date"],"2026-10")
+        self.assertEqual(len(result["dates"]),130)
+
     def test_five_full_windows_and_idempotence(self):
         m,n,f=fixture();old=copy.deepcopy(n);out,r=prepare(m,n,NOW,f)
         self.assertEqual([x["status"] for x in r["series"]],["READY"]*5)

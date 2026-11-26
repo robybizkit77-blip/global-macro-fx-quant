@@ -1,7 +1,8 @@
 """Align five native liquidity lanes with verified full official current vintages."""
-import argparse,copy,json,math,statistics
+import argparse,copy,csv,io,json,math,statistics
 from datetime import datetime,timezone
 from pathlib import Path
+from urllib.parse import urlencode,urlsplit
 from validation.macro import prepare_us_monthly_revised_v1 as us,prepare_chf_snb_revised_v1 as ch,prepare_aud_rba_stocks_revised_v1 as au,prepare_cad_boc_revised_v1 as ca
 ROOT=Path(__file__).resolve().parents[2]
 CONFIG={
@@ -29,8 +30,36 @@ def history(row,f,now):
     else:
         need(keys[-1]<=now.date().isoformat() and all((datetime.fromisoformat(b)-datetime.fromisoformat(a)).days==7 for a,b in zip(keys,keys[1:])),"weekly gap/future")
     return dict(zip(keys,vs))
+def load_us_m2_full(row,now,fetcher=us.fetch):
+    # The shared household parser deliberately trims history to October 2019.
+    # Native liquidity starts in January 2016: retrieve and verify the entire
+    # requested official vintage rather than truncating or splicing histories.
+    series="M2SL";start=key(row["dates"][0],"M")
+    raw,final=fetcher("https://fred.stlouisfed.org/series/"+series)
+    need(urlsplit(final).hostname=="fred.stlouisfed.org" and urlsplit(final).path.rstrip("/")=="/series/"+series,"wrong FRED metadata endpoint")
+    us.metadata(raw,series,"M2","Billions of Dollars")
+    url="https://fred.stlouisfed.org/graph/fredgraph.csv?"+urlencode({"id":series,"cosd":start+"-01"})
+    raw,final=fetcher(url)
+    need(urlsplit(final).hostname=="fred.stlouisfed.org" and urlsplit(final).path=="/graph/fredgraph.csv","wrong FRED CSV endpoint")
+    reader=csv.DictReader(io.StringIO(raw.decode("utf-8-sig")))
+    need(reader.fieldnames in (["observation_date",series],["DATE",series]),"wrong M2 CSV identity")
+    obs={};seen=set()
+    for rec in reader:
+        d=datetime.strptime(rec[reader.fieldnames[0]],"%Y-%m-%d")
+        m=d.strftime("%Y-%m")
+        need(d.day==1 and m not in seen,"invalid or duplicate M2 month")
+        seen.add(m)
+        if rec[series] in ("","."):continue
+        v=float(rec[series])
+        need(m<now.strftime("%Y-%m") and math.isfinite(v) and v>0,"future or invalid M2 value")
+        if m>=start:obs[m]=v
+    ds=sorted(obs);need(len(ds)>=24 and ds[0]==start,"M2 source does not cover native start")
+    vs=[obs[d] for d in ds]
+    row.update(dates=ds,values=vs,last_date=ds[-1],last_value=vs[-1])
+    history(row,"M",now)
+    return row
 def load_full(ccy,ident,row,now):
-    if ccy=="USD":us.prepare_row(row,ident,now,us.fetch)
+    if ccy=="USD":load_us_m2_full(row,now)
     elif ccy=="CHF":ch.prepare_row(row,ident,now,ch.fetch)
     elif ccy=="CAD":ca.prepare_row(row,ident,now,ca.fetch)
     elif ccy=="AUD":
