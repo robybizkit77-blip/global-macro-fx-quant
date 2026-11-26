@@ -15,6 +15,7 @@ on:
       - 'validation/macro/probe_gbp_paye_rti_v1.py'
       - 'validation/macro/prepare_gbp_ons_paye_v1.py'
       - 'validation/macro/test_prepare_gbp_ons_paye_v1.py'
+      - 'validation/macro/probe_chf_neer_daily_v1.py'
       - 'validation/macro_adapter_pit_handoff.py'
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
@@ -207,6 +208,20 @@ env:
   PYTHONDONTWRITEBYTECODE: '1'
 
 jobs:
+  chf-neer-daily-source-proof:
+    if: github.event_name == 'pull_request' && github.head_ref == 'research/chf-neer-daily-snb-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify official SNB daily index historical identity
+        run: python -m validation.macro.probe_chf_neer_daily_v1
+
   gbp-paye-rti-source-proof:
     if: github.event_name == 'pull_request' && github.head_ref == 'research/gbp-paye-rti-20261126'
     runs-on: ubuntu-24.04
