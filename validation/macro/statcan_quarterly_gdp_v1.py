@@ -144,10 +144,10 @@ def archive_for(path):
     return data
 
 
-def latest_growth(as_of, *, path=ARCHIVE):
+def latest_growth(as_of, *, path=ARCHIVE, live_cutoff=None):
     rows = archive_for(path)["editions"]
     result = archived_growth(as_of, rows, stage="QUARTERLY_NATIONAL_ACCOUNTS",
-                              same_edition_field="prior_value_from_same_publisher_edition")
+                              same_edition_field="prior_value_from_same_publisher_edition", live_cutoff=live_cutoff)
     if result:
         row = next(r for r in rows if r["quarter"] == result["reference_quarter"])
         result["publisher_table_source"] = row["table_url"]
