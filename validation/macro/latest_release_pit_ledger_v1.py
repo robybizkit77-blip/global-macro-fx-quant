@@ -348,9 +348,16 @@ def build_ledger(root, today, items=None):
             require(len(row) == 1 and len(row[0].get("dates") or []) >= 2,
                     key+": missing canonical PIT series")
             actual = heat["currencies"][c][dim]
-            period = period_key(row[0]["dates"][-1], source["frequency"])
-            require(period == period_key(actual["as_of"], source["frequency"]),
+            # Reuse the independently validated source-to-engine mapping.
+            # An official missing annual base may leave the newest raw index
+            # ahead of the latest computable YoY; never redate that YoY.
+            mapped = g["currencies"][c][dim]
+            period = period_key(actual["as_of"], source["frequency"])
+            raw_period = period_key(row[0]["dates"][-1], source["frequency"])
+            require(raw_period == period or mapped["documented_annual_base_gap"] is True,
                     key+": canonical source and heatmap observation differ")
+            require(period == period_key(mapped["observation_as_of"], source["frequency"]),
+                    key+": mapped observation period differs")
             raw = []
             # Exact calendar period only. Previous-month anchor cannot certify
             # the latest month even if it is for the same series.
@@ -368,7 +375,7 @@ def build_ledger(root, today, items=None):
                                      rel_tol=0.0, abs_tol=1e-8),
                         key+": conflicting current-period pinned official value")
                 if r.get("series_value") is not None:
-                    require(math.isclose(r["series_value"], row[0]["values"][-1],
+                    require(math.isclose(r["series_value"], mapped["series_value"],
                                          rel_tol=0.0, abs_tol=1e-9),
                             key+": official raw-index/current series value mismatch")
                 if r.get("transformation") is not None:
@@ -434,6 +441,8 @@ def build_ledger(root, today, items=None):
                 "series_id": source["series_id"], "canonical_series_id": histid,
                 "current_observation_period": actual["as_of"],
                 "latest_transformed_observation": actual["latest_value"],
+                "latest_raw_source_period": raw_period,
+                "documented_annual_base_gap": mapped["documented_annual_base_gap"],
                 "release": result,
             }
     require(len(results) == 16 and sum(counts.values()) == 16,
