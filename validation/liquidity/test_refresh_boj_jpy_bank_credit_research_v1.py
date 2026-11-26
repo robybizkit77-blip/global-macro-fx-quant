@@ -10,7 +10,13 @@ from validation.liquidity.refresh_boj_jpy_bank_credit_research_v1 import (
     parse,run,emit_js,existing,existing_payload,parse_tankan,tankan_latest_url,CANON,ORIGINAL_PERIOD,ORIGINAL_VALUE
 )
 DAY=date(2026,11,14)
-CANONICAL=json.loads(CANON.read_text(encoding="utf-8"))
+CURRENT_CANONICAL=json.loads(CANON.read_text(encoding="utf-8"))
+# Preserve the original historical test case even after the live feed advances.
+CANONICAL=copy.deepcopy(CURRENT_CANONICAL)
+row=CANONICAL["JPY"]["credit"]
+n=row["dates"].index(ORIGINAL_PERIOD)+1
+row["dates"]=row["dates"][:n];row["values"]=row["values"][:n]
+row["last_date"]=row["dates"][-1];row["last_value"]=row["values"][-1]
 LAST="2026-09"
 ADDED=[
     {"date":"2026-08","value":6778576},
@@ -34,8 +40,8 @@ def candidate(*,added=None):
         "last_date":ORIGINAL_PERIOD,
         "last_value":ORIGINAL_VALUE
       },
-      "runtime_overlap_count":28,
-      "runtime_exact_match_count":28,
+      "runtime_overlap_count":len(CANONICAL["JPY"]["credit"]["dates"]),
+      "runtime_exact_match_count":len(CANONICAL["JPY"]["credit"]["dates"]),
       "runtime_match_confirmed":True,
       "latest_date":x[-1]["date"] if x else ORIGINAL_PERIOD,
       "latest_value":x[-1]["value"] if x else ORIGINAL_VALUE,
@@ -53,6 +59,25 @@ class JPYOfficialBankCreditResearchTest(unittest.TestCase):
         self.assertGreaterEqual(p["matched_canonical_months"],12)
         self.assertEqual(p["new_after_canonical"],2)
 
+    def test_recurring_candidate_accepts_advanced_canonical_and_rejects_wrong_anchor(self):
+        advanced=copy.deepcopy(CANONICAL)
+        row=advanced["JPY"]["credit"]
+        row["dates"]+=["2026-08","2026-09"]
+        row["values"] += [6778576,6790000]
+        row["last_date"]="2026-09";row["last_value"]=6790000
+        x=candidate(added=[{"date":"2026-10","value":6791000}])
+        x["runtime"]={"last_date":row["last_date"],"last_value":row["last_value"]}
+        x["runtime_overlap_count"]=len(row["dates"])
+        x["runtime_exact_match_count"]=len(row["dates"])
+        p=parse(x,today=DAY,canonical=advanced)
+        self.assertEqual(p["last_observation"],"2026-10")
+        self.assertEqual(p["new_after_canonical"],1)
+        with self.assertRaisesRegex(ValueError,"different canonical feed"):
+            parse(candidate(),today=DAY,canonical=advanced)
+        row["values"][row["dates"].index(ORIGINAL_PERIOD)]+=1
+        with self.assertRaisesRegex(ValueError,"contract has moved"):
+            parse(x,today=DAY,canonical=advanced)
+
     def test_monthly_chronology_and_source_contract(self):
         p=parse(candidate(),today=DAY,canonical=CANONICAL)
         self.assertEqual(p["dates"][-3:],
@@ -68,7 +93,7 @@ class JPYOfficialBankCreditResearchTest(unittest.TestCase):
 
     def test_historical_mismatch_no_silent_credit_rebase(self):
         bad=candidate()
-        bad["runtime_exact_match_count"]=27
+        bad["runtime_exact_match_count"]=bad["runtime_overlap_count"]-1
         with self.assertRaisesRegex(ValueError,"nonexact"):
             parse(bad,today=DAY,canonical=CANONICAL)
         alt=copy.deepcopy(CANONICAL)

@@ -78,19 +78,22 @@ def parse(candidate,*,today=None,canonical=None):
     require(row.get("last_date")==dates[-1] and
             numeric(row.get("last_value"),label="last")==numeric(values[-1],label="last-array"),
             "canonical JPY credit last-date/amount inconsistency")
-    require(dates[-1]==ORIGINAL_PERIOD and
-            numeric(values[-1],label="original anchor")==ORIGINAL_VALUE,
+    # The certified original observation is a historical anchor, not a
+    # permanent last-date constraint. Every current overlapping observation
+    # must still be exactly matched by the official candidate.
+    require(ORIGINAL_PERIOD in dates and
+            numeric(values[dates.index(ORIGINAL_PERIOD)],label="original anchor")==ORIGINAL_VALUE,
             "canonical JPY credit contract has moved; re-evaluate core isolation")
     for i,period in enumerate(dates):
         require(i==0 or month_num(period)==month_num(dates[i-1])+1,
                 "gap or duplicate in canonical monthly history")
     r=candidate.get("runtime") or {}
     require(r.get("last_date")==dates[-1] and
-            numeric(r.get("last_value"),label="candidate anchor")==ORIGINAL_VALUE,
+            numeric(r.get("last_value"),label="candidate anchor")==numeric(values[-1],label="current canonical anchor"),
             "candidate was proven against a different canonical feed")
     cnt=candidate.get("runtime_overlap_count")
     require(isinstance(cnt,int) and cnt>=12 and
-            candidate.get("runtime_exact_match_count")==cnt,
+            candidate.get("runtime_exact_match_count")==cnt and cnt<=len(dates),
             "BoJ matched overlap insufficient or nonexact")
     added=[]
     next_serial=month_num(dates[-1])+1
