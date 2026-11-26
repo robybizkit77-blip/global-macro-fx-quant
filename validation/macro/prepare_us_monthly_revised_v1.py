@@ -18,6 +18,7 @@ SOURCE=ROOT/"live_data/sections/MACRO_SERIES.json"
 CONFIG={
  "US_RRSFS_history_value":("RRSFS","US_RRSFS_history.csv","Advance Real Retail and Food Services Sales","Millions of 1982-84 CPI Adjusted Dollars","Millions of chained dollars"),
  "US_INDPRO_history_value":("INDPRO","US_INDPRO_history.csv","Industrial Production", "Index 2017=100","Index 2017=100"),
+ "US_CPIAUCSL_history_value":("CPIAUCSL","US_CPIAUCSL_history.csv","Consumer Price Index for All Urban Consumers: All Items in U.S. City Average","Index 1982-1984=100","Index 1982-1984=100"),
  "US_CPILFESL_history_value":("CPILFESL","US_CPILFESL_history.csv","Consumer Price Index for All Urban Consumers: All Items Less Food and Energy","Index 1982-1984=100","Index 1982-1984=100"),
  "US_PCEPILFE_history_value":("PCEPILFE","US_PCEPILFE_history.csv","Personal Consumption Expenditures Excluding Food and Energy","Index 2017=100","Index 2017=100"),
  "US_PCEPI_history_value":("PCEPI","US_PCEPI_history.csv","Personal Consumption Expenditures: Chain-type Price Index","Index 2017=100","Index 2017=100 SA"),
@@ -92,7 +93,7 @@ def prepare_row(row,ident,now,fetcher):
     raw_csv,final=fetcher(csv_url)
     require(urlsplit(final).path=="/graph/fredgraph.csv","unexpected FRED CSV redirect")
     missing=[]
-    if fred in ("CPILFESL","RRSFS"):
+    if fred in ("CPILFESL","CPIAUCSL","RRSFS"):
         lookup,missing=parse_core_cpi(raw_csv,now,fred)
     else:
         parsed=fred_monthly_csv(raw_csv,fred,now.date())
@@ -103,7 +104,7 @@ def prepare_row(row,ident,now,fetcher):
     require(set(str(x)[:7] for x in row["dates"])<=set(months),"source history loses existing periods")
     def ordinal(m):return int(m[:4])*12+int(m[5:7])
     gaps=[(a,b) for a,b in zip(months,months[1:]) if ordinal(b)-ordinal(a)!=1]
-    if fred in ("CPILFESL","RRSFS") and gaps:
+    if fred in ("CPILFESL","CPIAUCSL","RRSFS") and gaps:
         require(gaps==[("2025-09","2025-11")] and CORE_CPI_OFFICIAL_GAP in missing,
                 "unexpected CPI-linked missing observation")
         require(CORE_CPI_OFFICIAL_GAP not in {str(x)[:7] for x in row["dates"]},
@@ -132,7 +133,7 @@ def prepare_row(row,ident,now,fetcher):
         "source_csv_sha256":sha256(raw_csv).hexdigest(),"source_metadata_sha256":sha256(raw_meta).hexdigest(),
         "source_units_verified":verified_units,"source_series_first_release_PIT_certified":False,
         "historical_levels_may_be_revised_again":True,"runner_first_seen_utc":now.isoformat()}
-    if fred in ("CPILFESL","RRSFS") and gaps:
+    if fred in ("CPILFESL","CPIAUCSL","RRSFS") and gaps:
         provenance.update(official_missing_periods=[CORE_CPI_OFFICIAL_GAP],
                           missing_period_source_url=CORE_CPI_GAP_SOURCE,
                           gap_not_imputed=True,
