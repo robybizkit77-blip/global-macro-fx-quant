@@ -190,6 +190,11 @@ def collect(now,*,path=ARCHIVE,fetch=retrieve,apply=False):
             progressed=day
     for i in range(max(0,(end-start).days+1)):
         day=start+timedelta(days=i)
+        # Reuse the independently verified listing for settled negative days.
+        # Recent days are rechecked on subsequent runs; never skip a listed GDP.
+        if index is not None and day>index[0] and ("2",day) not in index[1] and day<=today-timedelta(days=SETTLEMENT_DAYS):
+            confirm(day)
+            continue
         try:
             row=read_day(day,today,fetch)
         except HTTPError as exc:
