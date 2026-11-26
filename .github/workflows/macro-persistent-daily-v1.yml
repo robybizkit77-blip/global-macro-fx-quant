@@ -14,6 +14,8 @@ on:
       - 'validation/macro/prepare_us_monthly_revised_v1.py'
       - 'validation/macro/prepare_us_weekly_daily_revised_v1.py'
       - 'validation/macro/prepare_eur_gbp_revised_v1.py'
+      - 'validation/macro/prepare_jpy_m3_native_parity_v1.py'
+      - 'validation/macro/test_prepare_jpy_m3_native_parity_v1.py'
       - 'validation/macro/test_prepare_eur_gbp_revised_v1.py'
       - 'validation/macro/test_prepare_us_weekly_daily_revised_v1.py'
       - 'validation/macro/test_prepare_us_monthly_revised_v1.py'
@@ -51,6 +53,8 @@ on:
       - 'validation/macro/prepare_us_monthly_revised_v1.py'
       - 'validation/macro/prepare_us_weekly_daily_revised_v1.py'
       - 'validation/macro/prepare_eur_gbp_revised_v1.py'
+      - 'validation/macro/prepare_jpy_m3_native_parity_v1.py'
+      - 'validation/macro/test_prepare_jpy_m3_native_parity_v1.py'
       - 'validation/macro/test_prepare_eur_gbp_revised_v1.py'
       - 'validation/macro/test_prepare_us_weekly_daily_revised_v1.py'
       - 'validation/macro/test_prepare_us_monthly_revised_v1.py'
@@ -900,6 +904,55 @@ jobs:
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           assert changed and changed.issubset(set(managed)),changed
           print(json.dumps(persist(managed=managed,commit_message='Refresh verified EUR/GBP revised macro histories'),sort_keys=True))
+          PY
+
+      - name: Validate and synchronize already certified native BoJ M3 to descriptive Macro
+        id: jpy_m3_parity
+        continue-on-error: ${{ github.event_name != 'pull_request' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_prepare_jpy_m3_native_parity_v1 -v
+          python -m validation.macro.prepare_jpy_m3_native_parity_v1 \
+            --candidate /tmp/macro-persistent/MACRO_SERIES_JPY_M3_PREP.json \
+            --receipt /tmp/macro-persistent/jpy-m3-parity-receipt.json
+          python - <<'PY'
+          import json
+          old=json.load(open('live_data/sections/MACRO_SERIES.json'))
+          new=json.load(open('/tmp/macro-persistent/MACRO_SERIES_JPY_M3_PREP.json'))
+          receipt=json.load(open('/tmp/macro-persistent/jpy-m3-parity-receipt.json'))
+          assert set(old)==set(new)
+          changes=set()
+          for c in old:
+              assert len(old[c])==len(new[c])
+              for a,b in zip(old[c],new[c]):
+                  assert a['id']==b['id']
+                  if a!=b: changes.add((c,a['id']))
+          assert changes==({('JPY','JP_M3_SA_history_value')} if receipt['status']=='READY' else set())
+          assert not receipt['affects_fx_core'] and not receipt['native_mutated']
+          assert receipt['after']>=receipt['before']
+          PY
+
+      - name: Persist verified descriptive JPY M3 parity
+        if: github.ref == 'refs/heads/main' && steps.jpy_m3_parity.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(python -c "import json; print(json.load(open('/tmp/macro-persistent/jpy-m3-parity-receipt.json'))['status'])")"
+          if [ "$status" = NO_CHANGE ]; then exit 0; fi
+          test "$status" = READY
+          python validation/update_live_direct_section.py --section MACRO_SERIES \
+            --replacement /tmp/macro-persistent/MACRO_SERIES_JPY_M3_PREP.json --apply
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+          python validation/rebuild_live_data_runtime.py --verify-only
+          python - <<'PY'
+          import json,subprocess
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          managed=('live_data/sections/MACRO_SERIES.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt')
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed and changed.issubset(set(managed)),changed
+          print(json.dumps(persist(managed=managed,protected=('live_data/sections/NATIVE_LIQ_DATA.json',),commit_message='Synchronize descriptive JPY M3 with certified BoJ native history'),sort_keys=True))
           PY
 
       # Existing Macro refresh cadence only. Freeze a single first-seen
