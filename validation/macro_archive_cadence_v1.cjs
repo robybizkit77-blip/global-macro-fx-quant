@@ -42,3 +42,24 @@ function cadence(row){
  return {observed_frequency,history_integrity:'ORDERED',cadence_evidence:'OBSERVED_HISTORY_ONLY_NOT_PUBLISHER_CERTIFICATION',observed_sample_size:tail.length};
 }
 module.exports={normalize,cadence};
+
+if(require.main===module){
+ const assert=require('node:assert/strict');
+ assert.equal(normalize('2026-W38'),'2026-09-14');
+ assert.equal(normalize('2026-Q3'),'2026-07-01');
+ assert.equal(normalize('2026Q2'),'2026-04-01');
+ assert.equal(normalize('31/07/2026'),'2026-07-31');
+ assert.equal(normalize('31-Aug-2026'),'2026-08-31');
+ assert.equal(normalize('Jul-26'),'2026-07-01');
+ assert.equal(normalize('2026/8/7'),'2026-08-07');
+ assert.equal(normalize('2026-02-31'),null);
+ function series(ds){return {dates:ds,values:ds.map(()=>1),last_date:ds.at(-1),last_value:1};}
+ const monthly=series(['2026-01','2026-02','2026-03','2026-04','2026-05']);
+ assert.equal(cadence(monthly).observed_frequency,'M');
+ const quarterly=series(['2025-Q1','2025-Q2','2025-Q3','2025-Q4','2026-Q1']);
+ assert.equal(cadence(quarterly).observed_frequency,'Q');
+ const unordered=series(['2026/8/1','2026/8/31','2026/8/4','2026/8/5','2026/8/7']);
+ assert.equal(cadence(unordered).history_integrity,'UNORDERED_OR_DUPLICATE_DATES');
+ assert.equal(cadence(unordered).observed_frequency,null);
+ console.log('MACRO_ARCHIVE_CADENCE_SELF_TEST_PASS');
+}
