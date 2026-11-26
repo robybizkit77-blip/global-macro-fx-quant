@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/macro-persistent-daily-v1.yml'
+      - 'validation/macro/probe_gbp_mortgage_75ltv_v1.py'
       - 'validation/macro_adapter_pit_handoff.py'
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
@@ -197,6 +198,31 @@ env:
   PYTHONDONTWRITEBYTECODE: '1'
 
 jobs:
+  gbp-mortgage-rate-source-proof:
+    if: github.event_name == 'pull_request' && github.head_ref == 'research/gbp-mortgage-rate-75ltv-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare full official IADB mortgage rate history
+        run: |
+          python -m validation.macro.probe_gbp_mortgage_75ltv_v1
+          python -m unittest validation.macro.test_prepare_gbp_boe_revised_v1 -v
+          python -m validation.macro.prepare_gbp_boe_revised_v1 --candidate /tmp/gbp-mortgage-proof/candidate.json --receipt /tmp/gbp-mortgage-proof/receipt.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/gbp-mortgage-proof/receipt.json'))
+          assert len(d['series'])==5,d
+          r=next(r for r in d['series'] if r['id']=='UK_MORTGAGE_RATE_2Y_75LTV_history_value')
+          assert r['status'] in ('READY','NO_CHANGE') and r['after']>='2026-10-31',r
+          print(r)
+          PY
+
   cad-ceer-source-proof:
     if: github.event_name == 'pull_request' && github.head_ref == 'fix/cad-ceer-monthly-20261126'
     runs-on: ubuntu-24.04
@@ -403,11 +429,11 @@ jobs:
           import json
           d=json.load(open('/tmp/gbp-boe-iadb-proof/receipt.json'))
           for r in d['series']: print(r)
-          assert len(d['series'])==4
+          assert len(d['series'])==5
           # Prove each verified row and require meaningful real-source coverage;
           # independent withheld rows are explicit, never promoted.
           approved=[r for r in d['series'] if r['status'] in ('READY','NO_CHANGE')]
-          assert len(approved)==4,d
+          assert len(approved)==5,d
           assert all(r['after']>=r['before'] and r['after'][:7]>='2026-09' for r in approved),d
           PY
       - uses: actions/upload-artifact@v4
@@ -2513,7 +2539,7 @@ jobs:
           python - <<'PY'
           import json
           j=json.load(open('/tmp/macro-persistent/gbp-boe-iadb-revised-receipt.json'))
-          assert len(j['series'])==4 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
+          assert len(j['series'])==5 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
           for row in j['series']:
               if row['status']=='WITHHELD': print('::warning::GBP BOE IADB '+row['id']+' '+row['reason'])
           PY
