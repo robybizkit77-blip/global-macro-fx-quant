@@ -13,6 +13,8 @@ on:
       - 'validation/rates/test_report_fxv2_chf_nzd_freshness_v1.py'
       - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
       - 'validation/rates/reconcile_fxv2_nzd_b2_postroll_v1.py'
+      - 'validation/rates/check_nzd_postroll_release_readiness_v1.py'
+      - 'validation/rates/test_check_nzd_postroll_release_readiness_v1.py'
       - 'validation/rates/test_reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py'
@@ -39,6 +41,8 @@ on:
       - 'validation/rates/test_report_fxv2_chf_nzd_freshness_v1.py'
       - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
       - 'validation/rates/reconcile_fxv2_nzd_b2_postroll_v1.py'
+      - 'validation/rates/check_nzd_postroll_release_readiness_v1.py'
+      - 'validation/rates/test_check_nzd_postroll_release_readiness_v1.py'
       - 'validation/rates/test_reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py'
@@ -97,6 +101,7 @@ jobs:
           python3 validation/rates/test_report_fxv2_chf_nzd_freshness_v1.py
           python3 validation/rates/test_collect_rbnz_b2_daily_web_v1.py
           python3 validation/rates/test_reconcile_fxv2_nzd_b2_postroll_v1.py
+          python3 validation/rates/test_check_nzd_postroll_release_readiness_v1.py
           python3 validation/rates/test_fxv2_nzd_manual_public_source_v1.py
           python3 validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py
           python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
@@ -167,6 +172,12 @@ jobs:
       # Free eolas: Tue/Thu 06:30 Rome, max 10 scheduled requests/month.
       # Set EOLAS_PRO_ENABLED=true ONLY with a confirmed paid Pro entitlement.
       # Other RBNZ/CHF research refreshes continue daily without this key.
+      - name: Prepare read-only NZD post-roll release review receipt
+        if: steps.gate.outputs.should_run == 'true' && github.event_name != 'pull_request'
+        run: |
+          python3 validation/rates/check_nzd_postroll_release_readiness_v1.py \
+            --as-of "$(TZ=Pacific/Auckland date +%F)" \
+            --output /tmp/fxv2-nzd-postroll-release-review.json
       - name: Use authorized eolas API only when the quota-safe slot is permitted
         if: steps.gate.outputs.should_run == 'true' && github.event_name != 'pull_request'
         shell: bash
@@ -295,6 +306,7 @@ jobs:
           name: fxv2-chf-nzd-benchmark-evidence
           path: |
             /tmp/fxv2-rbnz-b2-daily-source.json
+            /tmp/fxv2-nzd-postroll-release-review.json
             /tmp/fxv2-rbnz-b2-eolas-research.json
             /tmp/fxv2-chf-nzd-research-candidate.json
             /tmp/fxv2-chf-nzd-freshness-receipt.json
