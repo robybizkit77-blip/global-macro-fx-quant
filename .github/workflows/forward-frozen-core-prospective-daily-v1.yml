@@ -68,6 +68,7 @@ jobs:
           python -m unittest validation.forward.test_v2_full_command_capture_path_v1 -v
           python -m unittest validation.forward.test_capture_v2_quality_aware_prospective_v1 -v
           python -m unittest validation.forward.test_certify_quality_aware_persisted_v1 -v
+          python -m unittest validation.forward.test_capture_v2_uniform_macro_prospective_v1 -v
 
       - name: Observe registered next-session V2 economic/market inputs without synthetic ECB T0
         if: github.event_name == 'pull_request' && steps.early_gate.outputs.eligible == 'true'
@@ -215,6 +216,17 @@ jobs:
           fi
           echo "status=$status" >> "$GITHUB_OUTPUT"
           echo "- Separate quality-aware observational freeze: **$status** (no original V2 score, no H1)." >> "$GITHUB_STEP_SUMMARY"
+      - name: Freeze distinct uniform Macro research cohort after same-day Quality-Aware anchor
+        if: steps.admit.outputs.admitted == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          status='UNIFORM_RESEARCH_SOURCE_FAILURE'
+          if python -m validation.forward.capture_v2_uniform_macro_prospective_v1 > /tmp/v2-uniform-macro-freeze.json; then
+            cat /tmp/v2-uniform-macro-freeze.json
+            status="$(python -c "import json; print(json.load(open('/tmp/v2-uniform-macro-freeze.json'))['status'])")"
+          fi
+          echo "- Distinct uniform Macro cohort: **$status** (research only; no H1 or trade)." >> "$GITHUB_STEP_SUMMARY"
       - name: Verify only immutable forward-ledger files changed
         if: steps.admit.outputs.admitted == 'true'
         shell: bash
@@ -228,7 +240,8 @@ jobs:
               if path not in (
                   'validation/forward/decision_snapshots/CORE_DECISION_SNAPSHOTS_V1.jsonl',
                   'validation/forward/candidate_shadow_snapshots/V2_MACRO_EVIDENCE_SNAPSHOTS_V1.jsonl',
-                  'validation/forward/candidate_shadow_snapshots/V2_QUALITY_AWARE_PROSPECTIVE_SNAPSHOTS_V1.jsonl'
+                  'validation/forward/candidate_shadow_snapshots/V2_QUALITY_AWARE_PROSPECTIVE_SNAPSHOTS_V1.jsonl',
+                  'validation/forward/candidate_shadow_snapshots/V2_UNIFORM_MACRO_PROSPECTIVE_V1.jsonl'
               ) and not (
                  path.startswith('validation/forward/receipts/') and path.endswith('__V1.json')
               ):
@@ -247,6 +260,9 @@ jobs:
           fi
           if test -f validation/forward/candidate_shadow_snapshots/V2_QUALITY_AWARE_PROSPECTIVE_SNAPSHOTS_V1.jsonl; then
             git add validation/forward/candidate_shadow_snapshots/V2_QUALITY_AWARE_PROSPECTIVE_SNAPSHOTS_V1.jsonl
+          fi
+          if test -f validation/forward/candidate_shadow_snapshots/V2_UNIFORM_MACRO_PROSPECTIVE_V1.jsonl; then
+            git add validation/forward/candidate_shadow_snapshots/V2_UNIFORM_MACRO_PROSPECTIVE_V1.jsonl
           fi
           if git diff --cached --quiet; then
             echo 'FORWARD_ALREADY_CAPTURED_TODAY_NO_COMMIT' >> "$GITHUB_STEP_SUMMARY"
