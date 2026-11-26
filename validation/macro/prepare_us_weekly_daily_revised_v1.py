@@ -20,8 +20,8 @@ CONFIG={
  "US_NFCI_history_value":("NFCI","Chicago Fed National Financial Conditions Index","Index","W","not seasonally adjusted","Index"),
  "US_DTWEXBGS_history_value":("DTWEXBGS","Nominal Broad U.S. Dollar Index","Index Jan 2006=100","D","not seasonally adjusted","Index Jan 2006=100"),
  "US_T10YIE_history_T10YIE":("T10YIE","10-Year Breakeven Inflation Rate","Percent","D","not seasonally adjusted",""),
- "US_DFII10_history_DFII10":("DFII10","10-Year Treasury Inflation-Indexed Security","Percent","D","not seasonally adjusted",""),
- **{f"US_DGS{n}_history_DGS{n}":(f"DGS{n}",f"{n}-Year Treasury Constant Maturity","Percent","D","not seasonally adjusted","") for n in (2,5,10,30)},
+ "US_DFII10_history_DFII10":("DFII10","Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity, Quoted on an Investment Basis, Inflation-Indexed","Percent","D","not seasonally adjusted",""),
+ **{f"US_DGS{n}_history_DGS{n}":(f"DGS{n}",f"Market Yield on U.S. Treasury Securities at {n}-Year Constant Maturity, Quoted on an Investment Basis","Percent","D","not seasonally adjusted","") for n in (2,5,10,30)},
 }
 SCHEMA="GMFQ_US_MARKET_WEEKLY_REVISED_FRED_RESEARCH_V1"
 def need(ok,reason):
@@ -68,7 +68,14 @@ def prepare_row(row,ident,now,fetcher):
     vs=[obs[d] for d in ds]
     need(ds and ds[0]==row["dates"][0] and ds[-1]>=row["last_date"] and set(row["dates"])<=set(ds),"source does not cover canonical dates; do not relabel or fill gaps")
     if freq=="W":
-        need(all((date.fromisoformat(b)-date.fromisoformat(a)).days==7 for a,b in zip(ds,ds[1:])),"weekly source cadence not contiguous")
+        gaps=[(date.fromisoformat(b)-date.fromisoformat(a)).days for a,b in zip(ds,ds[1:])]
+        # Freddie Mac can publish on a different weekday around holidays.
+        # Preserve actual dates; do not synthesize or shift observations.
+        if fred=="MORTGAGE30US":
+            need(all(5<=g<=9 for g in gaps),"mortgage weekly source cadence incompatible")
+            need(len({d.isocalendar()[:2] for d in map(date.fromisoformat,ds)})==len(ds),"duplicate mortgage ISO week")
+        else:
+            need(all(g==7 for g in gaps),"weekly source cadence not contiguous")
     before=row["last_date"]
     changed=row["dates"]!=ds or row["values"]!=vs or row.get("frequency")!=freq or row.get("unit")!=new_unit or row.get("current_vintage_provenance",{}).get("source_series_id")!=fred
     if changed:
