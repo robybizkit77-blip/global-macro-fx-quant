@@ -37,6 +37,24 @@ class BlsTransportQuarantineTests(unittest.TestCase):
         self.assertEqual(opener.call_count, 2)
         sleep.assert_called_once_with(1)
 
+    def test_http_200_daily_quota_is_withheld_without_retry_or_candidate(self):
+        payload = {"status": "REQUEST_NOT_PROCESSED", "message": ["Request could not be serviced, as the daily threshold for total number of requests allocated to the user with registration key  has been reached."]}
+        with tempfile.TemporaryDirectory() as d, \
+                mock.patch.object(bls.urllib.request, "urlopen", return_value=io.BytesIO(json.dumps(payload).encode())) as opener, \
+                mock.patch.object(bls.time, "sleep") as sleep, \
+                mock.patch("sys.argv", ["us_bls_core_macro.py", "--output-dir", d]):
+            self.assertEqual(bls.main(), 76)
+            self.assertEqual(list(Path(d).iterdir()), [])
+            self.assertEqual(opener.call_count, 1)
+            sleep.assert_not_called()
+
+    def test_other_http_200_application_errors_remain_fatal(self):
+        payload = {"status": "REQUEST_NOT_PROCESSED", "message": ["invalid series ID"]}
+        with mock.patch.object(bls.urllib.request, "urlopen", return_value=io.BytesIO(json.dumps(payload).encode())):
+            result = bls.fetch_payload(2024, 2026)
+        with self.assertRaises(ValueError):
+            bls.parse_series(result, bls.LABOUR_BLS_SERIES)
+
     def test_401_authentication_failure_does_not_get_quarantined(self):
         with mock.patch.object(bls.urllib.request, "urlopen", side_effect=http_error(401)) as opener, \
                 mock.patch.object(bls.time, "sleep") as sleep:
