@@ -9,10 +9,11 @@ def row(i):
     dates=[(date(2026,9,1)+timedelta(days=n)).isoformat()+suffix for n in range(50)]
     values=[val(i,n) for n in range(50)]
     return {"id":i,"source_file":i.removesuffix("_value")+".csv","unit":unit,"frequency":"D","dates":dates,"values":values,"last_date":dates[-1],"last_value":values[-1]}
-def source(i,wrong=False,missing=False,alternative=False):
+def source(i,wrong=False,missing=False,alternative=False,sparse=False):
     key,_,_,mult,*_=CONFIG[i];f=io.StringIO();w=csv.writer(f);w.writerow(["KEY","TIME_PERIOD","OBS_VALUE","UNIT_MULT"])
     for n in range(85):
         if missing and n==4:continue
+        if sparse and n%3:continue
         w.writerow([key.replace("SS_CIN","SS_CI") if alternative else key,(date(2026,9,1)+timedelta(days=n)).isoformat(),val(i,n)+(.1 if alternative else 0),"99" if wrong else mult])
     return f.getvalue()
 class ECBTests(unittest.TestCase):
@@ -21,6 +22,11 @@ class ECBTests(unittest.TestCase):
             x=row(i);self.assertEqual(prepare_row(x,i,NOW,lambda u:source(i,alternative="SS_CI." in u))["status"],"READY")
             self.assertEqual(x["last_date"][:10],"2026-11-24")
             self.assertEqual(prepare_row(x,i,NOW,lambda u:source(i,alternative="SS_CI." in u))["status"],"NO_CHANGE")
+    def test_alternative_calendar_compares_only_real_paired_dates(self):
+        i=IDS[1];x=row(i)
+        result=prepare_row(x,i,NOW,lambda u:source(i,alternative="SS_CI." in u,sparse="SS_CI." in u))
+        self.assertEqual(result["status"],"READY")
+        self.assertEqual(result["overlap_audit"]["alternative_overlap_count"],17)
     def test_missing_old_period_wrong_unit(self):
         for i in IDS:
             with self.assertRaises(ValueError):prepare_row(row(i),i,NOW,lambda u:source(i,missing=True,alternative="SS_CI." in u))
