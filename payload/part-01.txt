@@ -27301,7 +27301,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-05-01",
         "2026-06-01",
         "2026-07-01",
-        "2026-08-01"
+        "2026-08-01",
+        "2026-09-01",
+        "2026-10-01"
       ],
       "values": [
         117356.0,
@@ -27385,13 +27387,36 @@ window.__GMFQ_DATA.MACRO_SERIES={
         230198.0,
         231235.0,
         233644.0,
-        231913.0
+        231913.0,
+        242657.0,
+        232323.0
       ],
       "unit": "CAD millions",
       "frequency": "M",
       "source_file": "CA_BOC_TOTAL_ASSETS_history.csv",
-      "last_date": "2026-08-01",
-      "last_value": 231913.0
+      "last_date": "2026-10-01",
+      "last_value": 232323.0,
+      "current_vintage_provenance": {
+        "status": "BOC_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.bankofcanada.ca/valet/observations/V36651/json?start_date=2019-11-01",
+        "source_series_id": "V36651",
+        "source_metadata": {
+          "label": "Total assets",
+          "description": "Assets",
+          "dimension": {
+            "key": "d",
+            "name": "Date"
+          },
+          "dateFormat": "monthly",
+          "metadata": {}
+        },
+        "source_json_sha256": "1dc94b8d0720329b948039b04bc433cd92b57d4a3afa3be6189a99b3e9e5ef4a",
+        "historical_overlap_exact": 82,
+        "period_semantics": "CALENDAR_MONTH_STORED_FIRST_DAY",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T10:05:46.564014+00:00"
+      }
     },
     {
       "id": "CA_M2PP_SA_history_value",
@@ -27479,7 +27504,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-04-01",
         "2026-05-01",
         "2026-06-01",
-        "2026-07-01"
+        "2026-07-01",
+        "2026-08-01",
+        "2026-09-01"
       ],
       "values": [
         3444760.0,
@@ -27547,29 +27574,52 @@ window.__GMFQ_DATA.MACRO_SERIES={
         4885825.0,
         4909041.0,
         4926527.0,
-        4942058.0,
-        4956557.0,
-        4976040.0,
-        4991589.0,
-        5000014.0,
-        5028931.0,
-        5039692.0,
-        5077080.0,
-        5095530.0,
-        5189013.0,
-        5197774.0,
-        5211582.0,
-        5227870.0,
-        5251693.0,
-        5271542.0,
-        5301338.0,
-        5323673.0
+        4941963.0,
+        4956455.0,
+        4976026.0,
+        4992251.0,
+        5000693.0,
+        5029770.0,
+        5040662.0,
+        5078120.0,
+        5096432.0,
+        5189977.0,
+        5198371.0,
+        5212192.0,
+        5228480.0,
+        5252291.0,
+        5272193.0,
+        5302653.0,
+        5324983.0,
+        5347141.0,
+        5354309.0
       ],
       "unit": "CAD millions",
       "frequency": "M",
       "source_file": "CA_M2PP_SA_history.csv",
-      "last_date": "2026-07-01",
-      "last_value": 5323673.0
+      "last_date": "2026-09-01",
+      "last_value": 5354309.0,
+      "current_vintage_provenance": {
+        "status": "BOC_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.bankofcanada.ca/valet/observations/V41552801/json?start_date=2019-10-01",
+        "source_series_id": "V41552801",
+        "source_metadata": {
+          "label": "M2++ (gross) (Seasonally adjusted)",
+          "description": "M2++ (gross)",
+          "dimension": {
+            "key": "d",
+            "name": "Date"
+          },
+          "dateFormat": "monthly",
+          "metadata": {}
+        },
+        "source_json_sha256": "4e2708dcd0cf95bf58a132254b0722ab65252bdf56014a64662d4a0540593db2",
+        "historical_overlap_exact": 65,
+        "period_semantics": "CALENDAR_MONTH_STORED_FIRST_DAY",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T10:05:46.564014+00:00"
+      }
     },
     {
       "id": "CA_SETTLEMENT_BALANCES_history_value",
@@ -27657,7 +27707,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-05-01",
         "2026-06-01",
         "2026-07-01",
-        "2026-08-01"
+        "2026-08-01",
+        "2026-09-01",
+        "2026-10-01"
       ],
       "values": [
         584.0,
@@ -27741,13 +27793,36 @@ window.__GMFQ_DATA.MACRO_SERIES={
         70946.0,
         72582.0,
         73485.0,
-        74157.0
+        74157.0,
+        83440.0,
+        73612.0
       ],
       "unit": "CAD millions",
       "frequency": "M",
       "source_file": "CA_SETTLEMENT_BALANCES_history.csv",
-      "last_date": "2026-08-01",
-      "last_value": 74157.0
+      "last_date": "2026-10-01",
+      "last_value": 73612.0,
+      "current_vintage_provenance": {
+        "status": "BOC_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.bankofcanada.ca/valet/observations/V41886561/json?start_date=2019-11-01",
+        "source_series_id": "V41886561",
+        "source_metadata": {
+          "label": "Members of Payments Canada",
+          "description": "Liabilities and equity - Canadian dollar deposits",
+          "dimension": {
+            "key": "d",
+            "name": "Date"
+          },
+          "dateFormat": "monthly",
+          "metadata": {}
+        },
+        "source_json_sha256": "2ea3a9672528aae63cee228d11e8d9bdee471f2348fb294603d2ce0eba6a51ff",
+        "historical_overlap_exact": 82,
+        "period_semantics": "CALENDAR_MONTH_STORED_FIRST_DAY",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T10:05:46.564014+00:00"
+      }
     },
     {
       "id": "CA_CEER_BROAD_NOMINAL_history_value",
