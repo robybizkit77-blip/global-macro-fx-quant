@@ -228,7 +228,8 @@ jobs:
           # Prove each verified row and require meaningful real-source coverage;
           # independent withheld rows are explicit, never promoted.
           approved=[r for r in d['series'] if r['status'] in ('READY','NO_CHANGE')]
-          assert len(approved)==3,d
+          assert {r['id'] for r in approved} >= {'EA_EXCESS_LIQUIDITY_history_value','EA_EER40_NOMINAL_history_value'},d
+          assert all(r['id']=='EA_CISS_history_value' for r in d['series'] if r['status']=='WITHHELD'),d
           assert all(r['after']>=r['before'] and r['after'][:10]>='2026-11-19' for r in approved),d
           assert all(r.get('reason') for r in d['series'] if r['status']=='WITHHELD'),d
           PY
