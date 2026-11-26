@@ -1,0 +1,31 @@
+name: NZD RBNZ employment SFM source proof V1
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/probe_nzd_rbnz_employment_sfm_v1.py'
+      - '.github/workflows/nzd-rbnz-employment-sfm-proof-v1.yml'
+      - 'validation/macro/prepare_nzd_rbnz_employment_sfm_v1.py'
+      - 'validation/macro/test_prepare_nzd_rbnz_employment_sfm_v1.py'
+permissions:
+  contents: read
+jobs:
+  source-proof:
+    if: github.head_ref == 'research/nzd-rbnz-employment-sfm-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install openpyxl
+      - run: python -m validation.macro.probe_nzd_rbnz_employment_sfm_v1
+      - run: python -m unittest validation.macro.test_prepare_nzd_rbnz_employment_sfm_v1 -v
+      - name: Verify actual official revised quarterly series
+        run: |
+          python -m validation.macro.prepare_nzd_rbnz_employment_sfm_v1 --candidate /tmp/nzd-rbnz/candidate.json --receipt /tmp/nzd-rbnz/receipt.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/nzd-rbnz/receipt.json'))
+          assert len(d['series'])==2 and all(r['status'] in ('READY','NO_CHANGE') and r['after']>='2026-09' and r['overlap']>=42 for r in d['series']),d
+          PY
