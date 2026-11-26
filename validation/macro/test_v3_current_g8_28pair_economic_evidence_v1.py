@@ -15,6 +15,7 @@ from validation.macro.ons_quarterly_gdp_v1 import latest_growth, previous_quarte
 from validation.macro.esri_quarterly_gdp_v1 import latest_growth as latest_jp_growth
 from validation.macro.seco_quarterly_gdp_v1 import latest_growth as latest_ch_growth
 from validation.macro.abs_quarterly_gdp_v1 import latest_growth as latest_au_growth
+from validation.macro.statcan_quarterly_gdp_v1 import latest_growth as latest_ca_growth
 
 
 class CurrentEconomicEvidenceTests(unittest.TestCase):
@@ -28,6 +29,7 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
         cls.jp_growth = latest_jp_growth(cls.asof)
         cls.ch_growth = latest_ch_growth(cls.asof)
         cls.au_growth = latest_au_growth(cls.asof)
+        cls.ca_growth = latest_ca_growth(cls.asof)
         cls.result = build(cls.observed, cls.heat, cls.legacy,
                            cls.setup, as_of=cls.asof)
 
@@ -71,6 +73,8 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             )
             if c == "JPY" and self.jp_growth:
                 expected = self.jp_growth["reference_quarter"]
+            if c == "CAD" and self.ca_growth:
+                expected = self.ca_growth["reference_quarter"]
             if c == "AUD" and self.au_growth:
                 expected = self.au_growth["reference_quarter"]
             if c == "CHF" and self.ch_growth:
@@ -124,7 +128,7 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
 
     def test_q3_latest_real_official_releases_no_fictional_g8_growth(self):
         import math
-        self.assertEqual(self.result["summary"]["GDP_later_quarter_official_releases"], 4 + bool(self.jp_growth) + bool(self.au_growth))
+        self.assertEqual(self.result["summary"]["GDP_later_quarter_official_releases"], 4 + bool(self.jp_growth) + bool(self.au_growth) + bool(self.ca_growth))
         countries = self.result["country_evidence"]
         self.assertEqual(set(observed_q3_updates("2026-10-29")), set())
         self.assertEqual(set(observed_q3_updates("2026-10-30")), {"USD"})
@@ -174,7 +178,9 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             self.assertEqual(prior["publisher_release_day"], g["publisher_release_day"])
             self.assertEqual(prior["publisher_source"], g["publisher_source"])
             self.assertTrue(g["prior_value_from_same_publisher_edition"])
-            if c == "AUD" and self.au_growth:
+            if c == "CAD" and self.ca_growth:
+                self.assertEqual(g, self.ca_growth)
+            elif c == "AUD" and self.au_growth:
                 self.assertEqual(g, self.au_growth)
             else:
                 self.assertAlmostEqual(g["nonannualized_qoq_descriptive_pct"] -
@@ -231,8 +237,21 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
                  ROOT / "live_data/sections/MACRO_SERIES.json",
                  ROOT / "live_data/sections/MACRO_THERMOMETER_DATA.json"]
         before = {str(p): p.read_bytes() for p in paths}
+        # Compare the same explicit-date issuer archive inputs.
+        from datetime import timezone
+        from validation.macro.recurring_official_actuals_v1 import validated_record
+        raw = load("NEWS_PULSE_OPERATIONAL").get("recurring_official_archive", [])
+        now = datetime.now(timezone.utc)
+        releases = [validated_record(row, now) for row in raw]
+        releases = [row for row in releases if row["as_of"] < self.asof and
+                    row["first_runner_observed_at_utc"][:10] < self.asof]
+        expected = build(self.observed, self.heat, self.legacy, self.setup,
+                         as_of=self.asof, issuer_releases=releases)
         again = run(as_of=self.asof)
-        self.assertEqual(self.result["receipt_sha256"], again["receipt_sha256"])
+        self.assertEqual(expected, again)
+        self.assertEqual(again, run(as_of=self.asof))
+        self.assertEqual(self.result, build(self.observed, self.heat, self.legacy,
+                                           self.setup, as_of=self.asof))
         self.assertEqual(before, {str(p): p.read_bytes() for p in paths})
 
 
