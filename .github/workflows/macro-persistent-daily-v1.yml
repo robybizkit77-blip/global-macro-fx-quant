@@ -86,7 +86,9 @@ permissions:
   contents: write
 
 concurrency:
-  group: macro-persistent-daily-main
+  # PR source proofs must never replace a queued production refresh or another PR.
+  group: ${{ github.event_name == 'pull_request' && format('macro-persistent-validation-pr-{0}', github.event.pull_request.number) || 'macro-persistent-daily-main' }}
+  queue: max
   cancel-in-progress: false
 
 env:
