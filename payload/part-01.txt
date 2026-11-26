@@ -20106,7 +20106,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         13721211.0,
@@ -20188,15 +20190,28 @@ window.__GMFQ_DATA.MACRO_SERIES={
         16324991.0,
         16355280.0,
         16382941.0,
-        16365276.0,
-        16368167.0,
-        16377129.0
+        16365265.0,
+        16366819.0,
+        16372604.0,
+        16381626.0,
+        16371215.0
       ],
       "unit": "100 million yen",
       "frequency": "M",
       "source_file": "JP_M3_SA_history.csv",
-      "last_date": "2026-08",
-      "last_value": 16377129.0
+      "last_date": "2026-10",
+      "last_value": 16371215.0,
+      "current_vintage_provenance": {
+        "status": "CERTIFIED_NATIVE_BOJ_CURRENT_VINTAGE_NOT_PIT",
+        "source_series_id": "MAM1XAM3M3MO",
+        "source_database": "MD02",
+        "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode",
+        "source_runtime": "NATIVE_LIQ_DATA.JPY.money",
+        "source_history_sha256": "a94fda63e9e7b0d68e4b215ccd3baa453d32ae97d403279336a5305029c9d838",
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T09:10:04.250195+00:00",
+        "historical_levels_may_be_revised_again": true
+      }
     },
     {
       "id": "JP_YEN_BROAD_NEER_history_value",
