@@ -20266,7 +20266,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-04",
         "2026-05",
         "2026-06",
-        "2026-07"
+        "2026-07",
+        "2026-08",
+        "2026-09"
       ],
       "values": [
         0.685,
@@ -20350,13 +20352,32 @@ window.__GMFQ_DATA.MACRO_SERIES={
         1.686,
         1.71,
         1.767,
-        1.706
+        1.706,
+        1.782,
+        2.12
       ],
       "unit": "Percent per annum",
       "frequency": "M",
       "source_file": "JP_NEW_LOANS_RATE_history.csv",
-      "last_date": "2026-07",
-      "last_value": 1.706
+      "last_date": "2026-09",
+      "last_value": 2.12,
+      "current_vintage_provenance": {
+        "status": "BOJ_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "DLLR2CIDBNL1",
+        "source_database": "IR04",
+        "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=IR04&startDate=201910&endDate=202611&code=DLLR2CIDBNL1",
+        "source_metadata": {
+          "SERIES_CODE": "DLLR2CIDBNL1",
+          "UNIT": "Percent per annum",
+          "FREQUENCY": "MONTHLY",
+          "NAME_OF_TIME_SERIES": "New Loans and Discounts/Total/Domestically Licensed Banks"
+        },
+        "source_json_sha256": "b805a3bb111ee1c7e595429ce81d9b43178f36c52c36b0a281b1dbae55598bf1",
+        "historical_overlap": 82,
+        "exact_overlap": 82,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T17:20:06.997268+00:00"
+      }
     },
     {
       "id": "JP_MONETARY_BASE_history_value",
