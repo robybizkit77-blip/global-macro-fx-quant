@@ -621,9 +621,10 @@
         "B": {
           "positive": 1,
           "negative": 1,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
+            "Crescita: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
@@ -1933,9 +1934,10 @@
         "B": {
           "positive": 1,
           "negative": 1,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
+            "Crescita: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
@@ -2733,9 +2735,10 @@
         "B": {
           "positive": 1,
           "negative": 1,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
+            "Crescita: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
@@ -2987,9 +2990,10 @@
         "A": {
           "positive": 1,
           "negative": 1,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
+            "Crescita: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
@@ -3135,9 +3139,10 @@
         "A": {
           "positive": 1,
           "negative": 1,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
+            "Crescita: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
@@ -3252,9 +3257,10 @@
         "A": {
           "positive": 1,
           "negative": 1,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
+            "Crescita: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
@@ -3403,9 +3409,10 @@
         "A": {
           "positive": 1,
           "negative": 1,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
+            "Crescita: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
