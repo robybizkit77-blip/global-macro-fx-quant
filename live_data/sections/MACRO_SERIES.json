@@ -18704,7 +18704,9 @@
         "2026-04",
         "2026-05",
         "2026-06",
-        "2026-07"
+        "2026-07",
+        "2026-08",
+        "2026-09"
       ],
       "values": [
         5083404.0,
@@ -18788,13 +18790,27 @@
         6665699.0,
         6699971.0,
         6750336.0,
-        6764306.0
+        6764306.0,
+        6778576.0,
+        6790944.0
       ],
       "unit": "100 million yen",
       "frequency": "M",
       "source_file": "JP_BANK_CREDIT_DOMESTIC_BANKS_history.csv",
-      "last_date": "2026-07",
-      "last_value": 6764306.0
+      "last_date": "2026-09",
+      "last_value": 6790944.0,
+      "current_vintage_provenance": {
+        "status": "BOJ_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=MD11&startDate=201910&endDate=202611&code=DLCLAEDBLTTO",
+        "source_database": "MD11",
+        "source_series_id": "DLCLAEDBLTTO",
+        "source_title": "Outstanding Loans and Bills Discounted/End of Period/Banking Accounts, Trust Accounts and Overseas Office Accounts/Domestically Licensed Banks",
+        "source_json_sha256": "0d8dd082bd080df4e23d3e178d7577e47a566d341316242a16661e58b92ab4a2",
+        "historical_overlap_exact": 82,
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T09:49:19.287221+00:00"
+      }
     },
     {
       "id": "JP_TANKAN_LENDING_ATTITUDE_history_value",
@@ -19870,7 +19886,9 @@
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         10370332.0,
@@ -19952,15 +19970,29 @@
         12856236.0,
         12888677.0,
         12924478.0,
-        12914847.0,
-        12932213.0,
-        12945659.0
+        12914841.0,
+        12932232.0,
+        12946217.0,
+        12964942.0,
+        12960466.0
       ],
       "unit": "100 million yen",
       "frequency": "M",
       "source_file": "JP_M2_SA_history.csv",
-      "last_date": "2026-08",
-      "last_value": 12945659.0
+      "last_date": "2026-10",
+      "last_value": 12960466.0,
+      "current_vintage_provenance": {
+        "status": "BOJ_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=MD02&startDate=201911&endDate=202611&code=MAM1XAM2M2MO",
+        "source_database": "MD02",
+        "source_series_id": "MAM1XAM2M2MO",
+        "source_title": "M2/Average Amounts Outstanding/Seasonally Adjusted/Money Stock",
+        "source_json_sha256": "901aa7290486462bb35f3bbb48ab76b5ce437d7da30a64136f0f01b890feffda",
+        "historical_overlap_exact": 79,
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T09:49:19.287221+00:00"
+      }
     },
     {
       "id": "JP_M3_SA_history_value",
