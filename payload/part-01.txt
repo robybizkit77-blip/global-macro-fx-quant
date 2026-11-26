@@ -24123,7 +24123,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-03",
         "2026-04",
         "2026-05",
-        "2026-06"
+        "2026-06",
+        "2026-07",
+        "2026-08"
       ],
       "values": [
         1.0495,
@@ -24207,13 +24209,30 @@ window.__GMFQ_DATA.MACRO_SERIES={
         1.3824,
         1.4592,
         1.5469,
-        1.479
+        1.479,
+        1.5348,
+        1.513
       ],
       "unit": "Percent per annum",
       "frequency": "M",
       "source_file": "CH_MORTGAGE_RATE_FIXED_3_5Y_history.csv",
-      "last_date": "2026-06",
-      "last_value": 1.479
+      "last_date": "2026-08",
+      "last_value": 1.513,
+      "current_vintage_provenance": {
+        "status": "SNB_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "EPB@SNB.zikredlauf{FH,L35J,MP0}",
+        "source_url": "https://data.snb.ch/api/cube/zikredlauf/data/json/en?dimSel=D0%28FH%29%2CD1%28L35J%29%2CD2%28MP0%29&fromDate=2019-09&toDate=2026-11",
+        "source_metadata": {
+          "key": "EPB@SNB.zikredlauf{FH,L35J,MP0}",
+          "frequency": "P1M",
+          "scale": ""
+        },
+        "source_json_sha256": "b7e198fee52df54db875d89a5965e94ee11208b24a8c772c90d278bd4538ac75",
+        "historical_overlap": 82,
+        "exact_overlap": 82,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T16:54:02.591501+00:00"
+      }
     },
     {
       "id": "CH_BANK_CREDIT_CUSTOMERS_history_value",
@@ -24879,7 +24898,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-04",
         "2026-05",
         "2026-06",
-        "2026-07"
+        "2026-07",
+        "2026-08",
+        "2026-09"
       ],
       "values": [
         492673.86304868,
@@ -24918,14 +24939,14 @@ window.__GMFQ_DATA.MACRO_SERIES={
         642824.67453262,
         639320.37557611,
         540568.8452336501,
-        516009.49470203,
+        516009.49470203003,
         510849.12542666,
         466922.65672225,
-        495241.4287560301,
+        495241.42875603004,
         488349.84828499,
         481296.06552457,
         499140.46429396,
-        495625.86354891,
+        495625.86354890995,
         462501.50803385,
         467871.89245506,
         453560.30017982,
@@ -24935,8 +24956,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         449439.49557356,
         462834.92005843,
         452739.13790356,
-        440552.89566386,
-        453844.53387278,
+        440552.89566385996,
+        453844.53387278004,
         448469.44619733,
         435624.68445015,
         441647.54059886,
@@ -24944,9 +24965,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         444714.23033449,
         443931.03094465,
         448129.69674443,
-        420034.87239217,
-        422557.96229182,
-        426554.57407848,
+        420034.87239216996,
+        422557.96229182003,
+        426554.57407847996,
         417420.11429459,
         434396.41869187,
         420350.04998665,
@@ -24954,22 +24975,40 @@ window.__GMFQ_DATA.MACRO_SERIES={
         434638.23637956,
         444627.86378432,
         428289.7184056,
-        436432.32219385,
+        436432.32219384995,
         437199.05596196,
-        418419.74708717,
+        418419.74708716996,
         435167.94436667,
         426120.27789496,
         415293.53008655,
         427024.45480763,
-        429130.58528523,
-        423342.12968732,
-        420858.97054532
+        429130.58528522996,
+        423342.12968732003,
+        420858.97054532,
+        419034.85387207003,
+        421377.79814890004
       ],
       "unit": "CHF millions",
       "frequency": "M",
       "source_file": "CH_SNB_SIGHT_DEPOSITS_DOMESTIC_BANKS_history.csv",
-      "last_date": "2026-07",
-      "last_value": 420858.97054532
+      "last_date": "2026-09",
+      "last_value": 421377.79814890004,
+      "current_vintage_provenance": {
+        "status": "SNB_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "EPB@SNB.snbbipo{GB}",
+        "source_url": "https://data.snb.ch/api/cube/snbbipo/data/json/en?dimSel=D0%28GB%29&fromDate=2019-10&toDate=2026-11",
+        "source_metadata": {
+          "key": "EPB@SNB.snbbipo{GB}",
+          "frequency": "P1M",
+          "scale": "",
+          "unit": "In CHF millions"
+        },
+        "source_json_sha256": "85c47cf8fc16a1ab5b6a51ab293815cf8c011887d71145fcde22fdfe4adf8efb",
+        "historical_overlap": 82,
+        "exact_overlap": 82,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T16:54:02.591501+00:00"
+      }
     },
     {
       "id": "CH_SNB_TOTAL_ASSETS_history_value",
@@ -25057,7 +25096,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-04",
         "2026-05",
         "2026-06",
-        "2026-07"
+        "2026-07",
+        "2026-08",
+        "2026-09"
       ],
       "values": [
         861532.9040570699,
@@ -25068,7 +25109,7 @@ window.__GMFQ_DATA.MACRO_SERIES={
         852310.8685656,
         903488.95247002,
         918647.29657449,
-        956297.51183067,
+        956297.5118306701,
         949277.68527749,
         951810.95014963,
         975014.06256001,
@@ -25078,11 +25119,11 @@ window.__GMFQ_DATA.MACRO_SERIES={
         997784.82518015,
         1012167.23984659,
         1030533.49923537,
-        1011154.43634569,
+        1011154.4363456899,
         1012146.17897735,
-        1041421.01526979,
-        1023827.25604118,
-        1042215.16963743,
+        1041421.0152697901,
+        1023827.2560411801,
+        1042215.1696374301,
         1050020.5823599,
         1034888.47848851,
         1034628.23744935,
@@ -25092,8 +25133,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         1037870.53484008,
         1066104.07903445,
         1069286.6565739498,
-        990256.90425169,
-        968264.97778819,
+        990256.9042516899,
+        968264.9777881899,
         964566.69213,
         889467.3710199599,
         902116.46180509,
@@ -25101,9 +25142,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         881376.80842027,
         884573.2003200799,
         877098.42413493,
-        954597.79237868,
-        932483.62645521,
-        930723.51444291,
+        954597.7923786801,
+        932483.6264552099,
+        930723.5144429101,
         885593.05163751,
         850667.09051916,
         837248.92072353,
@@ -25141,13 +25182,31 @@ window.__GMFQ_DATA.MACRO_SERIES={
         889535.4097643101,
         876070.70610121,
         913630.61593452,
-        929994.43550102
+        929994.43550102,
+        950571.5321509399,
+        945829.0389919
       ],
       "unit": "CHF millions",
       "frequency": "M",
       "source_file": "CH_SNB_TOTAL_ASSETS_history.csv",
-      "last_date": "2026-07",
-      "last_value": 929994.43550102
+      "last_date": "2026-09",
+      "last_value": 945829.0389919,
+      "current_vintage_provenance": {
+        "status": "SNB_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "EPB@SNB.snbbipo{T0}",
+        "source_url": "https://data.snb.ch/api/cube/snbbipo/data/json/en?dimSel=D0%28T0%29&fromDate=2019-10&toDate=2026-11",
+        "source_metadata": {
+          "key": "EPB@SNB.snbbipo{T0}",
+          "frequency": "P1M",
+          "scale": "",
+          "unit": "In CHF millions"
+        },
+        "source_json_sha256": "375f23f3d713d6733cfaf45e160210ba447252c25ab677ff7cc7b0e66ba84354",
+        "historical_overlap": 82,
+        "exact_overlap": 82,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T16:54:02.591501+00:00"
+      }
     },
     {
       "id": "CH_NEER_NOMINAL_OVERALL_history_value",
