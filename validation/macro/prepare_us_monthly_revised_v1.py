@@ -53,6 +53,31 @@ def metadata(raw,fred,title,unit):
     require(re.search(r"frequency:\s*monthly\b",text),"FRED frequency mismatch")
     return units.group(1)
 
+# BLS did not publish October 2025 CPI observations during the funding lapse.
+# No interpolation and no monthly return across the unavailable month.
+CORE_CPI_OFFICIAL_GAP="2025-10"
+CORE_CPI_GAP_SOURCE="https://www.bls.gov/cpi/additional-resources/2025-federal-government-shutdown-impact-cpi-faq.htm"
+
+def parse_core_cpi(raw,now):
+    import csv
+    from io import StringIO
+    reader=csv.DictReader(StringIO(raw.decode("utf-8-sig")))
+    require(reader.fieldnames in (["observation_date","CPILFESL"],["DATE","CPILFESL"]),"core CPI CSV identity mismatch")
+    values={}; missing=[]; seen=set()
+    for r in reader:
+        d=date.fromisoformat(r[reader.fieldnames[0]])
+        stamp=d.isoformat(); m=stamp[:7]
+        require(d.day==1 and d<=now.date() and m not in seen,"invalid core CPI monthly date")
+        seen.add(m)
+        if r["CPILFESL"] in ("","."):
+            missing.append(m)
+            continue
+        v=float(r["CPILFESL"])
+        require(math.isfinite(v) and v>0,"invalid core CPI level")
+        values[m]=v
+    require(len(values)>=24 and list(values)==sorted(values),"insufficient/unsorted core CPI history")
+    return values,missing
+
 def prepare_row(row,ident,now,fetcher):
     fred,source,title,unit,old_unit=CONFIG[ident]
     require(row["source_file"]==source and row.get("frequency") in ("","M")
@@ -65,15 +90,25 @@ def prepare_row(row,ident,now,fetcher):
     csv_url="https://fred.stlouisfed.org/graph/fredgraph.csv?"+urlencode({"id":fred,"cosd":str(row["dates"][0])[:7]+"-01"})
     raw_csv,final=fetcher(csv_url)
     require(urlsplit(final).path=="/graph/fredgraph.csv","unexpected FRED CSV redirect")
-    parsed=fred_monthly_csv(raw_csv,fred,now.date())
-    # Source helper's complete window begins 2019-10, sufficient for these imports.
-    lookup={r["date"][:7]:r["value"] for r in parsed["revised_vintage_monthly_history"]}
+    missing=[]
+    if fred=="CPILFESL":
+        lookup,missing=parse_core_cpi(raw_csv,now)
+    else:
+        parsed=fred_monthly_csv(raw_csv,fred,now.date())
+        lookup={r["date"][:7]:r["value"] for r in parsed["revised_vintage_monthly_history"]}
     start=str(row["dates"][0])[:7]
     months=sorted(m for m in lookup if m>=start)
     require(months and months[0]==start and months[-1]>=str(row["last_date"])[:7],"source does not cover canonical window")
     require(set(str(x)[:7] for x in row["dates"])<=set(months),"source history loses existing periods")
     def ordinal(m):return int(m[:4])*12+int(m[5:7])
-    require(all(ordinal(b)-ordinal(a)==1 for a,b in zip(months,months[1:])),"noncontiguous revised history")
+    gaps=[(a,b) for a,b in zip(months,months[1:]) if ordinal(b)-ordinal(a)!=1]
+    if fred=="CPILFESL" and gaps:
+        require(gaps==[("2025-09","2025-11")] and CORE_CPI_OFFICIAL_GAP in missing,
+                "unexpected core CPI missing observation")
+        require(CORE_CPI_OFFICIAL_GAP not in {str(x)[:7] for x in row["dates"]},
+                "canonical history contains incompatible October 2025 observation")
+    else:
+        require(not gaps,"noncontiguous revised history")
     # Keep existing storage precision so the page adapters continue to work.
     ds=[m+"-01" if len(str(row["dates"][0]))==10 else m for m in months]
     vs=[lookup[m] for m in months]
@@ -89,6 +124,11 @@ def prepare_row(row,ident,now,fetcher):
         "source_csv_sha256":sha256(raw_csv).hexdigest(),"source_metadata_sha256":sha256(raw_meta).hexdigest(),
         "source_units_verified":verified_units,"source_series_first_release_PIT_certified":False,
         "historical_levels_may_be_revised_again":True,"runner_first_seen_utc":now.isoformat()}
+    if fred=="CPILFESL" and gaps:
+        provenance.update(official_missing_periods=[CORE_CPI_OFFICIAL_GAP],
+                          missing_period_source_url=CORE_CPI_GAP_SOURCE,
+                          gap_not_imputed=True,
+                          cross_gap_monthly_change_not_valid=True)
     before=row["last_date"]
     changed=(row["dates"]!=ds or row["values"]!=vs or row.get("unit")!=new_unit or row.get("frequency")!="M"
              or row.get("current_vintage_provenance",{}).get("source_series_id")!=fred)
