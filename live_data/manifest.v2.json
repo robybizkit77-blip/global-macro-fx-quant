@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "a20defacaf011e2b8d686accdda0a94f358d7e8d220803d755444e6aee0f996c",
-  "runtime_bytes": 3229782,
+  "runtime_sha256": "bce544ab44841fd863280c8174accf102360ef5979250c7003ae4540ff59632e",
+  "runtime_bytes": 3228343,
   "part_count": 16,
   "direct_section_count": 12,
   "derived_section_count": 2,
@@ -131,8 +131,8 @@
       "key": "MACRO_SERIES",
       "file": "MACRO_SERIES.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 735661,
-      "sha256": "83af42334ea0ed64a171065d18904126aaf9b2637c0e3e18dc1ce73a09e236d8",
+      "bytes": 734222,
+      "sha256": "e20fd9ecd9a17d92ee74135db0e1bfe7740320726bb05b2be97f3f353dff8ddb",
       "occurrences_in_payload": 1,
       "part": 1,
       "direct_update_allowed": true
