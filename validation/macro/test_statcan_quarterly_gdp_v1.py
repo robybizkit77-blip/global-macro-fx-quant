@@ -40,8 +40,6 @@ class StatCanTests(unittest.TestCase):
         def fetch(url,host):
             if url==SEED_URL: return seed,url
             if url.endswith("260828/t002a-eng.htm"): return table(),url
-            if url==issue_url(release):
-                return b'<html><a href="dq261203h-eng.htm">GDP</a></html>',url
             if url==source: return revised,url
             if url.endswith("261203/t002h-eng.htm"): return revised_table,url
             raise HTTPError(url,404,"Not found",None,None)
