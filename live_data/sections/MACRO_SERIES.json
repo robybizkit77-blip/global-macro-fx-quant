@@ -17332,7 +17332,10 @@
         "Apr-26",
         "May-26",
         "Jun-26",
-        "Jul-26"
+        "Jul-26",
+        "Aug-26",
+        "Sep-26",
+        "Oct-26"
       ],
       "values": [
         41.925,
@@ -17340,10 +17343,10 @@
         85.479,
         78.045,
         75.555,
-        74.70400000000001,
+        74.704,
         70.874,
         70.791,
-        73.55799999999999,
+        73.558,
         68.125,
         68.787,
         66.436,
@@ -17383,14 +17386,14 @@
         53.363,
         51.632,
         49.44,
-        47.293000000000006,
+        47.293,
         45.295,
         46.664,
         54.267,
         50.335,
         52.601,
         45.599,
-        47.120000000000005,
+        47.12,
         50.31,
         52.772,
         53.106,
@@ -17407,18 +17410,48 @@
         57.211,
         53.343,
         50.937,
-        47.386,
+        47.396,
         57.432,
         60.724,
         60.898,
-        57.286,
-        49.96
+        57.315,
+        49.955,
+        54.053,
+        55.949,
+        49.406
       ],
       "unit": "",
       "frequency": "",
       "source_file": "UK_BOE_DMP_LEAD_INDICATORS_history.csv",
-      "last_date": "Jul-26",
-      "last_value": 49.96
+      "last_date": "Oct-26",
+      "last_value": 49.406,
+      "current_vintage_provenance": {
+        "status": "BOE_DMP_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "BOE_DMP_MONTHLY:HighVeryHighUncertainty",
+        "source_url": "https://www.bankofengland.co.uk/-/media/boe/files/decision-maker-panel-survey/2026/monthly-dmp-data-october-2026.xlsx",
+        "source_workbook_sha256": "b3379c0903cf9b9543264c820b7151768f23d5c68a43512b371da6b26f36615f",
+        "historical_overlap": 78,
+        "historical_revisions": [
+          {
+            "month": "2026-02",
+            "old": 47.386,
+            "official": 47.396
+          },
+          {
+            "month": "2026-06",
+            "old": 57.286,
+            "official": 57.315
+          },
+          {
+            "month": "2026-07",
+            "old": 49.96,
+            "official": 49.955
+          }
+        ],
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T15:42:37.116708+00:00"
+      }
     },
     {
       "id": "UK_BOE_DMP_LEAD_INDICATORS_history_EmploymentExpected",
@@ -17506,7 +17539,10 @@
         "Apr-26",
         "May-26",
         "Jun-26",
-        "Jul-26"
+        "Jul-26",
+        "Aug-26",
+        "Sep-26",
+        "Oct-26"
       ],
       "values": [
         0.625,
@@ -17589,14 +17625,39 @@
         -0.296,
         -0.143,
         -0.392,
-        0.089,
-        0.107
+        0.09,
+        0.108,
+        0.138,
+        0.213,
+        0.22
       ],
       "unit": "",
       "frequency": "",
       "source_file": "UK_BOE_DMP_LEAD_INDICATORS_history.csv",
-      "last_date": "Jul-26",
-      "last_value": 0.107
+      "last_date": "Oct-26",
+      "last_value": 0.22,
+      "current_vintage_provenance": {
+        "status": "BOE_DMP_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "BOE_DMP_MONTHLY:EmploymentExpected",
+        "source_url": "https://www.bankofengland.co.uk/-/media/boe/files/decision-maker-panel-survey/2026/monthly-dmp-data-october-2026.xlsx",
+        "source_workbook_sha256": "b3379c0903cf9b9543264c820b7151768f23d5c68a43512b371da6b26f36615f",
+        "historical_overlap": 82,
+        "historical_revisions": [
+          {
+            "month": "2026-06",
+            "old": 0.089,
+            "official": 0.09
+          },
+          {
+            "month": "2026-07",
+            "old": 0.107,
+            "official": 0.108
+          }
+        ],
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T15:42:37.116708+00:00"
+      }
     },
     {
       "id": "UK_BOE_DMP_LEAD_INDICATORS_history_EmploymentRealised",
@@ -17684,7 +17745,10 @@
         "Apr-26",
         "May-26",
         "Jun-26",
-        "Jul-26"
+        "Jul-26",
+        "Aug-26",
+        "Sep-26",
+        "Oct-26"
       ],
       "values": [
         2.841,
@@ -17763,18 +17827,48 @@
         -1.805,
         0.533,
         -0.333,
-        -0.714,
+        -0.713,
         0.188,
         -0.617,
         -0.54,
-        -0.64,
-        -0.109
+        -0.604,
+        -0.111,
+        0.005,
+        -0.574,
+        -0.856
       ],
       "unit": "",
       "frequency": "",
       "source_file": "UK_BOE_DMP_LEAD_INDICATORS_history.csv",
-      "last_date": "Jul-26",
-      "last_value": -0.109
+      "last_date": "Oct-26",
+      "last_value": -0.856,
+      "current_vintage_provenance": {
+        "status": "BOE_DMP_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "BOE_DMP_MONTHLY:EmploymentRealised",
+        "source_url": "https://www.bankofengland.co.uk/-/media/boe/files/decision-maker-panel-survey/2026/monthly-dmp-data-october-2026.xlsx",
+        "source_workbook_sha256": "b3379c0903cf9b9543264c820b7151768f23d5c68a43512b371da6b26f36615f",
+        "historical_overlap": 82,
+        "historical_revisions": [
+          {
+            "month": "2026-02",
+            "old": -0.714,
+            "official": -0.713
+          },
+          {
+            "month": "2026-06",
+            "old": -0.64,
+            "official": -0.604
+          },
+          {
+            "month": "2026-07",
+            "old": -0.109,
+            "official": -0.111
+          }
+        ],
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T15:42:37.116708+00:00"
+      }
     },
     {
       "id": "UK_BOE_DMP_LEAD_INDICATORS_history_PriceExpected",
@@ -17862,7 +17956,10 @@
         "Apr-26",
         "May-26",
         "Jun-26",
-        "Jul-26"
+        "Jul-26",
+        "Aug-26",
+        "Sep-26",
+        "Oct-26"
       ],
       "values": [
         2.214,
@@ -17928,7 +18025,7 @@
         3.599,
         3.788,
         3.986,
-        3.93,
+        3.899,
         3.971,
         3.905,
         3.706,
@@ -17944,15 +18041,40 @@
         3.35,
         3.717,
         4.384,
-        3.952,
+        3.95,
         4.049,
-        3.674
+        3.674,
+        3.591,
+        3.858,
+        3.986
       ],
       "unit": "",
       "frequency": "",
       "source_file": "UK_BOE_DMP_LEAD_INDICATORS_history.csv",
-      "last_date": "Jul-26",
-      "last_value": 3.674
+      "last_date": "Oct-26",
+      "last_value": 3.986,
+      "current_vintage_provenance": {
+        "status": "BOE_DMP_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "BOE_DMP_MONTHLY:PriceExpected",
+        "source_url": "https://www.bankofengland.co.uk/-/media/boe/files/decision-maker-panel-survey/2026/monthly-dmp-data-october-2026.xlsx",
+        "source_workbook_sha256": "b3379c0903cf9b9543264c820b7151768f23d5c68a43512b371da6b26f36615f",
+        "historical_overlap": 82,
+        "historical_revisions": [
+          {
+            "month": "2025-01",
+            "old": 3.93,
+            "official": 3.899
+          },
+          {
+            "month": "2026-05",
+            "old": 3.952,
+            "official": 3.95
+          }
+        ],
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T15:42:37.116708+00:00"
+      }
     },
     {
       "id": "UK_BOE_DMP_LEAD_INDICATORS_history_PriceRealised",
@@ -18040,7 +18162,10 @@
         "Apr-26",
         "May-26",
         "Jun-26",
-        "Jul-26"
+        "Jul-26",
+        "Aug-26",
+        "Sep-26",
+        "Oct-26"
       ],
       "values": [
         1.994,
@@ -18106,7 +18231,7 @@
         3.626,
         3.681,
         3.979,
-        3.675,
+        3.658,
         3.487,
         3.642,
         3.521,
@@ -18122,15 +18247,45 @@
         3.581,
         3.605,
         3.812,
-        3.857,
-        3.688,
-        3.864
+        3.855,
+        3.687,
+        3.864,
+        3.474,
+        3.79,
+        4.202
       ],
       "unit": "",
       "frequency": "",
       "source_file": "UK_BOE_DMP_LEAD_INDICATORS_history.csv",
-      "last_date": "Jul-26",
-      "last_value": 3.864
+      "last_date": "Oct-26",
+      "last_value": 4.202,
+      "current_vintage_provenance": {
+        "status": "BOE_DMP_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "BOE_DMP_MONTHLY:PriceRealised",
+        "source_url": "https://www.bankofengland.co.uk/-/media/boe/files/decision-maker-panel-survey/2026/monthly-dmp-data-october-2026.xlsx",
+        "source_workbook_sha256": "b3379c0903cf9b9543264c820b7151768f23d5c68a43512b371da6b26f36615f",
+        "historical_overlap": 82,
+        "historical_revisions": [
+          {
+            "month": "2025-01",
+            "old": 3.675,
+            "official": 3.658
+          },
+          {
+            "month": "2026-05",
+            "old": 3.857,
+            "official": 3.855
+          },
+          {
+            "month": "2026-06",
+            "old": 3.688,
+            "official": 3.687
+          }
+        ],
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T15:42:37.116708+00:00"
+      }
     },
     {
       "id": "UK_BOE_DMP_LEAD_INDICATORS_history_SalesExpected",
@@ -18218,7 +18373,10 @@
         "Apr-26",
         "May-26",
         "Jun-26",
-        "Jul-26"
+        "Jul-26",
+        "Aug-26",
+        "Sep-26",
+        "Oct-26"
       ],
       "values": [
         4.608,
@@ -18284,7 +18442,7 @@
         5.431,
         6.262,
         6.77,
-        6.119,
+        6.126,
         6.435,
         5.881,
         5.863,
@@ -18296,19 +18454,54 @@
         5.702,
         6.244,
         5.687,
-        5.839,
+        5.825,
         5.996,
         5.563,
         4.859,
-        4.087,
-        5.836,
-        5.162
+        4.081,
+        5.835,
+        5.162,
+        5.65,
+        5.54,
+        4.97
       ],
       "unit": "",
       "frequency": "",
       "source_file": "UK_BOE_DMP_LEAD_INDICATORS_history.csv",
-      "last_date": "Jul-26",
-      "last_value": 5.162
+      "last_date": "Oct-26",
+      "last_value": 4.97,
+      "current_vintage_provenance": {
+        "status": "BOE_DMP_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "BOE_DMP_MONTHLY:SalesExpected",
+        "source_url": "https://www.bankofengland.co.uk/-/media/boe/files/decision-maker-panel-survey/2026/monthly-dmp-data-october-2026.xlsx",
+        "source_workbook_sha256": "b3379c0903cf9b9543264c820b7151768f23d5c68a43512b371da6b26f36615f",
+        "historical_overlap": 82,
+        "historical_revisions": [
+          {
+            "month": "2025-01",
+            "old": 6.119,
+            "official": 6.126
+          },
+          {
+            "month": "2026-01",
+            "old": 5.839,
+            "official": 5.825
+          },
+          {
+            "month": "2026-05",
+            "old": 4.087,
+            "official": 4.081
+          },
+          {
+            "month": "2026-06",
+            "old": 5.836,
+            "official": 5.835
+          }
+        ],
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T15:42:37.116708+00:00"
+      }
     },
     {
       "id": "UK_BOE_DMP_LEAD_INDICATORS_history_SalesRealised",
@@ -18396,7 +18589,10 @@
         "Apr-26",
         "May-26",
         "Jun-26",
-        "Jul-26"
+        "Jul-26",
+        "Aug-26",
+        "Sep-26",
+        "Oct-26"
       ],
       "values": [
         5.874,
@@ -18462,7 +18658,7 @@
         4.411,
         3.921,
         5.374,
-        7.024,
+        7.028,
         6.032,
         4.033,
         6.973,
@@ -18474,19 +18670,54 @@
         4.357,
         5.257,
         4.168,
-        4.125,
+        4.111,
         5.853,
         5.349,
         6.147,
-        5.393,
-        4.217,
-        4.971
+        5.361,
+        4.214,
+        4.971,
+        4.775,
+        6.235,
+        4.69
       ],
       "unit": "",
       "frequency": "",
       "source_file": "UK_BOE_DMP_LEAD_INDICATORS_history.csv",
-      "last_date": "Jul-26",
-      "last_value": 4.971
+      "last_date": "Oct-26",
+      "last_value": 4.69,
+      "current_vintage_provenance": {
+        "status": "BOE_DMP_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "BOE_DMP_MONTHLY:SalesRealised",
+        "source_url": "https://www.bankofengland.co.uk/-/media/boe/files/decision-maker-panel-survey/2026/monthly-dmp-data-october-2026.xlsx",
+        "source_workbook_sha256": "b3379c0903cf9b9543264c820b7151768f23d5c68a43512b371da6b26f36615f",
+        "historical_overlap": 82,
+        "historical_revisions": [
+          {
+            "month": "2025-01",
+            "old": 7.024,
+            "official": 7.028
+          },
+          {
+            "month": "2026-01",
+            "old": 4.125,
+            "official": 4.111
+          },
+          {
+            "month": "2026-05",
+            "old": 5.393,
+            "official": 5.361
+          },
+          {
+            "month": "2026-06",
+            "old": 4.217,
+            "official": 4.214
+          }
+        ],
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T15:42:37.116708+00:00"
+      }
     }
   ],
   "JPY": [
