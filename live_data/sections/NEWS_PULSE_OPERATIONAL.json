@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-25",
-  "generated_at_utc": "2026-11-26T04:12:11.234109Z",
+  "generated_at_utc": "2026-11-26T05:32:16.839438Z",
   "items": [
     {
       "as_of": "2026-11-25",
@@ -136,6 +136,19 @@
     },
     {
       "as_of": "2026-11-25",
+      "category": "MARKET_VOLATILITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 28.29; confronto con chiusura 2026-11-24. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-24",
+      "source": "Cboe Global Markets, VIX daily close",
+      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "title": "VIX: +1.93 punti nella chiusura del 2026-11-25"
+    },
+    {
+      "as_of": "2026-11-25",
       "category": "MARKET_FX_ECB_FIXING",
       "ccy": "EUR",
       "confidence": "A",
@@ -224,19 +237,6 @@
     },
     {
       "as_of": "2026-11-24",
-      "category": "MARKET_VOLATILITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 26.36; confronto con chiusura 2026-11-23. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-23",
-      "source": "Cboe Global Markets, VIX daily close",
-      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "title": "VIX: -0.26 punti nella chiusura del 2026-11-24"
-    },
-    {
-      "as_of": "2026-11-24",
       "category": "MARKET_CREDIT_OAS",
       "ccy": "",
       "confidence": "B",
@@ -317,7 +317,7 @@
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
     }
   ],
-  "last_checked_at_utc": "2026-11-26T04:12:11.234109Z",
+  "last_checked_at_utc": "2026-11-26T05:32:16.839438Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
