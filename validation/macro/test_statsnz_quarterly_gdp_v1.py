@@ -8,11 +8,11 @@ from validation.macro.statsnz_quarterly_gdp_v1 import (
 )
 
 
-def fixture(headline="GDP rose 0.2 percent", rows="Mar 2026 0.9 0.9 Jun 2026 0.2 1.7"):
+def fixture(headline="GDP rose 0.2 percent", rows="Mar 2026 0.9 0.9 Jun 2026 0.2 1.7", narrative="Economic activity rose 0.2 percent in the June 2026 quarter as measured by gross domestic product. This follows a 0.9 percent rise in the March 2026 quarter."):
     return f"""<html><h1>Gross domestic product: June 2026 quarter</h1>
     <p>17 September 2026, 10:45am</p><p>All movements are in seasonally adjusted chain-volume terms.</p>
     <p>In the June 2026 quarter, compared with the March 2026 quarter:</p><p>{headline}</p>
-    <h2>Gross domestic product, quarterly and annual growth rates, chain volume, December 2022–June 2026</h2>
+    <p>{narrative}</p><h2>Gross domestic product, quarterly and annual growth rates, chain volume, December 2022–June 2026</h2>
     <p>Quarter Quarterly growth (%) Annual growth (%) {rows}</p></html>""".encode()
 
 
@@ -20,7 +20,7 @@ class StatsNZTests(unittest.TestCase):
     def test_exact_edition(self):
         row=parse_bulletin(fixture(),"2026Q2",date(2026,9,17))
         self.assertEqual((row["reported_value"],row["prior_qoq"]),(0.2,0.9))
-        for raw in (fixture(headline="GDP rose 0.3 percent"),fixture(rows="Jun 2026 0.2 1.7")):
+        for raw in (fixture(headline="GDP rose 0.3 percent"),fixture(narrative="Expenditure on GDP rose 0.4 percent.")):
             with self.assertRaises(Pending):
                 parse_bulletin(raw,"2026Q2",date(2026,9,17))
         with self.assertRaises(Pending):
