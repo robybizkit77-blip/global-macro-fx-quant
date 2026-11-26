@@ -27,7 +27,7 @@ def ensure(ok, why):
         raise ValueError("MACRO_V3_PUBLICATION_REJECTED: " + why)
 
 
-def snapshot(src):
+def snapshot(src, momentum=None):
     day = datetime.now(ZoneInfo("Europe/Rome")).date()
     ensure(src.get("schema") == SOURCE_SCHEMA
            and src.get("status") == "COMPLETE_CURRENT_ECONOMIC_OBSERVATION_8_G8_28_PAIRS_NOT_FX_SIGNAL"
@@ -91,6 +91,17 @@ def snapshot(src):
         "pair_context": pairs,
         "summary": src["summary"],
     }
+    if momentum is not None:
+        ensure(momentum.get("schema") == "GMFQ_G8_CURRENT_ACTIVITY_MOMENTUM_RESEARCH_V1"
+               and momentum.get("as_of") == src["as_of"]
+               and momentum.get("safe_to_publish_D") is False
+               and momentum.get("safe_to_update_pairs") is False
+               and momentum.get("writes_live_data") is False
+               and momentum.get("no_cross_country_momentum_aggregation") is True
+               and set(momentum.get("countries", {})) == set(FX),
+               "invalid activity momentum diagnostic")
+        result["activity_momentum_research"] = momentum
+        result["activity_momentum_status"] = "RESEARCH_ONLY"
     result["snapshot_content_sha256"] = hashlib.sha256(
         json.dumps(result, sort_keys=True, separators=(",", ":"),
                    ensure_ascii=False).encode("utf-8")).hexdigest()
@@ -106,7 +117,8 @@ def main():
     ensure(target == TARGET.resolve() or target.is_relative_to(Path("/tmp")),
            "only fixed public research snapshot or /tmp test output permitted")
     src = run(as_of=args.as_of)
-    result = snapshot(src)
+    from validation.macro.v2_current_activity_momentum_v1 import run as activity_run
+    result = snapshot(src, activity_run())
     target.parent.mkdir(parents=True, exist_ok=True)
     encoded = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
     target.write_text(encoded, encoding="utf-8")
@@ -119,6 +131,7 @@ def main():
         "output": str(target),
         "replaced_D_scores": 0,
         "new_trade_biases": 0,
+        "activity_momentum_countries": len(result["activity_momentum_research"]["countries"]),
     }, sort_keys=True))
 
 
