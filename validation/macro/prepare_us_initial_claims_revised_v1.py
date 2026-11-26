@@ -33,7 +33,12 @@ def prepare_row(row,now,fetcher):
     need(all(0<v<10000000 and v.is_integer() for v in vs),"invalid claims counts")
     errors=[abs(obs[d]-v)/max(abs(v),1) for d,v in zip(mapped,vs0)]
     exact=sum(abs(obs[d]-v)<=1e-6 for d,v in zip(mapped,vs0))
-    need(exact/len(mapped)>=.7 and statistics.median(errors)<=.003 and max(errors)<=.05,"weekly history mapping not established")
+    audit={"exact":exact,"count":len(mapped),"median_relative_error":statistics.median(errors),"max_relative_error":max(errors),"comparisons":[]}
+    for lag in (-14,-7,0,7,14):
+        pairs=[(obs[(date.fromisoformat(d)+timedelta(days=lag)).isoformat()],v) for d,v in zip(mapped,vs0) if (date.fromisoformat(d)+timedelta(days=lag)).isoformat() in obs]
+        if pairs:audit["comparisons"].append({"lag_days":lag,"count":len(pairs),"exact":sum(abs(x-y)<=1e-6 for x,y in pairs),"median_relative_error":statistics.median(abs(x-y)/max(abs(y),1) for x,y in pairs)})
+    print("ICSA_CALENDAR_DIAGNOSTIC",json.dumps(audit,sort_keys=True))
+    need(exact/len(mapped)>=.7 and statistics.median(errors)<=.003 and max(errors)<=.05,"weekly history mapping not established: "+json.dumps(audit,sort_keys=True))
     if shift:
         # Check competing adjacent-week hypotheses against real source dates.
         for lag in (-7,7):
