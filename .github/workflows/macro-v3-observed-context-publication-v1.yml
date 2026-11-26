@@ -158,6 +158,11 @@ jobs:
         run: |
           python -m validation.macro.statcan_quarterly_gdp_v1 --verify-q2 > /tmp/statcan-q2-proof.json
           python -c "import json; d=json.load(open('/tmp/statcan-q2-proof.json')); assert (d['reported_value'],d['prior_qoq'],d['next_release_day']) == (0.8,0.1,'2026-11-30')"
+      - name: Verify StatCan Daily index against published June edition
+        if: github.event_name == 'pull_request' && github.head_ref == 'fix/statcan-reschedule-recovery-20261126'
+        run: |
+          python -m validation.macro.statcan_quarterly_gdp_v1 --verify-index > /tmp/statcan-index-proof.json
+          python -c "import json; d=json.load(open('/tmp/statcan-index-proof.json')); assert (d['reported_value'],d['prior_qoq'],d['next_release_day']) == (0.8,0.1,'2026-11-30')"
       - name: Collect and archive the next Canadian StatCan quarterly GDP edition
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
@@ -367,6 +372,7 @@ jobs:
             /tmp/abs-q2-proof.json
             /tmp/statcan-quarterly-gdp-collection.json
             /tmp/statcan-q2-proof.json
+            /tmp/statcan-index-proof.json
             /tmp/eurostat-quarterly-gdp-collection.json
             /tmp/eurostat-q3-proof.json
             /tmp/statsnz-quarterly-gdp-collection.json
