@@ -73,6 +73,30 @@ class BatchTests(unittest.TestCase):
         self.assertEqual(prepare_row(x,ident,NOW,source)["status"],"NO_CHANGE")
         with self.assertRaises(ValueError):
             prepare_row(x,ident,NOW,lambda u:source(u,True))
+    def test_headline_cpi_only_official_gap_is_preserved(self):
+        ident="US_CPIAUCSL_history_value"
+        x=row(ident)
+        x.update(dates=["2024-10-01","2025-09-01","2025-11-01"],
+                 values=[100,111,113],last_date="2025-11-01",last_value=113)
+        def source(url,unexpected=False):
+            if "/series/" in url:
+                cfg=CONFIG[ident]
+                return f"<title>{cfg[2]} ({cfg[0]}) | FRED</title><p>Units: {cfg[3]}, Seasonally Adjusted</p><p>Frequency: Monthly</p>".encode(),url
+            lines=["observation_date,CPIAUCSL"]
+            for n in range(25):
+                y=2024+(9+n)//12;m=(9+n)%12+1
+                d=f"{y}-{m:02d}"
+                val="." if d=="2025-10" or (unexpected and d=="2026-01") else str(100+n)
+                lines.append(f"{d}-01,{val}")
+            return ("\n".join(lines)+"\n").encode(),url
+        result=prepare_row(x,ident,NOW,source)
+        self.assertEqual(result["after"],"2026-10-01")
+        self.assertNotIn("2025-10-01",x["dates"])
+        self.assertEqual(x["current_vintage_provenance"]["official_missing_periods"],["2025-10"])
+        self.assertTrue(x["current_vintage_provenance"]["cross_gap_monthly_change_not_valid"])
+        self.assertEqual(prepare_row(x,ident,NOW,source)["status"],"NO_CHANGE")
+        with self.assertRaises(ValueError):
+            prepare_row(x,ident,NOW,lambda u:source(u,True))
     def test_rrsfs_source_unit_and_official_gap(self):
         ident="US_RRSFS_history_value"
         x=row(ident)
