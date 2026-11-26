@@ -1,0 +1,31 @@
+name: CHF FSO growth history source proof V1
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/probe_chf_fso_growth_history_v1.py'
+      - '.github/workflows/chf-fso-growth-history-proof-v1.yml'
+      - 'validation/macro/prepare_chf_fso_growth_history_v1.py'
+      - 'validation/macro/test_prepare_chf_fso_growth_history_v1.py'
+permissions:
+  contents: read
+jobs:
+  source-proof:
+    if: github.head_ref == 'research/chf-fso-growth-history-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install openpyxl
+      - run: python -m validation.macro.probe_chf_fso_growth_history_v1
+      - run: python -m unittest validation.macro.test_prepare_chf_fso_growth_history_v1 -v
+      - name: Verify both source candidates
+        run: |
+          python -m validation.macro.prepare_chf_fso_growth_history_v1 --candidate /tmp/chf-fso-growth/candidate.json --receipt /tmp/chf-fso-growth/receipt.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/chf-fso-growth/receipt.json'))
+          assert len(d['series'])==2 and all(r['status'] in ('READY','NO_CHANGE') and r['after']>='2026-09' and r['overlap']>=82 for r in d['series']),d
+          PY
