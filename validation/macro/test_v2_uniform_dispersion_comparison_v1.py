@@ -45,3 +45,18 @@ class UniformDispersionTests(unittest.TestCase):
                 self.assertEqual(row["economic_polarity_sample_sd_z"],
                                  sign * row["sample_sd_z"])
                 self.assertGreater(row["prior_sample_sd"], 0)
+
+    def test_all_24_axes_no_promotion(self):
+        r = run()
+        self.assertEqual(len(r["growth_rows"]), 8)
+        self.assertEqual(len(r["rows"]) + len(r["growth_rows"]), 24)
+        axes = {**r["rows"], **r["growth_rows"]}
+        self.assertEqual(r["all_24_axis_alternative_numeric_count"],
+                         sum(v["sample_sd_z"] is not None for v in axes.values()))
+        self.assertTrue(r["mixed_evidence_classes_not_synchronized_PIT_panel"])
+        for row in r["growth_rows"].values():
+            self.assertEqual(row["source_class"], "INITIAL_PUBLISHER_WEB_STATEMENTS_NOT_ARCHIVAL_PIT")
+            if row["sample_sd_z"] is not None:
+                self.assertEqual(row["prior_count"], 12)
+            if row["latest_visible_revision"] is not None:
+                self.assertTrue(row["latest_visible_revision"]["NOT_used_to_train_initial_web_z"])
