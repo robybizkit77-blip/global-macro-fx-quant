@@ -50,24 +50,21 @@ def parse_bulletin(raw, quarter, today):
         raise Pending("STATSNZ_GDP_RELEASE_DATE_RANGE")
     if not re.search(r"seasonally adjusted chain.volume terms", text, re.I):
         raise Pending("STATSNZ_REAL_SA_UNIT_MISSING")
-    # The GDP chart table is distinct from expenditure GDP and annual average growth.
-    chart = re.search(r"Gross domestic product,\s*quarterly and annual growth rates,\s*chain volume,\s*"
-                      r"(?:March|June|September|December)\s+20\d{2}\s*[–—-]\s*"
-                      + re.escape(label(quarter)) +
-                      r"\s*Quarter\s+Quarterly growth\s*\(%\)\s+Annual growth\s*\(%\)", text, re.I)
-    if not chart:
-        raise Pending("STATSNZ_GDP_QUARTERLY_TABLE_IDENTITY")
-    def short(k):
-        y, q = quarter_parts(k)
-        return MONTHS[q-1][:3] + " " + str(y)
+    # The release's production GDP paragraph explicitly states both rates.
+    # Avoid dependence on graph/table widget DOM serialization.
     number = r"[+-]?\d+(?:\.\d+)?"
-    hits = re.findall(r"(?<!\w)" + re.escape(short(previous_quarter(quarter))) +
-                      r"\s+(" + number + r")\s+" + number + r"\s+" +
-                      re.escape(short(quarter)) + r"\s+(" + number + r")\s+" + number +
-                      r"(?![\d.])", text[chart.end():], re.I)
-    if len(hits) != 1:
-        raise Pending("STATSNZ_GDP_CONTIGUOUS_QUARTERS_NOT_UNIQUE")
-    prior, current = map(float, hits[0])
+    direction = r"(rose|fell|increased|decreased)"
+    narrative = re.findall(
+        r"\bEconomic activity\s+" + direction + r"\s+(" + number +
+        r")\s+percent in the " + re.escape(label(quarter)) +
+        r" quarter as measured by gross domestic product\.\s+This follows a\s+(" +
+        number + r")\s+percent\s+(rise|fall|increase|decrease)\s+in the " +
+        re.escape(label(previous_quarter(quarter))) + r" quarter\.", text, re.I)
+    if len(narrative) != 1:
+        raise Pending("STATSNZ_PRODUCTION_GDP_TWO_QUARTER_NARRATIVE_NOT_UNIQUE")
+    verb, rate, previous_rate, previous_verb = narrative[0]
+    current = abs(float(rate)) * (-1 if verb.lower() in ("fell", "decreased") else 1)
+    prior = abs(float(previous_rate)) * (-1 if previous_verb.lower() in ("fall", "decrease") else 1)
     if not all(-30 < x < 30 for x in (prior,current)):
         raise Pending("STATSNZ_GDP_OUT_OF_RANGE")
     # Cross-check the headline production GDP, not expenditure GDP.
@@ -114,7 +111,7 @@ def render_bulletin(url):
                 if not response or response.status != 200 or page.url != url:
                     raise Pending("STATSNZ_BROWSER_EDITION_TRANSPORT")
                 page.get_by_text("Key facts", exact=True).first.wait_for(timeout=15000)
-                page.get_by_text("Quarterly growth (%)", exact=True).first.wait_for(state="attached", timeout=15000)
+                page.get_by_text("as measured by gross domestic product.", exact=False).first.wait_for(state="attached", timeout=15000)
                 raw = page.content().encode("utf-8")
                 if page.url != url or not 16 < len(raw) <= 2_000_000:
                     raise Pending("STATSNZ_BROWSER_EDITION_INVALID")
