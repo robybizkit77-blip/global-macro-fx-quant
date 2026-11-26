@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/macro-persistent-daily-v1.yml'
+      - 'validation/macro/probe_gbp_mortgage_75ltv_v1.py'
       - 'validation/macro_adapter_pit_handoff.py'
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
@@ -197,6 +198,20 @@ env:
   PYTHONDONTWRITEBYTECODE: '1'
 
 jobs:
+  gbp-mortgage-rate-source-proof:
+    if: github.event_name == 'pull_request' && github.head_ref == 'research/gbp-mortgage-rate-75ltv-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare full official IADB mortgage rate history
+        run: python -m validation.macro.probe_gbp_mortgage_75ltv_v1
+
   cad-ceer-source-proof:
     if: github.event_name == 'pull_request' && github.head_ref == 'fix/cad-ceer-monthly-20261126'
     runs-on: ubuntu-24.04
