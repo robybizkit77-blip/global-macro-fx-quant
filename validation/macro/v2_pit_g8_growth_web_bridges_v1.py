@@ -11,6 +11,7 @@ Read-only source adapters for existing shared 24-slot evidence control plane.
 from __future__ import annotations
 
 import json
+import math
 from datetime import datetime, date, timedelta, timezone
 from urllib.parse import urlsplit
 
@@ -191,14 +192,33 @@ def collect_growth_bridges(*, evidence=None, current=None):
         require(x.get("original_day_html_bytes_proven") is False,
                 "original source availability not proven for "+c)
         cand=[y for y in observed[c] if y.get("id")==p["runtime_id"]]
-        require(len(cand)==1 and cand[0].get("frequency")==p["runtime_freq"]
-                and cand[0].get("unit")==p["runtime_unit"]
-                and type(cand[0].get("last_value")) in (int,float)
-                and cand[0]["last_value"]==p["runtime_val"],
-                "canonical CURRENT observation changed; no first-release promotion")
-        period=parse_reference_period(cand[0].get("last_date"),p["runtime_freq"])
-        require(period and period[0].strftime("%Y-%m")==p["runtime_period"],
-                "Growth current observed reference period changed")
+        require(len(cand)==1 and cand[0].get("frequency")==p["runtime_freq"],
+                "Growth current source identity or frequency changed")
+        row=cand[0]
+        period=parse_reference_period(row.get("last_date"),p["runtime_freq"])
+        dates=row.get("dates",[]); values=row.get("values",[])
+        require(period and dates and len(dates)==len(values) and
+                dates[-1]==row.get("last_date") and values[-1]==row.get("last_value") and
+                type(row.get("last_value")) in (int,float) and math.isfinite(row["last_value"]),
+                "Growth current observation tail inconsistent")
+        anchors=[i for i,d in enumerate(dates) if
+                 parse_reference_period(d,p["runtime_freq"]) and
+                 parse_reference_period(d,p["runtime_freq"])[0].strftime("%Y-%m")==p["runtime_period"]]
+        require(len(anchors)==1 and period[0].strftime("%Y-%m")>=p["runtime_period"],
+                "Growth historical reference period missing or current series regressed")
+        vintage=row.get("current_vintage_provenance") or {}
+        current_revised=(str(vintage.get("status","")).endswith("CURRENT_REVISED_HISTORY_NOT_PIT") and
+                         vintage.get("source_series_first_release_PIT_certified") is False and
+                         vintage.get("historical_levels_may_be_revised_again") is True)
+        unit_ok=row.get("unit")==p["runtime_unit"] or (
+            c=="USD" and row.get("unit")=="Index 2022=100" and current_revised and
+            vintage.get("source_series_id")=="INDPRO" and
+            vintage.get("source_units_verified")=="index 2022=100 , seasonally adjusted")
+        require(unit_ok,"Growth current metric unit changed without documented rebase")
+        require(current_revised or values[anchors[0]]==p["runtime_val"],
+                "Growth historical reference differs without documented revised vintage")
+        # The pinned publisher event and historical comparison remain immutable.
+        # The current revised observation is not used as a release event or scoring input.
         ev=x.get("events")
         require(isinstance(ev,list) and len(ev)==(2 if c=="EUR" else 1),
                 "event count or revision semantics changed")
@@ -210,6 +230,7 @@ def collect_growth_bridges(*, evidence=None, current=None):
             evidence="OFFICIAL_G8_GROWTH_SIX_WEB_BRIDGES_OCT_2026",
             notes=[
                 NOTES[c],
+                "October review comparison is historical; current revised runtime levels are not release evidence",
                 "Research publication statement, not original release-day archived bytes or full revision chain",
                 "The canonical G8 Growth series is NOT selected; date/metric agreement does not authorize Macro scoring",
                 "Official local release clock with UTC offset" if p["clock"] is not None
