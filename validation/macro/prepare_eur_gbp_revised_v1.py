@@ -1,19 +1,21 @@
 """Current revised EUR/GBP research histories: exact publisher series, no PIT or FX promotion."""
 from __future__ import annotations
-import argparse,copy,json,math
+import argparse,copy,json,math,statistics
 from datetime import datetime,timezone
 from hashlib import sha256
 from pathlib import Path
 from urllib.parse import urlencode,urlsplit
 from urllib.request import Request,urlopen
 from validation.sources.eur_eurostat_core import API_BASE as EUROSTAT,extract_series
-from validation.sources.gbp_ons_core import API_BASE as ONS,extract_months
+from validation.sources.gbp_ons_core import API_BASE as ONS,extract_months,month_shift
 
 SOURCE=Path(__file__).resolve().parents[2]/"live_data/sections/MACRO_SERIES.json"
 CONFIG={
  ("EUR","EA_HICP_CORE_YOY_history_value"):("EA_HICP_CORE_YOY_history.csv","Percent YoY","TOT_X_NRG_FOOD"),
  ("EUR","EA_HICP_SERVICES_YOY_history_value"):("EA_HICP_SERVICES_YOY_history.csv","Percent YoY","SERV"),
  ("GBP","UK_CPI_CORE_YOY_history_value"):("UK_CPI_CORE_YOY_history.csv","Percent","/economy/inflationandpriceindices/timeseries/dko8/mm23"),
+ ("GBP","UK_PRODUCTION_history_value"):("UK_PRODUCTION_history.csv","Index","/economy/economicoutputandproductivity/output/timeseries/k222/diop"),
+ ("GBP","UK_EMPLOYMENT_RATE_history_value"):("UK_EMPLOYMENT_RATE_history.csv","Percent","/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/lf24/lms"),
  ("GBP","UK_RETAIL_VOL_history_value"):("UK_RETAIL_VOL_history.csv","Index","/businessindustryandtrade/retailindustry/timeseries/j5ek/drsi"),
 }
 SCHEMA="GMFQ_EUR_GBP_REVISED_RESEARCH_HISTORIES_V1"
@@ -46,10 +48,32 @@ def prepare_row(currency,ident,row,now,fetcher):
         title=str(desc.get("title","")).casefold()
         if expected_id=="DKO8":
             require("12mth" in title and all(x in title for x in ("excluding","energy","food","alcohol","tobacco")),"ONS core CPI title mismatch")
+        elif expected_id=="K222":
+            require(all(x in title for x in ("iop","b-e","production","cvmsa")) and "index" in str(desc.get("unit","")).casefold(),"ONS production identity mismatch")
+        elif expected_id=="LF24":
+            require(all(x in title for x in ("employment rate","16 to 64","seasonally adjusted")),"ONS employment identity mismatch")
         else:
             require(all(x in title for x in ("volume","seasonally adjusted","all retailers","inc fuel","index")),"ONS retail identity mismatch")
         observations=extract_months(payload)
         definition={"cdid":expected_id,"dataset":code.split("/")[-1].upper(),"official_uri":code,"title":desc.get("title"),"publisher_unit":desc.get("unit")}
+    if ident=="UK_EMPLOYMENT_RATE_history_value":
+        # LF24 month labels are the centre of rolling three-month windows.
+        # Identify the legacy convention empirically before replacing any history.
+        old_definition=row.get("current_vintage_provenance",{}).get("definition",{})
+        if old_definition.get("cdid")=="LF24":
+            shift=old_definition["legacy_period_shift_months"]
+            require(shift in (0,1),"invalid certified period convention")
+        else:
+            errors={}
+            for shift in (0,1):
+                lookup={month_shift(d,shift)[:7]:v for d,v in observations}
+                diffs=[abs(float(v)-lookup[str(d)[:7]]) for d,v in zip(row["dates"],row["values"]) if str(d)[:7] in lookup]
+                require(len(diffs)>=36,"insufficient employment overlap")
+                errors[shift]=statistics.mean(diffs)
+            shift=min(errors,key=errors.get)
+            require(errors[shift]<=0.35 and errors[1-shift]-errors[shift]>=0.025,"ambiguous LFS centre/end month convention: "+str(errors))
+        observations=[(month_shift(d,shift),v) for d,v in observations]
+        definition.update(legacy_period_shift_months=shift,period_semantics="ROLLING_3_MONTH_CENTRE" if shift==0 else "ROLLING_3_MONTH_END")
     start=str(row["dates"][0])[:7]
     pairs=[(d[:7],v) for d,v in observations if d[:7]>=start]
     require(bool(pairs),"empty history")
@@ -59,6 +83,15 @@ def prepare_row(currency,ident,row,now,fetcher):
     require(all(ordinal(b)-ordinal(a)==1 for a,b in zip(ds,ds[1:])) and all(math.isfinite(v) for v in vs),"incomplete revised source history")
     require(set(str(x)[:7] for x in row["dates"])<=set(ds),"historical coverage regression")
     if ident=="UK_RETAIL_VOL_history_value":require(all(v>0 for v in vs),"nonpositive retail volume index")
+    if ident=="UK_PRODUCTION_history_value":
+        require(all(v>0 for v in vs),"nonpositive production index")
+        lookup=dict(zip(ds,vs))
+        ratios=[float(v)/lookup[str(d)[:7]] for d,v in zip(row["dates"],row["values"])]
+        require(len(ratios)>=36,"insufficient production overlap")
+        scale=statistics.median(ratios)
+        require(0.8<=scale<=1.2 and max(abs(r/scale-1) for r in ratios)<=0.08,"production source overlap incompatible")
+    if ident=="UK_EMPLOYMENT_RATE_history_value":
+        require(all(0<v<100 for v in vs),"invalid employment percentage")
     before=row["last_date"]
     old=row.get("current_vintage_provenance",{})
     changed=row["dates"]!=ds or row["values"]!=vs or old.get("definition")!=definition
