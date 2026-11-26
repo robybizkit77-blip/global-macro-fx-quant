@@ -25,7 +25,10 @@ def prepare_row(row,ident,now,fetcher):
     matches=[x for x in payload["timeseries"] if x.get("metadata",{}).get("key")==series]
     need(len(matches)==1,"SNB exact series not unique")
     x=matches[0];meta=x["metadata"]
-    need(meta.get("frequency")=="P1M" and meta.get("unit")=="In CHF millions" and meta.get("scale")=="","SNB metadata mismatch: "+str(meta))
+    need(meta.get("frequency")=="P1M" and meta.get("unit") in ("In CHF millions","In CHF millions / In percent") and meta.get("scale")=="","SNB metadata mismatch: "+str(meta))
+    # The cube-level unit combines levels and percent changes. Exact B (level),
+    # GM2/GM3 keys above, the full-window value guard below and the official
+    # published level definition exclude any growth-rate variant.
     obs={}
     for p in x["values"]:
         d=p["date"];v=p.get("value")
