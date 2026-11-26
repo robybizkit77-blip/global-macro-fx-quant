@@ -24,6 +24,11 @@ on:
       - 'validation/macro/probe_chf_balance_yield_rates_v1.py'
       - 'validation/macro/prepare_chf_snb_balance_mortgage_v1.py'
       - 'validation/macro/test_prepare_chf_snb_balance_mortgage_v1.py'
+      - 'validation/macro/probe_core_jpy_chf_canonical_v1.py'
+      - 'validation/macro/prepare_core_jpy_chf_canonical_v1.py'
+      - 'validation/macro/test_prepare_core_jpy_chf_canonical_v1.py'
+      - 'validation/macro/prepare_jpy_boj_new_loans_v1.py'
+      - 'validation/macro/test_prepare_jpy_boj_new_loans_v1.py'
       - 'validation/macro/probe_jpy_employment_lfs_v1.py'
       - 'validation/macro_adapter_pit_handoff.py'
       - 'validation/macro/check_macro_source_registry.py'
@@ -231,6 +236,53 @@ jobs:
       - run: python -m pip install openpyxl
       - name: Inspect official historical employment workbook
         run: python -m validation.macro.probe_jpy_employment_lfs_v1
+
+  jpy-new-loans-source-proof:
+    if: github.event_name == 'pull_request' && github.head_ref == 'research/core-jpy-chf-canonical-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify BoJ IR04 rate identity and source history
+        run: |
+          python -m unittest validation.macro.test_prepare_jpy_boj_new_loans_v1 -v
+          python -m validation.macro.prepare_jpy_boj_new_loans_v1 --candidate /tmp/jpy-loans-proof/candidate.json --receipt /tmp/jpy-loans-proof/receipt.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/jpy-loans-proof/receipt.json'))
+          assert len(d['series'])==1,d
+          r=d['series'][0]
+          assert r['status'] in ('READY','NO_CHANGE') and r['after']>='2026-08' and r['exact_overlap']>=82,r
+          PY
+
+  core-jpy-chf-canonical-proof:
+    if: github.event_name == 'pull_request' && github.head_ref == 'research/core-jpy-chf-canonical-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install openpyxl requests
+      - name: Verify official Japanese and Swiss national core CPI
+        run: |
+          python -m unittest validation.macro.test_prepare_core_jpy_chf_canonical_v1 -v
+          python -m validation.macro.prepare_core_jpy_chf_canonical_v1 --candidate /tmp/core-jpy-chf-proof/candidate.json --receipt /tmp/core-jpy-chf-proof/receipt.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/core-jpy-chf-proof/receipt.json'))
+          assert len(d['series'])==2,d
+          for r in d['series']:
+              assert r['status'] in ('READY','NO_CHANGE') and r['after']>='2026-10' and r['exact_overlap']>=82,r
+          PY
 
   chf-balance-yield-rates-source-proof:
     if: github.event_name == 'pull_request' && github.head_ref == 'research/chf-balance-yield-rates-20261126'
@@ -2755,6 +2807,116 @@ jobs:
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           assert changed and changed.issubset(set(managed)),changed
           print(json.dumps(persist(managed=managed,commit_message='Refresh verified GBP BOE IADB revised macro histories'),sort_keys=True))
+          PY
+
+
+      - name: Prepare independent revised JPY BOJ NEW LOANS histories
+        id: jpy_boj_new_loans
+        shell: bash
+        run: |
+          python -m unittest validation.macro.test_prepare_jpy_boj_new_loans_v1 -v
+          python -m validation.macro.prepare_jpy_boj_new_loans_v1 \
+            --candidate /tmp/macro-persistent/MACRO_SERIES_JPY_BOJ_NEW_LOANS_PREP.json \
+            --receipt /tmp/macro-persistent/jpy-boj-new-loans-revised-receipt.json
+          python - <<'PY'
+          import json
+          j=json.load(open('/tmp/macro-persistent/jpy-boj-new-loans-revised-receipt.json'))
+          assert len(j['series'])==1 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
+          for row in j['series']:
+              if row['status']=='WITHHELD': print('::warning::JPY BOJ NEW LOANS '+row['id']+' '+row['reason'])
+          PY
+
+      - name: Apply verified JPY BOJ NEW LOANS histories with existing canonical guards
+        if: github.ref == 'refs/heads/main' && steps.jpy_boj_new_loans.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from validation.macro.prepare_jpy_boj_new_loans_v1 import CONFIG
+          old=json.load(open('live_data/sections/MACRO_SERIES.json'))
+          new=json.load(open('/tmp/macro-persistent/MACRO_SERIES_JPY_BOJ_NEW_LOANS_PREP.json'))
+          assert set(old)==set(new)
+          changed=set()
+          for c in old:
+              assert len(old[c])==len(new[c])
+              for a,b in zip(old[c],new[c]):
+                  assert a['id']==b['id']
+                  if a!=b: changed.add((c,a['id']))
+          assert changed <= {('JPY',x) for x in CONFIG}
+          j=json.load(open('/tmp/macro-persistent/jpy-boj-new-loans-revised-receipt.json'))
+          assert changed=={('JPY',r['id']) for r in j['series'] if r['status']=='READY'}
+          PY
+          status="$(python -c "import json; print(json.load(open('/tmp/macro-persistent/jpy-boj-new-loans-revised-receipt.json'))['status'])")"
+          if [ "$status" = NO_CHANGE_OR_WITHHELD ]; then exit 0; fi
+          test "$status" = READY
+          python validation/update_live_direct_section.py --section MACRO_SERIES \
+            --replacement /tmp/macro-persistent/MACRO_SERIES_JPY_BOJ_NEW_LOANS_PREP.json --apply
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+          python validation/rebuild_live_data_runtime.py --verify-only
+          python - <<'PY'
+          import json,subprocess
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          managed=('live_data/sections/MACRO_SERIES.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt')
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed and changed.issubset(set(managed)),changed
+          print(json.dumps(persist(managed=managed,commit_message='Refresh verified JPY BOJ NEW LOANS revised macro histories'),sort_keys=True))
+          PY
+
+
+      - name: Prepare independent revised JPY CHF CORE histories
+        id: jpy_chf_core
+        shell: bash
+        run: |
+          python -m unittest validation.macro.test_prepare_core_jpy_chf_canonical_v1 -v
+          python -m validation.macro.prepare_core_jpy_chf_canonical_v1 \
+            --candidate /tmp/macro-persistent/MACRO_SERIES_JPY_CHF_CORE_PREP.json \
+            --receipt /tmp/macro-persistent/jpy-chf-core-revised-receipt.json
+          python - <<'PY'
+          import json
+          j=json.load(open('/tmp/macro-persistent/jpy-chf-core-revised-receipt.json'))
+          assert len(j['series'])==2 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
+          for row in j['series']:
+              if row['status']=='WITHHELD': print('::warning::JPY CHF CORE '+row['id']+' '+row['reason'])
+          PY
+
+      - name: Apply verified JPY CHF CORE histories with existing canonical guards
+        if: github.ref == 'refs/heads/main' && steps.jpy_chf_core.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from validation.macro.prepare_core_jpy_chf_canonical_v1 import CONFIG
+          old=json.load(open('live_data/sections/MACRO_SERIES.json'))
+          new=json.load(open('/tmp/macro-persistent/MACRO_SERIES_JPY_CHF_CORE_PREP.json'))
+          assert set(old)==set(new)
+          changed=set()
+          for c in old:
+              assert len(old[c])==len(new[c])
+              for a,b in zip(old[c],new[c]):
+                  assert a['id']==b['id']
+                  if a!=b: changed.add((c,a['id']))
+          assert changed <= {(spec[0],x) for x,spec in CONFIG.items()}
+          j=json.load(open('/tmp/macro-persistent/jpy-chf-core-revised-receipt.json'))
+          assert changed=={(CONFIG[r['id']][0],r['id']) for r in j['series'] if r['status']=='READY'}
+          PY
+          status="$(python -c "import json; print(json.load(open('/tmp/macro-persistent/jpy-chf-core-revised-receipt.json'))['status'])")"
+          if [ "$status" = NO_CHANGE_OR_WITHHELD ]; then exit 0; fi
+          test "$status" = READY
+          python validation/update_live_direct_section.py --section MACRO_SERIES \
+            --replacement /tmp/macro-persistent/MACRO_SERIES_JPY_CHF_CORE_PREP.json --apply
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+          python validation/rebuild_live_data_runtime.py --verify-only
+          python - <<'PY'
+          import json,subprocess
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          managed=('live_data/sections/MACRO_SERIES.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt')
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed and changed.issubset(set(managed)),changed
+          print(json.dumps(persist(managed=managed,commit_message='Refresh verified JPY CHF CORE revised macro histories'),sort_keys=True))
           PY
 
 
