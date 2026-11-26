@@ -79,6 +79,31 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         records[("EUR.inflation", period)] = [row]
         return records, period
 
+    def test_us_cpi_missing_annual_base_never_redates_release_evidence(self):
+        row = self.run_receipt()["observations"]["USD.inflation"]
+        raw_period = row["latest_raw_source_period"]
+        transformed_period = row["current_observation_period"][:7]
+        if row["documented_annual_base_gap"]:
+            self.assertGreater(raw_period, transformed_period)
+            records = {target: rows for target, rows in self.anchors.items()
+                       if target[0] != "USD.inflation"}
+            records[("USD.inflation", raw_period)] = [{
+                "date": TODAY.isoformat(),
+                "value": row["latest_transformed_observation"],
+                "source_path": "TEST_ONLY/raw_period_must_not_certify_older_yoy",
+                "source_kind": "TEST_NEGATIVE_CONTROL_NOT_OFFICIAL",
+                "official_reference": None,
+                "source_sha256": None,
+                "release_time_utc": None,
+                "release_time_jst": None,
+            }]
+            isolated = self.run_receipt(records)["observations"]["USD.inflation"]
+            self.assertEqual(isolated["current_observation_period"][:7], transformed_period)
+            self.assertTrue(isolated["release"]["status"].startswith("WITHHELD"))
+            self.assertIsNone(isolated["release"]["first_release_date"])
+        else:
+            self.assertEqual(raw_period, transformed_period)
+
     def test_strict_latest_period_evidence_and_withheld(self):
         out = self.run_receipt()
         self.assertEqual(out["source_lineage"], "PASS")
