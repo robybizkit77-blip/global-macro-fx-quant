@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-25T23:41:08.767881Z",
-  "edition_time_rome": "2026-11-26 00:41",
-  "material_digest": "7cb657ceb39c5604833c41ab9898ca4e001b95784359c1dfd8ff5d432c9166de",
+  "generated_at_utc": "2026-11-26T04:15:04.028827Z",
+  "edition_time_rome": "2026-11-26 05:15",
+  "material_digest": "93c58f2de66524963c60e78b6b5830c559f08d5819a5d2e7e3f3b86a69340269",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in rialzo",
-  "lead": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 24 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
+  "lead": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. La volatilità azionaria è salita alla chiusura del 25 novembre.",
   "news": [
     {
       "headline": "Dollaro in rialzo",
@@ -34,18 +34,16 @@
       "evidence": "PIL reale USA annualizzato: 4,3% (periodo precedente 2,2%)"
     },
     {
-      "headline": "Azioni in calo e credito più cauto",
-      "analysis": "Alla chiusura del 24 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito. La volatilità in Borsa è scesa. Da seguire se la cautela nel credito si estende alle prossime sedute.",
+      "headline": "Il quadro del rischio",
+      "analysis": "La volatilità azionaria è salita alla chiusura del 25 novembre. Da seguire se il movimento prosegue anche alla prossima chiusura.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-24",
-      "event_date": "2026-11-24",
+      "published_date": "2026-11-25",
+      "event_date": "2026-11-25",
       "market_area": "RISCHIO",
       "sources": [
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
+        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
       ],
-      "evidence": "Alla chiusura del 24 novembre, S&P 500 −0,50%, VIX −0,26 punti e spread high yield +9 pb."
+      "evidence": "Alla chiusura del 25 novembre, VIX +1,93 punti."
     },
     {
       "headline": "L’oro sale",
@@ -61,6 +59,18 @@
       "evidence": "Proxy futures da fonte secondaria. Oro +1,29% al 25 novembre. WTI +2,35% al 24 novembre."
     },
     {
+      "headline": "Speech by Board Member TAMURA in Yamanashi (Economic Activity, Prices, and Monetary Policy in Japan)",
+      "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
+      "kind": "NEWS",
+      "published_date": "2026-11-26",
+      "event_date": "2026-11-26",
+      "market_area": "BANCHE CENTRALI",
+      "sources": [
+        "https://www.boj.or.jp/en/about/press/koen_2026/ko261126a.htm"
+      ],
+      "evidence": ""
+    },
+    {
       "headline": "How does EIA compare different types of energy?",
       "analysis": "Questo approfondimento aiuta a leggere come cambia l’offerta di energia.",
       "kind": "FOLLOW_UP",
@@ -73,26 +83,25 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 24 novembre, Wall Street ha perso terreno e il premio sul debito più rischioso è salito.",
+  "desk_judgment": "Il 25 novembre il dollaro ha guadagnato contro euro e yen. La volatilità azionaria è salita alla chiusura del 25 novembre.",
   "fx_implications": "Il 30 novembre alle 09:00 italiane è in programma Swiss quarterly GDP (CHF). Da verificare la risposta dei tassi e di CHF.",
   "what_changed": "Nei proxy futures del 25 novembre l’oro sale.",
-  "contrary_evidence": "Il VIX è sceso mentre il credito high yield ha chiesto uno spread più ampio. La tensione nel credito merita una verifica a parte.",
+  "contrary_evidence": "La tenuta del movimento dipende anche dal sostegno dei tassi a breve.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-3rd-quarter-2026",
+      "https://www.boj.or.jp/en/about/press/koen_2026/ko261126a.htm",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "https://www.eia.gov/todayinenergy/detail.php?id=68504"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-25",
-      "rss_checked_at_utc": "2026-11-25T23:41:08.767881Z",
+      "rss_checked_at_utc": "2026-11-26T04:15:04.028827Z",
       "commodities": "2026-11-25"
     },
     "no_paid_api": true,
@@ -100,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-25T23:41:08.767881Z",
+      "headline": "Dollaro in rialzo",
+      "material_digest": "7cb657ceb39c5604833c41ab9898ca4e001b95784359c1dfd8ff5d432c9166de"
+    },
     {
       "generated_at_utc": "2026-11-25T20:07:59.593011Z",
       "headline": "Dollaro in rialzo",
@@ -214,11 +228,6 @@
       "generated_at_utc": "2026-11-23T23:16:42.626802Z",
       "headline": "Dollaro in rialzo",
       "material_digest": "fe6f8a21f173753760a6cfd29ebd813ea2504304b63eca1eeaa3e910f76711ce"
-    },
-    {
-      "generated_at_utc": "2026-11-23T18:07:15.554770Z",
-      "headline": "Dollaro in rialzo",
-      "material_digest": "3c16c691120b1a56d348b1f872f2e0c26b3c602dc89e3799b9228e1a03625558"
     }
   ]
 }
