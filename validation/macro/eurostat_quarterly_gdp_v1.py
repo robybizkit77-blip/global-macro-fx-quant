@@ -101,11 +101,10 @@ def archive_for(path):
     return data
 
 
-def latest_growth(as_of, *, path=ARCHIVE):
-    day=date.fromisoformat(as_of)
+def latest_growth(as_of, *, path=ARCHIVE, live_cutoff=None):
+    from validation.macro.ons_quarterly_gdp_v1 import edition_available
     rows=[r for r in archive_for(path)["editions"] if
-          date.fromisoformat(r["publisher_release_day"])<day and
-          datetime.fromisoformat(r["first_observed_at_utc"]).astimezone(ROME).date()<=day]
+          edition_available(r, as_of, live_cutoff)]
     if not rows:
         return None
     r=max(rows,key=lambda x:(x["quarter"],x["publisher_release_day"]))
