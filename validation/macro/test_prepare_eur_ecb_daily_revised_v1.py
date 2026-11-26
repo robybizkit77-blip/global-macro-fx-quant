@@ -34,7 +34,7 @@ class ECBTests(unittest.TestCase):
             return "KEY,TIME_PERIOD,OBS_VALUE,UNIT_MULT\n"+"\n".join(f"{key},{end-timedelta(days=n)},0.1,0" for n in range(count))
         def fetch(url):
             if "SS_CI." in url:
-                self.assertIn("startPeriod=2025-04-01",url)
+                self.assertIn("startPeriod=2024-01-01",url)
                 return legacy()
             return source(i)
         x=row(i);r=prepare_row(x,i,NOW,fetch)

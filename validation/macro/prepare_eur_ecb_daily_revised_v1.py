@@ -44,7 +44,7 @@ def prepare_row(row,ident,now,fetcher):
         legacy_end=date(2025,5,2)
         alternative=key.replace("SS_CIN","SS_CI")
         post_legacy=min(old)>legacy_end
-        alt_start=date(2025,4,1) if post_legacy else min(old)
+        alt_start=date(2024,1,1) if post_legacy else min(old)
         alt_url="https://data-api.ecb.europa.eu/service/data/"+dataset+"/"+alternative.split(".",1)[1]+"?format=csvdata&startPeriod="+alt_start.isoformat()
         alt_raw=fetcher(alt_url);alt={}
         for rec in csv.DictReader(io.StringIO(alt_raw)):
@@ -56,7 +56,7 @@ def prepare_row(row,ident,now,fetcher):
         common=sorted(set(old)&set(alt))
         overlap_audit["alternative_overlap_count"]=len(common)
         if not common and post_legacy:
-            need(len(alt)>=10 and max(alt)==legacy_end,"legacy terminal observation not independently established")
+            need(len(alt)>=10 and max(alt)==legacy_end,"legacy terminal observation not independently established: count="+str(len(alt))+" last="+str(max(alt) if alt else None))
             need(exact/len(old)>=.95,"post-retirement New CISS exact historical match insufficient")
             overlap_audit.update({"variant_proof":"POST_LEGACY_TERMINATION_EXACT_OVERLAP","legacy_last_observation":max(alt).isoformat(),"legacy_observations":len(alt),"legacy_source_url":alt_url,"legacy_csv_sha256":sha256(alt_raw.encode()).hexdigest()})
         else:
