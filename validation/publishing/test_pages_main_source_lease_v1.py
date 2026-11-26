@@ -82,6 +82,12 @@ assert triggers.count("'" + source_name.group(1) + "'") == 1, (
     "PAGES_OIS_PRODUCER_TRIGGER_MISSING_OR_DUPLICATED"
 )
 assert "types: [completed]" in triggers, "PAGES_WORKFLOW_RUN_COMPLETED_EVENT_MISSING"
+assert "branches: [main]" in triggers, "PAGES_TEST_EVENTS_MUST_NOT_TRIGGER_PRODUCTION_PUBLISHER"
+concurrency = workflow.split("concurrency:",1)[1].split("jobs:",1)[0]
+assert "github.event.workflow_run.conclusion != 'success'" in concurrency
+assert "github.event.workflow_run.head_branch != 'main'" in concurrency
+assert "format('pages-nonpublishing-{0}', github.run_id)" in concurrency
+assert "|| 'publish-dashboard-pages-v1'" in concurrency
 assert "github.event.workflow_run.conclusion == 'success'" in workflow, (
     "PAGES_PUBLISHER_MUST_REQUIRE_SUCCESSFUL_PRODUCER"
 )
