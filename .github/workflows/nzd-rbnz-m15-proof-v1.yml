@@ -1,0 +1,29 @@
+name: NZD RBNZ M15 expectations source proof V1
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/prepare_nzd_rbnz_m15_v1.py'
+      - 'validation/macro/test_prepare_nzd_rbnz_m15_v1.py'
+      - '.github/workflows/nzd-rbnz-m15-proof-v1.yml'
+permissions:
+  contents: read
+jobs:
+  source-proof:
+    if: github.head_ref == 'fix/nzd-rbnz-m15-expectations-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install beautifulsoup4
+      - run: python -m unittest validation.macro.test_prepare_nzd_rbnz_m15_v1 -v
+      - name: Verify exact official M15 quarter and release
+        run: |
+          python -m validation.macro.prepare_nzd_rbnz_m15_v1 --candidate /tmp/nzd-m15/candidate.json --receipt /tmp/nzd-m15/receipt.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/nzd-m15/receipt.json'))
+          assert len(r['series'])==8 and all(x['status'] in ('READY','NO_CHANGE') and x['after']>='2026-12' and x['overlap']>=4 for x in r['series']),r
+          PY
