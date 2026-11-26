@@ -42,7 +42,7 @@ assert.match(card,/vintage non certificata|prima vintage non certificata/i);
 assert.match(card,/pubblicato \d{4}-\d{2}-\d{2}/);
 assert.match(card,/Fonte: RBA/);
 const nativeCredit=card.split('data-liq-role="credit"')[1]?.split('</div>')[0]||'';
-assert(nativeCredit.includes('2026')&&!nativeCredit.includes('2026-09'),
+assert(nativeCredit.includes('Ultimo '+native.AUD.credit.last_date+' · '+fmt(native.AUD.credit.last_value,2)),
  'AUD research must not change canonical 2026-07 credit');
 for(const other of FX.filter(x=>x!=='AUD'))assert(!studio.render(api(other)).includes('drivers-aud-official'),other);
 console.log('AUD_RBA_ADJUSTED_BUSINESS_CREDIT_PASS',JSON.stringify({
