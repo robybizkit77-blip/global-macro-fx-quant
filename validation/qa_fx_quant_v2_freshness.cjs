@@ -77,6 +77,52 @@ let macroCount=0;
 for(const c of ccy){const count=macro[c]?.length||0;macroCount+=count;requireValid(count>=10,'Missing canonical macro series '+c);}
 requireValid(macroCount>=200,'Missing expected Macro G8 full research coverage');
 note('macro','Serie Macro',macroCount+' indicatori: le osservazioni hanno frequenze e periodi eterogenei. Non considerarli dati giornalieri.');
+
+// Inventory the actual underlying archive separately from newer page overlays.
+// Period age is a triage heuristic, NOT an official release-calendar assertion.
+// Never infer missing frequencies or mark an old historical series as live.
+const inventoryThresholds={D:7,W:21,M:75,Q:160,A:550};
+const inventory=[];
+for(const c of ccy){
+ for(const series of macro[c]||[]){
+  const raw=series.last_date;
+  const frequency=series.frequency||null;
+  const limit=inventoryThresholds[frequency]??null;
+  let parsed=null;
+  if(typeof raw==='string'){
+   if(/^\d{4}-\d{2}$/.test(raw)) parsed=raw+'-01';
+   else if(/^\d{4}-\d{2}-\d{2}(?:$|T| )/.test(raw)) parsed=raw.slice(0,10);
+   else {
+    const match=/^(\d{1,2})[ -]([A-Za-z]{3})[ -](\d{4})$/.exec(raw);
+    const month=match&&['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(match[2].toLowerCase())+1;
+    if(match&&month) parsed=match[3]+'-'+String(month).padStart(2,'0')+'-'+match[1].padStart(2,'0');
+   }
+  }
+  const parsedTime=parsed&&Date.parse(parsed+'T00:00:00Z');
+  const valid=Number.isFinite(parsedTime)&&new Date(parsedTime).toISOString().slice(0,10)===parsed;
+  const age=valid?days(parsed):null;
+  const lastHistoryDate=Array.isArray(series.dates)?series.dates.at(-1):null;
+  const valuePresent=typeof series.last_value==='number'&&Number.isFinite(series.last_value);
+  const state=!valid||age<0||!valuePresent?'INVALID_OBSERVATION':
+    limit===null?'FREQUENCY_UNDECLARED':age>limit?'AGE_REVIEW_REQUIRED':'WITHIN_AGE_SCREEN';
+  inventory.push({currency:c,id:series.id,label:series.label,category:series.category,
+   frequency,raw_last_date:raw,normalized_period_start:parsed,calendar_age_days:age,
+   screening_limit_days:limit,state,source_file:series.source_file||null,
+   last_history_date:lastHistoryDate,value_present:valuePresent});
+ }
+}
+const inventoryCounts=Object.fromEntries(['WITHIN_AGE_SCREEN','AGE_REVIEW_REQUIRED','FREQUENCY_UNDECLARED','INVALID_OBSERVATION'].map(state=>[state,inventory.filter(r=>r.state===state).length]));
+result.macro_archive_inventory={
+ scope:'MACRO_SERIES_ONLY_NOT_PAGE_OVERLAYS_OR_RELEASE_CALENDAR',
+ thresholds_calendar_days:inventoryThresholds,total:inventory.length,
+ counts:inventoryCounts,rows:inventory,
+ limitations:'Observation age is preliminary. Compare with official release calendar, source availability and actual page consumers before declaring a missed release.'
+};
+requireValid(inventory.length===macroCount,'Macro archive inventory must cover every series');
+note('macro','Inventario storico completo',inventory.length+' serie; '+inventoryCounts.AGE_REVIEW_REQUIRED+
+ ' richiedono verifica per età; '+inventoryCounts.FREQUENCY_UNDECLARED+' senza frequenza; '+
+ inventoryCounts.INVALID_OBSERVATION+' con osservazione non valida. Questo screening non certifica l’ultima pubblicazione ufficiale.');
+
 const cb=read('NATIVE_CB_DATA');
 for(const c of ccy){
  const x=cb[c]||{};
@@ -272,7 +318,9 @@ result.summary={
   late_or_invalid:result.checks.filter(x=>x.state!=='ON_CADENCE').length,
   gaps:result.findings.filter(x=>x.severity==='GAP').length,
   review_notes:result.findings.filter(x=>x.severity==='REVIEW').length,
-  canonical_macro_series:macroCount,certified_policy_pricing:certified,
+  canonical_macro_series:macroCount,macro_archive_age_review:inventoryCounts.AGE_REVIEW_REQUIRED,
+  macro_archive_frequency_undeclared:inventoryCounts.FREQUENCY_UNDECLARED,
+  macro_archive_invalid_observations:inventoryCounts.INVALID_OBSERVATION,certified_policy_pricing:certified,
   eight_government_pairs:ccy.length,fx_pairs:pair.pair_count,v2_pages:pages.length
 };
 result.status=result.hard_errors.length?'AUDIT_FAILED':result.summary.gaps?'DATA_GAPS_PRESENT':'DATE_CHECKS_PASS';
@@ -289,6 +337,7 @@ result.dual_track_readiness={
 const out=path.resolve('fxv2-freshness-evidence');
 fs.mkdirSync(out,{recursive:true});
 fs.writeFileSync(path.join(out,'freshness.json'),JSON.stringify(result,null,2)+'\n');
+fs.writeFileSync(path.join(out,'macro-archive-inventory.json'),JSON.stringify(result.macro_archive_inventory,null,2)+'\n');
 fs.writeFileSync(path.join(out,'decision-readiness.json'),JSON.stringify(dualReadiness,null,2)+'\n');
 const lines=['## FX Quant V2 — Source-date freshness', '',
  'Source inspection '+today+' Europe/Rome. **Workflow green means the audit ran, not all feeds are fresh.**',
