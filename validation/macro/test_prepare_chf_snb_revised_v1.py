@@ -6,9 +6,9 @@ IDS=list(CONFIG)
 def row(ident):
     ds=[f"{2024+n//12}-{n%12+1:02d}" for n in range(30)]
     return {"id":ident,"source_file":ident.removesuffix("_value")+".csv","frequency":"M","unit":"CHF millions","dates":ds,"values":[1000+n for n in range(30)],"last_date":ds[-1],"last_value":1029}
-def source(url,wrong=False,offset=0):
+def source(url,wrong=False,offset=0,mixed=False):
     key="GM2" if "GM2" in url else "GM3"
-    return json.dumps({"timeseries":[{"metadata":{"key":"EPB@SNB.snbmonagg{B,"+key+"}","frequency":"P1M","unit":"In CHF millions" if not wrong else "percent","scale":""},"values":[{"date":f"{2024+n//12}-{n%12+1:02d}","value":1000+n+offset} for n in range(34)]}]}).encode()
+    return json.dumps({"timeseries":[{"metadata":{"key":"EPB@SNB.snbmonagg{B,"+key+"}","frequency":"P1M","unit":("In CHF millions / In percent" if mixed else "In CHF millions") if not wrong else "percent","scale":""},"values":[{"date":f"{2024+n//12}-{n%12+1:02d}","value":1000+n+offset} for n in range(34)]}]}).encode()
 class SNBTests(unittest.TestCase):
     def test_full_window_and_noop(self):
         for i in IDS:
@@ -16,6 +16,10 @@ class SNBTests(unittest.TestCase):
             self.assertEqual(prepare_row(x,i,NOW,source)["status"],"READY")
             self.assertEqual(x["last_date"],"2026-10")
             self.assertEqual(prepare_row(x,i,NOW,source)["status"],"NO_CHANGE")
+    def test_exact_level_with_mixed_cube_unit(self):
+        for i in IDS:
+            self.assertEqual(prepare_row(row(i),i,NOW,lambda u:source(u,mixed=True))["status"],"READY")
+            with self.assertRaises(ValueError):prepare_row(row(i),i,NOW,lambda u:source(u,mixed=True,offset=-990))
     def test_reject_wrong_units_and_overlap(self):
         for i in IDS:
             with self.assertRaises(ValueError):prepare_row(row(i),i,NOW,lambda u:source(u,wrong=True))
