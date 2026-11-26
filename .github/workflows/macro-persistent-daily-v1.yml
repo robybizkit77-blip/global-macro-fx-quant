@@ -18,6 +18,7 @@ on:
       - 'validation/macro/probe_jpy_chf_stock_identity_v1.py'
       - 'validation/macro/prepare_jpy_boj_reserve_average_v1.py'
       - 'validation/macro/test_prepare_jpy_boj_reserve_average_v1.py'
+      - 'validation/macro/probe_core_jpy_chf_canonical_v1.py'
       - 'validation/macro_adapter_pit_handoff.py'
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
@@ -210,6 +211,21 @@ env:
   PYTHONDONTWRITEBYTECODE: '1'
 
 jobs:
+  core-jpy-chf-canonical-proof:
+    if: github.event_name == 'pull_request' && github.head_ref == 'research/core-jpy-chf-canonical-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install openpyxl requests
+      - name: Verify official Japanese and Swiss national core CPI
+        run: python -m validation.macro.probe_core_jpy_chf_canonical_v1
+
   jpy-chf-stock-identity-proof:
     if: github.event_name == 'pull_request' && github.head_ref == 'research/jpy-chf-residual-stock-identity-20261126'
     runs-on: ubuntu-24.04
