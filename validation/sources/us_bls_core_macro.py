@@ -147,7 +147,18 @@ def fetch_payload(start_year: int, end_year: int) -> dict[str, Any]:
     for attempt in range(1, HTTP_ATTEMPTS + 1):
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
-                return json.load(resp)
+                payload = json.load(resp)
+                # BLS can return HTTP 200 for an exhausted daily request quota.
+                # Only the explicit official quota message is recoverable;
+                # malformed responses and other REQUEST_NOT_PROCESSED errors remain fatal.
+                if isinstance(payload, dict) and payload.get("status") == "REQUEST_NOT_PROCESSED":
+                    messages = payload.get("message")
+                    if isinstance(messages, list) and any(
+                        isinstance(m, str) and "daily threshold for total number of requests" in m.lower()
+                        and "has been reached" in m.lower() for m in messages
+                    ):
+                        raise BlsTransportUnavailable("official BLS daily request quota exhausted")
+                return payload
         except urllib.error.HTTPError as exc:
             if exc.code not in RETRYABLE_HTTP_CODES:
                 raise
