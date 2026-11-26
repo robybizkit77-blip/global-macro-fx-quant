@@ -55,10 +55,10 @@ def archive_for(path):
     return data
 
 
-def latest_growth(as_of, *, path=ARCHIVE):
+def latest_growth(as_of, *, path=ARCHIVE, live_cutoff=None):
     return archived_growth(as_of, archive_for(path)["editions"],
                            stage="FIRST_PRELIMINARY_ESTIMATE",
-                           same_edition_field="prior_value_from_same_esri_edition")
+                           same_edition_field="prior_value_from_same_esri_edition", live_cutoff=live_cutoff)
 
 
 def release_date(raw, quarter):

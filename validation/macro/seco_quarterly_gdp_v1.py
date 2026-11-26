@@ -172,11 +172,10 @@ def observation(row):
     }
 
 
-def latest_growth(as_of, *, path=ARCHIVE):
-    day = date.fromisoformat(as_of)
+def latest_growth(as_of, *, path=ARCHIVE, live_cutoff=None):
+    from validation.macro.ons_quarterly_gdp_v1 import edition_available
     for row in reversed(archive_for(path)["editions"]):
-        seen = datetime.fromisoformat(row["first_observed_at_utc"]).astimezone(ROME).date()
-        if date.fromisoformat(row["publisher_release_day"]) < day and seen <= day:
+        if edition_available(row, as_of, live_cutoff):
             return {
                 **observation(row), "prior_documented_quarter": observation(row["prior"]),
                 "publisher_methodology": SECO_METHODOLOGY,

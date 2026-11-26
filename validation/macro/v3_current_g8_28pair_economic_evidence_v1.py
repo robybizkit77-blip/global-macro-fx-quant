@@ -115,7 +115,7 @@ def attach_q2_prior(currency, growth, as_of):
             }}
 
 
-def build(observed, heat, legacy, setup, *, as_of, issuer_releases=()):
+def build(observed, heat, legacy, setup, *, as_of, issuer_releases=(), live_cutoff=None):
     cutoff = date.fromisoformat(as_of)
     need(observed.get("schema") == OBSERVED_SCHEMA and
          observed.get("checked_as_of") == as_of and
@@ -144,7 +144,7 @@ def build(observed, heat, legacy, setup, *, as_of, issuer_releases=()):
 
     growth_updates = observed_q3_updates(as_of)
     for currency, latest in (("GBP", latest_uk_growth), ("JPY", latest_jp_growth), ("CHF", latest_ch_growth), ("AUD", latest_au_growth), ("CAD", latest_ca_growth), ("NZD", latest_nz_growth), ("EUR", latest_eu_growth)):
-        growth = latest(as_of)
+        growth = latest(as_of, live_cutoff=live_cutoff)
         if growth is not None:
             growth_updates[currency] = growth
     countries = {}
@@ -334,7 +334,7 @@ def run(*, as_of=None):
                     row["first_runner_observed_at_utc"][:10] < as_of]
     return build(observed_run(as_of=as_of), load("MACRO_THERMOMETER_DATA"),
                  load("D"), load("PAIR_SETUP_OPERATIONAL_VIEW"), as_of=as_of,
-                 issuer_releases=releases)
+                 issuer_releases=releases, live_cutoff=None if explicit else now)
 
 
 def main():
