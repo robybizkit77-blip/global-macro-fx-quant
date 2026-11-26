@@ -5,6 +5,11 @@ on:
     paths:
       - '.github/workflows/macro-v2-explicit-formula-candidate-ci.yml'
       - 'validation/macro/v2_domestic_candidate_explicit_formula_v1.py'
+      - 'validation/macro/v2_g8_observed_feature_bridge_v1.py'
+      - 'validation/macro/v2_g8_three_axis_economic_shadow_v1.py'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
       - 'validation/macro/test_v2_domestic_candidate_explicit_formula_v1.py'
       - 'validation/macro/v2_frozen_domestic_research_v1.py'
       - 'validation/macro/v2_source_robustness_triage_v1.py'
