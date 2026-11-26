@@ -342,3 +342,22 @@ assert.ok(coppie.includes('STIMA/PROXY INDICATIVO'),'Coppie must visibly label s
 assert.ok(coppie.includes('model.eligible_for_fx_engine!==false'),'Coppie must keep estimates out of the engine');
 assert.ok(coppie.includes('id="pairRatesSourceNote"'),'Coppie must expose research caveats');
 console.log('FXV2_WORKING_RATE_TESTS PASS CHF 2Y '+chf['2Y']+'% ('+chf.tenor_quality['2Y']+'), CHF 10Y '+chf['10Y']+'% ('+chf.date+'); NZD 2Y '+nzd['2Y']+'%, NZD 10Y '+nzd['10Y']+'% ('+nzd.date+'); source dates verified, canonical unchanged');
+
+// The displayed source receipt must corroborate the exact research edition, not a stale or promoted one.
+{
+ const {nzdReconciledProof}=require('../site/fx-quant-v2/assets/rates-working-model-v1.js');
+ const doc=JSON.parse(fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json')));
+ const context=copy(research.NZD);
+ const today=maxDate(doc.publication_date,context.latest_date);
+ const proof=nzdReconciledProof(doc,context,today);
+ if(doc.last_observation_date===context.latest_date){
+  assert.ok(proof,'same edition reconciled proof should be visible');
+  assert.equal(proof.date,context.latest_date);
+  assert.ok(proof.reference>=context.roll_date);
+  const ref=doc.observations.find(r=>r.date===proof.reference);
+  assert.equal(proof.change2,Number(((doc.observations.at(-1)['2Y']-ref['2Y'])*100).toFixed(1)));
+ }else assert.equal(proof,null,'different editions must not be labelled reconciled');
+ assert.equal(nzdReconciledProof({...doc,eligible_for_core:true},context,today),null);
+ assert.equal(nzdReconciledProof({...doc,html_xlsx_matched_dates:[]},context,today),null);
+ assert.equal(nzdReconciledProof(doc,{...context,latest_2Y:context.latest_2Y+1},today),null);
+}
