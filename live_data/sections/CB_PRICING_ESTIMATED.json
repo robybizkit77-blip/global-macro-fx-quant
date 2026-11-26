@@ -321,20 +321,20 @@
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQK2027",
           "contract_description": "May 2027",
           "expiration": "2027-06-01",
-          "futures_price": 95.53,
+          "futures_price": 95.52,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-25T10:42:47Z",
-          "quote_as_of": "2026-11-25",
+          "price_valid_until": "2026-11-26T10:42:54Z",
+          "quote_as_of": "2026-11-26",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.47,
+          "rate": 4.48,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 59.5,
+          "raw_level_minus_spot_policy_bp": 60.5,
           "symbol": "CBOT:ZQK2027"
         }
       },
