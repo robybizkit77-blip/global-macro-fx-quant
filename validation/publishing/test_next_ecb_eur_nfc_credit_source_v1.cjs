@@ -50,7 +50,11 @@ assert.match(eur,/class="drivers-cad-official drivers-eur-official"/);
 assert.match(eur,/BCE \/ ESCB/);
 assert.match(eur,/Prestiti alle imprese dell’Eurozona/);
 assert.match(eur,/Il cumulato di due mesi/);
-assert.match(eur,/non è ancora una sequenza di accelerazione/);
+const monthly=source.values.at(-1)/source.values.at(-2)-1;
+const twoMonths=source.values.at(-1)/source.values.at(-3)-1;
+assert.match(eur,monthly>0&&twoMonths<0?/non è ancora una sequenza di accelerazione/:
+ monthly>0&&twoMonths>0?/non provano che le banche stiano allentando gli standard/:
+ /non è sufficiente a certificare un impulso positivo al credito/);
 assert.match(eur,/vintage di prima pubblicazione non verificato/);
 assert.match(eur,/Fonte: BCE/);
 const coreFact=eur.split('data-liq-role="credit"')[1].split('</div>')[0];
