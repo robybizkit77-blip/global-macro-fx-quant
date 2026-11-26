@@ -1236,7 +1236,8 @@ function render(){
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,banks,rates,liquidity,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
  const health=window.FXQuantDataHealth?.read(state.data,dayNow());
- $('content').innerHTML=views[route]()+ (route==='overview'&&health?window.FXQuantDataHealth.render(health,esc):'');
+ const activity=window.FXQuantActivityMomentum?.read(get('macroObserved'),dayNow(),route,state.ccy,state.pairDetailOpen?state.pair:null);
+ $('content').innerHTML=views[route]()+ (activity?window.FXQuantActivityMomentum.render(activity,esc,fmt):'')+ (route==='overview'&&health?window.FXQuantDataHealth.render(health,esc):'');
  // Restore after replacing the DOM; nested details must not close when the
  // user changes currency, comparison, return window or research sorting.
  for(const selector of openG8){
