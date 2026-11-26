@@ -10,7 +10,7 @@ SOURCE=Path(__file__).resolve().parents[2]/"live_data/sections/MACRO_SERIES.json
 EXACT_BASE=BASE.rsplit("/",1)[0]+"/AUS.M.LI.IX._Z.AA.IX._Z.H"
 CONFIG={ID:EXACT_BASE}
 META={"DATAFLOW":"OECD.SDD.STES:DSD_STES@DF_CLI(4.1)","REF_AREA":"AUS","FREQ":"M","MEASURE":"LI","UNIT_MEASURE":"IX","ACTIVITY":"_Z","ADJUSTMENT":"AA","TRANSFORMATION":"IX","TIME_HORIZON":"_Z","METHODOLOGY":"H","UNIT_MULT":"0","BASE_PER":""}
-SERIES_KEY="DSD_STES@DF_CLI(4.1)/AUS.M.LI._Z.AA.IX._Z.H"
+SERIES_KEY="DSD_STES@DF_CLI(4.1)/AUS.M.LI.IX._Z.AA.IX._Z.H"
 def need(ok,msg):
     if not ok:raise ValueError(msg)
 def parse(raw,now):
@@ -20,7 +20,7 @@ def parse(raw,now):
     need(not missing,"missing source metadata: "+",".join(sorted(missing)))
     obs={}
     for r in rd:
-        need(all(r[k]==v for k,v in META.items()),"unexpected OECD series")
+        if not all(r[k]==v for k,v in META.items()):continue
         d=r["TIME_PERIOD"]
         need(bool(re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])",d)) and d<now.strftime("%Y-%m"),"invalid or future period")
         need(d not in obs,"duplicate observation")
@@ -49,13 +49,18 @@ def prepare(current,*,now,fetcher=fetch):
     out=copy.deepcopy(current)
     try:
         hits=[r for r in out["AUD"] if r["id"]==ID];need(len(hits)==1,"unique row required")
-        row=copy.deepcopy(hits[0]);url=EXACT_BASE+"?"+urlencode({"startPeriod":row["dates"][0][:7],"dimensionAtObservation":"AllDimensions","format":"csvfile"})
-        # A transient upstream schema/transport response is retried once; identity guards remain mandatory.
-        for attempt in range(2):
+        row=copy.deepcopy(hits[0])
+        query="?"+urlencode({"startPeriod":min(d[:7] for d in row["dates"]),"dimensionAtObservation":"AllDimensions","format":"csvfile"})
+        # Use the proven wildcard response first, selecting only the full exact metadata tuple.
+        # Never infer an absent dimension, even when an exact URL was requested.
+        errors=[]
+        for endpoint in (BASE,EXACT_BASE):
+            url=endpoint+query
             try:
                 raw=fetcher(url);obs=parse(raw,now);break
-            except (OSError,ValueError,AssertionError):
-                if attempt:raise
+            except (OSError,ValueError,AssertionError) as exc:
+                errors.append(str(exc))
+        else:raise ValueError("; ".join(errors))
         rec=reconcile(row,obs,url,raw,now);hits[0].update(row)
     except (OSError,ValueError,KeyError,TypeError,IndexError,AssertionError) as e:rec={"id":ID,"status":"WITHHELD","reason":str(e)}
     return out,{"schema":"GMFQ_AUD_OECD_CLI_V1","series":[rec],"status":"READY" if rec["status"]=="READY" else "NO_CHANGE_OR_WITHHELD","first_release_PIT_certified":False,"affects_fx_core":False}
