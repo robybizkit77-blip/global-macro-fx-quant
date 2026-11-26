@@ -12,6 +12,8 @@ on:
   schedule:
     # Official ECB BSI monthly releases; check weekdays off the hour.
     - cron: '23 7 * * 1-5'
+    # Second check after European daytime publication windows.
+    - cron: '23 11 * * 1-5'
   push:
     branches: [main]
     paths:
@@ -67,9 +69,12 @@ jobs:
         run: |
           python -m unittest validation.liquidity.test_refresh_ecb_eur_nfc_credit_v1 -v
           python - <<'PY'
-          from validation.liquidity.refresh_ecb_eur_nfc_credit_v1 import fetch,parse_excess_liquidity,EXLIQ_API
+          from validation.liquidity.refresh_ecb_eur_nfc_credit_v1 import fetch,parse,parse_excess_liquidity,EXLIQ_API
           x=parse_excess_liquidity(fetch(EXLIQ_API))
           print('ECB_EXLIQ_LIVE_SOURCE_PASS',x['latest_observation'],x['values'][-1],len(x['dates']))
+          nfc=parse(fetch())
+          assert nfc['latest_observation'] >= '2026-10',nfc
+          print('ECB_NFC_LIVE_SOURCE_PASS',nfc['latest_observation'],nfc['values'][-1],len(nfc['dates']))
           PY
   source-only:
     if: github.event_name != 'pull_request'

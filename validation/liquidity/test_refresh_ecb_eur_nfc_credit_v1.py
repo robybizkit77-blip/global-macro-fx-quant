@@ -81,6 +81,16 @@ class ECBNFCSourceTest(unittest.TestCase):
             self.assertEqual(repeated["write_state"],"NO_MUTATION")
 
 
+    def test_monthly_rollback_does_not_overwrite_newer_sidecar(self):
+        with tempfile.TemporaryDirectory() as root:
+            f=Path(root)/"nfc.csv";dest=Path(root)/"research.js"
+            f.write_text(fixture());run(dest,apply=True,fixture=f,today=TODAY)
+            before=dest.read_bytes()
+            f.write_text("\n".join(x for x in fixture().splitlines() if "2026-09" not in x)+"\n")
+            with self.assertRaisesRegex(ValueError,"rolled back"):
+                run(dest,apply=True,fixture=f,today=TODAY)
+            self.assertEqual(dest.read_bytes(),before)
+
     def test_daily_liquidity_isolation_and_retention(self):
         start=date(2026,9,1)
         days=[start+timedelta(days=i) for i in range(74)]
