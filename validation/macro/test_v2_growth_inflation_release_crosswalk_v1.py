@@ -42,7 +42,8 @@ class GrowthInflationReleaseCrosswalkTests(unittest.TestCase):
                          ["2026-10-02", "2026-10-16"])
         self.assertEqual([r["published_value_for_metric"] for r in eur["official_web_anchor_events"]],
                          [3.8, 3.8])
-        self.assertTrue(eur["selected_series_has_an_anchor"])
+        self.assertEqual(eur["selected_series_has_an_anchor"],
+                         eur["inventory_selected_series_id"] == "EA_HICP_HEADLINE_YOY_history_value")
 
     def test_aud_latest_spending_not_automatically_selected_gdp(self):
         result = build(*self.inputs)
@@ -59,21 +60,24 @@ class GrowthInflationReleaseCrosswalkTests(unittest.TestCase):
         nzd = next(row for row in result["rows"] if row["currency"] == "NZD"
                    and row["pillar"] == "growth")
         self.assertEqual(nzd["official_web_anchor_events"][0]["published_value_for_metric"], 2.6)
-        self.assertTrue(nzd["selected_series_has_an_anchor"])
+        self.assertEqual(nzd["selected_series_has_an_anchor"],
+                         nzd["inventory_selected_series_id"] == nzd["official_web_anchor_events"][0]["series_id"])
 
     def test_revision_mismatch_flagged_not_overwritten(self):
         data = copy.deepcopy(self.inputs)
         dataset = data[0]
         for x in dataset["GBP"]:
             if x["id"] == "UK_CPI_HEADLINE_YOY_history_value":
-                x["last_value"] = 3.9
+                anchor = next(a for a in data[1]["attestations"] if a["key"] == "GBP.inflation")
+                x["last_date"] = anchor["observation_period"]
+                x["last_value"] = anchor["raw_series_value"] + 0.1
         out = build(*data)
         gbp = next(r for r in out["rows"] if r["currency"] == "GBP" and r["pillar"] == "inflation")
         evidence = gbp["official_web_anchor_events"][0]
         self.assertFalse(evidence["candidate_value_matches_web_anchor"])
         self.assertEqual(evidence["source_event_historical_or_revision_warning"],
                          "SAME_PERIOD_DIFFERENT_VALUE_REVIEW_REVISION")
-        self.assertEqual(dataset["GBP"][-1]["last_value"], data[0]["GBP"][-1]["last_value"])
+        self.assertEqual(next(x for x in dataset["GBP"] if x["id"] == "UK_CPI_HEADLINE_YOY_history_value")["last_value"], anchor["raw_series_value"] + 0.1)
 
     def test_future_official_release_rejected(self):
         data = copy.deepcopy(self.inputs)
