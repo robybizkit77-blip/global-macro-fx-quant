@@ -1,0 +1,31 @@
+name: AUD ABS quarterly trimmed mean proof V1
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/probe_aud_abs_quarterly_trimmed_v1.py'
+      - '.github/workflows/aud-abs-quarterly-trimmed-proof-v1.yml'
+      - 'validation/macro/prepare_aud_abs_quarterly_trimmed_v1.py'
+      - 'validation/macro/test_prepare_aud_abs_quarterly_trimmed_v1.py'
+permissions:
+  contents: read
+jobs:
+  source-proof:
+    if: github.head_ref == 'research/aud-abs-quarterly-trimmed-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install openpyxl beautifulsoup4
+      - run: python -m validation.macro.probe_aud_abs_quarterly_trimmed_v1
+      - run: python -m unittest validation.macro.test_prepare_aud_abs_quarterly_trimmed_v1 -v
+      - name: Verify actual ABS quarterly history
+        run: |
+          python -m validation.macro.prepare_aud_abs_quarterly_trimmed_v1 --candidate /tmp/aud-trimmed/candidate.json --receipt /tmp/aud-trimmed/receipt.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/aud-trimmed/receipt.json'))
+          assert len(d['series'])==1 and all(r['status'] in ('READY','NO_CHANGE') and r['after']>='2026-09' and r['overlap']>=42 for r in d['series']),d
+          PY
