@@ -35,8 +35,10 @@ assert.equal(sourceGate.check('USD','conditions').code,'VARIANT_NOT_ALIGNED');
 assert(sourceGate.check('USD','conditions').withheld);
 const sourceSLOOS=research.USD.find(x=>x.id==='US_SLOOS_CI_LARGE_MIDDLE_history_value');
 assert(sourceSLOOS);
-assert.equal(sourceSLOOS.last_date,runtime.USD.conditions.last_date);
-assert.notEqual(sourceSLOOS.last_value,runtime.USD.conditions.last_value,
+const nativeSLOOS=runtime.USD.conditions;
+const matched=sourceSLOOS.dates.indexOf(nativeSLOOS.last_date);
+assert(matched>=0,'Require the comparable native vintage to remain identifiable');
+assert.notEqual(sourceSLOOS.values[matched],nativeSLOOS.last_value,
   'When variant mismatch disappears, re-validate mapping and remove quarantine deliberately');
 assert.equal(runtime.CAD.credit,null);
 assert(research.CAD.some(x=>x.id==='CA_BUSINESS_LOANS_OUTSTANDING_history_value'));
