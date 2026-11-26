@@ -88,10 +88,10 @@ def archive_for(path):
     return data
 
 
-def latest_growth(as_of, *, path=ARCHIVE):
+def latest_growth(as_of, *, path=ARCHIVE, live_cutoff=None):
     value = archived_growth(as_of,archive_for(path)["editions"],
                             stage="QUARTERLY_NATIONAL_ACCOUNTS",
-                            same_edition_field="prior_value_from_same_publisher_edition")
+                            same_edition_field="prior_value_from_same_publisher_edition", live_cutoff=live_cutoff)
     if value is not None:
         value["reported_unit"] = UNIT
         value["prior_documented_quarter"]["reported_unit"] = UNIT
