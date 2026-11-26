@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict');
+const m=require('../../site/fx-quant-v2/next/activity-momentum-v1.js');
+const today='2026-11-26',row={label:'Produzione',reference_period:'2026-10',momentum_pct:1,velocity_pp:-.2,acceleration_pp:0,turning_point:'NONE'};
+const countries=Object.fromEntries(['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].map(c=>[c,[row]]));
+const feed={activity_momentum_status:'RESEARCH_ONLY',generated_europe_rome_day:today,activity_momentum_research:{schema:'GMFQ_G8_CURRENT_ACTIVITY_MOMENTUM_RESEARCH_V1',as_of:today,safe_to_publish_D:false,safe_to_update_pairs:false,no_cross_country_momentum_aggregation:true,countries}};
+assert.equal(m.read(feed,today,'overview','USD').rows.length,8);
+assert.equal(m.read(feed,today,'macro','GBP').rows[0].currency,'GBP');
+assert.equal(m.read(feed,today,'currencies','CHF').rows.length,1);
+assert.deepEqual(m.read(feed,today,'pairs','USD','EURUSD').rows.map(x=>x.currency),['EUR','USD']);
+assert.equal(m.read(feed,today,'rates','USD'),null);
+assert.equal(m.read(feed,'2026-11-27','overview','USD').status,'historical');
+assert.equal(m.read(feed,'2026-11-25','overview','USD').status,'unavailable');
+assert.equal(m.read({},today,'overview','USD').status,'unavailable');
+assert.ok(m.render(m.read(feed,today,'macro','GBP'),String,(v)=>v.toFixed(2)).includes('nessun ranking o segnale Forex'));
+feed.activity_momentum_research.safe_to_update_pairs=true;
+assert.equal(m.read(feed,today,'overview','USD').status,'unavailable');
+console.log('ACTIVITY_MOMENTUM_SHARED_4_ROUTES_PASS');
