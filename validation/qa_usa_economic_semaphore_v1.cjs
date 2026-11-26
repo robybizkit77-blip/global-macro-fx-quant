@@ -47,7 +47,15 @@ for(const key of ['house','industry','credit']){
  assert.equal(nz.find(r=>r.key===key).signal.tone,'neutral');
 }
 assert.match(render({catalog,esc,dayNow,country:'USD'}),/SLOOS/);
-assert.match(render({catalog,esc,dayNow,country:'USD'}),/osservazioni datate/i);
+// Live archive updates may remove the last stale US observation. Assert the
+// warning exactly when the current model has a stale item, then exercise it
+// unconditionally with an intentionally later consultation date.
+const usHasStale=model(catalog,asof,'USD').some(r=>r.items.some(x=>x?.stale));
+const usCurrentHtml=render({catalog,esc,dayNow,country:'USD'});
+assert.equal(/osservazioni datate/i.test(usCurrentHtml),usHasStale);
+const staleUS=model(catalog,'2028-11-23','USD');
+assert.ok(staleUS.some(r=>r.items.some(x=>x?.stale)));
+assert.match(render({catalog,esc,dayNow:()=> '2028-11-23',country:'USD'}),/osservazioni datate/i);
 assert.match(render({catalog,esc,dayNow,country:'GBP'}),/Regno Unito/);
 assert.match(render({catalog,esc,dayNow,country:'JPY'}),/BoJ/);
 assert.match(render({catalog,esc,dayNow,country:'NZD'}),/Nessuna serie idonea nel feed attuale/);
