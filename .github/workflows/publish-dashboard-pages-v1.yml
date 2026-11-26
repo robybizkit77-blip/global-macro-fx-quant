@@ -10,6 +10,7 @@ on:
   workflow_run:
     workflows: ['Macro Persistent Daily V1','CB Pricing Persistent Daily V1','CB Policy Decision Reconciliation V1','OIS Estimated Snapshot Repricing V1','OIS G8 History Persistent Daily V1','Calendar News Operational Refresh V1','Macro 30 October 2026 targeted official actual fast checks','Price Persistent Daily V1','Rates Persistent Daily V1','COT Persistent Weekly V1','Liquidity JPY M3 Persistent Daily V1','VIX Persistent Apply V1','WTI Persistent Rebuild V1','Brent Market Proxy Refresh V1','Gold Secondary Market Proxy Refresh V1','CHF Residual Proxy Refresh V1','JPY Reserve Balances Proxy Refresh V1','CHF SNB 10Y Informational Context V1']
     types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
       recovery_attempt:
@@ -27,10 +28,11 @@ permissions:
 # pending run when another workflow/event is triggered in the same group.
 # Each attempt remains serialized; downstream source/lease checks still apply.
 # PR validation never occupies the production writer/retry queue.
-# All main, workflow_run, workflow_dispatch and schedule triggers retain
-# the original shared production group and serialized writes.
+# Main pushes, successful main producers and explicit recovery dispatches
+# retain the original shared writer group. Nonpublishing events must not
+# occupy that queue, even if GitHub evaluates workflow concurrency first.
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('pages-validation-pr-{0}', github.event.pull_request.number) || 'publish-dashboard-pages-v1' }}
+  group: ${{ github.event_name == 'pull_request' && format('pages-validation-pr-{0}', github.event.pull_request.number) || (github.event_name == 'workflow_run' && (github.event.workflow_run.conclusion != 'success' || github.event.workflow_run.head_branch != 'main')) && format('pages-nonpublishing-{0}', github.run_id) || 'publish-dashboard-pages-v1' }}
   queue: max
   cancel-in-progress: false
 
