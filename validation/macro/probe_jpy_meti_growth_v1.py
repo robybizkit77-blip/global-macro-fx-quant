@@ -6,8 +6,8 @@ from urllib.parse import urljoin,urlsplit
 from urllib.request import Request,urlopen
 from openpyxl import load_workbook
 PAGES={
- "JP_IIP_history_value":("https://www.meti.go.jp/english/statistics/tyo/iip/b2020_result-2.html",r"b2020_g[os]m1e\.xlsx"),
- "JP_RETAIL_history_value":("https://www.meti.go.jp/statistics/tyo/syoudou/result-2/index.html",r"業種別商業販売額指数"),
+ "JP_IIP_history_value":"https://www.e-stat.go.jp/stat-search/file-download?fileKind=0&statInfId=000040172363",
+ "JP_RETAIL_history_value":"https://www.e-stat.go.jp/stat-search/file-download?fileKind=0&statInfId=000031387999",
 }
 class Links(HTMLParser):
     def __init__(self):super().__init__();self.links=[];self.a=None
@@ -20,7 +20,7 @@ class Links(HTMLParser):
 def fetch(url):
     with urlopen(Request(url,headers={"User-Agent":"Mozilla/5.0 GMFQ research"}),timeout=45) as r:
         raw=r.read(15_000_001)
-        assert urlsplit(r.geturl()).hostname=="www.meti.go.jp"
+        assert urlsplit(r.geturl()).hostname in ("www.e-stat.go.jp","e-stat.go.jp")
         charset=r.headers.get_content_charset() or "utf-8"
     assert 0<len(raw)<=15_000_000
     return raw,charset
@@ -39,15 +39,15 @@ def compare_sequences(lines,old,orientation):
     return sorted(matches,key=lambda x:(x["median_abs"],x["max_abs"]))[:5]
 def main():
     doc=json.loads(Path("live_data/sections/MACRO_SERIES.json").read_text())
-    for ident,(page,pattern) in PAGES.items():
+    for ident,page in PAGES.items():
         row=next(r for r in doc["JPY"] if r["id"]==ident)
         assert len(row["dates"])==len(row["values"])>=36
-        raw,charset=fetch(page);p=Links();p.feed(raw.decode(charset,errors="replace"))
-        urls=sorted({urljoin(page,h) for h,label in p.links if re.search(pattern,h+" "+label) and urlsplit(urljoin(page,h)).hostname=="www.meti.go.jp" and urlsplit(urljoin(page,h)).path.endswith(".xlsx")})
-        print("METI_LINKS",ident,urls)
-        assert 1<=len(urls)<=5
+        urls=[page]
+        print("ESTAT_LINKS",ident,urls)
         for url in urls:
-            raw,_=fetch(url);book=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
+            raw,_=fetch(url)
+            print("ESTAT_FILE",ident,len(raw),raw[:8].hex())
+            book=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
             try:
                 for ws in book.worksheets:
                     if ws.max_row and ws.max_column and ws.max_row*ws.max_column>600000:continue
