@@ -15917,7 +15917,16 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-08-26",
         "2026-09-02",
         "2026-09-09",
-        "2026-09-16"
+        "2026-09-16",
+        "2026-09-23",
+        "2026-09-30",
+        "2026-10-07",
+        "2026-10-14",
+        "2026-10-21",
+        "2026-10-28",
+        "2026-11-04",
+        "2026-11-11",
+        "2026-11-18"
       ],
       "values": [
         654531.0,
@@ -16001,13 +16010,38 @@ window.__GMFQ_DATA.MACRO_SERIES={
         521819.0,
         521819.0,
         521819.0,
-        521819.0
+        521819.0,
+        521819.0,
+        521819.0,
+        521819.0,
+        521819.0,
+        521819.0,
+        488149.0,
+        488149.0,
+        488149.0,
+        488149.0
       ],
       "unit": "GBP millions",
       "frequency": "W",
       "source_file": "UK_BOE_APF_LOAN_history.csv",
-      "last_date": "2026-09-16",
-      "last_value": 521819.0
+      "last_date": "2026-11-18",
+      "last_value": 488149.0,
+      "current_vintage_provenance": {
+        "status": "BOE_IADB_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "RPWZ4TM",
+        "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&Datefrom=26%2FFeb%2F2025&Dateto=now&SeriesCodes=RPWZ4TM&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N",
+        "source_csv_sha256": "bea64076b2b0cc2ede04b9073e11dcae3414b5aa5c527c6ef169ddcf5a1717f3",
+        "historical_overlap": {
+          "count": 82,
+          "exact": 82,
+          "median_error": 0.0,
+          "max_error": 0.0,
+          "error_units": "relative"
+        },
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T19:33:06.763518+00:00"
+      }
     },
     {
       "id": "UK_BOE_RESERVE_BALANCES_history_value",
