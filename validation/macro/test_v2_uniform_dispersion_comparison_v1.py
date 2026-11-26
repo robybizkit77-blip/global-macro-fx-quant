@@ -79,3 +79,26 @@ class UniformDispersionTests(unittest.TestCase):
             if gap["sample_sd_z"] is not None:
                 count += 1
         self.assertEqual(r["separate_bls_gap_alternative_estimate_count"], count)
+
+    def test_domestic_panel_uses_fixed_weights_and_no_fx_claim(self):
+        from validation.macro.v2_uniform_dispersion_comparison_v1 import domestic_panel
+        r = run()
+        axes = {**r["rows"], **r["growth_rows"]}
+        panel = domestic_panel(axes)
+        self.assertEqual(len(panel), 8)
+        for country, row in panel.items():
+            self.assertIsNone(row["fx_strength"])
+            self.assertIsNone(row["cross_country_rank"])
+            coords = row["sample_sd_axes"]
+            if all(v is not None for v in coords.values()):
+                self.assertAlmostEqual(row["sample_sd_domestic"]["activity"],
+                                       .5*coords["growth"]+.5*coords["labour"])
+            else:
+                self.assertIsNone(row["sample_sd_domestic"])
+            for p, q in row["quality"].items():
+                if q["tier"] == "BLS_GAP_ESTIMATE_RESEARCH_ONLY":
+                    self.assertEqual(country, "USD")
+                    self.assertIn(p, ("labour", "inflation"))
+                    self.assertIsNone(row["strict_mad_axes"][p])
+        with self.assertRaises(ValueError):
+            domestic_panel({})
