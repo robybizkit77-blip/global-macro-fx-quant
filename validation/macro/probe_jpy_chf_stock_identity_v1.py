@@ -1,5 +1,7 @@
 """Read-only historical identity diagnostics for already live BoJ/SNB stock proxies."""
-import json,statistics
+import json,statistics,io,math
+from openpyxl import load_workbook
+from validation.estimated.refresh_jpy_reserve_balances_proxy_v1 import _row_period,_number
 from datetime import datetime,timezone
 from validation.macro.prepare_gbp_boe_revised_v1 import SOURCE,need
 from validation.estimated.refresh_jpy_reserve_balances_proxy_v1 import _fetch_workbook,_extract_series
@@ -20,7 +22,27 @@ def main():
             row=rows[0]
             if ccy=="JPY":
                 need(row["unit"]=="100 million yen" and row["frequency"]=="M","legacy identity mismatch")
-                candidate=_extract_series(_fetch_workbook());obs=candidate["series"];meta={k:v for k,v in candidate.items() if k!="series"}
+                raw=_fetch_workbook();candidate=_extract_series(raw);obs=candidate["series"];meta={k:v for k,v in candidate.items() if k!="series"}
+                # Test all workbook columns on the exact same historical months.
+                # End-of-period and average balance concepts are not interchangeable.
+                wb=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
+                candidates=[]
+                for ws in wb.worksheets:
+                    sheet=list(ws.iter_rows(values_only=True))
+                    for col in range(1,max(map(len,sheet))):
+                        series={};duplicates=False
+                        for line in sheet:
+                            if len(line)<=col:continue
+                            d=_row_period(line);v=_number(line[col])
+                            if not d or v is None or v<=0:continue
+                            if d in series:duplicates=True;break
+                            series[d]=v
+                        if duplicates or not set(row["dates"])<=set(series):continue
+                        audit=compare(row,series)
+                        headers=[str(line[col]) for line in sheet[:20] if len(line)>col and line[col] is not None and not isinstance(line[col],(int,float))]
+                        candidates.append({"sheet":ws.title,"column":col+1,"header":headers[:10],**audit})
+                wb.close()
+                print("BOJ_RESERVE_WORKBOOK_VARIANTS",json.dumps(sorted(candidates,key=lambda c:c["median_relative"])[:8],sort_keys=True))
             else:
                 need(row["unit"]=="CHF millions" and row["frequency"]=="M","legacy identity mismatch")
                 raw,url=get_json(SIGHT_URL,{"dimSel":SIGHT_DIMSEL,"fromDate":min(row["dates"]),"toDate":now.strftime("%Y-%m")})
