@@ -12,7 +12,7 @@ def fixture(ident):
     raw=("DATE,"+code+"\n"+"\n".join(f"{x.strftime('%d %b %Y')},{y}" for x,y in zip(ds,vs))).encode()
     return row,raw
 class Tests(unittest.TestCase):
-    def test_four_sources_and_idempotence(self):
+    def test_five_sources_and_idempotence(self):
         for ident in CONFIG:
             row,raw=fixture(ident)
             self.assertEqual(prepare_row(row,ident,NOW,lambda u:raw)["status"],"READY")
@@ -23,6 +23,6 @@ class Tests(unittest.TestCase):
             i=next(i for i in ids if CONFIG[i][0] in url)
             return b"HTML" if i==ids[0] else fixture(i)[1]
         out,r=prepare({"GBP":rows},now=NOW,fetcher=fetch)
-        self.assertEqual([x["status"] for x in r["series"]],["WITHHELD"]+["READY"]*3)
+        self.assertEqual([x["status"] for x in r["series"]],["WITHHELD"]+["READY"]*(len(ids)-1))
         self.assertEqual(out["GBP"][0],rows[0])
 if __name__=="__main__":unittest.main()
