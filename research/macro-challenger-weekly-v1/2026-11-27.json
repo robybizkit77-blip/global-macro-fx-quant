@@ -1,0 +1,435 @@
+{
+  "benchmark_from": "2026-11-19",
+  "benchmark_through": "2026-11-26",
+  "capture_at_utc": "2026-11-26T23:00:10.055637+00:00",
+  "capture_day": "2026-11-27",
+  "core_as_of": "2026-09-25",
+  "formula_sha256": "2dbb980aed2c22d7278f9e1e4fd6eb3bdcc99c74fcec93eb5157fa2cda5594f8",
+  "historical_vintages_certified": false,
+  "inflation_context": {
+    "AUD": {
+      "change_direction": "UP",
+      "observation_period": "2026Q3"
+    },
+    "CAD": {
+      "change_direction": "UP",
+      "observation_period": "2026-10"
+    },
+    "CHF": {
+      "change_direction": "UP",
+      "observation_period": "2026-10"
+    },
+    "EUR": {
+      "change_direction": "UP",
+      "observation_period": "2026-10"
+    },
+    "GBP": {
+      "change_direction": "UP",
+      "observation_period": "2026-10"
+    },
+    "JPY": {
+      "change_direction": "UP",
+      "observation_period": "2026-10"
+    },
+    "NZD": {
+      "change_direction": "UP",
+      "observation_period": "2026Q3"
+    },
+    "USD": {
+      "change_direction": "UP",
+      "observation_period": "2026-09"
+    }
+  },
+  "input_commit": "aa8238381c61a7cb7fb3c73f432cd5f59ea5a334",
+  "macro_public_snapshot_day": "2026-11-26",
+  "method": {
+    "fx": "BENCHMARK_ONLY",
+    "government_2y_change_threshold_bp": 5,
+    "government_2y_max_quote_age_days": 7,
+    "growth_acceleration_deadband_pp": 0.1,
+    "growth_basis": "MATCHED_QUARTER_ACCELERATION_WHEN_BOTH_AVAILABLE_ELSE_MATCHED_QUARTER_GDP_LEVEL",
+    "growth_level_deadband_pct": 0.2,
+    "horizon": "FIRST_ECB_FIXING_AFTER_CAPTURE_TO_FIRST_AFTER_SEVEN_CALENDAR_DAYS",
+    "inflation": "CONTEXT_ONLY_NO_ASSUMED_DIRECTION",
+    "policy_rule": "YIELDS_CAN_CONFIRM_OR_VETO_A_MACRO_DIRECTION_BUT_CANNOT_CREATE_ONE",
+    "unemployment_deadband_pp": 0.1,
+    "unemployment_max_observation_lag_months": 1
+  },
+  "pairs": {
+    "AUD/CAD": {
+      "candidate": -1,
+      "core": 1,
+      "growth": -1,
+      "growth_basis": "GDP_ACCELERATION_2026Q2",
+      "labour": 0,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "AUD/CHF": {
+      "candidate": -1,
+      "core": 1,
+      "growth": 0,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": -1,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "AUD/JPY": {
+      "candidate": -1,
+      "core": -1,
+      "growth": 0,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": -1,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "AUD/NZD": {
+      "candidate": 1,
+      "core": 1,
+      "growth": 1,
+      "growth_basis": "GDP_ACCELERATION_2026Q2",
+      "labour": null,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "AUD/USD": {
+      "candidate": -1,
+      "core": -1,
+      "growth": 0,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": -1,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "CAD/CHF": {
+      "candidate": -1,
+      "core": 1,
+      "growth": 0,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": -1,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "CAD/JPY": {
+      "candidate": 0,
+      "core": -1,
+      "growth": 0,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": -1,
+      "momentum": 1,
+      "rates_confirmed": false,
+      "rates_contradicted": true,
+      "rates_window": [
+        "2026-11-18",
+        "2026-11-25"
+      ],
+      "yield_spread_week_change_bp": 8.1
+    },
+    "CHF/JPY": {
+      "candidate": 0,
+      "core": -1,
+      "growth": 0,
+      "growth_basis": "GDP_ACCELERATION_2026Q3",
+      "labour": 0,
+      "momentum": 1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "EUR/AUD": {
+      "candidate": 1,
+      "core": -1,
+      "growth": 0,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": 1,
+      "momentum": 1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "EUR/CAD": {
+      "candidate": 0,
+      "core": -1,
+      "growth": 0,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": 1,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": true,
+      "rates_window": [
+        "2026-11-18",
+        "2026-11-25"
+      ],
+      "yield_spread_week_change_bp": -5.7
+    },
+    "EUR/CHF": {
+      "candidate": 0,
+      "core": 1,
+      "growth": 0,
+      "growth_basis": "GDP_ACCELERATION_2026Q3",
+      "labour": 0,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "EUR/GBP": {
+      "candidate": -1,
+      "core": 1,
+      "growth": -1,
+      "growth_basis": "GDP_ACCELERATION_2026Q3",
+      "labour": -1,
+      "momentum": 1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": [
+        "2026-11-18",
+        "2026-11-25"
+      ],
+      "yield_spread_week_change_bp": -1.3
+    },
+    "EUR/JPY": {
+      "candidate": 0,
+      "core": -1,
+      "growth": 0,
+      "growth_basis": "GDP_ACCELERATION_2026Q3",
+      "labour": 0,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": [
+        "2026-11-18",
+        "2026-11-25"
+      ],
+      "yield_spread_week_change_bp": 2.4
+    },
+    "EUR/NZD": {
+      "candidate": 1,
+      "core": 1,
+      "growth": 1,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": null,
+      "momentum": 1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "EUR/USD": {
+      "candidate": 0,
+      "core": -1,
+      "growth": -1,
+      "growth_basis": "GDP_ACCELERATION_2026Q3",
+      "labour": 0,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": true,
+      "rates_window": [
+        "2026-11-18",
+        "2026-11-25"
+      ],
+      "yield_spread_week_change_bp": 7.3
+    },
+    "GBP/AUD": {
+      "candidate": 1,
+      "core": -1,
+      "growth": 0,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": 1,
+      "momentum": 1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "GBP/CAD": {
+      "candidate": 1,
+      "core": -1,
+      "growth": 0,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": 1,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": [
+        "2026-11-18",
+        "2026-11-25"
+      ],
+      "yield_spread_week_change_bp": -4.4
+    },
+    "GBP/CHF": {
+      "candidate": 1,
+      "core": -1,
+      "growth": 1,
+      "growth_basis": "GDP_ACCELERATION_2026Q3",
+      "labour": 1,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "GBP/JPY": {
+      "candidate": 1,
+      "core": -1,
+      "growth": 1,
+      "growth_basis": "GDP_ACCELERATION_2026Q3",
+      "labour": 1,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": [
+        "2026-11-18",
+        "2026-11-25"
+      ],
+      "yield_spread_week_change_bp": 3.7
+    },
+    "GBP/NZD": {
+      "candidate": 1,
+      "core": -1,
+      "growth": 1,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": null,
+      "momentum": 1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "GBP/USD": {
+      "candidate": 1,
+      "core": -1,
+      "growth": 0,
+      "growth_basis": "GDP_ACCELERATION_2026Q3",
+      "labour": 1,
+      "momentum": -1,
+      "rates_confirmed": true,
+      "rates_contradicted": false,
+      "rates_window": [
+        "2026-11-18",
+        "2026-11-25"
+      ],
+      "yield_spread_week_change_bp": 8.6
+    },
+    "NZD/CAD": {
+      "candidate": -1,
+      "core": 0,
+      "growth": -1,
+      "growth_basis": "GDP_ACCELERATION_2026Q2",
+      "labour": null,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "NZD/CHF": {
+      "candidate": -1,
+      "core": -1,
+      "growth": -1,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": null,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "NZD/JPY": {
+      "candidate": -1,
+      "core": -1,
+      "growth": -1,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": null,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "NZD/USD": {
+      "candidate": -1,
+      "core": 0,
+      "growth": -1,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": null,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "USD/CAD": {
+      "candidate": 0,
+      "core": 1,
+      "growth": 0,
+      "growth_basis": "GDP_LEVEL_2026Q2",
+      "labour": 1,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": true,
+      "rates_window": [
+        "2026-11-18",
+        "2026-11-25"
+      ],
+      "yield_spread_week_change_bp": -13.0
+    },
+    "USD/CHF": {
+      "candidate": 1,
+      "core": 1,
+      "growth": 1,
+      "growth_basis": "GDP_ACCELERATION_2026Q3",
+      "labour": 0,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": null,
+      "yield_spread_week_change_bp": null
+    },
+    "USD/JPY": {
+      "candidate": 1,
+      "core": -1,
+      "growth": 1,
+      "growth_basis": "GDP_ACCELERATION_2026Q3",
+      "labour": 0,
+      "momentum": -1,
+      "rates_confirmed": false,
+      "rates_contradicted": false,
+      "rates_window": [
+        "2026-11-18",
+        "2026-11-25"
+      ],
+      "yield_spread_week_change_bp": -4.9
+    }
+  },
+  "safe_to_publish_new_core": false,
+  "schema": "GMFQ_STRUCTURAL_MACRO_CHALLENGER_WEEKLY_V1",
+  "snapshot_sha256": "61b685fcc739e8f19175aeb3852d8200f8d4840d2b971a97efe3ca1ec9f73b6d",
+  "source_sha256": {
+    "core": "c2847597a4ec07c9d0117d5195426eef34147ea1565cdad06c1de39849b34840",
+    "macro": "cadf3b826d5fbd856e389cb680d913ef7e33e61cd75eeb6a78059f1e47a1f588",
+    "prices": "0a6041dbefd8a5da49aa08e3d2c78d7ea770ce18c938db63dca933aeae7de642",
+    "rates": "b5671689c1512ba826b70dd30fb0a4fd5fc89d212d6003b2268ce639d35e3c43"
+  }
+}
