@@ -219,7 +219,36 @@
     }
     return out;
   }
-  const api=Object.freeze({derive});
+  // Read-only corroboration of the exact displayed post-roll RBNZ edition.
+  // Never changes the canonical row, pricing or signal eligibility.
+  function nzdReconciledProof(doc, context, today) {
+    const no = null;
+    if (!doc || !context || doc.schema!=="GMFQ_NZD_RBNZ_B2_RECONCILED_RESEARCH_V1" ||
+        doc.status!=="RBNZ_B2_HTML_XLSX_AGREE_POSTROLL_RESEARCH_ONLY" ||
+        doc.research_only!==true || doc.no_interpolation!==true ||
+        ["eligible_for_core","eligible_for_fx_pair_engine","eligible_for_backtests","eligible_for_automatic_promotion"].some(k=>doc[k]!==false) ||
+        doc.source_url!=="https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates" ||
+        !/^[a-f0-9]{64}$/.test(doc.html_sha256||"") || !/^[a-f0-9]{64}$/.test(doc.xlsx_sha256||"") ||
+        !iso(doc.publication_date)||!iso(doc.last_observation_date)||doc.publication_date>today||
+        doc.last_observation_date>doc.publication_date||doc.benchmark_roll_date!==context.roll_date||
+        doc.benchmark_2Y!==context.new_benchmark?.["2Y"]||doc.benchmark_10Y!==context.new_benchmark?.["10Y"]||
+        doc.last_observation_date!==context.latest_date) return no;
+    const rows=doc.observations,matched=doc.html_xlsx_matched_dates;
+    if(!Array.isArray(rows)||rows.length<6||!Array.isArray(matched)||new Set(matched).size<6||
+       !rows.every((r,i)=>iso(r.date)&&(!i||r.date>rows[i-1].date)&&
+         Number.isFinite(r["2Y"])&&Number.isFinite(r["10Y"])&&r.date<=doc.publication_date)||
+       rows[0].date!==doc.benchmark_roll_date||rows.at(-1).date!==doc.last_observation_date||
+       rows.at(-1)["2Y"]!==context.latest_2Y||rows.at(-1)["10Y"]!==context.latest_10Y||
+       !matched.includes(doc.last_observation_date)||!matched.every(d=>rows.some(r=>r.date===d)))return no;
+    const last=rows.at(-1);
+    const cutoff=new Date(Date.parse(last.date+"T00:00:00Z")-7*86400000).toISOString().slice(0,10);
+    const ref=rows.filter(r=>r.date<=cutoff).at(-1);
+    if(!ref||ref.date<doc.benchmark_roll_date)return no;
+    return {date:last.date,publication:doc.publication_date,matched:new Set(matched).size,
+      observations:rows.length,reference:ref.date,
+      change2:round((last["2Y"]-ref["2Y"])*100,1),change10:round((last["10Y"]-ref["10Y"])*100,1)};
+  }
+  const api=Object.freeze({derive,nzdReconciledProof});
   root.FXV2RatesWorking=api;
   if(typeof module==="object"&&module&&module.exports)module.exports=api;
 })(typeof globalThis!=="undefined"?globalThis:this);
