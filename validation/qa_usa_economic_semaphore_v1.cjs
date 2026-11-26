@@ -153,8 +153,22 @@ const manualTampered=structuredClone(manualPsi);
 manualTampered.series[0].source_page='https://somethingelse.com/fake';
 assert.equal(model(catalog,'2026-11-24','NZD',manualTampered).find(x=>x.key==='services').signal.tone,'neutral');
 
+// Pin historical fallback cases to dated test data; the live archive now advances.
+const oldCatalog=structuredClone(catalog);
+const truncate=(ccy,id,cutoff)=>{
+ const r=oldCatalog[ccy].find(x=>x.id===id);
+ assert.ok(r,'Missing fixture source '+id);
+ const keep=r.dates.map((p,i)=>({p,i})).filter(x=>parsePeriod(x.p)<=cutoff);
+ r.dates=keep.map(x=>x.p);r.values=keep.map(x=>r.values[x.i]);
+};
+truncate('EUR','EA_ECFIN_BCS_LEAD_INDICATORS_history_Services','2026-07-31');
+truncate('EUR','EA_RETAIL_VOL_history_value','2026-07-31');
+truncate('USD','US_INDPRO_history_value','2026-07-31');
+truncate('USD','US_NEWORDER_history_NEWORDER','2026-07-31');
+truncate('USD','US_SLOOS_CI_LARGE_MIDDLE_history_value','2025-12-31');
+truncate('USD','US_TOTBKCR_history_value','2026-07-31');
 // An old service survey remains readable, but cannot silently stay green/red.
-const euroStale=model(catalog,'2026-11-24','EUR').find(x=>x.key==='services');
+const euroStale=model(oldCatalog,'2026-11-24','EUR').find(x=>x.key==='services');
 assert.equal(euroStale.signal.tone,'neutral','July services data are stale in late November');
 assert.ok(euroStale.items[0].stale,'Explicit stale marker needed');
 assert.equal(euroStale.items[0].verdict,null,'Stale observation must not generate a direction');
@@ -168,18 +182,18 @@ const freshEuro={
   source_file:'Eurostat / DG ECFIN teibs020',
   source_page:'https://ec.europa.eu/eurostat/databrowser/view/teibs020/default/table?lang=en'
  }]};
-const euroUpgraded=model(catalog,'2026-11-24','EUR',freshEuro).find(x=>x.key==='services');
+const euroUpgraded=model(oldCatalog,'2026-11-24','EUR',freshEuro).find(x=>x.key==='services');
 assert.equal(euroUpgraded.signal.tone,'green','Fresh official EA21 survey supersedes July');
 assert.equal(euroUpgraded.items[0].period,'2026-10');
 assert.equal(euroUpgraded.items[0].current,3.8);
-assert.match(render({catalog,esc,dayNow:()=>'2026-11-24',country:'EUR',overlay:freshEuro}),/teibs020/);
+assert.match(render({catalog:oldCatalog,esc,dayNow:()=>'2026-11-24',country:'EUR',overlay:freshEuro}),/teibs020/);
 const wrongEuro=structuredClone(freshEuro);
 wrongEuro.series[0].source_series_id='UNRELATED';
-assert.equal(model(catalog,'2026-11-24','EUR',wrongEuro).find(x=>x.key==='services').signal.tone,'neutral');
+assert.equal(model(oldCatalog,'2026-11-24','EUR',wrongEuro).find(x=>x.key==='services').signal.tone,'neutral');
 const olderEuro=structuredClone(freshEuro);
 olderEuro.series[0].dates=['2026-05','2026-06'];
-assert.equal(model(catalog,'2026-11-24','EUR',olderEuro).find(x=>x.key==='services').signal.tone,'neutral');
-const euroNextYear=model(catalog,'2028-01-01','EUR',freshEuro).find(x=>x.key==='services');
+assert.equal(model(oldCatalog,'2026-11-24','EUR',olderEuro).find(x=>x.key==='services').signal.tone,'neutral');
+const euroNextYear=model(oldCatalog,'2028-01-01','EUR',freshEuro).find(x=>x.key==='services');
 assert.equal(euroNextYear.signal.tone,'neutral');
 // New official current observation may replace an incomplete/stale primary composite
 // without erasing historical canonical series in the detail.
@@ -191,17 +205,17 @@ const USfresh={
   metric_kind:'percent',up_good:true,quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',
   source_file:'Federal Reserve via FRED',source_page:'https://fred.stlouisfed.org/series/INDPRO'
  }]};
-const currentUS=model(catalog,'2026-11-24','USD',USfresh).find(x=>x.key==='industry');
+const currentUS=model(oldCatalog,'2026-11-24','USD',USfresh).find(x=>x.key==='industry');
 assert.equal(currentUS.signal.tone,'green');
 assert.equal(currentUS.signalSource,'fallback');
 assert.equal(currentUS.items.length,3,'Preserve two dated official canonical indicators for context');
 assert.equal(currentUS.items[0].period,'2026-10');
 assert.equal(currentUS.expected,1,'Only the current official substitute is signal eligible');
-assert.match(render({catalog,esc,dayNow:()=>'2026-11-24',country:'USD',overlay:USfresh}),
+assert.match(render({catalog:oldCatalog,esc,dayNow:()=>'2026-11-24',country:'USD',overlay:USfresh}),
  /Segnale da fonte supplementare aggiornata/);
 const fakeFred=structuredClone(USfresh);
 fakeFred.series[0].source_series_id='WRONG';
-assert.equal(model(catalog,'2026-11-24','USD',fakeFred).find(x=>x.key==='industry').signal.tone,'neutral');
+assert.equal(model(oldCatalog,'2026-11-24','USD',fakeFred).find(x=>x.key==='industry').signal.tone,'neutral');
 const UScredit=structuredClone(USfresh);
 UScredit.series[0].area='credit';
 UScredit.series[0].id='SEM_G8_USD_CREDIT';
@@ -213,7 +227,7 @@ UScredit.series[0].unit='net tightening share';
 UScredit.series[0].dates=['2026-Q2','2026-Q3'];
 UScredit.series[0].values=[1.0,8.0];
 UScredit.series[0].up_good=false;
-assert.equal(model(catalog,'2026-11-24','USD',UScredit).find(x=>x.key==='credit').signal.tone,'red',
+assert.equal(model(oldCatalog,'2026-11-24','USD',UScredit).find(x=>x.key==='credit').signal.tone,'red',
   'Credit tightening increases should be an adverse signal');
 const EAfresh={
  schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',series:[{
@@ -224,8 +238,8 @@ const EAfresh={
   frequency:'M',metric_kind:'percent',up_good:true,quality:'SOURCE_REVISED_RESEARCH_NOT_PIT',
   source_file:'Eurostat',source_page:'https://ec.europa.eu/eurostat/databrowser/view/sts_trtu_m/default/table?lang=en'
  }]};
-assert.equal(model(catalog,'2026-11-24','EUR',EAfresh).find(x=>x.key==='demand').signal.tone,'green');
-assert.equal(model(catalog,'2028-01-01','EUR',EAfresh).find(x=>x.key==='demand').signal.tone,'neutral');
+assert.equal(model(oldCatalog,'2026-11-24','EUR',EAfresh).find(x=>x.key==='demand').signal.tone,'green');
+assert.equal(model(oldCatalog,'2028-01-01','EUR',EAfresh).find(x=>x.key==='demand').signal.tone,'neutral');
 
 const nextSources={
  schema:'GMFQ_G8_SEMAPHORE_SUPPLEMENT_V1',
@@ -257,7 +271,7 @@ manualDwelling.series[1].manual_verified_on='2026-11-24';
 assert.equal(model(catalog,'2026-11-24','NZD',manualDwelling).find(x=>x.key==='house').signal.tone,'red');
 assert.match(render({catalog,esc,dayNow:()=>'2026-11-24',country:'NZD',overlay:manualDwelling}),/verificato manualmente/);
 assert.equal(model(catalog,'2027-04-01','NZD',manualDwelling).find(x=>x.key==='house').signal.tone,'neutral');
-const heatmap=render({catalog,esc,dayNow:()=>'2026-11-24',country:'USD',overlay:USfresh});
+const heatmap=render({catalog:oldCatalog,esc,dayNow:()=>'2026-11-24',country:'USD',overlay:USfresh});
 assert.equal((heatmap.match(/class="sem-matrix-cell (?:green|red|amber|neutral)" title=/g)||[]).length,56,'56 accessible direction cells');
 assert.match(heatmap,/role="progressbar" aria-label="Copertura G8" aria-valuenow="\d+" aria-valuemin="0" aria-valuemax="56"/);
 assert.equal((heatmap.match(/class="sem-overview-kpi /g)||[]).length,4);
@@ -378,6 +392,14 @@ assert.equal(inflationContext(example,'2027-04-01','USD')[0].direction,null);
 const missingLag=structuredClone(example);
 missingLag.USD[0].values[1]=null;
 assert.equal(inflationContext(missingLag,inflationDay,'USD')[0].available,false);
+// A documented missing base may retain September, without inventing October YoY.
+const officialGap={USD:[{...example.USD[0],dates:['2025-08','2025-09','2026-08','2026-09','2026-10'],values:[100,100,102,103,104],
+ current_vintage_provenance:{status:'FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT',source_series_id:'CPIAUCSL',gap_not_imputed:true,official_missing_periods:['2025-10']}}]};
+const gapResult=inflationContext(officialGap,inflationDay,'USD')[0];
+assert.equal(gapResult.period,'2026-09');assert.equal(gapResult.latestIndexPeriod,'2026-10');
+assert.equal(gapResult.annualGap,true);assert.equal(gapResult.direction,null);
+const undocumentedGap=structuredClone(officialGap);delete undocumentedGap.USD[0].current_vintage_provenance;
+assert.equal(inflationContext(undocumentedGap,inflationDay,'USD')[0].available,false);
 const inflationGap=structuredClone(example);
 inflationGap.USD[0].dates[2]='2026-07';
 assert.equal(inflationContext(inflationGap,inflationDay,'USD')[0].direction,null);
@@ -670,19 +692,21 @@ console.log('ECONOMIC_CYCLE_RELATIVE_DIVERGENCES_PASS');
  const uk=make('GBP','DKO8','https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/dko8/mm23','% a/a',dates.map((_,i)=>2+i/100));
  const ov=JSON.parse(fs.readFileSync(path.join(base,'site/fx-quant-v2/next/semaphore-supplement-v1.json'),'utf8'));
  ov.inflation_context={schema:'GMFQ_G8_INFLATION_CONTEXT_V1',series:[us,uk]};
- const u=inflationContext(catalog,today,'USD',ov).find(x=>/core/i.test(x.label));
- const k=inflationContext(catalog,today,'GBP',ov).find(x=>/core/i.test(x.label));
+ const missingCore=structuredClone(catalog);
+ for(const ccy of ['USD','GBP','EUR','CAD'])missingCore[ccy]=missingCore[ccy].filter(r=>!/(CPILFESL|CORE_YOY|CPI_MEDIAN_YOY|CPI_TRIM_YOY)/.test(r.id));
+ const u=inflationContext(missingCore,today,'USD',ov).find(x=>/core/i.test(x.label));
+ const k=inflationContext(missingCore,today,'GBP',ov).find(x=>/core/i.test(x.label));
  const gapDates=dates.filter(p=>p!=='2025-10'),gapValues=dates.map((p,i)=>({p,v:values[i]})).filter(x=>x.p!=='2025-10').map(x=>x.v);
  const gap={...us,exact_lag_history:{schema:'GMFQ_US_CORE_EXACT_LAG_V1',source_series_id:'CPILFESL',dates:gapDates,values:gapValues}};
  const gapCore=inflationContext(catalog,today,'USD',{...ov,inflation_context:{...ov.inflation_context,series:[gap]}}).find(x=>/core/i.test(x.label));
  assert.equal(gapCore.period,'2026-09');assert.equal(gapCore.latestIndexPeriod,'2026-10');assert.equal(gapCore.annualGap,true);assert.equal(gapCore.direction,null);
  const eur=make('EUR','EUROSTAT_EA21_HICP_CORE_YOY','https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_minr/default/table?lang=en','% a/a',dates.map((_,i)=>2+i/100));
- const e=inflationContext(catalog,today,'EUR',{...ov,inflation_context:{...ov.inflation_context,series:[eur]}}).find(x=>/core/i.test(x.label));
+ const e=inflationContext(missingCore,today,'EUR',{...ov,inflation_context:{...ov.inflation_context,series:[eur]}}).find(x=>/core/i.test(x.label));
  assert.equal(e.period,'2026-10');assert.equal(e.value,2.23);
  const cadPage='https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810025601';
  const median=make('CAD','STATCAN_18100256_MEDIAN_YOY',cadPage,'% a/a',dates.map((_,i)=>2+i/100));
  const trim=make('CAD','STATCAN_18100256_TRIM_YOY',cadPage,'% a/a',dates.map((_,i)=>1+i/100));
- const canada=inflationContext(catalog,today,'CAD',{...ov,inflation_context:{...ov.inflation_context,series:[median,trim]}});
+ const canada=inflationContext(missingCore,today,'CAD',{...ov,inflation_context:{...ov.inflation_context,series:[median,trim]}});
  assert.equal(canada.find(x=>/median/i.test(x.label)).value,2.23);
  assert.equal(canada.find(x=>/trim/i.test(x.label)).value,1.23);
  assert.equal(canada.find(x=>/trim/i.test(x.label)).period,'2026-10');
