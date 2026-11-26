@@ -81,6 +81,7 @@ note('macro','Serie Macro',macroCount+' indicatori: le osservazioni hanno freque
 // Inventory the actual underlying archive separately from newer page overlays.
 // Period age is a triage heuristic, NOT an official release-calendar assertion.
 // Never infer missing frequencies or mark an old historical series as live.
+const {normalize,cadence}=require('./macro_archive_cadence_v1.cjs');
 const inventoryThresholds={D:7,W:21,M:75,Q:160,A:550};
 const inventory=[];
 for(const c of ccy){
@@ -88,16 +89,9 @@ for(const c of ccy){
   const raw=series.last_date;
   const frequency=series.frequency||null;
   const limit=inventoryThresholds[frequency]??null;
-  let parsed=null;
-  if(typeof raw==='string'){
-   if(/^\d{4}-\d{2}$/.test(raw)) parsed=raw+'-01';
-   else if(/^\d{4}-\d{2}-\d{2}(?:$|T| )/.test(raw)) parsed=raw.slice(0,10);
-   else {
-    const match=/^(\d{1,2})[ -]([A-Za-z]{3})[ -](\d{4})$/.exec(raw);
-    const month=match&&['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(match[2].toLowerCase())+1;
-    if(match&&month) parsed=match[3]+'-'+String(month).padStart(2,'0')+'-'+match[1].padStart(2,'0');
-   }
-  }
+  const parsed=normalize(raw);
+  const historical=cadence(series);
+  const observedLimit=inventoryThresholds[historical.observed_frequency]??null;
   const parsedTime=parsed&&Date.parse(parsed+'T00:00:00Z');
   const valid=Number.isFinite(parsedTime)&&new Date(parsedTime).toISOString().slice(0,10)===parsed;
   const age=valid?days(parsed):null;
@@ -106,7 +100,8 @@ for(const c of ccy){
   const state=!valid||age<0||!valuePresent?'INVALID_OBSERVATION':
     limit===null?'FREQUENCY_UNDECLARED':age>limit?'AGE_REVIEW_REQUIRED':'WITHIN_AGE_SCREEN';
   inventory.push({currency:c,id:series.id,label:series.label,category:series.category,
-   frequency,raw_last_date:raw,normalized_period_start:parsed,calendar_age_days:age,
+   frequency,...historical,raw_last_date:raw,normalized_period_start:parsed,calendar_age_days:age,
+   observed_cadence_age_screen:!valid||age<0||observedLimit===null?null:age>observedLimit?'AGE_REVIEW_REQUIRED':'WITHIN_AGE_SCREEN',
    screening_limit_days:limit,state,source_file:series.source_file||null,
    last_history_date:lastHistoryDate,value_present:valuePresent});
  }
@@ -116,6 +111,8 @@ result.macro_archive_inventory={
  scope:'MACRO_SERIES_ONLY_NOT_PAGE_OVERLAYS_OR_RELEASE_CALENDAR',
  thresholds_calendar_days:inventoryThresholds,total:inventory.length,
  counts:inventoryCounts,rows:inventory,
+ observed_cadence_only_count:inventory.filter(r=>!r.frequency&&r.observed_frequency).length,
+ historical_integrity_review_count:inventory.filter(r=>!['ORDERED','INSUFFICIENT_HISTORY'].includes(r.history_integrity)).length,
  limitations:'Observation age is preliminary. Compare with official release calendar, source availability and actual page consumers before declaring a missed release.'
 };
 requireValid(inventory.length===macroCount,'Macro archive inventory must cover every series');
