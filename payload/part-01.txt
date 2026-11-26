@@ -15600,7 +15600,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "31 May 2026",
         "30 Jun 2026",
         "31 Jul 2026",
-        "31 Aug 2026"
+        "31 Aug 2026",
+        "30 Sep 2026",
+        "31 Oct 2026"
       ],
       "values": [
         1.41,
@@ -15684,13 +15686,31 @@ window.__GMFQ_DATA.MACRO_SERIES={
         4.91,
         4.8,
         4.79,
-        4.92
+        4.92,
+        5.13,
+        5.39
       ],
       "unit": "Percent",
       "frequency": "M",
       "source_file": "UK_MORTGAGE_RATE_2Y_75LTV_history.csv",
-      "last_date": "31 Aug 2026",
-      "last_value": 4.92
+      "last_date": "31 Oct 2026",
+      "last_value": 5.39,
+      "current_vintage_provenance": {
+        "status": "BOE_IADB_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "IUMBV34",
+        "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&Datefrom=30%2FNov%2F2019&Dateto=now&SeriesCodes=IUMBV34&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N",
+        "source_csv_sha256": "09881126f610b0aa88c048b730f053001e1426e584811d3c5dafa46cc8eb0c12",
+        "historical_overlap": {
+          "count": 82,
+          "exact": 82,
+          "median_error": 0.0,
+          "max_error": 0.0,
+          "error_units": "percentage points"
+        },
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T15:18:28.829671+00:00"
+      }
     },
     {
       "id": "UK_CCS_CORPORATE_CREDIT_AVAILABILITY_history_value",
