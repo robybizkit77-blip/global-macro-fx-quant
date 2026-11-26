@@ -37,3 +37,15 @@ o.operational_status='GREEN_OFFICIAL';cb.next_meeting=today;
 assert.doesNotMatch(m.marketReading('CAD',market,today,fmt),/OIS 6M:/);
 console.log('ACTIVITY_MOMENTUM_SHARED_4_ROUTES_PASS');
 console.log('ACTIVITY_POLICY_CONTEXT_6_ROUTES_PASS');
+
+const cot={dates:['2026-11-10','2026-11-17'],net:[10,8],long:[20,21],short:[10,13],netoi:[10,8],percentile:[80,79]};
+const px={base:'EUR',last_as_of:'2026-11-26',rows:['19','20','23','24','25','26'].map((d,i)=>({Date:'2026-11-'+d,EUR:1,USD:1+i*.02,GBP:.8}))};
+const flow={cot:{USD:cot},prices:px};
+assert.match(m.positionReading('USD',flow,today,fmt),/variazione settimanale -2.*long \+1, short \+3/);
+assert.match(m.positionReading('USD',flow,'2026-12-02',fmt),/non validato/);
+assert.match(m.priceReading('EUR','USD',flow,today,fmt),/\+10.00%/);
+assert.match(m.priceReading('USD','EUR',flow,today,fmt),/-9.09%/);
+assert.match(m.priceReading('EUR','USD',flow,'2026-12-04',fmt),/non validabili/);
+cot.net[1]=9;
+assert.match(m.positionReading('USD',flow,today,fmt),/non validato/);
+console.log('ACTIVITY_COT_ECB_CONTEXT_PASS');
