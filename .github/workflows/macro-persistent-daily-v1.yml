@@ -18,6 +18,8 @@ on:
       - 'validation/macro/test_prepare_aud_rba_stocks_revised_v1.py'
       - 'validation/macro/prepare_cad_monthly_revised_v1.py'
       - 'validation/macro/prepare_cad_boc_revised_v1.py'
+      - 'validation/macro/prepare_native_liquidity_macro_parity_v1.py'
+      - 'validation/macro/test_prepare_native_liquidity_macro_parity_v1.py'
       - 'validation/macro/test_prepare_cad_boc_revised_v1.py'
       - 'validation/macro/test_prepare_cad_monthly_revised_v1.py'
       - 'validation/macro/prepare_jpy_m3_native_parity_v1.py'
@@ -65,6 +67,8 @@ on:
       - 'validation/macro/test_prepare_aud_rba_stocks_revised_v1.py'
       - 'validation/macro/prepare_cad_monthly_revised_v1.py'
       - 'validation/macro/prepare_cad_boc_revised_v1.py'
+      - 'validation/macro/prepare_native_liquidity_macro_parity_v1.py'
+      - 'validation/macro/test_prepare_native_liquidity_macro_parity_v1.py'
       - 'validation/macro/test_prepare_cad_boc_revised_v1.py'
       - 'validation/macro/test_prepare_cad_monthly_revised_v1.py'
       - 'validation/macro/prepare_jpy_m3_native_parity_v1.py'
@@ -1348,6 +1352,47 @@ jobs:
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           assert changed and changed.issubset(set(managed)),changed
           print(json.dumps(persist(managed=managed,commit_message='Refresh verified AUD RBA revised macro histories'),sort_keys=True))
+          PY
+
+      - name: Validate exact native CAD money and JPY credit parity
+        id: native_macro_parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_prepare_native_liquidity_macro_parity_v1 -v
+          python -m validation.macro.prepare_native_liquidity_macro_parity_v1 --candidate /tmp/macro-persistent/NATIVE_LIQ_PARITY.json --receipt /tmp/macro-persistent/native-liq-parity.json
+          python - <<'PY'
+          import json
+          old=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))
+          new=json.load(open('/tmp/macro-persistent/NATIVE_LIQ_PARITY.json'))
+          receipt=json.load(open('/tmp/macro-persistent/native-liq-parity.json'))
+          assert set(old)==set(new)
+          allowed={(r['ccy'],r['role']) for r in receipt['series'] if r['status']=='READY'}
+          assert allowed <= {('CAD','money'),('JPY','credit')}
+          assert all(set(old[c])==set(new[c]) for c in old)
+          assert {(c,k) for c in old for k in old[c] if old[c][k]!=new[c][k]}==allowed
+          PY
+
+      - name: Persist verified native CAD money and JPY credit only
+        if: github.ref == 'refs/heads/main' && steps.native_macro_parity.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(python -c "import json; print(json.load(open('/tmp/macro-persistent/native-liq-parity.json'))['status'])")"
+          if [ "$status" = NO_CHANGE_OR_WITHHELD ]; then exit 0; fi
+          test "$status" = READY
+          python validation/update_live_direct_section.py --section NATIVE_LIQ_DATA --replacement /tmp/macro-persistent/NATIVE_LIQ_PARITY.json --apply
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+          python validation/rebuild_live_data_runtime.py --verify-only
+          python validation/check_liquidity_remaining_blockers_v1.py
+          python - <<'PY'
+          import json,subprocess
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          managed=('live_data/sections/NATIVE_LIQ_DATA.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt')
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed and changed.issubset(set(managed)),changed
+          print(json.dumps(persist(managed=managed,protected=('live_data/sections/MACRO_SERIES.json',),commit_message='Synchronize native CAD M2++ and JPY bank credit with verified Macro histories'),sort_keys=True))
           PY
 
       # Existing Macro refresh cadence only. Freeze a single first-seen
