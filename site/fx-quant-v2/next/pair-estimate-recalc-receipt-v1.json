@@ -1,20 +1,19 @@
 {
   "schema": "GMFQ_NEXT_ESTIMATED_FX_RECALC_RECEIPT_V1",
   "status": "NO_MATERIAL_THESIS_CHANGE",
-  "checkedAtUtc": "2026-11-26T18:39:20.115Z",
+  "checkedAtUtc": "2026-11-26T18:40:00.957Z",
   "checkedDay": "2026-11-26",
-  "sourceCommit": "70e30be03fe29c8f75c99b44d5e0d68c9edbd4c9",
+  "sourceCommit": "71329ed39e7158a272a19872def3aaf2d99f2365",
   "method": "c54bb6f6a2fa76470e8c616c72b478e70735166b10c36cd32f35dddcf8cd0379",
   "sourceHashes": {
     "observed": "56bdcedaa554f8c91bdd92d13ed6331d684aa563c3ca0ba5c9caae360cbb27d7",
     "prices": "0a6041dbefd8a5da49aa08e3d2c78d7ea770ce18c938db63dca933aeae7de642",
-    "ois": "aa93f3f44c05b5dcf318854eb8967020f178117deb20b7517ba8787cf1957dc5",
+    "ois": "cb423fb351fd20ed27913387af8e42d18257c2007d6a3a4fe43f8462f1971833",
     "rates": "b5671689c1512ba826b70dd30fb0a4fd5fc89d212d6003b2268ce639d35e3c43",
     "model": "6e12e7a1b5ef5645cae6b7f3d083b4a2fc190e1c4d9637d2f44dfa8fedb4b09f"
   },
   "inputChanges": [
-    "ois",
-    "model"
+    "ois"
   ],
   "methodChanged": false,
   "comparisonBasis": "PREVIOUS_RECEIPT",
@@ -31,41 +30,7 @@
   },
   "changedPairs": [],
   "changedRanks": [],
-  "factorChanges": [
-    {
-      "ccy": "NZD",
-      "rank": {
-        "previous": 8,
-        "current": 8
-      },
-      "changes": {
-        "score": {
-          "previous": -0.647857,
-          "current": -0.542857,
-          "delta": 0.105
-        },
-        "macroScore": {
-          "previous": -0.8,
-          "current": -0.8,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": -0.35,
-          "current": 0,
-          "delta": 0.35
-        },
-        "priceScore": {
-          "previous": -0.714286,
-          "current": -0.714286,
-          "delta": 0
-        }
-      },
-      "monetaryQuality": {
-        "previous": "PROXY",
-        "current": "PROXY"
-      }
-    }
-  ],
+  "factorChanges": [],
   "currencies": [
     {
       "ccy": "AUD",
