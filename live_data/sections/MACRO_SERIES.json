@@ -19490,7 +19490,9 @@
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         5176305.0,
@@ -19574,13 +19576,33 @@
         5757634.0,
         5592039.0,
         5549259.0,
-        5430070.0
+        5430070.0,
+        5328464.0,
+        5325717.0
       ],
       "unit": "100 million yen",
       "frequency": "M",
       "source_file": "JP_MONETARY_BASE_history.csv",
-      "last_date": "2026-08",
-      "last_value": 5430070.0
+      "last_date": "2026-10",
+      "last_value": 5325717.0,
+      "current_vintage_provenance": {
+        "status": "BOJ_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=MD01&startDate=201911&endDate=202611&code=MABS1AN11",
+        "source_database": "MD01",
+        "source_series_id": "MABS1AN11",
+        "source_title": "Monetary Base/Average Amounts Outstanding",
+        "source_json_sha256": "a8309470393a6ecdba7ab8b9667d3b30b1f52e12b7fd10ed335c6f9889469d63",
+        "historical_overlap_exact": 82,
+        "historical_overlap_audit": {
+          "overlap_count": 82,
+          "exact": 82,
+          "median_relative_error": 0.0,
+          "max_relative_error": 0.0
+        },
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T11:34:48.632710+00:00"
+      }
     },
     {
       "id": "JP_BOJ_CURRENT_ACCOUNT_BALANCES_history_value",
@@ -19668,7 +19690,9 @@
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         4053420.0,
@@ -19752,13 +19776,33 @@
         4552620.0,
         4397236.0,
         4353368.0,
-        4234230.0
+        4234230.0,
+        4136678.0,
+        4139317.0
       ],
       "unit": "100 million yen",
       "frequency": "M",
       "source_file": "JP_BOJ_CURRENT_ACCOUNT_BALANCES_history.csv",
-      "last_date": "2026-08",
-      "last_value": 4234230.0
+      "last_date": "2026-10",
+      "last_value": 4139317.0,
+      "current_vintage_provenance": {
+        "status": "BOJ_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=MD01&startDate=201911&endDate=202611&code=MABS1AN113",
+        "source_database": "MD01",
+        "source_series_id": "MABS1AN113",
+        "source_title": "Monetary Base/Current Account Balances/Average Amounts Outstanding",
+        "source_json_sha256": "6a83687d4d599de97bf4a6e13191368983852f2f318d5713fede6b01f63458d9",
+        "historical_overlap_exact": 82,
+        "historical_overlap_audit": {
+          "overlap_count": 82,
+          "exact": 82,
+          "median_relative_error": 0.0,
+          "max_relative_error": 0.0
+        },
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T11:34:48.632710+00:00"
+      }
     },
     {
       "id": "JP_BOJ_RESERVE_BALANCES_history_value",
