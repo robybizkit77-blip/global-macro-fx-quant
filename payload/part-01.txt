@@ -18884,7 +18884,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-04",
         "2026-05",
         "2026-06",
-        "2026-07"
+        "2026-07",
+        "2026-08",
+        "2026-09"
       ],
       "values": [
         107.9,
@@ -18968,13 +18970,26 @@ window.__GMFQ_DATA.MACRO_SERIES={
         102.5,
         102.6,
         104.6,
-        104.4
+        104.4,
+        101.9,
+        103.9
       ],
       "unit": "Index 2020=100",
       "frequency": "M",
       "source_file": "JP_IIP_history.csv",
-      "last_date": "2026-07",
-      "last_value": 104.4
+      "last_date": "2026-09",
+      "last_value": 103.9,
+      "current_vintage_provenance": {
+        "status": "METI_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "ESTAT_METI_IIP_1000000000_SA_2020",
+        "source_url": "https://www.e-stat.go.jp/stat-search/file-download?fileKind=0&statInfId=000040172363",
+        "source_workbook_sha256": "5c04e402354ffb527b4c66d34a79859f270d327a1e7fc100c31a18c5cfc280b4",
+        "historical_overlap": 82,
+        "exact_overlap": 82,
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T18:50:31.765676+00:00"
+      }
     },
     {
       "id": "JP_RETAIL_history_value",
@@ -19062,7 +19077,9 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-04",
         "2026-05",
         "2026-06",
-        "2026-07"
+        "2026-07",
+        "2026-08",
+        "2026-09"
       ],
       "values": [
         95.8,
@@ -19146,13 +19163,26 @@ window.__GMFQ_DATA.MACRO_SERIES={
         118.8,
         120.8,
         116.1,
-        118.5
+        118.5,
+        117.4,
+        116.7
       ],
       "unit": "Index 2020=100",
       "frequency": "M",
       "source_file": "JP_RETAIL_history.csv",
-      "last_date": "2026-07",
-      "last_value": 118.5
+      "last_date": "2026-09",
+      "last_value": 116.7,
+      "current_vintage_provenance": {
+        "status": "METI_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "ESTAT_METI_RETAIL_SA_2020",
+        "source_url": "https://www.e-stat.go.jp/stat-search/file-download?fileKind=0&statInfId=000031387999",
+        "source_workbook_sha256": "6d30a2bf019890029bccba95f7ed454819749aee7390e075a917052f6ad876c3",
+        "historical_overlap": 82,
+        "exact_overlap": 82,
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T18:50:31.765676+00:00"
+      }
     },
     {
       "id": "JP_CPI_CORE_YOY_history_value",
