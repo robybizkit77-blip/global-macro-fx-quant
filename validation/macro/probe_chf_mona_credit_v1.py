@@ -18,15 +18,21 @@ def main():
         assert len(old)==len(row["dates"])==len(row["values"])
         dimensions=fetch(BASE+cube+"/dimensions/en")
         print("MONA_DIMENSIONS",ident,json.dumps(dimensions,ensure_ascii=False)[:30000])
-        data=fetch(BASE+cube+"/data/json/en?"+urlencode({"fromDate":min(old),"toDate":"2026-11"}))
+        dims={x["id"]:{i["id"] for i in x["dimensionItems"]} for x in dimensions["dimensions"]}
+        selections={"KONSOLIDIERUNGSSTUFE":"B","INLANDAUSLAND":"I,T","WAEHRUNG":"T,CHF","FAELLIGKEIT":"T","BANKENGRUPPE":"A40"}
+        if "DECKUNG" in dims:selections.update(DECKUNG="T",SEKTORDECKUNG="T")
+        assert all(set(v.split(","))<=dims[k] for k,v in selections.items())
+        dimsel=",".join(k+"("+v+")" for k,v in selections.items())
+        data=fetch(BASE+cube+"/data/json/en?"+urlencode({"dimSel":dimsel,"fromDate":min(old),"toDate":"2026-11"}))
         print("MONA_STRUCTURE",ident,list(data),len(data.get("timeseries",[])))
         candidates=[]
         for s in data.get("timeseries",[]):
             obs={p["date"]:float(p["value"]) for p in s["values"] if p.get("value") not in (None,"")}
             if not set(old)<=set(obs):continue
             if not all(math.isfinite(obs[d]) for d in old):continue
-            err=[abs(obs[d]-v)/max(abs(v),1) for d,v in old.items()]
-            candidates.append({"metadata":s["metadata"],"overlap":len(err),"median_relative":statistics.median(err),"max_relative":max(err),"new":{d:v for d,v in obs.items() if max(old)<d<"2026-11"}})
+            for factor in (1,0.001,1000):
+                err=[abs(obs[d]*factor-v)/max(abs(v),1) for d,v in old.items()]
+                candidates.append({"metadata":s["metadata"],"factor":factor,"overlap":len(err),"median_relative":statistics.median(err),"max_relative":max(err),"new":{d:v*factor for d,v in obs.items() if max(old)<d<"2026-11"}})
         candidates.sort(key=lambda x:(x["median_relative"],x["max_relative"]))
         print("MONA_CANDIDATES",ident,json.dumps(candidates[:10],ensure_ascii=False))
     print("DIAGNOSTIC_ONLY_NO_CANONICAL_WRITES")
