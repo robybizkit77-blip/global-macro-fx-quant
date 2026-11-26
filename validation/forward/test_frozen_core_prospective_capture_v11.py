@@ -218,6 +218,26 @@ class ProspectiveAdmission(unittest.TestCase):
         self.assertIn("PAIR_CORE_G8_ORIENTATION_MISMATCH",
                       gate.assess(local(19), fx, setup, altered)["checks"])
 
+    def test_explicit_current_history_with_lagging_overlay(self):
+        fx, setup, core = minimal()
+        audit = setup["price_audit"]
+        audit.update(overlay_asof="2026-10-23",
+                     current_row_source="official history snapshot",
+                     source="ECB euro foreign exchange reference rates",
+                     history_status="CURRENT_OFFICIAL_HISTORY",
+                     history_rows=fx["row_count"], complete_return_values=140)
+        self.assertEqual(gate.assess(local(19),fx,setup,core)["checks"], [])
+        for key, wrong in (("current_row_source","overlay"),("history_rows",22),
+                           ("complete_return_values",139),("overlay_asof","2026-10-27"),
+                           ("history_status","STALE")):
+            altered=copy.deepcopy(setup)
+            altered["price_audit"][key]=wrong
+            self.assertIn("PAIR_PRICE_AUDIT_NOT_CERTIFIED",
+                          gate.assess(local(19),fx,altered,core)["checks"])
+        fx["rows"][-1]["JPY"]=None
+        self.assertIn("ECB_OFFICIAL_ROW_INTEGRITY_FAILED",
+                      gate.assess(local(19),fx,setup,core)["checks"])
+
     def test_ecb_date_label_does_not_certify_corrupt_last_row(self):
         fx, setup, core = minimal()
         fx["rows"][-1]["Date"] = "2026-10-23"
