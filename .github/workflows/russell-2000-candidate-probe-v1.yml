@@ -1,0 +1,17 @@
+name: Russell 2000 Candidate Source Probe V1
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/cross_asset/probe_russell_2000_candidate_v1.py'
+      - '.github/workflows/russell-2000-candidate-probe-v1.yml'
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate candidate cash-index history (read only)
+        run: python3 validation/cross_asset/probe_russell_2000_candidate_v1.py
