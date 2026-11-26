@@ -20,14 +20,17 @@ def prepare_row(row,ident,now,fetcher):
     code,title,f,unit,lo,hi,med_limit,max_limit=CONFIG[ident]
     need(row["id"]==ident and row["unit"]==unit and row["frequency"] in ("",f),"local identity mismatch")
     need(len(row["dates"])==len(row["values"])>=24 and row["last_date"]==row["dates"][-1] and row["last_value"]==row["values"][-1],"invalid local history")
-    groups={}
-    for d,v in zip(row["dates"],row["values"]):groups.setdefault(date.fromisoformat(d[:10]),[]).append(v)
-    mixed=any(len(v)>1 for v in groups.values())
+    segments=[{}]
+    for d,v in zip(row["dates"],row["values"]):
+        d=date.fromisoformat(d[:10])
+        if segments[-1] and d<=next(reversed(segments[-1])):segments.append({})
+        segments[-1][d]=v
+    mixed=len(segments)>1
     if mixed:
-        need(code=="DRTSCILM" and all(len(v)==2 for v in groups.values()),"ambiguous duplicate local dates")
-        # Two complete legacy columns were concatenated. Only accept one
-        # coherent historical column, never choose a different value per date.
-    old={d:v[0] for d,v in groups.items()}
+        need(code=="DRTSCILM" and len(segments)==2,"ambiguous duplicate local dates")
+        need(all(len(seg)>=24 and all(d.day==1 and d.month in (1,4,7,10) for d in seg) and all((b.year-a.year)*12+b.month-a.month==3 for a,b in zip(seg,list(seg)[1:])) for seg in segments),"invalid legacy SLOOS segment")
+        need(len(set(segments[0]) & set(segments[1]))>=24,"insufficient shared SLOOS history")
+    old={d:v for seg in reversed(segments) for d,v in seg.items()}
     meta_url="https://fred.stlouisfed.org/series/"+code
     meta,final=fetcher(meta_url);need(urlsplit(final).hostname=="fred.stlouisfed.org" and urlsplit(final).path.rstrip("/")=="/series/"+code,"wrong metadata endpoint")
     soup=BeautifulSoup(meta,"html.parser");head=norm(soup.title.get_text(" ",strip=True) if soup.title else "")
@@ -54,13 +57,13 @@ def prepare_row(row,ident,now,fetcher):
     need(all((b.year-a.year)*12+b.month-a.month==(3 if f=="Q" else 1) for a,b in zip(ds,ds[1:])),"source cadence gap")
     if mixed:
         comparisons=[]
-        for i in (0,1):
-            errors=[abs(obs[d]-v[i]) for d,v in groups.items()]
-            comparisons.append({"column":i,"median":statistics.median(errors),"max":max(errors),"exact":sum(e<=1e-6 for e in errors)})
+        for i,seg in enumerate(segments):
+            errors=[abs(obs[d]-v) for d,v in seg.items()]
+            comparisons.append({"column":i,"count":len(seg),"first":min(seg).isoformat(),"last":max(seg).isoformat(),"median":statistics.median(errors),"max":max(errors),"exact":sum(e<=1e-6 for e in errors)})
         print("SLOOS_LEGACY_DUPLICATE_COLUMN_PROOF",json.dumps(comparisons,sort_keys=True))
-        matched=[a for a in comparisons if a["median"]<=med_limit and a["max"]<=max_limit and a["exact"]>=.9*len(groups)]
+        matched=[a for a in comparisons if a["median"]<=med_limit and a["max"]<=max_limit and a["exact"]>=.9*a["count"]]
         need(len(matched)==1,"cannot uniquely identify historical SLOOS column")
-        old={d:v[matched[0]["column"]] for d,v in groups.items()}
+        old=segments[matched[0]["column"]]
     errors=[abs(obs[d]-v)/max(abs(v),1) if code in ("ULCNFB","OPHNFB") else abs(obs[d]-v) for d,v in old.items()]
     audit={"count":len(old),"exact":sum(abs(obs[d]-v)<=1e-6 for d,v in old.items()),"median_error":statistics.median(errors),"max_error":max(errors)}
     print("US_RESEARCH_HISTORICAL_OVERLAP",ident,json.dumps(audit,sort_keys=True))
@@ -69,7 +72,7 @@ def prepare_row(row,ident,now,fetcher):
     dates=[d.isoformat()+suffix for d in ds];vs=[obs[d] for d in ds];before=row["last_date"];prior=row.get("current_vintage_provenance",{})
     need(not prior.get("source_series_id") or prior["source_series_id"]==code,"source changed")
     changed=dates!=row["dates"] or vs!=row["values"] or prior.get("source_series_id")!=code
-    if changed:row.update(dates=dates,values=vs,last_date=dates[-1],last_value=vs[-1],current_vintage_provenance={"status":"FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT","source_series_id":code,"source_url":meta_url,"source_csv_url":url,"source_csv_sha256":sha256(raw).hexdigest(),"source_units_verified":u,"source_frequency":f,"legacy_duplicate_column_repair":mixed,"historical_overlap":audit,"source_series_first_release_PIT_certified":False,"historical_levels_may_be_revised_again":True,"runner_first_seen_utc":now.isoformat()})
+    if changed:row.update(dates=dates,values=vs,last_date=dates[-1],last_value=vs[-1],current_vintage_provenance={"status":"FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT","source_series_id":code,"source_url":meta_url,"source_csv_url":url,"source_csv_sha256":sha256(raw).hexdigest(),"source_units_verified":u,"source_frequency":f,"legacy_duplicate_column_repair":mixed,"historical_overlap":audit,"legacy_segment_comparisons":comparisons if mixed else None,"source_series_first_release_PIT_certified":False,"historical_levels_may_be_revised_again":True,"runner_first_seen_utc":now.isoformat()})
     return {"id":ident,"status":"READY" if changed else "NO_CHANGE","before":before,"after":dates[-1],"latest":vs[-1],"source_series_id":code,"overlap":audit}
 def prepare(current,*,now,fetcher=fetch):
     need(now.utcoffset() is not None,"aware clock required")
