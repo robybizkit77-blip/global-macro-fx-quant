@@ -51,9 +51,12 @@ const live=h.read({rates:read('live_data/sections/NATIVE_RATES_DATA.json'),
  chfResearch:read('site/fx-quant-v2/chf-snb-paired-history.json'),
  audDailyResearch:read('site/fx-quant-v2/aud-rba-f2-history-research.json'),
  ois:read('site/fx-quant-v2/ois-pricing-snapshot.json'),
- nzdDirectionalProxy:read('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json')},
+ nzdDirectionalProxy:read('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),
+ nzdReconciled:read('site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json'),
+ nzdPostroll:read('site/fx-quant-v2/nzd-b2-postroll-web-research.json')},
  new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),context);
 assert.equal(live.rows.length,12);
+assert.ok(live.rows.find(x=>x.name==='Fonti integrative · tassi e pricing').items.find(x=>x.label==='NZD · RBNZ B2 HTML/XLSX').day);
 assert.equal(live.rows.find(x=>x.name==='Fonti integrative · liquidità e credito').items.length,21);
 assert.ok(live.rows.find(x=>x.name==='Fonti integrative · liquidità e credito').items.every(x=>x.day), 'all registered supplemental liquidity dates present');
 console.log('DATA_HEALTH_LIVE_SOURCE_DIAGNOSTIC',JSON.stringify(live));
