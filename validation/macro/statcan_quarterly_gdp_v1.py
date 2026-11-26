@@ -1,5 +1,5 @@
 """StatCan expenditure GDP: archive dated bulletin and its quarterly table."""
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from hashlib import sha256
 from html.parser import HTMLParser
 from urllib.parse import urljoin
@@ -20,6 +20,8 @@ BASE = f"https://{HOST}/n1/daily-quotidien/"
 ARCHIVE = ROOT / "validation/macro/STATCAN_QUARTERLY_GDP_V1.json"
 SCHEMA = "GMFQ_STATCAN_QUARTERLY_GDP_V1"
 FIRST = "2026Q3"
+MAX_SCAN_DAYS = 10
+SETTLEMENT_DAYS = 2
 SEED_URL = BASE + "260828/dq260828a-eng.htm"
 ORDINALS = ("first", "second", "third", "fourth")
 MONTHS = "January February March April May June July August September October November December".split()
@@ -130,6 +132,15 @@ def archive_for(path):
         if r["next_release_day"] is not None and date.fromisoformat(r["next_release_day"]) <= day:
             raise ValueError("StatCan next release date invalid")
         last = r
+    cursor = data.get("discovery")
+    if cursor is not None:
+        expected = next_quarter(last["quarter"]) if last else FIRST
+        if (not isinstance(cursor,dict) or cursor.get("quarter") != expected
+                or not isinstance(cursor.get("checked_through"),str)):
+            raise ValueError("StatCan discovery cursor invalid")
+        checked = date.fromisoformat(cursor["checked_through"])
+        if last and checked <= date.fromisoformat(last["publisher_release_day"]):
+            raise ValueError("StatCan discovery cursor precedes latest edition")
     return data
 
 
@@ -161,11 +172,53 @@ def read_edition(url, quarter, today, fetch):
             "source_html_sha256":sha256(raw).hexdigest(),"table_sha256":sha256(table_raw).hexdigest()}
 
 
+def issue_url(day):
+    return daily_prefix(day) + f"dq{day.strftime('%y%m%d')}-eng.htm"
+
+
+def find_edition_on_day(day, quarter, today, fetch):
+    # Inspect the official daily index, not a guessed article suffix.
+    url = issue_url(day)
+    try:
+        raw = exact_fetch(url, fetch)
+    except HTTPError as exc:
+        if exc.code == 404:
+            return None
+        raise
+    parser = Links()
+    parser.feed(raw.decode("utf-8", errors="replace"))
+    prefix = daily_prefix(day)
+    pattern = re.escape(prefix) + r"dq" + day.strftime("%y%m%d") + r"[a-z]-eng\.htm"
+    candidates = sorted({urljoin(url,h) for h in parser.hrefs
+                         if re.fullmatch(pattern,urljoin(url,h))})
+    if not candidates:
+        raise Pending("STATCAN_DAILY_INDEX_ARTICLES_NOT_IDENTIFIED")
+    for article in candidates:
+        try:
+            return read_edition(article,quarter,today,fetch)
+        except Pending as exc:
+            if str(exc) != "STATCAN_GDP_BULLETIN_IDENTITY":
+                raise
+    return None
+
+
+def save_cursor(path,data,quarter,day):
+    data["discovery"] = {"quarter":quarter,"checked_through":day.isoformat()}
+    tmp=path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data,indent=2,sort_keys=True)+"\n",encoding="utf-8")
+    tmp.replace(path)
+
+
 def collect(now, *, path=ARCHIVE, fetch=retrieve, apply=False):
     data = archive_for(path)
     last = data["editions"][-1] if data["editions"] else None
     quarter = next_quarter(last["quarter"]) if last else FIRST
     today = now.astimezone(ROME).date()
+    cursor = data.get("discovery")
+    checked = date.fromisoformat(cursor["checked_through"]) if cursor else None
+    if checked and checked > today:
+        raise ValueError("StatCan discovery cursor from future")
+    progressed=checked
     try:
         if last is None:
             seed = read_edition(SEED_URL, "2026Q2", today, fetch)
@@ -175,43 +228,53 @@ def collect(now, *, path=ARCHIVE, fetch=retrieve, apply=False):
         else:
             hint = last["next_release_day"]
         if hint is None:
-            raise Pending("STATCAN_NEXT_RELEASE_DISCOVERY_REQUIRED")
-        day = date.fromisoformat(hint)
-        if today < day:
+            # No calendar hint: search from the first day after quarter close.
+            ny,nq = quarter_parts(next_quarter(quarter))
+            hint = date(ny,3*nq-2,1).isoformat()
+        expected = date.fromisoformat(hint)
+        if today < expected:
             return {"status":"AWAITING_STATCAN_RELEASE","next_quarter":quarter,"expected_release_day":hint}
-        # A Daily issue may contain multiple articles; never trust suffix alone.
-        # Bounded to first six on expected date; fail closed on a schedule change.
-        code = day.strftime("%y%m%d")
-        row = None
-        for letter in "abcdef":
-            try:
-                row = read_edition(daily_prefix(day)+f"dq{code}{letter}-eng.htm", quarter, today, fetch)
-                break
-            except HTTPError as error:
-                if error.code != 404:
-                    raise
-            except Pending as error:
-                if str(error) != "STATCAN_GDP_BULLETIN_IDENTITY":
-                    raise
-        if row is None:
-            raise Pending("STATCAN_EXPECTED_EDITION_NOT_FOUND")
+        start=max(expected,checked+timedelta(days=1) if checked else expected)
+        end=min(today,start+timedelta(days=MAX_SCAN_DAYS-1))
+        for i in range(max(0,(end-start).days+1)):
+            day=start+timedelta(days=i)
+            row=find_edition_on_day(day,quarter,today,fetch)
+            if row is not None:
+                if apply:
+                    data.pop("discovery",None)
+                    append_edition(path,data,row,now)
+                return {"status":"ARCHIVED" if apply else "VERIFIED_PREVIEW",**row}
+            if day<=today-timedelta(days=SETTLEMENT_DAYS):
+                progressed=day
+        if apply and progressed and progressed!=checked:
+            save_cursor(path,data,quarter,progressed)
+        return {"status":"AWAITING_STATCAN_RELEASE","next_quarter":quarter,
+                "expected_release_day":hint,"checked_through":progressed.isoformat() if progressed else None,
+                "catchup_pending":end<today}
     except (OSError, ValueError, Pending) as exc:
-        return {"status":"SOURCE_UNAVAILABLE_ARCHIVE_RETAINED","next_quarter":quarter,"reason":str(exc)}
-    if apply:
-        append_edition(path,data,row,now)
-    return {"status":"ARCHIVED" if apply else "VERIFIED_PREVIEW",**row}
+        if apply and progressed and progressed!=checked:
+            save_cursor(path,data,quarter,progressed)
+        return {"status":"SOURCE_UNAVAILABLE_ARCHIVE_RETAINED","next_quarter":quarter,
+                "reason":str(exc),"checked_through":progressed.isoformat() if progressed else None}
+
+
 
 
 def main():
     p=argparse.ArgumentParser()
     p.add_argument("--apply",action="store_true")
     p.add_argument("--verify-q2",action="store_true")
+    p.add_argument("--verify-index",action="store_true")
     a=p.parse_args()
     now=datetime.now(timezone.utc)
-    if a.verify_q2:
+    if a.verify_q2 or a.verify_index:
         if a.apply:
             p.error("verification is read-only")
-        print(json.dumps(read_edition(SEED_URL,"2026Q2",now.astimezone(ROME).date(),retrieve),sort_keys=True))
+        if a.verify_index:
+            row=find_edition_on_day(date(2026,8,28),"2026Q2",now.astimezone(ROME).date(),retrieve)
+        else:
+            row=read_edition(SEED_URL,"2026Q2",now.astimezone(ROME).date(),retrieve)
+        print(json.dumps(row,sort_keys=True))
     else:
         print(json.dumps(collect(now,apply=a.apply),sort_keys=True))
 
