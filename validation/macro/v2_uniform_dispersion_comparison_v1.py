@@ -83,6 +83,63 @@ def growth_comparison(rows, *, as_of):
     return out
 
 
+def domestic_panel(axes):
+    """Compare the same fixed domestic equation under two estimators.
+
+    The SD panel may use explicitly tagged BLS gap estimates only in this
+    separate research view. No change to the preregistered strict candidate.
+    """
+    from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
+        activity_class, price_class, indicative_regime, continuous_weight_interval,
+    )
+    expected = {c+"."+p for c in FX for p in ("growth", "labour", "inflation")}
+    if set(axes) != expected:
+        raise ValueError("exactly 24 G8 economic axes required")
+    result = {}
+    for c in FX:
+        coords, strict, quality = {}, {}, {}
+        for p in ("growth", "labour", "inflation"):
+            row = axes[c+"."+p]
+            sign = -1 if p == "labour" else 1
+            z, mad = row["sample_sd_z"], row["strict_mad_z"]
+            gap = row.get("separate_bls_gap_estimate")
+            tier = "COMPLETE_OBSERVATION_WINDOW_RESEARCH_ONLY"
+            if z is None and gap is not None:
+                if (c != "USD" or p == "growth" or
+                    gap["missing_value_imputed"] is not False or
+                    gap["eligible_for_live_scoring"] is not False or
+                    gap["missing_periods"] != ["2025-10"] or
+                    gap["prior_count"] != 24 or gap["calendar_months"] != 25):
+                    raise ValueError("invalid separate BLS estimate")
+                z = gap["sample_sd_z"]
+                tier = "BLS_GAP_ESTIMATE_RESEARCH_ONLY"
+            if z is None:
+                tier = "WITHHELD"
+            for v in (z, mad):
+                if v is not None and (type(v) not in (int, float) or not math.isfinite(v) or abs(v)>3):
+                    raise ValueError("invalid normalized research coordinate")
+            coords[p] = sign*z if z is not None else None
+            strict[p] = sign*mad if mad is not None else None
+            quality[p] = {"period": row["period"], "tier": tier,
+                          "growth_definition_caveats": row.get("growth_definition_caveats", [])}
+        def evaluate(values):
+            if any(v is None for v in values.values()):
+                return None
+            g, l, p = (values[k] for k in ("growth", "labour", "inflation"))
+            a = .5*g + .5*l
+            return {"activity": a, "activity_class": activity_class(a),
+                    "price_class": price_class(p), "regime": indicative_regime(a, p),
+                    "weight_sensitivity": continuous_weight_interval(g, l)}
+        alternative, original = evaluate(coords), evaluate(strict)
+        result[c] = {"sample_sd_axes": coords, "strict_mad_axes": strict,
+                     "quality": quality, "sample_sd_domestic": alternative,
+                     "strict_mad_domestic": original,
+                     "activity_class_agrees": (alternative["activity_class"] == original["activity_class"]
+                         if alternative is not None and original is not None else None),
+                     "cross_country_rank": None, "fx_strength": None}
+    return result
+
+
 def run(root=ROOT):
     load = lambda p: json.loads((root / p).read_text(encoding="utf-8"))
     series = load("live_data/sections/MACRO_SERIES.json")
@@ -159,6 +216,7 @@ def run(root=ROOT):
     all_axes = {**out, **growth}
     return {"schema": SCHEMA, "policy": POLICY, "as_of": today.isoformat(),
             "rows": out, "growth_rows": growth,
+            "domestic_panel_RESEARCH_ONLY": domestic_panel(all_axes),
             "strict_numeric_count": sum(r["strict_mad_z"] is not None for r in out.values()),
             "alternative_numeric_count": sum(r["sample_sd_z"] is not None for r in out.values()),
             "all_24_axis_strict_numeric_count": sum(r["strict_mad_z"] is not None for r in all_axes.values()),
