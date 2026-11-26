@@ -3,7 +3,7 @@ No first-release PIT claim, heatmap mutation or FX score promotion.
 Each source fails independently and retains the prior verified row.
 """
 from __future__ import annotations
-import argparse, copy, json, math, re
+import argparse, copy, json, math, re, statistics
 from datetime import datetime, timezone, date
 from hashlib import sha256
 from pathlib import Path
@@ -16,6 +16,7 @@ SOURCE=ROOT/"live_data/sections/MACRO_SERIES.json"
 # Exact local import identity, FRED series ID, metadata title and unit tokens,
 # expected canonical unit (blank only for previously unannotated imports).
 CONFIG={
+ "US_RRSFS_history_value":("RRSFS","US_RRSFS_history.csv","Advance Real Retail and Food Services Sales","Millions of 1982-84 CPI Adjusted Dollars","Millions of chained dollars"),
  "US_INDPRO_history_value":("INDPRO","US_INDPRO_history.csv","Industrial Production", "Index 2017=100","Index 2017=100"),
  "US_CPILFESL_history_value":("CPILFESL","US_CPILFESL_history.csv","Consumer Price Index for All Urban Consumers: All Items Less Food and Energy","Index 1982-1984=100","Index 1982-1984=100"),
  "US_PCEPILFE_history_value":("PCEPILFE","US_PCEPILFE_history.csv","Personal Consumption Expenditures Excluding Food and Energy","Index 2017=100","Index 2017=100"),
@@ -58,21 +59,21 @@ def metadata(raw,fred,title,unit):
 CORE_CPI_OFFICIAL_GAP="2025-10"
 CORE_CPI_GAP_SOURCE="https://www.bls.gov/cpi/additional-resources/2025-federal-government-shutdown-impact-cpi-faq.htm"
 
-def parse_core_cpi(raw,now):
+def parse_core_cpi(raw,now,fred="CPILFESL"):
     import csv
     from io import StringIO
     reader=csv.DictReader(StringIO(raw.decode("utf-8-sig")))
-    require(reader.fieldnames in (["observation_date","CPILFESL"],["DATE","CPILFESL"]),"core CPI CSV identity mismatch")
+    require(reader.fieldnames in (["observation_date",fred],["DATE",fred]),"core CPI CSV identity mismatch")
     values={}; missing=[]; seen=set()
     for r in reader:
         d=date.fromisoformat(r[reader.fieldnames[0]])
         stamp=d.isoformat(); m=stamp[:7]
         require(d.day==1 and d<=now.date() and m not in seen,"invalid core CPI monthly date")
         seen.add(m)
-        if r["CPILFESL"] in ("","."):
+        if r[fred] in ("","."):
             missing.append(m)
             continue
-        v=float(r["CPILFESL"])
+        v=float(r[fred])
         require(math.isfinite(v) and v>0,"invalid core CPI level")
         values[m]=v
     require(len(values)>=24 and list(values)==sorted(values),"insufficient/unsorted core CPI history")
@@ -91,8 +92,8 @@ def prepare_row(row,ident,now,fetcher):
     raw_csv,final=fetcher(csv_url)
     require(urlsplit(final).path=="/graph/fredgraph.csv","unexpected FRED CSV redirect")
     missing=[]
-    if fred=="CPILFESL":
-        lookup,missing=parse_core_cpi(raw_csv,now)
+    if fred in ("CPILFESL","RRSFS"):
+        lookup,missing=parse_core_cpi(raw_csv,now,fred)
     else:
         parsed=fred_monthly_csv(raw_csv,fred,now.date())
         lookup={r["date"][:7]:r["value"] for r in parsed["revised_vintage_monthly_history"]}
@@ -102,9 +103,9 @@ def prepare_row(row,ident,now,fetcher):
     require(set(str(x)[:7] for x in row["dates"])<=set(months),"source history loses existing periods")
     def ordinal(m):return int(m[:4])*12+int(m[5:7])
     gaps=[(a,b) for a,b in zip(months,months[1:]) if ordinal(b)-ordinal(a)!=1]
-    if fred=="CPILFESL" and gaps:
+    if fred in ("CPILFESL","RRSFS") and gaps:
         require(gaps==[("2025-09","2025-11")] and CORE_CPI_OFFICIAL_GAP in missing,
-                "unexpected core CPI missing observation")
+                "unexpected CPI-linked missing observation")
         require(CORE_CPI_OFFICIAL_GAP not in {str(x)[:7] for x in row["dates"]},
                 "canonical history contains incompatible October 2025 observation")
     else:
@@ -113,6 +114,13 @@ def prepare_row(row,ident,now,fetcher):
     ds=[m+"-01" if len(str(row["dates"][0]))==10 else m for m in months]
     vs=[lookup[m] for m in months]
     new_unit=old_unit or unit
+    if fred=="RRSFS":
+        # The legacy label incorrectly describes this CPI-deflated series as chained dollars.
+        # Require a full-window replacement and a level overlap sanity check, never splice.
+        overlap=[abs(float(v)/lookup[str(d)[:7]]-1) for d,v in zip(row["dates"],row["values"])]
+        require(len(overlap)>=24 and statistics.median(overlap)<=0.05 and max(overlap)<=0.10,
+                "RRSFS legacy overlap incompatible with CPI-deflated source")
+        new_unit=unit
     if fred=="INDPRO":
         new_unit="Index 2022=100" if "index 2022=100" in verified_units else "Index 2017=100"
     if fred in ("JTSHIR","JTSQUR"): new_unit="Rate, seasonally adjusted"
@@ -124,7 +132,7 @@ def prepare_row(row,ident,now,fetcher):
         "source_csv_sha256":sha256(raw_csv).hexdigest(),"source_metadata_sha256":sha256(raw_meta).hexdigest(),
         "source_units_verified":verified_units,"source_series_first_release_PIT_certified":False,
         "historical_levels_may_be_revised_again":True,"runner_first_seen_utc":now.isoformat()}
-    if fred=="CPILFESL" and gaps:
+    if fred in ("CPILFESL","RRSFS") and gaps:
         provenance.update(official_missing_periods=[CORE_CPI_OFFICIAL_GAP],
                           missing_period_source_url=CORE_CPI_GAP_SOURCE,
                           gap_not_imputed=True,
