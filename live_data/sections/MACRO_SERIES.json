@@ -27450,7 +27450,10 @@
         "2026-03-01",
         "2026-04-01",
         "2026-05-01",
-        "2026-06-01"
+        "2026-06-01",
+        "2026-07-01",
+        "2026-08-01",
+        "2026-09-01"
       ],
       "values": [
         699726.0,
@@ -27534,13 +27537,37 @@
         1247985.0,
         1249393.0,
         1250406.0,
-        1252761.0
+        1252761.0,
+        1254149.0,
+        1254963.0,
+        1255300.0
       ],
       "unit": "CAD millions",
       "frequency": "M",
       "source_file": "CA_MORTGAGE_OUTSTANDING_UNINSURED_history.csv",
-      "last_date": "2026-06-01",
-      "last_value": 1252761.0
+      "last_date": "2026-09-01",
+      "last_value": 1255300.0,
+      "current_vintage_provenance": {
+        "status": "BOC_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.bankofcanada.ca/valet/observations/V122667742/json?start_date=2019-09-01",
+        "source_series_id": "V122667742",
+        "source_metadata": {
+          "label": "Residential mortgages, uninsured, Total",
+          "description": "Mortgages - Outstanding balances",
+          "dimension": {
+            "key": "d",
+            "name": "Date"
+          },
+          "dateFormat": "monthly",
+          "metadata": {}
+        },
+        "source_json_sha256": "8712f9dc6bfb707d4b5e528864ded3eaf56d2cfbd3b70b6b81325a2d31b4de25",
+        "historical_overlap_exact": 82,
+        "period_semantics": "CALENDAR_MONTH_STORED_FIRST_DAY",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T14:12:58.595564+00:00"
+      }
     },
     {
       "id": "CA_SLOS_MORTGAGE_LENDING_history_value",
@@ -27741,7 +27768,10 @@
         "2026-03-01",
         "2026-04-01",
         "2026-05-01",
-        "2026-06-01"
+        "2026-06-01",
+        "2026-07-01",
+        "2026-08-01",
+        "2026-09-01"
       ],
       "values": [
         489280.0,
@@ -27818,20 +27848,44 @@
         890592.0,
         896416.0,
         897910.0,
-        900400.0,
-        912797.0,
-        906636.0,
-        913682.0,
-        920748.0,
-        922002.0,
-        927146.0,
-        937354.0
+        900725.0,
+        913021.0,
+        906795.0,
+        913900.0,
+        920923.0,
+        922171.0,
+        927358.0,
+        937138.0,
+        941686.0,
+        944614.0,
+        949456.0
       ],
       "unit": "CAD millions",
       "frequency": "M",
       "source_file": "CA_BUSINESS_LOANS_OUTSTANDING_history.csv",
-      "last_date": "2026-06-01",
-      "last_value": 937354.0
+      "last_date": "2026-09-01",
+      "last_value": 949456.0,
+      "current_vintage_provenance": {
+        "status": "BOC_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.bankofcanada.ca/valet/observations/V122667770/json?start_date=2019-09-01",
+        "source_series_id": "V122667770",
+        "source_metadata": {
+          "label": "Business loans, Total",
+          "description": "Credit extended to corporate sector - Outstanding balances",
+          "dimension": {
+            "key": "d",
+            "name": "Date"
+          },
+          "dateFormat": "monthly",
+          "metadata": {}
+        },
+        "source_json_sha256": "81a191d2c3b2d329917e901d13a6a2a97b33cd217291c54d807f42864c86728a",
+        "historical_overlap_exact": 74,
+        "period_semantics": "CALENDAR_MONTH_STORED_FIRST_DAY",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T14:12:58.595564+00:00"
+      }
     },
     {
       "id": "CA_SLOS_BUSINESS_LENDING_history_value",
@@ -28040,7 +28094,10 @@
         "2026-03-01",
         "2026-04-01",
         "2026-05-01",
-        "2026-06-01"
+        "2026-06-01",
+        "2026-07-01",
+        "2026-08-01",
+        "2026-09-01"
       ],
       "values": [
         3.83,
@@ -28107,30 +28164,54 @@
         5.92,
         5.76,
         5.49,
-        5.28,
-        5.13,
-        4.85,
-        4.88,
-        4.9,
+        5.29,
+        5.14,
+        4.86,
+        4.89,
         4.91,
-        4.84,
-        4.94,
-        4.68,
-        4.55,
-        4.39,
-        4.41,
+        4.93,
+        4.85,
+        4.96,
+        4.69,
+        4.56,
+        4.5,
+        4.53,
+        4.59,
+        4.51,
+        4.56,
+        4.54,
+        4.77,
+        4.47,
+        4.54,
         4.48,
-        4.39,
-        4.44,
-        4.4,
-        4.64,
-        4.33
+        4.45
       ],
       "unit": "Percent per annum",
       "frequency": "M",
       "source_file": "CA_BUSINESS_LOAN_RATE_NEW_history.csv",
-      "last_date": "2026-06-01",
-      "last_value": 4.33
+      "last_date": "2026-09-01",
+      "last_value": 4.45,
+      "current_vintage_provenance": {
+        "status": "BOC_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.bankofcanada.ca/valet/observations/V122667816/json?start_date=2019-09-01",
+        "source_series_id": "V122667816",
+        "source_metadata": {
+          "label": "Business loans, Total",
+          "description": "Credit extended to corporate sector for mortgage loans - Funds advanced",
+          "dimension": {
+            "key": "d",
+            "name": "Date"
+          },
+          "dateFormat": "monthly",
+          "metadata": {}
+        },
+        "source_json_sha256": "e4ff254ed829601ce4abb069e280620f0ec08740e1858599cf7106f79356d093",
+        "historical_overlap_exact": 64,
+        "period_semantics": "CALENDAR_MONTH_STORED_FIRST_DAY",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T14:12:58.595564+00:00"
+      }
     },
     {
       "id": "CA_BOC_TOTAL_ASSETS_history_value",
