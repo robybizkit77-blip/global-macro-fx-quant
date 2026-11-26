@@ -1,0 +1,20 @@
+name: JPY METI growth history source proof V1
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/probe_jpy_meti_growth_v1.py'
+      - '.github/workflows/jpy-meti-growth-proof-v1.yml'
+permissions:
+  contents: read
+jobs:
+  source-proof:
+    if: github.head_ref == 'research/jpy-meti-growth-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install openpyxl
+      - run: python -m validation.macro.probe_jpy_meti_growth_v1
