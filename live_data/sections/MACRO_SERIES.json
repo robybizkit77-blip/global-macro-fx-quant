@@ -11386,7 +11386,8 @@
         "2026-11-20 00:00:00+00:00",
         "2026-11-23 00:00:00+00:00",
         "2026-11-24 00:00:00+00:00",
-        "2026-11-25 00:00:00+00:00"
+        "2026-11-25 00:00:00+00:00",
+        "2026-11-26 00:00:00+00:00"
       ],
       "values": [
         129.3875,
@@ -11516,29 +11517,30 @@
         126.0771,
         125.7407,
         125.8404,
-        125.7648
+        125.7645,
+        125.9732
       ],
       "unit": "Index",
       "frequency": "D",
       "source_file": "EA_EER40_NOMINAL_history.csv",
-      "last_date": "2026-11-25 00:00:00+00:00",
-      "last_value": 125.7648,
+      "last_date": "2026-11-26 00:00:00+00:00",
+      "last_value": 125.9732,
       "current_vintage_provenance": {
         "status": "ECB_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_url": "https://data-api.ecb.europa.eu/service/data/EXR/D.E03.EUR.EN00.A?format=csvdata&startPeriod=2026-06-01",
         "source_series_id": "EXR.D.E03.EUR.EN00.A",
-        "source_csv_sha256": "541d4bdf81e2ad52c715156f4099ca902fc975788ecc7e5f53733bd52694c86c",
-        "historical_overlap_exact": 81,
+        "source_csv_sha256": "836e78437b8195d4ff4e878b1848bc9146add1f2a20250842be0afa83dddc7d2",
+        "historical_overlap_exact": 127,
         "historical_overlap_audit": {
-          "count": 82,
-          "exact": 81,
+          "count": 128,
+          "exact": 127,
           "median_scaled_error": 0.0,
-          "max_scaled_error": 2.8724477913276456e-05
+          "max_scaled_error": 2.3854051371746954e-06
         },
         "no_synthetic_dates": true,
         "source_series_first_release_PIT_certified": false,
         "historical_levels_may_be_revised_again": true,
-        "runner_first_seen_utc": "2026-11-26T11:34:29.675974+00:00"
+        "runner_first_seen_utc": "2026-11-26T15:42:22.472285+00:00"
       }
     },
     {
