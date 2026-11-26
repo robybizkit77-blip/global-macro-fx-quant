@@ -237,8 +237,21 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
                  ROOT / "live_data/sections/MACRO_SERIES.json",
                  ROOT / "live_data/sections/MACRO_THERMOMETER_DATA.json"]
         before = {str(p): p.read_bytes() for p in paths}
+        # Compare the same explicit-date issuer archive inputs.
+        from datetime import timezone
+        from validation.macro.recurring_official_actuals_v1 import validated_record
+        raw = load("NEWS_PULSE_OPERATIONAL").get("recurring_official_archive", [])
+        now = datetime.now(timezone.utc)
+        releases = [validated_record(row, now) for row in raw]
+        releases = [row for row in releases if row["as_of"] < self.asof and
+                    row["first_runner_observed_at_utc"][:10] < self.asof]
+        expected = build(self.observed, self.heat, self.legacy, self.setup,
+                         as_of=self.asof, issuer_releases=releases)
         again = run(as_of=self.asof)
-        self.assertEqual(self.result["receipt_sha256"], again["receipt_sha256"])
+        self.assertEqual(expected, again)
+        self.assertEqual(again, run(as_of=self.asof))
+        self.assertEqual(self.result, build(self.observed, self.heat, self.legacy,
+                                           self.setup, as_of=self.asof))
         self.assertEqual(before, {str(p): p.read_bytes() for p in paths})
 
 
