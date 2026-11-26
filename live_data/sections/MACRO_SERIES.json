@@ -28984,7 +28984,9 @@
         "2026-05-01",
         "2026-06-01",
         "2026-07-01",
-        "2026-08-01"
+        "2026-08-01",
+        "2026-09-01",
+        "2026-10-01"
       ],
       "values": [
         117.12,
@@ -29068,13 +29070,39 @@
         113.46,
         111.48,
         111.11,
-        111.87
+        111.87,
+        111.39,
+        111.13
       ],
       "unit": "Index",
       "frequency": "M",
       "source_file": "CA_CEER_BROAD_NOMINAL_history.csv",
-      "last_date": "2026-08-01",
-      "last_value": 111.87
+      "last_date": "2026-10-01",
+      "last_value": 111.13,
+      "current_vintage_provenance": {
+        "status": "BOC_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.bankofcanada.ca/valet/observations/CEER_BROADNM/json?start_date=2019-11-01",
+        "source_series_id": "CEER_BROADNM",
+        "source_metadata": {
+          "label": "Monthly nominal Canadian effective exchange rates",
+          "description": "The monthly value of the nominal Canadian effective exchange rate (CEER) index, calculated using a weighted average of bilateral exchange rates against a basket of major trading partners’ currencies. The index is set to 100 for the base year 1999.",
+          "dimension": {
+            "key": "d",
+            "name": "Date"
+          },
+          "dateFormat": "monthly",
+          "metadata": {
+            "unit": "Index (2010 = 100)",
+            "frequency": "Monthly"
+          }
+        },
+        "source_json_sha256": "1667df339e2b35ab8c7c211cea006432e2731a6301664983d0e3e1597cf5455b",
+        "historical_overlap_exact": 82,
+        "period_semantics": "CALENDAR_MONTH_STORED_FIRST_DAY",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T15:00:11.003616+00:00"
+      }
     },
     {
       "id": "CAD_RATES_2016_2026_10Y",
