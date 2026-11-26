@@ -14,6 +14,8 @@ on:
       - 'validation/forward/test_observe_v2_research_ecb_reference_returns_v1.py'
       - 'validation/forward/observe_v2_quality_aware_ecb_reference_returns_v1.py'
       - 'validation/forward/observe_v2_uniform_macro_ecb_reference_returns_v1.py'
+      - 'validation/forward/audit_uniform_macro_daily_v1.py'
+      - 'validation/forward/test_audit_uniform_macro_daily_v1.py'
       - 'validation/forward/test_observe_v2_uniform_macro_ecb_reference_returns_v1.py'
       - 'validation/forward/capture_v2_uniform_macro_prospective_v1.py'
       - 'validation/forward/test_observe_v2_quality_aware_ecb_reference_returns_v1.py'
@@ -68,6 +70,7 @@ jobs:
           python -m unittest validation.forward.test_observe_v2_research_ecb_reference_returns_v1 -v
           python -m unittest validation.forward.test_observe_v2_quality_aware_ecb_reference_returns_v1 -v
           python -m unittest validation.forward.test_observe_v2_uniform_macro_ecb_reference_returns_v1 -v
+          python -m unittest validation.forward.test_audit_uniform_macro_daily_v1 -v
           python -m validation.forward.observe_v2_uniform_macro_ecb_reference_returns_v1 --receipt /tmp/v2-uniform-reference-ci.json
           python -m unittest validation.forward.test_audit_v2_prospective_cohort_independence_v1 -v
       - name: Confirm current repository has no faux matured outcomes
@@ -412,4 +415,17 @@ jobs:
           else:
               print('FORWARD_DAILY_CORE_QA_COVERAGE_VERIFIED',d['local_date_rome'])
           PY
+          exit "$rc"
+
+      - name: Independently attest durable uniform Macro capture after reference persistence
+        if: ${{ always() && steps.gate.outputs.valid == 'true' }}
+        shell: bash
+        run: |
+          set +e
+          python -m validation.forward.audit_uniform_macro_daily_v1 > /tmp/uniform-macro-durable-audit.json
+          rc=$?
+          set -e
+          cat /tmp/uniform-macro-durable-audit.json
+          echo '### Uniform Macro durable capture (research only)' >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/uniform-macro-durable-audit.json >> "$GITHUB_STEP_SUMMARY"
           exit "$rc"
