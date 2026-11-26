@@ -28,6 +28,8 @@ on:
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
       - 'site/fx-quant-v2/nzd-b2-postroll-web-research.json'
       - 'site/fx-quant-v2/tassi.html'
+      - 'site/fx-quant-v2/assets/rates-working-model-v1.js'
+      - 'validation/qa_fxv2_rates_working_v1.cjs'
       - '.github/workflows/fxv2-chf-nzd-benchmark-research.yml'
   push:
     branches: [main]
@@ -56,6 +58,8 @@ on:
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
       - 'site/fx-quant-v2/nzd-b2-postroll-web-research.json'
       - 'site/fx-quant-v2/tassi.html'
+      - 'site/fx-quant-v2/assets/rates-working-model-v1.js'
+      - 'validation/qa_fxv2_rates_working_v1.cjs'
       - '.github/workflows/fxv2-chf-nzd-benchmark-research.yml'
   schedule:
     # Early source attempt at 06:30 Europe/Rome before the 08:00 V2 check.
@@ -106,6 +110,7 @@ jobs:
           python3 validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py
           python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
           python3 validation/rates/test_build_fxv2_chf_snb_history_feed_v1.py
+          node validation/qa_fxv2_rates_working_v1.cjs
       - name: Prove upstream Rates actually executed dated market-source audit
         id: parent_rates
         if: github.event_name == 'workflow_run'
