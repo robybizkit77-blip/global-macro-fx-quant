@@ -118,6 +118,39 @@ def run(root=ROOT):
                 result["economic_polarity_sample_sd_z"] = (
                     -cmp["sample_sd_z"] if dim == "labour" and cmp["sample_sd_z"] is not None
                     else cmp["sample_sd_z"])
+            # The official BLS non-release is already independently scoped by
+            # the existing one-gap research policy. Keep strict outputs null.
+            if c == "USD" and strict["missing_prior_periods"]:
+                from validation.macro.v2_us_shutdown_gap_research_v1 import (
+                    shadow_gap_estimate, MAX_PRIOR_CALENDAR_MONTHS,
+                    TRAIN_PRIOR_ACTUAL_N,
+                )
+                gap = shadow_gap_estimate(dim, reg, row, heat["currencies"][c][dim], strict, today)
+                result["separate_bls_gap_estimate"] = None
+                if gap["status"] == "BLS_SHUTDOWN_GAP_AWARE_RESEARCH_ESTIMATE_NOT_PIT":
+                    grouped, _ = normalized_source(row, "M")
+                    data = transformed_series(grouped, reg["transformation"])
+                    newest = max(data)
+                    prior = [data[i][1] for i in range(newest-MAX_PRIOR_CALENDAR_MONTHS, newest)
+                             if i in data]
+                    if len(prior) != TRAIN_PRIOR_ACTUAL_N:
+                        raise ValueError(key + ": invalid gap training count")
+                    cmp = compare(prior, data[newest][1])
+                    if cmp["strict_mad_z"] != gap["estimated_research_robust_z"]:
+                        raise ValueError(key + ": gap comparator drift")
+                    z = cmp["sample_sd_z"]
+                    result["separate_bls_gap_estimate"] = {
+                        "status": "OBSERVED_24_OF_25_MONTHS_RESEARCH_ESTIMATE_NOT_PIT",
+                        "sample_sd_z": z,
+                        "sample_sd_z_unclipped": cmp["sample_sd_z_unclipped"],
+                        "economic_polarity_sample_sd_z": -z if dim == "labour" and z is not None else z,
+                        "prior_count": len(prior),
+                        "calendar_months": MAX_PRIOR_CALENDAR_MONTHS,
+                        "missing_periods": gap["missing_calendar_periods"],
+                        "official_evidence_url": gap["official_evidence_url"],
+                        "missing_value_imputed": False,
+                        "eligible_for_live_scoring": False,
+                    }
             out[key] = result
     from datetime import timezone
     from validation.macro.v2_g8_gdp_unified_web_research_v1 import unified_research_rows
@@ -133,6 +166,9 @@ def run(root=ROOT):
             "complete_alternative_countries": [c for c in FX if all(
                 all_axes[c+"."+dim]["sample_sd_z"] is not None
                 for dim in ("growth", "labour", "inflation"))],
+            "separate_bls_gap_alternative_estimate_count": sum(
+                (r.get("separate_bls_gap_estimate") or {}).get("sample_sd_z") is not None
+                for r in out.values()),
             "mixed_evidence_classes_not_synchronized_PIT_panel": True,
             "current_revised_not_historical_PIT": True, "growth_not_in_scope": False,
             "safe_to_publish_D": False, "safe_to_update_pairs": False,
