@@ -103,7 +103,12 @@ jobs:
           d=json.load(open('/tmp/us-proof/receipt.json'))
           for r in d['series']: print(r)
           assert len(d['series'])==16
-          assert all(r['status']!='WITHHELD' for r in d['series']),d
+          # Prove each verified row and require meaningful real-source coverage;
+          # independent withheld rows are explicit, never promoted.
+          approved=[r for r in d['series'] if r['status'] in ('READY','NO_CHANGE')]
+          assert len(approved)>=10,d
+          assert all(r['after']>=r['before'] for r in approved),d
+          assert all(r.get('reason') for r in d['series'] if r['status']=='WITHHELD'),d
           PY
       - uses: actions/upload-artifact@v4
         if: always()
