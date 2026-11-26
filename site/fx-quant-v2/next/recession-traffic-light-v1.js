@@ -638,7 +638,18 @@ function annualRateContext(catalog,today,country,mapping){
    }
    const keys=[...records.keys()].sort((a,b)=>a-b);
    const latest=keys.at(-1);if(latest===undefined)return missing;
-   const k=index&&src.exactLagRecovery===true?keys.findLast(j=>records.has(j-12)):latest;
+   // For the explicitly documented official US CPI missing October 2025 base,
+   // retain the latest exact annual comparison; never estimate the missing month.
+   const provenance=src.current_vintage_provenance;
+   const expectedId=id==='US_CPIAUCSL_history_value'?'CPIAUCSL':id==='US_CPILFESL_history_value'?'CPILFESL':null;
+   const baseKey=latest-12,baseYear=Math.floor(baseKey/12),baseMonth=baseKey%12+1;
+   const basePeriod=baseYear+'-'+String(baseMonth).padStart(2,'0');
+   const documentedGap=country==='USD'&&index&&expectedId&&
+     provenance?.status==='FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT'&&
+     provenance.source_series_id===expectedId&&provenance.gap_not_imputed===true&&
+     Array.isArray(provenance.official_missing_periods)&&provenance.official_missing_periods.includes(basePeriod)&&
+     !records.has(baseKey);
+   const k=index&&(src.exactLagRecovery===true||documentedGap)?keys.findLast(j=>records.has(j-12)):latest;
    if(k===undefined)return missing;
    const current=records.get(k),prior=records.get(k-months);
    const rate=j=>{
@@ -881,7 +892,7 @@ function countryHistories(catalog,today,country,overlay,rows,context){
  const inflation=(INFLATION_MAP[country]||[]).filter(([,label])=>/headline|core|trimmed|median|\btrim\b/i.test(label)).map(([id,label,freq,index])=>{
    const x=context.inflation.find(z=>z.id===id);
    let src=inflationLocal.find(z=>z.id===id);
-   if(x?.annualGap&&src){const n=src.dates.findIndex(p=>p>x.period);if(n>=0)src={...src,dates:src.dates.slice(0,n),values:src.values.slice(0,n)};}
+   if(x?.annualGap&&src){const n=src.dates.findIndex(p=>(parsePeriod(p)||'').slice(0,7)>x.period);if(n>=0)src={...src,dates:src.dates.slice(0,n),values:src.values.slice(0,n)};}
    return x?.available?series(label,src,freq,'% a/a',{annualize:index,expected:x.value,period:x.period,stale:x.stale,source:x.source}):null;
  }).filter(Boolean);
  const wages=context.wages.filter(x=>x.available).map(x=>{

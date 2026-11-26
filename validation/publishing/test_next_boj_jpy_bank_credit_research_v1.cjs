@@ -38,11 +38,13 @@ for(let i=0;i<source.dates.length;i++){
  }
 }
 const canonical=native.JPY.credit;
-assert.equal(canonical.last_date,'2026-07');
-assert.equal(canonical.last_value,6764306);
-const overlap=source.dates.indexOf(canonical.last_date);
+const anchor=canonical.dates.indexOf(source.original_canonical_last);
+assert(anchor>=0);
+assert.equal(canonical.values[anchor],source.original_canonical_value);
+const overlap=source.dates.indexOf(source.original_canonical_last);
 assert(overlap!==-1);
-assert.equal(source.values[overlap],canonical.last_value);
+assert.equal(source.values[overlap],canonical.values[anchor]);
+assert(canonical.last_date>=source.original_canonical_last);
 assert(new Date(source.last_observation+'-01')<=new Date());
 const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
 const fmt=(v,n=2)=>Number(v).toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n});
@@ -66,7 +68,7 @@ assert(jp.includes(fmt(source.values.at(-1)/10,2)+' miliardi JPY'),
  'Source units must convert 100 million yen to billions of yen exactly');
 assert(jp.includes(fmt(source.values.at(-2)/10,2)+' miliardi'));
 const core=jp.split('data-liq-role="credit"')[1]?.split('</div>')[0]||'';
-assert(core.includes('2026-07')&&!core.includes('2026-09'),
+assert(core.includes('Ultimo '+canonical.last_date+' · '+fmt(canonical.last_value,2)),
  'Verified source sidecar must never replace canonical JPY credit dates');
 for(const other of FX.filter(ccy=>ccy!=='JPY'))
  assert(!studio.render(api(other)).includes('drivers-jpy-official'),

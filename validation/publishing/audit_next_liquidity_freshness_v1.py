@@ -66,15 +66,24 @@ def compare_labeled_sloos(runtime, research):
     values_numeric = (type(base.get("last_value")) in (int, float) and
                       other is not None and type(other.get("last_value")) in (int, float))
     mismatch = same_period and values_numeric and abs(base["last_value"] - other["last_value"]) > 0.000001
+    # Compare the native date against the research history, not against a
+    # different/latest quarter. Matching values alone never certify the mapping.
+    overlap = [(d, v) for d, v in zip(other.get("dates", []), other.get("values", []))
+               if observed_date(d) == observed_date(base.get("last_date"))] if other else []
+    matched = len(overlap) == 1 and type(overlap[0][1]) in (int, float) and values_numeric
+    overlap_value = overlap[0][1] if matched else None
     return {
         "same_period": same_period,
+        "native_period_overlap_found": matched,
+        "native_period_overlap_value": overlap_value,
+        "native_period_overlap_agrees": bool(matched and abs(overlap_value-base["last_value"]) <= 0.000001),
         "same_series_id_proven": False,
         "different_labeled_values": bool(mismatch),
         "runtime_value": base.get("last_value") if mismatch else None,
         "research_value": other.get("last_value") if mismatch else None,
         "runtime_date": base.get("last_date"),
         "research_date": other.get("last_date") if other else None,
-        "resolution": "WITHHELD_PENDING_EXACT_VARIANT" if mismatch else "NO_OBSERVED_LABEL_CONFLICT",
+        "resolution": "WITHHELD_PENDING_EXACT_VARIANT",
     }
 
 def separate_source_inventory(root, today, runtime):
@@ -183,9 +192,11 @@ def audit(*, today=None, root=ROOT):
                 "eligible_to_claim_current_fx_transmission": False
             })
     conflict = compare_labeled_sloos(runtime, research)
-    assert conflict["different_labeled_values"], (
-        "SLOOS label-period discrepancy changed: review sources/variant before clearing quarantine"
+    assert conflict["native_period_overlap_found"], (
+        "SLOOS native observation cannot be reconciled with the research history"
     )
+    assert conflict["same_series_id_proven"] is False and conflict["resolution"] == "WITHHELD_PENDING_EXACT_VARIANT"
+    assert source_registry.get("USD.conditions", {}).get("automation_ready") is not True or conflict["same_series_id_proven"] is False
     assert "VARIANT_NOT_ALIGNED" in (
         root / GATE.relative_to(ROOT)).read_text(encoding="utf-8"), "SLOOS quarantine missing"
     cad = [x for x in research["CAD"] if x.get("id") == "CA_BUSINESS_LOANS_OUTSTANDING_history_value"]
@@ -222,7 +233,7 @@ def markdown(report):
         f"**Canali:** {report['channels']} · storici: {report['historical_periods']} · assenti: {report['missing_series']} · mappatura/automazione non pronta nello snapshot: {report['not_source_mapping_ready']}",
         "",
         "## Criticità da risolvere",
-        "- **USD SLOOS:** la variante del feed storico resta sospesa per la discrepanza tra valori. La scheda USD mostra separatamente la serie DRTSCILM quando è verificata.",
+        "- **USD SLOOS:** la mappatura del feed storico resta sospesa in attesa di certificazione della variante; l’accordo sul periodo comune non certifica da solo la fonte. La scheda USD mostra separatamente DRTSCILM quando verificata.",
         "- **CAD credito:** presente solo una candidata nel dataset di ricerca; non promossa al feed operativo.",
         "- **Acquisizione:** una mappatura fonte pronta non dimostra aggiornamento eseguito; non presentare i feed come live.",
         "",
@@ -251,6 +262,15 @@ def selftest():
     assert observed_date("impossibile") is None
     assert threshold({"frequency": "QUARTERLY"}) == 135
     assert threshold({"frequency": "WEEKLY"}) == 21
+    sample_runtime={"USD":{"conditions":{"last_date":"2026-07-01","last_value":0}}}
+    sample_research={"USD":[{"id":"US_SLOOS_CI_LARGE_MIDDLE_history_value",
+        "last_date":"2026-10-01","last_value":1.7,"dates":["2026-07-01","2026-10-01"],"values":[0,1.7]}]}
+    comparison=compare_labeled_sloos(sample_runtime,sample_research)
+    assert comparison["native_period_overlap_agrees"] and not comparison["same_period"]
+    assert comparison["resolution"]=="WITHHELD_PENDING_EXACT_VARIANT"
+    sample_research["USD"][0]["values"][0]=2
+    assert not compare_labeled_sloos(sample_runtime,sample_research)["native_period_overlap_agrees"]
+    assert compare_labeled_sloos(sample_runtime,sample_research)["resolution"]=="WITHHELD_PENDING_EXACT_VARIANT"
     data = audit(today=date(2026, 11, 24))
     assert data["channels"] == 24 and data["missing_series"] >= 3
     assert data["sloos_variant"]["resolution"] == "WITHHELD_PENDING_EXACT_VARIANT"

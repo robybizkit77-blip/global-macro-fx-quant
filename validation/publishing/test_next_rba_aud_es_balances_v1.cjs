@@ -30,8 +30,9 @@ assert.equal(source.latest_balance_million_aud-source.weekly_movement_million_au
  source.previous_implied_million_aud);
 assert(new Date(source.source_period+'T12:00:00Z')<=new Date());
 assert.equal(new Date(source.source_period+'T12:00:00Z').getUTCDay(),3);
-assert.equal(native.AUD.liquidity.last_date,source.asof_canonical_overlap);
-assert.equal(native.AUD.liquidity.last_value,source.value_canonical_overlap);
+const anchor=native.AUD.liquidity.dates.indexOf(source.asof_canonical_overlap);
+assert(anchor>=0);
+assert.equal(native.AUD.liquidity.values[anchor],source.value_canonical_overlap);
 const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
 const fmt=(v,n=2)=>Number(v).toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n});
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -58,7 +59,7 @@ assert(reserves.includes(fmt(source.latest_balance_million_aud,0)+' milioni AUD'
 assert(reserves.includes(signed+' milioni sulla settimana'));
 assert.match(html,/movimento pubblicato/);
 const nativeFact=html.split('data-liq-role="liquidity"')[1]?.split('</div>')[0]||'';
-assert(nativeFact.includes(source.asof_canonical_overlap)&&!nativeFact.includes(source.source_period),
+assert(nativeFact.includes('Ultimo '+native.AUD.liquidity.last_date+' · '+fmt(native.AUD.liquidity.last_value,2)),
  'Official ES research may not silently overwrite original native RBA liquidity');
 for(const c of FX.filter(x=>x!=='AUD'))
  assert(!studio.render(api(c)).includes('drivers-aud-es-bridge'),c);

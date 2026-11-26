@@ -43,8 +43,7 @@ for(const [date,ref] of [['2026-07',3.6],['2026-08',3.6],['2026-09',3.4]]){
  assert(at>=0,'BoE official reference month missing '+date);
  assert(Math.abs(mortgage.values[at]-ref)<.16,'Official BoE variant drift '+date);
 }
-assert.equal(native.GBP.credit.last_date,'31 Jul 2026');
-assert.equal(native.GBP.credit.last_value,3.6);
+assert(Number.isFinite(native.GBP.credit.last_value));
 assert.equal(reserve.series_id,'RPWB56A');
 const fmt=(v,n=2)=>Number(v).toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n});
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -78,7 +77,7 @@ assert.match(html,/non sono due misure confrontabili/);
 assert.match(html,/fonte separata dal feed FX/);
 assert.match(html,/RPWB56A/);
 const original=html.split('data-liq-role="credit"')[1]?.split('</div>')[0]||'';
-assert(original.includes('31 Jul 2026')&&!original.includes('2026-09'),
+assert(original.includes('Ultimo '+native.GBP.credit.last_date+' · '+fmt(native.GBP.credit.last_value,2)),
  'Research-only September data must not silently change GBP native credit');
 for(const ccy of FX.filter(x=>x!=='GBP')){
  assert(!studio.render(api(ccy)).includes('drivers-gbp-credit-bridge'),

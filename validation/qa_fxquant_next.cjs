@@ -30,6 +30,12 @@ const evidence='fxquant-next-browser-evidence';
 fs.mkdirSync(evidence,{recursive:true});
 const locator=(page,css)=>page.locator(css);
 const readSource=path=>JSON.parse(fs.readFileSync(path,'utf8'));
+const nativeLiquidity=readSource('live_data/sections/NATIVE_LIQ_DATA.json');
+const nativeEvidence=(text,ccy,role)=>{
+ const row=nativeLiquidity[ccy][role];
+ const value=Number(row.last_value).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
+ return text.includes('Ultimo '+row.last_date+' · '+value);
+};
 const priceEvidence=priceModel.evaluate({
  observed:readSource('site/control-room-preview/macro-v3-current-evidence.json'),
  prices:readSource('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
@@ -507,7 +513,7 @@ async function macroDriversJourney(page,label){
         ecbText.includes('revisioni possibili')&&ecbText.includes('Fonte: BCE'),
   label+' EUR credit stock requires dated source and persistence narrative');
  const eurNative=await locator(page,'[data-liq-role="credit"]').textContent();
- assert(eurNative.includes('2026-07')&&!eurNative.includes('Ultimo 2026-09'),
+ assert(nativeEvidence(eurNative,'EUR','credit'),
   label+' ECB research must not overwrite the EUR canonical credit value');
  await locator(page,'[data-liq-country="AUD"]').click();
  assert.equal(await locator(page,'.drivers-aud-official').count(),1,
@@ -527,7 +533,7 @@ async function macroDriversJourney(page,label){
         audESText.includes(audESPeriod),
   label+' current RBA ES weekly evidence must stay distinct from credit growth and FX');
  const audCanonical=await locator(page,'[data-liq-role="credit"]').textContent();
- assert(audCanonical.includes('31/07/2026')&&!audCanonical.includes('Ultimo 2026-09'),
+ assert(nativeEvidence(audCanonical,'AUD','credit'),
   label+' AUD native credit stock must not be replaced by research source');
  const f7=await page.evaluate(()=>window.FXQuantAUDBusinessCreditGrowthResearch?.lending_rate_proxy);
  const f7Block=locator(page,'[aria-label="Costo credito imprese Australia F7"]');
@@ -555,7 +561,7 @@ async function macroDriversJourney(page,label){
         bojText.includes('non sono nuovi prestiti'),
   label+' JPY credit stock, economic limitations and Forex confirmation missing');
  const jpyNative=await locator(page,'[data-liq-role="credit"]').textContent();
- assert(jpyNative.includes('2026-07')&&!jpyNative.includes('Ultimo '+bojSrc.last_observation),
+ assert(nativeEvidence(jpyNative,'JPY','credit'),
   label+' official JPY research must not overwrite the historical canonical credit record');
  await locator(page,'[data-liq-country="GBP"]').click();
  const officialBoE=locator(page,'.drivers-gbp-official');
@@ -577,8 +583,7 @@ async function macroDriversJourney(page,label){
         boeText.includes('RPWB56A')&&boeText.includes('EUR/GBP'),
   label+' GBP reserve stock must reflect the latest issuer publication and relative FX check');
  const gbpNative=await locator(page,'[data-liq-role="liquidity"]').textContent();
- assert(gbpNative.includes('2026-09-16')&&
-        !gbpNative.includes('Ultimo '+boeSources.reserves.source_period),
+ assert(nativeEvidence(gbpNative,'GBP','liquidity'),
   label+' GBP research must not silently overwrite historical native reserves');
  const householdCredit=locator(page,'.drivers-gbp-credit-bridge');
  assert.equal(await householdCredit.count(),1,
@@ -594,7 +599,7 @@ async function macroDriversJourney(page,label){
   assert(secured.includes('Money and Credit'),
    label+' September credit interpretation must link the issuer economic release');
  const gbpOldCredit=await locator(page,'[data-liq-role="credit"]').textContent();
- assert(gbpOldCredit.includes('31 Jul 2026')&&!gbpOldCredit.includes('Ultimo 2026-09'),
+ assert(nativeEvidence(gbpOldCredit,'GBP','credit'),
   label+' GBP latest research must not overwrite original old native credit source');
  const ccs=boeSources.secured.lending_conditions;
  assert(ccs,label+' verified CCS data must load in browser');

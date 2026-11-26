@@ -49,7 +49,7 @@ assert.match(cad,/fonte ufficiale canadese separata/i);
 assert.match(cad,/stock bancario, non il flusso di nuovi prestiti/i);
 assert.match(cad,/non certifica/i);
 assert.match(cad,/V122667770/);
-assert.match(cad,/2026-08/);
+assert(cad.includes(source.latest_observation),'Render current official source date');
 assert.match(cad,/Fonte: Bank of Canada/);
 const creditCard=cad.split('data-liq-role="credit"')[1].split('</div>')[0];
 assert.match(creditCard,/Misura non verificabile/);

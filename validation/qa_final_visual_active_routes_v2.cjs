@@ -227,7 +227,12 @@ async function checkPairChartControls(page,label) {
     }
   }
   const ref=detail.locator('[data-v12-reference-toggle]');
-  if (!(await ref.count())) throw Error(label + ' chart reference control missing');
+  if (!(await ref.count())) {
+     const withheld=detail.locator('.decision-watch-unavailable');
+     if(await withheld.count()!==1||!(await withheld.innerText()).includes('Riferimenti di prezzo non verificabili'))
+       throw Error(label + ' chart reference control missing without explicit data-safety reason');
+     return;
+   }
   const before=await ref.getAttribute('aria-pressed');
   await ref.click();
   if (!(await detail.evaluate(el => el.open))) throw Error(label + ' chart closed when toggling references');
