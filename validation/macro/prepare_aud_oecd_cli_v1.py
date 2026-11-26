@@ -14,7 +14,9 @@ def need(ok,msg):
     if not ok:raise ValueError(msg)
 def parse(raw,now):
     rd=csv.DictReader(io.StringIO(raw.decode("utf-8-sig")))
-    need(rd.fieldnames and set(META)|{"TIME_PERIOD","OBS_VALUE"} <= set(rd.fieldnames),"missing source metadata")
+    required=set(META)|{"TIME_PERIOD","OBS_VALUE"}
+    missing=required-set(rd.fieldnames or [])
+    need(not missing,"missing source metadata: "+",".join(sorted(missing)))
     obs={}
     for r in rd:
         need(all(r[k]==v for k,v in META.items()),"unexpected OECD series")
@@ -47,7 +49,13 @@ def prepare(current,*,now,fetcher=fetch):
     try:
         hits=[r for r in out["AUD"] if r["id"]==ID];need(len(hits)==1,"unique row required")
         row=copy.deepcopy(hits[0]);url=BASE+"?"+urlencode({"startPeriod":row["dates"][0][:7],"dimensionAtObservation":"AllDimensions","format":"csvfile"})
-        raw=fetcher(url);rec=reconcile(row,parse(raw,now),url,raw,now);hits[0].update(row)
+        # A transient upstream schema/transport response is retried once; identity guards remain mandatory.
+        for attempt in range(2):
+            try:
+                raw=fetcher(url);obs=parse(raw,now);break
+            except (OSError,ValueError,AssertionError):
+                if attempt:raise
+        rec=reconcile(row,obs,url,raw,now);hits[0].update(row)
     except (OSError,ValueError,KeyError,TypeError,IndexError,AssertionError) as e:rec={"id":ID,"status":"WITHHELD","reason":str(e)}
     return out,{"schema":"GMFQ_AUD_OECD_CLI_V1","series":[rec],"status":"READY" if rec["status"]=="READY" else "NO_CHANGE_OR_WITHHELD","first_release_PIT_certified":False,"affects_fx_core":False}
 def main():
