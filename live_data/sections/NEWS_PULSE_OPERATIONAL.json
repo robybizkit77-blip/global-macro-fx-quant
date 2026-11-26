@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-25",
-  "generated_at_utc": "2026-11-26T05:32:16.839438Z",
+  "generated_at_utc": "2026-11-26T08:28:53.450323Z",
   "items": [
     {
       "as_of": "2026-11-25",
@@ -136,6 +136,19 @@
     },
     {
       "as_of": "2026-11-25",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 23585.80; confronto con chiusura 2026-11-24. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-24",
+      "source": "Nasdaq, Inc. via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
+      "title": "Nasdaq Composite: -0.62% nella chiusura del 2026-11-25"
+    },
+    {
+      "as_of": "2026-11-25",
       "category": "MARKET_VOLATILITY_CLOSE",
       "ccy": "",
       "confidence": "B",
@@ -175,6 +188,28 @@
     },
     {
       "as_of": "2026-11-25",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "CAD",
+      "confidence": "A",
+      "detail": "Movimento 1D -1.0 bp sul bucket 3M; variazione 1W +2.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+      "title": "CAD: repricing implicito da futures più dovish (-1.0 bp 3M in 1D)"
+    },
+    {
+      "as_of": "2026-11-25",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "Movimento 1D +1.5 bp sul bucket 6M; variazione 1W -8.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+      "title": "AUD: repricing implicito da futures più hawkish (+1.5 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-11-25",
       "category": "MARKET_FX_ECB_FIXING",
       "ccy": "AUD",
       "confidence": "A",
@@ -189,28 +224,6 @@
     },
     {
       "as_of": "2026-11-24",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "CAD",
-      "confidence": "A",
-      "detail": "Movimento 1D +6.0 bp sul bucket 6M; variazione 1W +2.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "title": "CAD: repricing implicito da futures più hawkish (+6.0 bp 6M in 1D)"
-    },
-    {
-      "as_of": "2026-11-24",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "Movimento 1D -6.5 bp sul bucket 12M; variazione 1W -28.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing implicito da futures più dovish (-6.5 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-24",
       "category": "MARKET_EQUITY_CLOSE",
       "ccy": "",
       "confidence": "B",
@@ -221,19 +234,6 @@
       "source": "S&P Dow Jones Indices via FRED",
       "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "title": "S&P 500: -0.50% nella chiusura del 2026-11-24"
-    },
-    {
-      "as_of": "2026-11-24",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 23733.54; confronto con chiusura 2026-11-23. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-23",
-      "source": "Nasdaq, Inc. via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
-      "title": "Nasdaq Composite: -1.48% nella chiusura del 2026-11-24"
     },
     {
       "as_of": "2026-11-24",
@@ -317,7 +317,7 @@
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
     }
   ],
-  "last_checked_at_utc": "2026-11-26T05:32:16.839438Z",
+  "last_checked_at_utc": "2026-11-26T08:28:53.450323Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -738,12 +738,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.99,
-            "date": "2026-11-24",
+            "6m_rate_pct": 2.985,
+            "date": "2026-11-25",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -793,12 +793,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.99,
-            "date": "2026-11-24",
+            "6m_rate_pct": 2.985,
+            "date": "2026-11-25",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -1218,9 +1218,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 12,
+        "accepted_items": 10,
         "ccy": "JPY",
-        "entries_rejected": 34,
+        "entries_rejected": 36,
         "feed_entries_seen": 46,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
