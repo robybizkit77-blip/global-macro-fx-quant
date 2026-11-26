@@ -218,16 +218,6 @@ jobs:
               target=Path(tmp)/'archive.json'
               target.write_bytes(ARCHIVE.read_bytes())
               now=datetime.now(timezone.utc)
-              # Diagnostic for the exact missing-day redirect, not a GDP source.
-              import urllib.request
-              from validation.macro.eurostat_quarterly_gdp_v1 import edition_url
-              from datetime import date
-              probe=edition_url(date(2026,11,14))
-              try:
-                  with urllib.request.urlopen(probe,timeout=12) as response:
-                      print('EUROSTAT_MISSING_DAY_REDIRECT',response.status,response.geturl(),repr(response.read(300)),flush=True)
-              except Exception as exc:
-                  print('EUROSTAT_MISSING_DAY_PROBE_ERROR',repr(exc),flush=True)
               result=collect(now,path=target,apply=True)
               print(json.dumps(result,sort_keys=True),flush=True)
               Path('/tmp/eurostat-recovery-proof.json').write_text(json.dumps(result,indent=2))
