@@ -42,7 +42,7 @@ def prepare_row(row,now,fetcher):
     need(set(old)<=set(obs) and dates and dates[-1]>=ds[-1],"history regression")
     need(all((int(b[:4])-int(a[:4]))*12+int(b[5:])-int(a[5:])==1 for a,b in zip(dates,dates[1:])),"monthly gap")
     errors=[abs(obs[d]-v) for d,v in old.items()]
-    need(all(e<=1 for e in errors),"full history mismatch beyond rounding")
+    need(all(e<=1e-6 for e in errors),"full history mismatch beyond rounding")
     previous=row.get("current_vintage_provenance",{})
     need(not previous.get("source_series_id") or previous["source_series_id"]==CODE,"source changed")
     values=[obs[d] for d in dates];before=ds[-1]
