@@ -24,7 +24,9 @@ def main():
     old={month(d):float(v) for d,v in zip(row["dates"],row["values"])}
     need(None not in old and len(old)==len(row["dates"])>=36,"invalid legacy months")
     raw,final=fetch(PAGE);soup=BeautifulSoup(raw,"html.parser")
-    headings=[h for h in soup.find_all(["h2","h3","h4"]) if "figure 1:" in h.get_text(" ",strip=True).casefold() and "payrolled employees" in h.get_text(" ",strip=True).casefold()]
+    print("PAYE_PAGE",final,"HEADINGS",[(h.name,h.get_text(" ",strip=True)) for h in soup.find_all(["h2","h3","h4","h5"])][:70])
+    print("PAYE_DOWNLOAD_LINKS",[(a.get_text(" ",strip=True),a["href"]) for a in soup.find_all("a",href=True) if "csv" in a["href"].lower() or "dataset" in a["href"].lower()][:60])
+    headings=[h for h in soup.find_all(["h2","h3","h4","h5"]) if "figure 1:" in h.get_text(" ",strip=True).casefold() and "payrolled employees" in h.get_text(" ",strip=True).casefold()]
     need(len(headings)==1,"missing unique payrolled employee Figure 1")
     links=[]
     for el in headings[0].next_elements:
