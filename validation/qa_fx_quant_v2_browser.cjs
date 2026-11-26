@@ -218,7 +218,7 @@ async function audit(browser,name,file,selector,view,viewport){
     await page.locator('#currencyGrid button[data-ccy="NZD"]').click();
     const nzdCandidate=((await page.locator('#macroCandidateNote').textContent())||'');
     const candidateDoc=await page.evaluate(async()=>{const r=await fetch('./macro-baseline-candidate-v1.json',{cache:'no-store'});if(!r.ok)throw Error('Macro candidate HTTP '+r.status);return r.json();});
-    const g=candidateDoc.currencies?.NZD?.growth;
+    const g=candidateDoc.features?.NZD?.growth_qoq_pct;
     const accel=g?.gdp_acceleration_pp;
     if(accel!==null&&!Number.isFinite(accel))throw Error('NZD candidate acceleration not present');
     const expectedNZD=accel===null?'non è confrontabile con un trimestre precedente omogeneo':accel>.05?'La crescita accelera rispetto al trimestre precedente':accel<-.05?'La crescita rallenta rispetto al trimestre precedente':'Il ritmo trimestrale di crescita è sostanzialmente stabile';
