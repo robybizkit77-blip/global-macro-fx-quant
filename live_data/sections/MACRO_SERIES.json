@@ -25019,7 +25019,9 @@
         "2026-03",
         "2026-04",
         "2026-05",
-        "2026-06"
+        "2026-06",
+        "2026-07",
+        "2026-08"
       ],
       "values": [
         2098648.0,
@@ -25086,30 +25088,42 @@
         2317073.0,
         2312337.0,
         2317000.0,
-        2329713.0,
-        2326072.0,
-        2330230.0,
-        2328390.0,
-        2324814.0,
-        2322727.0,
-        2338957.0,
-        2337688.0,
-        2342161.0,
-        2336171.0,
-        2338062.0,
-        2340690.0,
-        2340294.0,
-        2344080.0,
-        2340472.0,
-        2355245.0,
-        2363056.0,
-        2369309.0
+        2329701.0,
+        2326060.0,
+        2330409.0,
+        2328370.0,
+        2324828.0,
+        2323310.0,
+        2338465.0,
+        2336966.0,
+        2342644.0,
+        2335762.0,
+        2337816.0,
+        2340246.0,
+        2339783.0,
+        2343599.0,
+        2340035.0,
+        2354837.0,
+        2362878.0,
+        2371177.0,
+        2371788.0,
+        2371635.0
       ],
       "unit": "million chained 2017 CAD SAAR",
       "frequency": "M",
       "source_file": "CA_REAL_GDP_M_history.csv",
-      "last_date": "2026-06",
-      "last_value": 2369309.0
+      "last_date": "2026-08",
+      "last_value": 2371635.0,
+      "current_vintage_provenance": {
+        "status": "STATCAN_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610043401",
+        "source_table": "36100434",
+        "source_vector": "v65201210",
+        "source_csv_sha256": "6dad0acf74bcede1606cdc9b72c6bdfdae922c76784e4e52aacc592f8ecdd898",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T09:17:05.734749+00:00"
+      }
     },
     {
       "id": "CA_RETAIL_VOLUME_history_value",
@@ -25655,7 +25669,9 @@
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         2.1,
@@ -25739,13 +25755,25 @@
         2.1,
         1.9,
         2.0,
+        2.0,
+        2.0,
         2.0
       ],
       "unit": "percent YoY",
       "frequency": "M",
       "source_file": "CA_CPI_MEDIAN_YOY_history.csv",
-      "last_date": "2026-08",
-      "last_value": 2.0
+      "last_date": "2026-10",
+      "last_value": 2.0,
+      "current_vintage_provenance": {
+        "status": "STATCAN_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810025601",
+        "source_table": "18100256",
+        "source_vector": "v108785714",
+        "source_csv_sha256": "d20e343f7365cafaeaff38d5d106ffacffefa298ebdefdfb1207af622f8410cc",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T09:17:05.734749+00:00"
+      }
     },
     {
       "id": "CA_CPI_TRIM_YOY_history_value",
@@ -25833,7 +25861,9 @@
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         2.2,
@@ -25917,13 +25947,25 @@
         2.0,
         1.9,
         1.9,
-        1.9
+        1.9,
+        1.9,
+        1.8
       ],
       "unit": "percent YoY",
       "frequency": "M",
       "source_file": "CA_CPI_TRIM_YOY_history.csv",
-      "last_date": "2026-08",
-      "last_value": 1.9
+      "last_date": "2026-10",
+      "last_value": 1.8,
+      "current_vintage_provenance": {
+        "status": "STATCAN_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810025601",
+        "source_table": "18100256",
+        "source_vector": "v108785715",
+        "source_csv_sha256": "d20e343f7365cafaeaff38d5d106ffacffefa298ebdefdfb1207af622f8410cc",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T09:17:05.734749+00:00"
+      }
     },
     {
       "id": "CA_UNEMP_RATE_history_value",
@@ -26193,7 +26235,9 @@
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         19096.8,
@@ -26277,13 +26321,25 @@
         21121.5,
         21139.7,
         21214.8,
-        21173.1
+        21173.1,
+        21104.8,
+        21100.1
       ],
       "unit": "thousand persons SA",
       "frequency": "M",
       "source_file": "CA_EMPLOYMENT_history.csv",
-      "last_date": "2026-08",
-      "last_value": 21173.1
+      "last_date": "2026-10",
+      "last_value": 21100.1,
+      "current_vintage_provenance": {
+        "status": "STATCAN_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+        "source_table": "14100287",
+        "source_vector": "v2062811",
+        "source_csv_sha256": "c91102550ac290ff9076e9935f0226d89b6f7730411d2ac0dd5667b50df779ee",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T09:17:05.734749+00:00"
+      }
     },
     {
       "id": "CA_MORTGAGE_OUTSTANDING_UNINSURED_history_value",
