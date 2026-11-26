@@ -217,8 +217,13 @@ async function audit(browser,name,file,selector,view,viewport){
       issue(name,view,'macro_explanatory_candidate_missing',usdCandidate.slice(0,1000));
     await page.locator('#currencyGrid button[data-ccy="NZD"]').click();
     const nzdCandidate=((await page.locator('#macroCandidateNote').textContent())||'');
+    const candidateDoc=await page.evaluate(async()=>{const r=await fetch('./macro-baseline-candidate-v1.json',{cache:'no-store'});if(!r.ok)throw Error('Macro candidate HTTP '+r.status);return r.json();});
+    const g=candidateDoc.currencies?.NZD?.growth;
+    const accel=g?.gdp_acceleration_pp;
+    if(accel!==null&&!Number.isFinite(accel))throw Error('NZD candidate acceleration not present');
+    const expectedNZD=accel===null?'non è confrontabile con un trimestre precedente omogeneo':accel>.05?'La crescita accelera rispetto al trimestre precedente':accel<-.05?'La crescita rallenta rispetto al trimestre precedente':'Il ritmo trimestrale di crescita è sostanzialmente stabile';
     if(!nzdCandidate.includes('LETTURA MACRO G8 · NZD')||
-       !nzdCandidate.includes('non è confrontabile con un trimestre precedente omogeneo')||
+       !nzdCandidate.includes(expectedNZD)||
        !nzdCandidate.includes('periodi non necessariamente allineati'))
       issue(name,view,'macro_missing_gdp_or_date_guard',nzdCandidate.slice(0,1000));
   }
@@ -324,8 +329,15 @@ async function audit(browser,name,file,selector,view,viewport){
       issue(name,view,'dynamic_macro_not_read_only',dynamicEUR.slice(-650));
     await page.locator('#allPairs').selectOption('AUDCAD');
     const dynamicAUD=(await page.locator('#macroV3Context').textContent())||'';
-    if(!dynamicAUD.includes('PIL: accelerazione relativa NON calcolabile')||
-       !dynamicAUD.includes('Inflazione non sincronizzata'))
+    const observedPair=await page.evaluate(async()=>{const r=await fetch('../control-room-preview/macro-v3-current-evidence.json',{cache:'no-store'});if(!r.ok)throw Error('Macro snapshot HTTP '+r.status);return r.json();});
+    const [aud,cad]=['AUD','CAD'].map(c=>observedPair.countries[c]);
+    const comparableGrowth=[aud,cad].every(c=>c.growth.prior_documented_quarter&&
+      Number.isFinite(c.growth.prior_documented_quarter.nonannualized_qoq_descriptive_pct)&&
+      Number.isFinite(c.growth.nonannualized_qoq_descriptive_pct))&&
+      aud.growth.reference_quarter===cad.growth.reference_quarter;
+    const expectedGrowth=comparableGrowth?'PIL: variazione del ritmo trimestrale':'PIL: accelerazione relativa NON calcolabile';
+    if(!dynamicAUD.includes(expectedGrowth)||
+       (aud.inflation.observation_period!==cad.inflation.observation_period&&!dynamicAUD.includes('Inflazione non sincronizzata')))
       issue(name,view,'macro_noncomparable_intervals_not_flagged',dynamicAUD.slice(-550));
     await page.locator('#allPairs').selectOption('EURUSD');
     const ordinary=((await page.locator('#gapDate').textContent())||'');
