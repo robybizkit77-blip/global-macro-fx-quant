@@ -1,6 +1,8 @@
 """Eurostat dated GDP releases, including subsequent revisions; descriptive only."""
 from datetime import date, datetime, timedelta, timezone
 from hashlib import sha256
+from html.parser import HTMLParser
+from urllib.parse import urljoin, urlsplit, parse_qs
 from urllib.error import HTTPError
 import argparse
 import json
@@ -18,6 +20,7 @@ SCHEMA = "GMFQ_EUROSTAT_QUARTERLY_GDP_V1"
 UNIT = "PERCENT_QOQ_SA_CALENDAR"
 FIRST_DAY = date(2026,11,13)
 FIRST_QUARTER = "2026Q3"
+RELEASE_INDEX = f"https://{HOST}/eurostat/news/euro-indicators"
 ORDINALS = ("first","second","third","fourth")
 MONTHS = "January February March April May June July August September October November December".split()
 MAX_SCAN_DAYS = 14
@@ -130,6 +133,43 @@ def read_day(day,today,fetch):
     return parse_bulletin(raw,day,today)
 
 
+class ReleaseIndexLinks(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.links=set()
+    def handle_starttag(self,tag,attrs):
+        if tag=="a":
+            for key,value in attrs:
+                if key=="href" and value:
+                    url=urlsplit(urljoin(RELEASE_INDEX,value))
+                    if url.scheme=="https" and url.hostname==HOST:
+                        match=re.search(r"/products-euro-indicators/w/(\d+)-(\d{8})-ap/?$",url.path)
+                        if not match and url.path.rstrip("/")=="/eurostat/product":
+                            codes=parse_qs(url.query).get("code",[])
+                            if len(codes)==1:
+                                match=re.fullmatch(r"(\d+)-(\d{8})-ap",codes[0])
+                        if match:
+                            self.links.add((match[1],datetime.strptime(match[2],"%d%m%Y").date()))
+
+
+def release_index(raw,today):
+    text=source_text(raw)
+    if not re.search(r"\bEuro indicators\b",text,re.I) or not re.search(r"Showing\s+1\s*[-–]\s*\d+\s+out of\s+[\d,.\s]+\s+results",text,re.I):
+        raise Pending("EUROSTAT_PUBLIC_INDEX_NOT_IDENTIFIED")
+    parser=ReleaseIndexLinks()
+    parser.feed(raw.decode("utf-8",errors="replace"))
+    published=re.findall(r"PUBLISHED:\s*(\d{1,2})\s+("+"|".join(MONTHS)+r")\s+(20\d{2})",text,re.I)
+    dates={date(int(y),MONTHS.index(m.title())+1,int(d)) for d,m,y in published}
+    # Only a genuine populated first page may establish date coverage.
+    if len(dates)<3 or len(parser.links)<3 or any(d>today for d in dates):
+        raise Pending(f"EUROSTAT_PUBLIC_INDEX_COVERAGE_UNVERIFIED: dates={len(dates)} links={len(parser.links)}")
+    # URL dates must correspond to dated published results. Ignore unrelated links.
+    links={pair for pair in parser.links if pair[1] in dates}
+    if len(links)<3:
+        raise Pending("EUROSTAT_PUBLIC_INDEX_RELEASE_LINKS_UNVERIFIED")
+    return min(dates),links
+
+
 def collect(now,*,path=ARCHIVE,fetch=retrieve,apply=False):
     data=archive_for(path)
     today=now.astimezone(ROME).date()
@@ -143,12 +183,18 @@ def collect(now,*,path=ARCHIVE,fetch=retrieve,apply=False):
               (last+timedelta(days=1)) if last else FIRST_DAY)
     end=min(today,start+timedelta(days=MAX_SCAN_DAYS-1))
     additions=[]; checks=[]; progressed=cursor
+    index=None
     def confirm(day):
         nonlocal progressed
         if day <= today-timedelta(days=SETTLEMENT_DAYS):
             progressed=day
     for i in range(max(0,(end-start).days+1)):
         day=start+timedelta(days=i)
+        # Reuse the independently verified listing for settled negative days.
+        # Recent days are rechecked on subsequent runs; never skip a listed GDP.
+        if index is not None and day>index[0] and ("2",day) not in index[1] and day<=today-timedelta(days=SETTLEMENT_DAYS):
+            confirm(day)
+            continue
         try:
             row=read_day(day,today,fetch)
         except HTTPError as exc:
@@ -157,14 +203,32 @@ def collect(now,*,path=ARCHIVE,fetch=retrieve,apply=False):
                 continue
             checks.append({"day":day.isoformat(),"error":str(exc)})
             break
-        except Pending as exc:
+        except (Pending, ValueError) as exc:
             # An identified non-GDP release is a negative, not a source error.
             if str(exc)=="EUROSTAT_NOT_IDENTIFIED_GDP_EDITION":
                 confirm(day)
                 continue
+            # Missing dated articles may redirect to EU Login. Do not read
+            # authentication pages or classify an unverified redirect as absent.
+            # Independently consult the public list of recent official releases.
+            if "redirect" in str(exc).lower():
+                try:
+                    if index is None:
+                        raw,final=fetch(RELEASE_INDEX,HOST)
+                        if final!=RELEASE_INDEX:
+                            raise Pending("EUROSTAT_PUBLIC_INDEX_REDIRECT")
+                        index=release_index(raw,today)
+                    oldest,links=index
+                    if day<=oldest or ("2",day) in links:
+                        raise Pending("EUROSTAT_PUBLIC_INDEX_CANNOT_EXCLUDE_GDP")
+                    confirm(day)
+                    continue
+                except (OSError,ValueError,Pending) as index_exc:
+                    checks.append({"day":day.isoformat(),"error":str(index_exc)})
+                    break
             checks.append({"day":day.isoformat(),"error":str(exc)})
             break
-        except (OSError,ValueError) as exc:
+        except OSError as exc:
             checks.append({"day":day.isoformat(),"error":str(exc)})
             break
         if day==FIRST_DAY and (row["quarter"],row["reported_value"],row["prior_qoq"]) != (FIRST_QUARTER,0.4,0.6):

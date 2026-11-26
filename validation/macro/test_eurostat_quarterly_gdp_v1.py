@@ -51,6 +51,34 @@ class EurostatTests(unittest.TestCase):
             self.assertEqual(latest_growth("2026-12-08",path=p)["reported_value"],0.3)
             self.assertEqual(latest_growth("2026-12-08",path=p)["prior_documented_quarter"]["reported_value"],0.5)
 
+    def test_missing_day_redirect_requires_independent_public_index(self):
+        from validation.macro.eurostat_quarterly_gdp_v1 import RELEASE_INDEX
+        index=b"""<html><h1>Euro indicators</h1><p>Showing 1 - 3 out of 4486 results</p>
+        <p>PUBLISHED: 19 November 2026</p><a href="/eurostat/web/products-euro-indicators/w/4-19112026-ap">Construction</a>
+        <p>PUBLISHED: 18 November 2026</p><a href="/eurostat/web/products-euro-indicators/w/3-18112026-ap">Inflation</a>
+        <p>PUBLISHED: 13 November 2026</p><a href="/eurostat/web/products-euro-indicators/w/2-13112026-ap">GDP</a></html>"""
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp)/"archive.json"
+            p.write_text(json.dumps({"schema":SCHEMA,"editions":[]}))
+            collect(datetime(2026,11,13,12,tzinfo=timezone.utc),path=p,
+                    fetch=lambda u,h:(fixture(),u),apply=True)
+            def fetch(url,host):
+                if url==RELEASE_INDEX:
+                    return index,url
+                raise ValueError("MACRO_OFFICIAL_ACTUAL_GATE: unapproved official redirect")
+            now=datetime(2026,11,21,12,tzinfo=timezone.utc)
+            result=collect(now,path=p,fetch=fetch,apply=True)
+            self.assertEqual(result["checked_through"],"2026-11-19")
+            self.assertEqual(result["source_warnings"],[])
+            self.assertEqual(len(json.loads(p.read_text())["editions"]),1)
+            def unavailable(url,host):
+                if url==RELEASE_INDEX:
+                    return b"<html>Login</html>",url
+                raise ValueError("MACRO_OFFICIAL_ACTUAL_GATE: unapproved official redirect")
+            retry=collect(datetime(2026,11,23,12,tzinfo=timezone.utc),path=p,fetch=unavailable,apply=True)
+            self.assertEqual(retry["status"],"SOURCE_UNAVAILABLE_ARCHIVE_RETAINED")
+            self.assertEqual(retry["checked_through"],"2026-11-19")
+
     def test_outage_and_transient_failure_never_skip_a_release(self):
         with tempfile.TemporaryDirectory() as tmp:
             p=Path(tmp)/"archive.json"

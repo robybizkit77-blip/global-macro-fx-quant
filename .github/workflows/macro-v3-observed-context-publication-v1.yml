@@ -205,6 +205,26 @@ jobs:
           if grep -q 'SOURCE_UNAVAILABLE_ARCHIVE_RETAINED' /tmp/eurostat-quarterly-gdp-collection.json; then
             echo "::warning::Eurostat GDP bulletin not validated; retaining prior verified GDP."
           fi
+      - name: Verify actual Eurostat recovery without mutating the repository
+        if: github.event_name == 'pull_request' && github.head_ref == 'test/macro-v3-live-end-to-end-20261126'
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+          from tempfile import TemporaryDirectory
+          from validation.macro.eurostat_quarterly_gdp_v1 import ARCHIVE, ROME, collect
+          with TemporaryDirectory() as tmp:
+              target=Path(tmp)/'archive.json'
+              target.write_bytes(ARCHIVE.read_bytes())
+              now=datetime.now(timezone.utc)
+              result=collect(now,path=target,apply=True)
+              print(json.dumps(result,sort_keys=True),flush=True)
+              Path('/tmp/eurostat-recovery-proof.json').write_text(json.dumps(result,indent=2))
+              assert not result['source_warnings'], 'Source recovery stalled on a real official date'
+              assert result['checked_through'] is not None, 'Durable checkpoint not created'
+              assert json.loads(target.read_text())['checked_through']==result['checked_through']
+          PY
       - name: Generate verified public Macro V3 context
         run: |
           set -euo pipefail
@@ -375,6 +395,7 @@ jobs:
             /tmp/statcan-index-proof.json
             /tmp/eurostat-quarterly-gdp-collection.json
             /tmp/eurostat-q3-proof.json
+            /tmp/eurostat-recovery-proof.json
             /tmp/statsnz-quarterly-gdp-collection.json
             /tmp/statsnz-q2-proof.json
           if-no-files-found: warn

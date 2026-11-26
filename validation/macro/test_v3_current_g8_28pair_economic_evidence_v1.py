@@ -259,6 +259,53 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             for producer in producers:
                 producer.assert_called_once_with(self.asof,live_cutoff=now)
 
+    def test_same_day_release_propagates_to_public_snapshot_and_every_affected_pair(self):
+        """Synthetic values confined to the regression; no publisher actual is fabricated."""
+        from contextlib import ExitStack
+        from datetime import timedelta
+        from unittest.mock import patch
+        from validation.macro.ons_quarterly_gdp_v1 import archived_growth
+        from validation.macro.publish_v3_current_context_v1 import snapshot
+        now=datetime.fromisoformat(self.asof+"T12:00:00").replace(tzinfo=ZoneInfo("Europe/Rome"))
+        module="validation.macro.v3_current_g8_28pair_economic_evidence_v1."
+        names={"GBP":"latest_uk_growth","JPY":"latest_jp_growth","CHF":"latest_ch_growth",
+               "AUD":"latest_au_growth","CAD":"latest_ca_growth","NZD":"latest_nz_growth",
+               "EUR":"latest_eu_growth"}
+        values={c:round(0.11+i*0.13,2) for i,c in enumerate(names)}
+        def producer(c):
+            def read(as_of, live_cutoff=None):
+                rows=[{"quarter":"2026Q3","publisher_release_day":self.asof,
+                       "first_observed_at_utc":now.isoformat(),"reported_value":values[c],
+                       "prior_qoq":-0.2,"source_url":"https://example.invalid/test-only"}]
+                return archived_growth(as_of,rows,stage="TEST_ONLY",
+                    same_edition_field="prior_value_from_same_publisher_edition",
+                    live_cutoff=live_cutoff)
+            return read
+        with ExitStack() as stack:
+            for c,name in names.items():
+                stack.enter_context(patch(module+name,side_effect=producer(c)))
+            historical=build(self.observed,self.heat,self.legacy,self.setup,as_of=self.asof)
+            premature=build(self.observed,self.heat,self.legacy,self.setup,as_of=self.asof,
+                            live_cutoff=now-timedelta(seconds=1))
+            self.assertEqual(historical,premature)
+            live=build(self.observed,self.heat,self.legacy,self.setup,as_of=self.asof,live_cutoff=now)
+            public=snapshot(live)
+        self.assertEqual(len(public["pair_context"]),28)
+        self.assertEqual(public["summary"]["GDP_later_quarter_official_releases"],8)
+        for c,value in values.items():
+            growth=public["countries"][c]["growth"]
+            self.assertEqual(growth["reported_value"],value)
+            self.assertEqual(growth["prior_documented_quarter"]["reported_value"],-0.2)
+            self.assertEqual(growth["publisher_release_day"],self.asof)
+            affected=[p for p in public["pair_context"].values() if c in (p["base"],p["quote"])]
+            self.assertEqual(len(affected),7)
+            for pair in affected:
+                self.assertEqual(pair["growth"][c],value)
+                self.assertEqual(pair["growth_periods"][c],"2026Q3")
+                self.assertIsNone(pair["pair_trade_bias"])
+        self.assertEqual(public["summary"]["pair_trade_signals_generated"],0)
+        self.assertFalse(public["safe_to_republish_D"])
+
     def test_deterministic_snapshot_and_read_only(self):
         paths = [ROOT / "live_data/sections/D.json",
                  ROOT / "live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json",
