@@ -155,7 +155,7 @@
 const pricingSeed={"USD":{"as_of":"2026-10-30","source_type":"Futures · indicativo (non OIS)","quality":"STIMA INFORMATIVA","horizons":{"3m":{"rate":4.01,"as_of":"2026-11-02"},"6m":{"rate":4.28,"as_of":"2026-10-30"},"12m":{"rate":4.46,"as_of":"2026-10-30"}}},"EUR":{"as_of":"2026-10-30","source_type":"Futures · indicativo (non OIS)","quality":"STIMA INFORMATIVA","horizons":{"3m":{"rate":2.5125,"as_of":"2026-10-30"},"6m":{"rate":2.8325,"as_of":"2026-10-30"},"12m":{"rate":3.0975,"as_of":"2026-11-02"}}},"CHF":{"as_of":"2026-10-30","source_type":"Futures · indicativo (non OIS)","quality":"STIMA INFORMATIVA","horizons":{"3m":{"rate":0.11,"as_of":"2026-11-02"},"6m":{"rate":0.25,"as_of":"2026-11-02"},"12m":{"rate":0.48,"as_of":"2026-10-30"}}},"NZD":{"as_of":"2026-09-02","source_type":"Proxy 3M storico · scadenze successive non quotate","quality":"STORICO PARZIALE","horizons":{"3m":{"rate":3.0,"as_of":"2026-09-02"}}},"AUD":{"as_of":"2026-10-30","source_type":"Futures impliciti · certificato","quality":"FONTE UFFICIALE","horizons":{"3m":{"rate":4.835,"as_of":"2026-10-30"},"6m":{"rate":4.915,"as_of":"2026-10-30","change_1d_bp":-2},"12m":{"rate":4.83,"as_of":"2026-10-30"}}},"CAD":{"as_of":"2026-10-30","source_type":"Futures impliciti · certificato","quality":"FONTE UFFICIALE","horizons":{"6m":{"rate":2.97,"as_of":"2026-10-30","change_1d_bp":-5}}},"GBP":{"as_of":"2026-10-30","source_type":"OIS · certificato","quality":"FONTE UFFICIALE","horizons":{"6m":{"rate":4.4784,"as_of":"2026-10-30","change_1d_bp":-2.9}}},"JPY":{"as_of":"2026-11-02","source_type":"Futures TONA impliciti · certificato","quality":"FONTE UFFICIALE","horizons":{"6m":{"rate":1.697,"as_of":"2026-11-02","change_1d_bp":-0.7}}}};
 const names={USD:'Stati Uniti',EUR:'Area euro',GBP:'Regno Unito',JPY:'Giappone',CHF:'Svizzera',CAD:'Canada',AUD:'Australia',NZD:'Nuova Zelanda'};
 const order=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-const state={rates:seed.rates,price:pricingSeed,selected:'USD',live:0,compareA:'EUR',compareB:'USD',extraRates:{},benchmarkResearch:null,workingRates:null,audResearch:null,nzdAsxProxy:null,chfHistory:null};
+const state={rates:seed.rates,price:pricingSeed,selected:'USD',live:0,compareA:'EUR',compareB:'USD',extraRates:{},benchmarkResearch:null,workingRates:null,audResearch:null,nzdAsxProxy:null,chfHistory:null,nzdReconciled:null};
 const $=s=>document.getElementById(s);const fmt=(n,d=2)=>typeof n==='number'&&isFinite(n)?n.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';const sg=(n,d=1,s='')=>typeof n==='number'&&isFinite(n)?(n>0?'+':n<0?'−':'')+fmt(Math.abs(n),d)+s:'—';const dt=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||'')?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):'n.d.';
 const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 const narrative=(c,r)=>{const d=r.chg2_bp, l=r.chg10_bp;const f=typeof d==='number'?(d<=-2?'scende':d>=2?'sale':'è quasi stabile'):'non è determinato';const g=typeof l==='number'?(l<=-2?'scende':l>=2?'sale':'è quasi stabile'):'non è determinato';return {f,g}};
@@ -404,7 +404,18 @@ async function refreshBenchmarkResearch(){
   draw();
  }catch(error){console.warn("[FX Quant V2 Rates] Same-basis research source unavailable; retained dated canonical displays:",error);}
 }
+async function refreshNZDReconciled(){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9000);
+ try{
+  const response=await fetch("./nzd-rbnz-b2-reconciled-research.json",{cache:"no-store",signal:controller.signal});
+  if(!response.ok)throw Error("NZD reconciled HTTP "+response.status);
+  state.nzdReconciled=await response.json();
+  if(state.selected==="NZD")draw();
+ }catch(e){console.warn("[FXV2 NZD] Reconciled source evidence unavailable:",e);}
+ finally{clearTimeout(timer);}
+}
 baseReady.then(refreshBenchmarkResearch);
+baseReady.then(refreshNZDReconciled);
 baseReady.then(refreshCHFHistory).catch(e=>console.warn('[FXV2 CHF] storico SNB non disponibile:',e));
 
 /* Source-cadence-aware AUD recovery: independent same-row official RBA F2.
@@ -557,7 +568,12 @@ function benchmarkPanel(){
   card("Prima del cambio · "+dt(old.date),"2Y "+it(old["2Y"],2)+"% ("+x.old_benchmark["2Y"]+"); 10Y "+it(old["10Y"],2)+"% ("+x.old_benchmark["10Y"]+"). Nessuna linea o variazione calcolata verso la nuova serie.");
   card("Dopo il cambio · "+dt(first.date)+" → "+dt(last.date),
     "2Y "+it(first["2Y"],2)+"% → "+it(last["2Y"],2)+"% ("+x.new_benchmark["2Y"]+"); 10Y "+it(first["10Y"],2)+"% → "+it(last["10Y"],2)+"% ("+x.new_benchmark["10Y"]+"). Variazione entro lo stesso benchmark: 2Y "+plus(x.same_benchmark_change_bp["2Y"])+" pb, 10Y "+plus(x.same_benchmark_change_bp["10Y"])+" pb. Curva indicativa finale "+it(x.latest_curve_bp,0)+" pb.");
-  assign("benchmarkFoot","Fonte: tabella ufficiale RBNZ B2, letture web di ricerca. La variazione tra "+dt(first.date)+" e "+dt(last.date)+" è cumulata su più sedute, NON 1D. Verifica XLSX mancante. Livelli indicativi V2, esclusi da Core FX, OIS ufficiali e backtest.");
+  const proof=globalThis.FXV2RatesWorking?.nzdReconciledProof?.(state.nzdReconciled,x,today);
+  if(proof)card("Variazione settimanale osservata · "+dt(proof.reference)+" → "+dt(proof.date),
+     "2Y "+plus(proof.change2)+" pb, 10Y "+plus(proof.change10)+" pb. Curva: "+plus(proof.change10-proof.change2)+" pb. Stesso benchmark; non è una variazione 1D.");
+  assign("benchmarkFoot","Fonte: tabella ufficiale RBNZ B2. La variazione tra "+dt(first.date)+" e "+dt(last.date)+" è cumulata su più sedute, NON 1D. "+
+     (proof?"HTML e XLSX della stessa edizione "+dt(proof.publication)+" riconciliati: "+proof.matched+" date coincidenti, "+proof.observations+" osservazioni post-roll. ":"Verifica XLSX non disponibile per questa specifica edizione. ")+
+     "Livelli osservati di ricerca V2, esclusi da Core FX, OIS ufficiali e backtest.");
   assign("ratesTitle","Nuova Zelanda: il salto del 30 ottobre è un cambio benchmark.");
   assign("ratesStand","Il 2Y e il 10Y hanno cambiato titolo di riferimento. Per i calcoli indicativi usiamo solo il nuovo benchmark: non colleghiamo artificialmente le due serie.");
  }
