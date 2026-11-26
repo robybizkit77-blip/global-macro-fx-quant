@@ -2,7 +2,7 @@
 from datetime import date, datetime, timedelta, timezone
 from hashlib import sha256
 from html.parser import HTMLParser
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit, parse_qs
 from urllib.error import HTTPError
 import argparse
 import json
@@ -144,6 +144,10 @@ class ReleaseIndexLinks(HTMLParser):
                     url=urlsplit(urljoin(RELEASE_INDEX,value))
                     if url.scheme=="https" and url.hostname==HOST:
                         match=re.search(r"/products-euro-indicators/w/(\d+)-(\d{8})-ap/?$",url.path)
+                        if not match and url.path.rstrip("/")=="/eurostat/product":
+                            codes=parse_qs(url.query).get("code",[])
+                            if len(codes)==1:
+                                match=re.fullmatch(r"(\d+)-(\d{8})-ap",codes[0])
                         if match:
                             self.links.add((match[1],datetime.strptime(match[2],"%d%m%Y").date()))
 
@@ -158,7 +162,7 @@ def release_index(raw,today):
     dates={date(int(y),MONTHS.index(m.title())+1,int(d)) for d,m,y in published}
     # Only a genuine populated first page may establish date coverage.
     if len(dates)<3 or len(parser.links)<3 or any(d>today for d in dates):
-        raise Pending("EUROSTAT_PUBLIC_INDEX_COVERAGE_UNVERIFIED")
+        raise Pending(f"EUROSTAT_PUBLIC_INDEX_COVERAGE_UNVERIFIED: dates={len(dates)} links={len(parser.links)}")
     # URL dates must correspond to dated published results. Ignore unrelated links.
     links={pair for pair in parser.links if pair[1] in dates}
     if len(links)<3:
