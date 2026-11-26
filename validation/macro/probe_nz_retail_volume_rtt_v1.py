@@ -94,7 +94,22 @@ if __name__=="__main__":
             if p.scheme=="https" and p.hostname in ("www.stats.govt.nz","stats.govt.nz") and "retail trade survey" in label and "september 2026 quarter" in label and "csv" in label:
                 links.add(u)
         print("NZ_RETAIL_INDEX_EXACT_LINKS",sorted(links))
-        need(len(links)==1,"missing or ambiguous exact release CSV link on issuer index")
+        # File cards may place the link on an icon, with the title in a sibling.
+        # Inspect the release card itself, not the entire parent page.
+        for origin,body in ((final,raw),(listing_final,listing)):
+            doc=BeautifulSoup(body,"html.parser")
+            for h in doc.find_all(["h2","h3","h4","h5"]):
+                title=norm(h.get_text(" ",strip=True))
+                if "retail trade survey" not in title or "september 2026 quarter" not in title or "csv" not in title:continue
+                for card in (h,h.parent,h.parent.parent):
+                    urls=set()
+                    for a in card.find_all("a",href=True):
+                        u=urljoin(origin,a["href"]);p=urlsplit(u)
+                        if p.scheme=="https" and p.hostname in ("www.stats.govt.nz","stats.govt.nz") and p.path.lower().endswith(".zip"):urls.add(u)
+                    if len(urls)==1:links.update(urls);break
+                print("NZ_RETAIL_RELEASE_CARD",str(h.parent)[:1600])
+            print("NZ_RETAIL_LINK_DIAGNOSTICS",json.dumps([{"href":a["href"],"label":norm(a.get_text(" ",strip=True))} for a in doc.find_all("a",href=True) if "retail" in a["href"].lower() or ".zip" in a["href"].lower()][:30]))
+        need(len(links)==1,"missing or ambiguous exact release CSV link on issuer pages")
         url=links.pop()
     print("NZ_RETAIL_ISSUER_ZIP",url)
     blob,returned=fetch(url)
