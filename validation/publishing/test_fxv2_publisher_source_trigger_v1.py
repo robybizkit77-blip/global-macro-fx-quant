@@ -49,6 +49,7 @@ required=source_paths | {
     "site/fx-quant-v2/next/pair-rankings.js",
     "site/fx-quant-v2/next/app.js",
     "site/fx-quant-v2/next/index.html",
+    "site/fx-quant-v2/next/data-health-v1.js",
 }
 assert paths == required, (required-paths, paths-required)
 assert "if proof[\"status\"] != \"PASS\":" in s
