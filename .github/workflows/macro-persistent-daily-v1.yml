@@ -406,9 +406,23 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
+      # A production event can spend minutes in the shared concurrency queue.
+      # Resolve current main only after acquiring that slot, before collecting
+      # any observations. PRs and non-main validation retain their event SHA.
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.ref == 'refs/heads/main' && 'refs/heads/main' || github.sha }}
           fetch-depth: 0
+
+      - name: Record actual Macro checkout and reject obsolete production baseline
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          current="$(git rev-parse HEAD)"
+          observed="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          echo "MACRO_PRODUCTION_BASELINE event=$GITHUB_SHA actual=$current remote=$observed"
+          test -n "$observed" && test "$current" = "$observed"
 
       - uses: actions/setup-python@v5
         with:

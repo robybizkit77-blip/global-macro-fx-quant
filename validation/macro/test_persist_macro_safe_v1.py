@@ -71,6 +71,30 @@ class MacroConcurrentWriterTests(unittest.TestCase):
         git(self.macro, "fetch", "origin", "main")
         return git(self.macro, "show", "origin/main:" + filename)
 
+    def test_queued_production_resolves_current_main_after_serialization(self):
+        # The event SHA was captured before another serialized Macro writer.
+        event_sha = git(self.macro, "rev-parse", "HEAD")
+        self.other_commit(MACRO, "newer already certified archive\n")
+        self.other_commit(PART1, "newer already certified payload\n")
+        git(self.macro, "fetch", "origin", "main")
+        git(self.macro, "checkout", "--detach", "origin/main")
+        self.assertNotEqual(git(self.macro, "rev-parse", "HEAD"), event_sha)
+        self.assertEqual(git(self.macro, "show", "HEAD:" + MACRO), "newer already certified archive")
+        put(self.macro, MACRO, "newer already certified archive plus new observation\n")
+        receipt = persist(self.macro, managed=MANAGED, commit_message=MESSAGE)
+        self.assertEqual(receipt["status"], "PERSISTED")
+        self.assertEqual(self.remote_file(MACRO), "newer already certified archive plus new observation")
+        self.assertEqual(self.remote_file(PART1), "newer already certified payload")
+
+    def test_workflow_preserves_pr_identity_and_refreshes_production_baseline(self):
+        root=Path(__file__).resolve().parents[2]
+        workflow=(root/".github/workflows/macro-persistent-daily-v1.yml").read_text()
+        production=workflow.split("  persist-macro:\n",1)[1]
+        self.assertIn("ref: ${{ github.ref == 'refs/heads/main' && 'refs/heads/main' || github.sha }}",production)
+        self.assertLess(production.index("Record actual Macro checkout"), production.index("Snapshot baseline and registry contract"))
+        self.assertIn("cancel-in-progress: false",workflow)
+        self.assertIn("REMOTE_MANAGED_FILES_MOVED_FAIL_CLOSED",(root/"validation/macro/persist_calendar_news_safe_v12.py").read_text())
+
     def test_independent_main_advance_preserves_both_updates_without_force(self):
         put(self.macro, MACRO, "new certified macro series\n")
         put(self.macro, HEAT, "new certified heatmap\n")
