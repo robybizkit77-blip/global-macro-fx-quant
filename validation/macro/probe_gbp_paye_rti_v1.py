@@ -26,7 +26,7 @@ def main():
     raw,final=fetch(PAGE);soup=BeautifulSoup(raw,"html.parser")
     print("PAYE_PAGE",final,"HEADINGS",[(h.name,h.get_text(" ",strip=True)) for h in soup.find_all(["h2","h3","h4","h5"])][:70])
     print("PAYE_DOWNLOAD_LINKS",[(a.get_text(" ",strip=True),a["href"]) for a in soup.find_all("a",href=True) if "csv" in a["href"].lower() or "dataset" in a["href"].lower()][:60])
-    headings=[h for h in soup.find_all(["h2","h3","h4","h5"]) if "figure 1:" in h.get_text(" ",strip=True).casefold() and "payrolled employees" in h.get_text(" ",strip=True).casefold()]
+    headings=[h for h in soup.find_all(["h2","h3","h4","h5"]) if h.get_text(" ",strip=True).casefold().startswith("figure 1:") and "payrolled employees" in h.get_text(" ",strip=True).casefold()]
     need(len(headings)==1,"missing unique payrolled employee Figure 1")
     links=[]
     for el in headings[0].next_elements:
@@ -35,6 +35,7 @@ def main():
             url=urljoin(final,el["href"]);q=parse_qs(urlsplit(url).query)
             if q.get("format")==["csv"] and urlsplit(url).hostname=="www.ons.gov.uk":links.append(url);break
     need(len(links)==1,"missing official chart CSV")
+    need("seasonally adjusted" in headings[0].find_next(["h4","h5"]).get_text(" ",strip=True).casefold(),"wrong chart seasonal adjustment")
     raw,url=fetch(links[0]);data=list(csv.reader(io.StringIO(raw.decode("utf-8-sig"))))
     print("PAYE_CSV",url,json.dumps(data[:12]),json.dumps(data[-6:]))
     # Compare all numeric columns on the full shared history; do not assume flash column identity.
