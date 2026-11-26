@@ -20,6 +20,15 @@ class Tests(unittest.TestCase):
             row,fetch=fixture(ident)
             self.assertEqual(prepare_row(row,ident,NOW,fetch)["status"],"READY")
             self.assertEqual(prepare_row(row,ident,NOW,fetch)["status"],"NO_CHANGE")
+    def test_sloos_mixed_columns_require_unique_match(self):
+        ident="US_SLOOS_CI_LARGE_MIDDLE_history_value"
+        row,fetch=fixture(ident)
+        row["dates"]+=row["dates"][:]
+        row["values"] += [v+10 for v in row["values"]]
+        row["last_value"]=row["values"][-1]
+        self.assertEqual(prepare_row(row,ident,NOW,fetch)["status"],"READY")
+        self.assertEqual(len(row["dates"]),len(set(row["dates"])))
+        self.assertTrue(row["current_vintage_provenance"]["legacy_duplicate_column_repair"])
     def test_bad_metadata(self):
         ident=next(iter(CONFIG));row,_=fixture(ident)
         with self.assertRaises(ValueError):prepare_row(row,ident,NOW,lambda url:(b"<html></html>",url))
