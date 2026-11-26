@@ -19182,7 +19182,9 @@
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         0.5,
@@ -19266,13 +19268,25 @@
         1.4,
         1.6,
         1.8,
-        1.7
+        1.7,
+        2.1,
+        2.2
       ],
       "unit": "Percent YoY",
       "frequency": "M",
       "source_file": "JP_CPI_CORE_YOY_history.csv",
-      "last_date": "2026-08",
-      "last_value": 1.7
+      "last_date": "2026-10",
+      "last_value": 2.2,
+      "current_vintage_provenance": {
+        "status": "OFFICIAL_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "ESTAT_JP_2025_CORE_0161_YOY",
+        "source_url": "https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=1&statInfId=000040482953",
+        "source_sha256": "bff8cb2c35514f2f1ec7302a82636692436a7a1ed6ed7cbdcb94d65ddf11e040",
+        "historical_overlap": 82,
+        "exact_overlap": 82,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T17:20:12.943285+00:00"
+      }
     },
     {
       "id": "JP_CPI_HEADLINE_YOY_history_value",
@@ -23268,7 +23282,9 @@
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         0.3,
@@ -23352,13 +23368,25 @@
         0.3,
         0.3,
         0.3,
-        0.4
+        0.4,
+        0.5,
+        0.5
       ],
       "unit": "Percent YoY",
       "frequency": "M",
       "source_file": "CH_CPI_CORE1_YOY_history.csv",
-      "last_date": "2026-08",
-      "last_value": 0.4
+      "last_date": "2026-10",
+      "last_value": 0.5,
+      "current_vintage_provenance": {
+        "status": "OFFICIAL_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "FSO_LIK25B25_CORE1_YOY",
+        "source_url": "https://dam-api.bfs.admin.ch/hub/api/dam/assets/36970583/master",
+        "source_sha256": "0add4b699967e71c609dee342bf9c6e5cd04fd0dc7f272026b775f7a43667004",
+        "historical_overlap": 82,
+        "exact_overlap": 82,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T17:20:12.943285+00:00"
+      }
     },
     {
       "id": "CH_CPI_HEADLINE_YOY_history_value",
