@@ -194,7 +194,7 @@ def collect(now,*,path=ARCHIVE,fetch=retrieve,apply=False):
                 continue
             checks.append({"day":day.isoformat(),"error":str(exc)})
             break
-        except Pending as exc:
+        except (Pending, ValueError) as exc:
             # An identified non-GDP release is a negative, not a source error.
             if str(exc)=="EUROSTAT_NOT_IDENTIFIED_GDP_EDITION":
                 confirm(day)
@@ -219,7 +219,7 @@ def collect(now,*,path=ARCHIVE,fetch=retrieve,apply=False):
                     break
             checks.append({"day":day.isoformat(),"error":str(exc)})
             break
-        except (OSError,ValueError) as exc:
+        except OSError as exc:
             checks.append({"day":day.isoformat(),"error":str(exc)})
             break
         if day==FIRST_DAY and (row["quarter"],row["reported_value"],row["prior_qoq"]) != (FIRST_QUARTER,0.4,0.6):
