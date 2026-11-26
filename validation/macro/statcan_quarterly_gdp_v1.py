@@ -177,25 +177,33 @@ def issue_url(day):
 
 
 def find_edition_on_day(day, quarter, today, fetch):
-    # Inspect the official daily index, not a guessed article suffix.
+    # Prefer the daily index if it exists; historical dates can lack it.
+    # The dated bulletin and its linked table remain the authority.
     url = issue_url(day)
+    prefix = daily_prefix(day)
+    code = day.strftime("%y%m%d")
+    candidates = []
     try:
         raw = exact_fetch(url, fetch)
+        parser = Links()
+        parser.feed(raw.decode("utf-8", errors="replace"))
+        pattern = re.escape(prefix) + r"dq" + code + r"[a-z]-eng\.htm"
+        candidates = sorted({urljoin(url,h) for h in parser.hrefs
+                             if re.fullmatch(pattern,urljoin(url,h))})
     except HTTPError as exc:
-        if exc.code == 404:
-            return None
-        raise
-    parser = Links()
-    parser.feed(raw.decode("utf-8", errors="replace"))
-    prefix = daily_prefix(day)
-    pattern = re.escape(prefix) + r"dq" + day.strftime("%y%m%d") + r"[a-z]-eng\.htm"
-    candidates = sorted({urljoin(url,h) for h in parser.hrefs
-                         if re.fullmatch(pattern,urljoin(url,h))})
-    if not candidates:
-        raise Pending("STATCAN_DAILY_INDEX_ARTICLES_NOT_IDENTIFIED")
+        if exc.code != 404:
+            raise
+    # A missing or incomplete issue index is not proof of no release.
+    # Try all official article suffixes, without guessing any GDP value.
+    candidates = list(dict.fromkeys(candidates + [
+        prefix + f"dq{code}{letter}-eng.htm" for letter in "abcdefghijklmnopqrstuvwxyz"
+    ]))
     for article in candidates:
         try:
             return read_edition(article,quarter,today,fetch)
+        except HTTPError as exc:
+            if exc.code != 404:
+                raise
         except Pending as exc:
             if str(exc) != "STATCAN_GDP_BULLETIN_IDENTITY":
                 raise
