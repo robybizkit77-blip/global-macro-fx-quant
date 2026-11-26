@@ -1,0 +1,20 @@
+name: NZD RBNZ employment SFM source proof V1
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/probe_nzd_rbnz_employment_sfm_v1.py'
+      - '.github/workflows/nzd-rbnz-employment-sfm-proof-v1.yml'
+permissions:
+  contents: read
+jobs:
+  source-proof:
+    if: github.head_ref == 'research/nzd-rbnz-employment-sfm-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install openpyxl
+      - run: python -m validation.macro.probe_nzd_rbnz_employment_sfm_v1
