@@ -638,7 +638,7 @@
   "economic_data_coverage": "8/8_G8_THREE_PILLARS",
   "eligible_for_trading_or_forward_backtest": false,
   "fx_price_as_of": "2026-11-25",
-  "generated_europe_rome_day": "2026-11-25",
+  "generated_europe_rome_day": "2026-11-26",
   "historic_PIT_OOS_not_certified": true,
   "pair_context": {
     "AUD/CAD": {
@@ -1772,9 +1772,9 @@
   "safe_to_recompute_structural_pair_theses": false,
   "safe_to_republish_D": false,
   "schema": "GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1",
-  "snapshot_content_sha256": "b87ac980887cd2a525869a677af86cfafc61ab723829aed04cd31ee0a3ee8ceb",
+  "snapshot_content_sha256": "a378533914af4055a25b031a7e258e9ebc6a671ed84f8048615b31e9bef4deaa",
   "source_observation_periods_not_release_days": true,
-  "source_receipt_sha256": "18744c8ed8b9cd7e472373f86d5bc7c7fae9f490a1615680b7fdd641ca551923",
+  "source_receipt_sha256": "4e4406ee4b700b604880f7fc91c2b5d5e693c8625ac8d5d9ea72d5aa7c06eb7d",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
   "status": "OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL",
   "summary": {
