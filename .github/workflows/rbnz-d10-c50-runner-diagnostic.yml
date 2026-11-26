@@ -1,0 +1,66 @@
+name: RBNZ D10 C50 runner diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/rbnz-d10-c50-runner-diagnostic.yml'
+
+permissions: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Verify official RBNZ tables from the runner
+        run: |
+          python3 - <<'PY'
+          from html import unescape
+          import re
+          from urllib.error import HTTPError, URLError
+          from urllib.request import Request, urlopen
+
+          base = "https://www.rbnz.govt.nz/statistics/series/"
+          sources = {
+              "D10": ("reserve-bank/influences-on-settlement-cash", {
+                  "9. Average settlement cash": ("26,460", "27,036"),
+              }),
+              "C50": ("lending-and-monetary/depository-corporations-money-and-credit-aggregates", {
+                  "Broad money (A+B)": ("454,671", "459,840"),
+                  "D. Private sector credit": ("624,663", "630,847"),
+              }),
+          }
+          errors = []
+          for code, (path, expected_rows) in sources.items():
+              request = Request(base + path, headers={
+                  "User-Agent": "RBNZ-Automated-Agent/GlobalMacroFXQuant/LiquidityResearch",
+                  "Accept": "text/html",
+              })
+              try:
+                  with urlopen(request, timeout=15) as response:
+                      page = response.read(5_000_000).decode("utf-8")
+                      print(f"{code} HTTP {response.status}", flush=True)
+                  # Match cells within their own rows so an error page cannot pass.
+                  rows = []
+                  for row in re.findall(r"<tr\b[^>]*>(.*?)</tr>", page, re.I | re.S):
+                      cells = re.split(r"<t[hd]\b[^>]*>", row, flags=re.I)[1:]
+                      rows.append([" ".join(unescape(re.sub(r"<[^>]+>", " ", cell)).split())
+                                   for cell in cells])
+                  for label, pair in expected_rows.items():
+                      matches = [cells for cells in rows if cells and
+                                 re.sub(r"^\d+\.\s*", "", label).casefold() in
+                                 " ".join(cells).casefold()]
+                      if not any(tuple(cells[-2:]) == pair for cells in matches):
+                          print(f"{code} candidate rows: {matches[:3]}", flush=True)
+                          marker = re.search(r"average.{0,200}settlement.{0,100}cash", page, re.I | re.S)
+                          if code == "D10" and marker:
+                              print(repr(page[max(0, marker.start()-200):marker.end()+450]), flush=True)
+                          raise ValueError(f"verified August/September rows absent for {label}")
+                      print(f"{code} | {label} | August {pair[0]} | September {pair[1]}", flush=True)
+              except (HTTPError, URLError, TimeoutError, ValueError) as exc:
+                  errors.append(f"{code}: {exc}")
+
+          if errors:
+              raise SystemExit("\n".join(errors))
+          PY
