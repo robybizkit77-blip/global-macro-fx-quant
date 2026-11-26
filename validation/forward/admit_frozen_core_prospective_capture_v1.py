@@ -73,6 +73,28 @@ def schedule_attempt(now, event, cron):
     return "SKIPPED_DUPLICATE_DST_UTC_SLOT"
 
 
+def current_price_provenance(audit, fx, today):
+    """Overlay may lag only when the producer explicitly used the current official history.
+
+    The same-day 28-pair audit and actual ECB row checks in assess remain mandatory.
+    """
+    if audit.get("overlay_asof") == today:
+        return True
+    try:
+        overlay_day = dt.date.fromisoformat(audit["overlay_asof"])
+        if overlay_day >= dt.date.fromisoformat(today):
+            return False
+    except (KeyError, TypeError, ValueError):
+        return False
+    return (audit.get("current_row_source") == "official history snapshot"
+            and audit.get("source") == "ECB euro foreign exchange reference rates"
+            and audit.get("history_status") == "CURRENT_OFFICIAL_HISTORY"
+            and audit.get("history_asof") == today
+            and fx.get("last_as_of") == today
+            and audit.get("history_rows") == fx.get("row_count")
+            and audit.get("complete_return_values") == 140)
+
+
 def assess(now, fx, setup, core):
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("actual forward observation must have timezone")
@@ -123,7 +145,7 @@ def assess(now, fx, setup, core):
         audit = setup.get("price_audit")
         if (not isinstance(audit, dict) or audit.get("status") != "PASS"
                 or audit.get("as_of") != today
-                or audit.get("overlay_asof") != today
+                or not current_price_provenance(audit, fx, today)
                 or audit.get("history_asof") != today
                 or audit.get("pair_count") != 28
                 or audit.get("complete_pair_count") != 28
