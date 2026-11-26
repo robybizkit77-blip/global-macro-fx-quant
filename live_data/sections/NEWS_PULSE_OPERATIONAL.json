@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-25",
-  "generated_at_utc": "2026-11-26T08:28:53.450323Z",
+  "generated_at_utc": "2026-11-26T08:43:57.345674Z",
   "items": [
     {
       "as_of": "2026-11-25",
@@ -317,7 +317,7 @@
       "title": "Australia · tasso di disoccupazione destagionalizzato, ottobre 2026: 4,9%"
     }
   ],
-  "last_checked_at_utc": "2026-11-26T08:28:53.450323Z",
+  "last_checked_at_utc": "2026-11-26T08:43:57.345674Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1198,9 +1198,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 11,
+        "accepted_items": 10,
         "ccy": "EUR",
-        "entries_rejected": 4,
+        "entries_rejected": 5,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -1260,8 +1260,8 @@
       {
         "accepted_items": 4,
         "ccy": "NZD",
-        "entries_rejected": 46,
-        "feed_entries_seen": 50,
+        "entries_rejected": 196,
+        "feed_entries_seen": 200,
         "feed_url": "https://www.rbnz.govt.nz/feeds/news",
         "source": "Reserve Bank of New Zealand",
         "source_id": "RBNZ_NEWS",
