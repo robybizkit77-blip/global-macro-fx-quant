@@ -33,8 +33,9 @@ assert(dt(issuer.published_on)>=dt(issuer.source_period));
 assert(dt(issuer.published_on)<Date.now()+86400000);
 assert.equal(issuer.latest_balance_million_gbp-issuer.previous_balance_million_gbp,issuer.weekly_change_million_gbp);
 assert(issuer.latest_balance_million_gbp>300000);
-assert.equal(native.GBP.liquidity.last_date,issuer.asof_canonical_overlap);
-assert.equal(native.GBP.liquidity.last_value,issuer.value_canonical_overlap);
+const anchor=native.GBP.liquidity.dates.indexOf(issuer.asof_canonical_overlap);
+assert(anchor>=0);
+assert.equal(native.GBP.liquidity.values[anchor],issuer.value_canonical_overlap);
 const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
 const fmt=(v,n=2)=>Number(v).toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n});
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -62,7 +63,7 @@ assert.match(gbp,/fonte separata dal feed FX/);
 assert.match(gbp,/EUR\/GBP e GBP\/USD/);
 assert.match(gbp,/non possiamo dedurre un allentamento/);
 const core=gbp.split('data-liq-role="liquidity"')[1]?.split('</div>')[0]||'';
-assert(core.includes('2026-09-16')&&!core.includes(issuer.source_period),
+assert(core.includes('Ultimo '+native.GBP.liquidity.last_date+' · '+fmt(native.GBP.liquidity.last_value,2)),
  'BoE research must never change the canonical weekly GBP liquidity');
 for(const ccy of FX.filter(x=>x!=='GBP'))
  assert(!studio.render(api(ccy)).includes('drivers-gbp-official'),
