@@ -78,8 +78,10 @@ function read(data,today,globals=root){
  add('Fonti integrative · liquidità e credito',supplemental(o,today,globals),'Periodi delle fonti integrative già utilizzate nelle sezioni. Non sostituiscono automaticamente le serie native, e non certificano l’ultimo rilascio.');
  add('Fonti integrative · tassi e pricing',[
   item('CHF · SNB 10Y (senza 2Y)',o.chfSpot?.as_of,today,7,'Solo 10Y informativo'),
-  item('CHF · storico SNB 2Y/10Y',o.chfResearch?.last_observation_date,today,7,'Storico di ricerca'),
-  item('AUD · RBA F2 2Y/10Y',o.audDailyResearch?.last_observation_date,today,7,'Storico di ricerca'),
+  item('CHF · storico SNB 2Y/10Y',o.chfResearch?.last_observation_date,today,45,'Ancoraggio statistico mensile di ricerca'),
+  item('AUD · RBA F2 2Y/10Y',o.audDailyResearch?.last_observation_date,today,14,'Pubblicazione F2 a cadenza settimanale; ricerca'),
+  item('NZD · RBNZ B2 HTML/XLSX',o.nzdReconciled?.last_observation_date,today,7,'Benchmark governativi post-roll riconciliati; ricerca'),
+  item('NZD · RBNZ B2 archivio web',o.nzdPostroll?.daily_observations?.at(-1)?.date,today,7,'Archivio storico separato, non fonte preferita'),
   ...G8.map(c=>{const q=o.ois?.currencies?.[c],x=item(c+' · snapshot pricing',q?.as_of,today,7,q?.quality||'');if(x.state==='observed')x.state='research';return x;}),
   {...item('NZD · proxy direzionale',o.nzdDirectionalProxy?.as_of,today,7),state:o.nzdDirectionalProxy?.as_of&&age(o.nzdDirectionalProxy.as_of,today)>=0&&age(o.nzdDirectionalProxy.as_of,today)<=7?'proxy':item('NZD',o.nzdDirectionalProxy?.as_of,today,7).state}
  ],'Le fonti integrative non risolvono automaticamente una lacuna operativa.');
