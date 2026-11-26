@@ -147,9 +147,9 @@
         "policySide": "AUD"
       },
       "transition": {
-        "state": "NESSUNA DIVERGENZA RELATIVA CHIARA",
-        "cls": "transNeutral",
-        "note": "la dinamica relativa non contraddice né rafforza chiaramente il vantaggio strutturale di AUD"
+        "state": "DINAMICA RELATIVA ALLINEATA",
+        "cls": "transConfirm",
+        "note": "la dinamica relativa è allineata al driver strutturale (AUD); il backtest la mantiene diagnostica, non autonoma"
       },
       "relative_dynamics": {
         "a": "AUD",
@@ -169,19 +169,18 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora"
           ],
           "withheld": false
         },
         "aNet": -1,
         "bNet": -1,
-        "state": "MISTO",
-        "fav": "—"
+        "state": "TURNING POINT ASIMMETRICO",
+        "fav": "AUD"
       },
       "price_state": null
     },
@@ -878,11 +877,10 @@
         "A": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora"
           ],
           "withheld": false
@@ -996,11 +994,10 @@
         "A": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora"
           ],
           "withheld": false
@@ -1432,11 +1429,10 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora"
           ],
           "withheld": false
@@ -2358,11 +2354,10 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora"
           ],
           "withheld": false
@@ -3008,11 +3003,10 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora"
           ],
           "withheld": false
@@ -3575,11 +3569,10 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora"
           ],
           "withheld": false
