@@ -57,6 +57,7 @@ def prepare_row(row,ident,now,fetcher):
         overlap_audit["alternative_overlap_count"]=len(common)
         if not common and post_legacy:
             need(len(alt)>=10 and max(alt)==legacy_end,"legacy terminal observation not independently established: count="+str(len(alt))+" last="+str(max(alt) if alt else None))
+            print("CISS_NEW_VINTAGE_DIAGNOSTIC",json.dumps({"count":len(old),"exact":exact,"median_abs_error":statistics.median(errors),"max_abs_error":max(errors),"within_0_0001":sum(e<=.0001 for e in errors),"within_0_001":sum(e<=.001 for e in errors),"samples":[[d.isoformat(),old[d],obs[d]] for d in sorted(old)[::10]]},sort_keys=True))
             need(exact/len(old)>=.95,"post-retirement New CISS exact historical match insufficient")
             overlap_audit.update({"variant_proof":"POST_LEGACY_TERMINATION_EXACT_OVERLAP","legacy_last_observation":max(alt).isoformat(),"legacy_observations":len(alt),"legacy_source_url":alt_url,"legacy_csv_sha256":sha256(alt_raw.encode()).hexdigest()})
         else:
