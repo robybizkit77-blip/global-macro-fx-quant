@@ -101,7 +101,46 @@ def latest_growth(as_of, *, path=ARCHIVE):
     return value
 
 
-def collect(now, *, path=ARCHIVE, fetch=retrieve, apply=False):
+def render_bulletin(url):
+    # Stats NZ may serve a JavaScript shell to ordinary HTTP clients.
+    # Render the exact official edition, not a search snippet or proxy.
+    from playwright.sync_api import sync_playwright, Error as BrowserError
+    try:
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch(headless=True)
+            try:
+                page = browser.new_page(locale="en-NZ")
+                response = page.goto(url, wait_until="domcontentloaded", timeout=20000)
+                if not response or response.status != 200 or page.url != url:
+                    raise Pending("STATSNZ_BROWSER_EDITION_TRANSPORT")
+                page.get_by_text("Key facts", exact=True).first.wait_for(timeout=15000)
+                page.get_by_text("Quarterly growth (%)", exact=True).first.wait_for(state="attached", timeout=15000)
+                raw = page.content().encode("utf-8")
+                if page.url != url or not 16 < len(raw) <= 2_000_000:
+                    raise Pending("STATSNZ_BROWSER_EDITION_INVALID")
+                return raw
+            finally:
+                browser.close()
+    except BrowserError as exc:
+        raise Pending("STATSNZ_BROWSER_SOURCE_UNAVAILABLE") from exc
+
+
+def official_edition(quarter, today, fetch=retrieve, render=None):
+    url = edition_url(quarter)
+    raw, final = fetch(url, HOST)
+    if final != url:
+        raise Pending("STATSNZ_GDP_EDITION_REDIRECT")
+    try:
+        return parse_bulletin(raw, quarter, today), raw
+    except Pending:
+        if render is None:
+            raise
+        # Fallback still requires every original date/unit/table/headline check.
+        rendered = render(url)
+        return parse_bulletin(rendered, quarter, today), rendered
+
+
+def collect(now, *, path=ARCHIVE, fetch=retrieve, render=None, apply=False):
     data = archive_for(path)
     latest = data["editions"][-1] if data["editions"] else None
     quarter = next_quarter(latest["quarter"]) if latest else FIRST
@@ -111,10 +150,7 @@ def collect(now, *, path=ARCHIVE, fetch=retrieve, apply=False):
         return {"status":"AWAITING_STATSNZ_QUARTER_CLOSE","next_quarter":quarter}
     url = edition_url(quarter)
     try:
-        raw,final = fetch(url,HOST)
-        if final != url:
-            raise Pending("STATSNZ_GDP_EDITION_REDIRECT")
-        row = parse_bulletin(raw,quarter,today)
+        row, raw = official_edition(quarter,today,fetch,render)
         if latest and row["publisher_release_day"] <= latest["publisher_release_day"]:
             raise Pending("STATSNZ_GDP_RELEASE_DATE_REGRESSED")
     except (OSError, ValueError, Pending) as error:
@@ -134,18 +170,10 @@ def main():
     if a.verify_quarter:
         if a.apply:
             p.error("verification is read-only")
-        url=edition_url(a.verify_quarter)
-        raw,final=retrieve(url,HOST)
-        if final != url:
-            raise Pending("STATSNZ_GDP_EDITION_REDIRECT")
-        try:
-            print(json.dumps(parse_bulletin(raw,a.verify_quarter,now.astimezone(ROME).date()),sort_keys=True))
-        except Pending:
-            import sys
-            print("Stats NZ public response text:", repr(source_text(raw)[:2800]), file=sys.stderr)
-            raise
+        row, _ = official_edition(a.verify_quarter, now.astimezone(ROME).date(), render=render_bulletin)
+        print(json.dumps(row,sort_keys=True))
     else:
-        print(json.dumps(collect(now,apply=a.apply),sort_keys=True))
+        print(json.dumps(collect(now,render=render_bulletin,apply=a.apply),sort_keys=True))
 
 
 if __name__ == "__main__":
