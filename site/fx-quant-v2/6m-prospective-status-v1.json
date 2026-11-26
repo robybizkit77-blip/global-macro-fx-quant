@@ -7,7 +7,7 @@
   "latest_observed_ecb_fixing": "2026-11-26",
   "input_readiness": {
     "capture_gate_local_time": "20:45 Europe/Rome",
-    "capture_gate_reached_for_rome_business_day": false,
+    "capture_gate_reached_for_rome_business_day": true,
     "official_ecb_t0_available_for_rome_day": true,
     "prospective_capture_already_frozen_for_rome_day": true,
     "capture_due_but_missing": false,
