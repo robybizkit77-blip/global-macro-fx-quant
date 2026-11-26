@@ -10,6 +10,7 @@ on:
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/reconcile_us_real_households_countrybook_v2.py'
       - 'validation/macro/prepare_us_revised_household_canonical_v1.py'
+      - 'validation/macro/prepare_eur_activity_revised_v1.py'
       - 'validation/macro/test_prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/orchestration/audit_g8_source_coverage_v1.py'
@@ -40,6 +41,7 @@ on:
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/reconcile_us_real_households_countrybook_v2.py'
       - 'validation/macro/prepare_us_revised_household_canonical_v1.py'
+      - 'validation/macro/prepare_eur_activity_revised_v1.py'
       - 'validation/macro/test_prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/orchestration/audit_g8_source_coverage_v1.py'
@@ -532,6 +534,58 @@ jobs:
             'payload/part-00.txt',
             'payload/part-01.txt',
           )
+          print(json.dumps(persist(managed=managed),sort_keys=True))
+          PY
+
+      - name: Prepare official revised Eurostat industry and retail histories
+        id: eur_activity
+        shell: bash
+        continue-on-error: ${{ github.event_name != 'pull_request' }}
+        run: |
+          set -euo pipefail
+          python -m validation.macro.prepare_eur_activity_revised_v1 \
+            --candidate /tmp/macro-persistent/MACRO_SERIES_EUR_ACTIVITY_PREP.json \
+            --receipt /tmp/macro-persistent/eur-activity-revised-receipt.json
+          python - <<'PY'
+          import json
+          j=json.load(open('/tmp/macro-persistent/eur-activity-revised-receipt.json'))
+          assert j['status'] in ('READY','NO_CHANGE')
+          assert j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
+          assert len(j['series'])==2
+          PY
+
+      - name: Apply Eurostat activity histories with existing canonical guards
+        if: github.ref == 'refs/heads/main' && steps.eur_activity.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          old=json.load(open('live_data/sections/MACRO_SERIES.json'))
+          new=json.load(open('/tmp/macro-persistent/MACRO_SERIES_EUR_ACTIVITY_PREP.json'))
+          assert set(old)==set(new)
+          changed=set()
+          for c in old:
+              assert len(old[c])==len(new[c])
+              for a,b in zip(old[c],new[c]):
+                  assert a['id']==b['id']
+                  if a!=b: changed.add((c,a['id']))
+          assert changed <= {('EUR','EA_IP_history_value'),('EUR','EA_RETAIL_VOL_history_value')}
+          PY
+          status="$(python -c "import json; print(json.load(open('/tmp/macro-persistent/eur-activity-revised-receipt.json'))['status'])")"
+          if [ "$status" = NO_CHANGE ]; then exit 0; fi
+          test "$status" = READY
+          python validation/update_live_direct_section.py --section MACRO_SERIES \
+            --replacement /tmp/macro-persistent/MACRO_SERIES_EUR_ACTIVITY_PREP.json --apply
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+          python validation/rebuild_live_data_runtime.py --verify-only
+          python - <<'PY'
+          import json,subprocess
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          managed=('live_data/sections/MACRO_SERIES.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt')
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed and changed.issubset(set(managed)),changed
           print(json.dumps(persist(managed=managed),sort_keys=True))
           PY
 
