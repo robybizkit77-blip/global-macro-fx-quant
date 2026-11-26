@@ -10569,7 +10569,8 @@
         "2026-11-21T00:00:00Z",
         "2026-11-22T00:00:00Z",
         "2026-11-23T00:00:00Z",
-        "2026-11-24T00:00:00Z"
+        "2026-11-24T00:00:00Z",
+        "2026-11-25T00:00:00Z"
       ],
       "values": [
         2198583.0,
@@ -10717,29 +10718,30 @@
         2075156.0,
         2075156.0,
         2072997.0,
-        2080726.0
+        2080726.0,
+        2053537.0
       ],
       "unit": "EUR millions",
       "frequency": "D",
       "source_file": "EA_EXCESS_LIQUIDITY_history.csv",
-      "last_date": "2026-11-24T00:00:00Z",
-      "last_value": 2080726.0,
+      "last_date": "2026-11-25T00:00:00Z",
+      "last_value": 2053537.0,
       "current_vintage_provenance": {
         "status": "ECB_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_url": "https://data-api.ecb.europa.eu/service/data/ILM/D.U2.C.EXLIQ.U2.EUR?format=csvdata&startPeriod=2026-07-02",
         "source_series_id": "ILM.D.U2.C.EXLIQ.U2.EUR",
-        "source_csv_sha256": "2dd2f848bf2c9d6e8df48fbaead5ee04dcd88bac687011fc9a1de6790550cab0",
-        "historical_overlap_exact": 82,
+        "source_csv_sha256": "32dc659f33de7cbe1c7b7dc4dd4e5570968daa7ef961150a9d969a7e07b74148",
+        "historical_overlap_exact": 146,
         "historical_overlap_audit": {
-          "count": 82,
-          "exact": 82,
+          "count": 146,
+          "exact": 146,
           "median_scaled_error": 0.0,
           "max_scaled_error": 0.0
         },
         "no_synthetic_dates": true,
         "source_series_first_release_PIT_certified": false,
         "historical_levels_may_be_revised_again": true,
-        "runner_first_seen_utc": "2026-11-26T11:34:29.675974+00:00"
+        "runner_first_seen_utc": "2026-11-26T15:17:59.432741+00:00"
       }
     },
     {
@@ -15540,7 +15542,9 @@
         "31 May 2026",
         "30 Jun 2026",
         "31 Jul 2026",
-        "31 Aug 2026"
+        "31 Aug 2026",
+        "30 Sep 2026",
+        "31 Oct 2026"
       ],
       "values": [
         1.41,
@@ -15624,13 +15628,31 @@
         4.91,
         4.8,
         4.79,
-        4.92
+        4.92,
+        5.13,
+        5.39
       ],
       "unit": "Percent",
       "frequency": "M",
       "source_file": "UK_MORTGAGE_RATE_2Y_75LTV_history.csv",
-      "last_date": "31 Aug 2026",
-      "last_value": 4.92
+      "last_date": "31 Oct 2026",
+      "last_value": 5.39,
+      "current_vintage_provenance": {
+        "status": "BOE_IADB_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "IUMBV34",
+        "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&Datefrom=30%2FNov%2F2019&Dateto=now&SeriesCodes=IUMBV34&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N",
+        "source_csv_sha256": "09881126f610b0aa88c048b730f053001e1426e584811d3c5dafa46cc8eb0c12",
+        "historical_overlap": {
+          "count": 82,
+          "exact": 82,
+          "median_error": 0.0,
+          "max_error": 0.0,
+          "error_units": "percentage points"
+        },
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T15:18:28.829671+00:00"
+      }
     },
     {
       "id": "UK_CCS_CORPORATE_CREDIT_AVAILABILITY_history_value",
@@ -20690,7 +20712,9 @@
         "2026-05",
         "2026-06",
         "2026-07",
-        "2026-08"
+        "2026-08",
+        "2026-09",
+        "2026-10"
       ],
       "values": [
         5785322.0,
@@ -20774,13 +20798,26 @@
         6643630.0,
         6395509.0,
         6442957.0,
-        6446620.0
+        6446620.0,
+        6250253.0,
+        6261882.0
       ],
       "unit": "100 million yen",
       "frequency": "M",
       "source_file": "JP_BOJ_TOTAL_ASSETS_history.csv",
-      "last_date": "2026-08",
-      "last_value": 6446620.0
+      "last_date": "2026-10",
+      "last_value": 6261882.0,
+      "current_vintage_provenance": {
+        "status": "FRED_BOJ_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "JPNASSETS",
+        "source_url": "https://fred.stlouisfed.org/series/JPNASSETS",
+        "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=JPNASSETS&cosd=2019-11-01",
+        "source_csv_sha256": "9591e561f30f2178ae2e80b35483027ca741a555483dc776f7e44c45123c4bce",
+        "historical_overlap": 82,
+        "max_absolute_revision": 0.0,
+        "source_series_first_release_PIT_certified": false,
+        "runner_first_seen_utc": "2026-11-26T14:56:34.333982+00:00"
+      }
     },
     {
       "id": "JP_M2_SA_history_value",
@@ -28969,7 +29006,9 @@
         "2026-05-01",
         "2026-06-01",
         "2026-07-01",
-        "2026-08-01"
+        "2026-08-01",
+        "2026-09-01",
+        "2026-10-01"
       ],
       "values": [
         117.12,
@@ -29053,13 +29092,39 @@
         113.46,
         111.48,
         111.11,
-        111.87
+        111.87,
+        111.39,
+        111.13
       ],
       "unit": "Index",
       "frequency": "M",
       "source_file": "CA_CEER_BROAD_NOMINAL_history.csv",
-      "last_date": "2026-08-01",
-      "last_value": 111.87
+      "last_date": "2026-10-01",
+      "last_value": 111.13,
+      "current_vintage_provenance": {
+        "status": "BOC_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://www.bankofcanada.ca/valet/observations/CEER_BROADNM/json?start_date=2019-11-01",
+        "source_series_id": "CEER_BROADNM",
+        "source_metadata": {
+          "label": "Monthly nominal Canadian effective exchange rates",
+          "description": "The monthly value of the nominal Canadian effective exchange rate (CEER) index, calculated using a weighted average of bilateral exchange rates against a basket of major trading partners’ currencies. The index is set to 100 for the base year 1999.",
+          "dimension": {
+            "key": "d",
+            "name": "Date"
+          },
+          "dateFormat": "monthly",
+          "metadata": {
+            "unit": "Index (2010 = 100)",
+            "frequency": "Monthly"
+          }
+        },
+        "source_json_sha256": "1667df339e2b35ab8c7c211cea006432e2731a6301664983d0e3e1597cf5455b",
+        "historical_overlap_exact": 82,
+        "period_semantics": "CALENDAR_MONTH_STORED_FIRST_DAY",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T15:00:11.003616+00:00"
+      }
     },
     {
       "id": "CAD_RATES_2016_2026_10Y",

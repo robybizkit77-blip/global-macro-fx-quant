@@ -30,7 +30,7 @@
     "source": "Reserve Bank of New Zealand · B2 government benchmarks (public HTML research)",
     "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
     "roll_date": "2026-10-30",
-    "latest_date": "2026-11-24",
+    "latest_date": "2026-11-25",
     "old_benchmark": {
       "2Y": "May 2028",
       "10Y": "May 2036"
@@ -53,19 +53,19 @@
         "10Y": 4.9
       },
       {
-        "date": "2026-11-24",
+        "date": "2026-11-25",
         "2Y": 3.8,
-        "10Y": 4.72
+        "10Y": 4.7
       }
     ],
     "latest_2Y": 3.8,
-    "latest_10Y": 4.72,
-    "latest_curve_bp": 92.0,
+    "latest_10Y": 4.7,
+    "latest_curve_bp": 90.0,
     "same_benchmark_change_bp": {
       "2Y": -16.0,
-      "10Y": -18.0,
+      "10Y": -20.0,
       "start": "2026-10-30",
-      "end": "2026-11-24"
+      "end": "2026-11-25"
     },
     "cross_roll_change_allowed": false,
     "research_only_note": "RBNZ government benchmark closing yields, public HTML; not XLSX-reconciled. Roll 30 Oct preserved; no Core or backtests.",
@@ -74,7 +74,7 @@
     "eligible_for_backtests": false,
     "eligible_for_automatic_promotion": false,
     "independent_xlsx_reconciled": false,
-    "source_release_date": "2026-11-25",
+    "source_release_date": "2026-11-26",
     "source_capture_method": "OFFICIAL_HTML_PUBLIC_TABLE_NOT_INDEPENDENT_XLSX",
     "source_release_date_quality": "OFFICIAL_RBNZ_PUBLIC_PAGE_DATE"
   },
