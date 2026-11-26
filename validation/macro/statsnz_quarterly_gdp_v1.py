@@ -33,8 +33,15 @@ def edition_url(quarter):
 
 def parse_bulletin(raw, quarter, today):
     text = source_text(raw).replace("\u2212", "-")
-    heading = re.search(r"Gross domestic product:\s*" + re.escape(label(quarter)) +
-                        r"\s+quarter\s+(\d{1,2})\s+([A-Za-z]+)\s+(20\d{2}),?\s+\d{1,2}:\d{2}", text, re.I)
+    # Page title and publication date need not be adjacent in the HTML.
+    title = r"Gross domestic product:\s*" + re.escape(label(quarter)) + r"\s+quarter\b"
+    titles = list(re.finditer(title, text, re.I))
+    heading = None
+    for match in titles:
+        candidate = re.search(r"\b(\d{1,2})\s+([A-Za-z]+)\s+(20\d{2})\s*,?\s+\d{1,2}:\d{2}", text[match.end():match.end()+400], re.I)
+        if candidate and candidate[2].title() in CALENDAR_MONTHS:
+            heading = candidate
+            break
     if not heading or heading[2].title() not in CALENDAR_MONTHS:
         raise Pending("STATSNZ_GDP_DATED_EDITION_IDENTITY")
     released = date(int(heading[3]), CALENDAR_MONTHS.index(heading[2].title())+1, int(heading[1]))
@@ -131,7 +138,12 @@ def main():
         raw,final=retrieve(url,HOST)
         if final != url:
             raise Pending("STATSNZ_GDP_EDITION_REDIRECT")
-        print(json.dumps(parse_bulletin(raw,a.verify_quarter,now.astimezone(ROME).date()),sort_keys=True))
+        try:
+            print(json.dumps(parse_bulletin(raw,a.verify_quarter,now.astimezone(ROME).date()),sort_keys=True))
+        except Pending:
+            import sys
+            print("Stats NZ public response text:", repr(source_text(raw)[:2800]), file=sys.stderr)
+            raise
     else:
         print(json.dumps(collect(now,apply=a.apply),sort_keys=True))
 
