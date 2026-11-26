@@ -48,6 +48,21 @@ class RebaseReadinessTests(unittest.TestCase):
             self.assertIsNone(p["certified_delta"])
             self.assertEqual(p["status"], "WITHHELD_UNTIL_VERSIONED_SCORE_REBASE")
 
+    def test_documented_us_cpi_annual_base_gap_is_not_false_latest_rate(self):
+        out = self.run_audit()["currencies"]["USD"]["inflation"]
+        if out["documented_annual_base_gap"]:
+            self.assertLess(out["observation_as_of"][:7], out["latest_raw_source_period"])
+            self.assertNotEqual(out["series_value"], out["latest_raw_source_value"])
+            s = copy.deepcopy(self.inputs["series"])
+            row = next(x for x in s["USD"] if x["id"] == "US_CPIAUCSL_history_value")
+            row["current_vintage_provenance"]["gap_not_imputed"] = False
+            with self.assertRaisesRegex(ValueError, "observation date mismatch"):
+                self.run_audit(series=s)
+            h = copy.deepcopy(self.inputs["heat"])
+            h["currencies"]["USD"]["inflation"]["latest_value"] += 1
+            with self.assertRaisesRegex(ValueError, "observation date mismatch"):
+                self.run_audit(heat=h)
+
     def test_heat_series_id_mismatch_rejected(self):
         h = copy.deepcopy(self.inputs["heat"])
         h["currencies"]["EUR"]["labour"]["series_id"] = "FAKE_UNEMP"

@@ -129,10 +129,33 @@ def g8_coverage(model, series, heat, registry, rates, ois, setup, today):
             require(isinstance(dates, list) and isinstance(values, list) and
                     len(dates) >= 2 and len(dates) == len(values),
                     f"{key}: invalid source history")
-            require(period_key(dates[-1], entry["frequency"]) ==
-                    period_key(h.get("as_of"), entry["frequency"]),
-                    f"{key}: heat/source observation date mismatch")
             period_not_future(dates[-1], entry["frequency"], today)
+            source_period = period_key(dates[-1], entry["frequency"])
+            heat_period = period_key(h.get("as_of"), entry["frequency"])
+            source_index = len(dates)-1
+            documented_annual_gap = False
+            if source_period != heat_period:
+                # Only the documented official US CPI missing base month may
+                # retain the last computable exact-calendar annual rate.
+                provenance = r.get("current_vintage_provenance") or {}
+                base = lambda p: f"{int(p[:4])-1:04d}{p[4:]}"
+                monthly = {period_key(d, "M"): i for i,d in enumerate(dates)}
+                if (key == "USD.inflation" and entry["series_id"] == "CPIAUCSL"
+                    and entry["transformation"] == "yoy_pct_from_index"
+                    and provenance.get("status") == "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT"
+                    and provenance.get("source_series_id") == "CPIAUCSL"
+                    and provenance.get("gap_not_imputed") is True
+                    and base(source_period) in (provenance.get("official_missing_periods") or [])
+                    and base(source_period) not in monthly):
+                    comparable = sorted(p for p in monthly if base(p) in monthly)
+                    if comparable and comparable[-1] == heat_period:
+                        source_index = monthly[heat_period]
+                        denominator = values[monthly[base(heat_period)]]
+                        numerator = values[source_index]
+                        documented_annual_gap = (valid_number(denominator) and denominator > 0
+                            and valid_number(numerator) and valid_number(h.get("latest_value"))
+                            and math.isclose(100*(numerator/denominator-1), h["latest_value"], abs_tol=1e-8))
+                require(documented_annual_gap, f"{key}: heat/source observation date mismatch")
             require(valid_number(h.get("latest_value")) and
                     valid_number(values[-1]), f"{key}: nonfinite latest observation")
             require(isinstance(h.get("validation"), dict) and
@@ -151,7 +174,10 @@ def g8_coverage(model, series, heat, registry, rates, ois, setup, today):
                 "canonical_macro_series_id": target_id,
                 "source": h.get("source"),
                 "transformation": entry["transformation"],
-                "series_value": values[-1],
+                "series_value": values[source_index],
+                "latest_raw_source_period": source_period,
+                "latest_raw_source_value": values[-1],
+                "documented_annual_base_gap": documented_annual_gap,
                 "transformed_value": h["latest_value"],
                 "historical_replay_certified": entry.get("historical_replay_certified") is True,
                 "score_mapping_status": "UNSPECIFIED_FOR_D",
