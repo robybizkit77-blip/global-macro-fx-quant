@@ -32,4 +32,28 @@ class RevisedTests(unittest.TestCase):
     def test_wrong_source(self):
         x=row(KEY)
         with self.assertRaises(ValueError):prepare_row(*KEY,x,NOW,lambda url:fetch("retail"))
+    def test_uk_production_full_revised_window_and_identity(self):
+        k=("GBP","UK_PRODUCTION_history_value")
+        x=row(k)
+        months=[(f"{2022+n//12}-{n%12+1:02d}",100+n/20) for n in range(48)]
+        x.update(dates=[d for d,v in months[:-2]],values=[v*0.98 for d,v in months[:-2]],last_date=months[-3][0],last_value=months[-3][1]*0.98)
+        import calendar
+        def source(url):
+            return json.dumps({"description":{"cdid":"K222","title":"IOP: B-E: PRODUCTION: CVMSA","unit":"Index, base year = 100"},
+                "months":[{"year":d[:4],"month":calendar.month_abbr[int(d[5:])],"value":str(v)} for d,v in months]}).encode()
+        self.assertEqual(prepare_row(*k,x,NOW,source)["status"],"READY")
+        self.assertEqual(x["last_date"],months[-1][0])
+        self.assertEqual(prepare_row(*k,x,NOW,source)["status"],"NO_CHANGE")
+    def test_uk_employment_period_identity(self):
+        k=("GBP","UK_EMPLOYMENT_RATE_history_value")
+        x=row(k)
+        import calendar
+        months=[(f"{2022+n//12}-{n%12+1:02d}",74+(n%3)*0.4) for n in range(48)]
+        x.update(dates=[d for d,v in months[1:-1]],values=[v for d,v in months[1:-1]],last_date=months[-2][0],last_value=months[-2][1])
+        def source(url):
+            return json.dumps({"description":{"cdid":"LF24","title":"Employment rate (aged 16 to 64, seasonally adjusted): %","unit":"%"},
+                "months":[{"year":d[:4],"month":calendar.month_abbr[int(d[5:])],"value":str(v)} for d,v in months]}).encode()
+        self.assertEqual(prepare_row(*k,x,NOW,source)["status"],"READY")
+        self.assertEqual(x["current_vintage_provenance"]["definition"]["legacy_period_shift_months"],0)
+        self.assertEqual(prepare_row(*k,x,NOW,source)["status"],"NO_CHANGE")
 if __name__=="__main__":unittest.main()
