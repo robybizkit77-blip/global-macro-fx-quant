@@ -1,0 +1,19 @@
+name: Macro chronology exact scope V1
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/prepare_macro_chronology_v1.py'
+      - 'validation/macro/test_prepare_macro_chronology_v1.py'
+      - '.github/workflows/macro-chronology-proof-v1.yml'
+permissions:
+  contents: read
+jobs:
+  exact-scope:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest validation.macro.test_prepare_macro_chronology_v1 -v
+      - run: python -m validation.macro.prepare_macro_chronology_v1 --candidate /tmp/chronology/candidate.json --receipt /tmp/chronology/receipt.json
