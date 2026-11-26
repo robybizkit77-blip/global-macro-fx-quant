@@ -60,3 +60,22 @@ class UniformDispersionTests(unittest.TestCase):
                 self.assertEqual(row["prior_count"], 12)
             if row["latest_visible_revision"] is not None:
                 self.assertTrue(row["latest_visible_revision"]["NOT_used_to_train_initial_web_z"])
+
+    def test_bls_gap_estimates_remain_separate(self):
+        r = run()
+        count = 0
+        for key, row in r["rows"].items():
+            gap = row.get("separate_bls_gap_estimate")
+            if gap is None:
+                continue
+            self.assertIn(key, ("USD.inflation", "USD.labour"))
+            self.assertIsNone(row["sample_sd_z"])
+            self.assertIsNone(row["strict_mad_z"])
+            self.assertEqual(gap["prior_count"], 24)
+            self.assertEqual(gap["calendar_months"], 25)
+            self.assertEqual(gap["missing_periods"], ["2025-10"])
+            self.assertFalse(gap["missing_value_imputed"])
+            self.assertFalse(gap["eligible_for_live_scoring"])
+            if gap["sample_sd_z"] is not None:
+                count += 1
+        self.assertEqual(r["separate_bls_gap_alternative_estimate_count"], count)
