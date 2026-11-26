@@ -221,6 +221,41 @@ def test_fetch_clock_only_noop():
             assert result["status"] == "PUSHED", result
             assert json.loads(git("--git-dir", str(origin), "show", "main:" + second))["source_as_of"] == "2026-11-24"
 
+
+def test_asx_reference_metadata_only_noop():
+    for mode in ("estimated", "g8"):
+        for scenario in ("same", "rate", "date", "hash_mismatch", "history_append"):
+            with tempfile.TemporaryDirectory() as td:
+                origin, writer, _ = fixture(Path(td))
+                first, proxy = ESTIMATED_PATHS[:2]
+                history = "site/fx-quant-v2/next/rates-pricing-history-v1.json"
+                def put(digest, clock, rate=3.68, date="2026-11-25", mismatch=False):
+                    write(writer, first, json.dumps({"generated_at_utc": clock, "rate": 4.5}))
+                    write(writer, proxy, json.dumps({"generated_at_utc": clock, "as_of": date,
+                        "monthly_reference": {"schema": "GMFQ_NZD_ASX_EXACT_20_WEEKDAY_REFERENCE_V1",
+                            "status": "REFERENCE_PARSED", "decoded_source_sha256": digest,
+                            "reference_date": "2026-10-28", "rate": rate}}))
+                    write(writer, history, json.dumps({"as_of": date, "currencies": {"NZD": {
+                        "fixed_contract_20d": {"basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS",
+                            "source_sha256": "c"*64 if mismatch else digest, "current_rate": rate}}}}))
+                put("a"*64, "2026-11-26T09:30:00Z")
+                git("add", first, proxy, history, cwd=writer)
+                git("commit", "-m", "baseline ASX proof", cwd=writer)
+                git("push", "origin", "HEAD:main", cwd=writer)
+                base = git("rev-parse", "HEAD", cwd=writer)
+                put("b"*64, "2026-11-26T09:35:00Z", rate=3.69 if scenario == "rate" else 3.68,
+                    date="2026-11-26" if scenario == "date" else "2026-11-25",
+                    mismatch=scenario == "hash_mismatch")
+                if scenario == "history_append":
+                    write(writer, ESTIMATED_PATHS[5], "v1\\nnew observed record\\n")
+                result = persist(base, mode, cwd=writer)
+                if scenario == "same":
+                    assert result["status"] == "NO_CHANGE" and result["reason"] == "ASX_REFERENCE_METADATA_ONLY", result
+                    assert git("--git-dir", str(origin), "rev-parse", "main") == base
+                else:
+                    assert result["status"] == "PUSHED", (scenario, result)
+
+
 if __name__ == "__main__":
     test_unrelated_change()
     test_unrelated_change_without_repository_identity()
@@ -233,4 +268,5 @@ if __name__ == "__main__":
     test_estimated_history_requires_certified_official_append()
     test_noop_scope()
     test_fetch_clock_only_noop()
+    test_asx_reference_metadata_only_noop()
     print("OIS_SAFE_PUSH_LEASE_V1: PASS (unrelated rebase, protected refusal, no-change, scope)")
