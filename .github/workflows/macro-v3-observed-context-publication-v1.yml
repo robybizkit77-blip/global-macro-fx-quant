@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'validation/macro/publish_v3_current_context_v1.py'
+      - 'validation/macro/v2_current_activity_momentum_v1.py'
+      - 'validation/macro/test_v2_current_activity_momentum_v1.py'
       - 'validation/publishing/verify_pages_http_delivery_v1.py'
       - 'validation/publishing/test_verify_pages_http_delivery_v1.py'
       - 'validation/macro/v3_current_g8_28pair_economic_evidence_v1.py'
@@ -62,6 +64,8 @@ on:
       - 'validation/macro/v3_gdp_q3_official_overlay_v1.py'
       - 'validation/macro/fixtures/v3_gdp_q3_2026_official_web_updates_v1.json'
       - 'validation/macro/publish_v3_current_context_v1.py'
+      - 'validation/macro/v2_current_activity_momentum_v1.py'
+      - 'validation/macro/test_v2_current_activity_momentum_v1.py'
       - 'validation/publishing/verify_pages_http_delivery_v1.py'
       - 'validation/publishing/test_verify_pages_http_delivery_v1.py'
       - '.github/workflows/macro-v3-observed-context-publication-v1.yml'
@@ -234,6 +238,10 @@ jobs:
           from pathlib import Path
           f=Path('site/control-room-preview/macro-v3-current-evidence.json')
           d=json.loads(f.read_text())
+          assert d['activity_momentum_status']=='RESEARCH_ONLY'
+          m=d['activity_momentum_research']
+          assert len(m['countries'])==8 and sum(map(len,m['countries'].values()))==13
+          assert m['safe_to_update_pairs'] is False and m['safe_to_publish_D'] is False
           assert d['summary']['currencies']==8
           assert d['summary']['economic_dimensions']==24
           assert d['summary']['pairs']==28
