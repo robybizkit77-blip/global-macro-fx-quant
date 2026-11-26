@@ -73,4 +73,30 @@ class BatchTests(unittest.TestCase):
         self.assertEqual(prepare_row(x,ident,NOW,source)["status"],"NO_CHANGE")
         with self.assertRaises(ValueError):
             prepare_row(x,ident,NOW,lambda u:source(u,True))
+    def test_rrsfs_source_unit_and_official_gap(self):
+        ident="US_RRSFS_history_value"
+        x=row(ident)
+        dates=[]; values=[]
+        for n in range(27):
+            y=2024+(7+n)//12;m=(7+n)%12+1
+            d=f"{y}-{m:02d}-01"
+            if d!="2025-10-01": dates.append(d);values.append(100+n)
+        x.update(dates=dates[:-2],values=values[:-2],last_date=dates[-3],last_value=values[-3])
+        def source(url):
+            if "/series/" in url:
+                cfg=CONFIG[ident]
+                return f"<title>{cfg[2]} (RRSFS) | FRED</title><p>Units: {cfg[3]}, Seasonally Adjusted</p><p>Frequency: Monthly</p>".encode(),url
+            lines=["observation_date,RRSFS"]
+            for n in range(27):
+                y=2024+(7+n)//12;m=(7+n)%12+1
+                d=f"{y}-{m:02d}-01"
+                lines.append(d+","+("." if d=="2025-10-01" else str(100+n)))
+            return ("\n".join(lines)+"\n").encode(),url
+        bad=dict(x,values=[v*2 for v in x["values"]],last_value=x["last_value"]*2)
+        with self.assertRaises(ValueError): prepare_row(bad,ident,NOW,source)
+        self.assertEqual(prepare_row(x,ident,NOW,source)["status"],"READY")
+        self.assertEqual(x["unit"],CONFIG[ident][3])
+        self.assertNotIn("2025-10-01",x["dates"])
+        self.assertEqual(x["current_vintage_provenance"]["official_missing_periods"],["2025-10"])
+        self.assertEqual(prepare_row(x,ident,NOW,source)["status"],"NO_CHANGE")
 if __name__=="__main__":unittest.main()
