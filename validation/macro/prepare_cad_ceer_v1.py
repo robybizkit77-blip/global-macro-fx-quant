@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 from urllib.request import Request,urlopen
 SOURCE=Path(__file__).resolve().parents[2]/"live_data/sections/MACRO_SERIES.json"
 BASE="https://www.bankofcanada.ca/valet/observations/"
-CONFIG={"CA_CEER_BROAD_NOMINAL_history_value":("CEER_BROADM","monthly nominal canadian effective exchange rates","Index")}
+CONFIG={"CA_CEER_BROAD_NOMINAL_history_value":("CEER_BROADNM","monthly nominal canadian effective exchange rates","Index")}
 def need(ok,why):
     if not ok:raise ValueError(why)
 def fetch(url):
@@ -27,7 +27,7 @@ def prepare_row(row,ident,now,fetcher):
     label=str(meta.get("label",""));desc=str(meta.get("description",""))
     need(title in (label+" "+desc).casefold(),"BoC series label mismatch: "+str(meta))
     text=(label+" "+desc).casefold()
-    need("nominal" in text and "real" not in text and "excluding" not in text,"wrong exchange rate variant")
+    need("nominal" in label.casefold() and "excluding" not in label.casefold() and "real" not in label.casefold(),"wrong exchange rate variant")
     print("BOC_CEER_METADATA",code,json.dumps(meta,sort_keys=True))
     obs={}
     for x in j["observations"]:
