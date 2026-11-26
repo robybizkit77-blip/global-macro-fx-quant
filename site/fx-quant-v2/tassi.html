@@ -404,7 +404,18 @@ async function refreshBenchmarkResearch(){
   draw();
  }catch(error){console.warn("[FX Quant V2 Rates] Same-basis research source unavailable; retained dated canonical displays:",error);}
 }
+async function refreshNZDReconciled(){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9000);
+ try{
+  const response=await fetch("./nzd-rbnz-b2-reconciled-research.json",{cache:"no-store",signal:controller.signal});
+  if(!response.ok)throw Error("NZD reconciled HTTP "+response.status);
+  state.nzdReconciled=await response.json();
+  if(state.selected==="NZD")draw();
+ }catch(e){console.warn("[FXV2 NZD] Reconciled source evidence unavailable:",e);}
+ finally{clearTimeout(timer);}
+}
 baseReady.then(refreshBenchmarkResearch);
+baseReady.then(refreshNZDReconciled);
 baseReady.then(refreshCHFHistory).catch(e=>console.warn('[FXV2 CHF] storico SNB non disponibile:',e));
 
 /* Source-cadence-aware AUD recovery: independent same-row official RBA F2.
@@ -557,7 +568,12 @@ function benchmarkPanel(){
   card("Prima del cambio · "+dt(old.date),"2Y "+it(old["2Y"],2)+"% ("+x.old_benchmark["2Y"]+"); 10Y "+it(old["10Y"],2)+"% ("+x.old_benchmark["10Y"]+"). Nessuna linea o variazione calcolata verso la nuova serie.");
   card("Dopo il cambio · "+dt(first.date)+" → "+dt(last.date),
     "2Y "+it(first["2Y"],2)+"% → "+it(last["2Y"],2)+"% ("+x.new_benchmark["2Y"]+"); 10Y "+it(first["10Y"],2)+"% → "+it(last["10Y"],2)+"% ("+x.new_benchmark["10Y"]+"). Variazione entro lo stesso benchmark: 2Y "+plus(x.same_benchmark_change_bp["2Y"])+" pb, 10Y "+plus(x.same_benchmark_change_bp["10Y"])+" pb. Curva indicativa finale "+it(x.latest_curve_bp,0)+" pb.");
-  assign("benchmarkFoot","Fonte: tabella ufficiale RBNZ B2, letture web di ricerca. La variazione tra "+dt(first.date)+" e "+dt(last.date)+" è cumulata su più sedute, NON 1D. Verifica XLSX mancante. Livelli indicativi V2, esclusi da Core FX, OIS ufficiali e backtest.");
+  const proof=globalThis.FXV2RatesWorking?.nzdReconciledProof?.(state.nzdReconciled,x,today);
+  if(proof)card("Variazione settimanale osservata · "+dt(proof.reference)+" → "+dt(proof.date),
+     "2Y "+plus(proof.change2)+" pb, 10Y "+plus(proof.change10)+" pb. Curva: "+plus(proof.change10-proof.change2)+" pb. Stesso benchmark; non è una variazione 1D.");
+  assign("benchmarkFoot","Fonte: tabella ufficiale RBNZ B2. La variazione tra "+dt(first.date)+" e "+dt(last.date)+" è cumulata su più sedute, NON 1D. "+
+     (proof?"HTML e XLSX della stessa edizione "+dt(proof.publication)+" riconciliati: "+proof.matched+" date coincidenti, "+proof.observations+" osservazioni post-roll. ":"Verifica XLSX non disponibile per questa specifica edizione. ")+
+     "Livelli osservati di ricerca V2, esclusi da Core FX, OIS ufficiali e backtest.");
   assign("ratesTitle","Nuova Zelanda: il salto del 30 ottobre è un cambio benchmark.");
   assign("ratesStand","Il 2Y e il 10Y hanno cambiato titolo di riferimento. Per i calcoli indicativi usiamo solo il nuovo benchmark: non colleghiamo artificialmente le due serie.");
  }
