@@ -1,10 +1,10 @@
 {
   "schema": "GMFQ_FXV2_6M_PROSPECTIVE_STATUS_READONLY_V1",
-  "as_of_rome_day": "2026-11-25",
+  "as_of_rome_day": "2026-11-26",
   "report_status": "PROSPECTIVE_COLLECTION_IN_PROGRESS_NOT_VALIDATED",
   "registration_date_utc": "2026-11-05",
   "first_eligible_rome_date": "2026-11-06",
-  "latest_observed_ecb_fixing": "2026-11-25",
+  "latest_observed_ecb_fixing": "2026-11-26",
   "input_readiness": {
     "capture_gate_local_time": "20:45 Europe/Rome",
     "capture_gate_reached_for_rome_business_day": false,
@@ -13,28 +13,28 @@
     "capture_due_but_missing": false,
     "last_valid_6m_source_audit": {
       "available": true,
-      "source_as_of_last_available_ecb_fixing": "2026-11-25",
+      "source_as_of_last_available_ecb_fixing": "2026-11-26",
       "currency_latest_market_date": {
-        "USD": "2026-11-25",
-        "EUR": "2026-11-24",
-        "CHF": "2026-11-25"
+        "USD": "2026-11-26",
+        "EUR": "2026-11-25",
+        "CHF": "2026-11-26"
       },
       "pair_recent_same_contract_source": {
         "EUR/USD": {
           "has_recent_matched_same_contract_6m_quote_change": true,
-          "last_eligible_source_market_day": "2026-11-24",
+          "last_eligible_source_market_day": "2026-11-25",
           "not_a_frozen_hypothesis": true,
           "not_an_OIS_repricing_signal": true
         },
         "EUR/CHF": {
           "has_recent_matched_same_contract_6m_quote_change": true,
-          "last_eligible_source_market_day": "2026-11-24",
+          "last_eligible_source_market_day": "2026-11-25",
           "not_a_frozen_hypothesis": true,
           "not_an_OIS_repricing_signal": true
         },
         "USD/CHF": {
           "has_recent_matched_same_contract_6m_quote_change": true,
-          "last_eligible_source_market_day": "2026-11-25",
+          "last_eligible_source_market_day": "2026-11-26",
           "not_a_frozen_hypothesis": true,
           "not_an_OIS_repricing_signal": true
         }
@@ -51,10 +51,10 @@
     "pair_universe": 28,
     "supported_rate_source_pair_universe": 3,
     "unsupported_rate_source_pair_universe": 25,
-    "actual_prospective_capture_days": 12,
-    "frozen_28_pair_rows": 336,
-    "experimental_direction_observations": 22,
-    "outcomes_observed_after_5_future_fixings": 13,
+    "actual_prospective_capture_days": 13,
+    "frozen_28_pair_rows": 364,
+    "experimental_direction_observations": 23,
+    "outcomes_observed_after_5_future_fixings": 14,
     "frozen_directions_awaiting_maturity": 9,
     "matured_outcomes_not_recorded": 0,
     "elapsed_full_weeks_since_first_capture": 2,
@@ -65,10 +65,10 @@
   "pairs": {
     "AUD/CAD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -76,10 +76,10 @@
     },
     "AUD/CHF": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -87,10 +87,10 @@
     },
     "AUD/JPY": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -98,10 +98,10 @@
     },
     "AUD/NZD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -109,10 +109,10 @@
     },
     "AUD/USD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -120,10 +120,10 @@
     },
     "CAD/CHF": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -131,10 +131,10 @@
     },
     "CAD/JPY": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -142,10 +142,10 @@
     },
     "CHF/JPY": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -153,10 +153,10 @@
     },
     "EUR/AUD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -164,10 +164,10 @@
     },
     "EUR/CAD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -175,23 +175,23 @@
     },
     "EUR/CHF": {
       "futures_6m_history_potentially_supported": true,
-      "frozen_capture_days": 12,
-      "last_capture_state": "ABSTAIN_SMALL_RELATIVE_MOVE",
+      "frozen_capture_days": 13,
+      "last_capture_state": "FROZEN_EXPERIMENTAL_DIRECTION",
       "all_capture_state_counts": {
         "ABSTAIN_REPEATED_SAME_SOURCE_FEATURE": 1,
         "ABSTAIN_SMALL_RELATIVE_MOVE": 5,
-        "FROZEN_EXPERIMENTAL_DIRECTION": 6
+        "FROZEN_EXPERIMENTAL_DIRECTION": 7
       },
-      "frozen_experimental_directions": 6,
+      "frozen_experimental_directions": 7,
       "matured_ecb_reference_outcomes": 4,
       "eligible_for_live_fx_signals": false
     },
     "EUR/GBP": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -199,10 +199,10 @@
     },
     "EUR/JPY": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -210,10 +210,10 @@
     },
     "EUR/NZD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -221,11 +221,11 @@
     },
     "EUR/USD": {
       "futures_6m_history_potentially_supported": true,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_SMALL_RELATIVE_MOVE",
       "all_capture_state_counts": {
         "ABSTAIN_REPEATED_SAME_SOURCE_FEATURE": 1,
-        "ABSTAIN_SMALL_RELATIVE_MOVE": 6,
+        "ABSTAIN_SMALL_RELATIVE_MOVE": 7,
         "FROZEN_EXPERIMENTAL_DIRECTION": 5
       },
       "frozen_experimental_directions": 5,
@@ -234,10 +234,10 @@
     },
     "GBP/AUD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -245,10 +245,10 @@
     },
     "GBP/CAD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -256,10 +256,10 @@
     },
     "GBP/CHF": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -267,10 +267,10 @@
     },
     "GBP/JPY": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -278,10 +278,10 @@
     },
     "GBP/NZD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -289,10 +289,10 @@
     },
     "GBP/USD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -300,10 +300,10 @@
     },
     "NZD/CAD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -311,10 +311,10 @@
     },
     "NZD/CHF": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -322,10 +322,10 @@
     },
     "NZD/JPY": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -333,10 +333,10 @@
     },
     "NZD/USD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -344,10 +344,10 @@
     },
     "USD/CAD": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
@@ -355,22 +355,23 @@
     },
     "USD/CHF": {
       "futures_6m_history_potentially_supported": true,
-      "frozen_capture_days": 12,
-      "last_capture_state": "FROZEN_EXPERIMENTAL_DIRECTION",
+      "frozen_capture_days": 13,
+      "last_capture_state": "ABSTAIN_SMALL_RELATIVE_MOVE",
       "all_capture_state_counts": {
         "ABSTAIN_REPEATED_SAME_SOURCE_FEATURE": 1,
+        "ABSTAIN_SMALL_RELATIVE_MOVE": 1,
         "FROZEN_EXPERIMENTAL_DIRECTION": 11
       },
       "frozen_experimental_directions": 11,
-      "matured_ecb_reference_outcomes": 6,
+      "matured_ecb_reference_outcomes": 7,
       "eligible_for_live_fx_signals": false
     },
     "USD/JPY": {
       "futures_6m_history_potentially_supported": false,
-      "frozen_capture_days": 12,
+      "frozen_capture_days": 13,
       "last_capture_state": "ABSTAIN_NO_SUPPORTED_6M_SOURCE",
       "all_capture_state_counts": {
-        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 12
+        "ABSTAIN_NO_SUPPORTED_6M_SOURCE": 13
       },
       "frozen_experimental_directions": 0,
       "matured_ecb_reference_outcomes": 0,
