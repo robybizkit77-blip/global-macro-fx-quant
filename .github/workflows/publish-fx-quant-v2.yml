@@ -32,6 +32,8 @@ on:
       - 'site/fx-quant-v2/next/decision-journey.js'
       - 'site/fx-quant-v2/next/app.js'
       - 'site/fx-quant-v2/next/data-health-v1.js'
+      - 'site/fx-quant-v2/next/activity-momentum-v1.js'
+      - 'validation/publishing/test_next_activity_momentum_v1.cjs'
       - 'validation/publishing/test_next_data_health_v1.cjs'
       - 'site/fx-quant-v2/next/cot-studio.js'
       - 'site/fx-quant-v2/next/cot-studio.css'
@@ -140,6 +142,7 @@ jobs:
           python3 validation/publishing/check_fxv2_mirror_source_contract_v1.py
           node --check site/fx-quant-v2/next/app.js
           node validation/publishing/test_next_data_health_v1.cjs
+          node validation/publishing/test_next_activity_momentum_v1.cjs
           node --check site/fx-quant-v2/next/pair-rankings.js
           node --check site/fx-quant-v2/next/currency-studio.js
 
@@ -479,7 +482,8 @@ jobs:
                   "site/fx-quant-v2/next/index.html",
               )
           # The overview and source checks also require its shared diagnostic reader.
-          paths += ("site/fx-quant-v2/next/data-health-v1.js",)
+          paths += ("site/fx-quant-v2/next/data-health-v1.js",
+                    "site/fx-quant-v2/next/activity-momentum-v1.js",)
           # Remove overlapping consumers without weakening exact-byte checks.
           paths = tuple(dict.fromkeys(paths))
           proof = verify(Path("."), BASE_URL, paths, budget_seconds=480, interval_seconds=10)
