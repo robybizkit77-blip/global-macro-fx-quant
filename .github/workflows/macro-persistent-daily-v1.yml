@@ -51,6 +51,8 @@ on:
       - 'validation/macro/test_prepare_gbp_boe_revised_v1.py'
       - 'validation/macro/test_prepare_us_weekly_daily_revised_v1.py'
       - 'validation/macro/test_prepare_us_monthly_revised_v1.py'
+      - 'validation/macro/prepare_us_quarterly_cfna_revised_v1.py'
+      - 'validation/macro/test_prepare_us_quarterly_cfna_revised_v1.py'
       - 'validation/macro/test_prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/orchestration/audit_g8_source_coverage_v1.py'
@@ -122,6 +124,8 @@ on:
       - 'validation/macro/test_prepare_gbp_boe_revised_v1.py'
       - 'validation/macro/test_prepare_us_weekly_daily_revised_v1.py'
       - 'validation/macro/test_prepare_us_monthly_revised_v1.py'
+      - 'validation/macro/prepare_us_quarterly_cfna_revised_v1.py'
+      - 'validation/macro/test_prepare_us_quarterly_cfna_revised_v1.py'
       - 'validation/macro/test_prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/orchestration/audit_g8_source_coverage_v1.py'
@@ -340,6 +344,42 @@ jobs:
         with:
           name: gbp-boe-iadb-source-proof
           path: /tmp/gbp-boe-iadb-proof/receipt.json
+          if-no-files-found: warn
+
+
+  us-quarterly-cfnai-source-proof:
+    if: github.event_name == 'pull_request' && github.head_ref == 'fix/us-four-fred-research-histories-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install beautifulsoup4
+      - name: Validate source contract and independent failure behavior
+        run: python -m unittest validation.macro.test_prepare_us_quarterly_cfna_revised_v1 -v
+      - name: Verify official FRED historical overlap
+        run: |
+          python -m validation.macro.prepare_us_quarterly_cfna_revised_v1 --candidate /tmp/us-quarterly-cfnai-proof/candidate.json --receipt /tmp/us-quarterly-cfnai-proof/receipt.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/us-quarterly-cfnai-proof/receipt.json'))
+          for r in d['series']: print(r)
+          assert len(d['series'])==4
+          # Prove each verified row and require meaningful real-source coverage;
+          # independent withheld rows are explicit, never promoted.
+          approved=[r for r in d['series'] if r['status'] in ('READY','NO_CHANGE')]
+          assert len(approved)==4,d
+          assert all(r['after']>=r['before'] for r in approved),d
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: us-quarterly-cfnai-source-proof
+          path: /tmp/us-quarterly-cfnai-proof/receipt.json
           if-no-files-found: warn
 
 
@@ -1834,6 +1874,61 @@ jobs:
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           assert changed and changed.issubset(set(managed)),changed
           print(json.dumps(persist(managed=managed,commit_message='Refresh verified GBP BOE IADB revised macro histories'),sort_keys=True))
+          PY
+
+
+      - name: Prepare independent revised US QUARTERLY CFNAI histories
+        id: us_quarterly_cfnai
+        shell: bash
+        run: |
+          python -m unittest validation.macro.test_prepare_us_quarterly_cfna_revised_v1 -v
+          python -m validation.macro.prepare_us_quarterly_cfna_revised_v1 \
+            --candidate /tmp/macro-persistent/MACRO_SERIES_US_QUARTERLY_CFNAI_PREP.json \
+            --receipt /tmp/macro-persistent/us-quarterly-cfnai-revised-receipt.json
+          python - <<'PY'
+          import json
+          j=json.load(open('/tmp/macro-persistent/us-quarterly-cfnai-revised-receipt.json'))
+          assert len(j['series'])==4 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
+          for row in j['series']:
+              if row['status']=='WITHHELD': print('::warning::US QUARTERLY CFNAI '+row['id']+' '+row['reason'])
+          PY
+
+      - name: Apply verified US QUARTERLY CFNAI histories with existing canonical guards
+        if: github.ref == 'refs/heads/main' && steps.us_quarterly_cfnai.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from validation.macro.prepare_us_quarterly_cfna_revised_v1 import CONFIG
+          old=json.load(open('live_data/sections/MACRO_SERIES.json'))
+          new=json.load(open('/tmp/macro-persistent/MACRO_SERIES_US_QUARTERLY_CFNAI_PREP.json'))
+          assert set(old)==set(new)
+          changed=set()
+          for c in old:
+              assert len(old[c])==len(new[c])
+              for a,b in zip(old[c],new[c]):
+                  assert a['id']==b['id']
+                  if a!=b: changed.add((c,a['id']))
+          assert changed <= {('USD',x) for x in CONFIG}
+          j=json.load(open('/tmp/macro-persistent/us-quarterly-cfnai-revised-receipt.json'))
+          assert changed=={('USD',r['id']) for r in j['series'] if r['status']=='READY'}
+          PY
+          status="$(python -c "import json; print(json.load(open('/tmp/macro-persistent/us-quarterly-cfnai-revised-receipt.json'))['status'])")"
+          if [ "$status" = NO_CHANGE_OR_WITHHELD ]; then exit 0; fi
+          test "$status" = READY
+          python validation/update_live_direct_section.py --section MACRO_SERIES \
+            --replacement /tmp/macro-persistent/MACRO_SERIES_US_QUARTERLY_CFNAI_PREP.json --apply
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+          python validation/rebuild_live_data_runtime.py --verify-only
+          python - <<'PY'
+          import json,subprocess
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          managed=('live_data/sections/MACRO_SERIES.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt')
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed and changed.issubset(set(managed)),changed
+          print(json.dumps(persist(managed=managed,commit_message='Refresh verified US QUARTERLY CFNAI revised macro histories'),sort_keys=True))
           PY
 
 
