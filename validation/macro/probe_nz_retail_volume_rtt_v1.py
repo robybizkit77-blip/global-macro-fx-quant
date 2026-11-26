@@ -5,12 +5,15 @@ from hashlib import sha256
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 from zipfile import ZipFile
+from urllib.request import Request,urlopen
 from bs4 import BeautifulSoup
 from validation.macro.collect_us_nz_household_firm_sources_v1 import fetch
 
 ROOT=Path(__file__).resolve().parents[2]
 PAGE="https://www.stats.govt.nz/information-releases/retail-trade-survey-september-2026-quarter/"
 ID="RTTQS1S9K"
+CANDIDATES=("RTTQS1S9K","RTTQSF91KS","RTTQ.SF91KS")
+DIRECT="https://www.stats.govt.nz/assets/Uploads/Retail-trade-survey/Retail-trade-survey-September-2026-quarter/Download-data/retail-trade-survey-september-2026-quarter.zip"
 TARGET="NZ_RETAIL_VOLUME_Q_history_value"
 
 def need(ok, reason):
@@ -32,7 +35,7 @@ def zip_link(raw, page):
     need(len(links)==1, "missing or ambiguous retail ZIP link: "+str(sorted(links)))
     return links.pop()
 
-def inspect_zip(raw, row, today):
+def inspect_zip(raw, row, today, ident):
     need(row["id"]==TARGET and row["unit"]=="NZD million, deflated Sep 2010 quarter prices, SA" and row["frequency"]=="Q","canonical identity changed")
     need(len(row["dates"])==len(row["values"])>=24 and row["dates"]==sorted(set(row["dates"])),"bad canonical history")
     prior=dict(zip(row["dates"],row["values"]))
@@ -45,7 +48,7 @@ def inspect_zip(raw, row, today):
             headers=reader.fieldnames or []
             schemas.append({"name":ent.filename,"headers":headers})
             for r in reader:
-                if r.get("Series_reference")==ID: hits.append(r)
+                if r.get("Series_reference")==ident: hits.append(r)
     print("NZ_RETAIL_ZIP_SCHEMA",json.dumps(schemas))
     need(hits,"candidate series not present")
     meta={k:sorted({str(r.get(k,"")) for r in hits}) for k in hits[0] if k not in ("Period","Data_value","STATUS","Suppressed")}
@@ -74,45 +77,27 @@ def inspect_zip(raw, row, today):
     need(all((int(b[:4])-int(a[:4]))*12+int(b[5:])-int(a[5:])==3 for a,b in zip(dates,dates[1:])),"quarterly history gap")
     # Independent exact anchor published on the issuer's release chart, NZD millions.
     need("2026-09" in obs and abs(obs["2026-09"]*factor-26487.973)<=.1,"September chart level mismatch")
-    return {"series_id":ID,"metadata":meta,"overlap":len(prior),"scale":match[0],"first":dates[0],"last":dates[-1],"latest_nzd_million":obs[dates[-1]]*factor,"source_sha256":sha256(raw).hexdigest(),"first_release_PIT_certified":False,"research_only":True,"canonical_mutated":False}
+    return {"series_id":ident,"metadata":meta,"overlap":len(prior),"scale":match[0],"first":dates[0],"last":dates[-1],"latest_nzd_million":obs[dates[-1]]*factor,"source_sha256":sha256(raw).hexdigest(),"first_release_PIT_certified":False,"research_only":True,"canonical_mutated":False}
 
 if __name__=="__main__":
     row=next(x for x in json.loads((ROOT/"live_data/sections/MACRO_SERIES.json").read_text())["NZD"] if x["id"]==TARGET)
-    raw,final=fetch(PAGE)
-    try:
-        url=zip_link(raw,final)
-    except ValueError as exc:
-        print("NZ_RETAIL_RELEASE_LINK_UNRESOLVED",str(exc))
-        index="https://www.stats.govt.nz/large-datasets/csv-files-for-download/"
-        listing,listing_final=fetch(index)
-        soup=BeautifulSoup(listing,"html.parser")
-        links=set()
-        for a in soup.find_all("a",href=True):
-            u=urljoin(listing_final,a["href"])
-            p=urlsplit(u)
-            label=norm(a.get_text(" ",strip=True))
-            if p.scheme=="https" and p.hostname in ("www.stats.govt.nz","stats.govt.nz") and "retail trade survey" in label and "september 2026 quarter" in label and "csv" in label:
-                links.add(u)
-        print("NZ_RETAIL_INDEX_EXACT_LINKS",sorted(links))
-        # File cards may place the link on an icon, with the title in a sibling.
-        # Inspect the release card itself, not the entire parent page.
-        for origin,body in ((final,raw),(listing_final,listing)):
-            doc=BeautifulSoup(body,"html.parser")
-            for h in doc.find_all(["h2","h3","h4","h5"]):
-                title=norm(h.get_text(" ",strip=True))
-                if "retail trade survey" not in title or "september 2026 quarter" not in title or "csv" not in title:continue
-                for card in (h,h.parent,h.parent.parent):
-                    urls=set()
-                    for a in card.find_all("a",href=True):
-                        u=urljoin(origin,a["href"]);p=urlsplit(u)
-                        if p.scheme=="https" and p.hostname in ("www.stats.govt.nz","stats.govt.nz") and p.path.lower().endswith(".zip"):urls.add(u)
-                    if len(urls)==1:links.update(urls);break
-                print("NZ_RETAIL_RELEASE_CARD",str(h.parent)[:1600])
-            print("NZ_RETAIL_LINK_DIAGNOSTICS",json.dumps([{"href":a["href"],"label":norm(a.get_text(" ",strip=True))} for a in doc.find_all("a",href=True) if "retail" in a["href"].lower() or ".zip" in a["href"].lower()][:30]))
-        need(len(links)==1,"missing or ambiguous exact release CSV link on issuer pages")
-        url=links.pop()
-    print("NZ_RETAIL_ISSUER_ZIP",url)
-    blob,returned=fetch(url)
-    receipt=inspect_zip(blob,row,datetime.now(timezone.utc).date())
-    receipt["source_url"]=returned
-    print("NZ_RETAIL_SOURCE_PROOF",json.dumps(receipt,sort_keys=True))
+    # Derived candidate from the previous issuer archive path; verify actual
+    # HTTPS issuer response, ZIP magic and exact series contents. Not a claim
+    # that the guessed URL exists until this proof succeeds.
+    req=Request(DIRECT,headers={"User-Agent":"GMFQ-official-research/1.0","Accept":"application/zip,application/octet-stream"})
+    with urlopen(req,timeout=30) as res:
+        returned=res.geturl()
+        need(res.status==200 and urlsplit(returned).scheme=="https" and urlsplit(returned).hostname in ("www.stats.govt.nz","stats.govt.nz"),"unexpected archive endpoint")
+        blob=res.read(5_000_001)
+    need(0<len(blob)<=5_000_000 and blob.startswith(b"PK"),"not a bounded ZIP archive")
+    print("NZ_RETAIL_ISSUER_ZIP",returned)
+    proofs=[]
+    for ident in CANDIDATES:
+        try:
+            receipt=inspect_zip(blob,row,datetime.now(timezone.utc).date(),ident)
+            receipt["source_url"]=returned
+            print("NZ_RETAIL_SOURCE_PROOF",json.dumps(receipt,sort_keys=True))
+            proofs.append(receipt)
+        except (ValueError,KeyError) as exc:
+            print("NZ_RETAIL_CANDIDATE_REJECTED",ident,str(exc))
+    need(len(proofs)==1,"unique verified source not identified")
