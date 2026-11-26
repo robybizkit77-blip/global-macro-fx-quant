@@ -1448,7 +1448,9 @@
         "2026-05-01",
         "2026-06-01",
         "2026-07-01",
-        "2026-08-01"
+        "2026-08-01",
+        "2026-09-01",
+        "2026-10-01"
       ],
       "values": [
         264.97,
@@ -1532,13 +1534,33 @@
         336.121,
         336.065,
         336.789,
-        337.765
+        337.765,
+        338.896,
+        339.9
       ],
       "unit": "Index 1982-1984=100",
       "frequency": "M",
       "source_file": "US_CPILFESL_history.csv",
-      "last_date": "2026-08-01",
-      "last_value": 337.765
+      "last_date": "2026-10-01",
+      "last_value": 339.9,
+      "current_vintage_provenance": {
+        "status": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_series_id": "CPILFESL",
+        "source_url": "https://fred.stlouisfed.org/series/CPILFESL",
+        "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPILFESL&cosd=2019-10-01",
+        "source_csv_sha256": "05500f40739e3174124f11fcbae06099c587fb956e1bafde7607551cf0b80397",
+        "source_metadata_sha256": "77504b2c2096d798226bb47d6aeef314a2702a9de3bf9925b5d258bfec4c43ec",
+        "source_units_verified": "index 1982-1984=100 , seasonally adjusted",
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-26T09:01:20.395364+00:00",
+        "official_missing_periods": [
+          "2025-10"
+        ],
+        "missing_period_source_url": "https://www.bls.gov/cpi/additional-resources/2025-federal-government-shutdown-impact-cpi-faq.htm",
+        "gap_not_imputed": true,
+        "cross_gap_monthly_change_not_valid": true
+      }
     },
     {
       "id": "US_CPIAUCSL_history_value",
