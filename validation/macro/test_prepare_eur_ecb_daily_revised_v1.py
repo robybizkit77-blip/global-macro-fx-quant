@@ -20,7 +20,7 @@ class ECBTests(unittest.TestCase):
         for i in IDS:
             x=row(i);self.assertEqual(prepare_row(x,i,NOW,lambda u:source(i,alternative="SS_CI." in u))["status"],"READY")
             self.assertEqual(x["last_date"][:10],"2026-11-24")
-            self.assertEqual(prepare_row(x,i,NOW,lambda u:source(i))["status"],"NO_CHANGE")
+            self.assertEqual(prepare_row(x,i,NOW,lambda u:source(i,alternative="SS_CI." in u))["status"],"NO_CHANGE")
     def test_missing_old_period_wrong_unit(self):
         for i in IDS:
             with self.assertRaises(ValueError):prepare_row(row(i),i,NOW,lambda u:source(i,missing=True,alternative="SS_CI." in u))
