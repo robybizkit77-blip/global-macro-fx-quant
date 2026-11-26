@@ -77,6 +77,36 @@ env:
   PYTHONDONTWRITEBYTECODE: '1'
 
 jobs:
+  eur-activity-source-proof:
+    if: github.event_name == 'pull_request' && github.head_ref == 'fix/eur-industry-retail-recurring-20261126'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify both official Eurostat series against real API independently of core refresh
+        run: |
+          python -m validation.macro.prepare_eur_activity_revised_v1 \
+            --candidate /tmp/eur-proof/candidate.json --receipt /tmp/eur-proof/receipt.json
+          python - <<'PY'
+          import json
+          j=json.load(open('/tmp/eur-proof/receipt.json'))
+          assert len(j['series'])==2 and j['first_release_PIT_certified'] is False
+          for row in j['series']:
+              assert row['after'] >= '2026-09',row
+              print(row['id'],row['before'],row['after'],row['latest'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eur-activity-source-proof
+          path: /tmp/eur-proof/receipt.json
+          if-no-files-found: warn
+
   persist-macro:
     if: >-
       github.event_name != 'workflow_run' ||
