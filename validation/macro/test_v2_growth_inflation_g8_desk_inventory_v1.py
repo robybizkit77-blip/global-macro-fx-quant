@@ -34,8 +34,17 @@ class G8GrowthInflationInventoryTests(unittest.TestCase):
             self.assertIsNotNone(row["reference_period_end"])
             self.assertGreaterEqual(row["reference_period_age_days"], 0)
 
+    def historical_case(self, currency, frequency, period):
+        data = copy.deepcopy(self.data)
+        for series in data[currency]:
+            if series.get("category") == "Crescita":
+                series["frequency"] = frequency
+                series["last_date"] = period
+                series["last_value"] = 100.0
+        return inspect(data, as_of=date(2026, 10, 23))
+
     def test_monthly_eur_growth_is_observed_not_missing(self):
-        row = self.row(inspect(self.data), "EUR", "growth")
+        row = self.row(self.historical_case("EUR", "M", "2026-07"), "EUR", "growth")
         self.assertEqual(row["reference_period_raw"], "2026-07")
         self.assertEqual(row["reference_period_end"], "2026-07-31")
         self.assertEqual(row["reference_period_granularity"], "month")
@@ -44,7 +53,7 @@ class G8GrowthInflationInventoryTests(unittest.TestCase):
         self.assertEqual(row["research_freshness"], "REFERENCE_PERIOD_OLDER_THAN_EXPECTED_CADENCE")
 
     def test_quarterly_growth_is_not_mislabeled_stale_at_60_days(self):
-        row = self.row(inspect(self.data), "NZD", "growth")
+        row = self.row(self.historical_case("NZD", "Q", "2026-06"), "NZD", "growth")
         self.assertEqual(row["reference_period_raw"], "2026-06")
         self.assertEqual(row["reference_period_end"], "2026-06-30")
         self.assertEqual(row["reference_period_granularity"], "quarter")
@@ -77,7 +86,7 @@ class G8GrowthInflationInventoryTests(unittest.TestCase):
             for series in data["USD"]:
                 if series.get("category") == "Crescita":
                     series["last_date"] = future
-            result = inspect(data)
+            result = inspect(data, as_of=date(2026, 10, 23))
             row = self.row(result, "USD", "growth")
             self.assertEqual(row["research_freshness"], "NO_VALID_DATED_VALUE")
             self.assertIsNone(row["latest_observed_value"])
