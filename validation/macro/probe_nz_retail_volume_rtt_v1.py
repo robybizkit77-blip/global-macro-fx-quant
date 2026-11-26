@@ -79,7 +79,23 @@ def inspect_zip(raw, row, today):
 if __name__=="__main__":
     row=next(x for x in json.loads((ROOT/"live_data/sections/MACRO_SERIES.json").read_text())["NZD"] if x["id"]==TARGET)
     raw,final=fetch(PAGE)
-    url=zip_link(raw,final)
+    try:
+        url=zip_link(raw,final)
+    except ValueError as exc:
+        print("NZ_RETAIL_RELEASE_LINK_UNRESOLVED",str(exc))
+        index="https://www.stats.govt.nz/large-datasets/csv-files-for-download/"
+        listing,listing_final=fetch(index)
+        soup=BeautifulSoup(listing,"html.parser")
+        links=set()
+        for a in soup.find_all("a",href=True):
+            u=urljoin(listing_final,a["href"])
+            p=urlsplit(u)
+            label=norm(a.get_text(" ",strip=True))
+            if p.scheme=="https" and p.hostname in ("www.stats.govt.nz","stats.govt.nz") and "retail trade survey" in label and "september 2026 quarter" in label and "csv" in label:
+                links.add(u)
+        print("NZ_RETAIL_INDEX_EXACT_LINKS",sorted(links))
+        need(len(links)==1,"missing or ambiguous exact release CSV link on issuer index")
+        url=links.pop()
     print("NZ_RETAIL_ISSUER_ZIP",url)
     blob,returned=fetch(url)
     receipt=inspect_zip(blob,row,datetime.now(timezone.utc).date())
