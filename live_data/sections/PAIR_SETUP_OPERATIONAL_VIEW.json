@@ -316,11 +316,10 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
+          "positive": 1,
           "negative": 1,
           "turns": 1,
           "details": [
-            "Crescita: migliora",
             "Lavoro: migliora",
             "Rates: peggiora",
             "Rates: turning point"
@@ -328,7 +327,7 @@
           "withheld": false
         },
         "aNet": -1,
-        "bNet": 1,
+        "bNet": 0,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "CHF"
       },
@@ -886,11 +885,10 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
+          "positive": 1,
           "negative": 1,
           "turns": 1,
           "details": [
-            "Crescita: migliora",
             "Lavoro: migliora",
             "Rates: peggiora",
             "Rates: turning point"
@@ -898,7 +896,7 @@
           "withheld": false
         },
         "aNet": -2,
-        "bNet": 1,
+        "bNet": 0,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "CHF"
       },
@@ -1143,11 +1141,10 @@
         "a": "CHF",
         "b": "JPY",
         "A": {
-          "positive": 2,
+          "positive": 1,
           "negative": 1,
           "turns": 1,
           "details": [
-            "Crescita: migliora",
             "Lavoro: migliora",
             "Rates: peggiora",
             "Rates: turning point"
@@ -1168,9 +1165,9 @@
           ],
           "withheld": false
         },
-        "aNet": 1,
+        "aNet": 0,
         "bNet": 1,
-        "state": "TURNING POINT ASIMMETRICO",
+        "state": "DINAMICA FAVOREVOLE B",
         "fav": "JPY"
       },
       "price_state": null
@@ -1578,11 +1575,10 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
+          "positive": 1,
           "negative": 1,
           "turns": 1,
           "details": [
-            "Crescita: migliora",
             "Lavoro: migliora",
             "Rates: peggiora",
             "Rates: turning point"
@@ -1590,7 +1586,7 @@
           "withheld": false
         },
         "aNet": -3,
-        "bNet": 1,
+        "bNet": 0,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "CHF"
       },
@@ -2502,11 +2498,10 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
+          "positive": 1,
           "negative": 1,
           "turns": 1,
           "details": [
-            "Crescita: migliora",
             "Lavoro: migliora",
             "Rates: peggiora",
             "Rates: turning point"
@@ -2514,7 +2509,7 @@
           "withheld": false
         },
         "aNet": 3,
-        "bNet": 1,
+        "bNet": 0,
         "state": "DINAMICA FAVOREVOLE A",
         "fav": "GBP"
       },
@@ -3134,9 +3129,9 @@
         "policySide": "NZD"
       },
       "transition": {
-        "state": "DIVERGENZA RELATIVA DA MONITORARE",
-        "cls": "transWatch",
-        "note": "il driver strutturale favorisce NZD, ma la dinamica relativa favorisce CHF: divergenza da monitorare, non segnale automatico"
+        "state": "DINAMICA RELATIVA ALLINEATA",
+        "cls": "transConfirm",
+        "note": "la dinamica relativa è allineata al driver strutturale (NZD); il backtest la mantiene diagnostica, non autonoma"
       },
       "relative_dynamics": {
         "a": "NZD",
@@ -3154,11 +3149,10 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
+          "positive": 1,
           "negative": 1,
           "turns": 1,
           "details": [
-            "Crescita: migliora",
             "Lavoro: migliora",
             "Rates: peggiora",
             "Rates: turning point"
@@ -3166,9 +3160,9 @@
           "withheld": false
         },
         "aNet": 0,
-        "bNet": 1,
-        "state": "DINAMICA FAVOREVOLE B",
-        "fav": "CHF"
+        "bNet": 0,
+        "state": "TURNING POINT ASIMMETRICO",
+        "fav": "NZD"
       },
       "price_state": null
     },
@@ -3703,9 +3697,9 @@
         "policySide": "USD"
       },
       "transition": {
-        "state": "DIVERGENZA RELATIVA DA MONITORARE",
-        "cls": "transWatch",
-        "note": "il driver strutturale favorisce USD, ma la dinamica relativa favorisce CHF: divergenza da monitorare, non segnale automatico"
+        "state": "DINAMICA RELATIVA ALLINEATA",
+        "cls": "transConfirm",
+        "note": "la dinamica relativa è allineata al driver strutturale (USD); il backtest la mantiene diagnostica, non autonoma"
       },
       "relative_dynamics": {
         "a": "USD",
@@ -3722,11 +3716,10 @@
           "withheld": false
         },
         "B": {
-          "positive": 2,
+          "positive": 1,
           "negative": 1,
           "turns": 1,
           "details": [
-            "Crescita: migliora",
             "Lavoro: migliora",
             "Rates: peggiora",
             "Rates: turning point"
@@ -3734,9 +3727,9 @@
           "withheld": false
         },
         "aNet": 1,
-        "bNet": 1,
-        "state": "TURNING POINT ASIMMETRICO",
-        "fav": "CHF"
+        "bNet": 0,
+        "state": "DINAMICA FAVOREVOLE A",
+        "fav": "USD"
       },
       "price_state": null
     },
