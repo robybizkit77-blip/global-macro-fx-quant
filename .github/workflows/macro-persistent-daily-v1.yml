@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/macro-persistent-daily-v1.yml'
+      - 'validation/macro/probe_gbp_dmp_monthly_v1.py'
       - 'validation/macro_adapter_pit_handoff.py'
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
