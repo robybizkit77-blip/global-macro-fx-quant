@@ -2,6 +2,13 @@ import copy,csv,io,unittest
 from datetime import datetime,timezone
 from validation.macro.prepare_aud_oecd_cli_v1 import ID,META,parse,reconcile
 class TestCLI(unittest.TestCase):
+    def test_observed_official_csv_schema(self):
+        now=datetime(2026,11,26,tzinfo=timezone.utc)
+        header="DATAFLOW,REF_AREA,FREQ,MEASURE,UNIT_MEASURE,ACTIVITY,ADJUSTMENT,TRANSFORMATION,TIME_HORIZ,METHODOLOGY,TIME_PERIOD,OBS_VALUE,OBS_STATUS,UNIT_MULT,DECIMALS,BASE_PER"
+        data="OECD.SDD.STES:DSD_STES@DF_CLI(4.1),AUS,M,LI,IX,_Z,AA,IX,_Z,H,2026-10,99.97236,A,0,5,"
+        raw=(header+"\n"+data+"\n").encode()
+        self.assertEqual(parse(raw,now),{"2026-10":99.97236})
+        with self.assertRaises(ValueError):parse(raw.replace(b"TIME_HORIZ,",b"UNVERIFIED_HORIZ,"),now)
     def test_identity(self):
         now=datetime(2026,11,26,tzinfo=timezone.utc)
         def raw(meta,period):
