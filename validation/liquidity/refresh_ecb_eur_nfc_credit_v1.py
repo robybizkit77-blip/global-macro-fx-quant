@@ -101,7 +101,7 @@ def parse(content,*,today=None):
         require(abs(records[months[i]]/records[months[i-1]]-1)<.10,
                 "unexpected >10% month-to-month credit level change")
     y,m=map(int,months[-1].split("-"))
-    require((y,m)<=(today.year,today.month),"future monthly credit observation")
+    require((y,m)<(today.year,today.month),"future or incomplete monthly credit observation")
     require(months[-1]>=ANCHOR_DATE,
             "source older than the canonical EUR credit series")
     require(len(months)<=60,"unexpected ECB sample size")
@@ -241,6 +241,8 @@ def run(destination=DEST,*,apply=False,fixture=None,exliq_fixture=None,bls_fixtu
     nfc_status={"status":"VERIFIED"}
     try:
         data=parse(Path(fixture).read_text(encoding="utf-8") if fixture else fetch(),today=today)
+        if prior.get("schema")==SCHEMA and prior.get("latest_observation") and data["latest_observation"]<prior["latest_observation"]:
+            raise ValueError("ECB NFC monthly source rolled back; preserve last verified vintage")
     except (OSError,ValueError,UnicodeError) as error:
         if not (previous and prior.get("schema")==SCHEMA and (exliq!=prior_exliq or bls!=prior_bls)):raise
         data=prior
