@@ -5,7 +5,8 @@ import unittest
 from datetime import date
 from pathlib import Path
 from validation.liquidity.refresh_rba_aud_es_balances_v1 import (
-    parse,emit_js,previous_values,run,SOURCE,ANCHOR_VALUE,ANCHOR_DATE
+    parse,emit_js,previous_values,run,SOURCE,ANCHOR_VALUE,ANCHOR_DATE,
+    validate_canonical,validate_source_overlap
 )
 TODAY=date(2026,11,14)
 def document(*,when="Wednesday, 11 November 2026",current="185,950",
@@ -69,6 +70,19 @@ class RBAESBalanceTest(unittest.TestCase):
         self.assertIn('"first_release_pit_verified": false',js)
         self.assertIn('"value_canonical_overlap": 173965',js)
         self.assertIn('"asof_canonical_overlap": "2026-09-16"',js)
+
+    def test_historical_anchor_survives_valid_append_but_not_revision(self):
+        row={"dates":[ANCHOR_DATE,"2026-11-04","2026-11-11"],
+             "values":[ANCHOR_VALUE,181737,185950],
+             "last_date":"2026-11-11","last_value":185950}
+        history=validate_canonical({"AUD":{"liquidity":row}})
+        parsed=parse(document(),today=TODAY)
+        self.assertEqual(validate_source_overlap(parsed,history),["2026-11-11","2026-11-04"])
+        with self.assertRaisesRegex(ValueError,"overlap mismatch"):
+            validate_source_overlap(dict(parsed,latest_balance_million_aud=185951),history)
+        row["values"][0]+=1
+        with self.assertRaisesRegex(ValueError,"anchor changed"):
+            validate_canonical({"AUD":{"liquidity":row}})
 
     def test_idempotent_research_only_apply(self):
         with tempfile.TemporaryDirectory() as tmp:
