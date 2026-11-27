@@ -44,6 +44,12 @@ def latest_due(cron, now):
         if x<=cutoff and (x.weekday()+1)%7 in days:return x
     raise ValueError("No due slot")
 
+def latest_due_for_crons(crons, now):
+    if not crons or len(set(crons)) != len(crons):
+        raise ValueError("Missing or duplicate UTC cron")
+    return max(latest_due(cron, now) for cron in crons)
+
+
 def assess(run, jobs, required, due, changed, version_ok):
     if not run or dt(run["created_at"])<max(due,changed):
         return "WAIT_NEXT_SLOT_AFTER_CHANGE" if due<changed else "MISSING_RECENT_SCHEDULE"
@@ -67,8 +73,7 @@ def inspect(spec, now, repo):
         workflow=".github/workflows/"+file
         text=(ROOT/workflow).read_text()
         crons=re.findall(r"cron:\s*['\"]([^'\"]+)['\"]",text)
-        if len(crons)!=1:raise ValueError("Expected exactly one UTC cron")
-        due=latest_due(crons[0],now)
+        due=latest_due_for_crons(crons,now)
         from urllib.parse import urlencode
         versions=[]
         for path in [workflow]+["validation/"+p for p in paths]:
@@ -78,7 +83,7 @@ def inspect(spec, now, repo):
         changed=max(x[0] for x in versions)
         runs=api(f"repos/{repo}/actions/workflows/{file}/runs?branch=main&event=schedule&per_page=5")["workflow_runs"]
         run=max(runs,key=lambda x:x["created_at"]) if runs else None
-        out.update(cron_utc=crons[0],latest_due_after_grace=due.isoformat(),latest_relevant_change=changed.isoformat())
+        out.update(cron_utc=crons[0] if len(crons)==1 else crons,latest_due_after_grace=due.isoformat(),latest_relevant_change=changed.isoformat())
         jobs=[];version_ok=False
         if run:
             out.update(run_id=run["id"],run_url=run["html_url"],created_at=run["created_at"],run_started_at=run.get("run_started_at"),conclusion=run.get("conclusion"))
@@ -98,6 +103,10 @@ def selftest():
     assert due==dt("2026-11-20T08:39:00Z")
     assert latest_due("23 2 * * *",now)==dt("2026-11-24T02:23:00Z")
     assert latest_due("51 6 * * 1-5",dt("2026-11-23T07:00:00Z"))==dt("2026-11-20T06:51:00Z")
+    ecb_crons=["23 7 * * 1-5","23 11 * * 1-5"]
+    assert latest_due_for_crons(ecb_crons,dt("2026-11-27T07:36:00Z"))==dt("2026-11-26T11:23:00Z")
+    assert latest_due_for_crons(ecb_crons,dt("2026-11-27T10:00:00Z"))==dt("2026-11-27T07:23:00Z")
+    assert latest_due_for_crons(ecb_crons,dt("2026-11-27T13:30:00Z"))==dt("2026-11-27T11:23:00Z")
     base={"created_at":now.isoformat(),"event":"schedule","head_branch":"main","status":"completed","conclusion":"success"}
     job={"conclusion":"success","steps":[{"name":"acquire","status":"completed","conclusion":"success"}]}
     assert assess(base,[job],["acquire"],due,due,True)=="RECENT_SCHEDULE_STEPS_OBSERVED"
