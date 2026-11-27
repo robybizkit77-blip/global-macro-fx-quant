@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse,json,re,urllib.request
+import argparse,http.client,json,re,sys,time,urllib.error,urllib.request
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 SERIES=ROOT/'live_data/sections/MACRO_SERIES.json'
@@ -24,11 +24,21 @@ def load(p): return json.loads(p.read_text())
 def api_url(cube): return f'https://data.snb.ch/api/cube/{cube}/data/json/en'
 def fetch_json(url):
  req=urllib.request.Request(url,headers=HEADERS)
- with urllib.request.urlopen(req,timeout=45) as r:
-  if r.status!=200: raise ValueError(f'SNB API HTTP {r.status}')
-  ctype=(r.headers.get('Content-Type') or '').lower()
-  if 'json' not in ctype: raise ValueError(f'SNB API unexpected content-type: {ctype}')
-  return json.load(r)
+ for attempt in range(3):
+  try:
+   with urllib.request.urlopen(req,timeout=45) as r:
+    if r.status!=200: raise ValueError(f'SNB API HTTP {r.status}')
+    ctype=(r.headers.get('Content-Type') or '').lower()
+    if 'json' not in ctype: raise ValueError(f'SNB API unexpected content-type: {ctype}')
+    return json.load(r)
+  except urllib.error.HTTPError as exc:
+   if exc.code not in (500,502,503,504) or attempt==2: raise
+  except urllib.error.URLError as exc:
+   if not isinstance(exc.reason,(TimeoutError,ConnectionResetError,http.client.RemoteDisconnected)) or attempt==2: raise
+  except (TimeoutError,ConnectionResetError,http.client.RemoteDisconnected):
+   if attempt==2: raise
+  print(f'SNB transient transport retry {attempt+1}/2',file=sys.stderr)
+  time.sleep(2**(attempt+1))
 def header_label(ts):
  h=ts.get('header')
  if not isinstance(h,list) or len(h)!=1 or not isinstance(h[0],dict): return None
