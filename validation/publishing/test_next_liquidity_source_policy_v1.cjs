@@ -93,3 +93,30 @@ assert(!renderCHF(residual,'EUR').includes('SNB · COSTO DEI NUOVI FINANZIAMENTI
 const bad=structuredClone(residual);bad.lanes['CHF.credit'].lending_rate_proxy.maturity='over_1_to_2_years';
 assert(!renderCHF(bad).includes('SNB · COSTO DEI NUOVI FINANZIAMENTI'));
 console.log('NEXT_CHF_LOAN_RATE_ACTUAL_PASS',proxy.latest_observation,proxy.values.at(-1),proxy.dates.length);
+
+const nzdText=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/nzd-rbnz-liquidity-research-v1.js'),'utf8');
+const release=JSON.parse(nzdText.split(' = ')[1].trim().replace(/;$/,''));
+const nzdBase=structuredClone(runtime.NZD);
+globalThis.FXQuantNZDRBNZLiquidity=release;
+const actualNZD=page.nzdDossier(nzdBase,release.released);
+assert(actualNZD,'verified RBNZ history should be accepted');
+const periods=Object.keys(release.history).sort();
+assert(periods.length>=36);
+for(const role of ['liquidity','money','credit']){
+ assert.deepEqual(actualNZD[role].dates,periods);
+ assert.deepEqual(actualNZD[role].values,periods.map(d=>release.history[d][role]));
+ assert.equal(actualNZD[role].last_date,release.period);
+}
+assert.deepEqual(nzdBase,runtime.NZD,'native data must remain immutable');
+let damaged=structuredClone(release);
+damaged.history[nzdBase.credit.dates[0]].credit+=1;
+globalThis.FXQuantNZDRBNZLiquidity=damaged;
+assert.equal(page.nzdDossier(nzdBase,release.released),null,'reject differing older overlap');
+damaged=structuredClone(release);delete damaged.history[periods[2]];
+globalThis.FXQuantNZDRBNZLiquidity=damaged;
+assert.equal(page.nzdDossier(nzdBase,release.released),null,'reject gaps, never interpolate');
+damaged=structuredClone(release);damaged.history_backfill.first_release_pit_verified=true;
+globalThis.FXQuantNZDRBNZLiquidity=damaged;
+assert.equal(page.nzdDossier(nzdBase,release.released),null,'do not claim PIT');
+delete globalThis.FXQuantNZDRBNZLiquidity;
+console.log('NEXT_NZD_FULL_VERIFIED_HISTORY_PASS',periods.length,release.period);
