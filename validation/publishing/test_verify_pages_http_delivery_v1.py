@@ -79,6 +79,7 @@ def main():
     assert len(FILES) == len(set(FILES))
     assert "live_data/sections/V247_COT_STORIES.json" in FILES
     assert "live_data/sections/RATES_AUDIT_METADATA.json" in FILES
+    assert "live_data/sections/NATIVE_RATES_DATA.json" in FILES
     assert "live_data/sections/OIS_DATA.json" in FILES
     assert "live_data/manifest.v2.json" in FILES
     assert "live_data/sections/NATIVE_CB_DATA.json" in FILES
@@ -102,7 +103,7 @@ def main():
                  if r["path"] == "live_data/sections/MACRO_SERIES.json")
     assert not wrong["http_200_and_sha256_match"]
     # A stale liquidity archive, policy or renderer must not pass with green Macro.
-    for name in ["live_data/sections/NATIVE_LIQ_DATA.json","site/fx-quant-v2/next/liquidity-source-policy-gate-v1.js","site/fx-quant-v2/next/liquidity-credit-studio.js"]:
+    for name in ["live_data/sections/NATIVE_RATES_DATA.json","live_data/sections/NATIVE_LIQ_DATA.json","site/fx-quant-v2/next/liquidity-source-policy-gate-v1.js","site/fx-quant-v2/next/liquidity-credit-studio.js"]:
         assert name in FILES
         stale_liquidity = case(False, name)
         assert stale_liquidity["status"] == "FAIL", stale_liquidity
