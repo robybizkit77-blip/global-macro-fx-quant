@@ -95,7 +95,7 @@ permissions:
   pages: write
 
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('macro-v3-context-validation-pr-{0}', github.event.pull_request.number) || 'publish-dashboard-pages-v1' }}
+  group: ${{ github.event_name == 'pull_request' && format('macro-v3-context-validation-pr-{0}', github.event.pull_request.number) || 'macro-v3-source-generation-main-v1' }}
   queue: max
   cancel-in-progress: false
 
@@ -111,7 +111,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
+          ref: ${{ github.event_name == 'pull_request' && github.ref || 'main' }}
           fetch-depth: 0
           persist-credentials: true
       - uses: actions/setup-python@v5
@@ -331,6 +331,7 @@ jobs:
               protected=(
                   'live_data/sections/NEWS_PULSE_OPERATIONAL.json',
                   'live_data/sections/MACRO_SERIES.json',
+                  'site/fx-quant-v2/next/nzd-rbnz-liquidity-research-v1.js',
                   'live_data/sections/MACRO_THERMOMETER_DATA.json',
                   'live_data/sections/D.json',
                   'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
@@ -361,6 +362,58 @@ jobs:
               ),
               commit_message='Publish observed Macro V3 G8 and 28-pair research context',
           )))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macro-v3-observed-source-receipt-${{ github.run_id }}
+          path: |
+            site/control-room-preview/macro-v3-current-evidence.json
+            validation/macro/SECTOR_OUTPUT_RESEARCH_V1.json
+            /tmp/ons-quarterly-gdp-collection.json
+            /tmp/esri-quarterly-gdp-collection.json
+            /tmp/abs-quarterly-gdp-collection.json
+            /tmp/abs-q2-proof.json
+            /tmp/statcan-quarterly-gdp-collection.json
+            /tmp/statcan-q2-proof.json
+            /tmp/statcan-index-proof.json
+            /tmp/eurostat-quarterly-gdp-collection.json
+            /tmp/eurostat-q3-proof.json
+            /tmp/eurostat-recovery-proof.json
+            /tmp/statsnz-quarterly-gdp-collection.json
+            /tmp/statsnz-q2-proof.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  deliver-public-context:
+    needs: source-audited-public-context
+    if: github.event_name != 'pull_request' && needs.source-audited-public-context.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    concurrency:
+      group: publish-dashboard-pages-v1
+      queue: max
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify persisted source snapshot before public delivery
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('site/control-room-preview/macro-v3-current-evidence.json').read_text())
+          assert d['status']=='OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL'
+          assert d['summary']['currencies']==8 and d['summary']['pairs']==28
+          assert d['safe_to_republish_D'] is False
+          rows=[r for v in d.get('sector_financial_dynamics',{}).get('countries',{}).values() for r in v]
+          print('MACRO_V3_PERSISTED_SOURCE_COVERAGE',len(rows),sum(r.get('measurement')!='WITHHELD' for r in rows),flush=True)
           PY
       - name: Mirror verified V3 file to gh-pages with remote-head lease
         if: github.event_name != 'pull_request'
@@ -447,17 +500,5 @@ jobs:
           path: |
             site/control-room-preview/macro-v3-current-evidence.json
             /tmp/macro-v3-public-http-delivery-proof.json
-            /tmp/ons-quarterly-gdp-collection.json
-            /tmp/esri-quarterly-gdp-collection.json
-            /tmp/abs-quarterly-gdp-collection.json
-            /tmp/abs-q2-proof.json
-            /tmp/statcan-quarterly-gdp-collection.json
-            /tmp/statcan-q2-proof.json
-            /tmp/statcan-index-proof.json
-            /tmp/eurostat-quarterly-gdp-collection.json
-            /tmp/eurostat-q3-proof.json
-            /tmp/eurostat-recovery-proof.json
-            /tmp/statsnz-quarterly-gdp-collection.json
-            /tmp/statsnz-q2-proof.json
           if-no-files-found: warn
           retention-days: 14
