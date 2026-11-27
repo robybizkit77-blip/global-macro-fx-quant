@@ -27,7 +27,10 @@
  const qend=x=>quarter(x)?x.slice(0,4)+'-'+String(Number(x.slice(-1))*3).padStart(2,'0'):null;
  const clamp=x=>Math.max(-1,Math.min(1,x));
  const signed=x=>x>0?1:x<0?-1:0;
- const scoreBand=x=>x>=0.25?'favorevole':x<=-0.25?'sfavorevole':'misto';
+ // Preserve economic thresholds exactly: tolerate only floating-point noise,
+ // not a change in the economic precision or materiality of the input.
+ const compare=(x,y)=>Math.abs(x-y)<=1e-10?0:signed(x-y);
+ const scoreBand=x=>compare(x,0.25)>=0?'favorevole':compare(x,-0.25)<=0?'sfavorevole':'misto';
  const fails=reason=>({status:'STIMA_SOSPESA',reason,currencies:[],pairs:[],asof:null,coverage:null,
   methodology:'Pesi euristici fissi, non regressione né backtest validato'});
  function sourceOK(doc,price,now){
@@ -81,12 +84,12 @@
      finite(p.nonannualized_qoq_descriptive_pct)&&
      g.later_revisions_not_identical_to_first_release===true){
     const d=g.nonannualized_qoq_descriptive_pct-p.nonannualized_qoq_descriptive_pct;
-    gTrend=d>0.1?1:d< -0.1?-1:0;
+    gTrend=compare(d,0.1)>0?1:compare(d,-0.1)<0?-1:0;
   }
-  const gLevel=g.nonannualized_qoq_descriptive_pct>0.2?1:
-    g.nonannualized_qoq_descriptive_pct< -0.2?-1:0;
+  const gLevel=compare(g.nonannualized_qoq_descriptive_pct,0.2)>0?1:
+    compare(g.nonannualized_qoq_descriptive_pct,-0.2)<0?-1:0;
   const unemployment=l.change_over_three_observation_intervals_pp;
-  const labour=unemployment>=0.1?-1:unemployment<=-0.1?1:0;
+  const labour=compare(unemployment,0.1)>=0?-1:compare(unemployment,-0.1)<=0?1:0;
   const econ=0.45*(gTrend===null?0:gTrend)+0.20*gLevel+0.35*labour;
   return {econ,labour,gLevel,gTrend,gdp:g.reference_quarter,gdpRelease:g.publisher_release_day,
    unemploymentPeriod:l.observation_period,unemploymentChange:unemployment,
@@ -102,7 +105,7 @@
   if(o?.quality==='FONTE UFFICIALE'&&['OIS','FUTURES'].includes(o.kind)&&
      day(h?.as_of)&&day(o?.as_of)&&h.as_of===o.as_of&&within(h.as_of,now,7)&&
      finite(h.change_1w_bp)){
-    const bp=h.change_1w_bp, direction=bp>=5?1:bp<=-5?-1:0;
+    const bp=h.change_1w_bp, direction=compare(bp,5)>=0?1:compare(bp,-5)<=0?-1:0;
     return {score:direction,kind:o.kind,asof:h.as_of,changeBp:bp,quality:'UFFICIALE',
       description:'Variazione settimanale di strumento '+o.kind+' 6M; non livello OIS cross-country'};
   }
@@ -112,7 +115,7 @@
   if(ccy==='NZD'&&o?.quality==='PROXY DIREZIONALE'&&
      o?.kind==='PROXY FUTURES'&&day(h?.as_of)&&within(h.as_of,now,7)&&
      finite(h.change_1w_bp)){
-    const bp=h.change_1w_bp, direction=bp>=5?1:bp<=-5?-1:0;
+    const bp=h.change_1w_bp, direction=compare(bp,5)>=0?1:compare(bp,-5)<=0?-1:0;
     return {score:0.35*direction,kind:'BANK_BILL_6M_DIRECTIONAL_PROXY',
      asof:h.as_of,changeBp:bp,quality:'PROXY',
      description:'ASX NZ bank-bill 6M: variazione settimanale di futures, proxy direzionale scontato; non OIS né stima del percorso OCR'};
@@ -121,7 +124,7 @@
   if(finite(r?.['2Y'])&&finite(w?.change_bp)&&day(r.date)&&
      w.end_date===r.date&&day(w.start_date)&&w.start_date<w.end_date&&
      within(r.date,now,7)){
-    const bp=w.change_bp,direction=bp>=5?1:bp<=-5?-1:0;
+    const bp=w.change_bp,direction=compare(bp,5)>=0?1:compare(bp,-5)<=0?-1:0;
     return {score:0.5*direction,kind:'GOV_2Y_PROXY',asof:r.date,changeBp:bp,
       quality:'PROXY',description:'Movimento del rendimento governativo 2Y: NON è repricing OIS'};
   }
@@ -136,10 +139,10 @@
   const relativePolicy=policyGap*direction;
   const rateReady=base?.rate?.quality!=='ASSENTE'&&quote?.rate?.quality!=='ASSENTE'&&
     Boolean(base?.rate?.quality&&quote?.rate?.quality);
-  const macroState=!direction?'NON DISTINTA':relativeMacro>=0.12?'FAVOREVOLE':
-    relativeMacro<=-0.12?'CONTRARIA':'NON DECISIVA';
+  const macroState=!direction?'NON DISTINTA':compare(relativeMacro,0.12)>=0?'FAVOREVOLE':
+    compare(relativeMacro,-0.12)<=0?'CONTRARIA':'NON DECISIVA';
   const policyState=!direction?'NON DISTINTA':!rateReady?'ASSENTE':
-    relativePolicy>=0.10?'FAVOREVOLE':relativePolicy<=-0.10?'CONTRARIA':'NON DECISIVA';
+    compare(relativePolicy,0.10)>=0?'FAVOREVOLE':compare(relativePolicy,-0.10)<=0?'CONTRARIA':'NON DECISIVA';
   const bothSupported=macroState==='FAVOREVOLE'&&policyState==='FAVOREVOLE';
   const anyAgainst=macroState==='CONTRARIA'||policyState==='CONTRARIA';
   const anySupport=macroState==='FAVOREVOLE'||policyState==='FAVOREVOLE';
@@ -148,7 +151,7 @@
   const thesisStrength=!direction?'NON DISTINTA':anyAgainst?'CONTRASTATA':
     complete?'COERENTE':anySupport?'PARZIALE':'NON DISTINTA';
   const relative5=move5*direction;
-  const fiveState=!direction||!finite(move5)||Math.abs(move5)<0.05?'INDECISO':
+  const fiveState=!direction||!finite(move5)||compare(Math.abs(move5),0.05)<0?'INDECISO':
     relative5>0?'COERENTE':'CONTRARIO';
   const tradeAttractiveness=!direction||thesisStrength==='NON DISTINTA'?'NON VALUTABILE':
     thesisStrength==='CONTRASTATA'?'NON SUPPORTATA':
@@ -225,11 +228,11 @@
    // The pair's favored side is formed without price: economic momentum + 
    // within-instrument weekly rate changes. No 20-day price circularity.
    const thesisGap=0.5*core+0.3*rateGap;
-   const favored=Math.abs(thesisGap)>=0.22?(thesisGap>0?a:b):null;
+   const favored=compare(Math.abs(thesisGap),0.22)>=0?(thesisGap>0?a:b):null;
    const baseMove=100*((row[b]/row[a])/(first[b]/first[a])-1);
    const move5=100*((row[b]/row[a])/(fifth[b]/fifth[a])-1);
    if(!finite(baseMove)||!finite(move5))return fails('Confronto FX non finito '+key);
-   const priceSide=Math.abs(baseMove)>=0.15?(baseMove>0?a:b):null;
+   const priceSide=compare(Math.abs(baseMove),0.15)>=0?(baseMove>0?a:b):null;
    const aligned=Boolean(favored&&priceSide===favored);
    const opposite=Boolean(favored&&priceSide&&priceSide!==favored);
    const assessment=assessThesisTrade({
