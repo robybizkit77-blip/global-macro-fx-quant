@@ -572,7 +572,7 @@
       "unit": "abitazioni (SA)",
       "source_url": "https://www.stats.govt.nz/information-releases/building-consents-issued-september-2026/",
       "source_series_id": "BLDM.SFTZ1100A1S",
-      "source_sha256": "ada8100cd1b9ab077e409befc4c4c243ed7ec224ae52bdd5003e345808b44161",
+      "source_sha256": "9fc8570ce14f5f428ef4563af13f12cadb4b8651c4dafe9dd5245cdf2a3c34b1",
       "dates": [
         "2019-10",
         "2019-11",
