@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-27T02:15:55.333089Z",
-  "edition_time_rome": "2026-11-27 03:15",
-  "material_digest": "fad8632d9cffe08b625f5f0d16e876416ddb2041512823894d44501ace50f048",
+  "generated_at_utc": "2026-11-27T04:23:05.428389Z",
+  "edition_time_rome": "2026-11-27 05:23",
+  "material_digest": "35fd4c11d4259e6c0bbb20058908d86cf05ae5905631a836f45d81fe78a65049",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in calo",
@@ -62,7 +62,7 @@
     {
       "headline": "Keynote speech by Executive Director KAMIYAMA at the IMF MCM-OAP Seminar in Tokyo (Digital Money and Payments: Transitioning Toward a New Paradigm)",
       "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-27",
       "event_date": "2026-11-27",
       "market_area": "BANCHE CENTRALI",
@@ -103,7 +103,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-26",
-      "rss_checked_at_utc": "2026-11-27T02:15:55.333089Z",
+      "rss_checked_at_utc": "2026-11-27T04:23:05.428389Z",
       "commodities": "2026-11-26"
     },
     "no_paid_api": true,
@@ -111,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-27T02:15:55.333089Z",
+      "headline": "Dollaro in calo",
+      "material_digest": "fad8632d9cffe08b625f5f0d16e876416ddb2041512823894d44501ace50f048"
+    },
     {
       "generated_at_utc": "2026-11-26T23:06:03.782748Z",
       "headline": "Dollaro in calo",
@@ -225,11 +230,6 @@
       "generated_at_utc": "2026-11-25T00:42:00.599896Z",
       "headline": "Dollaro misto",
       "material_digest": "55f1bc802cc1467c712d11a742241b96f7de8cd8d096399c19769937b82395a8"
-    },
-    {
-      "generated_at_utc": "2026-11-24T21:18:16.063547Z",
-      "headline": "Dollaro misto",
-      "material_digest": "5fdbc1259f15cdb8c095d6386523d1cd1461921b3d8b8c1b445f313cbb5dfc44"
     }
   ]
 }
