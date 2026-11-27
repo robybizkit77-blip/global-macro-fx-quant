@@ -1434,6 +1434,10 @@ document.addEventListener('click',e=>{
   if(FX.includes(c)){state.cbCcy=c;state.ccy=c;render();}
   return;
  }
+ const bankFromRates=e.target.closest('[data-rates-openbank]');
+ if(bankFromRates&&state.route==='rates'&&FX.includes(bankFromRates.dataset.ratesOpenbank)){
+  e.preventDefault();state.cbCcy=bankFromRates.dataset.ratesOpenbank;state.route='banks';location.hash='#banks';return;
+ }
  const bankGo=e.target.closest('[data-bank-open]');
  if(bankGo&&state.route==='banks'){
   const mode=bankGo.dataset.bankOpen,c=bankGo.dataset.bankTarget;
