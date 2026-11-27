@@ -9,7 +9,7 @@
 <meta name="research-revision" content="thesis-strength-versus-trade-attractiveness-2026-11-12">
 <meta name="home-layout-revision" content="premium-research-workbench-2026-11-14-home-6m-fx-proof">
 <title>FX Quant — Research & Decision Dashboard | Next</title>
-<link rel="stylesheet" href="./theme.css?v=4">
+<link rel="stylesheet" href="./theme.css?v=5">
 <link rel="stylesheet" href="./cot-studio.css?v=30">
 <link rel="stylesheet" href="./rates-studio.css?v=10">
 <link rel="stylesheet" href="./macro-studio.css?v=3">
@@ -91,7 +91,7 @@
 <script src="./research-library.js?v=20" defer></script>
 <script src="./data-health-v1.js?v=3" defer></script>
 <script src="./activity-momentum-v1.js?v=11" defer></script>
-<script src="./app.js?v=18.101-activity-positioning-officialoi" defer></script>
+<script src="./app.js?v=18.102-control-room" defer></script>
 </head>
 <body>
 <div class="ambient ambient-a" aria-hidden="true"></div>
@@ -103,22 +103,25 @@
       <span class="brand-copy"><strong>FX QUANT<span class="brand-dot">.</span></strong><small>GLOBAL MACRO RESEARCH</small></span>
     </a>
     <div class="edition-tag"><span class="live-dot"></span> NEXT / ANTEPRIMA <span class="edition-sep">·</span> 18</div>
-    <div class="nav-heading">MARKET DESK</div>
-    <nav class="nav" id="nav" aria-label="Sezioni research">
+    <nav class="nav next-area-nav" id="nav" aria-label="Sette aree di ricerca">
+      <div class="nav-heading nav-subheading">01 / CONTROL ROOM</div>
       <a href="#overview" data-route="overview" aria-current="page"><span class="nav-icon">◈</span><span>Panoramica</span></a>
-      <a href="#news" data-route="news"><span class="nav-icon">▤</span><span>Notizie</span></a>
-      <a href="#risk" data-route="risk"><span class="nav-icon">⌁</span><span>Rischio</span></a>
-      <div class="nav-heading nav-subheading">MACRO RESEARCH</div>
+      <div class="nav-heading nav-subheading">02 / GLOBAL MACRO</div>
       <a href="#macro" data-route="macro"><span class="nav-icon">▥</span><span>Scenario macro</span></a>
+      <div class="nav-heading nav-subheading">03 / POLITICA MONETARIA</div>
       <a href="#banks" data-route="banks"><span class="nav-icon">▣</span><span>Banche Centrali</span></a>
       <a href="#rates" data-route="rates"><span class="nav-icon">≋</span><span>Tassi & OIS</span></a>
-      <a href="#liquidity" data-route="liquidity"><span class="nav-icon">◌</span><span>Liquidità & Credito</span></a>
-      <div class="nav-heading nav-subheading">FOREX RESEARCH</div>
-      <a href="#cot" data-route="cot"><span class="nav-icon">◉</span><span>COT</span></a>
+      <div class="nav-heading nav-subheading">04 / FOREX RESEARCH</div>
       <a href="#currencies" data-route="currencies"><span class="nav-icon">◎</span><span>Valute G8</span><span class="nav-count">8</span></a>
       <a href="#pairs" data-route="pairs"><span class="nav-icon">⇄</span><span>Coppie FX</span><span class="nav-count">28</span></a>
-      <div class="nav-heading nav-subheading">RESEARCH LIBRARY</div>
-      <a href="#library" data-route="library"><span class="nav-icon">▦</span><span>Research Library</span></a>
+      <a href="#cot" data-route="cot"><span class="nav-icon">◉</span><span>COT</span></a>
+      <div class="nav-heading nav-subheading">05 / CROSS-ASSET & RISCHIO</div>
+      <a href="#risk" data-route="risk"><span class="nav-icon">⌁</span><span>Mercati & rischio</span></a>
+      <a href="#liquidity" data-route="liquidity"><span class="nav-icon">◌</span><span>Liquidità & Credito</span></a>
+      <div class="nav-heading nav-subheading">06 / EVENTI & NOTIZIE</div>
+      <a href="#news" data-route="news"><span class="nav-icon">▤</span><span>Calendario & Notizie</span></a>
+      <div class="nav-heading nav-subheading">07 / RESEARCH LIBRARY</div>
+      <a href="#library" data-route="library"><span class="nav-icon">▦</span><span>Report & archivio</span></a>
     </nav>
     <div class="nav-heading nav-heading-other">IL METODO</div>
     <div class="sidebar-mini">
@@ -150,7 +153,7 @@
   <div class="quick-box" role="dialog" aria-modal="true" aria-label="Ricerca rapida mercati">
     <div class="quick-search-line"><span aria-hidden="true">⌕</span><input type="search" id="quick-input" placeholder="Cerca una sezione, valuta o coppia FX..." autocomplete="off" aria-label="Cerca nel sito"><button id="quickclose" type="button">ESC</button></div>
     <div id="quick-results" class="quick-results" aria-live="polite"></div>
-    <div class="quick-hint"><span>Ricerca unificata · 11 sezioni · G8 · 28 coppie</span><span>Esc per chiudere</span></div>
+    <div class="quick-hint"><span>7 aree · 11 sezioni · G8 · 28 coppie</span><span>Esc per chiudere</span></div>
   </div>
 </div>
 </body>
