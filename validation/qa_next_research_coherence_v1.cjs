@@ -635,3 +635,38 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  assert.equal(rates.recentSecondaryWeek({...h,tenors:{'6m':points.map((p,i)=>i===0?{...p,derived:true}:p)}},last,'2026-11-27'),null);
  console.log('ENHANCED_RECENT_EXACT_SECONDARY_WEEK_PASS');
 }
+
+{
+ const base='../site/fx-quant-v2/next/';
+ const position=require(base+'positioning-research-score-v1.js');
+ const desk=require(base+'cot-report-reading-v26.js');
+ const composite=require(base+'global-fx-research-composite-v1.js');
+ const load=p=>JSON.parse(read(p));
+ const history=load('live_data/sections/V250_COT_CHART_DATA.json'),archive=load('site/fx-quant-v2/design-studio-cot-v1-data.json');
+ const officialOI=load('site/fx-quant-v2/next/cot-official-oi-v1.json');
+ for(const currency of Object.keys(history)){
+  const last=history[currency].dates.at(-1),args={currency,history,archive,desk,today:last};
+  const estimated=position.evaluate(args),observed=position.evaluate({...args,officialOI});
+  const row=officialOI.currencies[currency];
+  if(officialOI.as_of===last){
+   const h=history[currency],n=h.dates.length-1;
+   assert.equal(position.officialOpenInterest(officialOI,currency,{date:last,long:h.long[n],short:h.short[n],net:h.net[n],netoi:h.netoi[n]}),row.open_interest);
+   if(estimated.score!==null){
+    assert.equal(observed.quality,'OFFICIAL_OI_RESEARCH');
+    assert.equal(observed.openInterest,row.open_interest);
+    assert.ok(Math.abs(observed.flow1-(h.net[n]-h.net[n-1])*100/row.open_interest)<1e-10);
+    const a=composite.evaluate({currency,positioning:estimated}).enhanced,b=composite.evaluate({currency,positioning:observed}).enhanced;
+    assert.equal(a.estimatedWeight-b.estimatedWeight,15);
+    assert.equal(a.coverage,b.coverage);
+    assert.match(position.render(observed,String),/OI ufficiale CFTC/);
+   }
+  }else assert.equal(observed.quality,estimated.quality);
+  for(const patch of [{date:'2000-01-01'},{market_code:'000000'},{long:-1},{open_interest:1},{source_url:'https://example.com'}]){
+   const bad={...officialOI,currencies:{...officialOI.currencies,[currency]:{...row,...patch}}};
+   assert.equal(position.evaluate({...args,officialOI:bad}).quality,estimated.quality);
+  }
+  assert.equal(position.evaluate({...args,officialOI:{...officialOI,affects_fx_ranking:true}}).quality,estimated.quality);
+  console.log('OFFICIAL_OI_G8',currency,JSON.stringify({quality:observed.quality,oi:observed.openInterest,score:observed.score}));
+ }
+ console.log('OFFICIAL_OI_RESEARCH_CONSUMER_PASS');
+}
