@@ -47,6 +47,15 @@ const {chromium}=require('playwright');
    await page.locator('#nav button').getByText('Macro',{exact:true}).click();
    await page.getByLabel('Indicatore macro').waitFor();
    assert(await page.getByLabel('Indicatore macro').locator('option').count()>10);
+   assert.equal(await page.locator('#country-sectors .sector-read').count(),9);
+   for(const c of ['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD']){
+     await page.evaluate(c=>{state.ccy=c;render()},c);
+     const judge=await page.locator('#view .judgement').first().innerText();
+     assert.match(judge,/PIL.*(CPI|PCE|HICP|inflazione).*Disoccupazione/s);
+     assert.match(judge,/6M/);
+     assert.equal(await page.locator('#country-sectors .sector-read').count(),9);
+   }
+   await page.evaluate(()=>{state.ccy='GBP';render()});
    const originalReading=await page.locator('#studio-research .plain-reading').innerText();
    await page.getByLabel('Indicatore macro').selectOption({index:1});
    assert.notEqual(await page.locator('#studio-research .plain-reading').innerText(),originalReading);
