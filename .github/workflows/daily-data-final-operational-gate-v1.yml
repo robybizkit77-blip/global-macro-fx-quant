@@ -69,12 +69,10 @@ jobs:
           assert d['publishable'] is True and d['publication_state']=='ELIGIBLE_WITH_WITHHELD_OVERLAYS', d
           assert d['publication_policy']=='CORE_LANES_MAY_PUBLISH_WHILE_NON_CORE_OVERLAYS_FAIL_CLOSED', d
           assert d['live_data_published'] is False and d['gh_pages_published'] is False, d
-          assert [(x['lane'],x['key'],x['state']) for x in d['exact_blockers']]==[
-            ('LIQUIDITY','CHF.liquidity','WITHHELD_OVERLAY_ONLY'),
-            ('LIQUIDITY','CHF.credit','WITHHELD_OVERLAY_ONLY'),
-            ('LIQUIDITY','JPY.liquidity','WITHHELD_OVERLAY_ONLY'),
-            ('RISK','Brent','WITHHELD_OVERLAY_ONLY'),
-          ], d
+          policy=json.load(open('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json'))
+          pending=sorted(k for k,v in policy['mapped'].items() if v.get('automation_ready') is not True)
+          expected=[('LIQUIDITY',k,'WITHHELD_OVERLAY_ONLY') for k in pending]+[('RISK','Brent','WITHHELD_OVERLAY_ONLY')]
+          assert [(x['lane'],x['key'],x['state']) for x in d['exact_blockers']]==expected, d
           assert d['lane_receipts']['RISK']['blocks_core_dashboard_publication'] is False, d
           print('FINAL_OPERATIONAL_GATE_DEGRADED_OVERLAYS_PASS')
           PY
