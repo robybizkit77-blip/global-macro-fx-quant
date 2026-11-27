@@ -3,7 +3,7 @@ import copy
 import json
 import unittest
 from datetime import date, timedelta
-from check_nzd_postroll_release_readiness_v1 import build, RESEARCH, NATIVE
+from check_nzd_postroll_release_readiness_v1 import build, isolated_candidate, RESEARCH, NATIVE
 
 class Preflight(unittest.TestCase):
     def setUp(self):
@@ -20,6 +20,20 @@ class Preflight(unittest.TestCase):
         self.assertGreaterEqual(receipt["weekly_reference"]["date"], self.doc["benchmark_roll_date"])
         self.assertLessEqual(receipt["weekly_reference"]["date"], receipt["weekly_cutoff"])
         self.assertEqual(receipt["latest"], self.doc["observations"][-1])
+
+    def test_isolated_candidate_preserves_roll_and_native(self):
+        original = copy.deepcopy(self.native)
+        candidate = isolated_candidate(self.doc, self.native, self.asof)
+        self.assertEqual(self.native, original)
+        self.assertEqual(candidate["history2"]["dates"][0], self.doc["benchmark_roll_date"])
+        self.assertEqual(candidate["history2"]["dates"], candidate["history10"]["dates"])
+        self.assertEqual(candidate["history2"]["values"], [r["2Y"] for r in self.doc["observations"]])
+        self.assertEqual(candidate["history10"]["values"], [r["10Y"] for r in self.doc["observations"]])
+        self.assertGreaterEqual(candidate["weekly_reference"]["date"], self.doc["benchmark_roll_date"])
+        self.assertFalse(candidate["writes_live_data"])
+        self.assertFalse(candidate["cross_roll_change_allowed"])
+        with self.assertRaises(ValueError):
+            isolated_candidate(self.doc, self.native, self.asof + timedelta(days=15))
 
     def test_protected_contract(self):
         for key, value in (("eligible_for_core", True),
