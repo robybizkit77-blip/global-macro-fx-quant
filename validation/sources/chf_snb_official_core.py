@@ -32,7 +32,7 @@ def fetch_json(url):
     if 'json' not in ctype: raise ValueError(f'SNB API unexpected content-type: {ctype}')
     return json.load(r)
   except urllib.error.HTTPError as exc:
-   if exc.code not in (429,500,502,503,504) or attempt==2: raise
+   if exc.code not in (500,502,503,504) or attempt==2: raise
   except urllib.error.URLError as exc:
    if not isinstance(exc.reason,(TimeoutError,ConnectionResetError,http.client.RemoteDisconnected)) or attempt==2: raise
   except (TimeoutError,ConnectionResetError,http.client.RemoteDisconnected):
