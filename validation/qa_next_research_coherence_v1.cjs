@@ -711,3 +711,12 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  assert.match(cot,/Storico delle rilevazioni e metodo COT/);
  console.log('FOREX_RESEARCH_HIERARCHY_PASS');
 }
+
+{
+ const liq=read('site/fx-quant-v2/next/liquidity-credit-studio.js');
+ assert.match(app,/class="risk-next-step"/);
+ assert.match(app,/href="\.\.\/cross-asset\.html"/);
+ assert.match(liq,/Gli spread IG\/HY misurano il rischio di mercato, non gli standard dei prestiti bancari/);
+ assert.match(liq,/Verifica dati, copertura e fonti bancarie/);
+ console.log('CROSS_ASSET_BANK_CREDIT_SEPARATION_PASS');
+}
