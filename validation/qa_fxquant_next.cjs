@@ -492,17 +492,17 @@ async function macroDriversJourney(page,label){
  assert.equal(await officialSloos.locator('a').getAttribute('href'),
   'https://fred.stlouisfed.org/series/DRTSCILM',label+' SLOOS source link');
  const usSloos=locator(page,'[data-liq-role="conditions"]');
- assert.equal(await usSloos.getAttribute('data-source-safety'),'withheld',
-  label+' uncertified USD SLOOS variant must remain withheld');
+ const sloosGate=await page.evaluate(()=>window.FXQuantLiquiditySourcePolicy.check('USD','conditions'));
+ assert.equal(sloosGate.ready,true,label+' reviewed official DRTSCILM contract must be mapped');
+ assert.equal(await usSloos.getAttribute('data-source-safety'),'mapped',
+  label+' certified USD SLOOS must be available');
  const usSloosText=await usSloos.textContent();
- assert(usSloosText.includes('Dato sospeso')&&usSloosText.includes('SLOOS IN VERIFICA'),
-  label+' SLOOS discrepancy quarantine must explain the reason');
- assert(!usSloosText.includes('Ultimo 2026-07-01 · 0,00'),
-  label+' unresolved survey value cannot be published as confirmed evidence');
+ assert(usSloosText.includes('CONTRATTO MAPPATO')&&!usSloosText.includes('Dato sospeso'),
+  label+' source registry must explain verified status');
  const sourceContract=locator(page,'.drivers-source-provenance-fold');
  await sourceContract.locator('summary').click();
  assert(await sourceContract.evaluate(el=>el.open),label+' registry/source provenance cannot open');
- assert(await usSloos.isVisible(),label+' the provenance disclosure must reveal withheld SLOOS');
+ assert(await usSloos.isVisible(),label+' the provenance disclosure must reveal mapped SLOOS');
  await locator(page,'[data-liq-country="EUR"]').click();
  assert.equal(await officialSloos.count(),0,label+' Fed SLOOS belongs only in the USD dossier');
  const officialECB=locator(page,'.drivers-eur-official');
@@ -669,8 +669,15 @@ async function macroDriversJourney(page,label){
  assert(meaning.toLowerCase().includes('liquidità')&&meaning.toLowerCase().includes('credito'),
   label+' liquidity-to-credit divergence narrative missing');
  const jpySources=await locator(page,'.drivers-source-provenance-fold').textContent();
- assert(jpySources.includes('STORICO')&&jpySources.includes('osservazione precedente'),
-  label+' historical source age and observed changes must be explicit');
+ assert(/STORICO|DATATO/.test(jpySources)&&jpySources.includes('osservazione precedente'),
+  label+' source age and observed changes must be explicit');
+ const actualJPY=readSource('live_data/sections/NATIVE_LIQ_DATA.json').JPY;
+ for(const role of ['liquidity','credit','conditions']){
+  const data=actualJPY[role];
+  if(!data?.last_date)continue;
+  const fact=locator(page,'[data-liq-role="'+role+'"]');
+  assert((await fact.textContent()).includes(data.last_date),label+' JPY '+role+' must show real observation period');
+ }
  const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format();
  const risk=readSource('site/fx-quant-v2/cross-asset-live-data.json');
  assert(meaning.includes('USD/JPY')&&meaning.includes(riskCheck(risk,today)),

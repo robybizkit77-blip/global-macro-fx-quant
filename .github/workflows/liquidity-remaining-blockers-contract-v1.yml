@@ -41,7 +41,7 @@ jobs:
         run: |
           sha256sum -c /tmp/liquidity.before.sha256
           git diff --exit-code -- live_data/sections/NATIVE_LIQ_DATA.json payload
-          echo 'LIQUIDITY_23_READY_3_WITHHELD_NO_RUNTIME_MUTATION_NO_PUBLICATION'
+          echo 'LIQUIDITY_CURRENT_REGISTRY_VALIDATED_NO_RUNTIME_MUTATION_NO_PUBLICATION'
       - uses: actions/upload-artifact@v4
         with:
           name: liquidity-remaining-blockers-evidence

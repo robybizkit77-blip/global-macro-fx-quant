@@ -85,28 +85,72 @@
     },
     "USD.credit": {
       "label": "Credito bancario totale",
-      "status": "OFFICIAL_SERIES_IDENTIFIED_TRANSPORT_NOT_STABLE",
       "publisher": "Federal Reserve Board",
-      "source_contract": "H.8 Assets and Liabilities of Commercial Banks in the United States — Bank credit, all commercial banks, seasonally adjusted",
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "FRED H8 total bank credit all commercial banks, seasonally adjusted",
       "frequency": "WEEKLY",
-      "automation_ready": false,
-      "series_mapping_status": "EXACT_SERIES_ID_IDENTIFIED_RUNTIME_MATCH_NOT_CERTIFIED",
-      "series_key": "H8/H8/B1001NCBA",
-      "collector_probe": "validation/fetch_fed_usd_bank_credit_candidate.py",
-      "candidate_pipeline_ready": false,
-      "live_tested_in_ci": true,
-      "transport_status": "FED_DDP_EMPTY_RESPONSE_IN_CI",
-      "source_url": "https://www.federalreserve.gov/releases/h8/"
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
+      "series_key": "TOTBKCR",
+      "source_url": "https://fred.stlouisfed.org/series/TOTBKCR",
+      "macro_series_id": "US_TOTBKCR_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45989956181,
+        "job_id": 140474966868,
+        "receipt_status": "READY",
+        "native_last_date": "2026-11-11",
+        "native_last_value": 20133.1843,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false
+      },
+      "previous_contract_snapshot": {
+        "label": "Credito bancario totale",
+        "status": "OFFICIAL_SERIES_IDENTIFIED_TRANSPORT_NOT_STABLE",
+        "publisher": "Federal Reserve Board",
+        "source_contract": "H.8 Assets and Liabilities of Commercial Banks in the United States — Bank credit, all commercial banks, seasonally adjusted",
+        "frequency": "WEEKLY",
+        "automation_ready": false,
+        "series_mapping_status": "EXACT_SERIES_ID_IDENTIFIED_RUNTIME_MATCH_NOT_CERTIFIED",
+        "series_key": "H8/H8/B1001NCBA",
+        "collector_probe": "validation/fetch_fed_usd_bank_credit_candidate.py",
+        "candidate_pipeline_ready": false,
+        "live_tested_in_ci": true,
+        "transport_status": "FED_DDP_EMPTY_RESPONSE_IN_CI",
+        "source_url": "https://www.federalreserve.gov/releases/h8/"
+      }
     },
     "USD.conditions": {
       "label": "SLOOS — standard credito imprese",
-      "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
       "publisher": "Federal Reserve Board",
-      "source_contract": "Senior Loan Officer Opinion Survey on Bank Lending Practices",
-      "frequency": "QUARTERLY_STANDARD_WITH_OCCASIONAL_ADDITIONAL_SURVEYS",
-      "automation_ready": false,
-      "series_mapping_status": "PENDING_EXACT_SERIES_KEY",
-      "source_url": "https://www.federalreserve.gov/data/sloos.htm"
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "Fed SLOOS large and middle-market firms, net percentage tightening C&I lending standards",
+      "frequency": "QUARTERLY",
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
+      "series_key": "DRTSCILM",
+      "source_url": "https://fred.stlouisfed.org/series/DRTSCILM",
+      "macro_series_id": "US_SLOOS_CI_LARGE_MIDDLE_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45989956181,
+        "job_id": 140474966868,
+        "receipt_status": "READY",
+        "native_last_date": "2026-10-01",
+        "native_last_value": 1.7,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false
+      },
+      "previous_contract_snapshot": {
+        "label": "SLOOS — standard credito imprese",
+        "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
+        "publisher": "Federal Reserve Board",
+        "source_contract": "Senior Loan Officer Opinion Survey on Bank Lending Practices",
+        "frequency": "QUARTERLY_STANDARD_WITH_OCCASIONAL_ADDITIONAL_SURVEYS",
+        "automation_ready": false,
+        "series_mapping_status": "PENDING_EXACT_SERIES_KEY",
+        "source_url": "https://www.federalreserve.gov/data/sloos.htm"
+      }
     },
     "AUD.liquidity": {
       "label": "Exchange Settlement balances",
@@ -299,27 +343,71 @@
     },
     "CAD.conditions": {
       "label": "SLOS — condizioni credito imprese",
-      "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
       "publisher": "Bank of Canada",
-      "source_contract": "Senior Loan Officer Survey",
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "BoC overall business lending conditions, balance of opinion",
       "frequency": "QUARTERLY",
-      "automation_ready": false,
-      "series_mapping_status": "PENDING_EXACT_BUSINESS_LENDING_CONDITIONS_SERIES_KEY",
-      "source_url": "https://www.bankofcanada.ca/rates/indicators/capacity-and-inflation-pressures/senior-loan-officer-survey/"
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
+      "series_key": "SLOS_BUS_LEND",
+      "source_url": "https://www.bankofcanada.ca/valet/observations/SLOS_BUS_LEND/json?start_date=2016-01-01",
+      "macro_series_id": "CA_SLOS_BUSINESS_LENDING_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45989956181,
+        "job_id": 140474966868,
+        "receipt_status": "READY",
+        "native_last_date": "2026-07-01",
+        "native_last_value": -6.48,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false
+      },
+      "previous_contract_snapshot": {
+        "label": "SLOS — condizioni credito imprese",
+        "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
+        "publisher": "Bank of Canada",
+        "source_contract": "Senior Loan Officer Survey",
+        "frequency": "QUARTERLY",
+        "automation_ready": false,
+        "series_mapping_status": "PENDING_EXACT_BUSINESS_LENDING_CONDITIONS_SERIES_KEY",
+        "source_url": "https://www.bankofcanada.ca/rates/indicators/capacity-and-inflation-pressures/senior-loan-officer-survey/"
+      }
     },
     "CHF.liquidity": {
       "label": "SNB — sight deposits",
-      "status": "OFFICIAL_PROVIDER_CONFIRMED_VARIANT_MATCH_PENDING",
       "publisher": "Swiss National Bank",
-      "source_contract": "SNB Data Portal — Sight deposits with the SNB",
-      "frequency": "MONTHLY_SOURCE_FAMILY",
-      "automation_ready": false,
-      "series_mapping_status": "PENDING_EXACT_VARIANT_MATCH_TO_RUNTIME_LEVELS",
-      "candidate_series_keys": [
-        "BSTA@SNB.MONA_U.BIL.AKT.FMI.GGU{U,T,CHF,A40}",
-        "BSTA@SNB.MIRE_U.MIR.AAK.GGU{U,T,CHF,A50}"
-      ],
-      "source_url": "https://data.snb.ch/"
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "SNB sight deposits domestic banks, monthly",
+      "frequency": "MONTHLY",
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
+      "series_key": "EPB@SNB.snbbipo{GB}",
+      "source_url": "https://data.snb.ch/api/cube/snbbipo/data/json/en?dimSel=D0%28GB%29&fromDate=2019-10&toDate=2026-11",
+      "macro_series_id": "CH_SNB_SIGHT_DEPOSITS_DOMESTIC_BANKS_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45989956181,
+        "job_id": 140474966868,
+        "receipt_status": "READY",
+        "native_last_date": "2026-09",
+        "native_last_value": 421377.79814890004,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false
+      },
+      "previous_contract_snapshot": {
+        "label": "SNB — sight deposits",
+        "status": "OFFICIAL_PROVIDER_CONFIRMED_VARIANT_MATCH_PENDING",
+        "publisher": "Swiss National Bank",
+        "source_contract": "SNB Data Portal — Sight deposits with the SNB",
+        "frequency": "MONTHLY_SOURCE_FAMILY",
+        "automation_ready": false,
+        "series_mapping_status": "PENDING_EXACT_VARIANT_MATCH_TO_RUNTIME_LEVELS",
+        "candidate_series_keys": [
+          "BSTA@SNB.MONA_U.BIL.AKT.FMI.GGU{U,T,CHF,A40}",
+          "BSTA@SNB.MIRE_U.MIR.AAK.GGU{U,T,CHF,A50}"
+        ],
+        "source_url": "https://data.snb.ch/"
+      }
     },
     "CHF.money": {
       "label": "M3",
@@ -334,15 +422,37 @@
     },
     "CHF.credit": {
       "label": "Credito bancario",
-      "status": "OFFICIAL_PROVIDER_CONFIRMED_DIMENSION_MATCH_PENDING",
       "publisher": "Swiss National Bank",
-      "source_contract": "Monthly banking statistics — credit volume / loans utilisation",
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "SNB MONA bank credit customers, exact dimensions",
       "frequency": "MONTHLY",
-      "automation_ready": false,
-      "series_mapping_status": "PENDING_EXACT_CUBE_DIMENSIONS_AND_RUNTIME_VALUE_MATCH",
-      "candidate_cube": "bakredinausbm",
-      "source_url": "https://data.snb.ch/en/topics/banken/cube/bakredinausbm",
-      "api_url": "https://data.snb.ch/api/cube/bakredinausbm/data/json/en"
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
+      "series_key": "BSTA@SNB.MONA_B.BIL.AKT.FKU{B,T,T,T,T,T,A40}",
+      "source_url": "https://data.snb.ch/api/warehouse/cube/BSTA.SNB.MONA_B.BIL.AKT.FKU/data/json/en?dimSel=KONSOLIDIERUNGSSTUFE%28B%29%2CINLANDAUSLAND%28T%29%2CWAEHRUNG%28T%29%2CFAELLIGKEIT%28T%29%2CDECKUNG%28T%29%2CSEKTORDECKUNG%28T%29%2CBANKENGRUPPE%28A40%29&fromDate=2019-10&toDate=2026-11",
+      "macro_series_id": "CH_BANK_CREDIT_CUSTOMERS_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45989956181,
+        "job_id": 140474966868,
+        "receipt_status": "READY",
+        "native_last_date": "2026-09",
+        "native_last_value": 416220.1065642587,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false
+      },
+      "previous_contract_snapshot": {
+        "label": "Credito bancario",
+        "status": "OFFICIAL_PROVIDER_CONFIRMED_DIMENSION_MATCH_PENDING",
+        "publisher": "Swiss National Bank",
+        "source_contract": "Monthly banking statistics — credit volume / loans utilisation",
+        "frequency": "MONTHLY",
+        "automation_ready": false,
+        "series_mapping_status": "PENDING_EXACT_CUBE_DIMENSIONS_AND_RUNTIME_VALUE_MATCH",
+        "candidate_cube": "bakredinausbm",
+        "source_url": "https://data.snb.ch/en/topics/banken/cube/bakredinausbm",
+        "api_url": "https://data.snb.ch/api/cube/bakredinausbm/data/json/en"
+      }
     },
     "EUR.liquidity": {
       "label": "Liquidità in eccesso",
@@ -490,23 +600,69 @@
     },
     "JPY.liquidity": {
       "label": "BoJ — reserve balances",
-      "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
       "publisher": "Bank of Japan",
-      "source_contract": "Current account balances at the Bank of Japan / market operations statistics",
-      "frequency": "DAILY_SOURCE_FAMILY",
-      "automation_ready": false,
-      "series_mapping_status": "PENDING_EXACT_SERIES_CODE_AND_MONTHLY_AGGREGATION_RULE",
-      "source_url": "https://www.boj.or.jp/en/statistics/"
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "BoJ monetary base average reserve balances",
+      "frequency": "MONTHLY",
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
+      "series_key": "BOJ_MBLONG_AVERAGE_RESERVE_BALANCES",
+      "source_url": "https://www.boj.or.jp/en/statistics/boj/other/mb/mblong.xlsx",
+      "macro_series_id": "JP_BOJ_RESERVE_BALANCES_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45989956181,
+        "job_id": 140474966868,
+        "receipt_status": "READY",
+        "native_last_date": "2026-10",
+        "native_last_value": 3821699,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false
+      },
+      "previous_contract_snapshot": {
+        "label": "BoJ — reserve balances",
+        "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
+        "publisher": "Bank of Japan",
+        "source_contract": "Current account balances at the Bank of Japan / market operations statistics",
+        "frequency": "DAILY_SOURCE_FAMILY",
+        "automation_ready": false,
+        "series_mapping_status": "PENDING_EXACT_SERIES_CODE_AND_MONTHLY_AGGREGATION_RULE",
+        "source_url": "https://www.boj.or.jp/en/statistics/"
+      }
     },
     "JPY.money": {
       "label": "M3",
-      "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
       "publisher": "Bank of Japan",
-      "source_contract": "Money Stock — M3",
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "BoJ MD02 M3 average amounts outstanding, seasonally adjusted",
       "frequency": "MONTHLY",
-      "automation_ready": false,
-      "series_mapping_status": "PENDING_EXACT_BOJ_API_SERIES_CODE",
-      "source_url": "https://www.boj.or.jp/en/statistics/money/ms/"
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
+      "series_key": "MAM1XAM3M3MO",
+      "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode",
+      "macro_series_id": "JP_M3_SA_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45977649169,
+        "job_id": 140433310675,
+        "receipt_status": "NO_CHANGE",
+        "native_last_date": "2026-10",
+        "native_last_value": 16371215,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false,
+        "exact_overlap": 130,
+        "native_overlap": 130
+      },
+      "previous_contract_snapshot": {
+        "label": "M3",
+        "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
+        "publisher": "Bank of Japan",
+        "source_contract": "Money Stock — M3",
+        "frequency": "MONTHLY",
+        "automation_ready": false,
+        "series_mapping_status": "PENDING_EXACT_BOJ_API_SERIES_CODE",
+        "source_url": "https://www.boj.or.jp/en/statistics/money/ms/"
+      }
     },
     "JPY.credit": {
       "label": "Credito bancario",
@@ -533,23 +689,45 @@
     },
     "JPY.conditions": {
       "label": "Tankan — lending attitude",
-      "status": "OFFICIAL_SOURCE_CONFIRMED_VALUE_MAPPING_PENDING",
       "publisher": "Bank of Japan",
-      "source_contract": "Tankan — Lending Attitude of Financial Institutions (All industries)",
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "BoJ Tankan lending attitude all enterprises all industries actual DI",
       "frequency": "QUARTERLY",
-      "automation_ready": false,
-      "series_mapping_status": "PENDING_EXACT_BOJ_API_SERIES_CODE_OR_STABLE_TABLE_EXTRACT",
-      "latest_verified_release": "2026-09",
-      "latest_value_all_enterprises": 13,
-      "source_url": "https://www.boj.or.jp/en/statistics/tk/yoshi/tk2609.htm"
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
+      "series_key": "TK99F0000612GCQ00000",
+      "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=CO&startDate=201601&endDate=202604&code=TK99F0000612GCQ00000",
+      "macro_series_id": "JP_TANKAN_LENDING_ATTITUDE_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45989956181,
+        "job_id": 140474966868,
+        "receipt_status": "READY",
+        "native_last_date": "2026-Q3",
+        "native_last_value": 13,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false
+      },
+      "previous_contract_snapshot": {
+        "label": "Tankan — lending attitude",
+        "status": "OFFICIAL_SOURCE_CONFIRMED_VALUE_MAPPING_PENDING",
+        "publisher": "Bank of Japan",
+        "source_contract": "Tankan — Lending Attitude of Financial Institutions (All industries)",
+        "frequency": "QUARTERLY",
+        "automation_ready": false,
+        "series_mapping_status": "PENDING_EXACT_BOJ_API_SERIES_CODE_OR_STABLE_TABLE_EXTRACT",
+        "latest_verified_release": "2026-09",
+        "latest_value_all_enterprises": 13,
+        "source_url": "https://www.boj.or.jp/en/statistics/tk/yoshi/tk2609.htm"
+      }
     }
   },
   "unresolved": [],
   "coverage": {
     "total_subseries": 26,
     "source_mapped_subseries": 26,
-    "automation_ready_subseries": 16,
-    "mapping_pending_subseries": 10,
+    "automation_ready_subseries": 24,
+    "mapping_pending_subseries": 2,
     "unresolved_subseries": 0
   },
   "status": "PARTIAL_POLICY_FAIL_CLOSED"

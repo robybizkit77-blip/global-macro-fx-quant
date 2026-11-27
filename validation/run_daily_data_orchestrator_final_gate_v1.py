@@ -40,9 +40,13 @@ def main():
 
     if price.get('status') != 'CONTROLLED_APPLY_PROVEN_PUBLICATION_WITHHELD':
         raise SystemExit(f'Price final-gate drift: {price}')
-    if (liquidity.get('ready'), liquidity.get('withheld'), liquidity.get('total')) != (23, 3, 26):
+    liq_policy = load('validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json')
+    liq_counts = liq_policy['coverage']
+    if (liquidity.get('ready'), liquidity.get('withheld'), liquidity.get('total')) != (
+        liq_counts['automation_ready_subseries'], liq_counts['mapping_pending_subseries'], liq_counts['total_subseries']
+    ):
         raise SystemExit(f'Liquidity final-gate drift: {liquidity}')
-    if liquidity.get('exact_blockers') != ['CHF.liquidity', 'CHF.credit', 'JPY.liquidity']:
+    if liquidity.get('exact_blockers') != sorted(k for k, v in liq_policy['mapped'].items() if v.get('automation_ready') is not True):
         raise SystemExit(f'Liquidity blocker drift: {liquidity}')
     if risk.get('status') != 'HARD_BLOCKER_CERTIFIED_NO_CONTROLLED_APPLY':
         raise SystemExit(f'Risk final-gate drift: {risk}')
