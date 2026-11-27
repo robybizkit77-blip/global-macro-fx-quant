@@ -4,12 +4,14 @@ on:
     branches: [main]
     paths:
       - 'validation/inspect_rbnz_b2_official_workbook_v1.py'
+      - 'validation/rates/reconcile_rbnz_b2_live_v1.py'
       - 'validation/test_rbnz_b2_official_workbook_inspector_v1.py'
       - '.github/workflows/rbnz-b2-official-workbook-inspector-qa.yml'
   push:
     branches: [main]
     paths:
       - 'validation/inspect_rbnz_b2_official_workbook_v1.py'
+      - 'validation/rates/reconcile_rbnz_b2_live_v1.py'
       - 'validation/test_rbnz_b2_official_workbook_inspector_v1.py'
       - '.github/workflows/rbnz-b2-official-workbook-inspector-qa.yml'
   workflow_dispatch:
@@ -28,35 +30,8 @@ jobs:
           python -m py_compile validation/inspect_rbnz_b2_official_workbook_v1.py
           python validation/test_rbnz_b2_official_workbook_inspector_v1.py
           git diff --exit-code -- live_data payload site
-      - name: Read current official RBNZ B2 workbook and live public table without production writes
+      - name: Reconcile official current B2 HTML and workbook including benchmark identity
         if: github.event_name == 'pull_request' && github.head_ref == 'research/rbnz-b2-live-workbook-20261127'
         run: |
-          python - <<'PY'
-          import io, json, hashlib, urllib.request, urllib.parse
-          from openpyxl import load_workbook
-          from validation.rates.collect_rbnz_b2_daily_web_v1 import fetch, parse, NZ, dt
-          from validation.rates.reconcile_rbnz_b2_xlsx_oct29_v1 import URL, ALTERNATE
-          print("LIVE_B2_HTML",json.dumps(parse(fetch(),now_nz=dt.datetime.now(NZ)),sort_keys=True))
-          errors=[]
-          raw=None
-          for url in (URL,ALTERNATE):
-              try:
-                  req=urllib.request.Request(url,headers={"User-Agent":"RBNZ-Automated-Agent/GlobalMacroFXQuant/B2Research"})
-                  with urllib.request.urlopen(req,timeout=25) as r:
-                      assert r.status==200 and urllib.parse.urlsplit(r.geturl()).hostname in ("www.rbnz.govt.nz","rbnz.govt.nz")
-                      raw=r.read(10000001)
-                  assert len(raw)<10000001 and raw.startswith(b"PK")
-                  print("B2_XLSX",url,len(raw),hashlib.sha256(raw).hexdigest())
-                  break
-              except Exception as e:
-                  raw=None; errors.append(str(e))
-          assert raw is not None, errors
-          wb=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
-          for ws in wb:
-              ws.reset_dimensions()
-              print("B2_SHEET",ws.title)
-              for i,row in enumerate(ws.iter_rows(max_row=12,values_only=True),1):
-                  print("B2_HEADER",i,repr([(j+1,v) for j,v in enumerate(row) if v is not None])[:6000])
-          wb.close()
-          PY
+          python -m validation.rates.reconcile_rbnz_b2_live_v1
           git diff --exit-code -- live_data payload site
