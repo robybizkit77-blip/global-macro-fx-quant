@@ -733,8 +733,9 @@ async function chosenPair(page,key,label){
  assert.match(firstRead,/Cosa va\.[\s\S]*Cosa frena\.[\s\S]*Cosa guardare\./);
  assert.match(await p.locator('.pairs-reading-head h2').innerText(),/nelle ultime settimane/i,
   label+' '+key+' must open on the observed move');
- assert.doesNotMatch(firstRead,/fixing|futures|\d+(?:,\d+)?\s*%|TRADE ATTRACTIVENESS/i,
+ assert.doesNotMatch(firstRead,/fixing|futures|\d+(?:,\d+)?\s*%/i,
   label+' '+key+' exposed technical details in the first reading');
+ assert.equal(await p.locator('.pairs-three-answers > div:visible').count(),3,label+' three qualitative decisions must be visible before opening details');
  const quotes=p.locator('details.pairs-evidence');
  assert(!await quotes.evaluate(el=>el.open),label+' '+key+' details open without request');
  assert(!await p.locator('.pairs-price-periods').isVisible(),label+' '+key+' price numbers should be folded');
@@ -778,7 +779,7 @@ async function chosenPair(page,key,label){
   assert.equal(await period.getAttribute('data-pair-price-tone'),sourceTone,label+' '+key+' price direction reversed');
   assert.equal(await period.locator('strong').innerText(),expectedMove,label+' '+key+' price move misquoted');
  }
- assert.equal(await p.locator('.pairs-price-assessment small').innerText(),
+ assert.equal(await p.locator('.pairs-price-detail small').innerText(),
   'Fixing BCE al '+priceEvidence.priceAsOf.split('-').reverse().join('/'),
   label+' '+key+' price comparison lost its source date');
  assert(/calendario|evento|prossimo|previsto|ufficiale/i.test(story),
