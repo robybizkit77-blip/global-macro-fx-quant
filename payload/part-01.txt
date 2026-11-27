@@ -10675,7 +10675,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-11-22T00:00:00Z",
         "2026-11-23T00:00:00Z",
         "2026-11-24T00:00:00Z",
-        "2026-11-25T00:00:00Z"
+        "2026-11-25T00:00:00Z",
+        "2026-11-26T00:00:00Z"
       ],
       "values": [
         2198583.0,
@@ -10824,29 +10825,30 @@ window.__GMFQ_DATA.MACRO_SERIES={
         2075156.0,
         2072997.0,
         2080726.0,
-        2053537.0
+        2053537.0,
+        2039750.0
       ],
       "unit": "EUR millions",
       "frequency": "D",
       "source_file": "EA_EXCESS_LIQUIDITY_history.csv",
-      "last_date": "2026-11-25T00:00:00Z",
-      "last_value": 2053537.0,
+      "last_date": "2026-11-26T00:00:00Z",
+      "last_value": 2039750.0,
       "current_vintage_provenance": {
         "status": "ECB_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_url": "https://data-api.ecb.europa.eu/service/data/ILM/D.U2.C.EXLIQ.U2.EUR?format=csvdata&startPeriod=2026-07-02",
         "source_series_id": "ILM.D.U2.C.EXLIQ.U2.EUR",
-        "source_csv_sha256": "32dc659f33de7cbe1c7b7dc4dd4e5570968daa7ef961150a9d969a7e07b74148",
-        "historical_overlap_exact": 146,
+        "source_csv_sha256": "911ef4dbc2c29ab2398b2fce645281305fe31b4e4849e24ed73414d0e0ad7b5d",
+        "historical_overlap_exact": 147,
         "historical_overlap_audit": {
-          "count": 146,
-          "exact": 146,
+          "count": 147,
+          "exact": 147,
           "median_scaled_error": 0.0,
           "max_scaled_error": 0.0
         },
         "no_synthetic_dates": true,
         "source_series_first_release_PIT_certified": false,
         "historical_levels_may_be_revised_again": true,
-        "runner_first_seen_utc": "2026-11-26T15:17:59.432741+00:00"
+        "runner_first_seen_utc": "2026-11-27T10:34:30.267457+00:00"
       }
     },
     {
