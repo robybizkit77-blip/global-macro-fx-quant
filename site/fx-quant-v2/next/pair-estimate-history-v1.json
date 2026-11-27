@@ -3432,6 +3432,162 @@
           "timing": "BASSA ORA"
         }
       }
+    },
+    {
+      "fixing": "2026-11-26",
+      "macroAsOf": "2026-11-27",
+      "capturedAt": "2026-11-27T06:20:03.645Z",
+      "commit": "b08bd00841ff3156929b4d4dd8debc3b9b3c073f",
+      "method": "c54bb6f6a2fa76470e8c616c72b478e70735166b10c36cd32f35dddcf8cd0379",
+      "sourceHashes": {
+        "observed": "fb1ae503a417c21af5e866aa55c04073ba30d7721bad3f585788cf53a43a6303",
+        "prices": "0a6041dbefd8a5da49aa08e3d2c78d7ea770ce18c938db63dca933aeae7de642",
+        "ois": "c9783a9bb9e324b1478c498bc59feafd8cdbf906f4437f72d50d6a2bc99b6c74",
+        "rates": "95accb665c705d85c42ba4c0efcb26e6107d13b2fd0371ba9f47bfbde8de1662",
+        "model": "95f7bc6ea2bc30215dbf8877ef66dfddcf1569eca792e7bb44024814410e9503"
+      },
+      "pairs": {
+        "AUDCAD": {
+          "favored": null,
+          "thesis": "NON DISTINTA",
+          "timing": "NON VALUTABILE"
+        },
+        "AUDCHF": {
+          "favored": "AUD",
+          "thesis": "PARZIALE",
+          "timing": "BASSA ORA"
+        },
+        "AUDJPY": {
+          "favored": "AUD",
+          "thesis": "COERENTE",
+          "timing": "BASSA ORA"
+        },
+        "AUDNZD": {
+          "favored": "AUD",
+          "thesis": "PARZIALE",
+          "timing": "BASSA ORA"
+        },
+        "AUDUSD": {
+          "favored": null,
+          "thesis": "NON DISTINTA",
+          "timing": "NON VALUTABILE"
+        },
+        "CADCHF": {
+          "favored": "CAD",
+          "thesis": "PARZIALE",
+          "timing": "BASSA ORA"
+        },
+        "CADJPY": {
+          "favored": "CAD",
+          "thesis": "COERENTE",
+          "timing": "BASSA ORA"
+        },
+        "CHFJPY": {
+          "favored": null,
+          "thesis": "NON DISTINTA",
+          "timing": "NON VALUTABILE"
+        },
+        "EURAUD": {
+          "favored": "AUD",
+          "thesis": "PARZIALE",
+          "timing": "BASSA ORA"
+        },
+        "EURCAD": {
+          "favored": "CAD",
+          "thesis": "PARZIALE",
+          "timing": "BASSA ORA"
+        },
+        "EURCHF": {
+          "favored": null,
+          "thesis": "NON DISTINTA",
+          "timing": "NON VALUTABILE"
+        },
+        "EURGBP": {
+          "favored": "GBP",
+          "thesis": "PARZIALE",
+          "timing": "BASSA ORA"
+        },
+        "EURJPY": {
+          "favored": null,
+          "thesis": "NON DISTINTA",
+          "timing": "NON VALUTABILE"
+        },
+        "EURNZD": {
+          "favored": null,
+          "thesis": "NON DISTINTA",
+          "timing": "NON VALUTABILE"
+        },
+        "EURUSD": {
+          "favored": "USD",
+          "thesis": "PARZIALE",
+          "timing": "DA VALIDARE"
+        },
+        "GBPAUD": {
+          "favored": "GBP",
+          "thesis": "PARZIALE",
+          "timing": "DA VALIDARE"
+        },
+        "GBPCAD": {
+          "favored": "GBP",
+          "thesis": "PARZIALE",
+          "timing": "BASSA ORA"
+        },
+        "GBPCHF": {
+          "favored": "GBP",
+          "thesis": "PARZIALE",
+          "timing": "BASSA ORA"
+        },
+        "GBPJPY": {
+          "favored": "GBP",
+          "thesis": "COERENTE",
+          "timing": "BASSA ORA"
+        },
+        "GBPNZD": {
+          "favored": "GBP",
+          "thesis": "PARZIALE",
+          "timing": "DA VALIDARE"
+        },
+        "GBPUSD": {
+          "favored": "GBP",
+          "thesis": "PARZIALE",
+          "timing": "BASSA ORA"
+        },
+        "NZDCAD": {
+          "favored": "CAD",
+          "thesis": "PARZIALE",
+          "timing": "DA VALIDARE"
+        },
+        "NZDCHF": {
+          "favored": null,
+          "thesis": "NON DISTINTA",
+          "timing": "NON VALUTABILE"
+        },
+        "NZDJPY": {
+          "favored": null,
+          "thesis": "NON DISTINTA",
+          "timing": "NON VALUTABILE"
+        },
+        "NZDUSD": {
+          "favored": "USD",
+          "thesis": "CONTRASTATA",
+          "timing": "NON SUPPORTATA"
+        },
+        "USDCAD": {
+          "favored": null,
+          "thesis": "NON DISTINTA",
+          "timing": "NON VALUTABILE"
+        },
+        "USDCHF": {
+          "favored": "USD",
+          "thesis": "PARZIALE",
+          "timing": "BASSA ORA"
+        },
+        "USDJPY": {
+          "favored": "USD",
+          "thesis": "PARZIALE",
+          "timing": "BASSA ORA"
+        }
+      }
     }
   ]
 }
