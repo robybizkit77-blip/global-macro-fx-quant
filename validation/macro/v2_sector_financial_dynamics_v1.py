@@ -273,12 +273,38 @@ def cad_sector_rows(today):
             out.append(dict(base,measurement="WITHHELD",quality="SOURCE_CHECK_FAILED",reason=str(exc)))
     return out
 
+def nzd_housing_row(today):
+    from validation.macro.collect_sector_output_research_v1 import ARCHIVE
+    from validation.macro.collect_nzd_building_consents_v1 import ID,BASE
+    base=dict(series_id=ID,label="Nuove abitazioni autorizzate — destagionalizzate",frequency="M",pillar="housing")
+    try:
+        p=json.loads(ARCHIVE.read_text());r=p["series"][ID]
+        if (p["schema"]!="GMFQ_SECTOR_OUTPUT_RESEARCH_V1" or not r["source_url"].startswith(BASE) or
+            r["source_series_id"]!="BLDM.SFTZ1100A1S" or r["currency"]!="NZD" or r["frequency"]!="M" or
+            r["source_series_first_release_PIT_certified"] is not False or r["quality"]!="STATSNZ_CURRENT_REVISED_HISTORY_NOT_PIT"):
+            raise ValueError("Stats NZ housing provenance mismatch")
+        ds,vs=r["dates"],r["values"]
+        if len(ds)!=len(vs) or len(ds)<36 or ds[-1]!=r["latest_period"] or date.fromisoformat(r["released"])>today:
+            raise ValueError("Stats NZ housing history mismatch")
+        data={}
+        for d,v in zip(ds,vs):
+            i,stamp=parse(d,"M")
+            if i in data or type(v) is not int or v<=0:raise ValueError("invalid dwelling count")
+            data[i]=(stamp,v)
+        if sorted(data)!=list(range(min(data),max(data)+1)) or ds[-1]>=today.isoformat()[:7]:
+            raise ValueError("missing or future dwelling months")
+        return dict(base,measurement="QUANTITY",unit=r["unit"],quality=r["quality"],released=r["released"],
+                    source_series_id=r["source_series_id"],**calculate(data,"M","QUANTITY"))
+    except (OSError,ValueError,KeyError,TypeError,ArithmeticError) as exc:
+        return dict(base,measurement="WITHHELD",quality="SOURCE_CHECK_FAILED",reason=str(exc))
+
 def run():
     today=datetime.now(ZoneInfo("Europe/Rome")).date()
     result=build(json.loads((ROOT/"live_data/sections/MACRO_SERIES.json").read_text()),today)
     try: raw=(ROOT/NZD_PATH).read_text()
     except OSError: raw=""
     result["countries"]["NZD"]=nzd_rows(raw,today)
+    result["countries"]["NZD"].append(nzd_housing_row(today))
     result["countries"]["GBP"].append(uk_services_row(today))
     result["countries"]["CAD"].extend(cad_sector_rows(today))
     return result
