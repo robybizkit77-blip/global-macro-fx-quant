@@ -72,6 +72,17 @@ def browser(url):
             response=page.goto(url,wait_until="domcontentloaded",timeout=20000)
             require(response and response.status==200 and page.url==url,"Stats NZ browser edition mismatch")
             page.get_by_text("New dwellings consented, monthly, January 1995",exact=False).first.wait_for(state="attached",timeout=15000)
+            # A chart heading can appear before its data table is populated.
+            # Wait for a candidate table, then let parse() enforce identity,
+            # exact seasonally adjusted columns, chronology and release anchors.
+            page.wait_for_function(r"""() => Array.from(document.querySelectorAll('table')).some(table => {
+                const rows=Array.from(table.querySelectorAll('tr'));
+                const header=rows.findIndex(row => Array.from(row.querySelectorAll('th,td')).map(cell =>
+                    cell.textContent.trim().replace(/\\s+/g,' ').toLowerCase()).join('|') ===
+                    'category|actual|seasonally adjusted|trend');
+                return header>=0 && rows.slice(header+1).filter(row =>
+                    /^\\d{4}-\\d{2}-01$/.test(row.querySelector('th,td')?.textContent.trim()||'')).length>=36;
+            })""",timeout=20000)
             return page.content().encode("utf-8")
         finally:b.close()
 def collect(today,fetcher=retrieve,renderer=browser):
