@@ -119,6 +119,7 @@ def main():
             "exact_blockers": base_gate.get("exact_blockers"),
         },
         "documented_expected_gaps": {
+            "scope": "FROZEN_2026_10_15_BASELINE_NOT_CURRENT_LIQUIDITY_STATUS",
             "count": 7,
             "ids": expected_gap_ids,
             "fail_closed": True,
