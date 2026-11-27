@@ -56,12 +56,15 @@ jobs:
               print('WORKBOOK',key,hashlib.sha256(raw).hexdigest(),wb.sheetnames)
               for ws in wb:
                   print('SHEET',ws.title,ws.max_row,ws.max_column)
-                  if ws.max_column>100 or ws.max_row>20000: continue
+                  ws.reset_dimensions()
                   rows=list(ws.values)
-                  for i,row in enumerate(rows[:18],1):
-                      print('HEADER',i,repr(row)[:3000])
-                  for i,row in enumerate(rows[-12:],len(rows)-11):
-                      print('TAIL',i,repr(row)[:3000])
+                  assert len(rows)<20000
+                  for i,row in enumerate(rows[:14],1):
+                      cells=[(j+1,v) for j,v in enumerate(row) if v is not None]
+                      print('HEADER',i,repr(cells)[:9000])
+                  for i,row in enumerate(rows[-10:],len(rows)-9):
+                      cells=[(j+1,v) for j,v in enumerate(row) if v is not None]
+                      print('TAIL',i,repr(cells)[:9000])
               wb.close()
           PY
 
