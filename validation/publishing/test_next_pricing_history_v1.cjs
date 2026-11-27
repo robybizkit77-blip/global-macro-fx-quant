@@ -39,6 +39,12 @@ const quoteB={...quoteA,date:'2026-11-12',contract:'BBB'};
 assert(!connect(quoteA,quoteB),'Different listed contracts cannot be joined');
 assert(connect(quoteA,{...quoteB,contract:'AAA'}),'Same listed contract next day can connect');
 assert(!connect(quoteA,{...quoteB,date:'2026-11-20',contract:'AAA'}),'Missing source dates break lines');
+assert(!connect(quoteA,{...quoteB,date:'2026-11-13',contract:'AAA'}),'One missing weekday breaks lines');
+const friday={...quoteA,date:'2026-11-13'},monday={...quoteA,date:'2026-11-16'};
+assert(connect(friday,monday),'Adjacent weekdays across weekend remain connected');
+assert(!connect(friday,{...monday,date:'2026-11-17'}),'Missing Monday breaks line');
+assert(!connect(friday,{...monday,date:'2026-11-14'}),'Weekend quote cannot create a weekday interval');
+assert.equal(historicalMoves({tenors:{'6m':[quoteA,{...quoteA,date:'2026-11-13',rate:3.7},monday]}}).length,1,'Do not render a multi-weekday change as an adjacent observation');
 assert(connect({date:'2026-11-11',contract:'BBB',source_class:'BANK_BILL_PROXY_DELTA_REFERENCE',derived:true},
  {...quoteB,source_class:'BANK_BILL_PROXY'}),'Declared NZD 1D reference can be dotted');
 const eur=country(data,'EUR',30),gbp=country(data,'GBP',30);
@@ -77,7 +83,7 @@ assert(!safe.includes('<img')&&safe.includes('&lt;img'));
 assert(!render({history:{...data,official_ois_created:true},ccy:'GBP'}).includes('<svg'),
  'Official OIS promotion breaks data-readiness gate');
 const page=file('site/fx-quant-v2/next/index.html');
-assert(page.indexOf('rates-pricing-history-v1.js?v=7')<page.indexOf('rates-studio.js?v='));
+assert(page.indexOf('rates-pricing-history-v1.js?v=8')<page.indexOf('rates-studio.js?v='));
 assert.match(page,/rates-studio\.css\?v=\d+/);
 const app=file('site/fx-quant-v2/next/app.js');
 assert(app.includes("oisHistory:'./rates-pricing-history-v1.json'"));
