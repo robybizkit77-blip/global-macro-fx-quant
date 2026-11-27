@@ -13,7 +13,7 @@
  function sovereign(row,today){
   const w=row?.weekly2_validation;
   if(!fresh(row?.date,today)||w?.end_date!==row.date||days(w.start_date,w.end_date)!==7||
-   !same(row['2Y'],w.end_value)||!same((w.end_value-w.start_value)*100,w.change_bp))return null;
+   !same(row['2Y'],w.end_value)||!(finite(w.start_value)&&finite(w.end_value)&&finite(w.change_bp)&&Math.abs((w.end_value-w.start_value)*100-w.change_bp)<=.051))return null;
   return {bp:w.change_bp,from:w.start_date,to:w.end_date,source:w.source,kind:'GOV_2Y_NOT_OIS'};
  }
  function observedWeeklyPair(h,last){
@@ -26,7 +26,7 @@
   if(h.kind==='OIS'&&z.source_class!=='OFFICIAL_TENOR')return null;
   const current=(z.rate-a.rate)*100,previous=(a.rate-b.rate)*100;
   if(!same(current,last.week?.bp))return null;
-  return {current,previous,acceleration:current-previous,from:b.date,mid:a.date,to:z.date,contract:z.contract||'OIS 6M'};
+  return {current,previous,acceleration:Math.round((current-previous)*100)/100,from:b.date,mid:a.date,to:z.date,contract:z.contract||'OIS 6M'};
  }
  function evaluate({pricing,archive,snapshot,operational,research,nzd,history,rates,today,currency,other}={}){
   if(!pricing?.readCurrency||!FX.includes(currency)||!dateOK(today))return null;
