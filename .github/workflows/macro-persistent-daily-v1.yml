@@ -2770,6 +2770,62 @@ jobs:
           print(json.dumps(persist(managed=managed,commit_message='Refresh verified AUD ABS QUARTERLY TRIMMED revised macro histories'),sort_keys=True))
           PY
 
+      - name: Prepare independent revised AUD ABS WPI histories
+        id: aud_abs_wpi
+        shell: bash
+        run: |
+          python -m unittest validation.macro.test_prepare_aud_abs_wpi_v1 -v
+          python -m validation.macro.prepare_aud_abs_wpi_v1 \
+            --candidate /tmp/macro-persistent/MACRO_SERIES_AUD_ABS_WPI_PREP.json \
+            --receipt /tmp/macro-persistent/aud-abs-wpi-revised-receipt.json
+          python - <<'PY'
+          import json
+          j=json.load(open('/tmp/macro-persistent/aud-abs-wpi-revised-receipt.json'))
+          assert len(j['series'])==1 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
+          if '${{ github.head_ref }}' == 'fix/aud-wpi-recurring-consolidation-20261127':
+              assert j['series'][0]['status'] in ('READY','NO_CHANGE') and j['series'][0]['period']>='2026-09',j
+          for row in j['series']:
+              if row['status']=='WITHHELD': print('::warning::AUD ABS WPI '+row['id']+' '+row['reason'])
+          PY
+
+      - name: Apply verified AUD ABS WPI histories with existing canonical guards
+        if: github.ref == 'refs/heads/main' && steps.aud_abs_wpi.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from validation.macro.prepare_aud_abs_wpi_v1 import CONFIG
+          old=json.load(open('live_data/sections/MACRO_SERIES.json'))
+          new=json.load(open('/tmp/macro-persistent/MACRO_SERIES_AUD_ABS_WPI_PREP.json'))
+          assert set(old)==set(new)
+          changed=set()
+          for c in old:
+              assert len(old[c])==len(new[c])
+              for a,b in zip(old[c],new[c]):
+                  assert a['id']==b['id']
+                  if a!=b: changed.add((c,a['id']))
+          assert changed <= {('AUD',x) for x in CONFIG}
+          j=json.load(open('/tmp/macro-persistent/aud-abs-wpi-revised-receipt.json'))
+          assert changed=={('AUD',r['id']) for r in j['series'] if r['status']=='READY'}
+          PY
+          status="$(python -c "import json; print(json.load(open('/tmp/macro-persistent/aud-abs-wpi-revised-receipt.json'))['status'])")"
+          if [ "$status" = NO_CHANGE_OR_WITHHELD ]; then exit 0; fi
+          test "$status" = READY
+          python validation/update_live_direct_section.py --section MACRO_SERIES \
+            --replacement /tmp/macro-persistent/MACRO_SERIES_AUD_ABS_WPI_PREP.json --apply
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
+          python validation/check_live_update_contract.py
+          python validation/rebuild_live_data_runtime.py --verify-only
+          python - <<'PY'
+          import json,subprocess
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          managed=('live_data/sections/MACRO_SERIES.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt')
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed and changed.issubset(set(managed)),changed
+          print(json.dumps(persist(managed=managed,commit_message='Refresh verified AUD ABS WPI revised macro histories'),sort_keys=True))
+          PY
+
       - name: Prepare independent revised EUR ECB DAILY histories
         id: eur_ecb_daily
         shell: bash
