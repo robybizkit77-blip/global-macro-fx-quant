@@ -430,6 +430,7 @@ function make(api){
     +'<section id="rates-expected" class="rates-chapter" tabindex="-1" aria-label="Attese monetarie">'
     +'<div class="rates-section-head"><div><h2>Attese monetarie</h2></div><p>Leggi prima le variazioni verificabili, poi lo storico e i livelli per scadenza. Ogni serie indica lo strumento e la data.</p></div>'
     +(root.FXQuantPricingMoves?.renderOverview?.({snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),today:dayNow()})||'')
+    +(root.FXQuantRatesResearchScore?.render(root.FXQuantRatesResearchScore.evaluate({pricing:root.FXQuantPricingMoves,archive:root.FXQuantPricingHistory,snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),history:get('oisHistory'),rates:get('rates'),today:dayNow(),currency:c,other}),esc)||'')
     +(root.FXQuantPricingMoves?.render?.({
        currency:c,window:state.rsPricingWindow||'1d',plot,esc,fmt,sign,date,
        snapshot:get('ois'),operational:get('oisOperational'),
