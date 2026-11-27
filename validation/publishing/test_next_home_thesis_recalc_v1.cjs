@@ -109,6 +109,7 @@ changed.changedPairs=[{key:'EURUSD',
  current:{favored:'EUR',thesis:'CONTRASTATA',timing:'BASSA ORA'}}];
 changed.changedRanks=[{ccy:'EUR',previous:5,current:4}];
 changed.inputChanges=['observed','prices'];
+changed.methodChanged=false; // Isolate the input-change scenario from the current real receipt.
 changed.factorChanges=null; // Do not invent historical numeric deltas.
 changed.pairs.EURUSD={...changed.changedPairs[0].current};
 const changedEstimate=structuredClone(ctx.estimate);
