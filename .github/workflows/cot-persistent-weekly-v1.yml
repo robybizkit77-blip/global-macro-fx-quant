@@ -10,12 +10,16 @@ on:
       - 'validation/orchestration/apply_cot_runtime_candidate_v1.sh'
       - 'validation/orchestration/plan_cot_release_window_v1.py'
       - 'validation/orchestration/test_plan_cot_release_window_v1.py'
+      - 'validation/build_cot_official_oi_v1.py'
+      - 'validation/test_cot_official_oi_v1.py'
   pull_request:
     paths:
       - '.github/workflows/cot-persistent-weekly-v1.yml'
       - 'validation/orchestration/apply_cot_runtime_candidate_v1.sh'
       - 'validation/orchestration/plan_cot_release_window_v1.py'
       - 'validation/orchestration/test_plan_cot_release_window_v1.py'
+      - 'validation/build_cot_official_oi_v1.py'
+      - 'validation/test_cot_official_oi_v1.py'
   workflow_dispatch:
   schedule:
     # Existing Saturday retry cadence. Add *same-workflow* Monday 22:20
@@ -62,7 +66,7 @@ jobs:
           CRON_SLOT: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
-          python3 -m unittest validation.orchestration.test_plan_cot_release_window_v1 -v
+          python3 -m unittest validation.orchestration.test_plan_cot_release_window_v1 validation.test_cot_official_oi_v1 -v
           python3 -m validation.orchestration.plan_cot_release_window_v1
 
       - uses: actions/setup-python@v5
@@ -163,6 +167,34 @@ jobs:
             fi
           done
           echo 'COT main persistence exhausted its four attempts' >&2
+          exit 1
+
+      - name: Preserve official OI research evidence from validated CFTC candidate
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/build_cot_official_oi_v1.py \
+            --summary /tmp/cot-persistent/candidate-summary.json \
+            --chart /tmp/cot-persistent/V250_COT_CHART_DATA.json \
+            --output /tmp/cot-persistent/cot-official-oi-v1.json
+          if [[ "$GITHUB_REF" != refs/heads/main ]]; then exit 0; fi
+          target=site/fx-quant-v2/next/cot-official-oi-v1.json
+          for attempt in 1 2 3 4; do
+            git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+            git switch --detach origin/main
+            python validation/build_cot_official_oi_v1.py \
+              --summary /tmp/cot-persistent/candidate-summary.json \
+              --chart live_data/sections/V250_COT_CHART_DATA.json \
+              --output "$target"
+            if git diff --quiet -- "$target"; then exit 0; fi
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -- "$target"
+            git commit -m 'Preserve exact official CFTC open interest research evidence'
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          echo 'CFTC OI evidence persistence exhausted retries' >&2
           exit 1
 
       - name: Upload COT evidence
