@@ -18,7 +18,7 @@ function readSectors(feed,today,wanted){
 }
 function sectorTable(rows,wanted,esc,fmt){
  if(!rows)return '<p>Settori e condizioni finanziarie: diagnostica non disponibile.</p>';
- const labels={manufacturing:'Manifattura · indagini',services:'Servizi / non manifatturiero · indagini',housing:'Immobiliare',credit:'Credito',liquidity:'Liquidità',survey:'Indagini generali'};
+ const labels={manufacturing:'Manifattura · indagini',services:'Servizi · attività reale / indagini',housing:'Immobiliare',credit:'Credito',liquidity:'Liquidità',survey:'Indagini generali'};
  const kinds={STOCK:'Stock nominale',QUANTITY:'Quantità',RATE:'Tasso',BALANCE:'Saldo indagine',INDEX:'Indice',WITHHELD:'Fonte sospesa'};
  const horizons={HALF_YEAR:'semestre',STOCK_3M_ENDPOINT:'3 mesi, estremi',STOCK_QOQ_ENDPOINT:'trimestre',EXACT_CALENDAR_DAY:'1 giorno di calendario',EXACT_7_CALENDAR_DAYS:'7 giorni di calendario',ROLLING_3M_OVER_PREVIOUS_3M:'3m/3m',QOQ:'trimestre'};
  const n=(v,u='')=>Number.isFinite(v)?esc(fmt(v,2)+u):'—';
