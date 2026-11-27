@@ -146,7 +146,10 @@ const market=load('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json');
 const anchor=load('site/fx-quant-v2/nzd-asx-government-anchor-v1.json');
 const research=load('site/fx-quant-v2/chf-nzd-benchmark-research.json');
 const quoteDay=new Date(Date.parse(anchor.government_as_of+'T00:00:00Z')+86400000).toISOString().slice(0,10);
+// Explicit historical canonical state for the estimate fallback exercise.
+const staleGov={...gov,NZD:{...gov.NZD,date:anchor.government_as_of}};
 const scenario={
+ rates:staleGov,
  nzdAsxGovernmentAnchor:anchor,
  nzdBenchmarkResearch:{...research,NZD:{...research.NZD,latest_date:anchor.government_as_of,
   latest_2Y:anchor['2Y'],latest_10Y:anchor['10Y'],
@@ -172,7 +175,13 @@ wrongContract.nzdDirectionalProxy.horizons['6m'].expiration='2027-09-15';
 assert.doesNotMatch(render('NZD',wrongContract,[],false,scenarioToday),/data-gov-estimate=/);
 const newCanonical={...gov,NZD:{...gov.NZD,date:quoteDay}};
 assert.doesNotMatch(render('NZD',{...scenario,rates:newCanonical},[],false,scenarioToday),/data-gov-estimate=/);
-assert.match(render('NZD'),new RegExp('data-gov-reference="NZD".*'+nzd.daily_observations.at(-1).date));
+const currentNzd=render('NZD');
+if(gov.NZD.date>=nzd.daily_observations.at(-1).date&&gov.NZD.date<=liveDay){
+ assert.doesNotMatch(currentNzd,/data-gov-estimate="NZD"/);
+ assert.match(currentNzd,new RegExp('GOV '+gov.NZD.date));
+}else{
+ assert.match(currentNzd,new RegExp('data-gov-reference="NZD".*'+nzd.daily_observations.at(-1).date));
+}
 assert.doesNotMatch(render('CHF',{chfSpot:{...spot,source_url:'https://invalid.example'}}),/data-gov-reference=/);
 const newerCHF=render('CHF',{rates:{...gov,CHF:{...gov.CHF,date:spot.as_of,'2Y':0.42,'10Y':0.61}}});
 assert.match(newerCHF,new RegExp('GOV '+spot.as_of));
