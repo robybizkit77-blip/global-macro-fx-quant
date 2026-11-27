@@ -632,13 +632,37 @@
     },
     "JPY.money": {
       "label": "M3",
-      "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
       "publisher": "Bank of Japan",
-      "source_contract": "Money Stock — M3",
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "BoJ MD02 M3 average amounts outstanding, seasonally adjusted",
       "frequency": "MONTHLY",
-      "automation_ready": false,
-      "series_mapping_status": "PENDING_EXACT_BOJ_API_SERIES_CODE",
-      "source_url": "https://www.boj.or.jp/en/statistics/money/ms/"
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
+      "series_key": "MAM1XAM3M3MO",
+      "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode",
+      "macro_series_id": "JP_M3_SA_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45977649169,
+        "job_id": 140433310675,
+        "receipt_status": "NO_CHANGE",
+        "native_last_date": "2026-10",
+        "native_last_value": 16371215,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false,
+        "exact_overlap": 130,
+        "native_overlap": 130
+      },
+      "previous_contract_snapshot": {
+        "label": "M3",
+        "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
+        "publisher": "Bank of Japan",
+        "source_contract": "Money Stock — M3",
+        "frequency": "MONTHLY",
+        "automation_ready": false,
+        "series_mapping_status": "PENDING_EXACT_BOJ_API_SERIES_CODE",
+        "source_url": "https://www.boj.or.jp/en/statistics/money/ms/"
+      }
     },
     "JPY.credit": {
       "label": "Credito bancario",
@@ -702,8 +726,8 @@
   "coverage": {
     "total_subseries": 26,
     "source_mapped_subseries": 26,
-    "automation_ready_subseries": 23,
-    "mapping_pending_subseries": 3,
+    "automation_ready_subseries": 24,
+    "mapping_pending_subseries": 2,
     "unresolved_subseries": 0
   },
   "status": "PARTIAL_POLICY_FAIL_CLOSED"
