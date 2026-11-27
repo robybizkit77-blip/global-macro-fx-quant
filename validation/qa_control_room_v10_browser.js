@@ -2562,12 +2562,36 @@ function expectedReactionFromMetrics(row){
     return {status:c?.dataset.reactionStatus,content:c?.textContent,
      study:p?.dataset.studyStatus,spread:p?.dataset.studySpreadBp};
   });
-  const expectedAudSpread=Math.round((ratesFeed.AUD['2Y']-ratesFeed.CAD['2Y'])*1000)/10;
-  if(audReaction.status!=='WITHHELD'||audReaction.study!=='LEVELS_ONLY'||
-     Number(audReaction.spread)!==expectedAudSpread||
-     !audReaction.content?.includes('STIMA DI CONTINUITÀ')||
-     !audReaction.content?.includes('NON VALUTABILE'))
-     throw Error(label+' AUDCAD reaction used unevenly dated historical 2Y '+JSON.stringify(audReaction));
+  // Independent dated yield series can have one or two recent common
+  // FX fixing dates. Test the observed window rather than an old snapshot.
+  const audMap=new Map(ratesFeed.AUD.history2.dates.map((d,i)=>[d,ratesFeed.AUD.history2.values[i]]));
+  const cadMap=new Map(ratesFeed.CAD.history2.dates.map((d,i)=>[d,ratesFeed.CAD.history2.values[i]]));
+  const audCommon=ecbFeed.rows.map(r=>r.Date).filter(d=>{
+    const age=reactionToday-dayIndex(d);
+    return age>=0&&age<=5&&Number.isFinite(audMap.get(d))&&Number.isFinite(cadMap.get(d));
+  }).slice(-2);
+  if(audCommon.length<2){
+    if(audReaction.status!=='WITHHELD'||!audReaction.content?.includes('NON VALUTABILE'))
+      throw Error(label+' AUDCAD insufficient dated evidence promoted '+JSON.stringify(audReaction));
+    if(audCommon.length===1){
+      const day=audCommon[0],spread=Math.round((audMap.get(day)-cadMap.get(day))*1000)/10;
+      if(audReaction.study!=='LEVELS_ONLY'||Number(audReaction.spread)!==spread||
+         !audReaction.content?.includes(day))
+        throw Error(label+' AUDCAD observed common-date level mismatch '+JSON.stringify(audReaction));
+    }
+    if(ratesFeed.AUD.date!==ratesFeed.CAD.date&&
+       audReaction.study!=='LEVELS_ONLY'&&audReaction.content?.includes('COERENTE'))
+      throw Error(label+' mixed-date sovereign yield reaction promoted');
+  }else{
+    const audMetrics=await page.evaluate(()=>{
+      const c=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-pair-market-reaction');
+      return {state:c?.dataset.reactionStatus,dates:[c?.dataset.windowStart,c?.dataset.windowEnd],
+        values:[...c?.querySelectorAll('.gmfq-reaction-metrics strong')||[]].map(n=>n.textContent)};
+    });
+    if(audMetrics.state!==expectedReactionFromMetrics(audMetrics)||
+       JSON.stringify(audMetrics.dates)!==JSON.stringify(audCommon))
+      throw Error(label+' AUDCAD reaction not based on common dated observations '+JSON.stringify(audMetrics));
+  }
 
   await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="all"]').click();
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="GBPJPY"]').click();
