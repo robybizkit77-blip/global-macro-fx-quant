@@ -428,3 +428,25 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  for(const path of ['macro-strength-estimated-v1.js','pair-rankings.js']) assert.doesNotMatch(read('site/fx-quant-v2/next/'+path),/FXQuantMacroMultifactorShadow/);
  console.log('G8_MULTIFACTOR_MACRO_SHADOW_PASS');
 }
+
+{
+ const bank=require('../site/fx-quant-v2/next/central-bank-studio.js');
+ const engine=require('../site/fx-quant-v2/next/recession-traffic-light-v1.js');
+ const catalog=JSON.parse(read('live_data/sections/MACRO_SERIES.json'));
+ const overlay=JSON.parse(read('site/fx-quant-v2/next/semaphore-supplement-v1.json'));
+ const today=JSON.parse(read('site/control-room-preview/macro-v3-current-evidence.json')).generated_europe_rome_day;
+ for(const country of engine.coverage){
+  const x=bank.policyMacroContext({engine,catalog,overlay,country,today});
+  assert.equal(x.researchOnly,true);
+  assert.ok([...x.prices,...x.wages].every(a=>a.available&&!a.stale&&['M','Q'].includes(a.freq)));
+  assert.equal(x.jobs,engine.model(catalog,today,country,overlay).find(r=>r.key==='jobs').signal.tone);
+  assert.doesNotMatch(bank.renderPolicyMacroContext(x,String,x=>x.toFixed(2)),/undefined|NaN/);
+ }
+ const fake={inflationContext:()=>[{available:true,value:3,freq:'M'},{available:true,value:3,freq:'M',direction:null}],wageContext:()=>[{available:true,value:2,freq:'A',stale:true}],model:()=>[{key:'jobs',signal:{tone:'red'}}]};
+ const x=bank.policyMacroContext({engine:fake,catalog:{},country:'CHF',today});
+ assert.equal(x.missingWages,true);
+ assert.match(x.sentences.join(' '),/direzione non interamente verificata/);
+ assert.match(x.sentences.join(' '),/deterioramento/);
+ assert.equal(bank.policyMacroContext({catalog:{},country:'CHF',today}),null);
+ console.log('CB_CAN_CANONICAL_CONTEXT_PASS');
+}
