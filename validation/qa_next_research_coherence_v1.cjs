@@ -536,3 +536,38 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  for(const file of ['macro-strength-estimated-v1.js','pair-rankings.js'])assert.doesNotMatch(read('site/fx-quant-v2/next/'+file),/FXQuantPriceResearchScore/);
  console.log('PRICE_RESEARCH_SCORE_G8_PASS');
 }
+
+{
+ const mod=require('../site/fx-quant-v2/next/global-fx-research-composite-v1.js');
+ const currency='USD', flags={affectsFxRanking:false,eligibleForTrading:false};
+ const macro={...flags,country:currency,score:7,effectiveCoverage:75};
+ const rates={...flags,row:{currency,quality:'UFFICIALE',officialScore:6,score:6}};
+ const positioning={...flags,currency,score:4,quality:'ESTIMATED_OI_RESEARCH',asof:'2026-11-17'};
+ const price={...flags,currency,score:8,quality:'OFFICIAL_REFERENCE_FIXINGS',asof:'2026-11-26'};
+ const args={currency,macro,rates,positioning,price};
+ const x=mod.evaluate(args);
+ assert.equal(x.baseline.known,90);
+ assert.ok(Math.abs(x.baseline.lower-5.7)<1e-9);
+ assert.ok(Math.abs(x.baseline.upper-6.7)<1e-9);
+ assert.ok(Math.abs(x.baseline.conditional-5.7/.9)<1e-9);
+ assert.equal(x.baseline.complete,false);
+ assert.equal(x.rank,null);
+ assert.equal(x.affectsFxRanking,false);
+ assert.equal(x.eligibleForTrading,false);
+ assert.equal(x.pointInTimeCertified,false);
+ const y=mod.evaluate({...args,rates:{...flags,row:{currency,quality:'SECONDARIA',score:6}}});
+ assert.equal(y.baseline.known,60);
+ assert.equal(y.indicative.known,90);
+ assert.ok(Math.abs(y.indicative.conditional-x.baseline.conditional)<1e-9);
+ const z=mod.evaluate({currency});
+ assert.equal(z.baseline.known,0);assert.equal(z.baseline.lower,0);assert.equal(z.baseline.upper,10);
+ assert.equal(z.baseline.conditional,null);
+ const full=mod.evaluate({...args,macro:{...macro,effectiveCoverage:100}});
+ assert.equal(full.baseline.complete,true);
+ assert.equal(full.baseline.lower,full.baseline.upper);
+ for(const a of [x,y,z,full])assert.doesNotMatch(mod.render(a,String),/NaN|undefined/);
+ const invalid=mod.evaluate({...args,price:{...price,currency:'EUR'}});
+ assert.equal(invalid.baseline.known,75);
+ for(const file of ['macro-strength-estimated-v1.js','pair-rankings.js'])assert.doesNotMatch(read('site/fx-quant-v2/next/'+file),/FXQuantGlobalResearchComposite/);
+ console.log('GLOBAL_FX_RESEARCH_COMPOSITE_BOUNDS_PASS');
+}
