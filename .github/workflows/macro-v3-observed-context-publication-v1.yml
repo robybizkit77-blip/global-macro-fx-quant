@@ -7,6 +7,8 @@ on:
       - 'validation/macro/publish_v3_current_context_v1.py'
       - 'validation/macro/v2_current_activity_momentum_v1.py'
       - 'validation/macro/v2_labour_inflation_dynamics_v1.py'
+      - 'validation/macro/v2_sector_financial_dynamics_v1.py'
+      - 'validation/macro/test_v2_sector_financial_dynamics_v1.py'
       - 'validation/macro/test_v2_labour_inflation_dynamics_v1.py'
       - 'validation/macro/test_v2_current_activity_momentum_v1.py'
       - 'validation/publishing/verify_pages_http_delivery_v1.py'
@@ -68,6 +70,8 @@ on:
       - 'validation/macro/publish_v3_current_context_v1.py'
       - 'validation/macro/v2_current_activity_momentum_v1.py'
       - 'validation/macro/v2_labour_inflation_dynamics_v1.py'
+      - 'validation/macro/v2_sector_financial_dynamics_v1.py'
+      - 'validation/macro/test_v2_sector_financial_dynamics_v1.py'
       - 'validation/macro/test_v2_labour_inflation_dynamics_v1.py'
       - 'validation/macro/test_v2_current_activity_momentum_v1.py'
       - 'validation/publishing/verify_pages_http_delivery_v1.py'
@@ -237,6 +241,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m unittest validation.macro.test_v2_labour_inflation_dynamics_v1 -v
+          python -m unittest validation.macro.test_v2_sector_financial_dynamics_v1 -v
           python -m validation.macro.publish_v3_current_context_v1
           python - <<'PY'
           import json
@@ -245,6 +250,15 @@ jobs:
           d=json.loads(f.read_text())
           import os
           import os
+          if d['sector_financial_status']=='RESEARCH_ONLY':
+              m=d['sector_financial_dynamics']
+              assert len(m['countries'])==8 and sum(map(len,m['countries'].values()))==53
+              assert m['safe_to_update_pairs'] is False and m['safe_to_publish_D'] is False
+              print('SECTOR_FINANCIAL_COVERAGE', {c:sum(r['measurement']!='WITHHELD' for r in rs) for c,rs in m['countries'].items()})
+              print('SECTOR_FINANCIAL_WITHHELD_ROWS', [(r['series_id'],r['reason']) for rs in m['countries'].values() for r in rs if r['measurement']=='WITHHELD'])
+          else:
+              assert d['sector_financial_status']=='WITHHELD'
+              assert os.environ['GITHUB_EVENT_NAME']!='pull_request'
           if d['labour_inflation_status']=='RESEARCH_ONLY':
               m=d['labour_inflation_dynamics']
               assert len(m['countries'])==8 and sum(map(len,m['countries'].values()))==41
