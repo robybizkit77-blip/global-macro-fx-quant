@@ -1,0 +1,32 @@
+name: FX Quant Studio Preview QA V1
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/fx-quant-v2/studio/**'
+      - 'validation/qa_fxquant_studio_preview_v1.cjs'
+      - '.github/workflows/fx-quant-studio-preview-qa-v1.yml'
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser in isolated temporary directory
+        run: |
+          npm install --prefix "$RUNNER_TEMP/studio-qa" playwright@1.56.1
+          "$RUNNER_TEMP/studio-qa/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Test Studio against repository sources
+        env:
+          NODE_PATH: ${{ runner.temp }}/studio-qa/node_modules
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/studio-http.log 2>&1 &
+          server=$!
+          trap 'kill "$server" || true' EXIT
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8765/site/fx-quant-v2/studio/ >/dev/null && break; sleep 1; done
+          node validation/qa_fxquant_studio_preview_v1.cjs
