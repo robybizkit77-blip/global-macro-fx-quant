@@ -176,18 +176,18 @@ function render(){
  if(root.document&&!refreshInFlight&&Date.now()-lastLookupAt>30*60*1000){lastLookupAt=Date.now();Promise.resolve().then(refresh);}
  const view=libraryView();
  return '<header class="rl-head"><h1>Research Library</h1>'+
-  '<p>Briefing feriale e ultima edizione pubblicata per ogni categoria.</p></header>'+
+  '<p>La ricerca quotidiana e settimanale, in un unico archivio. Una sola edizione per categoria.</p></header>'+
   '<p id="library-loading" class="rl-loading" role="status"'+(view.loading?'':' hidden')+'>Verifica delle edizioni pubblicate in corso…</p>'+
   '<div id="library-featured"'+(view.featured?'':' hidden')+'>'+view.featured+'</div>'+
-  '<div id="library-summary">'+summaryView()+'</div>'+
+
   '<section class="rl-controls" aria-label="Filtri e ricerca"><div id="library-filterbar" class="rl-filters">'+filters()+'</div>'+
   '<label class="rl-search" for="library-search"><span>Cerca fra gli ultimi report</span><input id="library-search" type="search" autocomplete="off" placeholder="Es. OIS, COT, Fed, macro..." value="'+esc(query)+'"></label></section>'+
   '<section id="library-weekly" aria-labelledby="library-weekly-title"'+(view.hideWeekly?' hidden':'')+'>'+
   '<div class="rl-result-head"><h2 id="library-weekly-title">Report settimanali</h2><span id="library-match-count">'+view.count+'</span></div>'+
   '<div id="library-grid" class="rl-grid">'+view.weekly+'</div></section>'+
-  '<section class="rl-disclaimer"><h2>Come avviene l’aggiornamento</h2>'+
+  '<details class="rl-disclaimer"><summary>Stato delle pubblicazioni e verifica dei collegamenti</summary><div id="library-summary">'+summaryView()+'</div><h2>Come avviene l’aggiornamento</h2>'+
   '<p>La Library consulta gli indici pubblicati sul sito e verifica che ogni file sia raggiungibile. Una nuova edizione compare solo se è stata realmente pubblicata.</p>'+
-  '<div class="rl-next"><span>APPROFONDIMENTI</span><a href="#overview">Panoramica FX ↗</a><a href="#news">Calendario macro ↗</a><a href="#pairs">Monitor tesi FX ↗</a></div></section>';
+  '<div class="rl-next"><span>APPROFONDIMENTI</span><a href="#overview">Panoramica FX ↗</a><a href="#news">Calendario macro ↗</a><a href="#pairs">Coppie FX ↗</a></div></details>';
 }
 function setCategory(value){category=CATEGORIES.some(x=>x[0]===value)?value:'all';}
 function setQuery(value){query=String(value||'').slice(0,120);}
