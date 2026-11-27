@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-27T16:39:41.846214Z",
-  "edition_time_rome": "2026-11-27 17:39",
-  "material_digest": "839be969a039a059499a23b4d1732ca97c58a1ec85ebcbd53e07ee501a68cbc1",
+  "generated_at_utc": "2026-11-27T20:01:41.209708Z",
+  "edition_time_rome": "2026-11-27 21:01",
+  "material_digest": "f62d9b7ba6103e1f0b04853abb52f896e4cd8bc6707869834f66a27fd8630c66",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in rialzo",
@@ -41,9 +41,10 @@
       "event_date": "2026-11-26",
       "market_area": "RISCHIO",
       "sources": [
-        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
+        "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
       ],
-      "evidence": "Alla chiusura del 26 novembre, VIX −1,49 punti."
+      "evidence": "Alla chiusura del 26 novembre, VIX −1,49 punti e spread high yield 0 pb."
     },
     {
       "headline": "Oro e petrolio in rialzo",
@@ -91,6 +92,7 @@
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-3rd-quarter-2026",
@@ -101,7 +103,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-27",
-      "rss_checked_at_utc": "2026-11-27T16:39:41.846214Z",
+      "rss_checked_at_utc": "2026-11-27T20:01:41.209708Z",
       "commodities": "2026-11-27"
     },
     "no_paid_api": true,
@@ -109,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-27T16:39:41.846214Z",
+      "headline": "Dollaro in rialzo",
+      "material_digest": "839be969a039a059499a23b4d1732ca97c58a1ec85ebcbd53e07ee501a68cbc1"
+    },
     {
       "generated_at_utc": "2026-11-27T16:29:43.252122Z",
       "headline": "Dollaro in rialzo",
@@ -223,11 +230,6 @@
       "generated_at_utc": "2026-11-25T13:55:03.188558Z",
       "headline": "Dollaro misto",
       "material_digest": "ca68963f359a6bd2c60a6364b16b65ba4f383386cef31517b1116cdd1d52047d"
-    },
-    {
-      "generated_at_utc": "2026-11-25T08:58:10.175873Z",
-      "headline": "Dollaro misto",
-      "material_digest": "c901634bb55781ac54786d2fb4f45f808a6864e9cc1b9ed2127d38ac392b2c60"
     }
   ]
 }
