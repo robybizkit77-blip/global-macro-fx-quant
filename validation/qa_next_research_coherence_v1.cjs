@@ -571,3 +571,50 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  for(const file of ['macro-strength-estimated-v1.js','pair-rankings.js'])assert.doesNotMatch(read('site/fx-quant-v2/next/'+file),/FXQuantGlobalResearchComposite/);
  console.log('GLOBAL_FX_RESEARCH_COMPOSITE_BOUNDS_PASS');
 }
+
+{
+ const base='../site/fx-quant-v2/next/';
+ const mod=require(base+'global-fx-research-composite-v1.js');
+ const macro=require(base+'macro-multifactor-shadow-v1.js');
+ const cycle=require(base+'recession-traffic-light-v1.js');
+ const rates=require(base+'rates-research-score-v1.js');
+ const pricing=require(base+'rates-pricing-moves-v1.js');
+ const archive=require(base+'rates-pricing-history-v1.js');
+ const cot=require(base+'positioning-research-score-v1.js');
+ const desk=require(base+'cot-report-reading-v26.js');
+ const price=require(base+'price-research-score-v1.js');
+ const ranker=require(base+'pair-rankings.js').currencyRanking;
+ const momentum=require(base+'currency-strength-reading.js').momentum;
+ const load=p=>JSON.parse(read(p)), prefix='site/fx-quant-v2/next/';
+ const catalog=load('live_data/sections/MACRO_SERIES.json'),overlay=load(prefix+'semaphore-supplement-v1.json'),observed=load('site/control-room-preview/macro-v3-current-evidence.json'),today=observed.generated_europe_rome_day;
+ const rateArgs={pricing,archive,snapshot:load('site/fx-quant-v2/ois-pricing-snapshot.json'),operational:load('live_data/sections/OIS_OPERATIONAL_VIEW.json'),research:load('site/fx-quant-v2/ois-same-contract-repricing-research.json'),nzd:load('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),history:load(prefix+'rates-pricing-history-v1.json'),rates:load('live_data/sections/NATIVE_RATES_DATA.json'),today};
+ const cotArgs={history:load('live_data/sections/V250_COT_CHART_DATA.json'),archive:load('site/fx-quant-v2/design-studio-cot-v1-data.json'),desk,today};
+ const priceArgs={prices:load('live_data/sections/ECB_G8_PRICE_HISTORY.json'),today,ranker,momentum};
+ for(const currency of cycle.coverage){
+  const a=macro.evaluate({country:currency,rows:cycle.model(catalog,today,currency,overlay),observed,day:today});
+  const b=rates.evaluate({...rateArgs,currency});
+  const c=cot.evaluate({...cotArgs,currency});
+  const d=price.evaluate({...priceArgs,currency});
+  const x=mod.evaluate({currency,macro:a,rates:b,positioning:c,price:d}),e=x.enhanced;
+  assert.ok(e.coverage>=0&&e.coverage<=100);
+  if(e.complete){
+   assert.equal(e.coverage,100);
+   assert.ok(e.score>=0&&e.score<=10);
+   assert.ok(Math.abs(e.score-e.values.reduce((s,f)=>s+f.weight*f.score/100,0))<1e-10);
+   assert.ok(e.estimatedWeight>=15&&e.estimatedWeight<=100);
+   assert.ok(e.score>=x.baseline.lower-1e-8&&e.score<=x.baseline.upper+1e-8);
+  }else assert.equal(e.score,null);
+  assert.equal(x.affectsFxRanking,false);
+  assert.doesNotMatch(mod.render(x,String),/NaN|undefined/);
+  console.log('ENHANCED_G8',currency,JSON.stringify({score:e.score,coverage:e.coverage,estimatedWeight:e.estimatedWeight,coreCoverage:x.baseline.known,rates:e.rates?.quality,macro:e.macro?.score}));
+  const missing=mod.evaluate({currency,macro:a,rates:b,positioning:null,price:d});
+  assert.equal(missing.enhanced.score,null);
+  assert.ok(missing.enhanced.coverage<=85);
+ }
+ assert.equal(mod.ratesEnhanced({quality:'NON VERIFICATA'}),null);
+ const gov={kind:'GOV_2Y_NOT_OIS',bp:-19,from:'2026-11-18',to:'2026-11-25',source:'Official sovereign curve'};
+ assert.equal(mod.ratesEnhanced({quality:'NON VERIFICATA',gov}).score,3.1);
+ assert.equal(mod.macroEnhanced({families:[],effectiveCoverage:0}),null);
+ assert.equal(mod.evaluate({currency:'USD'}).enhanced.coverage,0);
+ console.log('GLOBAL_FX_ENHANCED_COVERAGE_PASS');
+}
