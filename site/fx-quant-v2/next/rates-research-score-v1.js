@@ -28,6 +28,19 @@
   if(!same(current,last.week?.bp))return null;
   return {current,previous,acceleration:Math.round((current-previous)*100)/100,from:b.date,mid:a.date,to:z.date,contract:z.contract||'OIS 6M'};
  }
+ // Recent exact observed week on the currently listed secondary contract.
+ // Never represent it as the latest weekly change or an official rate.
+ function recentSecondaryWeek(h,last,today){
+  if(h?.kind!=='FUTURES SECONDARI'||last?.week||!fresh(last?.asof,today)||!last.contract||!finite(last.rate))return null;
+  const pts=h.tenors?.['6m']||[];
+  const eligible=p=>p&&p.contract===last.contract&&p.source_class==='SECONDARY_SAME_CONTRACT'&&p.derived===false&&finite(p.rate)&&dateOK(p.date);
+  const anchor=pts.find(p=>p.date===last.asof);
+  if(!eligible(anchor)||!same(anchor.rate*100,last.rate*100))return null;
+  const to=offset(last.asof,-1),from=offset(to,-7);
+  const z=pts.find(p=>p.date===to),x=pts.find(p=>p.date===from);
+  if(!fresh(to,today)||!eligible(z)||!eligible(x))return null;
+  return {bp:Math.round((z.rate-x.rate)*10000)/100,from,to,contract:last.contract,source:h.source,kind:'RECENT_EXACT_SECONDARY_WEEK'};
+ }
  function evaluate({pricing,archive,snapshot,operational,research,nzd,history,rates,today,currency,other}={}){
   if(!pricing?.readCurrency||!FX.includes(currency)||!dateOK(today))return null;
   function one(c){
@@ -44,7 +57,7 @@
    const score=week?5+5*clamp(week.bp/25):null;
    return {currency:c,kind:m.kind,source:m.source,asof:r.asof,level:r.rate,one:r.one?.bp??null,week:week?.bp??null,
     referenceFrom:week?.from||null,score,quality,officialScore:quality==='UFFICIALE'?score:null,
-    twenty:twenty?.bp??null,twentyBasis:twenty?.basis||null,acceleration,gov:sovereign(rates?.[c],today)};
+    twenty:twenty?.bp??null,twentyBasis:twenty?.basis||null,acceleration,recentSecondaryWeek:recentSecondaryWeek(hist,r,today),gov:sovereign(rates?.[c],today)};
   }
   const row=one(currency),peer=FX.includes(other)&&other!==currency?one(other):null;
   const matched=peer&&finite(row.week)&&finite(peer.week)&&row.asof===peer.asof&&row.referenceFrom&&row.referenceFrom===peer.referenceFrom;
@@ -65,6 +78,6 @@
    (x.peer?'<p>Confronto '+esc(a.currency+'/'+x.peer.currency)+': '+(x.relative?esc(bp(x.relative.bp)+' · '+x.relative.from+' → '+x.relative.to+' · '+(x.relative.quality==='SAME_TYPE_OFFICIAL'?'stesso tipo di strumento ufficiale':'strumenti disomogenei o indicativi')):'Intervallo iniziale e finale comune non verificato: differenza non calcolata.')+'</p>':'')+
    '<p>Il 2Y non sostituisce il 6M. Le variazioni secondarie e proxy rimangono indicative. Il ranking operativo non viene modificato.</p></details>';
  }
- const api={evaluate,render,sovereign,observedWeeklyPair};
+ const api={evaluate,render,sovereign,observedWeeklyPair,recentSecondaryWeek};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FXQuantRatesResearchScore=api;
 })(typeof window==='undefined'?globalThis:window);

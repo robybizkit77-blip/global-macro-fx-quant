@@ -1,0 +1,81 @@
+{
+  "schema": "GMFQ_CFTC_OFFICIAL_OI_V1",
+  "as_of": "2026-11-17",
+  "report_type": "LEGACY_FUTURES_ONLY",
+  "research_only": true,
+  "affects_fx_ranking": false,
+  "currencies": {
+    "USD": {
+      "date": "2026-11-17",
+      "market_code": "098662",
+      "open_interest": 55775,
+      "long": 36596,
+      "short": 23251,
+      "net": 13345,
+      "source_url": "https://www.cftc.gov/dea/futures/deanybtsf.htm"
+    },
+    "EUR": {
+      "date": "2026-11-17",
+      "market_code": "099741",
+      "open_interest": 866032,
+      "long": 230074,
+      "short": 372784,
+      "net": -142710,
+      "source_url": "https://www.cftc.gov/dea/futures/deacmesf.htm"
+    },
+    "GBP": {
+      "date": "2026-11-17",
+      "market_code": "096742",
+      "open_interest": 233499,
+      "long": 70999,
+      "short": 103303,
+      "net": -32304,
+      "source_url": "https://www.cftc.gov/dea/futures/deacmesf.htm"
+    },
+    "JPY": {
+      "date": "2026-11-17",
+      "market_code": "097741",
+      "open_interest": 390361,
+      "long": 258756,
+      "short": 142439,
+      "net": 116317,
+      "source_url": "https://www.cftc.gov/dea/futures/deacmesf.htm"
+    },
+    "CHF": {
+      "date": "2026-11-17",
+      "market_code": "092741",
+      "open_interest": 126410,
+      "long": 33456,
+      "short": 41737,
+      "net": -8281,
+      "source_url": "https://www.cftc.gov/dea/futures/deacmesf.htm"
+    },
+    "AUD": {
+      "date": "2026-11-17",
+      "market_code": "232741",
+      "open_interest": 374281,
+      "long": 81148,
+      "short": 263208,
+      "net": -182060,
+      "source_url": "https://www.cftc.gov/dea/futures/deacmesf.htm"
+    },
+    "NZD": {
+      "date": "2026-11-17",
+      "market_code": "112741",
+      "open_interest": 137149,
+      "long": 17291,
+      "short": 80536,
+      "net": -63245,
+      "source_url": "https://www.cftc.gov/dea/futures/deacmesf.htm"
+    },
+    "CAD": {
+      "date": "2026-11-17",
+      "market_code": "090741",
+      "open_interest": 358186,
+      "long": 111591,
+      "short": 156639,
+      "net": -45048,
+      "source_url": "https://www.cftc.gov/dea/futures/deacmesf.htm"
+    }
+  }
+}

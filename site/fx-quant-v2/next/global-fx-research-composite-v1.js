@@ -29,6 +29,10 @@
   if(!b)return null;
   if(b.quality==='UFFICIALE'&&good(b.officialScore))return {score:b.officialScore,quality:'UFFICIALE',estimated:false,bp:b.week,asof:b.asof};
   if(['SECONDARIA','PROXY'].includes(b.quality)&&good(b.score)&&finite(b.week))return {score:b.score,quality:b.quality,estimated:true,bp:b.week,asof:b.asof};
+  const recent=b.recentSecondaryWeek;
+  if(b.quality==='NON VERIFICATA'&&recent?.kind==='RECENT_EXACT_SECONDARY_WEEK'&&finite(recent.bp)&&recent.contract&&recent.source&&
+    (Date.parse(recent.to)-Date.parse(recent.from))/864e5===7&&(Date.parse(b.asof)-Date.parse(recent.to))/864e5===1)
+   return {score:5+5*Math.max(-1,Math.min(1,recent.bp/25)),quality:'SECONDARIA · settimana precedente',estimated:true,bp:recent.bp,asof:recent.to,from:recent.from,source:recent.source,contract:recent.contract};
   // A conservative proxy for the SCORE, not an inferred OIS quote.
   // Shrink 2Y weekly changes by 50%: heuristic, not fitted beta.
   const g=b.gov;
@@ -95,7 +99,7 @@
    '<p><strong>'+esc(e.complete?n(e.score)+'/10':'Non valutabile')+'</strong> · copertura di calcolo '+esc(n(e.coverage))+'% · peso stimato/proxy '+esc(n(e.estimatedWeight))+'% (include OI COT stimato).</p>'+
    '<div style="overflow-x:auto"><table><thead><tr><th>Fattore</th><th>Score</th><th>Peso stimato</th><th>Metodo</th></tr></thead><tbody>'+
    e.values.map(f=>'<tr><td>'+esc(f.label)+'</td><td>'+esc(n(f.score))+'</td><td>'+esc(n(f.estimatedWeight))+'%</td><td>'+esc(f.quality)+'</td></tr>').join('')+'</tbody></table></div>'+
-   (e.rates?.source?'<p>Proxy governativo 2Y: '+esc(n(e.rates.bp))+' pb · '+esc(e.rates.from+' → '+e.rates.asof)+' · '+esc(e.rates.source)+'. Attenuazione euristica del 50%, non una stima certificata del 6M.</p>':'')+
+   (e.rates?.contract?'<p>Futures secondari '+esc(e.rates.contract)+': '+esc(n(e.rates.bp))+' pb · '+esc(e.rates.from+' → '+e.rates.asof)+' · '+esc(e.rates.source)+'. Ultima settimana esatta disponibile, termina un giorno prima del livello corrente. Non OIS ufficiale.</p>':e.rates?.source?'<p>Proxy governativo 2Y: '+esc(n(e.rates.bp))+' pb · '+esc(e.rates.from+' → '+e.rates.asof)+' · '+esc(e.rates.source)+'. Attenuazione euristica del 50%, non una stima certificata del 6M.</p>':'')+
    '<p>Macro: le dimensioni mancanti ereditano lo score condizionato della loro famiglia; nessuna serie economica è inventata. La copertura 100% indica solo che tutti i pesi sono valorizzabili, non che i dati siano tutti osservati. Il Core e il suo intervallo teorico restano distinti. Se manca una famiglia o un proxy ammissibile, non si forza il 100%. Metodo non calibrato, non validato in backtest.</p></section>':'';
 
   return '<details class="global-fx-research-composite" data-global-fx-research-v1 open><summary><strong>Sintesi Global FX · ricerca</strong> · '+esc(x.currency)+'</summary>'+
