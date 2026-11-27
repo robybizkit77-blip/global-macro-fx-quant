@@ -913,7 +913,7 @@ jobs:
           PY
 
   g8-native-liquidity-parity-source-proof:
-    if: github.event_name == 'pull_request' && github.head_ref == 'fix/g8-native-liquidity-five-lanes-20261126'
+    if: github.event_name == 'pull_request' && (github.head_ref == 'fix/g8-native-liquidity-five-lanes-20261126' || github.head_ref == 'fix/g8-native-liquidity-parity-five-residual-20261127')
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     permissions:
@@ -923,7 +923,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install beautifulsoup4
+      - run: python -m pip install beautifulsoup4 openpyxl requests pandas lxml
       - run: python -m unittest validation.macro.test_prepare_g8_native_liquidity_parity_v1 -v
       - name: Verify exact official full G8 native histories
         run: |
@@ -931,7 +931,8 @@ jobs:
           python - <<'PY'
           import json
           d=json.load(open('/tmp/g8-native-parity/receipt.json'))
-          assert len(d['series'])==6 and all(x['status'] in ('READY','NO_CHANGE') for x in d['series']),d
+          from validation.macro.prepare_g8_native_liquidity_parity_v1 import CONFIG
+          assert len(d['series'])==len(CONFIG) and all(x['status'] in ('READY','NO_CHANGE') for x in d['series']),d
           assert all(x['full_count']>=x['native_overlap'] for x in d['series']),d
           PY
 
@@ -4611,7 +4612,7 @@ jobs:
           receipt=json.load(open('/tmp/macro-persistent/native-liq-g8-parity.json'))
           assert set(old)==set(new)
           allowed={(r['ccy'],r['role']) for r in receipt['series'] if r['status']=='READY'}
-          assert allowed <= {('USD','liquidity'),('CHF','money'),('AUD','money'),('AUD','liquidity'),('AUD','credit'),('CAD','liquidity')}
+          assert allowed <= {('USD','liquidity'),('CHF','money'),('AUD','money'),('AUD','liquidity'),('AUD','credit'),('CAD','liquidity'),('USD','credit'),('GBP','liquidity'),('JPY','liquidity'),('CHF','liquidity'),('CHF','credit'),('USD','conditions'),('GBP','credit'),('JPY','conditions'),('CAD','conditions')}
           assert all(set(old[c])==set(new[c]) for c in old)
           assert {(c,k) for c in old for k in old[c] if old[c][k]!=new[c][k]}==allowed
           PY
@@ -4635,7 +4636,7 @@ jobs:
           managed=('live_data/sections/NATIVE_LIQ_DATA.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt')
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           assert changed and changed.issubset(set(managed)),changed
-          print(json.dumps(persist(managed=managed,protected=('live_data/sections/MACRO_SERIES.json',),commit_message='Synchronize six certified native G8 liquidity lanes with verified Macro histories'),sort_keys=True))
+          print(json.dumps(persist(managed=managed,protected=('live_data/sections/MACRO_SERIES.json',),commit_message='Synchronize certified native G8 liquidity lanes with verified Macro histories'),sort_keys=True))
           PY
 
       # Existing Macro refresh cadence only. Freeze a single first-seen

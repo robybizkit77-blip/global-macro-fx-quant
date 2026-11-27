@@ -6,9 +6,11 @@ def fixture():
     m={};n={};feeds={}
     for (c,role),(ident,series,label,unit,f,status) in CONFIG.items():
         if f=="W":ds=[(date(2025,1,1)+timedelta(days=i*7)).isoformat() for i in range(60)]
+        elif f=="Q":ds=[f"{2011+i//4}-Q{i%4+1}" if c=="JPY" else f"{2011+i//4}-{i%4*3+1:02d}-01" for i in range(60)]
+        elif c=="GBP":ds=[date(2021+i//12,i%12+1,calendar.monthrange(2021+i//12,i%12+1)[1]).strftime("%d %b %Y") for i in range(60)]
         elif c=="AUD":ds=[f"{calendar.monthrange(2021+i//12,i%12+1)[1]:02d}/{i%12+1:02d}/{2021+i//12}" for i in range(60)]
         else:ds=[f"{2021+i//12}-{i%12+1:02d}"+("-01" if c=="CAD" else "") for i in range(60)]
-        vs=[10000+i*10 for i in range(60)]
+        vs=[-10+i*.2 for i in range(60)] if role=="conditions" else ([2+i*.01 for i in range(60)] if c=="GBP" and role=="credit" else [10000+i*10 for i in range(60)])
         def row(a,b):
             d=ds[a:b];v=vs[a:b];return dict(label=label,dates=d,values=v,last_date=d[-1],last_value=v[-1])
         n.setdefault(c,{})[role]=row(0,55)
@@ -29,14 +31,15 @@ class Tests(unittest.TestCase):
         self.assertEqual(result["last_date"],"2026-10")
         self.assertEqual(len(result["dates"]),130)
 
-    def test_six_full_windows_and_idempotence(self):
+    def test_all_full_windows_and_idempotence(self):
         m,n,f=fixture();old=copy.deepcopy(n);out,r=prepare(m,n,NOW,f)
-        self.assertEqual([x["status"] for x in r["series"]],["READY"]*6)
+        self.assertEqual([x["status"] for x in r["series"]],["READY"]*len(CONFIG))
         self.assertEqual(n,old)
-        self.assertEqual([x["status"] for x in prepare(m,out,NOW,f)[1]["series"]],["NO_CHANGE"]*6)
+        self.assertEqual([x["status"] for x in prepare(m,out,NOW,f)[1]["series"]],["NO_CHANGE"]*len(CONFIG))
     def test_reject_vintage_and_keep_other_lanes(self):
         m,n,f=fixture();m["USD"][0]["values"][0]+=1
         out,r=prepare(m,n,NOW,f)
-        self.assertEqual([x["status"] for x in r["series"]],["WITHHELD"]+["READY"]*5)
-        self.assertEqual(out["USD"],n["USD"])
+        self.assertEqual([x["status"] for x in r["series"]],["WITHHELD"]+["READY"]*(len(CONFIG)-1))
+        self.assertEqual(out["USD"]["liquidity"],n["USD"]["liquidity"])
+        self.assertNotEqual(out["USD"]["credit"],n["USD"]["credit"])
 if __name__=="__main__":unittest.main()
