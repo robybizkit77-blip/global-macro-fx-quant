@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-26",
-  "generated_at_utc": "2026-11-27T05:28:29.280882Z",
+  "generated_at_utc": "2026-11-27T08:54:49.588867Z",
   "items": [
     {
       "as_of": "2026-11-26",
@@ -52,6 +52,17 @@
       "reference_previous_date": "2026-11-25",
       "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-26",
       "title": "JPY: governativo 2Y +1.6 pb, 10Y -0.9 pb"
+    },
+    {
+      "as_of": "2026-11-26",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "Movimento 1D +1.0 bp sul bucket 6M; variazione 1W +0.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+      "title": "AUD: repricing implicito da futures più hawkish (+1.0 bp 6M in 1D)"
     },
     {
       "as_of": "2026-11-26",
@@ -235,17 +246,6 @@
       "title": "CAD: repricing implicito da futures più dovish (-1.0 bp 3M in 1D)"
     },
     {
-      "as_of": "2026-11-25",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "Movimento 1D +1.5 bp sul bucket 6M; variazione 1W -8.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing implicito da futures più hawkish (+1.5 bp 6M in 1D)"
-    },
-    {
       "as_of": "2026-11-24",
       "category": "MARKET_EQUITY_CLOSE",
       "ccy": "",
@@ -301,7 +301,7 @@
       "title": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     }
   ],
-  "last_checked_at_utc": "2026-11-27T05:28:29.280882Z",
+  "last_checked_at_utc": "2026-11-27T08:54:49.588867Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
