@@ -70,6 +70,15 @@ class TestG8History(unittest.TestCase):
                     self.assertNotIn((c,p["contract"],p["date"]),excluded)
         self.assertEqual(self.actual["excluded_conflicted_contract_days"],len(excluded))
 
+    def test_cad_invalid_curve_never_reenters_history(self):
+        quarantine=ROOT/"validation/cb_pricing/history/quarantine/CAD_CORRA_INVALID_2026-11-26.jsonl"
+        bad=read_jsonl(quarantine)
+        self.assertEqual(len(bad),1)
+        self.assertEqual(bad[0]["horizons"]["6m"]["rate"],-762)
+        rebuilt=build(self.snapshot,self.archive+bad,self.quotes,self.conflicts,self.nzd,self.nzd_archive)
+        self.assertEqual(rebuilt,self.actual)
+        self.assertTrue(all(-5<=p["rate"]<=25 for points in rebuilt["currencies"]["CAD"]["tenors"].values() for p in points))
+
     def test_secondary_not_overtaken_by_forged_future_wrong_100_price(self):
         bad=copy.deepcopy(self.quotes[-1])
         bad["observation_date"]="2999-12-25"
