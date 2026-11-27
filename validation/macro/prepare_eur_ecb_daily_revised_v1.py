@@ -12,7 +12,50 @@ CONFIG={
 }
 def need(ok,why):
     if not ok:raise ValueError(why)
+# Separate weekly Eurosystem consolidated statement, not daily excess liquidity.
+WEEKLY_ASSETS="EA_EUROSYSTEM_TOTAL_ASSETS_history_value"
+WEEKLY_KEY="ILM.W.U2.C.T000000.Z5.Z01"
+CONFIG[WEEKLY_ASSETS]=(WEEKLY_KEY,"EUR millions","","6",100000,20000000,.002,.02)
+def week_date(period):
+    need(isinstance(period,str) and len(period)==8 and period[4:6]=="-W" and period[:4].isdigit() and period[6:].isdigit(),"invalid ISO week")
+    d=date.fromisocalendar(int(period[:4]),int(period[6:]),5)
+    return d
+def prepare_weekly_assets(row,now,fetcher):
+    ident=WEEKLY_ASSETS; key=WEEKLY_KEY
+    need(row["source_file"]==ident.removesuffix("_value")+".csv" and row["frequency"]=="W" and row["unit"]=="EUR millions","weekly assets identity mismatch")
+    dates=row["dates"]; values=row["values"]
+    need(len(dates)==len(values)>=40 and dates[-1]==row["last_date"] and values[-1]==row["last_value"],"invalid weekly local history")
+    old={week_date(d):v for d,v in zip(dates,values)}
+    need(len(old)==len(dates) and list(old)==sorted(old) and all(math.isfinite(v) and v>0 for v in values),"invalid weekly local observations")
+    url="https://data-api.ecb.europa.eu/service/data/ILM/"+key.split(".",1)[1]+"?format=csvdata&startPeriod="+dates[0]
+    raw=fetcher(url);reader=csv.DictReader(io.StringIO(raw));fields=set(reader.fieldnames or [])
+    need({"TIME_PERIOD","OBS_VALUE","UNIT_MULT"}<=fields and bool(fields&{"KEY","SERIES_KEY"}),"weekly ECB columns missing")
+    obs={}
+    for rec in reader:
+        need((rec.get("KEY") or rec.get("SERIES_KEY"))==key,"wrong exact weekly ECB series")
+        if rec.get("OBS_VALUE") in (None,"","."):continue
+        need(rec.get("UNIT_MULT")=="6","weekly ECB unit multiplier mismatch")
+        d=week_date(rec["TIME_PERIOD"]); v=float(rec["OBS_VALUE"])
+        need(d<=now.date() and d not in obs and math.isfinite(v) and 100000<=v<=20000000,"invalid or duplicate weekly observation")
+        obs[d]=v
+    ds=sorted(d for d in obs if d>=min(old))
+    need(len(ds)>=40 and set(old)<=set(ds) and ds[0]==min(old) and ds[-1]>=max(old),"weekly history regression or missing old dates")
+    need((now.date()-ds[-1]).days<=21 and all((b-a).days==7 for a,b in zip(ds,ds[1:])),"weekly source stale or missing week")
+    errors=[abs(obs[d]-v)/v for d,v in old.items()]
+    need(statistics.median(errors)<=.002 and max(errors)<=.02,"weekly source identity not established")
+    exact=sum(abs(obs[d]-v)<=1e-6 for d,v in old.items())
+    audit={"count":len(old),"exact":exact,"median_scaled_error":statistics.median(errors),"max_scaled_error":max(errors)}
+    vs=[obs[d] for d in ds]; labels=[f"{d.isocalendar().year:04d}-W{d.isocalendar().week:02d}" for d in ds];before=row["last_date"]
+    changed=dates!=labels or values!=vs or row.get("current_vintage_provenance",{}).get("source_series_id")!=key
+    if changed:
+        row.update(dates=labels,values=vs,last_date=labels[-1],last_value=vs[-1],current_vintage_provenance={
+         "status":"ECB_CURRENT_REVISED_HISTORY_NOT_PIT","source_url":url,"source_series_id":key,"source_csv_sha256":sha256(raw.encode()).hexdigest(),
+         "historical_overlap_exact":exact,"historical_overlap_audit":audit,"no_synthetic_dates":True,"source_series_first_release_PIT_certified":False,
+         "historical_levels_may_be_revised_again":True,"runner_first_seen_utc":now.isoformat()})
+    return {"id":ident,"status":"READY" if changed else "NO_CHANGE","before":before,"after":labels[-1],"latest":vs[-1],"source_url":url,"exact_overlap":exact,"overlap_audit":audit}
+
 def prepare_row(row,ident,now,fetcher):
+    if ident==WEEKLY_ASSETS:return prepare_weekly_assets(row,now,fetcher)
     key,unit,suffix,mult,lo,hi,median_limit,max_limit=CONFIG[ident]
     need(row["source_file"]==ident.removesuffix("_value")+".csv" and row["unit"]==unit and row["frequency"]=="D","local identity mismatch")
     need(len(row["dates"])==len(row["values"]) and row["dates"][-1]==row["last_date"] and row["values"][-1]==row["last_value"],"invalid local history")
