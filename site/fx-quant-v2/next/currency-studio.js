@@ -496,6 +496,10 @@ function build(api){
   const cycleDetails=cycleCatalog&&root.FXQuantMacroDesk?.countryReadings?.(cycleCatalog,dayNow(),cycleOverlay)?.[country];
   const cycleCountry=cycleDetails?.o;
   const shadowMacro=root.FXQuantMacroMultifactorShadow?.evaluate({country,rows:cycleDetails?.r||[],observed:get('macroObserved'),day:dayNow()});
+  const shadowPrice=root.FXQuantPriceResearchScore?.evaluate({currency:country,prices:FXDATA,today:dayNow(),ranker:root.FXQuantPairRankings?.currencyRanking,momentum:root.FXQuantCurrencyStrength?.momentum});
+  const shadowPositioning=root.FXQuantPositioningResearchScore?.evaluate({history:get('cotHistory'),archive:get('cotPriorReference'),desk:root.FXQuantCOTDeskV26,today:dayNow(),currency:country});
+  const shadowRates=root.FXQuantRatesResearchScore?.evaluate({pricing:root.FXQuantPricingMoves,archive:root.FXQuantPricingHistory,snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),history:get('oisHistory'),rates:get('rates'),today:dayNow(),currency:country});
+  const composite=root.FXQuantGlobalResearchComposite?.evaluate({currency:country,macro:shadowMacro,rates:shadowRates,positioning:shadowPositioning,price:shadowPrice});
   const cycleReading=cycleCountry?.reading;
   const cycleJudgment=cycleReading?
    cycleReading.label+' · '+cycleCountry.coverage+'/7 aree classificabili. '+cycleReading.quality+'. '+
@@ -517,10 +521,11 @@ function build(api){
    '<p><strong>Che cosa mostra il Forex.</strong> '+esc(opening.lead)+'</p>'+
    '</div>'+
    (cycleContext?'<p class="source-caption" data-g8-cycle-first-read><strong>Ciclo economico e condizioni finanziarie.</strong> '+esc(cycleContext)+' <a href="#macro">Scenario macro ↗</a></p>':'')+
+   (root.FXQuantGlobalResearchComposite?.render(composite,esc)||'')+
    (root.FXQuantMacroMultifactorShadow?.render(shadowMacro,esc)||'')+
-   (root.FXQuantPriceResearchScore?.render(root.FXQuantPriceResearchScore.evaluate({currency:country,prices:FXDATA,today:dayNow(),ranker:root.FXQuantPairRankings?.currencyRanking,momentum:root.FXQuantCurrencyStrength?.momentum}),esc)||'')+
-   (root.FXQuantPositioningResearchScore?.render(root.FXQuantPositioningResearchScore.evaluate({history:get('cotHistory'),archive:get('cotPriorReference'),desk:root.FXQuantCOTDeskV26,today:dayNow(),currency:country}),esc)||'')+
-   (root.FXQuantRatesResearchScore?.render(root.FXQuantRatesResearchScore.evaluate({pricing:root.FXQuantPricingMoves,archive:root.FXQuantPricingHistory,snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),history:get('oisHistory'),rates:get('rates'),today:dayNow(),currency:country}),esc)||'')+
+   (root.FXQuantPriceResearchScore?.render(shadowPrice,esc)||'')+
+   (root.FXQuantPositioningResearchScore?.render(shadowPositioning,esc)||'')+
+   (root.FXQuantRatesResearchScore?.render(shadowRates,esc)||'')+
    '<p class="strength-first-watch"><strong>Cosa guardare.</strong> '+esc(sourceRelease?nextCheck:cur?.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?'Verifica se NZD/USD e AUD/NZD confermano la direzione del riferimento neozelandese. Il proxy non sostituisce le attese RBNZ.':cur?.rate.quality==='ASSENTE'?'La prossima variazione verificabile dei tassi chiarirà se il prezzo relativo è sostenuto anche dalle aspettative monetarie.':positive.length&&negative.length?'Verifica quale dei segnali contrari cambia per primo e se le attese sui tassi e la valuta si riallineano.':nextCheck)+'</p>'+
    (root.FXQuantIssuerContext?.narrative(get('macroObserved'),[country],dayNow())?'<p class="source-caption">'+esc(root.FXQuantIssuerContext.narrative(get('macroObserved'),[country],dayNow()))+'</p>':'')+
    '<details class="strength-evidence-fold"><summary><strong>Apri numeri, date, stime e fonti di '+country+'</strong>'+
