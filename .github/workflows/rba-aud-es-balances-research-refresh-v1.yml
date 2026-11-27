@@ -1,6 +1,12 @@
 name: RBA AUD Exchange Settlement Balances Research Refresh V1
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/liquidity/refresh_rba_aud_es_balances_v1.py'
+      - 'validation/liquidity/test_refresh_rba_aud_es_balances_v1.py'
+      - '.github/workflows/rba-aud-es-balances-research-refresh-v1.yml'
   workflow_dispatch:
   schedule:
     # Weekly official RBA balance-sheet publication; check Thurs/Fri.
@@ -21,7 +27,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate-pr:
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test historic anchor and current RBA source overlap without writes
+        run: |
+          python -m unittest validation.liquidity.test_refresh_rba_aud_es_balances_v1 -v
+          python validation/liquidity/refresh_rba_aud_es_balances_v1.py --receipt /tmp/rba-source-proof.json
+          git diff --exit-code
   source-only:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
