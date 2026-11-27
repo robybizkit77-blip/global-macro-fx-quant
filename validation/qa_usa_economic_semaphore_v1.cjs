@@ -739,3 +739,19 @@ console.log('ECONOMIC_CYCLE_CORE_RECOVERY_PASS');
  assert.equal(model({},'2026-11-25','CAD',ov).find(x=>x.key==='services').signal.tone,'red');
  assert.equal(model({},'2026-12-10','CAD',ov).find(x=>x.key==='services').signal.tone,'neutral');
 }
+
+ // Eurostat monthly reference dates may be serialized on the first of the
+ // month. Normalize only this source, never an actual daily observation.
+ {
+ const source={id:'EA_UNEMP_history_value',source_file:'EA_UNEMP_history.csv',frequency:'M',dates:['2026-08','2026-09-01'],values:[6.5,6.5]};
+ const jobs=(s,day)=>model({EUR:[s]},day,'EUR').find(x=>x.key==='jobs').items[0];
+ const current=jobs(source,'2026-11-27');
+ assert.equal(current.date,'2026-09-30');
+ assert.equal(current.age,58);
+ assert.equal(current.stale,false);
+ assert.equal(current.verdict,0);
+ assert.equal(jobs({...source,dates:['2026-08','2026-09']},'2026-11-27').date,current.date);
+ assert.equal(jobs(source,'2026-12-25').stale,true);
+ assert.equal(jobs({...source,source_file:'unverified.csv'},'2026-11-27').stale,true);
+ assert.equal(jobs({...source,dates:['2026-07','2026-08','2026-09-01'],values:[6.4,6.5,6.5]},'2026-09-15').period,'2026-08');
+ }
