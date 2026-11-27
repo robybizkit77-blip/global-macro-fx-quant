@@ -923,7 +923,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install beautifulsoup4
+      - run: python -m pip install beautifulsoup4 openpyxl requests pandas lxml
       - run: python -m unittest validation.macro.test_prepare_g8_native_liquidity_parity_v1 -v
       - name: Verify exact official full G8 native histories
         run: |
