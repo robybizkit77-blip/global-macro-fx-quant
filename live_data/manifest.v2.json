@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "429348e2f2c6865c369cd14e4428adba4d5a2b676afdcce0d10e28a0f78b75cd",
-  "runtime_bytes": 3283212,
+  "runtime_sha256": "ce24c1eb0f3c015ad858179078938b708e760f17273a9e39c4af51f3f45cd6d9",
+  "runtime_bytes": 3288889,
   "part_count": 16,
   "direct_section_count": 12,
   "derived_section_count": 2,
@@ -81,8 +81,8 @@
       "key": "NATIVE_LIQ_DATA",
       "file": "NATIVE_LIQ_DATA.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 143283,
-      "sha256": "ba787c621c63c409ed337984e38b7b7be0eb5223caede249c645d80506b565f3",
+      "bytes": 146920,
+      "sha256": "3a539f51d0ceb05778c6b93456d2d3c7bf0aeea7d8c9b491526322c60360251a",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
@@ -131,8 +131,8 @@
       "key": "MACRO_SERIES",
       "file": "MACRO_SERIES.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 787383,
-      "sha256": "ce9ec0f66f4325e6ccd18770ce6fdaad6a070a4fd8d4fe889b6d9eae253f51c7",
+      "bytes": 789423,
+      "sha256": "19c188572ccb315a81e851fa3308aeb71d62e8fd17bad0e9ae7c5640ad5b2c2d",
       "occurrences_in_payload": 1,
       "part": 1,
       "direct_update_allowed": true
