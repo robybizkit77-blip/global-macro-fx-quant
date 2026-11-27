@@ -59,10 +59,32 @@ def build(research, native, asof):
     validate(out) # no automatic-lane exemption; this is a separate release review
     return out
 
+def reviewed_release(research, native, asof):
+    """One approved edition only; no recurring automatic Core promotion."""
+    if native["NZD"]["date"] >= "2026-10-30":
+        return None
+    assert native["NZD"]["date"] == "2026-10-16", "reviewed base changed"
+    assert research["publication_date"] == "2026-11-27"
+    assert research["last_observation_date"] == "2026-11-26"
+    assert research["html_sha256"] == "78682ece82c944eb4353ddc1d49f5821bff438d640470f74b2a20fcd8d782b48"
+    assert research["xlsx_sha256"] == "011739d660510e1d7d0612d0a9fda7b4b0e27f8dc97b2ac88c59ec9eb907b2fa"
+    out = build(research, native, asof)
+    row = out["NZD"]
+    assert (row["2Y"], row["10Y"]) == (3.79, 4.69)
+    row["freshness_status"] = "OFFICIAL_POSTROLL_RECONCILED_ONE_TIME_RELEASE"
+    row["freshness_note"] = "RBNZ B2 official HTML and XLSX reconciled. One-time reviewed publication; no recurring automatic canonical promotion or first-release PIT certification. Legacy benchmark retained separately."
+    return out
+
 if __name__ == "__main__":
     output = Path(sys.argv[1]).resolve()
     assert output.is_relative_to(Path("/tmp"))
     research, native = json.loads(RESEARCH.read_text()), json.loads(NATIVE.read_text())
-    out = build(research, native, date.fromisoformat(research["publication_date"]))
+    if "--reviewed-release" in sys.argv:
+        out = reviewed_release(research, native, date.today())
+        if out is None:
+            print("NZD_POSTROLL_REVIEWED_RELEASE_ALREADY_ADMITTED")
+            sys.exit(0)
+    else:
+        out = build(research, native, date.fromisoformat(research["publication_date"]))
     output.write_text(json.dumps(out, ensure_ascii=False, separators=(",",":"))+"\n")
     print("NZD_POSTROLL_RUNTIME_CANDIDATE",json.dumps({"date":out["NZD"]["date"],"changed_currencies":["NZD"],"prior_history_retained":True,"production_write":False}))

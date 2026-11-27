@@ -10,6 +10,8 @@ class Preflight(unittest.TestCase):
         self.doc = json.loads(RESEARCH.read_text())
         self.native = json.loads(NATIVE.read_text())
         self.asof = date.fromisoformat(self.doc["publication_date"])
+        # Exercise initial release independent of the deployed canonical date.
+        self.native["NZD"]["date"] = "2026-10-16"
 
     def test_reference_and_no_promotion(self):
         original = copy.deepcopy(self.native)
