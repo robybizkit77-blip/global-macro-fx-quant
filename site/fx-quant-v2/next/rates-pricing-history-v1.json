@@ -628,7 +628,7 @@
           "new_roll_rate": 4.55,
           "end_rate": 4.48,
           "old_move_bp": 17.5,
-          "new_move_bp": -7.0,
+          "new_move_bp": -7,
           "change_bp": 10.5,
           "capture_gap_hours": 4.804,
           "old_capture_utc": "2026-11-18T21:50:30.443447Z",
@@ -3916,7 +3916,7 @@
         "expiration": "2027-06-16",
         "reference_rate": 3.96,
         "current_rate": 3.69,
-        "change_bp": -27.0,
+        "change_bp": -27,
         "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261029ZFT.htm",
         "source_sha256": "f6234a60c871a3006e6fa11512b05e9834c36461c5734158ffefb1bc73e29b06",
         "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"
@@ -4123,13 +4123,6 @@
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
-          },
-          {
-            "date": "2026-11-26",
-            "rate": -286.0,
-            "contract": null,
-            "source_class": "OFFICIAL_TENOR",
-            "derived": false
           }
         ],
         "6m": [
@@ -4289,7 +4282,7 @@
           },
           {
             "date": "2026-11-18",
-            "rate": 3.0,
+            "rate": 3,
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
@@ -4325,13 +4318,6 @@
           {
             "date": "2026-11-25",
             "rate": 2.985,
-            "contract": null,
-            "source_class": "OFFICIAL_TENOR",
-            "derived": false
-          },
-          {
-            "date": "2026-11-26",
-            "rate": -762.0,
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
@@ -4533,18 +4519,11 @@
             "contract": null,
             "source_class": "OFFICIAL_TENOR",
             "derived": false
-          },
-          {
-            "date": "2026-11-26",
-            "rate": -864.0,
-            "contract": null,
-            "source_class": "OFFICIAL_TENOR",
-            "derived": false
           }
         ]
       },
-      "latest_date": "2026-11-26",
-      "observed_dates": 29,
+      "latest_date": "2026-11-25",
+      "observed_dates": 28,
       "derived_reference_points": 0
     }
   }

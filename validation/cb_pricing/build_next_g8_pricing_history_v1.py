@@ -180,6 +180,10 @@ def build(snapshot: dict, archive: list[dict], quotes: list[dict],
                 rec.get("method_id") != "OFFICIAL_CERTIFIED_V1" or
                 rec.get("backtest_eligible_as_official") is not True):
             continue
+        # An invalid rate invalidates the entire CAD curve, not just one tenor.
+        if c == "CAD" and any(not number((rec.get("horizons", {}).get(t) or {}).get("rate"))
+                or not -5 <= rec["horizons"][t]["rate"] <= 25 for t in TENORS):
+            continue
         day = rec.get("source_as_of")
         if not good_day(day, today) or rec.get("source") != source_currencies[c]["source"]:
             continue
