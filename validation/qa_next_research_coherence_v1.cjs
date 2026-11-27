@@ -720,3 +720,14 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  assert.match(liq,/Verifica dati, copertura e fonti bancarie/);
  console.log('CROSS_ASSET_BANK_CREDIT_SEPARATION_PASS');
 }
+
+{
+ const lib=read('site/fx-quant-v2/next/research-library.js');
+ assert.match(app,/id="desk-calendar" tabindex="-1"/);
+ assert.match(app,/id="desk-news" tabindex="-1"/);
+ assert(app.indexOf('id="desk-calendar"')<app.indexOf('id="desk-news"'));
+ assert.match(lib,/<details class="rl-disclaimer"><summary>Stato delle pubblicazioni/);
+ assert.match(lib,/id="library-summary"/);
+ assert.match(lib,/latestPerType/);
+ console.log('EVENTS_LIBRARY_HIERARCHY_PASS');
+}
