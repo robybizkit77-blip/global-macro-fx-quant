@@ -509,3 +509,30 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  for(const file of ['macro-strength-estimated-v1.js','pair-rankings.js'])assert.doesNotMatch(read('site/fx-quant-v2/next/'+file),/FXQuantPositioningResearchScore/);
  console.log('POSITIONING_RESEARCH_SCORE_G8_PASS');
 }
+
+{
+ const score=require('../site/fx-quant-v2/next/price-research-score-v1.js');
+ const ranker=require('../site/fx-quant-v2/next/pair-rankings.js').currencyRanking;
+ const momentum=require('../site/fx-quant-v2/next/currency-strength-reading.js').momentum;
+ const prices=JSON.parse(read('live_data/sections/ECB_G8_PRICE_HISTORY.json'));
+ const today=prices.last_as_of;
+ const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+ const args={prices,today,ranker,momentum};
+ const rows=FX.map(currency=>score.evaluate({...args,currency}));
+ assert.ok(rows.every(x=>x&&x.score>=0&&x.score<=10&&x.annualizedVolatility>=0&&x.affectsFxRanking===false&&x.eligibleForTrading===false));
+ assert.ok(Math.abs(rows.reduce((s,x)=>s+x.score,0)-40)<1e-10);
+ for(const x of rows){
+  assert.ok(Math.abs(x.acceleration-(x.recent5-x.prior5))<1e-10);
+  assert.equal(x.asof,today);
+  assert.doesNotMatch(score.render(x,String),/undefined|NaN/);
+ }
+ const equal={...prices,rows:prices.rows.map(r=>({...r,...Object.fromEntries(FX.map(c=>[c,1]))}))};
+ assert.ok(FX.every(currency=>score.evaluate({...args,prices:equal,currency}).score===5));
+ const duplicate={...prices,rows:[...prices.rows.slice(0,-1),prices.rows.at(-2)]};
+ assert.equal(score.evaluate({...args,prices:duplicate,currency:'USD'}),null);
+ const future=new Date(Date.parse(today)+6*864e5).toISOString().slice(0,10);
+ assert.equal(score.evaluate({...args,today:future,currency:'USD'}),null);
+ assert.equal(score.evaluate({...args,prices:{...prices,source:'other'},currency:'USD'}),null);
+ for(const file of ['macro-strength-estimated-v1.js','pair-rankings.js'])assert.doesNotMatch(read('site/fx-quant-v2/next/'+file),/FXQuantPriceResearchScore/);
+ console.log('PRICE_RESEARCH_SCORE_G8_PASS');
+}
