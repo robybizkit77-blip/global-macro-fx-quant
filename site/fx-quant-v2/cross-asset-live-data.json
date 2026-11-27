@@ -859,20 +859,12 @@
       "no_core_or_backtest_effect": true
     },
     "IG_OAS": {
-      "date": "2026-11-24",
-      "previous_date": "2026-11-23",
-      "value": 0.98,
-      "previous": 0.97,
-      "change_1d_pct": 1.0309,
+      "date": "2026-11-26",
+      "previous_date": "2026-11-25",
+      "value": 0.99,
+      "previous": 0.99,
+      "change_1d_pct": 0.0,
       "history": [
-        [
-          "2026-07-08",
-          0.76
-        ],
-        [
-          "2026-07-09",
-          0.76
-        ],
         [
           "2026-07-10",
           0.77
@@ -1264,6 +1256,14 @@
         [
           "2026-11-24",
           0.98
+        ],
+        [
+          "2026-11-25",
+          0.99
+        ],
+        [
+          "2026-11-26",
+          0.99
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -1272,25 +1272,17 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 3,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "HY_OAS": {
-      "date": "2026-11-24",
-      "previous_date": "2026-11-23",
-      "value": 3.72,
-      "previous": 3.63,
-      "change_1d_pct": 2.4793,
+      "date": "2026-11-26",
+      "previous_date": "2026-11-25",
+      "value": 3.77,
+      "previous": 3.77,
+      "change_1d_pct": 0.0,
       "history": [
-        [
-          "2026-07-08",
-          2.7
-        ],
-        [
-          "2026-07-09",
-          2.7
-        ],
         [
           "2026-07-10",
           2.69
@@ -1682,6 +1674,14 @@
         [
           "2026-11-24",
           3.72
+        ],
+        [
+          "2026-11-25",
+          3.77
+        ],
+        [
+          "2026-11-26",
+          3.77
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -1690,7 +1690,7 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 3,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -2531,16 +2531,12 @@
       "no_core_or_backtest_effect": true
     },
     "SX5E": {
-      "date": "2026-11-26",
-      "previous_date": "2026-11-25",
-      "value": 6014.74,
-      "previous": 5894.46,
-      "change_1d_pct": 2.0406,
+      "date": "2026-11-27",
+      "previous_date": "2026-11-26",
+      "value": 6089.2,
+      "previous": 6014.74,
+      "change_1d_pct": 1.238,
       "history": [
-        [
-          "2026-08-27",
-          6424.73
-        ],
         [
           "2026-08-28",
           6485.67
@@ -2800,6 +2796,10 @@
         [
           "2026-11-26",
           6014.74
+        ],
+        [
+          "2026-11-27",
+          6089.2
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -2808,7 +2808,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 0,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     }
