@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-27",
-  "generated_at_utc": "2026-11-27T16:38:45.501272Z",
+  "generated_at_utc": "2026-11-27T18:15:48.092705Z",
   "items": [
     {
       "as_of": "2026-11-27",
@@ -226,6 +226,19 @@
       "category": "MARKET_EQUITY_CLOSE",
       "ccy": "",
       "confidence": "B",
+      "detail": "Livello 7182.78; confronto con chiusura 2026-11-24. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-24",
+      "source": "S&P Dow Jones Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+      "title": "S&P 500: -0.25% nella chiusura del 2026-11-25"
+    },
+    {
+      "as_of": "2026-11-25",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
       "detail": "Livello 23585.80; confronto con chiusura 2026-11-24. Dato di mercato storico, non prova di un evento causale o di flussi.",
       "importance": "MEDIUM",
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -244,19 +257,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
       "title": "CAD: repricing implicito da futures più dovish (-1.0 bp 3M in 1D)"
-    },
-    {
-      "as_of": "2026-11-24",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 7201.09; confronto con chiusura 2026-11-23. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-23",
-      "source": "S&P Dow Jones Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-      "title": "S&P 500: -0.50% nella chiusura del 2026-11-24"
     },
     {
       "as_of": "2026-11-24",
@@ -301,7 +301,7 @@
       "title": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     }
   ],
-  "last_checked_at_utc": "2026-11-27T16:38:45.501272Z",
+  "last_checked_at_utc": "2026-11-27T18:15:48.092705Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -881,13 +881,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-25",
+            "date": "2026-11-26",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-25",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-26",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.24
+            "yield_2y_pct": 3.23
           }
         },
         "source": "Bank of Canada",
@@ -1032,13 +1032,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-25",
+            "date": "2026-11-26",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-25",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-26",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.24
+            "yield_2y_pct": 3.23
           }
         },
         "source": "Bank of Canada",
