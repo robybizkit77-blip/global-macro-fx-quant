@@ -100,6 +100,13 @@ def run():
     def recover(stamp, **changes):
         args={**trusted,**changes}
         return resolve("workflow_run","",iso(stamp),**args)
+    for stamp in ("2026-11-27T08:09:26Z","2026-11-27T06:20:00Z","2026-10-21T05:20:00Z"):
+        got=recover(stamp)
+        assert got["should_run"] and got["reason"]=="TRUSTED_SCHEDULED_HOURLY_MORNING_RATES_RECOVERY",got
+    for stamp in ("2026-11-27T06:19:59Z","2026-11-27T09:00:00Z","2026-11-28T08:09:26Z"):
+        assert not recover(stamp)["should_run"]
+    for overrides in ({"upstream_event":"push"},{"upstream_conclusion":"failure"},{"upstream_head_branch":"feature"}):
+        assert not recover("2026-11-27T08:09:26Z",**overrides)["should_run"]
     assert recover("2026-10-28T18:00:00Z")["should_run"] # 19:00 CET
     assert recover("2026-10-21T17:00:00Z")["should_run"] # 19:00 CEST
     assert recover("2026-10-28T22:59:00Z")["should_run"] # 23:59 CET
