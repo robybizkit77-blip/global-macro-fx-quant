@@ -1133,19 +1133,19 @@
       ],
       "EUR": [
         {
-          "acceleration_pp": 0.09999999999999964,
+          "acceleration_pp": 0.0,
           "frequency": "M",
           "label": "Disoccupazione",
           "level": 6.5,
           "measurement": "RATE",
           "pillar": "labour",
-          "previous_level": 6.4,
+          "previous_level": 6.5,
           "quality": "REGISTERED_CURRENT_REVISED_NOT_PIT",
           "reference_period": "2026-09",
           "series_id": "EA_UNEMP_history_value",
           "turning_point": "NONE",
           "unit": "%",
-          "velocity_pp": 0.09999999999999964
+          "velocity_pp": 0.0
         },
         {
           "acceleration_pp": -0.39999999999999947,
@@ -3726,7 +3726,7 @@
     "writes_live_data": false
   },
   "sector_financial_status": "RESEARCH_ONLY",
-  "snapshot_content_sha256": "2329d47ba6c193847bd57b341804fccc2be48b6881a19eb49088336798c0b742",
+  "snapshot_content_sha256": "1a2af3e357392327cd5182603a798ab5685c2f29a71f3c7610757da2c9ee6eb4",
   "source_observation_periods_not_release_days": true,
   "source_receipt_sha256": "172df8e058fd28b63946716ca795b10304b54097ac4e8d2b99d819db25d3d811",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
