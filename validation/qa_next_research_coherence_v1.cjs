@@ -450,3 +450,34 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  assert.equal(bank.policyMacroContext({catalog:{},country:'CHF',today}),null);
  console.log('CB_CAN_CANONICAL_CONTEXT_PASS');
 }
+
+{
+ const score=require('../site/fx-quant-v2/next/rates-research-score-v1.js');
+ const pricing=require('../site/fx-quant-v2/next/rates-pricing-moves-v1.js');
+ const archive=require('../site/fx-quant-v2/next/rates-pricing-history-v1.js');
+ const load=p=>JSON.parse(read(p));
+ const snapshot=load('site/fx-quant-v2/ois-pricing-snapshot.json'),operational=load('live_data/sections/OIS_OPERATIONAL_VIEW.json'),research=load('site/fx-quant-v2/ois-same-contract-repricing-research.json'),nzd=load('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),history=load('site/fx-quant-v2/next/rates-pricing-history-v1.json'),rates=load('live_data/sections/NATIVE_RATES_DATA.json');
+ const today=load('site/control-room-preview/macro-v3-current-evidence.json').generated_europe_rome_day;
+ for(const currency of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+  const x=score.evaluate({pricing,archive,snapshot,operational,research,nzd,history,rates,today,currency,other:'EUR'});
+  assert.equal(x.affectsFxRanking,false);assert.equal(x.eligibleForTrading,false);
+  assert.ok(x.row.score===null||x.row.score>=0&&x.row.score<=10);
+  if(x.row.quality!=='UFFICIALE')assert.equal(x.row.officialScore,null);
+  if(x.row.week===null)assert.equal(x.row.score,null);
+  if(x.relative){assert.equal(x.row.asof,x.peer.asof);assert.equal(x.row.referenceFrom,x.peer.referenceFrom);assert.ok(Math.abs(x.relative.bp-(x.row.week-x.peer.week))<1e-10);}
+  assert.doesNotMatch(score.render(x,String),/undefined|NaN/);
+ }
+ const fake=bp=>({readCurrency:()=>({kind:'FUTURES SECONDARI',source:'test',rows:[{tenor:'6m',asof:'2026-11-27',rate:3,week:bp===null?null:{bp,method:'CONTRATTO IDENTICO · RICERCA SECONDARIA',from:'2026-11-20'}}]})});
+ for(const [bp,expected] of [[25,10],[-25,0],[0,5],[null,null],[100,10]]){
+  const x=score.evaluate({pricing:fake(bp),currency:'USD',today:'2026-11-27'});
+  assert.equal(x.row.score,expected);assert.equal(x.row.officialScore,null);
+ }
+ assert.equal(score.evaluate({pricing:fake(25),currency:'USD',today:'2026-12-05'}).row.score,null);
+ assert.equal(score.sovereign({date:'2026-11-27','2Y':3.0307479,weekly2_validation:{start_date:'2026-11-20',end_date:'2026-11-27',start_value:3.12506375,end_value:3.0307479,change_bp:-9.4}},'2026-11-27').bp,-9.4);
+ const h={kind:'FUTURES',tenors:{'6m':[{date:'2026-11-13',rate:3,contract:'A',source_class:'OFFICIAL_TENOR',derived:false},{date:'2026-11-20',rate:3.1,contract:'A',source_class:'OFFICIAL_TENOR',derived:false},{date:'2026-11-27',rate:3.3,contract:'A',source_class:'OFFICIAL_TENOR',derived:false}]}};
+ assert.equal(score.observedWeeklyPair(h,{asof:'2026-11-27',rate:3.3,week:{bp:20}}).acceleration,10);
+ h.tenors['6m'][0].contract='B';
+ assert.equal(score.observedWeeklyPair(h,{asof:'2026-11-27',rate:3.3,week:{bp:20}}),null);
+ for(const path of ['macro-strength-estimated-v1.js','pair-rankings.js'])assert.doesNotMatch(read('site/fx-quant-v2/next/'+path),/FXQuantRatesResearchScore/);
+ console.log('RATES_RESEARCH_SCORE_EXACT_INTERVAL_PASS');
+}
