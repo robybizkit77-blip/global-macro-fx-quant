@@ -14,6 +14,19 @@ POLICY = ROOT / 'validation' / 'risk' / 'RISK_SOURCE_POLICY_V1_2026-10-12.json'
 DEFAULT_OUT = Path('/tmp/gmfq-vix-candidate.json')
 
 
+# Official Cboe C1 regular-session closures (daily CLOSE, not GTH quotes).
+# https://www.cboe.com/about/hours/us-options — 2026 and 2027 published calendars.
+# Early-close dates remain trading days; unverified years retain conservative weekdays.
+CBOE_RTH_CLOSED = frozenset(dt.date.fromisoformat(day) for day in (
+    '2026-01-01', '2026-01-19', '2026-02-16', '2026-04-03',
+    '2026-05-25', '2026-06-19', '2026-07-03', '2026-09-07',
+    '2026-11-26', '2026-12-25',
+    '2027-01-01', '2027-01-18', '2027-02-15', '2027-03-26',
+    '2027-05-31', '2027-06-18', '2027-07-05', '2027-09-06',
+    '2027-11-25', '2027-12-24',
+))
+
+
 def business_days_between(start: dt.date, end: dt.date) -> int:
     if end < start:
         return -1
@@ -21,7 +34,7 @@ def business_days_between(start: dt.date, end: dt.date) -> int:
     cur = start
     while cur < end:
         cur += dt.timedelta(days=1)
-        if cur.weekday() < 5:
+        if cur.weekday() < 5 and cur not in CBOE_RTH_CLOSED:
             n += 1
     return n
 
