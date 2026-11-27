@@ -74,6 +74,16 @@ def event_clock(evt):
     except (KeyError,TypeError,ValueError):
         return "orario non verificato"
 
+def event_identity(event):
+    return "|".join(str(event.get(k, "")) for k in ("ccy", "date", "event_type", "title")) if event else None
+
+
+def is_us_cpi(event):
+    return bool(event and event.get("ccy") == "USD" and
+                event.get("event_type") == "INFLATION" and
+                event.get("title") == "Consumer Price Index")
+
+
 def choose_event(seed,day):
     events=[x for x in seed.get("events",[]) if x.get("ccy") in COUNTRIES
             and x.get("importance")=="HIGH" and to_date(x.get("date"))]
@@ -81,7 +91,7 @@ def choose_event(seed,day):
     if today:
         return max(today,key=lambda x:(EVENT_SCORE.get(x.get("event_type"),0),x.get("ccy")=="USD")),"TODAY"
     recent=[x for x in events if day-timedelta(days=2)<=to_date(x["date"])<day
-            and x.get("ccy")=="USD" and x.get("event_type")=="INFLATION"]
+            and is_us_cpi(x)]
     if recent:
         return max(recent,key=lambda x:x["date"]),"PREVIOUS_CPI"
     # Upcoming is a *candidate* catalyst, not an automatic daily headline.
@@ -133,10 +143,10 @@ def matched_yields(rates,u,v,day):
 def forecast_reference(rows,event,day):
     if not event:return ""
     found=[x for x in rows if x.get("currency")==event["ccy"]
-           and event["date"] in x.get("event_key","")
+           and x.get("event_key")==event_identity(event)
            and (x.get("captured_at_utc") or "")[:10]<day.isoformat()
            and isnum(x.get("forecast_value_percent"))]
-    if event["ccy"]=="USD" and event.get("event_type")=="INFLATION":
+    if is_us_cpi(event):
         h=next((x for x in found if x.get("metric_id")=="US_CPI_U_HEADLINE_MOM_SA"),None)
         c=next((x for x in found if x.get("metric_id")=="US_CPI_U_CORE_MOM_SA"),None)
         if h and c:
@@ -282,7 +292,7 @@ def build(root,day,now,*,event_seed=None):
     observed_metrics=set()
     observed_values={}
     for entry in actual:
-        if entry.get("event_key")!="USD|2026-11-10|INFLATION|Consumer Price Index":
+        if not is_us_cpi(event) or entry.get("event_key")!=event_identity(event):
             continue
         try:
             observed=datetime.fromisoformat(entry["observed_at_utc"].replace("Z","+00:00"))
@@ -388,8 +398,8 @@ def build(root,day,now,*,event_seed=None):
                 signed(observed_values["US_CPI_U_HEADLINE_MOM_SA"],1,"%")+
                 " e core mensile "+
                 signed(observed_values["US_CPI_U_CORE_MOM_SA"],1,"%")+
-                ". I tassi annuali ottobre 2026 non sono pubblicabili: "
-                "manca la base di ottobre 2025. Il registro conserva "
+                ". Le misure annuali non sono pubblicabili da questo registro: "
+                "manca una base annua verificata. Il registro conserva "
                 "il primo rilevamento del runner, non l'orario di prima pubblicazione. ")
         elif certified_actuals:
             actual_context=(
@@ -400,7 +410,7 @@ def build(root,day,now,*,event_seed=None):
                 "Nel registro del progetto non sono ancora presenti misure "
                 "BLS validate e datate. Non attribuiamo una sorpresa o un "
                 "nuovo percorso Fed a dati che il motore non ha acquisito. ")
-        catalyst=("Il CPI era atteso ieri alle 14:30 italiane. "+
+        catalyst=(f"Il CPI era atteso il {pretty(event['date'])} alle {clock} italiane. "+
                   actual_context+
                   "Un'interpretazione post-evento richiede attese disponibili "
                   "con qualità dichiarata, composizione, OIS/futures e risposta "
