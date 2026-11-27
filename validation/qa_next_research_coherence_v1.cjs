@@ -670,3 +670,19 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  }
  console.log('OFFICIAL_OI_RESEARCH_CONSUMER_PASS');
 }
+
+{
+ const html=read('site/fx-quant-v2/next/index.html');
+ const nav=html.split('id="nav"',1).length; // preserve existing route IDs and URLs
+ const block=html.split('id="nav"')[1].split('</nav>')[0];
+ const routes=[...block.matchAll(/data-route="([^"]+)"/g)].map(m=>m[1]);
+ assert.equal(routes.length,11);assert.equal(new Set(routes).size,11);
+ assert.deepEqual(routes,['overview','macro','banks','rates','currencies','pairs','cot','risk','liquidity','news','library']);
+ assert.equal((block.match(/class="nav-heading nav-subheading"/g)||[]).length,7);
+ assert.match(app,/homeG8Read\(\)\+homeFxRankStrip\(\)/);
+ assert.match(app,/data-control-room-diagnostics/);
+ assert.match(app,/officialOI:get\('cotOfficialOI'\)/);
+ assert.match(app,/ranker:w.FXQuantPairRankings\?\.currencyRanking/);
+ assert.match(app,/composite.evaluate\(\{currency,macro,rates,positioning,price\}\)/);
+ console.log('CONTROL_ROOM_SEVEN_AREAS_AND_REUSED_RESEARCH_PASS');
+}
