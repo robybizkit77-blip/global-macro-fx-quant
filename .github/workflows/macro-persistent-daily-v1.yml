@@ -4652,6 +4652,19 @@ jobs:
           print(json.dumps(persist(managed=MANAGED,commit_message='Synchronize verified ECB and BoE actual lending surveys'),sort_keys=True))
           PY
 
+      - name: Synchronize exact Canadian business loan stock and source registry
+        if: github.ref == 'refs/heads/main' && success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.macro.prove_cad_credit_admission_v1 --output /tmp/macro-persistent/cad-credit-admission --apply
+          python - <<'PY'
+          import json
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          managed=('live_data/sections/NATIVE_LIQ_DATA.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt','validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json','site/fx-quant-v2/next/liquidity-source-policy-gate-v1.js')
+          print(json.dumps(persist(managed=managed,protected=('live_data/sections/MACRO_SERIES.json',),commit_message='Synchronize exact official Canadian credit and source registry'),sort_keys=True))
+          PY
+
       # Existing Macro refresh cadence only. Freeze a single first-seen
       # prospective model vintage per Rome date, even on no-new-source days.
       # Commits an append-only research file with GitHub Contents create-only;

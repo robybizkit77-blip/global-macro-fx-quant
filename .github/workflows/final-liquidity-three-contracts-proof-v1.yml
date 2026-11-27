@@ -25,6 +25,10 @@ jobs:
         run: git diff --exit-code
       - name: Exercise exact production apply in isolated PR checkout
         run: python -m validation.macro.apply_final_liquidity_surveys_v1 --output /tmp/final-survey-apply --strict --apply
+      - name: Verify Canadian admission and repeat with no new data
+        run: |
+          python -m validation.macro.prove_cad_credit_admission_v1 --output /tmp/final-cad-apply --apply
+          python -m validation.macro.prove_cad_credit_admission_v1 --output /tmp/final-cad-repeat --apply
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -32,3 +36,5 @@ jobs:
           path: |
             /tmp/final-liquidity/receipt.json
             /tmp/final-survey-apply/receipt.json
+            /tmp/final-cad-apply/receipt.json
+            /tmp/final-cad-repeat/receipt.json

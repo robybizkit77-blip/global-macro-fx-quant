@@ -1,6 +1,6 @@
-"""Controlled CAD credit admission: exact official vintage, native and registry.
-Default is temporary candidate only. --apply is restricted to an isolated PR
-checkout; no persistence, publication, ranking change or PIT certification.
+"""Canadian credit admission and recurrent parity using exact official vintage.
+Apply only in isolated PR or existing main Macro producer; persistence is external.
+No ranking change or PIT certification.
 """
 import argparse,copy,json,os,subprocess,sys
 from datetime import datetime,timezone
@@ -32,12 +32,15 @@ def candidate(macro,native,policy,now,fetcher=cad.fetch):
         need(set(prior)<=set(fresh) and all(abs(fresh[d]-v)<=max(abs(v),1)*.01 for d,v in prior.items()),"Canadian native history regression or large revision")
     out["CAD"]["credit"]=new
     pol=copy.deepcopy(policy)
-    need("CAD.credit" not in pol["mapped"],"controlled first admission only")
-    pol["mapped"]["CAD.credit"]={"label":src["label"],"publisher":"Bank of Canada",
+    prior_mapping=pol["mapped"].get("CAD.credit")
+    if prior_mapping is not None:
+        need(prior_mapping.get("automation_ready") is True and prior_mapping.get("series_key")==KEY and prior_mapping.get("macro_series_id")==IDENT,"existing Canadian mapping drift")
+    else:
+        pol["mapped"]["CAD.credit"]={"label":src["label"],"publisher":"Bank of Canada",
       "status":"AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY","source_contract":"Credit extended to corporate sector — outstanding business loans, total",
       "frequency":"MONTHLY","automation_ready":True,"series_mapping_status":"EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
       "series_key":KEY,"source_url":proof["source_url"],"macro_series_id":IDENT,
-      "verification":{"as_of":now.date().isoformat(),"run_id":45993982322,"job_id":140488626565,"receipt_status":"READY",
+      "verification":{"as_of":now.date().isoformat(),"run_id":45994799500,"job_id":140491408045,"receipt_status":"READY",
       "native_last_date":new["last_date"],"native_last_value":new["last_value"],"source_first_release_PIT_certified":False,"continuity_certified":False,
       "evidence_scope":"SOURCE_AND_ISOLATED_CANDIDATE_PROOF_NOT_PRODUCTION_PUBLICATION"}}
     pol["coverage"].update(total_subseries=len(pol["mapped"]),source_mapped_subseries=len(pol["mapped"]),
@@ -54,20 +57,26 @@ def main():
     dest=a.output/"native.json";dest.write_text(json.dumps(out,ensure_ascii=False,indent=2)+"\n")
     (a.output/"policy.json").write_text(json.dumps(pol,ensure_ascii=False,indent=2)+"\n")
     if a.apply:
-        need(os.environ.get("GITHUB_EVENT_NAME")=="pull_request","isolated PR apply only")
-        run("validation/update_live_direct_section.py","--section","NATIVE_LIQ_DATA","--replacement",str(dest),"--apply")
-        run("validation/build_live_manifest_v2.py","--write","live_data/manifest.v2.json")
-        POLICY.write_text(json.dumps(pol,ensure_ascii=False,indent=2)+"\n")
-        gate=GATE.read_text()
-        marker='  "credit": null,'
-        need(gate.count(marker)==1,"ambiguous CAD source gate")
-        GATE.write_text(gate.replace(marker,'  "credit": {\n   "ready": true,\n   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"\n  },'))
+        isolated=os.environ.get("GITHUB_EVENT_NAME")=="pull_request"
+        production=os.environ.get("GITHUB_REF")=="refs/heads/main" and os.environ.get("GITHUB_WORKFLOW")=="Macro Persistent Daily V1"
+        need(isolated or production,"apply only in PR proof or existing main Macro producer")
+        if native!=out:
+            run("validation/update_live_direct_section.py","--section","NATIVE_LIQ_DATA","--replacement",str(dest),"--apply")
+            run("validation/build_live_manifest_v2.py","--write","live_data/manifest.v2.json")
+        if pol!=policy:
+            POLICY.write_text(json.dumps(pol,ensure_ascii=False,indent=2)+"\n")
+            gate=GATE.read_text()
+            marker='  "credit": null,'
+            need(gate.count(marker)==1,"ambiguous CAD source gate")
+            GATE.write_text(gate.replace(marker,'  "credit": {\n   "ready": true,\n   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"\n  },'))
         run("validation/check_live_update_contract.py")
         run("validation/rebuild_live_data_runtime.py","--verify-only")
         run("validation/check_liquidity_remaining_blockers_v1.py")
         need(read("MACRO_SERIES")==macro and read("NATIVE_LIQ_DATA")==out,"unexpected mutation")
         subprocess.run(["node","validation/publishing/test_next_liquidity_source_policy_v1.cjs"],cwd=ROOT,check=True)
-        receipt["isolated_apply_verified"]=True
+        receipt["isolated_apply_verified"]=isolated
+        receipt["production_apply_verified"]=production and not isolated
+        receipt["registry_candidate_only"]=not production
     (a.output/"receipt.json").write_text(json.dumps(receipt,sort_keys=True)+"\n")
     print(json.dumps(receipt,sort_keys=True))
 if __name__=="__main__":main()
