@@ -27,14 +27,14 @@ const cb={bank:'BoC',rate:2.5,last_date:'2026-10-28',next_meeting:'2026-12-09',s
 const o={operational_status:'GREEN_OFFICIAL',official_status:'ACTIVE',quality:'OFFICIAL_CERTIFIED',as_of:'2026-11-25',policy_rate:2.5,change_1w_available:true,horizons:{'6m':{rate:2.985,policy_delta_bp:48.5,change_1w_bp:-1.5}}};
 const market={cb:{CAD:cb},ois:{currencies:{CAD:o}}};
 const fmt=(v,d)=>v.toFixed(d);
-assert.match(m.marketReading('CAD',market,today,fmt),/OIS 6M: 2.98.*48.5 pb.*Variazione 1W: -1.5 pb/);
+assert.match(m.marketReading('CAD',market,today,fmt),/Futures 6M ufficiali: 2.98.*48.5 pb.*Variazione 1W: -1.5 pb/);
 o.operational_status='GREEN_ESTIMATED';
 assert.match(m.marketReading('CAD',market,today,fmt),/Futures 6M indicativi/);
 assert.doesNotMatch(m.marketReading('CAD',market,today,fmt),/48.5 pb|Variazione 1W/);
 o.operational_status='WITHHELD';
 assert.match(m.marketReading('CAD',market,today,fmt),/non validabile/);
 o.operational_status='GREEN_OFFICIAL';cb.next_meeting=today;
-assert.doesNotMatch(m.marketReading('CAD',market,today,fmt),/OIS 6M:/);
+assert.doesNotMatch(m.marketReading('CAD',market,today,fmt),/Futures 6M ufficiali:/);
 console.log('ACTIVITY_MOMENTUM_SHARED_4_ROUTES_PASS');
 console.log('ACTIVITY_POLICY_CONTEXT_6_ROUTES_PASS');
 
@@ -68,3 +68,9 @@ const sf={generated_europe_rome_day:today,sector_financial_status:'RESEARCH_ONLY
 assert.equal(m.readSectors(sf,today,['EUR','NZD']).length,1);
 assert.equal(m.readSectors(sf,'2026-12-04',['EUR']),null);
 console.log('SECTOR_FINANCIAL_UI_PASS');
+
+assert.match(m.sectorReading({...sr,velocity_pp:-1,acceleration_pp:-1}),/Saldo dell’indagine in diminuzione.*Movimento più rapido/);
+assert.match(m.sectorReading({measurement:'STOCK',horizon:'STOCK_3M_ENDPOINT',momentum_pct:-2,velocity_pp:-1}),/Saldo in calo.*Non misura flussi/);
+assert.match(m.sectorReading({measurement:'QUANTITY',momentum_pct:-8,velocity_pp:-3,acceleration_pp:-.2}),/contrazione si approfondisce/);
+cb.next_meeting='2026-12-09';o.operational_status='GREEN_OFFICIAL';o.horizons['6m']={rate:-762,policy_delta_bp:-76450,change_1w_bp:-76498.5};
+assert.doesNotMatch(m.marketReading('CAD',market,today,fmt),/Futures 6M ufficiali:|76450/);
