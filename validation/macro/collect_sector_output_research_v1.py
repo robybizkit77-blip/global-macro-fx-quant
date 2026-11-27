@@ -111,9 +111,26 @@ def refresh(path,today,fetcher=fetch,strict=False):
     except (OSError,ValueError,KeyError,TypeError) as exc:
         print("SECTOR_OUTPUT_WITHHELD_OR_PRIOR_RETAINED",ID,str(exc),flush=True)
         if strict:raise
+def refresh_nzd(path,today,strict=False):
+    from validation.macro.collect_nzd_building_consents_v1 import collect
+    try:
+        row=collect(today)
+        old=json.loads(path.read_text())
+        require(old["schema"]=="GMFQ_SECTOR_OUTPUT_RESEARCH_V1","wrong archive schema")
+        prior=old["series"].get(row["series_id"])
+        if prior:
+            require(prior["source_series_id"]==row["source_series_id"] and set(prior["dates"])<=set(row["dates"]),"Stats NZ identity/coverage regression")
+        if prior!=row:
+            old["series"][row["series_id"]]=row
+            path.write_text(json.dumps(old,ensure_ascii=False,indent=2)+"\n")
+        print("SECTOR_OUTPUT_SOURCE_PASS",row["series_id"],row["latest_period"],len(row["dates"]),row["values"][-1],flush=True)
+    except (OSError,ValueError,KeyError,TypeError) as exc:
+        print("NZD_HOUSING_WITHHELD_OR_PRIOR_RETAINED",str(exc),flush=True)
+        if strict:raise
 if __name__=="__main__":
     p=argparse.ArgumentParser()
     p.add_argument("--strict",action="store_true")
     a=p.parse_args()
     refresh(ARCHIVE,datetime.now(timezone.utc).date(),strict=a.strict)
     refresh_cad(ARCHIVE,datetime.now(timezone.utc).date(),strict=a.strict)
+    refresh_nzd(ARCHIVE,datetime.now(timezone.utc).date(),strict=a.strict)
