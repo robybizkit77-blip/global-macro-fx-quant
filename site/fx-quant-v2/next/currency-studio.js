@@ -500,9 +500,9 @@ function build(api){
    '<div class="strength-first-reading">'+
    '<p><strong>Cosa va.</strong> '+esc(support)+'</p>'+
    '<p><strong>Cosa frena.</strong> '+esc(friction)+'</p>'+
-   (cycleFirstRead?'<p><strong>Economia reale e credito.</strong> '+esc(cycleFirstRead)+'</p>':'')+
    '<p><strong>Che cosa mostra il Forex.</strong> '+esc(opening.lead)+'</p>'+
    '</div>'+
+   (cycleFirstRead?'<p class="source-caption" data-g8-cycle-first-read><strong>Economia reale e credito.</strong> '+esc(cycleFirstRead)+'</p>':'')+
    '<p class="strength-first-watch"><strong>Cosa guardare.</strong> '+esc(sourceRelease?nextCheck:cur?.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?'Verifica se NZD/USD e AUD/NZD confermano la direzione del riferimento neozelandese. Il proxy non sostituisce le attese RBNZ.':cur?.rate.quality==='ASSENTE'?'La prossima variazione verificabile dei tassi chiarirà se il prezzo relativo è sostenuto anche dalle aspettative monetarie.':positive.length&&negative.length?'Verifica quale dei segnali contrari cambia per primo e se le attese sui tassi e la valuta si riallineano.':nextCheck)+'</p>'+
    (root.FXQuantIssuerContext?.narrative(get('macroObserved'),[country],dayNow())?'<p class="source-caption">'+esc(root.FXQuantIssuerContext.narrative(get('macroObserved'),[country],dayNow()))+'</p>':'')+
    '<details class="strength-evidence-fold"><summary><strong>Apri numeri, date, stime e fonti di '+country+'</strong>'+
