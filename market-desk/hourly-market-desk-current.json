@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-26T23:06:03.782748Z",
-  "edition_time_rome": "2026-11-27 00:06",
-  "material_digest": "893c29b527d05ea5b7a4b8247d5560f491c3d34dce02966c81d9959ec0766337",
+  "generated_at_utc": "2026-11-27T02:15:55.333089Z",
+  "edition_time_rome": "2026-11-27 03:15",
+  "material_digest": "fad8632d9cffe08b625f5f0d16e876416ddb2041512823894d44501ace50f048",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in calo",
@@ -60,6 +60,18 @@
       "evidence": "Proxy futures da fonte secondaria. Oro +1,63% al 26 novembre. WTI +0,81% al 26 novembre."
     },
     {
+      "headline": "Keynote speech by Executive Director KAMIYAMA at the IMF MCM-OAP Seminar in Tokyo (Digital Money and Payments: Transitioning Toward a New Paradigm)",
+      "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
+      "kind": "NEWS",
+      "published_date": "2026-11-27",
+      "event_date": "2026-11-27",
+      "market_area": "BANCHE CENTRALI",
+      "sources": [
+        "https://www.boj.or.jp/en/about/press/koen_2026/ko261127a.htm"
+      ],
+      "evidence": ""
+    },
+    {
       "headline": "Speech by Board Member TAMURA in Yamanashi (Economic Activity, Prices, and Monetary Policy in Japan)",
       "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
       "kind": "FOLLOW_UP",
@@ -68,18 +80,6 @@
       "market_area": "BANCHE CENTRALI",
       "sources": [
         "https://www.boj.or.jp/en/about/press/koen_2026/ko261126a.htm"
-      ],
-      "evidence": ""
-    },
-    {
-      "headline": "How does EIA compare different types of energy?",
-      "analysis": "Questo approfondimento aiuta a leggere come cambia l’offerta di energia.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-24",
-      "event_date": "2026-11-24",
-      "market_area": "ENERGIA",
-      "sources": [
-        "https://www.eia.gov/todayinenergy/detail.php?id=68504"
       ],
       "evidence": ""
     }
@@ -97,13 +97,13 @@
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-3rd-quarter-2026",
       "https://www.boj.or.jp/en/about/press/koen_2026/ko261126a.htm",
-      "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "https://www.eia.gov/todayinenergy/detail.php?id=68504"
+      "https://www.boj.or.jp/en/about/press/koen_2026/ko261127a.htm",
+      "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-26",
-      "rss_checked_at_utc": "2026-11-26T23:06:03.782748Z",
+      "rss_checked_at_utc": "2026-11-27T02:15:55.333089Z",
       "commodities": "2026-11-26"
     },
     "no_paid_api": true,
@@ -111,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-26T23:06:03.782748Z",
+      "headline": "Dollaro in calo",
+      "material_digest": "893c29b527d05ea5b7a4b8247d5560f491c3d34dce02966c81d9959ec0766337"
+    },
     {
       "generated_at_utc": "2026-11-26T22:39:07.191877Z",
       "headline": "Dollaro in calo",
@@ -225,11 +230,6 @@
       "generated_at_utc": "2026-11-24T21:18:16.063547Z",
       "headline": "Dollaro misto",
       "material_digest": "5fdbc1259f15cdb8c095d6386523d1cd1461921b3d8b8c1b445f313cbb5dfc44"
-    },
-    {
-      "generated_at_utc": "2026-11-24T17:42:35.716053Z",
-      "headline": "Dollaro misto",
-      "material_digest": "38d745c1e0ee8dd85b3574b74521b0e8f791a23ab4556c1aa0bb302cf79c7028"
     }
   ]
 }
