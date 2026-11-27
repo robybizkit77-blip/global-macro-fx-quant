@@ -991,7 +991,7 @@
     return '<button class="drivers-country" type="button" data-liq-country="'+ccy+'" aria-controls="liquidity-dossier" aria-label="'+
      esc(ccy+' · '+(NAMES[ccy]||ccy))+'" aria-pressed="'+String(active)+'">'+
      '<span class="drivers-country-head"><b>'+esc(FLAGS[ccy]||'')+' '+ccy+'</b><small>'+esc(NAMES[ccy]||ccy)+'</small></span>'+
-     '<span class="liq-country-reading">'+esc(issuer?.opening||'Apri il dossier per verificare le osservazioni e le fonti disponibili.')+'</span><span class="liq-country-open">Apri scheda ›</span>'+'</button>';
+     '<span class="liq-country-reading">'+esc(issuer?.opening?issuer.opening.split(/(?<=[.!?])\s+/)[0]:'Osservazioni da verificare nel dossier.')+'</span><span class="liq-country-open">Apri scheda ›</span>'+'</button>';
   }).join('');
   const facts='<div class="drivers-facts">'+cell('LIQUIDITÀ',row?.liquidity,read.liquidity,'liquidity')+
    cell('CREDITO',row?.credit,read.credit,'credit')+cell('STANDARD E CONDIZIONI',row?.conditions,null,'conditions')+'</div>';
@@ -1021,14 +1021,14 @@
    ?'Le serie svizzere disponibili hanno perimetri diversi. Verifica quali prestiti coprono prima di estendere il giudizio al credito interno.'
    :'Riserve, prestiti e criteri di concessione misurano aspetti diversi. La crescita dei prestiti, da sola, lascia aperta la lettura delle condizioni.';
   return pageHero('CONDIZIONI FINANZIARIE G8','Liquidità & Credito',
-   'Come si muovono le riserve delle banche e il credito a famiglie e imprese.')+
+   'Riserve bancarie, prestiti e condizioni di concessione: la trasmissione finanziaria all’economia reale, distinta dagli spread di mercato.')+
    '<section class="drivers-panel" id="liquidity-studio"><div class="drivers-head"><div><h2>Liquidità e prestiti nelle otto economie</h2><p class="liq-first-note">Ultime osservazioni delle fonti di ricerca già verificate, con il periodo nella lettura. Non sono una graduatoria delle condizioni finanziarie.</p>'+
    '</div></div>'+
    '<div class="drivers-country-grid">'+cards+'</div></section>'+
    '<div class="liq-section-jumps pill-controls" role="group" aria-label="Vai alle analisi di liquidità e credito">'+
    '<button type="button" class="pill" data-section-jump="liquidity-dossier">Dossier paese</button>'+
    (hasCharts?'<button type="button" class="pill" data-section-jump="liquidity-charts">Grafici e serie</button>':'')+
-   '<button type="button" class="pill" data-section-jump="liquidity-market">Credito di mercato</button></div>'+
+   '<button type="button" class="pill" data-section-jump="liquidity-market">Spread IG/HY · contesto</button></div>'+
    '<section class="drivers-panel drivers-selection" id="liquidity-dossier" tabindex="-1" aria-label="Scheda liquidità e credito '+selected+'">'+
    '<div class="drivers-head"><div><span class="mini-overline">'+esc(FLAGS[selected]||'')+' '+selected+'</span>'+
    '<h2>'+esc(headline)+'</h2></div></div>'+
@@ -1040,7 +1040,7 @@
    liquidityRead+
    (root.FXQuantDriverMarketAudit?.render?.({get,esc,dayNow},selected)||'')+
    '<div class="drivers-links"><a href="#macro">Scenario macro ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#risk">Rischio e credito IG/HY ↗</a><a href="#currencies">Valute G8 ↗</a></div>'+
-   '<details class="drivers-source-provenance-fold"><summary>Fonti e storico</summary>'+
+   '<details class="drivers-source-provenance-fold"><summary>Verifica dati, copertura e fonti bancarie</summary>'+
    (selected==='CHF'?'<p>Le serie mensili SNB hanno un perimetro diverso dallo storico precedente, che resta in verifica.</p>':
     '<p>'+esc(read.headline)+' '+esc(read.meaning)+'</p>')+
    facts+sourceStatus+
@@ -1058,7 +1058,7 @@
    (official?.additionalConditionsSeries?'<div class="drivers-chart-grid">'+chart(official.additionalConditionsSeries,'Condizioni di credito PMI · fonte ufficiale separata','#95c6e9')+'</div>':'')+
    '<p class="drivers-source-note">I grafici conservano i valori originali nelle rispettive unità (livelli o tassi di crescita esplicitamente indicati); non confrontare direttamente scale tra paesi o fra aggregati monetari e credito. Se manca un dato, non sostituiamo una stima a un’osservazione.</p></details>')+
    (hasCharts?'</section>':'')+
-   '<section class="liq-evidence-region" id="liquidity-market" tabindex="-1" aria-label="Credito di mercato e spread USA">'+market+'</section>';
+   '<section class="liq-evidence-region" id="liquidity-market" tabindex="-1" aria-label="Credito di mercato e spread USA">'+market+'<p class="source-caption">Gli spread IG/HY misurano il rischio di mercato, non gli standard dei prestiti bancari. <a href="#risk">Vai al quadro cross-asset ↗</a></p></section>';
  }
  const api={series,direction,interpret,observationDate,sourceEvidence,creditMarket,marketFirstRead,nzdDossier,render};
  root.FXQuantLiquidityCredit=api;
