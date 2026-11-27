@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-27T20:01:41.209708Z",
-  "edition_time_rome": "2026-11-27 21:01",
-  "material_digest": "f62d9b7ba6103e1f0b04853abb52f896e4cd8bc6707869834f66a27fd8630c66",
+  "generated_at_utc": "2026-11-27T22:01:51.561366Z",
+  "edition_time_rome": "2026-11-27 23:01",
+  "material_digest": "462fdb5bb7d4802a1348e8b71a4cfe181cc02c090d8b23ff82b7170acaf33595",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in rialzo",
@@ -57,7 +57,7 @@
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
         "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
       ],
-      "evidence": "Proxy futures da fonte secondaria. Oro +3,56% al 27 novembre. WTI +2,50% al 27 novembre."
+      "evidence": "Proxy futures da fonte secondaria. Oro +3,75% al 27 novembre. WTI +2,50% al 27 novembre."
     },
     {
       "headline": "Global electricity generation more than doubled from 2000 to 2025",
@@ -103,7 +103,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-27",
-      "rss_checked_at_utc": "2026-11-27T20:01:41.209708Z",
+      "rss_checked_at_utc": "2026-11-27T22:01:51.561366Z",
       "commodities": "2026-11-27"
     },
     "no_paid_api": true,
@@ -111,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-27T20:01:41.209708Z",
+      "headline": "Dollaro in rialzo",
+      "material_digest": "f62d9b7ba6103e1f0b04853abb52f896e4cd8bc6707869834f66a27fd8630c66"
+    },
     {
       "generated_at_utc": "2026-11-27T16:39:41.846214Z",
       "headline": "Dollaro in rialzo",
@@ -225,11 +230,6 @@
       "generated_at_utc": "2026-11-25T14:31:42.616659Z",
       "headline": "Dollaro misto",
       "material_digest": "20f0624ac796212744b19b4569c6b0ff6b01eae37bc28189e68da46c3935a4e3"
-    },
-    {
-      "generated_at_utc": "2026-11-25T13:55:03.188558Z",
-      "headline": "Dollaro misto",
-      "material_digest": "ca68963f359a6bd2c60a6364b16b65ba4f383386cef31517b1116cdd1d52047d"
     }
   ]
 }
