@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 REQUIRED = (
-    "Resolve Rates schedule from UTC cron and Rome offset",
+    "Resolve Rates schedule and Rome publication window",
     "Build official Rates candidate",
     "Verify current and candidate 2Y/10Y weekly reference dates before any live publication",
 )
