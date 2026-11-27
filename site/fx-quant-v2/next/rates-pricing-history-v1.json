@@ -2899,6 +2899,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-26T16:22:37.283637Z"
+          },
+          {
+            "date": "2026-11-27",
+            "rate": 0.385,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-27T16:22:33.546513Z"
           }
         ],
         "12m": [
@@ -3978,7 +3986,7 @@
         "current_rate": 3.69,
         "change_bp": -27.0,
         "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261029ZFT.htm",
-        "source_sha256": "fa5ff2b798014c3738c492b5dc0b9188751060bc2ab096128c18c2c31a23d908",
+        "source_sha256": "4baca3f263748490663c8725fc5ba35eaaa766538ef2ddcb40d4b6307f20f231",
         "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"
       }
     },
