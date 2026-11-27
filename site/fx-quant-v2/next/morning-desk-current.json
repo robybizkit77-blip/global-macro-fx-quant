@@ -3,7 +3,7 @@
   "edition_date": "2026-11-27",
   "created_at_utc": "2026-11-27T05:51:37.883856Z",
   "edition_status": "MORNING_SNAPSHOT",
-  "event_status": "AFTERMATH_MONTHLY_ONLY_YOY_UNAVAILABLE",
+  "event_status": "RELATIVE_PRICING",
   "editorial_quality": "DATED_RULED_NARRATIVE_NOT_HUMAN_REVIEWED",
   "observation_cutoff_exclusive": "2026-11-27",
   "sources": {
@@ -12,29 +12,29 @@
     "pair_setup": "2026-11-26",
     "calendar": "OFFICIAL_SEED"
   },
-  "headline": "Il CPI è passato, ma la direzione del dollaro dipende da ciò che è verificabile nel repricing.",
-  "lead": "La giornata riparte dopo l'inflazione USA. La domanda ora non è ripetere la narrativa pre-CPI: dobbiamo distinguere ciò che sappiamo dal comunicato, ciò che è cambiato nelle attese Fed e la risposta effettiva del dollaro nelle varie coppie.",
+  "headline": "Dollaro: il differenziale dei tassi e il cambio non raccontano ancora la stessa storia.",
+  "lead": "Rettifica editoriale del 27 novembre: il calendario del 25 novembre riportava il PCE USA, non il CPI. Manteniamo i fixing e i rendimenti della fotografia mattutina, senza attribuire loro una reazione a una pubblicazione non verificata nello stesso intervallo.",
   "paragraphs": [
     "Il contesto viene dalla Fed del 28 ottobre: tassi invariati al 3,75–4,00%, con due membri favorevoli a un rialzo. La crescita continua a essere descritta come resistente, ma l'inflazione rimane il vincolo per un eventuale allentamento. Per il dollaro la domanda è quanto di questa prudenza sia già incorporato nei tassi e quanto possa ancora sorprendere il mercato.",
     "Il differenziale governativo a due anni USD–EUR è +164 punti base al 25/11/2026; rispetto al 17/11/2026 è cambiato di −6,6 pb. Il fixing BCE di EUR/USD è 1,0975 al 26/11/2026, +0,37% sul fixing precedente. Confrontando invece rigorosamente le stesse date (17/11/2026–25/11/2026), lo spread si è mosso di −6,6 pb e il cambio di −0,49%. Nell'intervallo sulle stesse date, il prezzo non segue la direzione suggerita dal differenziale: divergenza da indagare, non automaticamente un'opportunità. Il livello del governativo 2Y non sostituisce un confronto delle variazioni OIS/futures.",
-    "Il CPI era atteso ieri alle 14:30 italiane. Il BLS ha pubblicato headline mensile +0,4% e core mensile +0,3%. I tassi annuali ottobre 2026 non sono pubblicabili: manca la base di ottobre 2025. Il registro conserva il primo rilevamento del runner, non l'orario di prima pubblicazione. Un'interpretazione post-evento richiede attese disponibili con qualità dichiarata, composizione, OIS/futures e risposta relativa delle valute nelle medesime finestre temporali.",
+    "Il 25 novembre alle 14:30 italiane il calendario ufficiale indicava Personal Income and Outlays (PCE). Le misure CPI mensili citate nella prima versione appartenevano invece all'evento del 10 novembre: sono state rimosse. Il confronto tra le aspettative monetarie e il cambio richiede osservazioni sincronizzate e non dimostra la reazione causale al PCE.",
     "Il banco di prova FX è EUR/USD. Nel modello delle coppie del 26/11/2026, USD ha il vantaggio relativo; il quadro resta con rischi. Il prezzo è coerente nell'orizzonte del modello, non necessariamente nell'ultimo fixing. Nel medesimo fixing USD/JPY si muove di −0,04% dal giorno precedente. Una sola controparte non dimostra forza generalizzata della valuta. La tesi economica non è un segnale d'ingresso finché pricing relativo e prezzo non convergono."
   ],
   "catalyst": {
-    "title": "Dopo il CPI · cosa sappiamo e cosa manca",
-    "text": "Il CPI era atteso ieri alle 14:30 italiane. Il BLS ha pubblicato headline mensile +0,4% e core mensile +0,3%. I tassi annuali ottobre 2026 non sono pubblicabili: manca la base di ottobre 2025. Il registro conserva il primo rilevamento del runner, non l'orario di prima pubblicazione. Un'interpretazione post-evento richiede attese disponibili con qualità dichiarata, composizione, OIS/futures e risposta relativa delle valute nelle medesime finestre temporali.",
+    "title": "Rettifica · distinguere PCE e CPI",
+    "text": "Il 25 novembre alle 14:30 italiane il calendario ufficiale indicava Personal Income and Outlays (PCE). Le misure CPI mensili citate nella prima versione appartenevano invece all'evento del 10 novembre: sono state rimosse. Il confronto tra le aspettative monetarie e il cambio richiede osservazioni sincronizzate e non dimostra la reazione causale al PCE.",
     "date": "2026-11-25",
     "currency": "USD",
     "time_rome": "14:30"
   },
   "scenarios": [
     {
-      "title": "Repricing monetario USA verificato",
-      "text": "Se le misure ufficiali confermano pressione core e il front-end USA si rafforza relativamente, rivalutare la tesi USD con EUR/USD e USD/JPY."
+      "title": "Differenziale USA–Europa in recupero",
+      "text": "Se il front-end USA si rafforza relativamente e il cambio conferma, rivalutare la tesi USD con EUR/USD e USD/JPY, senza attribuire automaticamente il movimento al PCE."
     },
     {
       "title": "Dollaro e rendimenti non confermano",
-      "text": "Se il pricing relativo o le coppie non seguono, non attribuire un regime hawkish all'evento: distinguere liquidazioni, rischio e debolezza della controparte."
+      "text": "Se il pricing relativo o le coppie non seguono, distinguere rischio globale, debolezza della controparte e variazioni delle aspettative monetarie."
     }
   ],
   "verdict": "Al 25/11/2026 lo spread 2Y USD–EUR è +164 pb; il confronto allineato col cambio è divergente. L'effetto del dato precedente resta da certificare, ma EUR/USD richiede una conferma specifica. Questa lettura non produce un segnale di ingresso.",
@@ -299,6 +299,7 @@
   "limitations": [
     "Ricostruzione per date di osservazione, non un archivio publisher point-in-time.",
     "Nessuna causalità intraday dedotta dai fixing o dai rendimenti daily.",
-    "Forecast secondari non equivalgono a survey consensus certificato."
+    "Forecast secondari non equivalgono a survey consensus certificato.",
+    "Rettifica editoriale del 27/11/2026: rimossi dati CPI associati erroneamente al PCE; osservazioni, orario originario e grafici invariati. Non è una nuova edizione mattutina."
   ]
 }
