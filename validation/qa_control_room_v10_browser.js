@@ -746,15 +746,19 @@ function expectedReactionFromMetrics(row){
      yieldStudy.width>yieldStudy.client+2)
     throw Error(label+' G8 observed sovereign yield study not ready '+JSON.stringify(yieldStudy));
 
-  // Original G8 table historical CHF/NZD coverage must be numeric and auditable.
-   await page.waitForFunction(()=>{
+  // Historical badges are required only for genuinely stale official rows.
+  // A newly reviewed current NZD must not be forced into the historical UI.
+   const historicalSpecial=['NZD','CHF'].filter(c=>expectedHistorical.includes(c));
+   await page.waitForFunction(({historicalSpecial})=>{
      const d=document.getElementById('gmfq-page')?.contentDocument;
      return ['NZD','CHF'].every(c=>[...d?.querySelectorAll('#rates-rows > tr')||[]]
-       .some(row=>row.dataset.gmfqProvenance==='OFFICIAL_HISTORICAL_SAME_DAY_2Y_10Y'&&
-          row.cells[0]?.textContent.includes(c==='NZD'?'Nuova Zelanda':'Svizzera')));
-   },null,{timeout:20000});
+       .some(row=>row.cells[0]?.textContent.includes(c==='NZD'?'Nuova Zelanda':'Svizzera')&&
+          (historicalSpecial.includes(c)?
+            row.dataset.gmfqProvenance==='OFFICIAL_HISTORICAL_SAME_DAY_2Y_10Y':
+            row.dataset.gmfqProvenance!=='OFFICIAL_HISTORICAL_SAME_DAY_2Y_10Y')));
+   },{historicalSpecial},{timeout:20000});
    const sovereignRows=await page.evaluate(()=>{
-    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const d=document.getElementById('gmfq-page').contentDocument;
     return ['NZD','CHF'].map(c=>{
      const row=[...d?.querySelectorAll('#rates-rows > tr')||[]]
        .find(x=>x.cells[0]?.textContent.includes(c==='NZD'?'Nuova Zelanda':'Svizzera'));
@@ -765,6 +769,16 @@ function expectedReactionFromMetrics(row){
     });
    });
    for(const row of sovereignRows){
+    if(!historicalSpecial.includes(row.ccy)){
+      const official=actualRates[row.ccy];
+      const numeric=text=>Number(String(text).replace(',','.').match(/-?\d+(?:\.\d+)?/)?.[0]);
+      if(!row.visible||row.asof||row.cells[0].includes('STORICO')||
+         Math.abs(numeric(row.cells[1])-official['2Y'])>.005||
+         Math.abs(numeric(row.cells[2])-official['10Y'])>.005||
+         !Number.isFinite(numeric(row.cells[1]))||!Number.isFinite(numeric(row.cells[2])))
+        throw Error(label+' recent official sovereign row incorrect '+JSON.stringify(row));
+      continue;
+    }
     const official=actualRates[row.ccy],us=actualRates.USD.history2,
       own=official.history2,usMap=new Map(us.dates.map((d,i)=>[d,us.values[i]]));
     const common=own.dates.map((d,i)=>({d,v:own.values[i]}))
