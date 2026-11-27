@@ -245,11 +245,236 @@ jobs:
               assert result['checked_through'] is not None, 'Durable checkpoint not created'
               assert json.loads(target.read_text())['checked_through']==result['checked_through']
           PY
-      - name: Collect official UK and Canadian real sector output into existing research archive
+      - name: Collect official UK, Canadian and NZ sector output into existing research archive
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
+          set -euo pipefail
           python -m unittest validation.macro.test_collect_sector_output_research_v1 validation.macro.test_collect_nzd_building_consents_v1 -v
+          # Collector or collector-test changes require live proof. A transient
+          # independent issuer outage must not prevent testing pure calculations
+          # against prior validated archives. Production retains its existing policy.
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            python -m validation.macro.collect_sector_output_research_v1 --strict
+            test -n "$PR_BASE_SHA"
+            changed="$(git diff --name-only "$PR_BASE_SHA" HEAD)"
+            if grep -Eq '^validation/macro/(test_)?collect_(sector_output_research|nzd_building_consents)_v1\.py
+      - name: Generate verified public Macro V3 context
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_v2_labour_inflation_dynamics_v1 -v
+          python -m unittest validation.macro.test_v2_sector_financial_dynamics_v1 -v
+          python -m validation.macro.publish_v3_current_context_v1
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          f=Path('site/control-room-preview/macro-v3-current-evidence.json')
+          d=json.loads(f.read_text())
+          import os
+          import os
+          if d['sector_financial_status']=='RESEARCH_ONLY':
+              m=d['sector_financial_dynamics']
+              assert len(m['countries'])==8 and sum(map(len,m['countries'].values()))==64
+              assert m['safe_to_update_pairs'] is False and m['safe_to_publish_D'] is False
+              print('SECTOR_FINANCIAL_COVERAGE', {c:sum(r['measurement']!='WITHHELD' for r in rs) for c,rs in m['countries'].items()})
+              print('SECTOR_FINANCIAL_WITHHELD_ROWS', [(r['series_id'],r['reason']) for rs in m['countries'].values() for r in rs if r['measurement']=='WITHHELD'])
+          else:
+              assert d['sector_financial_status']=='WITHHELD'
+              assert os.environ['GITHUB_EVENT_NAME']!='pull_request'
+          if d['labour_inflation_status']=='RESEARCH_ONLY':
+              m=d['labour_inflation_dynamics']
+              assert len(m['countries'])==8 and sum(map(len,m['countries'].values()))==41
+              assert m['safe_to_update_pairs'] is False and m['safe_to_publish_D'] is False
+              print('LABOUR_INFLATION_COVERAGE', {c:sum(r['measurement']!='WITHHELD' for r in rs) for c,rs in m['countries'].items()})
+          else:
+              assert d['labour_inflation_status']=='WITHHELD'
+              assert os.environ['GITHUB_EVENT_NAME']!='pull_request'
+          if d['activity_momentum_status']=='RESEARCH_ONLY':
+              m=d['activity_momentum_research']
+              assert len(m['countries'])==8 and sum(map(len,m['countries'].values()))==13
+              assert m['safe_to_update_pairs'] is False and m['safe_to_publish_D'] is False
+          else:
+              assert d['activity_momentum_status']=='WITHHELD' and 'activity_momentum_research' not in d
+              assert os.environ['GITHUB_EVENT_NAME']!='pull_request', 'Momentum diagnostic failed on current test sources'
+              print('::warning::Momentum diagnostic withheld; verified raw macro context preserved.')
+          assert d['summary']['currencies']==8
+          assert d['summary']['economic_dimensions']==24
+          assert d['summary']['pairs']==28
+          assert len(d['countries'])==8 and len(d['pair_context'])==28
+          assert d['status']=='OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL'
+          assert d['safe_to_republish_D'] is False
+          assert d['safe_to_recompute_structural_pair_theses'] is False
+          assert d['eligible_for_trading_or_forward_backtest'] is False
+          assert all(c['macro_score'] is None and c['FX_strength'] is None for c in d['countries'].values())
+          assert all(p['pair_trade_bias'] is None for p in d['pair_context'].values())
+          print('MACRO_V3_PUBLIC_CONTEXT_8_G8_24_AXES_28_PAIRS_PASS')
+          PY
+      - name: Exact source and website write scope; canonical D untouched
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload dashboard index.html
+          test -z "$(git status --porcelain -- live_data payload dashboard index.html)"
+          test -f site/control-room-preview/macro-v3-current-evidence.json
+          echo 'MACRO_V3_PUBLICATION_NO_CANONICAL_SIGNAL_MUTATION_PASS'
+      - name: Persist the Macro research snapshot and GDP archives with scoped retry (main only)
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+
+          print(json.dumps(persist(
+              managed=('site/control-room-preview/macro-v3-current-evidence.json',
+                       'validation/macro/ONS_FIRST_QUARTERLY_GDP_V1.json',
+                       'validation/macro/ESRI_FIRST_QUARTERLY_GDP_V1.json',
+                       'validation/macro/SECO_FLASH_QUARTERLY_GDP_V1.json',
+                       'validation/macro/ABS_QUARTERLY_GDP_V1.json',
+                       'validation/macro/STATCAN_QUARTERLY_GDP_V1.json',
+                       'validation/macro/STATSNZ_QUARTERLY_GDP_V1.json',
+                       'validation/macro/EUROSTAT_QUARTERLY_GDP_V1.json',
+                       'validation/macro/SECTOR_OUTPUT_RESEARCH_V1.json'),
+              protected=(
+                  'live_data/sections/NEWS_PULSE_OPERATIONAL.json',
+                  'live_data/sections/MACRO_SERIES.json',
+                  'live_data/sections/MACRO_THERMOMETER_DATA.json',
+                  'live_data/sections/D.json',
+                  'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
+                  'validation/macro/v2_*.py',
+                  'validation/macro/v3_*.py',
+                  'validation/macro/publish_v3_current_context_v1.py',
+                  'validation/macro/collect_sector_output_research_v1.py',
+                  'validation/macro/collect_nzd_building_consents_v1.py',
+                  'validation/macro/SECTOR_OUTPUT_RESEARCH_V1.json',
+                  'validation/macro/ons_quarterly_gdp_v1.py',
+                  'validation/macro/ONS_FIRST_QUARTERLY_GDP_V1.json',
+                  'validation/macro/esri_quarterly_gdp_v1.py',
+                  'validation/macro/ESRI_FIRST_QUARTERLY_GDP_V1.json',
+                  'validation/macro/statsnz_quarterly_gdp_v1.py',
+                  'validation/macro/STATSNZ_QUARTERLY_GDP_V1.json',
+                  'validation/macro/eurostat_quarterly_gdp_v1.py',
+                  'validation/macro/EUROSTAT_QUARTERLY_GDP_V1.json',
+                  'validation/macro/statcan_quarterly_gdp_v1.py',
+                  'validation/macro/STATCAN_QUARTERLY_GDP_V1.json',
+                  'validation/macro/abs_quarterly_gdp_v1.py',
+                  'validation/macro/ABS_QUARTERLY_GDP_V1.json',
+                  'validation/macro/seco_quarterly_gdp_v1.py',
+                  'validation/macro/SECO_FLASH_QUARTERLY_GDP_V1.json',
+                  'validation/macro/capture_uk_ch_gdp_official_firstseen_v11.py',
+                  'validation/macro/capture_official_postrelease_actuals_v1.py',
+                  'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json',
+                  'validation/macro/fixtures/*gdp*.json',
+              ),
+              commit_message='Publish observed Macro V3 G8 and 28-pair research context',
+          )))
+          PY
+      - name: Mirror verified V3 file to gh-pages with remote-head lease
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET="site/control-room-preview/macro-v3-current-evidence.json"
+          git fetch origin main gh-pages --no-tags
+          git show "origin/main:$TARGET" | cmp - "$TARGET" || { echo 'Main source drift' >&2; exit 1; }
+          PAGE_SHA="$(git rev-parse origin/gh-pages)"
+          WORKTREE="$(mktemp -d)"
+          git worktree add --detach "$WORKTREE" origin/gh-pages
+          mkdir -p "$WORKTREE/site/control-room-preview"
+          cp "$TARGET" "$WORKTREE/$TARGET"
+          cd "$WORKTREE"
+          git add -- "$TARGET"
+          if ! git diff --cached --quiet; then
+            CHANGED="$(git diff --cached --name-only)"
+            test "$CHANGED" = "$TARGET" || { echo "Unexpected changed files $CHANGED" >&2; exit 1; }
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Publish only Macro V3 observed G8 source snapshot'
+            REMOTE="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
+            test "$REMOTE" = "$PAGE_SHA" || { echo 'Pages advanced; fail closed' >&2; exit 1; }
+            git push --force-with-lease=refs/heads/gh-pages:"$PAGE_SHA" origin HEAD:gh-pages
+          fi
+          git show "HEAD:$TARGET" | cmp - "${{ github.workspace }}/$TARGET"
+          echo MACRO_V3_GHPAGES_EXACT_SOURCE_PROOF_PASS
+      - name: Explicitly queue Pages build after bot push
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cfg="$(gh api "repos/${GITHUB_REPOSITORY}/pages")"
+          test "$(jq -r '.source.branch' <<<"$cfg")" = "gh-pages"
+          test "$(jq -r '.source.path' <<<"$cfg")" = "/"
+          TARGET_SHA="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
+          last="$(gh api "repos/${GITHUB_REPOSITORY}/pages/builds/latest" 2>/dev/null || echo '{}')"
+          last_sha="$(jq -r '.commit // empty' <<<"$last")"
+          last_status="$(jq -r '.status // empty' <<<"$last")"
+          if [[ "$last_sha" == "$TARGET_SHA" &&
+                ( "$last_status" == "built" || "$last_status" == "building" || "$last_status" == "queued" ) ]]; then
+            echo "PAGES_BUILD_ALREADY_TARGETING_V3 $TARGET_SHA"
+          else
+            r="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds")"
+            jq -e '.status == "queued" or .status == "building"' <<<"$r" >/dev/null
+            echo "MACRO_V3_PAGES_BUILD_EXPLICITLY_QUEUED $TARGET_SHA"
+          fi
+      - name: Certify actual public Macro V3 HTTP bytes after Pages build
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from validation.publishing.verify_pages_http_delivery_v1 import BASE_URL, verify
+
+          target = 'site/control-room-preview/macro-v3-current-evidence.json'
+          source = json.loads(Path(target).read_text(encoding='utf-8'))
+          assert source['status'] == 'OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL'
+          assert source['summary']['currencies'] == 8
+          assert source['summary']['economic_dimensions'] == 24
+          assert source['summary']['pairs'] == 28
+          assert source['summary']['pair_trade_signals_generated'] == 0
+          report = verify(
+              Path('.'), BASE_URL, (target,),
+              budget_seconds=300, interval_seconds=10, timeout_seconds=12,
+          )
+          Path('/tmp/macro-v3-public-http-delivery-proof.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
+          )
+          print('MACRO_V3_PUBLIC_HTTP_SHA256', json.dumps(report, sort_keys=True), flush=True)
+          if report['status'] != 'PASS':
+              raise SystemExit('PUBLIC_MACRO_V3_HTTP_DELIVERY_NOT_CERTIFIED')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macro-v3-observed-public-receipt-${{ github.run_id }}
+          path: |
+            site/control-room-preview/macro-v3-current-evidence.json
+            /tmp/macro-v3-public-http-delivery-proof.json
+            /tmp/ons-quarterly-gdp-collection.json
+            /tmp/esri-quarterly-gdp-collection.json
+            /tmp/abs-quarterly-gdp-collection.json
+            /tmp/abs-q2-proof.json
+            /tmp/statcan-quarterly-gdp-collection.json
+            /tmp/statcan-q2-proof.json
+            /tmp/statcan-index-proof.json
+            /tmp/eurostat-quarterly-gdp-collection.json
+            /tmp/eurostat-q3-proof.json
+            /tmp/eurostat-recovery-proof.json
+            /tmp/statsnz-quarterly-gdp-collection.json
+            /tmp/statsnz-q2-proof.json
+          if-no-files-found: warn
+          retention-days: 14
+ <<< "$changed"; then
+              python -m validation.macro.collect_sector_output_research_v1 --strict
+            else
+              python -m validation.macro.collect_sector_output_research_v1 | tee /tmp/sector-source-check.log
+              if grep -q 'WITHHELD_OR_PRIOR_RETAINED' /tmp/sector-source-check.log; then
+                echo "::warning::Independent sector source not revalidated; calculation tests use previously verified archive, not a new source receipt."
+                cat /tmp/sector-source-check.log >> "$GITHUB_STEP_SUMMARY"
+              fi
+            fi
           else
             python -m validation.macro.collect_sector_output_research_v1
           fi
