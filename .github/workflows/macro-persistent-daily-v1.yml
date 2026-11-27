@@ -33,6 +33,8 @@ on:
       - 'validation/macro/prepare_jpy_employment_lfs_v1.py'
       - 'validation/macro/test_prepare_jpy_employment_lfs_v1.py'
       - 'validation/macro_adapter_pit_handoff.py'
+      - 'validation/sources/chf_snb_official_core.py'
+      - 'validation/test_snb_core_transport_retry_v1.py'
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/reconcile_us_real_households_countrybook_v2.py'
@@ -1578,6 +1580,9 @@ jobs:
 
       - name: Verify BLS transient transport quarantine and PIT fail-closed rules (offline)
         run: python -m unittest validation.test_us_bls_transport_withheld_v1 -v
+
+      - name: Verify SNB transient transport retry without weakening source guards
+        run: python -m unittest validation.test_snb_core_transport_retry_v1 -v
 
       - name: Guard EUR JPY NZD official source-label identity and reject spoofing
         run: python -m unittest validation.macro.test_macro_official_source_label_contract_v1 -v
