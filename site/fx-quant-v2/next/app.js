@@ -1084,13 +1084,13 @@ function pairs(){
   (window.FXQuantIssuerContext?.narrative(get('macroObserved'),[state.pair.slice(0,3),state.pair.slice(3)],dayNow())?'<p class="pairs-primary-story">'+esc(window.FXQuantIssuerContext.narrative(get('macroObserved'),[state.pair.slice(0,3),state.pair.slice(3)],dayNow()))+'</p>':'')+
   (pairProfile?.closes?.length>=22?
    '<button type="button" class="ghost-btn small pairs-chart-jump" data-pair-chart-jump aria-controls="fx-pair-price-chart">Vedi il grafico del cambio</button>':'')+
-  '<details class="pairs-optional-panel pairs-evidence"><summary><strong>Apri numeri, stime e cosa monitorare</strong><span class="pairs-open-icon" aria-hidden="true">+</span></summary><div class="pairs-details-body">'+
-  (window.FXQuantIssuerContext?.render(get('macroObserved'),[state.pair.slice(0,3),state.pair.slice(3)],dayNow())||'')+
-  '<span class="badge info">'+esc(quality)+'</span><p class="pairs-primary-story">'+esc(driverDetail)+'</p>'+
   '<div class="pairs-three-answers">'+
    '<div><span>TESI FONDAMENTALE</span><strong>'+esc(activePair?.thesisStrength||'NON VALUTABILE')+'</strong></div>'+
    '<div class="pairs-trade-assessment" data-pairs-trade-tone="'+tradeTone+'"><span>TRADE ATTRACTIVENESS</span><strong>'+esc(tradeStatus)+'</strong></div>'+
    '<div class="pairs-price-assessment"><span>IL PREZZO SEGUE LA TESI?</span>'+priceRead+'</div></div>'+
+  '<details class="pairs-optional-panel pairs-evidence"><summary><strong>Conferme, invalidazioni, rischio e fonti</strong><span class="pairs-open-icon" aria-hidden="true">+</span></summary><div class="pairs-details-body">'+
+  (window.FXQuantIssuerContext?.render(get('macroObserved'),[state.pair.slice(0,3),state.pair.slice(3)],dayNow())||'')+
+  '<span class="badge info">'+esc(quality)+'</span><p class="pairs-primary-story">'+esc(driverDetail)+'</p>'+
   '<p class="pairs-timing-reading"><strong>Prima di valutare un ingresso.</strong> '+esc(tradeText)+'</p>'+
   '<p class="pairs-why-no-entry"><strong>Rischio operativo.</strong> '+esc(riskReading)+
    ' Una buona tesi fondamentale non equivale a un buon ingresso.</p>'+
@@ -1120,7 +1120,7 @@ function pairs(){
  const originalDecision=typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?
   window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).pair():
   '<div class="empty">Grafico e lettura del prezzo non disponibili.</div>';
- const detail='<details class="pairs-optional-panel pairs-optional-chart"><summary><span><strong>Apri grafico, pricing e analisi completa</strong><small>Fixing BCE, 5/20 sedute, tassi differenziali, rischi e livelli di riferimento</small></span><span class="pairs-open-icon">+</span></summary>'+
+ const detail='<details class="pairs-optional-panel pairs-optional-chart"><summary><span><strong>Grafico del cambio e analisi completa</strong><small>Fixing BCE, 5/20 sedute, tassi differenziali, rischi e livelli di riferimento</small></span><span class="pairs-open-icon">+</span></summary>'+
   '<div class="pairs-details-body">'+originalDecision+'</div></details>';
  const chooser='<section class="pairs-chooser"><div class="pairs-chooser-top">'+choice+
   '<button class="watch-btn '+(saved?'saved':'')+'" type="button" data-watch="'+state.pair+'" aria-pressed="'+saved+'" aria-label="Watchlist '+esc(getPairName(state.pair))+'">'+pairWatchLabel(saved)+'</button></div>'+
@@ -1257,6 +1257,7 @@ function researchRibbon(route){
 // These are visual states only: data, ranking and FX reasoning remain untouched.
 const G8_DISCLOSURES=[
  'details.strength-evidence-fold',
+ 'details.strength-quant-fold',
  'details.strength-shadow-fold',
  'details.strength-pair-fold',
  'details.orient-thesis-details',
