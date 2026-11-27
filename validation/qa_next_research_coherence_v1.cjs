@@ -618,3 +618,20 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  assert.equal(mod.evaluate({currency:'USD'}).enhanced.coverage,0);
  console.log('GLOBAL_FX_ENHANCED_COVERAGE_PASS');
 }
+
+{
+ const rates=require('../site/fx-quant-v2/next/rates-research-score-v1.js');
+ const comp=require('../site/fx-quant-v2/next/global-fx-research-composite-v1.js');
+ const points=[['2026-11-19',4.58],['2026-11-26',4.48],['2026-11-27',4.515]].map(([date,rate])=>({date,rate,contract:'ZQK2027',source_class:'SECONDARY_SAME_CONTRACT',derived:false}));
+ const h={kind:'FUTURES SECONDARI',source:'Secondary dated futures archive',tenors:{'6m':points}};
+ const last={asof:'2026-11-27',rate:4.515,contract:'ZQK2027',week:null};
+ const r=rates.recentSecondaryWeek(h,last,'2026-11-27');
+ assert.equal(r.bp,-10); assert.equal(r.to,'2026-11-26');
+ assert.equal(comp.ratesEnhanced({quality:'NON VERIFICATA',asof:last.asof,recentSecondaryWeek:r}).score,3);
+ assert.equal(rates.recentSecondaryWeek(h,{...last,rate:4.6},'2026-11-27'),null);
+ assert.equal(rates.recentSecondaryWeek(h,{...last,week:{bp:1}},'2026-11-27'),null);
+ assert.equal(rates.recentSecondaryWeek(h,last,'2026-12-05'),null);
+ assert.equal(rates.recentSecondaryWeek({...h,tenors:{'6m':points.map((p,i)=>i===0?{...p,contract:'ZQJ2027'}:p)}},last,'2026-11-27'),null);
+ assert.equal(rates.recentSecondaryWeek({...h,tenors:{'6m':points.map((p,i)=>i===0?{...p,derived:true}:p)}},last,'2026-11-27'),null);
+ console.log('ENHANCED_RECENT_EXACT_SECONDARY_WEEK_PASS');
+}
