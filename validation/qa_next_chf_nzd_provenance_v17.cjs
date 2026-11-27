@@ -55,7 +55,11 @@ assert.match(nzdContext[0].text,/Copertura temporale sufficiente/);
 assert.match(nzdContext[0].text,/riconciliazione XLSX/);
 assert.match(nzdContext[0].text,/Nessun collegamento/);
 assert(!mod.snapshot(rates,prices,'EURCHF',asof,now,aud,chf,nzd).ready);
-assert(!mod.snapshot(rates,prices,'NZDUSD',asof,now,aud,chf,nzd).ready);
+const archivedRates={...rates,NZD:{...rates.NZD,date:'2026-10-16'}};
+assert(!mod.snapshot(archivedRates,prices,'NZDUSD',asof,now,aud,chf,nzd).ready);
+const currentNZD=mod.snapshot(rates,prices,'NZDUSD',asof,now,aud,chf,nzd);
+if(currentNZD.ready)assert(currentNZD.short&&currentNZD.lag<=3&&currentNZD.rows.every(x=>x.date<=asof),
+ 'Current archive reconstruction requires actual matched dates, never future research');
 assert(!mod.snapshot(rates,prices,'CHFNZD',asof,now,aud,chf,nzd).ready);
 const all=Object.keys(pairs.pairs).map(key=>mod.snapshot(rates,prices,key,asof,now,aud,chf,nzd));
 assert.equal(all.length,28);
@@ -125,7 +129,8 @@ const estimated=(key,source,clock=comparisonDay)=>
  mod.snapshot(rates,prices,key,liveAsOf,clock,aud,chf,nzd,reconciled,source);
 assert(!estimated('AUDCAD',estimateFeed).estimate,'The estimate only supplies a CHF leg');
 assert(!estimated('AUDCHF',{...estimateFeed,eligible_for_core:true}).estimate);
-assert(!estimated('AUDCHF',estimateFeed,'2026-12-05').estimate,'Too-old inputs cannot produce a fresh estimate');
+const staleClock=new Date(Date.parse(liveAsOf+'T12:00:00Z')+31*864e5).toISOString().slice(0,10);
+assert(!estimated('AUDCHF',estimateFeed,staleClock).estimate,'Too-old inputs cannot produce a fresh estimate');
 const chf2y=estimated('AUDCHF',estimateFeed);
 if(aud.last_observation_date==='2026-11-18'&&comparisonDay==='2026-11-20'&&
    estimateFeed.observations.some(x=>x.date==='2026-11-18')){
@@ -229,7 +234,7 @@ const date=s=>s,fmt=(v,n=2)=>Number(v).toFixed(n);
 const sign=(v,n=2,u='')=>(v>0?'+':'')+Number(v).toFixed(n)+u;
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const state={pair:'EURCHF',pairPriceWindow:60};
-const get=k=>({rates,pairs:fixturePairs,currencyPrices:prices,audDailyResearch:aud,chfResearch:chf,nzdPostroll:nzd})[k];
+const get=k=>({rates:archivedRates,pairs:fixturePairs,currencyPrices:prices,audDailyResearch:aud,chfResearch:chf,nzdPostroll:nzd})[k];
 const api={get,state,plot:()=>{throw Error('Stale CHF/NZD must not draw a current FX/rates chart')},fmt,sign,date,esc,dayNow:()=>now};
 let html=mod.build(api).render();
 assert.match(html,/data-source-context="CHF"/);
@@ -247,7 +252,7 @@ assert.match(html,/data-source-context="CHF"/);
 // The same source becomes visible on its verified publication/capture date,
 // as research context only; it cannot create a current FX/2Y trading signal.
 const researchPairs={...pairs,price_asof:researchDate};
-const researchGet=k=>({rates,pairs:researchPairs,currencyPrices:prices,audDailyResearch:aud,
+const researchGet=k=>({rates:archivedRates,pairs:researchPairs,currencyPrices:prices,audDailyResearch:aud,
   chfResearch:chf,nzdPostroll:nzd})[k];
 state.pair='NZDUSD';
 const researchHtml=mod.build({...api,get:researchGet,dayNow:()=>researchDate}).render();

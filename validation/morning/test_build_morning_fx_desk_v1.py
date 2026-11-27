@@ -70,6 +70,22 @@ class MorningFXDeskTests(unittest.TestCase):
         self.assertIn("non sono pubblicabili",report["paragraphs"][2])
         self.assertFalse(report["eligible_for_fx_signal"])
 
+    def test_pce_is_not_previous_cpi_and_old_actual_is_not_reused(self):
+        event={"ccy":"USD","date":"2026-11-25","event_type":"INFLATION",
+               "title":"Personal Income and Outlays","importance":"HIGH",
+               "time_local":"08:30","timezone":"America/New_York"}
+        day=date(2026,11,27)
+        now=datetime(2026,11,27,6,0,tzinfo=timezone.utc)
+        self.assertEqual(choose_event({"events":[event]},day)[1],"RELATIVE_PRICING")
+        report=build(ROOT,day,now,event_seed={"events":[event]})
+        self.assertNotIn("Il BLS ha pubblicato",report["catalyst"]["text"])
+        self.assertFalse(report["event_status"].startswith("AFTERMATH"))
+        new_cpi={**event,"title":"Consumer Price Index"}
+        report=build(ROOT,day,now,event_seed={"events":[new_cpi]})
+        self.assertEqual(report["event_status"],"AFTERMATH_UNVERIFIED")
+        self.assertIn("25/11/2026",report["catalyst"]["text"])
+        self.assertNotIn("ieri",report["catalyst"]["text"])
+
     def test_upcoming_uk_growth(self):
         x=build(ROOT,date(2026,11,12),datetime(2026,11,12,7,10,tzinfo=timezone.utc))
         self.assertEqual(x["event_status"],"EVENT_TODAY")

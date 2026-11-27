@@ -46,7 +46,18 @@ assert(latestRow&&Math.abs(eu.latest.spread-(yieldAt('EUR',eu.latest.date)-yield
 assert(Math.abs(eu.latest.spot-latestRow.USD/latestRow.EUR)<1e-9);
 assert(!snapshot(rates,prices,'AUDCAD',asof,today).ready,'Weekly AUD rates must not be passed off as daily five-session evidence');
 assert(!snapshot(rates,prices,'EURCHF',asof,today).ready,'CHF rates stale despite FX having latest prices');
-assert(!snapshot(rates,prices,'NZDUSD',asof,today).ready,'NZD rates stale despite FX having latest prices');
+// Keep the stale negative fixture explicit: NZD official history was
+// subsequently extended with reconciled post-roll observations.
+const staleNzd=JSON.parse(JSON.stringify(rates));
+staleNzd.NZD.date='2026-09-30';
+assert(!snapshot(staleNzd,prices,'NZDUSD',asof,today).ready,'Stale NZD must still be withheld despite fresh FX');
+const nzdObserved=snapshot(rates,prices,'NZDUSD',asof,today);
+if(nzdObserved.ready){
+ assert(nzdObserved.latest.date<=asof&&nzdObserved.lag<=3&&nzdObserved.short,
+   'NZD readiness requires actual matched-date evidence, not a blanket promotion');
+ assert(nzdObserved.rows.every(r=>r.date<=asof&&r.date<=rates.NZD.date),
+   'NZD history must not leak post-cutoff observations');
+}
 assert(snapshot(rates,prices,'EURGBP',asof,today).ready,'FX/rates comparison does not require a structural trade favourite');
 assert(!snapshot(rates,prices,'EURUSD',asof,'2027-01-01').ready,'Stale joined data must be hidden');
 assert(!snapshot(rates,{},'EURUSD',asof,today).ready,'No ECB price data, no inference');
