@@ -8,6 +8,8 @@ on:
       - 'validation/macro/v2_current_activity_momentum_v1.py'
       - 'validation/macro/v2_labour_inflation_dynamics_v1.py'
       - 'validation/macro/v2_sector_financial_dynamics_v1.py'
+      - 'validation/macro/collect_sector_output_research_v1.py'
+      - 'validation/macro/test_collect_sector_output_research_v1.py'
       - 'validation/macro/test_v2_sector_financial_dynamics_v1.py'
       - 'validation/macro/test_v2_labour_inflation_dynamics_v1.py'
       - 'validation/macro/test_v2_current_activity_momentum_v1.py'
@@ -71,6 +73,8 @@ on:
       - 'validation/macro/v2_current_activity_momentum_v1.py'
       - 'validation/macro/v2_labour_inflation_dynamics_v1.py'
       - 'validation/macro/v2_sector_financial_dynamics_v1.py'
+      - 'validation/macro/collect_sector_output_research_v1.py'
+      - 'validation/macro/test_collect_sector_output_research_v1.py'
       - 'validation/macro/test_v2_sector_financial_dynamics_v1.py'
       - 'validation/macro/test_v2_labour_inflation_dynamics_v1.py'
       - 'validation/macro/test_v2_current_activity_momentum_v1.py'
@@ -237,6 +241,14 @@ jobs:
               assert result['checked_through'] is not None, 'Durable checkpoint not created'
               assert json.loads(target.read_text())['checked_through']==result['checked_through']
           PY
+      - name: Collect official real UK services output into existing research archive
+        run: |
+          python -m unittest validation.macro.test_collect_sector_output_research_v1 -v
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            python -m validation.macro.collect_sector_output_research_v1 --strict
+          else
+            python -m validation.macro.collect_sector_output_research_v1
+          fi
       - name: Generate verified public Macro V3 context
         run: |
           set -euo pipefail
@@ -252,7 +264,7 @@ jobs:
           import os
           if d['sector_financial_status']=='RESEARCH_ONLY':
               m=d['sector_financial_dynamics']
-              assert len(m['countries'])==8 and sum(map(len,m['countries'].values()))==60
+              assert len(m['countries'])==8 and sum(map(len,m['countries'].values()))==61
               assert m['safe_to_update_pairs'] is False and m['safe_to_publish_D'] is False
               print('SECTOR_FINANCIAL_COVERAGE', {c:sum(r['measurement']!='WITHHELD' for r in rs) for c,rs in m['countries'].items()})
               print('SECTOR_FINANCIAL_WITHHELD_ROWS', [(r['series_id'],r['reason']) for rs in m['countries'].values() for r in rs if r['measurement']=='WITHHELD'])
@@ -310,7 +322,8 @@ jobs:
                        'validation/macro/ABS_QUARTERLY_GDP_V1.json',
                        'validation/macro/STATCAN_QUARTERLY_GDP_V1.json',
                        'validation/macro/STATSNZ_QUARTERLY_GDP_V1.json',
-                       'validation/macro/EUROSTAT_QUARTERLY_GDP_V1.json'),
+                       'validation/macro/EUROSTAT_QUARTERLY_GDP_V1.json',
+                       'validation/macro/SECTOR_OUTPUT_RESEARCH_V1.json'),
               protected=(
                   'live_data/sections/NEWS_PULSE_OPERATIONAL.json',
                   'live_data/sections/MACRO_SERIES.json',
@@ -320,6 +333,8 @@ jobs:
                   'validation/macro/v2_*.py',
                   'validation/macro/v3_*.py',
                   'validation/macro/publish_v3_current_context_v1.py',
+                  'validation/macro/collect_sector_output_research_v1.py',
+                  'validation/macro/SECTOR_OUTPUT_RESEARCH_V1.json',
                   'validation/macro/ons_quarterly_gdp_v1.py',
                   'validation/macro/ONS_FIRST_QUARTERLY_GDP_V1.json',
                   'validation/macro/esri_quarterly_gdp_v1.py',
