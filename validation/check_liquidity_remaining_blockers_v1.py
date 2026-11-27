@@ -30,7 +30,7 @@ def main():
     counts = policy['coverage']
     if (len(ready), len(pending), len(mapped)) != (
         counts['automation_ready_subseries'], counts['mapping_pending_subseries'], counts['total_subseries']
-    ) or len(mapped) != 26:
+    ) or len(mapped) not in (26, 27) or (len(mapped) == 27) != ('CAD.credit' in mapped):
         raise SystemExit('Current source registry coverage drift')
     for key in ready:
         row = mapped[key]

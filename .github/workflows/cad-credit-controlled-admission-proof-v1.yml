@@ -1,0 +1,27 @@
+name: CAD credit controlled admission proof
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/prove_cad_credit_admission_v1.py'
+      - 'validation/check_liquidity_remaining_blockers_v1.py'
+      - '.github/workflows/cad-credit-controlled-admission-proof-v1.yml'
+permissions:
+  contents: read
+jobs:
+  proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m validation.macro.prove_cad_credit_admission_v1 --output /tmp/cad-credit-admission --apply
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cad-credit-admission-receipt
+          path: /tmp/cad-credit-admission/receipt.json
