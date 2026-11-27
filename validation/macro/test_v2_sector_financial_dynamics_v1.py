@@ -19,8 +19,8 @@ class TestSectorFinancialDynamics(unittest.TestCase):
     def test_archive(self):
         d=run()
         self.assertEqual(len(d["countries"]),8)
-        self.assertEqual(sum(map(len,d["countries"].values())),63)
-        self.assertEqual(len(d["countries"]["NZD"]),7)
+        self.assertEqual(sum(map(len,d["countries"].values())),64)
+        self.assertEqual(len(d["countries"]["NZD"]),8)
         self.assertEqual(len(nzd_rows("",__import__("datetime").date(2026,11,27))),7)
         self.assertTrue(all(r["measurement"]=="WITHHELD" for r in nzd_rows("",__import__("datetime").date(2026,11,27))))
         self.assertFalse(d["safe_to_publish_D"])
