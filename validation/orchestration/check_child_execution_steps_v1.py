@@ -70,6 +70,52 @@ REQUIRED_STEPS: dict[str, tuple[str, ...]] = {
 }
 
 
+# These jobs are explicitly restricted to pull_request events in the macro
+# workflow. They must be skipped on the orchestrator's workflow_dispatch.
+# A regression test checks this exact allowlist against the live workflow.
+MACRO_PR_ONLY_JOBS = frozenset((
+    "jpy-employment-lfs-source-proof",
+    "jpy-new-loans-source-proof",
+    "core-jpy-chf-canonical-proof",
+    "chf-balance-yield-rates-source-proof",
+    "chf-neer-daily-source-proof",
+    "jpy-chf-stock-identity-proof",
+    "gbp-paye-rti-source-proof",
+    "aud-twi-source-proof",
+    "gbp-dmp-monthly-source-proof",
+    "gbp-mortgage-rate-source-proof",
+    "cad-ceer-source-proof",
+    "chf-snb-source-proof",
+    "aud-abs-cpi-context-source-proof",
+    "eur-ecb-daily-source-proof",
+    "eur-ecb-bsi-monthly-source-proof",
+    "gbp-boe-iadb-source-proof",
+    "us-quarterly-cfnai-source-proof",
+    "jpy-bis-neer-source-proof",
+    "jpy-boj-assets-fred-source-proof",
+    "chf-seco-index-source-proof",
+    "eur-ecfin-bcs-monthly-source-proof",
+    "eur-native-liquidity-parity-source-proof",
+    "g8-native-liquidity-parity-source-proof",
+    "aud-abs-activity-source-proof",
+    "us-initial-claims-source-proof",
+    "cad-boc-source-proof",
+    "cad-boc-quarterly-source-proof",
+    "cad-boc-lending-source-proof",
+    "cad-retail-volume-source-proof",
+    "nz-retail-volume-source-proof",
+    "jpy-tankan-actual-source-proof",
+    "jpy-boj-source-proof",
+    "jpy-boj-base-source-proof",
+    "aud-rba-source-proof",
+    "cad-monthly-source-proof",
+    "eur-gbp-source-proof",
+    "us-market-source-proof",
+    "us-monthly-source-proof",
+    "eur-activity-source-proof",
+))
+
+
 def inspect(workflow: str, payload: dict) -> dict:
     if workflow not in REQUIRED_STEPS:
         raise ValueError(f"Unknown orchestrator child: {workflow}")
@@ -77,6 +123,7 @@ def inspect(workflow: str, payload: dict) -> dict:
     jobs = payload.get("jobs") if isinstance(payload, dict) else None
     problems: list[str] = []
     observed_steps: dict[str, list[dict]] = {}
+    expected_pr_only_skips: list[str] = []
     if not isinstance(jobs, list) or not jobs:
         problems.append("NO_COMPLETED_CHILD_JOBS")
     else:
@@ -85,6 +132,13 @@ def inspect(workflow: str, payload: dict) -> dict:
                 problems.append("MALFORMED_CHILD_JOB")
                 continue
             name = str(job.get("name") or "unnamed")
+            if (workflow == "macro-persistent-daily-v1.yml"
+                    and name in MACRO_PR_ONLY_JOBS
+                    and job.get("status") == "completed"
+                    and job.get("conclusion") == "skipped"
+                    and job.get("steps") in (None, [])):
+                expected_pr_only_skips.append(name)
+                continue
             if job.get("status") != "completed" or job.get("conclusion") != "success":
                 problems.append(f"CHILD_JOB_NOT_SUCCESS:{name}:{job.get('conclusion')}")
             steps = job.get("steps")
@@ -111,6 +165,7 @@ def inspect(workflow: str, payload: dict) -> dict:
         "required_steps": list(expected),
         "step_evidence": proof,
         "problems": problems,
+        "expected_pr_only_jobs_skipped": sorted(expected_pr_only_skips),
         "meaning": "A no-change producer can PASS only after its essential acquire/validate steps ran.",
     }
 
