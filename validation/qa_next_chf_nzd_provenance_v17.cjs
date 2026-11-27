@@ -177,7 +177,7 @@ if(comparisonFixture){
 }
 assert(!chfRead(rates,chf,asof,now).historical,'A later RBA vintage cannot reach the archived desk');
 assert(!chfRead(rates,{...chf,eligible_for_core:true}).historical,'Invalid CHF research cannot feed the historical comparison');
-if(aud.last_observation_date==='2026-11-18'&&chf.last_observation_date==='2026-10-30'&&liveAsOf>='2026-11-18'){
+if(aud.last_observation_date==='2026-11-18'&&rates.AUD.date===aud.last_observation_date&&chf.last_observation_date==='2026-10-30'&&liveAsOf>='2026-11-18'){
  assert(!audChf.ready&&!audChf.short&&!audChf.medium,'Archived matched 2Y does not become a live verdict');
  assert.equal(audChf.historical.asof,'2026-10-30');
  assert.equal(audChf.historical.short.start,'2026-10-23');
@@ -188,6 +188,10 @@ if(aud.last_observation_date==='2026-11-18'&&chf.last_observation_date==='2026-1
  const newAnchor=chf.observations.at(-2);
  const advanced={...rates,CHF:{...rates.CHF,...newAnchor}};
  assert.deepEqual(chfRead(advanced,chf).historical,audChf.historical,'The CHF anchor can advance within the validated archive');
+}
+if(rates.AUD.date!==aud.last_observation_date){
+ assert(!audChf.historical,'Do not construct an anchored AUD/CHF historical comparison from mismatched native and research endpoints');
+ assert(!audChf.estimate,'Do not use stale F2 as an anchored AUD estimate leg');
 }
 const before=JSON.stringify(rates);
 for(const x of all)assert(typeof x.ready==='boolean');
