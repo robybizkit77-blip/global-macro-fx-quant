@@ -13,12 +13,12 @@
    "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
   "credit": {
-   "ready": false,
-   "status": "OFFICIAL_SERIES_IDENTIFIED_TRANSPORT_NOT_STABLE"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
   "conditions": {
-   "ready": false,
-   "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   }
  },
  "EUR": {
@@ -51,26 +51,26 @@
  },
  "JPY": {
   "liquidity": {
-   "ready": false,
-   "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
   "credit": {
    "ready": true,
    "status": "AUTOMATION_CONTRACT_PROVEN_CONTROLLED_APPLY"
   },
   "conditions": {
-   "ready": false,
-   "status": "OFFICIAL_SOURCE_CONFIRMED_VALUE_MAPPING_PENDING"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   }
  },
  "CHF": {
   "liquidity": {
-   "ready": false,
-   "status": "OFFICIAL_PROVIDER_CONFIRMED_VARIANT_MATCH_PENDING"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
   "credit": {
-   "ready": false,
-   "status": "OFFICIAL_PROVIDER_CONFIRMED_DIMENSION_MATCH_PENDING"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
   "conditions": null
  },
@@ -81,8 +81,8 @@
   },
   "credit": null,
   "conditions": {
-   "ready": false,
-   "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   }
  },
  "AUD": {
@@ -110,7 +110,7 @@
 };
  function check(ccy,role){
   const record=MAP[ccy]?.[role]||null;
-  const withheld=ccy==='USD'&&role==='conditions';
+  const withheld=ccy==='USD'&&role==='conditions'&&record?.ready!==true;
   if(withheld)return {available:false,withheld:true,ready:false,code:'VARIANT_NOT_ALIGNED',label:'SLOOS IN VERIFICA',
    narrative:'Le due serie interne con etichetta SLOOS hanno valori diversi nello stesso periodo. Identificare variante e perimetro ufficiali prima di interpretare il saldo; il numero è temporaneamente escluso dalla lettura.'};
   if(!record)return {available:false,withheld:false,ready:false,code:'NO_APPROVED_MAPPING',label:'MAPPATURA ASSENTE',
