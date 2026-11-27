@@ -409,11 +409,11 @@ function make(api){
     +(spot?'SNB 10Y spot '+date(spot.as_of):'GOV '+date(r?.date))
     +' · PRICING '+date(o?.as_of)+' · '+esc(o?.kind||'strumento da verificare')+'</span></div>'
     +countrySelect()
-    +(root.FXQuantPricingMoves?.renderOverview?.({snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),today:dayNow()})||'')
     +'<div class="rates-jumps pill-controls" role="group" aria-label="Vai alle analisi dei tassi">'
     +'<button type="button" class="pill" data-section-jump="rates-expected">Attese 3M / 6M / 12M</button>'
     +'<button type="button" class="pill" data-section-jump="rates-government">Governativi 2Y / 10Y</button>'
     +'<button type="button" class="pill" data-section-jump="rates-fx">Confronto con il cambio</button></div>'
+    +(root.FXQuantPricingMoves?.renderOverview?.({snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),today:dayNow()})||'')
     +'<section class="rates-hero"><div class="rates-hero-title"><span class="chapter-kicker">'+FLAGS[c]+' '+esc(NAMES[c])+'</span>'
     +'<h2>'+esc(m.headline)+'</h2>'
     +'<p class="rates-economic-observation"><strong>Cosa va.</strong> '+esc(r?.scenario_only?'La stima offre un riferimento per leggere la direzione dei rendimenti.':m.support||'Le osservazioni disponibili sono consultabili nei grafici.')+'</p>'
