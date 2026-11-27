@@ -78,13 +78,52 @@ def build(research, native, asof):
             "eligible_for_automatic_promotion": False, "eligible_for_core": False,
             "independent_release_review_required": True}
 
+def isolated_candidate(research, native, asof):
+    """Construct a separate release candidate. Never replace canonical history."""
+    receipt = build(research, native, asof)
+    require(receipt["status"] == "READY_FOR_INDEPENDENT_RELEASE_REVIEW",
+            "candidate is not newer and current")
+    rows = research["observations"]
+    last, ref = rows[-1], receipt["weekly_reference"]
+    return {
+        "schema": "GMFQ_NZD_POSTROLL_ISOLATED_RELEASE_CANDIDATE_V1",
+        "currency": "NZD", "date": last["date"],
+        "source": research["source"], "source_url": research["source_url"],
+        "publication_date": research["publication_date"],
+        "source_sha256": {"html": research["html_sha256"], "xlsx": research["xlsx_sha256"]},
+        "benchmark_roll_date": research["benchmark_roll_date"],
+        "benchmark_2Y": research["benchmark_2Y"], "benchmark_10Y": research["benchmark_10Y"],
+        "2Y": last["2Y"], "10Y": last["10Y"], "curve_bp": receipt["curve_bp"],
+        "history2": {"dates": [r["date"] for r in rows], "values": [r["2Y"] for r in rows],
+                     "last_date": last["date"], "last_value": last["2Y"]},
+        "history10": {"dates": [r["date"] for r in rows], "values": [r["10Y"] for r in rows],
+                      "last_date": last["date"], "last_value": last["10Y"]},
+        "weekly_reference": ref, "weekly_change_bp": receipt["weekly_change_bp"],
+        "canonical_base_date": native["NZD"]["date"],
+        "prior_canonical_history_retained_untouched": True,
+        "cross_roll_change_allowed": False, "first_release_pit_certified": False,
+        "writes_live_data": False, "eligible_for_automatic_promotion": False,
+        "eligible_for_core": False, "eligible_for_backtests": False,
+        "independent_release_review_required": True,
+    }
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--as-of", type=date.fromisoformat, required=True)
     p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--candidate-output", type=Path)
     a = p.parse_args()
     require(a.output.resolve().is_relative_to(Path("/tmp")), "output must be temporary")
-    report = build(json.loads(RESEARCH.read_text()), json.loads(NATIVE.read_text()), a.as_of)
+    research, native = json.loads(RESEARCH.read_text()), json.loads(NATIVE.read_text())
+    report = build(research, native, a.as_of)
+    if a.candidate_output:
+        require(a.candidate_output.resolve().is_relative_to(Path("/tmp")), "candidate output must be temporary")
+        candidate = isolated_candidate(research, native, a.as_of)
+        a.candidate_output.write_text(json.dumps(candidate, indent=2) + "\n")
+        print("NZD_POSTROLL_ISOLATED_CANDIDATE", json.dumps({"date": candidate["date"],
+              "rows": len(candidate["history2"]["dates"]), "weekly_change_bp": candidate["weekly_change_bp"],
+              "writes_live_data": False, "cross_roll_change_allowed": False}, sort_keys=True))
     a.output.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, sort_keys=True))
 

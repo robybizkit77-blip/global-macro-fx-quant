@@ -114,6 +114,14 @@ jobs:
           python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
           python3 validation/rates/test_build_fxv2_chf_snb_history_feed_v1.py
           node validation/qa_fxv2_rates_working_v1.cjs
+      - name: Prove isolated NZD post-roll candidate from stored reconciled edition
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          DAY=$(python3 -c "import json; print(json.load(open('site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json'))['publication_date'])")
+          python3 validation/rates/check_nzd_postroll_release_readiness_v1.py --as-of "$DAY" --output /tmp/fxv2-nzd-postroll-release-review.json --candidate-output /tmp/fxv2-nzd-postroll-isolated-candidate.json
+          git diff --exit-code -- live_data payload
+
       - name: Prove upstream Rates actually executed dated market-source audit
         id: parent_rates
         if: github.event_name == 'workflow_run'
@@ -320,6 +328,7 @@ jobs:
           path: |
             /tmp/fxv2-rbnz-b2-daily-source.json
             /tmp/fxv2-nzd-postroll-release-review.json
+            /tmp/fxv2-nzd-postroll-isolated-candidate.json
             /tmp/fxv2-rbnz-b2-eolas-research.json
             /tmp/fxv2-chf-nzd-research-candidate.json
             /tmp/fxv2-chf-nzd-freshness-receipt.json
