@@ -599,7 +599,7 @@ jobs:
           if-no-files-found: warn
 
   eur-ecb-daily-source-proof:
-    if: github.event_name == 'pull_request' && (github.head_ref == 'fix/eur-ecb-aud-abs-activity-consolidated-20261126' || github.head_ref == 'fix/eur-ciss-retired-legacy-proof-20261126')
+    if: github.event_name == 'pull_request' && (github.head_ref == 'fix/eur-ecb-aud-abs-activity-consolidated-20261126' || github.head_ref == 'fix/eur-ciss-retired-legacy-proof-20261126' || github.head_ref == 'fix/eur-ecb-weekly-assets-20261127')
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     permissions:
@@ -619,15 +619,17 @@ jobs:
           import json
           d=json.load(open('/tmp/eur-ecb-daily-proof/receipt.json'))
           for r in d['series']: print(r)
-          assert len(d['series'])==3
+          assert len(d['series'])==4
           # Prove each verified row and require meaningful real-source coverage;
           # independent withheld rows are explicit, never promoted.
           approved=[r for r in d['series'] if r['status'] in ('READY','NO_CHANGE')]
           assert {r['id'] for r in approved} >= {'EA_EXCESS_LIQUIDITY_history_value','EA_EER40_NOMINAL_history_value'},d
-          assert all(r['id']=='EA_CISS_history_value' for r in d['series'] if r['status']=='WITHHELD'),d
+          assert all(r['id'] in ('EA_CISS_history_value','EA_EUROSYSTEM_TOTAL_ASSETS_history_value') for r in d['series'] if r['status']=='WITHHELD'),d
+          if '${{ github.head_ref }}' == 'fix/eur-ecb-weekly-assets-20261127':
+              assert any(r['id']=='EA_EUROSYSTEM_TOTAL_ASSETS_history_value' and r['status'] in ('READY','NO_CHANGE') for r in approved),d
           if '${{ github.head_ref }}' == 'fix/eur-ciss-retired-legacy-proof-20261126':
               assert any(r['id']=='EA_CISS_history_value' and r['status'] in ('READY','NO_CHANGE') for r in d['series']),d
-          assert all(r['after']>=r['before'] and r['after'][:10]>='2026-11-19' for r in approved),d
+          assert all(r['after']>=r['before'] and (r['after'][:10]>='2026-11-19' if r['id']!='EA_EUROSYSTEM_TOTAL_ASSETS_history_value' else r['after']>='2026-W45') for r in approved),d
           assert all(r.get('reason') for r in d['series'] if r['status']=='WITHHELD'),d
           PY
       - uses: actions/upload-artifact@v4
@@ -2751,7 +2753,7 @@ jobs:
           python - <<'PY'
           import json
           j=json.load(open('/tmp/macro-persistent/eur-ecb-daily-revised-receipt.json'))
-          assert len(j['series'])==3 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
+          assert len(j['series'])==4 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
           for row in j['series']:
               if row['status']=='WITHHELD': print('::warning::EUR ECB DAILY '+row['id']+' '+row['reason'])
           PY
