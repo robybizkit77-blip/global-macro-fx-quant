@@ -6,11 +6,13 @@ on:
     paths:
       - '.github/workflows/fx-next-rbnz-liquidity.yml'
       - 'validation/publishing/collect_next_rbnz_liquidity.py'
+      - 'validation/publishing/test_collect_next_rbnz_liquidity.py'
   push:
     branches: [main]
     paths:
       - '.github/workflows/fx-next-rbnz-liquidity.yml'
       - 'validation/publishing/collect_next_rbnz_liquidity.py'
+      - 'validation/publishing/test_collect_next_rbnz_liquidity.py'
   schedule:
     # Check daily: C60 is released mid-month, D10/C50 at month end.
     - cron: '23 2 * * *'
@@ -28,6 +30,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Test historical backfill and revision guard
+        run: python3 -m unittest validation.publishing.test_collect_next_rbnz_liquidity -v
       - name: Read and validate all three live source tables
         run: python3 validation/publishing/collect_next_rbnz_liquidity.py "$RUNNER_TEMP/nzd.js" --require-c60
 
