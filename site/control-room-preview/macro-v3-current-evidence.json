@@ -3150,19 +3150,19 @@
           "velocity_pp": -0.11422653662149784
         },
         {
-          "acceleration_pp": -2.1564314061106815,
+          "acceleration_pp": 2.31487836087384,
           "frequency": "D",
           "horizon": "EXACT_CALENDAR_DAY",
           "label": "Liquidità in eccesso",
-          "level": 2053537.0,
+          "level": 2039750.0,
           "measurement": "STOCK",
-          "momentum_pct": -1.306707370408211,
+          "momentum_pct": -0.6713782123234258,
           "pillar": "liquidity",
           "quality": "ECB_CURRENT_REVISED_HISTORY_NOT_PIT",
-          "reference_period": "2026-11-25",
+          "reference_period": "2026-11-26",
           "series_id": "EA_EXCESS_LIQUIDITY_history_value",
           "unit": "EUR millions",
-          "velocity_pp": -1.6795492027890546
+          "velocity_pp": 0.6353291580847853
         },
         {
           "acceleration_pp": 0.37455565302828564,
@@ -3726,7 +3726,7 @@
     "writes_live_data": false
   },
   "sector_financial_status": "RESEARCH_ONLY",
-  "snapshot_content_sha256": "336b59991c7fc2fd9859a92dd5f7ccc2eccae15171e26fef50a7cba80003aa63",
+  "snapshot_content_sha256": "2329d47ba6c193847bd57b341804fccc2be48b6881a19eb49088336798c0b742",
   "source_observation_periods_not_release_days": true,
   "source_receipt_sha256": "172df8e058fd28b63946716ca795b10304b54097ac4e8d2b99d819db25d3d811",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
