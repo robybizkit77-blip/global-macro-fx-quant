@@ -54,7 +54,7 @@ def main():
     try:
         nz_review=validate_nzd(rates,reg)
         state='NO_CHANGE'
-        nz_reason=meta.get('reason')
+        nz_reason=('Exact reviewed post-roll HTML/XLSX snapshot; recurring canonical promotion not approved' if nz_review.get('source_access')=='HTML_XLSX_RECONCILED_ONE_TIME' else meta.get('reason'))
     except (ValueError, KeyError, TypeError, OSError) as exc:
         state='CURRENT_SNAPSHOT_REGISTRY_MISMATCH'
         nz_review=None
@@ -62,11 +62,11 @@ def main():
     out['currencies']['NZD']={
         'state':state,'coverage_mode':'OFFICIAL_SOURCE_LAG_ASSERTION',
         'authority':meta['authority'],
-        'official_contract_snapshot':meta['current_snapshot'],
+        'official_contract_snapshot':nz_review['as_of'] if nz_review else meta['current_snapshot'],
         'current':{'date':rates['NZD']['date'],'2Y':rates['NZD']['2Y'],'10Y':rates['NZD']['10Y']},
         'review_contract':nz_review,
         'reason':nz_reason,
-        'runner_access':'RBNZ B2 source blocked in GitHub runner; manual two-review evidence required, no secondary fallback permitted',
+        'runner_access':nz_review['source_access'] if nz_review else 'REVIEW_REQUIRED',
     }
     if state!='NO_CHANGE': failures.append('NZD')
     chf=reg['currencies']['CHF']; out['currencies']['CHF']={'state':'WITHHOLD','coverage_mode':'OFFICIAL_CUBE_LAST_PUBLISHED_DATE_NO_ADVANCE','authority':chf['authority'],'last_validated_snapshot':chf['last_validated_snapshot'],'current':{'date':rates['CHF']['date'],'2Y':rates['CHF']['2Y'],'10Y':rates['CHF']['10Y']},'reason':chf['reason']}

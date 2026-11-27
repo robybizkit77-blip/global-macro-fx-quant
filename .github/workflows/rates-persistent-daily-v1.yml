@@ -10,6 +10,10 @@ on:
       - 'validation/build_rates_candidate_from_audit.py'
       - 'validation/fetch_rates_usd_jpy.py'
       - 'validation/run_rates_audit.py'
+      - 'validation/check_nzd_rates_reviewed_snapshot_v1.py'
+      - 'validation/test_nzd_rates_reviewed_snapshot_v1.py'
+      - 'validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json'
+      - 'validation/fixtures/rbnz_b2_postroll_2026-11-26_reviewed_release.json'
       - 'validation/test_jpy_secondary_tenors_v1.py'
       - 'validation/rates/verify_weekly_rate_change_contract_v1.py'
       - 'validation/rates/test_weekly_rate_change_contract_v1.py'
@@ -40,6 +44,10 @@ on:
       - 'validation/build_rates_candidate_from_audit.py'
       - 'validation/fetch_rates_usd_jpy.py'
       - 'validation/run_rates_audit.py'
+      - 'validation/check_nzd_rates_reviewed_snapshot_v1.py'
+      - 'validation/test_nzd_rates_reviewed_snapshot_v1.py'
+      - 'validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json'
+      - 'validation/fixtures/rbnz_b2_postroll_2026-11-26_reviewed_release.json'
       - 'validation/test_jpy_secondary_tenors_v1.py'
       - 'validation/rates/verify_weekly_rate_change_contract_v1.py'
       - 'validation/rates/test_weekly_rate_change_contract_v1.py'
@@ -116,6 +124,9 @@ jobs:
         run: |
           python3 -m pip install --disable-pip-version-check --no-input openpyxl
           python3 -m unittest validation.test_fetch_rates_aud_xlsx_fallback_v1 -v
+
+      - name: Test exact reviewed NZD snapshot contract (offline)
+        run: python3 validation/test_nzd_rates_reviewed_snapshot_v1.py
 
       - name: Test delayed DST-safe Rates schedule gate
         run: python3 validation/test_rates_schedule_gate_v2.py
