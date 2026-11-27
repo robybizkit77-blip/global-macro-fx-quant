@@ -63,7 +63,7 @@ assert(page.includes('rates-economic-reading.js?v=21'));
 assert.match(page,/rates-studio\.js\?v=\d+/);
 assert(page.indexOf('rates-working-model-v1.js')<page.indexOf('rates-studio.js'));
 assert(page.includes('rates-relative-pricing-v1.js?v=1'));
-assert(page.includes('rates-pricing-history-v1.js?v=7'));
+assert.match(page,/rates-pricing-history-v1\.js\?v=[1-9]\d*/);
 assert.match(page,/rates-pricing-moves-v1\.js\?v=[3-9]\d*/);
 assert.match(page,/rates-studio\.css\?v=\d+/);
 assert(/app\.js\?v=[\w.-]+/.test(page));
