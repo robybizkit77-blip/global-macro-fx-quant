@@ -67,27 +67,27 @@
       "kind": "OIS",
       "quality": "FONTE UFFICIALE",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "as_of": "2026-11-25",
+      "as_of": "2026-11-26",
       "horizons": {
         "3m": {
-          "rate": 4.3496,
-          "as_of": "2026-11-25",
-          "change_1d_bp": 0.1,
-          "change_1w_bp": 3.0,
+          "rate": 4.3654,
+          "as_of": "2026-11-26",
+          "change_1d_bp": 1.6,
+          "change_1w_bp": 3.2,
           "contract": null
         },
         "6m": {
-          "rate": 4.6066,
-          "as_of": "2026-11-25",
-          "change_1d_bp": -1.6,
-          "change_1w_bp": 0.7,
+          "rate": 4.6291,
+          "as_of": "2026-11-26",
+          "change_1d_bp": 2.3,
+          "change_1w_bp": -0.2,
           "contract": null
         },
         "12m": {
-          "rate": 4.7923,
-          "as_of": "2026-11-25",
-          "change_1d_bp": -5.6,
-          "change_1w_bp": -7.5,
+          "rate": 4.8219,
+          "as_of": "2026-11-26",
+          "change_1d_bp": 3.0,
+          "change_1w_bp": -10.6,
           "contract": null
         }
       }
@@ -96,25 +96,25 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "as_of": "2026-11-26",
+      "as_of": "2026-11-27",
       "horizons": {
         "3m": {
           "rate": 1.44,
-          "as_of": "2026-11-26",
+          "as_of": "2026-11-27",
           "change_1d_bp": 0.0,
           "change_1w_bp": -1.4,
           "contract": null
         },
         "6m": {
           "rate": 1.585,
-          "as_of": "2026-11-26",
+          "as_of": "2026-11-27",
           "change_1d_bp": 0.0,
           "change_1w_bp": -6.3,
           "contract": null
         },
         "12m": {
           "rate": 1.822,
-          "as_of": "2026-11-26",
+          "as_of": "2026-11-27",
           "change_1d_bp": 0.0,
           "change_1w_bp": -6.3,
           "contract": null
