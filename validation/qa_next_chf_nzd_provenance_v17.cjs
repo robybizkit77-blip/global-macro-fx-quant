@@ -129,7 +129,8 @@ const estimated=(key,source,clock=comparisonDay)=>
  mod.snapshot(rates,prices,key,liveAsOf,clock,aud,chf,nzd,reconciled,source);
 assert(!estimated('AUDCAD',estimateFeed).estimate,'The estimate only supplies a CHF leg');
 assert(!estimated('AUDCHF',{...estimateFeed,eligible_for_core:true}).estimate);
-assert(!estimated('AUDCHF',estimateFeed,'2026-12-05').estimate,'Too-old inputs cannot produce a fresh estimate');
+const staleClock=new Date(Date.parse(liveAsOf+'T12:00:00Z')+31*864e5).toISOString().slice(0,10);
+assert(!estimated('AUDCHF',estimateFeed,staleClock).estimate,'Too-old inputs cannot produce a fresh estimate');
 const chf2y=estimated('AUDCHF',estimateFeed);
 if(aud.last_observation_date==='2026-11-18'&&comparisonDay==='2026-11-20'&&
    estimateFeed.observations.some(x=>x.date==='2026-11-18')){
