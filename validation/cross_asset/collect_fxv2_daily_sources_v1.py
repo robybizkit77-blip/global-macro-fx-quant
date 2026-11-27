@@ -19,6 +19,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "site/fx-quant-v2/cross-asset-live-data.json"
+CANONICAL_RUNTIME = ROOT / "live_data/sections/D.json"
 SCHEMA = "GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1"
 FRED_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id="
 VIX_URL = "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
@@ -150,8 +151,32 @@ def download(url: str) -> str:
     return raw.decode("utf-8-sig", "strict")
 
 
+def validate_vix_canonical_parity(rows: list[tuple[str, float]], asof: dt.date,
+                                  canonical_vix: dict[str, Any]) -> None:
+    """A newer validated observation from the same Cboe CSV must not be hidden.
+    Do not copy or relabel canonical observations: retry the independent source.
+    The dated historical anchor also guards against inconsistent source vintages.
+    """
+    dates = canonical_vix.get("dates")
+    values = canonical_vix.get("values")
+    if (not isinstance(dates, list) or not isinstance(values, list) or
+            not dates or len(dates) != len(values) or
+            dates[-1] != canonical_vix.get("last_date") or
+            values[-1] != canonical_vix.get("last_value")):
+        raise ValueError("Invalid canonical VIX anchor")
+    known = [(d, v) for d, v in zip(dates, values) if d <= asof.isoformat()]
+    if not known:
+        raise ValueError("No canonical VIX observation on or before cutoff")
+    anchor, level = known[-1]
+    if rows[-1][0] < anchor:
+        raise ValueError("VIX source behind canonical Cboe observation: " + anchor)
+    observed = dict(rows)
+    if anchor not in observed or not math.isclose(observed[anchor], level, rel_tol=0, abs_tol=1e-5):
+        raise ValueError("VIX source does not reconcile canonical Cboe anchor: " + anchor)
+
+
 def produce(asof: dt.date, previous: dict[str, Any],
-            payloads: dict[str, str]) -> dict[str, Any]:
+            payloads: dict[str, str], *, canonical_vix: dict[str, Any] | None = None) -> dict[str, Any]:
     if previous.get("schema") != SCHEMA:
         raise ValueError("Unexpected previous V2-only feed schema")
     streams = dict(previous.get("streams") or {})
@@ -162,6 +187,8 @@ def produce(asof: dt.date, previous: dict[str, Any],
             if key not in payloads:
                 raise ValueError("Source download unavailable")
             rows = parse_csv(key, payloads[key], asof)
+            if key == "VIX" and canonical_vix is not None:
+                validate_vix_canonical_parity(rows, asof, canonical_vix)
             row = validate_series(key, rows, asof, streams.get(key))
             streams[key] = row
             accepted.append(key)
@@ -208,7 +235,8 @@ def main():
     if not payloads:
         # Do not commit an empty feed or claim a successful data update.
         raise SystemExit("No feed downloaded; preserve original V2 source JSON")
-    result = produce(args.as_of, previous, payloads)
+    canonical_vix = None if args.fixture_dir else json.loads(CANONICAL_RUNTIME.read_text())["risk"]["VIX"]
+    result = produce(args.as_of, previous, payloads, canonical_vix=canonical_vix)
     result["source_errors"].update(errors)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")

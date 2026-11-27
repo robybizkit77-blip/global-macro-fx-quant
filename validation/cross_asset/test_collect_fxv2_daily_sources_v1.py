@@ -64,6 +64,29 @@ class FxV2CrossAssetDatedCollector(unittest.TestCase):
         out=module.produce(DAY,current,{"VIX":source_csv("VIX",[20]*12),"SP500":"not,a,csv\n1,2,3\n"})
         self.assertEqual(out["streams"]["SP500"]["date"],"2026-11-02")
         self.assertEqual(out["streams"]["VIX"]["date"],"2026-11-03")
+    def test_vix_canonical_holiday_observation_and_source_lag(self):
+        dates=["2026-11-"+str(i).zfill(2) for i in range(14,26)]+["2026-11-26"]
+        raw=source_csv("VIX",[26.36]*11+[28.29,26.80],dates=dates)
+        cutoff=dt.date(2026,11,27)
+        canonical={"dates":["2026-11-25","2026-11-26"],"values":[28.29,26.80],
+                   "last_date":"2026-11-26","last_value":26.80}
+        rows=module.parse_csv("VIX",raw,cutoff)
+        module.validate_vix_canonical_parity(rows,cutoff,canonical)
+        with self.assertRaisesRegex(ValueError,"behind canonical"):
+            module.validate_vix_canonical_parity(rows[:-1],cutoff,canonical)
+        with self.assertRaisesRegex(ValueError,"does not reconcile"):
+            module.validate_vix_canonical_parity(rows[:-1]+[("2026-11-26",27.0)],cutoff,canonical)
+        # Future canonical data must not leak into a historical replay.
+        module.validate_vix_canonical_parity(rows[:-1],dt.date(2026,11,25),canonical)
+        # A lagged VIX does not poison independently verified equity data.
+        old=module.validate_series("VIX",rows[:-1],cutoff)
+        prior={"schema":module.SCHEMA,"streams":{"VIX":old}}
+        out=module.produce(cutoff,prior,{"VIX":source_csv("VIX",[26.36]*11+[28.29],dates=dates[:-1]),
+                            "SP500":source_csv("SP500",[7200]*12,dates=dates[:-1])},canonical_vix=canonical)
+        self.assertEqual(out["verified_on_attempt"],["SP500"])
+        self.assertIn("behind canonical",out["source_errors"]["VIX"])
+        self.assertEqual(out["streams"]["VIX"],old)
+
     def test_csv_order_and_no_interpolation(self):
         raw=source_csv("HY_OAS",[3.43]*12)
         pts=module.parse_csv("HY_OAS",raw,DAY)
