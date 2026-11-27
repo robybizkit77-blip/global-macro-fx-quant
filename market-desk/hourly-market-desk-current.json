@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-27T09:56:05.761722Z",
-  "edition_time_rome": "2026-11-27 10:56",
-  "material_digest": "5c0aed1e73ce3071383202abf2db5fe1a1c499ef42896bba3166f8b9d8dfbd19",
+  "generated_at_utc": "2026-11-27T13:58:06.960881Z",
+  "edition_time_rome": "2026-11-27 14:58",
+  "material_digest": "e953df88286c52e5bf6b6b86bd078085beabe039086c2ff0ba3cd66af4f0629a",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in calo",
-  "lead": "Il 26 novembre il dollaro ha ceduto contro euro e yen. Alla chiusura del 25 novembre, il Nasdaq Composite ha perso terreno.",
+  "lead": "Il 26 novembre il dollaro ha ceduto contro euro e yen. La volatilità azionaria è scesa alla chiusura del 26 novembre.",
   "news": [
     {
       "headline": "Dollaro in calo",
@@ -34,17 +34,16 @@
       "evidence": "PIL reale USA annualizzato: 4,3% (periodo precedente 2,2%)"
     },
     {
-      "headline": "Il Nasdaq Composite scende",
-      "analysis": "Alla chiusura del 25 novembre, il Nasdaq Composite ha perso terreno. Da seguire se il movimento prosegue anche alla prossima chiusura.",
+      "headline": "Il quadro del rischio",
+      "analysis": "La volatilità azionaria è scesa alla chiusura del 26 novembre. Da seguire se il movimento prosegue anche alla prossima chiusura.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-25",
-      "event_date": "2026-11-25",
+      "published_date": "2026-11-26",
+      "event_date": "2026-11-26",
       "market_area": "RISCHIO",
       "sources": [
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
         "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
       ],
-      "evidence": "Alla chiusura del 25 novembre, Nasdaq Composite −0,62% e VIX +1,93 punti."
+      "evidence": "Alla chiusura del 26 novembre, VIX −1,49 punti."
     },
     {
       "headline": "Oro e petrolio in rialzo",
@@ -62,7 +61,7 @@
     {
       "headline": "ECB Consumer Expectations Survey results – October 2026",
       "analysis": "Da seguire se le prospettive per crescita e prezzi cambiano le attese sui tassi.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-27",
       "event_date": "2026-11-27",
       "market_area": "BANCHE CENTRALI",
@@ -84,15 +83,14 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 26 novembre il dollaro ha ceduto contro euro e yen. Alla chiusura del 25 novembre, il Nasdaq Composite ha perso terreno. Nella seduta del 25 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "desk_judgment": "Il 26 novembre il dollaro ha ceduto contro euro e yen. La volatilità azionaria è scesa alla chiusura del 26 novembre.",
   "fx_implications": "Il 30 novembre alle 09:00 italiane è in programma Swiss quarterly GDP (CHF). Da verificare la risposta dei tassi e di CHF.",
-  "what_changed": "Nei proxy futures del 27 novembre l’oro sale e il WTI sale. Nella seduta del 25 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "what_changed": "Nei proxy futures del 27 novembre l’oro sale e il WTI sale.",
   "contrary_evidence": "La tenuta del movimento dipende anche dal sostegno dei tassi a breve.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-3rd-quarter-2026",
@@ -103,7 +101,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-26",
-      "rss_checked_at_utc": "2026-11-27T09:56:05.761722Z",
+      "rss_checked_at_utc": "2026-11-27T13:58:06.960881Z",
       "commodities": "2026-11-27"
     },
     "no_paid_api": true,
@@ -111,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-27T09:56:05.761722Z",
+      "headline": "Dollaro in calo",
+      "material_digest": "5c0aed1e73ce3071383202abf2db5fe1a1c499ef42896bba3166f8b9d8dfbd19"
+    },
     {
       "generated_at_utc": "2026-11-27T08:55:34.655604Z",
       "headline": "Dollaro in calo",
@@ -225,11 +228,6 @@
       "generated_at_utc": "2026-11-25T04:58:18.668404Z",
       "headline": "Dollaro misto",
       "material_digest": "76f05ccb81c9988d3461a5af88f8a534fe6aa92e2c1abaceb07c29e29fbd569a"
-    },
-    {
-      "generated_at_utc": "2026-11-25T04:55:08.221646Z",
-      "headline": "Dollaro misto",
-      "material_digest": "f3582c9470e58e12c2c9ac259348e167ac1423d1c3a1c5bbce76ef2c445400d5"
     }
   ]
 }
