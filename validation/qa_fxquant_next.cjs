@@ -492,17 +492,17 @@ async function macroDriversJourney(page,label){
  assert.equal(await officialSloos.locator('a').getAttribute('href'),
   'https://fred.stlouisfed.org/series/DRTSCILM',label+' SLOOS source link');
  const usSloos=locator(page,'[data-liq-role="conditions"]');
- assert.equal(await usSloos.getAttribute('data-source-safety'),'withheld',
-  label+' uncertified USD SLOOS variant must remain withheld');
+ const sloosGate=await page.evaluate(()=>window.FXQuantLiquiditySourcePolicy.check('USD','conditions'));
+ assert.equal(sloosGate.ready,true,label+' reviewed official DRTSCILM contract must be mapped');
+ assert.equal(await usSloos.getAttribute('data-source-safety'),'mapped',
+  label+' certified USD SLOOS must be available');
  const usSloosText=await usSloos.textContent();
- assert(usSloosText.includes('Dato sospeso')&&usSloosText.includes('SLOOS IN VERIFICA'),
-  label+' SLOOS discrepancy quarantine must explain the reason');
- assert(!usSloosText.includes('Ultimo 2026-07-01 · 0,00'),
-  label+' unresolved survey value cannot be published as confirmed evidence');
+ assert(usSloosText.includes('CONTRATTO MAPPATO')&&!usSloosText.includes('Dato sospeso'),
+  label+' source registry must explain verified status');
  const sourceContract=locator(page,'.drivers-source-provenance-fold');
  await sourceContract.locator('summary').click();
  assert(await sourceContract.evaluate(el=>el.open),label+' registry/source provenance cannot open');
- assert(await usSloos.isVisible(),label+' the provenance disclosure must reveal withheld SLOOS');
+ assert(await usSloos.isVisible(),label+' the provenance disclosure must reveal mapped SLOOS');
  await locator(page,'[data-liq-country="EUR"]').click();
  assert.equal(await officialSloos.count(),0,label+' Fed SLOOS belongs only in the USD dossier');
  const officialECB=locator(page,'.drivers-eur-official');
