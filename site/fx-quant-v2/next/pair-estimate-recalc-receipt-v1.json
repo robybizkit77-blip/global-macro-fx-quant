@@ -1,23 +1,24 @@
 {
   "schema": "GMFQ_NEXT_ESTIMATED_FX_RECALC_RECEIPT_V1",
-  "status": "RECALCULATED_WITH_CHANGES",
-  "checkedAtUtc": "2026-11-27T16:09:44.472Z",
+  "status": "NO_MATERIAL_THESIS_CHANGE",
+  "checkedAtUtc": "2026-11-27T16:22:51.062Z",
   "checkedDay": "2026-11-27",
-  "sourceCommit": "ee726820918e4fe650571152f743cadbdaf15f33",
+  "sourceCommit": "9437fb5b8fbd926fd02acb833b1b830adb18a3a6",
   "method": "d4e489ade8103f4343ed1f7e3c0f1335ad995f7817f4af5a6eb404d2dc1d0a2b",
   "sourceHashes": {
     "observed": "927b06407ff0679e7fea7001bbd9c65b1892348ee93088b651f4017f83b0207e",
     "prices": "7d5eb5160c7ed6f9c284f26260a686db28f747b2740be53d5cddcb33357b1e47",
-    "ois": "31e665af0b4ee3eb3e5ead74f11c9cb003784bbf4a80343248446b9a2a2b0e18",
+    "ois": "fcf6ffdfe3a7e77e74ec435b10323562fcaf164ffaff27244ce0f2d803843f4a",
     "rates": "67cba67b34f5b158028c7c375b8e58d7b8a7d2e8719a2f09627ef11a149f1bce",
-    "model": "8ce3f9048d36431fd27fa1cd355fcb3aabea982d30b53f94a8dfa9edf895fda5"
+    "model": "dc765e9dcb5ec9fee00749747e623254b77669531071dbf028753bbbebd2233d"
   },
   "inputChanges": [
-    "prices"
+    "ois",
+    "model"
   ],
   "methodChanged": false,
   "comparisonBasis": "PREVIOUS_RECEIPT",
-  "previousFixingAsOf": "2026-11-26",
+  "previousFixingAsOf": "2026-11-27",
   "previousMacroAsOf": "2026-11-27",
   "fixingAsOf": "2026-11-27",
   "macroAsOf": "2026-11-27",
@@ -28,195 +29,9 @@
     "official6M": 4,
     "withGDPAcceleration": 8
   },
-  "changedPairs": [
-    {
-      "key": "EURCAD",
-      "previous": {
-        "favored": "CAD",
-        "thesis": "PARZIALE",
-        "timing": "BASSA ORA"
-      },
-      "current": {
-        "favored": "CAD",
-        "thesis": "PARZIALE",
-        "timing": "IN ATTESA"
-      }
-    },
-    {
-      "key": "EURGBP",
-      "previous": {
-        "favored": "GBP",
-        "thesis": "PARZIALE",
-        "timing": "BASSA ORA"
-      },
-      "current": {
-        "favored": "GBP",
-        "thesis": "PARZIALE",
-        "timing": "IN ATTESA"
-      }
-    },
-    {
-      "key": "GBPAUD",
-      "previous": {
-        "favored": "GBP",
-        "thesis": "PARZIALE",
-        "timing": "DA VALIDARE"
-      },
-      "current": {
-        "favored": "GBP",
-        "thesis": "PARZIALE",
-        "timing": "BASSA ORA"
-      }
-    },
-    {
-      "key": "USDJPY",
-      "previous": {
-        "favored": "USD",
-        "thesis": "PARZIALE",
-        "timing": "BASSA ORA"
-      },
-      "current": {
-        "favored": "USD",
-        "thesis": "PARZIALE",
-        "timing": "DA VALIDARE"
-      }
-    }
-  ],
+  "changedPairs": [],
   "changedRanks": [],
-  "factorChanges": [
-    {
-      "ccy": "CAD",
-      "rank": {
-        "previous": 3,
-        "current": 3
-      },
-      "changes": {
-        "score": {
-          "previous": 0.064286,
-          "current": 0.121429,
-          "delta": 0.057143
-        },
-        "macroScore": {
-          "previous": 0.3,
-          "current": 0.3,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": 0,
-          "current": 0,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": -0.428571,
-          "current": -0.142857,
-          "delta": 0.285714
-        }
-      },
-      "monetaryQuality": {
-        "previous": "UFFICIALE",
-        "current": "UFFICIALE"
-      }
-    },
-    {
-      "ccy": "CHF",
-      "rank": {
-        "previous": 4,
-        "current": 4
-      },
-      "changes": {
-        "score": {
-          "previous": -0.082143,
-          "current": -0.139286,
-          "delta": -0.057143
-        },
-        "macroScore": {
-          "previous": -0.45,
-          "current": -0.45,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": 0,
-          "current": 0,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": 0.714286,
-          "current": 0.428571,
-          "delta": -0.285715
-        }
-      },
-      "monetaryQuality": {
-        "previous": "ASSENTE",
-        "current": "ASSENTE"
-      }
-    },
-    {
-      "ccy": "GBP",
-      "rank": {
-        "previous": 1,
-        "current": 1
-      },
-      "changes": {
-        "score": {
-          "previous": 0.471429,
-          "current": 0.414286,
-          "delta": -0.057143
-        },
-        "macroScore": {
-          "previous": 1,
-          "current": 1,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": 0,
-          "current": 0,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": -0.142857,
-          "current": -0.428571,
-          "delta": -0.285714
-        }
-      },
-      "monetaryQuality": {
-        "previous": "UFFICIALE",
-        "current": "UFFICIALE"
-      }
-    },
-    {
-      "ccy": "JPY",
-      "rank": {
-        "previous": 5,
-        "current": 5
-      },
-      "changes": {
-        "score": {
-          "previous": -0.264286,
-          "current": -0.207143,
-          "delta": 0.057143
-        },
-        "macroScore": {
-          "previous": -0.1,
-          "current": -0.1,
-          "delta": 0
-        },
-        "policyScore": {
-          "previous": -1,
-          "current": -1,
-          "delta": 0
-        },
-        "priceScore": {
-          "previous": 0.428571,
-          "current": 0.714286,
-          "delta": 0.285715
-        }
-      },
-      "monetaryQuality": {
-        "previous": "UFFICIALE",
-        "current": "UFFICIALE"
-      }
-    }
-  ],
+  "factorChanges": [],
   "currencies": [
     {
       "ccy": "AUD",
