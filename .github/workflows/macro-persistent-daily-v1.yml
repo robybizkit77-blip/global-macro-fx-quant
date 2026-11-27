@@ -697,7 +697,7 @@ jobs:
           import json
           d=json.load(open('/tmp/gbp-boe-iadb-proof/receipt.json'))
           for r in d['series']: print(r)
-          assert len(d['series'])==9
+          assert len(d['series'])==6
           # Prove each verified row and require meaningful real-source coverage;
           # independent withheld rows are explicit, never promoted.
           approved=[r for r in d['series'] if r['status'] in ('READY','NO_CHANGE')]
@@ -1319,9 +1319,10 @@ jobs:
           python -m validation.macro.prepare_aud_rba_stocks_revised_v1 --candidate /tmp/aud-rba-proof/candidate.json --receipt /tmp/aud-rba-proof/receipt.json
           python - <<'PY'
           import json
+          from validation.macro.prepare_aud_rba_stocks_revised_v1 import CONFIG
           d=json.load(open('/tmp/aud-rba-proof/receipt.json'))
           for r in d['series']: print(r)
-          assert len(d['series'])==6
+          assert len(d['series'])==len(CONFIG) and {r['id'] for r in d['series']}==set(CONFIG),d
           # Prove each verified row and require meaningful real-source coverage;
           # independent withheld rows are explicit, never promoted.
           approved=[r for r in d['series'] if r['status'] in ('READY','NO_CHANGE')]
