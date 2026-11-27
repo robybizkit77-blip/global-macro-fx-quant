@@ -20,7 +20,14 @@ def collect_ons(today,fetcher=fetch):
     require(str(desc.get("cdid","")).upper()=="S2KU","ONS wrong series ID")
     title=str(desc.get("title","")).casefold()
     require(all(x in title for x in ("ios","services","index")),"ONS services title mismatch")
-    require("index" in str(desc.get("unit","")).casefold(),"ONS services unit mismatch")
+    # ONS's series page explicitly identifies S2KU as an index; its API
+    # unit field can be blank or use a base-year notation rather than "Index".
+    # Retain the publisher's raw metadata and reject explicit rate/currency units.
+    unit=str(desc.get("unit") or "").strip()
+    normalized=unit.casefold()
+    require(not any(x in normalized for x in ("percent","%","pounds","gbp","growth","change","million")),"ONS services unit contradicts index: "+repr(unit))
+    require(title=="ios: services: index-1dp","ONS services exact title mismatch")
+    require(str(desc.get("datasetId") or desc.get("dataset_id") or "IOS1").upper()=="IOS1","ONS dataset mismatch")
     pairs=[(d[:7],v) for d,v in extract_months(p) if d[:7]>="2019-10"]
     require(len(pairs)>=36,"ONS history too short")
     serial=[date.fromisoformat(d+"-01").year*12+int(d[5:]) for d,v in pairs]
@@ -28,7 +35,7 @@ def collect_ons(today,fetcher=fetch):
     require(pairs[-1][0]<today.isoformat()[:7],"ONS future or incomplete month")
     require(all(math.isfinite(v) and v>0 for d,v in pairs),"ONS nonpositive level")
     return {"series_id":ID,"currency":"GBP","pillar":"services","measurement":"QUANTITY",
-            "label":"Produzione reale dei servizi — ONS","frequency":"M","unit":str(desc["unit"]),
+            "label":"Produzione reale dei servizi — ONS","frequency":"M","unit":"Index (ONS IoS, seasonally adjusted)","publisher_unit_raw":unit,
             "source_url":URL,"source_series_id":"S2KU","source_title":desc["title"],
             "source_sha256":sha256(raw).hexdigest(),"dates":[d for d,v in pairs],"values":[v for d,v in pairs],
             "latest_period":pairs[-1][0],"source_series_first_release_PIT_certified":False,
