@@ -701,3 +701,13 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  assert.match(app,/state.cbCcy=bankFromRates.dataset.ratesOpenbank/);
  console.log('MONETARY_POLICY_RATES_HIERARCHY_PASS');
 }
+
+{
+ const base='site/fx-quant-v2/next/';
+ const cs=read(base+'currency-studio.js'),cot=read(base+'cot-studio.js');
+ assert(cs.indexOf('data-fx-enhanced-summary')<cs.indexOf('class="strength-quant-fold"'));
+ assert(cs.indexOf('class="strength-quant-fold"')<cs.indexOf('FXQuantGlobalResearchComposite?.render(composite,esc)'));
+ assert(app.indexOf('class="pairs-three-answers"')<app.indexOf('class="pairs-optional-panel pairs-evidence"'));
+ assert.match(cot,/Storico delle rilevazioni e metodo COT/);
+ console.log('FOREX_RESEARCH_HIERARCHY_PASS');
+}
