@@ -670,3 +670,64 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  }
  console.log('OFFICIAL_OI_RESEARCH_CONSUMER_PASS');
 }
+
+{
+ const html=read('site/fx-quant-v2/next/index.html');
+ const nav=html.split('id="nav"',1).length; // preserve existing route IDs and URLs
+ const block=html.split('id="nav"')[1].split('</nav>')[0];
+ const routes=[...block.matchAll(/data-route="([^"]+)"/g)].map(m=>m[1]);
+ assert.equal(routes.length,11);assert.equal(new Set(routes).size,11);
+ assert.deepEqual(routes,['overview','macro','banks','rates','currencies','pairs','cot','risk','liquidity','news','library']);
+ assert.equal((block.match(/class="nav-heading nav-subheading"/g)||[]).length,7);
+ assert.match(app,/homeG8Read\(\)\+homeFxRankStrip\(\)/);
+ assert.match(app,/data-control-room-diagnostics/);
+ assert.match(app,/officialOI:get\('cotOfficialOI'\)/);
+ assert.match(app,/ranker:w.FXQuantPairRankings\?\.currencyRanking/);
+ assert.match(app,/composite.evaluate\(\{currency,macro,rates,positioning,price\}\)/);
+ console.log('CONTROL_ROOM_SEVEN_AREAS_AND_REUSED_RESEARCH_PASS');
+}
+
+{
+ const base='site/fx-quant-v2/next/';
+ const cb=read(base+'central-bank-studio.js'),rates=read(base+'rates-studio.js');
+ const cr=cb.slice(cb.indexOf(' function render(api)'));
+ assert(cr.indexOf('WANT · COSA COMUNICA')<cr.indexOf('drivers-bank-sources'));
+ assert(cr.indexOf('CAN · MARGINE DI MANOVRA')<cr.indexOf('drivers-bank-sources'));
+ const rr=rates.slice(rates.lastIndexOf(' function render(){'));
+ assert(rr.indexOf('rates-jumps')<rr.indexOf('renderOverview')&&rr.indexOf('renderOverview')<rr.indexOf('rates-hero'));
+ assert(rr.indexOf('id="rates-expected"')<rr.indexOf('id="rates-government"'));
+ assert(rr.indexOf('id="rates-government"')<rr.indexOf('id="rates-fx"'));
+ assert.match(rr,/data-rates-openbank/);
+ assert.match(app,/state.cbCcy=bankFromRates.dataset.ratesOpenbank/);
+ console.log('MONETARY_POLICY_RATES_HIERARCHY_PASS');
+}
+
+{
+ const base='site/fx-quant-v2/next/';
+ const cs=read(base+'currency-studio.js'),cot=read(base+'cot-studio.js');
+ assert(cs.indexOf('data-fx-enhanced-summary')<cs.indexOf('class="strength-quant-fold"'));
+ assert(cs.indexOf('class="strength-quant-fold"')<cs.indexOf('FXQuantGlobalResearchComposite?.render(composite,esc)'));
+ assert(app.indexOf('class="pairs-three-answers"')<app.indexOf('class="pairs-optional-panel pairs-evidence"'));
+ assert.match(cot,/Storico delle rilevazioni e metodo COT/);
+ console.log('FOREX_RESEARCH_HIERARCHY_PASS');
+}
+
+{
+ const liq=read('site/fx-quant-v2/next/liquidity-credit-studio.js');
+ assert.match(app,/class="risk-next-step"/);
+ assert.match(app,/href="\.\.\/cross-asset\.html"/);
+ assert.match(liq,/Gli spread IG\/HY misurano il rischio di mercato, non gli standard dei prestiti bancari/);
+ assert.match(liq,/Verifica dati, copertura e fonti bancarie/);
+ console.log('CROSS_ASSET_BANK_CREDIT_SEPARATION_PASS');
+}
+
+{
+ const lib=read('site/fx-quant-v2/next/research-library.js');
+ assert.match(app,/id="desk-calendar" tabindex="-1"/);
+ assert.match(app,/id="desk-news" tabindex="-1"/);
+ assert(app.indexOf('id="desk-calendar"')<app.indexOf('id="desk-news"'));
+ assert.match(lib,/<details class="rl-disclaimer"><summary>Stato delle pubblicazioni/);
+ assert.match(lib,/id="library-summary"/);
+ assert.match(lib,/latestPerType/);
+ console.log('EVENTS_LIBRARY_HIERARCHY_PASS');
+}

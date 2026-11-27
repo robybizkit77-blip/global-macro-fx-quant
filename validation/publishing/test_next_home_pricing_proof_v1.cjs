@@ -219,11 +219,10 @@ assert(index.indexOf('pair-monetary-bridge-v1.js?v=2')<
  'Home module must load after monetary archive validators and before App');
 assert(index.includes('home-pricing-proof-v1.css?v=4'));
 assert(source.includes("window.FXQuantHomePricingProof?.render?.("));
-assert(source.includes(`moneyProof+'<section class="hourly-decision-section"'`));
-assert(source.includes("post+recalcProof+moneyProof+'<section class=\"morning-prose\"'"),
- 'The independent thesis receipt cannot remove the original 6M-FX comparison from the Morning Home');
-assert(source.includes(' +moneyProof\n +\'<section class="dashboard-main dashboard-reading-chart">'),
- 'Legacy fallback Home also needs the same source-first monetary comparison');
+assert(source.includes("recalcProof+moneyProof+'</details>'"),'Both source proofs remain available in the diagnostics');
+assert(source.includes("fxRankStrip+technicalProof+hourlyAnchor"));
+assert(source.includes("fxRankStrip+post+technicalProof+anchor"),'Morning Home preserves monetary proof');
+assert(source.includes(' +technicalProof\n +\'<section class="dashboard-main dashboard-reading-chart">'),'Fallback Home preserves monetary proof');
 const css=read(site+'home-pricing-proof-v1.css');
 assert(css.includes('.home-pricing-proof-multi-row'));
 assert(css.includes('.home-pricing-proof-date-context'));

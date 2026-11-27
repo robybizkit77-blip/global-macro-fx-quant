@@ -125,6 +125,10 @@ async function inspectRoute(page,label,key){
      label+' premium Home '+key+' copy became too small: '+fonts[key]+'px');
    }
   }
+  const diagnostic=locator(page,'details.control-room-diagnostics').filter({has:locator(page,'#fx-recalc-pulse')});
+  assert.equal(await diagnostic.count(),1,label+' proof disclosure missing');
+  assert.equal(await diagnostic.getAttribute('open'),null,label+' diagnostics start closed');
+  await diagnostic.locator(':scope > summary').click();
   const recalc=locator(page,'#fx-recalc-pulse');
   assert.equal(await recalc.count(),1,label+' Home must show one G8/28 recalculation receipt');
   const recalculationState=await recalc.getAttribute('data-recalc-state');
@@ -185,8 +189,9 @@ async function inspectRoute(page,label,key){
   assert.deepEqual(await story.locator('h3').allTextContents(),['Cosa va','Cosa frena','Cosa guardare']);
   assert.doesNotMatch(await story.innerText(),/punti base|\d+(?:,\d+)?\s*%|\bOIS\b/,
    label+' technical figures must follow the plain bank first read');
-  const policy=locator(page,'.drivers-bank-sources .drivers-lead');
-  assert(!await policy.isVisible(),label+' exact rate and decision date must be collapsed initially');
+  const policy=locator(page,'.bank-policy-first .drivers-lead');
+  assert(await policy.isVisible(),label+' exact official rate and decision date must be visible');
+  assert(await locator(page,'.bank-policy-first .drivers-want-can').isVisible(),label+' WANT/CAN visible before market audit');
   assert.equal(await locator(page,'.drivers-fold .drivers-fact').count(),3,
    label+' dated 3M/6M/12M pricing audit must remain accessible');
   assert.equal(await locator(page,'.drivers-links [data-bank-open]').count(),2,
@@ -286,6 +291,8 @@ async function inspectRoute(page,label,key){
 }
 async function homeMoneyJourney(page,label){
  await route(page,'overview');
+ const outer=locator(page,'details.control-room-diagnostics').filter({has:locator(page,'#home-pricing-proof')});
+ if(await outer.count()&&await outer.getAttribute('open')===null)await outer.locator(':scope > summary').click();
  const proof=locator(page,'#home-pricing-proof');
  assert.equal(await proof.count(),1,label+' source-backed Home pricing reading missing');
  const cards=proof.locator('.home-pricing-proof-card');
@@ -454,11 +461,12 @@ async function macroDriversJourney(page,label){
  assert.equal(await bankSources.getAttribute('open'),null,label+' pricing detail starts collapsed');
  await bankSources.locator(':scope > summary').click();
  const bank=await bankSources.innerText();
- assert(bank.includes('WANT')&&bank.includes('CAN')&&bank.includes('Tasso ufficiale')&&
+ const policy=await locator(page,'.bank-policy-first').innerText();
+ assert(policy.includes('WANT')&&policy.includes('CAN')&&policy.includes('Tasso ufficiale')&&
   bank.includes('COSA PREZZA IL MERCATO')&&bank.includes('CONFERMA SUL FOREX'),
   label+' policy decision, monetary pricing and FX model must remain distinct');
  assert(bank.includes('OIS'),'BoE pricing must name the instrument');
- assert.match(bank,/Tasso ufficiale .*decisione .*prossima riunione/i);
+ assert.match(policy,/Tasso ufficiale .*decisione .*prossima riunione/i);
  assert.match(await bankSources.innerText(),/3M \/ RIFERIMENTO DI MERCATO/);
  assert.match(await bankSources.innerText(),/VIX.*HY/);
  assert.equal(await bankSources.locator('a').filter({hasText:'Comunicazione ufficiale'}).count(),1,
@@ -725,8 +733,9 @@ async function chosenPair(page,key,label){
  assert.match(firstRead,/Cosa va\.[\s\S]*Cosa frena\.[\s\S]*Cosa guardare\./);
  assert.match(await p.locator('.pairs-reading-head h2').innerText(),/nelle ultime settimane/i,
   label+' '+key+' must open on the observed move');
- assert.doesNotMatch(firstRead,/fixing|futures|\d+(?:,\d+)?\s*%|TRADE ATTRACTIVENESS/i,
+ assert.doesNotMatch(firstRead,/fixing|futures|\d+(?:,\d+)?\s*%/i,
   label+' '+key+' exposed technical details in the first reading');
+ assert.equal(await p.locator('.pairs-three-answers > div:visible').count(),3,label+' three qualitative decisions must be visible before opening details');
  const quotes=p.locator('details.pairs-evidence');
  assert(!await quotes.evaluate(el=>el.open),label+' '+key+' details open without request');
  assert(!await p.locator('.pairs-price-periods').isVisible(),label+' '+key+' price numbers should be folded');
@@ -770,7 +779,7 @@ async function chosenPair(page,key,label){
   assert.equal(await period.getAttribute('data-pair-price-tone'),sourceTone,label+' '+key+' price direction reversed');
   assert.equal(await period.locator('strong').innerText(),expectedMove,label+' '+key+' price move misquoted');
  }
- assert.equal(await p.locator('.pairs-price-assessment small').innerText(),
+ assert.equal(await p.locator('.pairs-price-detail small').innerText(),
   'Fixing BCE al '+priceEvidence.priceAsOf.split('-').reverse().join('/'),
   label+' '+key+' price comparison lost its source date');
  assert(/calendario|evento|prossimo|previsto|ufficiale/i.test(story),

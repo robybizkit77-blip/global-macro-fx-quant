@@ -13,7 +13,7 @@ new vm.Script(src,{filename:'research-library.js'});
 const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
 assert.match(index,/research-library\.css\?v=4/);
-assert.match(index,/research-library\.js\?v=20/);
+assert.match(index,/research-library\.js\?v=21/);
 assert.match(index,/11 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);

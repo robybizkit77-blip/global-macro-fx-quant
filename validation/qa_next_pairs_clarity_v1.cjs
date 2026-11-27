@@ -20,7 +20,7 @@ assert(begin>=0&&end>begin);
 const pairs=app.slice(begin,end);
 for(const key of ['id="pair-primary-select"','28 coppie G8, una sola tesi alla volta',
  'pairs-reading-compact','pairs-three-answers','pairs-vintage',
- 'Come è cambiata la tesi?','Apri grafico, pricing e analisi completa',
+ 'Come è cambiata la tesi?','Grafico del cambio e analisi completa',
  'FXQuantDecisionJourney?.build','FXQuantThesisMonitor?.render',
  'const pairCatalyst=','const riskReading=','esc(riskReading)',
  'pairs-event-watch','pairs-compact-footer']){

@@ -362,8 +362,8 @@
        +'<p>Seleziona metrica e intervallo. I due grafici hanno scale indipendenti; nessuna correlazione forzata.</p></div>'
        +'<div class="cot-graph-grid"><div class="cot-plot-card">'+graphFor(a)+'</div><div class="cot-plot-card cot-price-card">'
        +priceGraph(a)+'</div></div></section>'
-       +last12(a)+glossary()
-       +'<section class="cot-after"><div><span class="chapter-kicker">DALLA RICERCA ALLA DECISIONE</span><h2>Il COT chiarisce le posizioni.<br><em>Il trade richiede macro, rates e prezzo.</em></h2>'
+       +'<details class="cot-desk-breakdown"><summary>Storico delle rilevazioni e metodo COT</summary>'+last12(a)+glossary()+'</details>'
+       +'<section class="cot-after"><div><span class="chapter-kicker">DALLA RICERCA ALLA DECISIONE</span><h2>Verifica la tesi relativa sulle coppie FX</h2>'
        +'<p>Confronta le valute in termini relativi: scenario economico, differenziali di tasso, condizioni di rischio e timing tecnico. Un estremo può persistere a lungo.</p></div>'
        +'<a href="#pairs" class="action-primary">Apri l’esploratore FX <span>↗</span></a></section>'
        +'<p class="source-caption">Fonti: CFTC Legacy Futures Only Non-Commercial (V250), archivio CFTC storico precedente verificato sui Net comuni e fixing BCE aggiornati alle date CFTC. Percentile e Z-score esatti SOLO sull’ultima rilevazione (104 precedenti, corrente esclusa). I vecchi percentili inclusivi sono marcati ≈. Nessun dato intraday. COT del '+date(last.date)+'.</p>';

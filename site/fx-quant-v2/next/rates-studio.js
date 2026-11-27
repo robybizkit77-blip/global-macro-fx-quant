@@ -410,26 +410,21 @@ function make(api){
     +' · PRICING '+date(o?.as_of)+' · '+esc(o?.kind||'strumento da verificare')+'</span></div>'
     +countrySelect()
     +'<div class="rates-jumps pill-controls" role="group" aria-label="Vai alle analisi dei tassi">'
-    +'<button type="button" class="pill" data-section-jump="rates-government">Governativi 2Y / 10Y</button>'
     +'<button type="button" class="pill" data-section-jump="rates-expected">Attese 3M / 6M / 12M</button>'
+    +'<button type="button" class="pill" data-section-jump="rates-government">Governativi 2Y / 10Y</button>'
     +'<button type="button" class="pill" data-section-jump="rates-fx">Confronto con il cambio</button></div>'
+    +(root.FXQuantPricingMoves?.renderOverview?.({snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),today:dayNow()})||'')
     +'<section class="rates-hero"><div class="rates-hero-title"><span class="chapter-kicker">'+FLAGS[c]+' '+esc(NAMES[c])+'</span>'
     +'<h2>'+esc(m.headline)+'</h2>'
     +'<p class="rates-economic-observation"><strong>Cosa va.</strong> '+esc(r?.scenario_only?'La stima offre un riferimento per leggere la direzione dei rendimenti.':m.support||'Le osservazioni disponibili sono consultabili nei grafici.')+'</p>'
     +'<p class="rates-economic-pricing"><strong>Cosa frena.</strong> '+esc(r?.scenario_only?'I rendimenti aggiornati sono stimati dai futures. Lo storico mostra le osservazioni governative effettive.':m.friction||'Il confronto tra governativi e attese monetarie va verificato.')+'</p>'
     +'<p class="rates-economic-watch"><strong>Cosa guardare.</strong> '+esc(r?.scenario_only?'Cerca una nuova rilevazione ufficiale prima di usare la stima per leggere il differenziale e il cambio.':m.nextCheck||m.watch)+'</p>'
+    +'<div class="drivers-links"><button type="button" data-rates-openbank="'+esc(c)+'">Decisione e vincoli della banca centrale ↗</button></div>'
     +'<details class="rates-method-detail"><summary>Dettagli del giudizio: variazioni, date e strumento</summary>'
     +'<p>'+esc(m.meaning)+'</p><p><strong>Cosa è prezzato.</strong> '+esc(m.pricingEvidence)+'</p></details></div>'
     +'<div class="rates-hero-side"><div class="rates-hero-orbit"><span>'+(spot?'PENDENZA STORICA':r?.scenario_only?'PENDENZA STIMATA':'PENDENZA')+'</span><strong>'+sign(r?(r['10Y']-r['2Y'])*100:null,1)+'</strong><small>punti base · '+date(r?.date)+'</small></div></div></section>'
-    +govCard(c)
-    +'<section class="rates-chapter rates-government" id="rates-government" tabindex="-1" aria-label="Governativi 2Y e 10Y">'
-    +'<div class="rates-section-head"><div><h2>Rendimenti governativi</h2></div><p>Guarda quale tratto della curva si è mosso di più sulle date disponibili.</p></div>'
-    +latestGovernmentReading(c)
-    +'<div class="rates-research-grid"><div class="rates-primary-plot">'+govPlot(c)+'</div>'+historicalSovereign(c)+'</div></section>'
-    +(editorial?.()||'')
     +'<section id="rates-expected" class="rates-chapter" tabindex="-1" aria-label="Attese monetarie">'
     +'<div class="rates-section-head"><div><h2>Attese monetarie</h2></div><p>Leggi prima le variazioni verificabili, poi lo storico e i livelli per scadenza. Ogni serie indica lo strumento e la data.</p></div>'
-    +(root.FXQuantPricingMoves?.renderOverview?.({snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),today:dayNow()})||'')
     +(root.FXQuantRatesResearchScore?.render(root.FXQuantRatesResearchScore.evaluate({pricing:root.FXQuantPricingMoves,archive:root.FXQuantPricingHistory,snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),history:get('oisHistory'),rates:get('rates'),today:dayNow(),currency:c,other}),esc)||'')
     +(root.FXQuantPricingMoves?.render?.({
        currency:c,window:state.rsPricingWindow||'1d',plot,esc,fmt,sign,date,
@@ -442,7 +437,13 @@ function make(api){
         history:get('oisHistory'),ccy:c,other,
         window:state.rsHistoryWindow||30
       })||'<section class="rates-pricing-history"><div class="rates-missing">Storico 3M/6M/12M temporaneamente non disponibile.</div></section>')
-    +'<div class="rates-pricing-grid">'+shapeBars(c)+oisAudit(c)+'</div>'+repricing(c)+'</section>'
+    +'<details class="rates-method-detail"><summary>Livelli per scadenza, composizione e fonti</summary><div class="rates-pricing-grid">'+shapeBars(c)+oisAudit(c)+'</div>'+repricing(c)+'</details></section>'
+    +govCard(c)
+    +'<section class="rates-chapter rates-government" id="rates-government" tabindex="-1" aria-label="Governativi 2Y e 10Y">'
+    +'<div class="rates-section-head"><div><h2>Rendimenti governativi</h2></div><p>Guarda quale tratto della curva si è mosso di più sulle date disponibili.</p></div>'
+    +latestGovernmentReading(c)
+    +'<div class="rates-research-grid"><div class="rates-primary-plot">'+govPlot(c)+'</div>'+historicalSovereign(c)+'</div></section>'
+    +(editorial?.()||'')
     +'<section id="rates-fx" class="rates-chapter" tabindex="-1" aria-label="Confronto con il cambio">'
     +'<div class="rates-section-head"><div><h2>Confronto con il cambio</h2></div><p>Scegli due economie. Confronta prima le attese monetarie, poi verifica se differenziale governativo e cambio si muovono sulle stesse date.</p></div>'
     +countryControls()
@@ -453,7 +454,7 @@ function make(api){
        history:get('oisHistory'),pairs:get('pairs')
      })||'<section class="rates-relative-pricing"><p>Il confronto relativo 6M non è disponibile: fonti da verificare.</p></section>')
     +spread(c,other)+fxRelativeEvidence(c,other)+'</section>'
-    +tableUniverse()+'<details class="rates-method-detail"><summary>Metodo: come leggere curva, attese e differenziali</summary>'+explanations(c)+glossary()+'</details>'
+    +'<details class="rates-method-detail"><summary>Tabella completa G8 · livelli e fonti</summary>'+tableUniverse()+'</details><details class="rates-method-detail"><summary>Metodo: come leggere curva, attese e differenziali</summary>'+explanations(c)+glossary()+'</details>'
     +'<div class="rates-end-note"><div><span class="chapter-kicker">DALLA RICERCA ALLA TESI FX</span><h2>Macro → Pricing → Positioning → Prezzo.</h2><p>La divergenza tra front-end, OIS/futures e prezzo è un problema da investigare. Non trasformiamo automaticamente ogni variazione di yield in un trade.</p></div><a href="#pairs" class="action-primary">Vai alle coppie FX <span>↗</span></a></div>'
     +'<p class="source-caption">Fonti dei rendimenti governativi: NATIVE_RATES_DATA e serie storica SNB per il dossier CHF. Tassi ufficiali: NATIVE_CB_DATA. Pricing: ois-pricing-snapshot.json. Ogni serie conserva la propria data.</p>';
  }

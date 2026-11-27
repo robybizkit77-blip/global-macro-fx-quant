@@ -521,13 +521,16 @@ function build(api){
    '<p><strong>Che cosa mostra il Forex.</strong> '+esc(opening.lead)+'</p>'+
    '</div>'+
    (cycleContext?'<p class="source-caption" data-g8-cycle-first-read><strong>Ciclo economico e condizioni finanziarie.</strong> '+esc(cycleContext)+' <a href="#macro">Scenario macro ↗</a></p>':'')+
+   (composite?.enhanced?'<div class="strength-enhanced-summary" data-fx-enhanced-summary><p><strong>Global FX Enhanced:</strong> '+esc(finite(composite.enhanced.score)?fmt(composite.enhanced.score,1)+'/10':'Non valutabile')+' · '+esc(fmt(composite.enhanced.coverage,0))+'% copertura di calcolo · '+esc(fmt(composite.enhanced.estimatedWeight,0))+'% peso stimato/proxy. Ricerca sperimentale, non ranking operativo.</p></div>':'')+
+   '<p class="strength-first-watch"><strong>Cosa guardare.</strong> '+esc(sourceRelease?nextCheck:cur?.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?'Verifica se NZD/USD e AUD/NZD confermano la direzione del riferimento neozelandese. Il proxy non sostituisce le attese RBNZ.':cur?.rate.quality==='ASSENTE'?'La prossima variazione verificabile dei tassi chiarirà se il prezzo relativo è sostenuto anche dalle aspettative monetarie.':positive.length&&negative.length?'Verifica quale dei segnali contrari cambia per primo e se le attese sui tassi e la valuta si riallineano.':nextCheck)+'</p>'+
+   (root.FXQuantIssuerContext?.narrative(get('macroObserved'),[country],dayNow())?'<p class="source-caption">'+esc(root.FXQuantIssuerContext.narrative(get('macroObserved'),[country],dayNow()))+'</p>':'')+
+   '<details class="strength-quant-fold"><summary><strong>Analisi quantitativa · Macro, tassi, COT e prezzo</strong></summary>'+
    (root.FXQuantGlobalResearchComposite?.render(composite,esc)||'')+
    (root.FXQuantMacroMultifactorShadow?.render(shadowMacro,esc)||'')+
    (root.FXQuantPriceResearchScore?.render(shadowPrice,esc)||'')+
    (root.FXQuantPositioningResearchScore?.render(shadowPositioning,esc)||'')+
    (root.FXQuantRatesResearchScore?.render(shadowRates,esc)||'')+
-   '<p class="strength-first-watch"><strong>Cosa guardare.</strong> '+esc(sourceRelease?nextCheck:cur?.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?'Verifica se NZD/USD e AUD/NZD confermano la direzione del riferimento neozelandese. Il proxy non sostituisce le attese RBNZ.':cur?.rate.quality==='ASSENTE'?'La prossima variazione verificabile dei tassi chiarirà se il prezzo relativo è sostenuto anche dalle aspettative monetarie.':positive.length&&negative.length?'Verifica quale dei segnali contrari cambia per primo e se le attese sui tassi e la valuta si riallineano.':nextCheck)+'</p>'+
-   (root.FXQuantIssuerContext?.narrative(get('macroObserved'),[country],dayNow())?'<p class="source-caption">'+esc(root.FXQuantIssuerContext.narrative(get('macroObserved'),[country],dayNow()))+'</p>':'')+
+   '</details>'+
    '<details class="strength-evidence-fold"><summary><strong>Apri numeri, date, stime e fonti di '+country+'</strong>'+
    '<span>Quattro pilastri · Macro / 2Y / attese 6M / prezzo · ricerca Quant separata</span></summary>'+
    '<div class="strength-evidence-body">'+(root.FXQuantIssuerContext?.render(get('macroObserved'),[country],dayNow())||'')+'<p>'+esc(estimatedEconomic)+' '+esc(chfRankingDetail||plainRates(sixProof))+'</p><p>'+esc(opening.lead)+'</p>'+(root.FXQuantG8PricingEvidence?.render?.(sixProof)||'')+
@@ -704,9 +707,9 @@ function build(api){
   const result=strengthView(),opening=countryOpening(result);
   return pageHero('VALUTE G8 · '+country,esc(opening.headline),esc(opening.lead))
    +strengthBoard(result)+strengthFocus(result,opening)
-   +'<details class="strength-pair-fold"><summary><strong>Confronta '+country+' con una seconda valuta</strong><span>La tesi bilaterale, il grafico delle sette controparti e le verifiche specifiche</span></summary>'
+   +'<details class="strength-pair-fold"><summary><strong>Confronto relativo · '+country+' e le altre valute</strong><span>La tesi bilaterale, il grafico delle sette controparti e le verifiche specifiche</span></summary>'
    +story()+peers()+'</details>'
-   +'<details class="strength-method-fold"><summary><strong>Verifica la classifica di prezzo e tutte le fonti</strong><span>Graduatoria BCE, storico macro, tassi, COT e limiti temporali</span></summary>'
+   +'<details class="strength-method-fold"><summary><strong>Prezzo, fonti e verifiche metodologiche</strong><span>Graduatoria BCE, storico macro, tassi, COT e limiti temporali</span></summary>'
    +(editorial?.()||'')+ranking()+evidence()+checkpoint()+'</details>';
  }
  return render();
