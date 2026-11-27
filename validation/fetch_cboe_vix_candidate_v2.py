@@ -27,6 +27,14 @@ CBOE_RTH_CLOSED = frozenset(dt.date.fromisoformat(day) for day in (
 ))
 
 
+def previous_cboe_session(day: dt.date) -> dt.date:
+    """Most recent prior regular Cboe session using the same dated closures."""
+    day -= dt.timedelta(days=1)
+    while day.weekday() >= 5 or day in CBOE_RTH_CLOSED:
+        day -= dt.timedelta(days=1)
+    return day
+
+
 def business_days_between(start: dt.date, end: dt.date) -> int:
     if end < start:
         return -1
