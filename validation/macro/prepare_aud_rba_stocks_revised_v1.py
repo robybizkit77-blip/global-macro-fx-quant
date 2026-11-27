@@ -108,8 +108,55 @@ def prepare(current,*,now,fetcher=fetch):
             receipts.append({"id":ident,"status":"WITHHELD","reason":str(exc)})
     return out,{"schema":"GMFQ_AUD_RBA_STOCKS_REVISED_V1","observed_at_utc":now.isoformat(),"series":receipts,
      "status":"READY" if any(r["status"]=="READY" for r in receipts) else "NO_CHANGE_OR_WITHHELD","first_release_PIT_certified":False,"affects_fx_core":False}
+# Read-only discovery: metadata and measured historical overlap, never a
+# source admission or an automatic mutation of the canonical archive.
+def probe_missing(current,now,fetcher=fetch):
+    targets={
+      "AU_CREDIT_BUSINESS_CURRENT_SA_history_value":"d2",
+      "AU_MORTGAGE_RATE_OWNER_OCC_OUTSTANDING_history_value":"f6",
+      "AU_BUSINESS_LENDING_RATE_MEDIUM_OUTSTANDING_history_value":"f7",
+    }
+    for ident,table in targets.items():
+        try:
+            row=next(x for x in current["AUD"] if x["id"]==ident)
+            old={parse_date(d):v for d,v in zip(row["dates"],row["values"])}
+            need(None not in old and len(old)==len(row["dates"]) and len(old)>=12,"invalid canonical history")
+            raw=fetcher(BASE+table+"-data.csv")
+            rows=list(csv.reader(StringIO(raw.decode("utf-8-sig"))))
+            meta={r[0].strip().lower():r for r in rows[:30] if r and r[0].strip().lower() in ("title","description","units","frequency","series id")}
+            ids=meta.get("series id",[]);candidates=[]
+            for i,code in enumerate(ids[1:],1):
+                def field(k):
+                    r=meta.get(k,[])
+                    return r[i].strip() if i<len(r) else ""
+                if not code.strip() or field("frequency").casefold()!="monthly":continue
+                obs={}
+                for rec in rows:
+                    if len(rec)<=i:continue
+                    d=parse_date(rec[0].strip())
+                    if d is None or d>now.date():continue
+                    try:v=float(rec[i].strip().replace(",",""))
+                    except ValueError:continue
+                    if math.isfinite(v):obs[d]=v
+                unit=norm(field("units"))
+                if table=="d2":
+                    if "million" in unit:obs={d:v/1000 for d,v in obs.items()}
+                    elif "billion" not in unit:continue
+                elif "percent" not in unit and "per cent" not in unit:continue
+                overlap=sorted(set(old)&set(obs))
+                if len(overlap)<12:continue
+                errors=[abs(obs[d]-old[d])/max(abs(old[d]),1) for d in overlap]
+                candidates.append({"code":code.strip(),"title":field("title"),"description":field("description"),"unit":field("units"),"frequency":field("frequency"),"overlap":len(overlap),"exact":sum(abs(obs[d]-old[d])<=1e-8 for d in overlap),"median_relative_error":statistics.median(errors),"max_relative_error":max(errors),"latest_date":max(obs).isoformat(),"latest_value":obs[max(obs)],"tail":[[d.isoformat(),obs[d]] for d in sorted(obs)[-5:]]})
+            candidates.sort(key=lambda x:(x["median_relative_error"],x["max_relative_error"],-x["exact"]))
+            print("RBA_SOURCE_IDENTITY_PROBE",json.dumps({"id":ident,"table":table,"source_sha256":sha256(raw).hexdigest(),"canonical_last_date":row["last_date"],"candidate_count":len(candidates),"closest":candidates[:8],"canonical_modified":False},sort_keys=True))
+        except (OSError,ValueError,KeyError,TypeError,StopIteration) as exc:
+            print("RBA_SOURCE_IDENTITY_PROBE_WITHHELD",ident,str(exc))
 def main():
-    p=argparse.ArgumentParser();p.add_argument("--candidate",required=True,type=Path);p.add_argument("--receipt",required=True,type=Path);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument("--candidate",type=Path);p.add_argument("--receipt",type=Path);p.add_argument("--probe-missing",action="store_true");a=p.parse_args()
+    if a.probe_missing:
+        need(a.candidate is None and a.receipt is None,"read-only probe accepts no output paths")
+        probe_missing(json.loads(SOURCE.read_text()),datetime.now(timezone.utc));return
+    need(a.candidate is not None and a.receipt is not None,"candidate and receipt required")
     need(all(x.resolve().is_relative_to(Path("/tmp")) for x in (a.candidate,a.receipt)),"temporary output only")
     out,receipt=prepare(json.loads(SOURCE.read_text()),now=datetime.now(timezone.utc))
     a.candidate.parent.mkdir(parents=True,exist_ok=True)
