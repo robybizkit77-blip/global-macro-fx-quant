@@ -59,6 +59,10 @@ def gbp_candidate(row,report,today):
     need(all(abs(old[q]-fresh[q])<=.11 for q in overlap),"BoE actual survey overlap mismatch")
     out=copy.deepcopy(row)
     replace_history(out,{**old,**fresh})
+    prior=row.get("current_vintage_provenance",{})
+    if (prior.get("source_series_id")==report["series_id"] and prior.get("source_url")==report["source_url"]
+        and out["dates"]==row["dates"] and out["values"]==row["values"]):
+        return out
     out["current_vintage_provenance"]={"status":"BOE_ACTUAL_SURVEY_WITH_RETAINED_HISTORY_NOT_PIT",
        "source_series_id":report["series_id"],"source_url":report["source_url"],
        "period_semantics":"OBSERVED_QUARTER","positive_means":"increased_availability",
