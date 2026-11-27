@@ -41,7 +41,29 @@ function cadence(row){
  else if(share(mg,x=>x===12)>=.9)observed_frequency='A';
  return {observed_frequency,history_integrity:'ORDERED',cadence_evidence:'OBSERVED_HISTORY_ONLY_NOT_PUBLISHER_CERTIFICATION',observed_sample_size:tail.length};
 }
-module.exports={normalize,cadence};
+// RBNZ M15 uses quarter-END month labels, even when the publisher has
+// already released the survey within that quarter. Never generalize this
+// exception to arbitrary future dates or claim a first-release timestamp.
+function surveyQuarter(row,today){
+ const p=row.current_vintage_provenance;
+ const match=/^(\d{4})-(03|06|09|12)$/.exec(row.last_date||'');
+ const code=/^NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_(CPI_(?:1|2|5|10)Y|Unemp_[12]Y|Wage_[12]Y)$/.exec(row.id||'');
+ if(!match||!code||row.source_file!=='NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent.csv'||
+    p?.status!=='RBNZ_M15_CURRENT_PUBLISHED_SURVEY_NOT_PIT'||
+    p.source_series_id!=='RBNZ_M15_AGGREGATE_WEIGHTED_MEAN_'+code[1]||
+    p.source_url!=='https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m15/hm15.xlsx'||
+    p.reference_period_semantics!=='survey quarter; observed availability upper bound, not certified release date'||
+    p.source_series_first_release_PIT_certified!==false||
+    !/^[a-f0-9]{64}$/.test(p.source_payload_sha256||'')||
+    !/^\d{4}-\d{2}-\d{2}$/.test(p.available_by_date||'')||
+    normalize(p.available_by_date)!==p.available_by_date||
+    p.available_by_date>today)return null;
+ const start=utc(+match[1],+match[2]-2,1);
+ if(start>p.available_by_date||start>today)return null;
+ return {period_start:start,available_by:p.available_by_date,frequency:'Q',
+   basis:'RBNZ_M15_DOCUMENTED_SURVEY_QUARTER_NOT_PIT'};
+}
+module.exports={normalize,cadence,surveyQuarter};
 
 if(require.main===module){
  const assert=require('node:assert/strict');
@@ -61,5 +83,12 @@ if(require.main===module){
  const unordered=series(['2026/8/1','2026/8/31','2026/8/4','2026/8/5','2026/8/7']);
  assert.equal(cadence(unordered).history_integrity,'UNORDERED_OR_DUPLICATE_DATES');
  assert.equal(cadence(unordered).observed_frequency,null);
+ const survey={id:'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_CPI_1Y',source_file:'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent.csv',last_date:'2026-12',current_vintage_provenance:{status:'RBNZ_M15_CURRENT_PUBLISHED_SURVEY_NOT_PIT',source_series_id:'RBNZ_M15_AGGREGATE_WEIGHTED_MEAN_CPI_1Y',source_url:'https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m15/hm15.xlsx',reference_period_semantics:'survey quarter; observed availability upper bound, not certified release date',source_series_first_release_PIT_certified:false,source_payload_sha256:'a'.repeat(64),available_by_date:'2026-11-26'}};
+ assert.equal(surveyQuarter(survey,'2026-11-27').period_start,'2026-10-01');
+ assert.equal(surveyQuarter(survey,'2026-11-25'),null);
+ assert.equal(surveyQuarter({...survey,last_date:'2027-03'},'2026-11-27'),null);
+ assert.equal(surveyQuarter({...survey,id:'OTHER'},'2026-11-27'),null);
+ assert.equal(surveyQuarter({...survey,current_vintage_provenance:{...survey.current_vintage_provenance,source_series_first_release_PIT_certified:true}},'2026-11-27'),null);
+ assert.equal(surveyQuarter({...survey,current_vintage_provenance:null},'2026-11-27'),null);
  console.log('MACRO_ARCHIVE_CADENCE_SELF_TEST_PASS');
 }
