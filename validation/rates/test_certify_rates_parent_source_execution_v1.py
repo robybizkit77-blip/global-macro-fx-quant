@@ -3,6 +3,7 @@
 from __future__ import annotations
 import copy
 import unittest
+from pathlib import Path
 from certify_rates_parent_source_execution_v1 import certify, REQUIRED, FINISHERS
 
 
@@ -20,6 +21,18 @@ class RatesSourceExecutedProof(unittest.TestCase):
         self.assertTrue(result["source_verified"])
         self.assertFalse(result["new_market_observations_certified"])
         self.assertEqual(result["reason"], "UPSTREAM_RATES_SOURCE_AUDIT_ACTUALLY_EXECUTED")
+
+    def test_contract_matches_actual_parent_workflow(self):
+        workflow = Path(__file__).resolve().parents[2] / ".github/workflows/rates-persistent-daily-v1.yml"
+        names = [line.strip().removeprefix("- name: ") for line in workflow.read_text().splitlines()
+                 if line.strip().startswith("- name: ")]
+        for name in (*REQUIRED, *FINISHERS):
+            self.assertEqual(names.count(name), 1, name)
+
+    def test_observed_parent_step_name_drift_fails_closed(self):
+        payload = fixture()
+        payload["jobs"][0]["steps"][0]["name"] = "Resolve Rates schedule from UTC cron and Rome offset"
+        self.assertFalse(certify(payload)["source_verified"])
 
     def test_real_completed_update_branch(self):
         payload = fixture()
