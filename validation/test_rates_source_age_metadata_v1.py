@@ -17,6 +17,7 @@ fixture_dates={'USD':'2026-10-22','EUR':'2026-10-21','GBP':'2026-10-21',
   'JPY':'2026-10-22','CHF':'2026-09-30','CAD':'2026-10-21',
   'AUD':'2026-10-21','NZD':'2026-10-16'}
 for c,d in fixture_dates.items(): src[c]['date']=d
+src['NZD']['quality']='FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED'
 out=build(src,'2026-10-23')
 assert out['schema']=='GMFQ_RATES_AUDIT_METADATA_V1'
 assert set(out['expected_rates'])=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
@@ -57,5 +58,8 @@ for fn in (lambda: build(src,'2026-10-01'),lambda: build({},'2026-10-23')):
     try: fn()
     except ValueError: pass
     else: raise AssertionError('Unverified source-date or missing currency must fail closed')
+new['NZD'].update(date='2026-11-26',quality='FULL_CURRENT_OFFICIAL_POSTROLL_RECONCILED',benchmark_roll_date='2026-10-30')
+assert build(new,'2026-11-27')['rates']['NZD']['status']=='OFFICIAL_POSTROLL_RECONCILED_RECENT'
+assert build(new,'2026-12-10')['rates']['NZD']['status']=='OFFICIAL_POSTROLL_RECONCILED_LAGGING'
 assert 'core_score' not in out and 'bias' not in out
 print('RATES_SOURCE_AGE_NO_FALSE_CURRENT_PASS')

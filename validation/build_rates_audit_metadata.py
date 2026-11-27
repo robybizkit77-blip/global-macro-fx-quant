@@ -70,6 +70,14 @@ def build(src: dict, audit_date: str) -> dict:
         if not d.get('source') or not d.get('quality'):
             raise ValueError(f'{c}: missing official source evidence')
         status=source_status(c,obs,check)
+        if c=='NZD' and d.get('quality')=='FULL_CURRENT_OFFICIAL_POSTROLL_RECONCILED' and obs>=d.get('benchmark_roll_date','9999-12-31'):
+            recent=(date.fromisoformat(check)-date.fromisoformat(obs)).days<=RECENT_MAX_CALENDAR_DAYS
+            status={
+                'status':'OFFICIAL_POSTROLL_RECONCILED_RECENT' if recent else 'OFFICIAL_POSTROLL_RECONCILED_LAGGING',
+                'action':'SOURCE_DATE_VALIDATED' if recent else 'RECONCILED_SOURCE_REFRESH_REVIEW_REQUIRED',
+                'source_access':'RBNZ_B2_HTML_XLSX_RECONCILED_ONE_TIME',
+                'reason':'Official same-edition HTML/XLSX government benchmark yields reconciled; one-time reviewed release, no recurring canonical continuity certification.'
+            }
         expected[c]=obs
         rates[c]={
             'current_as_of':obs,
