@@ -26,6 +26,20 @@ class PreMorningVixTests(unittest.TestCase):
         self.assertEqual(state["required_previous_weekday"], "2026-10-29")
         self.assertTrue(state["source_history_integrity"])
 
+    def test_thanksgiving_and_early_close_have_distinct_session_dates(self):
+        now = dt.datetime.fromisoformat("2026-11-27T08:24:00+01:00")
+        state = assess(now, model("2026-11-25"))
+        self.assertEqual(state["required_previous_cboe_session"], "2026-11-25")
+        self.assertEqual(state["status"], "SKIP_OFFICIAL_PREVIOUS_CLOSE_VERIFIED")
+        for day in ("2026-11-24", "2026-11-26", "2026-11-27"):
+            self.assertEqual(assess(now, model(day))["status"],
+                             "RETRY_OFFICIAL_CBOE_CHECK")
+        monday = dt.datetime.fromisoformat("2026-11-30T07:45:00+01:00")
+        self.assertEqual(assess(monday, model("2026-11-27"))["status"],
+                         "SKIP_OFFICIAL_PREVIOUS_CLOSE_VERIFIED")
+        self.assertEqual(assess(monday, model("2026-11-25"))["status"],
+                         "RETRY_OFFICIAL_CBOE_CHECK")
+
     def test_stale_close_requires_real_cboe_fetch(self):
         state = assess(dt.datetime.fromisoformat("2026-10-30T07:45:00+01:00"),
                        model("2026-10-28"))

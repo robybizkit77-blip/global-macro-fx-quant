@@ -11,8 +11,12 @@ import argparse
 import datetime as dt
 import json
 import math
+import sys
 from pathlib import Path
 from zoneinfo import ZoneInfo
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from fetch_cboe_vix_candidate_v2 import previous_cboe_session  # noqa: E402
 
 ROME = ZoneInfo("Europe/Rome")
 SCHEMA = "GMFQ_PREMORNING_VIX_RECOVERY_V1"
@@ -29,7 +33,7 @@ def assess(now: dt.datetime, model: dict | None) -> dict:
     if not isinstance(now, dt.datetime) or now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("Timezone-aware evaluation clock required")
     local = now.astimezone(ROME)
-    expected = previous_weekday(local.date()).isoformat()
+    expected = previous_cboe_session(local.date()).isoformat()
     risk = model.get("risk") if isinstance(model, dict) else None
     row = risk.get("VIX") if isinstance(risk, dict) else None
     row = row if isinstance(row, dict) else {}
@@ -53,7 +57,8 @@ def assess(now: dt.datetime, model: dict | None) -> dict:
     return {
         "schema": SCHEMA,
         "checked_at_rome": local.isoformat(timespec="seconds"),
-        "required_previous_weekday": expected,
+        "required_previous_weekday": expected,  # legacy field name; Cboe session date
+        "required_previous_cboe_session": expected,
         "observed_official_date": asof if date_valid else None,
         "source_history_integrity": bool(series_valid),
         "status": "SKIP_OFFICIAL_PREVIOUS_CLOSE_VERIFIED" if current else "RETRY_OFFICIAL_CBOE_CHECK",

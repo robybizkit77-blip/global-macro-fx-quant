@@ -12,10 +12,13 @@ import datetime as dt
 import json
 import math
 import re
+import sys
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "validation"))
+from fetch_cboe_vix_candidate_v2 import previous_cboe_session  # noqa: E402
 FEEDS = ROOT / "live_data" / "sections"
 ROME = ZoneInfo("Europe/Rome")
 G8 = ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD")
@@ -183,15 +186,17 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success", *,
     evidence = {}
     def session(name: str, date: object) -> None:
         actual = valid_date(date)
-        # Before the morning briefing, an ECB fixing / VIX CLOSE dated today
-        # has not been officially published yet. Require the previous weekday;
-        # official market holidays remain an explicit source-review exception.
+        # ECB and Cboe have different calendars. VIX must match the last
+        # regular Cboe close, not the last European weekday. Never accept
+        # a holiday/future observation or relax the ECB fixing requirement.
+        required_date = (previous_cboe_session(today).isoformat()
+                         if name == "VIX_OFFICIAL_CLOSE" else expected)
         current_ecb = (current_source_audit and name in ("FX_OFFICIAL_FIXING", "PAIR_PRICE")
                        and today.weekday() < 5 and now.hour >= 17
                        and actual == today.isoformat())
         status = ("CURRENT_SESSION_OFFICIAL" if current_ecb else
-                  "PREVIOUS_SESSION" if actual == expected else "NEEDS_SOURCE_REVIEW")
-        evidence[name] = {"as_of": actual, "expected_not_before": expected, "status": status}
+                  "PREVIOUS_SESSION" if actual == required_date else "NEEDS_SOURCE_REVIEW")
+        evidence[name] = {"as_of": actual, "expected_not_before": required_date, "status": status}
         if status not in ("PREVIOUS_SESSION", "CURRENT_SESSION_OFFICIAL"):
             problems.append(name)
 

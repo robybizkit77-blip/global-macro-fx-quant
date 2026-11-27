@@ -101,6 +101,31 @@ assert out["operational_state"] == "DAILY_READY_WITH_DOCUMENTED_GAPS", out["crit
 assert out["critical_daily_problems"] == []
 assert out["evidence"]["FX_OFFICIAL_FIXING"]["as_of"] == "2026-10-22"
 assert out["evidence"]["VIX_OFFICIAL_CLOSE"]["as_of"] == "2026-10-22"
+# Regression for the live 27-Nov incident: Europe traded on Thanksgiving,
+# Cboe RTH did not. The calendar exception must not relax ECB or accept
+# an earlier stale / fabricated holiday / same-day VIX value.
+holiday = copy.deepcopy(data)
+holiday_fx = holiday["ECB_G8_PRICE_HISTORY.json"]
+holiday_fx["last_as_of"] = holiday_fx["rows"][-1]["Date"] = "2026-11-26"
+holiday_pair = holiday["PAIR_SETUP_OPERATIONAL_VIEW.json"]
+holiday_pair["price_asof"] = "2026-11-26"
+holiday_pair["price_audit"].update(as_of="2026-11-26", history_asof="2026-11-26", overlay_asof="2026-11-26")
+holiday_now = dt.datetime.fromisoformat("2026-11-27T08:24:00+01:00")
+holiday_vix = holiday["D.json"]["risk"]["VIX"]
+holiday_vix["last_date"] = holiday_vix["dates"][-1] = "2026-11-25"
+h = inspect(holiday, holiday_now)
+assert h["evidence"]["VIX_OFFICIAL_CLOSE"]["expected_not_before"] == "2026-11-25", h
+assert h["evidence"]["VIX_OFFICIAL_CLOSE"]["status"] == "PREVIOUS_SESSION"
+assert h["evidence"]["FX_OFFICIAL_FIXING"]["expected_not_before"] == "2026-11-26"
+assert "VIX_OFFICIAL_CLOSE" not in h["critical_daily_problems"]
+for invalid_day in ("2026-11-24", "2026-11-26", "2026-11-27"):
+    bad_holiday = copy.deepcopy(holiday)
+    bad_vix = bad_holiday["D.json"]["risk"]["VIX"]
+    bad_vix["last_date"] = bad_vix["dates"][-1] = invalid_day
+    assert "VIX_OFFICIAL_CLOSE" in inspect(bad_holiday, holiday_now)["critical_daily_problems"]
+stale_ecb = copy.deepcopy(holiday)
+stale_ecb["ECB_G8_PRICE_HISTORY.json"]["last_as_of"] = "2026-11-25"
+assert "FX_OFFICIAL_FIXING" in inspect(stale_ecb, holiday_now)["critical_daily_problems"]
 assert out["evidence"]["MACRO_BASELINE"]["as_of"] == "2026-09-25"
 assert out["evidence"]["MACRO_BASELINE"]["state"] == "HISTORICAL_NOT_AUTO_RECALCULATED"
 # All 16 observed periods are visible, but their labels are not release instants
