@@ -1,9 +1,10 @@
-"""Align six native liquidity lanes with verified full official current vintages."""
+"""Align eleven native liquidity lanes with verified full official current vintages."""
 import argparse,copy,csv,io,json,math,statistics
 from datetime import datetime,timezone
 from pathlib import Path
 from urllib.parse import urlencode,urlsplit
 from validation.macro import prepare_us_monthly_revised_v1 as us,prepare_chf_snb_revised_v1 as ch,prepare_aud_rba_stocks_revised_v1 as au,prepare_cad_boc_revised_v1 as ca
+from validation.macro import prepare_us_weekly_daily_revised_v1 as usw, prepare_gbp_boe_revised_v1 as gb, prepare_chf_snb_balance_mortgage_v1 as chb, prepare_chf_mona_credit_v1 as chc, prepare_jpy_boj_reserve_average_v1 as jp
 ROOT=Path(__file__).resolve().parents[2]
 CONFIG={
  ("USD","liquidity"):("US_M2SL_history_value","M2SL","M2","Billions of U.S. dollars, seasonally adjusted","M","FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT"),
@@ -12,6 +13,11 @@ CONFIG={
  ("AUD","credit"):("AU_CREDIT_BUSINESS_CURRENT_SA_history_value","DLCACSFBS","Credito imprese","AUD billions","M","RBA_CURRENT_REVISED_HISTORY_NOT_PIT"),
  ("AUD","liquidity"):("AU_EXCHANGE_SETTLEMENT_BALANCES_history_value","ARBALESBW","Exchange Settlement balances","AUD millions","W","RBA_CURRENT_REVISED_HISTORY_NOT_PIT"),
  ("CAD","liquidity"):("CA_SETTLEMENT_BALANCES_history_value","V41886561","Settlement balances","CAD millions","M","BOC_CURRENT_REVISED_HISTORY_NOT_PIT"),
+ ("USD","credit"):("US_TOTBKCR_history_value","TOTBKCR","Credito bancario totale","Billions of U.S. Dollars","W","FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT"),
+ ("GBP","liquidity"):("UK_BOE_RESERVE_BALANCES_history_value","RPWB56A","BoE — reserve balances","GBP millions","W","BOE_IADB_CURRENT_REVISED_HISTORY_NOT_PIT"),
+ ("JPY","liquidity"):("JP_BOJ_RESERVE_BALANCES_history_value","BOJ_MBLONG_AVERAGE_RESERVE_BALANCES","BoJ — reserve balances","100 million yen","M","BOJ_CURRENT_REVISED_HISTORY_NOT_PIT"),
+ ("CHF","liquidity"):("CH_SNB_SIGHT_DEPOSITS_DOMESTIC_BANKS_history_value","EPB@SNB.snbbipo{GB}","SNB — sight deposits","CHF millions","M","SNB_CURRENT_REVISED_HISTORY_NOT_PIT"),
+ ("CHF","credit"):("CH_BANK_CREDIT_CUSTOMERS_history_value","BSTA@SNB.MONA_B.BIL.AKT.FKU{B,T,T,T,T,T,A40}","Credito bancario","CHF millions","M","SNB_CURRENT_REVISED_HISTORY_NOT_PIT"),
 }
 def need(ok,why):
     if not ok:raise ValueError(why)
@@ -60,7 +66,12 @@ def load_us_m2_full(row,now,fetcher=us.fetch):
     history(row,"M",now)
     return row
 def load_full(ccy,ident,row,now):
-    if ccy=="USD":load_us_m2_full(row,now)
+    if ident=="US_M2SL_history_value":load_us_m2_full(row,now)
+    elif ident in usw.CONFIG:usw.prepare_row(row,ident,now,usw.fetch)
+    elif ident in gb.CONFIG:gb.prepare_row(row,ident,now,gb.fetch)
+    elif ident in jp.CONFIG:jp.prepare_row(row,now,jp._fetch_workbook())
+    elif ident in chb.CONFIG:chb.prepare_row(row,ident,now,chb.fetch)
+    elif ident in chc.CONFIG:chc.prepare_row(row,ident,now,chc.fetch)
     elif ccy=="CHF":ch.prepare_row(row,ident,now,ch.fetch)
     elif ccy=="CAD":ca.prepare_row(row,ident,now,ca.fetch)
     elif ccy=="AUD":
@@ -88,7 +99,7 @@ def prepare(macro,native,now,loader=load_full):
             dates=candidate["dates"];values=candidate["values"];before=dst["last_date"];changed=dst["dates"]!=dates or dst["values"]!=values
             if changed:dst.update(dates=dates,values=values,last_date=dates[-1],last_value=values[-1])
             receipts.append(dict(ccy=c,role=role,id=ident,status="READY" if changed else "NO_CHANGE",before=before,after=dst["last_date"],source_series_id=series,full_count=len(full),canonical_exact_overlap=len(canonical),native_overlap=len(old),**audit))
-        except (OSError,ValueError,KeyError,TypeError) as exc:
+        except (OSError,RuntimeError,ValueError,KeyError,TypeError,IndexError) as exc:
             out[c][role]=copy.deepcopy(native[c][role])
             receipts.append(dict(ccy=c,role=role,id=ident,status="WITHHELD",reason=str(exc)))
     return out,{"schema":"GMFQ_G8_NATIVE_LIQUIDITY_PARITY_V1","series":receipts,"status":"READY" if any(x["status"]=="READY" for x in receipts) else "NO_CHANGE_OR_WITHHELD","first_release_PIT_certified":False,"macro_mutated":False}
