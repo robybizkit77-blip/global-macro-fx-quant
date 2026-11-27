@@ -3418,7 +3418,7 @@
       ],
       "NZD": [
         {
-          "acceleration_pp": null,
+          "acceleration_pp": -9.647847001497688,
           "change_1m_pct": 2.176870748299309,
           "frequency": "M",
           "horizon": "STOCK_3M_ENDPOINT",
@@ -3435,7 +3435,7 @@
           "velocity_pp": -4.95155331529441
         },
         {
-          "acceleration_pp": null,
+          "acceleration_pp": 0.4144707770079137,
           "change_1m_pct": 1.1368659976114692,
           "frequency": "M",
           "horizon": "STOCK_3M_ENDPOINT",
@@ -3452,7 +3452,7 @@
           "velocity_pp": 0.3273954681854985
         },
         {
-          "acceleration_pp": null,
+          "acceleration_pp": -0.11174016774173623,
           "change_1m_pct": 0.9899737938696473,
           "frequency": "M",
           "horizon": "STOCK_3M_ENDPOINT",
@@ -3726,7 +3726,7 @@
     "writes_live_data": false
   },
   "sector_financial_status": "RESEARCH_ONLY",
-  "snapshot_content_sha256": "3cae6dbc6e230101a3775323f7fd945d07247a4bdee5f15feb5af97a107f1b3e",
+  "snapshot_content_sha256": "3ea359d3ca2c000b6a8f76db2da99e5438c746ea6118e94b70dc32f284330984",
   "source_observation_periods_not_release_days": true,
   "source_receipt_sha256": "172df8e058fd28b63946716ca795b10304b54097ac4e8d2b99d819db25d3d811",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
