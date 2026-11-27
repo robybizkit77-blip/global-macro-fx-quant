@@ -50,6 +50,7 @@ FILES = (
     # Keep the public derived COT story and manifest in exact-byte lockstep
     # with the runtime payload. A stale standalone file fails the release.
     "live_data/sections/V247_COT_STORIES.json",
+    "live_data/sections/NATIVE_RATES_DATA.json",
     "live_data/sections/RATES_AUDIT_METADATA.json",
     "live_data/manifest.v2.json",
     # Previously missing/obsolete standalone reference feeds must converge too.
