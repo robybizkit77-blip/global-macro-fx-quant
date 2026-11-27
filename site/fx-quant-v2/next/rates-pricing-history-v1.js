@@ -45,7 +45,10 @@
    derivedReferences:TENORS.flatMap(t=>ts[t].filter(p=>p.derived)).length};
  }
  function connect(a,b){
-  if(!a||!b||span(a.date,b.date)<1||span(a.date,b.date)>4)return false;
+  // Only adjacent weekdays; weekends may be crossed, missing weekdays may not.
+  // Exchange holidays are intentionally gaps without an exchange-session calendar.
+  if(!a||!b||!dateOK(a.date)||!dateOK(b.date)||weekdayReference(b.date,1)!==a.date||
+     [0,6].includes(new Date(b.date+'T12:00:00Z').getUTCDay()))return false;
   if(a.source_class==='BANK_BILL_PROXY_DELTA_REFERENCE'&&b.source_class==='BANK_BILL_PROXY')return !!a.contract&&a.contract===b.contract;
   if(a.source_class!==b.source_class)return false;
   if(a.source_class==='SECONDARY_SAME_CONTRACT'||a.source_class==='RELATIVE_SAME_DATE'||a.source_class==='BANK_BILL_PROXY')
