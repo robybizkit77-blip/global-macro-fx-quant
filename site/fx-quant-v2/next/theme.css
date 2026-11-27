@@ -312,3 +312,12 @@ body{background:radial-gradient(ellipse 70% 45% at 90% 0,rgba(20,62,82,.28),tran
 .risk-next-step nav{display:flex;flex-wrap:wrap;gap:14px}.risk-next-step a{font-size:12px;color:#90d5e4}
 .strength-quant-fold{margin:13px 0;padding:14px;border:1px solid #38556a;border-radius:12px;background:#102131}.strength-quant-fold>summary{cursor:pointer;color:#c3d9e6;font-size:13px}
 .strength-enhanced-summary{padding:12px 14px;margin:12px 0;background:#112635;border:1px solid #38556a;border-radius:10px;font-size:13px;color:#c3d9e6}
+
+/* Shared reading hierarchy for events and research archive. */
+.desk-section-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.desk-section-nav button{cursor:pointer;color:#c3d9e6;background:#102131;border:1px solid #38556a;border-radius:8px;padding:10px 13px;font:inherit;font-size:12px}
+.desk-section-nav button:focus-visible{outline:2px solid #90d5e4;outline-offset:2px}
+.desk-section-title{margin:22px 0 12px;font-size:22px;color:#edf5f8}
+#desk-calendar,#desk-news{scroll-margin-top:85px}
+.rl-disclaimer>summary{cursor:pointer;font-weight:700;color:#c3d9e6;font-size:13px}
+.rl-disclaimer[open]>summary{margin-bottom:14px}
