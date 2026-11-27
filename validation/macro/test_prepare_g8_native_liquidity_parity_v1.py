@@ -6,9 +6,11 @@ def fixture():
     m={};n={};feeds={}
     for (c,role),(ident,series,label,unit,f,status) in CONFIG.items():
         if f=="W":ds=[(date(2025,1,1)+timedelta(days=i*7)).isoformat() for i in range(60)]
+        elif f=="Q":ds=[f"{2011+i//4}-Q{i%4+1}" if c=="JPY" else f"{2011+i//4}-{i%4*3+1:02d}-01" for i in range(60)]
+        elif c=="GBP":ds=[date(2021+i//12,i%12+1,calendar.monthrange(2021+i//12,i%12+1)[1]).strftime("%d %b %Y") for i in range(60)]
         elif c=="AUD":ds=[f"{calendar.monthrange(2021+i//12,i%12+1)[1]:02d}/{i%12+1:02d}/{2021+i//12}" for i in range(60)]
         else:ds=[f"{2021+i//12}-{i%12+1:02d}"+("-01" if c=="CAD" else "") for i in range(60)]
-        vs=[10000+i*10 for i in range(60)]
+        vs=[-10+i*.2 for i in range(60)] if role=="conditions" else ([2+i*.01 for i in range(60)] if c=="GBP" and role=="credit" else [10000+i*10 for i in range(60)])
         def row(a,b):
             d=ds[a:b];v=vs[a:b];return dict(label=label,dates=d,values=v,last_date=d[-1],last_value=v[-1])
         n.setdefault(c,{})[role]=row(0,55)
