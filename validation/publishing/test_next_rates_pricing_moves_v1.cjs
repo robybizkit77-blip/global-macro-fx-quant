@@ -25,13 +25,13 @@ const official=(ccy,t,window)=>{
  return operational.currencies[ccy].operational_status==='GREEN_OFFICIAL'&&
   o&&o.rate===p.rate&&same(o[prop],p[prop])?o[prop]:null;
 };
-assert.equal(result.GBP.rows[1].one?.bp,official('GBP','6m','1d'));
-assert.equal(result.GBP.rows[1].week?.bp,official('GBP','6m','1w'));
+assert.equal(result.GBP.rows[1].one?.bp??null,official('GBP','6m','1d'));
+assert.equal(result.GBP.rows[1].week?.bp??null,official('GBP','6m','1w'));
 assert.equal(result.GBP.rows[1].asof,snapshot.currencies.GBP.horizons['6m'].as_of);
 assert.equal(result.CAD.kind,'FUTURES');
-assert.equal(result.CAD.rows[1].one?.bp,official('CAD','6m','1d'));
-assert.equal(result.JPY.rows[1].one?.bp,official('JPY','6m','1d'));
-assert.equal(result.AUD.rows[2].one?.bp,official('AUD','12m','1d'));
+assert.equal(result.CAD.rows[1].one?.bp??null,official('CAD','6m','1d'));
+assert.equal(result.JPY.rows[1].one?.bp??null,official('JPY','6m','1d'));
+assert.equal(result.AUD.rows[2].one?.bp??null,official('AUD','12m','1d'));
 assert.equal(result.NZD.kind,'PROXY FUTURES');
 assert.equal(result.NZD.rows[1].one?.bp,nzd.horizons['6m'].change_1d_bp);
 assert.equal(result.USD.kind,'FUTURES SECONDARI');
