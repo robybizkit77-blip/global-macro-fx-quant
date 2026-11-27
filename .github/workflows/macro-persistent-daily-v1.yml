@@ -1296,7 +1296,7 @@ jobs:
 
 
   aud-rba-source-proof:
-    if: github.event_name == 'pull_request' && github.head_ref == 'fix/aud-rba-credit-liquidity-batch-20261126'
+    if: github.event_name == 'pull_request' && (github.head_ref == 'fix/aud-rba-credit-liquidity-batch-20261126' || github.head_ref == 'probe/aud-rba-d2-f6-f7-exact-identity-20261127')
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     permissions:
@@ -1309,6 +1309,9 @@ jobs:
       - run: python -m pip install beautifulsoup4
       - name: Validate source contract and independent failure behavior
         run: python -m unittest validation.macro.test_prepare_aud_rba_stocks_revised_v1 -v
+      - name: Diagnose exact D2 F6 F7 identities against existing canonical histories (read only)
+        if: github.head_ref == 'probe/aud-rba-d2-f6-f7-exact-identity-20261127'
+        run: python -m validation.macro.prepare_aud_rba_stocks_revised_v1 --probe-missing
       - name: Verify official RBA source series and monetary units
         run: |
           python -m validation.macro.prepare_aud_rba_stocks_revised_v1 --candidate /tmp/aud-rba-proof/candidate.json --receipt /tmp/aud-rba-proof/receipt.json
