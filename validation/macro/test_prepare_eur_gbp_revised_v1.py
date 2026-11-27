@@ -56,4 +56,35 @@ class RevisedTests(unittest.TestCase):
         self.assertEqual(prepare_row(*k,x,NOW,source)["status"],"READY")
         self.assertEqual(x["current_vintage_provenance"]["definition"]["legacy_period_shift_months"],0)
         self.assertEqual(prepare_row(*k,x,NOW,source)["status"],"NO_CHANGE")
+    def test_ea_labour_revisions(self):
+        k=("EUR","EA_UNEMP_history_value")
+        x=row(k)
+        x.update(dates=["2026-08","2026-09-01"],values=[6.4,6.5],last_date="2026-09-01",last_value=6.5)
+        filters={"freq":"M","s_adj":"SA","age":"TOTAL","unit":"PC_ACT","sex":"T","geo":"EA21"}
+        payload={"id":[*filters,"time"],"size":[*[1 for _ in filters],2],
+            "dimension":{**{k:{"category":{"index":{v:0}}} for k,v in filters.items()},
+              "time":{"category":{"index":{"2026-08":0,"2026-09":1}}}},"value":{"0":6.5,"1":6.5}}
+        source=lambda url:json.dumps(payload).encode()
+        self.assertEqual(prepare_row(*k,x,NOW,source)["status"],"READY")
+        self.assertEqual(x["dates"],["2026-08","2026-09"])
+        self.assertEqual(x["values"],[6.5,6.5])
+        self.assertEqual(prepare_row(*k,x,NOW,source)["status"],"NO_CHANGE")
+        payload["dimension"]["geo"]["category"]["index"]={"EA20":0}
+        with self.assertRaises(ValueError):prepare_row(*k,x,NOW,source)
+    def test_ea_employment_quarterly(self):
+        k=("EUR","EA_EMPLOYMENT_history_value")
+        x=row(k)
+        dates=[f"{2023+n//4}-Q{n%4+1}" for n in range(15)]
+        values=[170000+n*100 for n in range(15)]
+        x.update(frequency="Q",dates=dates[:-1],values=values[:-1],last_date=dates[-2],last_value=values[-2])
+        filters={"freq":"Q","unit":"THS_PER","na_item":"EMP_DC","s_adj":"SCA","geo":"EA21"}
+        payload={"id":[*filters,"time"],"size":[*[1 for _ in filters],len(dates)],
+            "dimension":{**{k:{"category":{"index":{v:0}}} for k,v in filters.items()},
+              "time":{"category":{"index":{d:i for i,d in enumerate(dates)}}}},"value":values}
+        source=lambda url:json.dumps(payload).encode()
+        self.assertEqual(prepare_row(*k,x,NOW,source)["status"],"READY")
+        self.assertEqual(x["last_date"],"2026-Q3")
+        self.assertEqual(prepare_row(*k,x,NOW,source)["status"],"NO_CHANGE")
+        payload["value"]=[v*1.1 for v in values]
+        with self.assertRaises(ValueError):prepare_row(*k,x,NOW,source)
 if __name__=="__main__":unittest.main()
