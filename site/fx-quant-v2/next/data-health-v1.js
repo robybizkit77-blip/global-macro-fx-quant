@@ -56,11 +56,31 @@ function item(label,day,today,maxAge,extra=''){
   lane('NZD · C60 condizioni credito',nz?.credit_conditions,nz?.credit_conditions?.latest_observation,210);
   return r;
  }
+function cycleCoverage(feed,today){
+ const specs=[
+  ['Attività', 'activity_momentum_status','activity_momentum_research','GMFQ_G8_CURRENT_ACTIVITY_MOMENTUM_RESEARCH_V1',13],
+  ['Lavoro e inflazione','labour_inflation_status','labour_inflation_dynamics','GMFQ_G8_LABOUR_INFLATION_DYNAMICS_RESEARCH_V1',41],
+  ['Settori, credito e liquidità','sector_financial_status','sector_financial_dynamics','GMFQ_G8_SECTOR_FINANCIAL_DYNAMICS_RESEARCH_V1',64]
+ ];
+ return specs.map(([label,status,key,schema,expected])=>{
+  const x=feed?.[key];
+  const gate=feed?.[status]==='RESEARCH_ONLY'&&x?.schema===schema&&x.safe_to_publish_D===false&&x.safe_to_update_pairs===false&&x.as_of===feed.generated_europe_rome_day&&age(x.as_of,today)>=0&&age(x.as_of,today)<=7&&G8.every(c=>Array.isArray(x.countries?.[c]));
+  if(!gate)return {label,day:x?.as_of||null,state:'withheld',extra:'Copertura non validabile; attesi '+expected+' indicatori.'};
+  const rows=G8.flatMap(c=>x.countries[c].map(r=>({...r,currency:c})));
+  const unique=new Set(rows.map(r=>r.currency+'|'+r.series_id));
+  const valid=rows.filter(r=>r.measurement!=='WITHHELD'&&Number.isFinite(r.level)&&typeof r.reference_period==='string');
+  const velocity=valid.filter(r=>Number.isFinite(r.velocity_pp)).length, acceleration=valid.filter(r=>Number.isFinite(r.acceleration_pp)).length;
+  const complete=rows.length===expected&&unique.size===expected&&valid.length===expected;
+  const missing=rows.filter(r=>r.measurement==='WITHHELD').map(r=>r.currency+' '+r.label+': '+(r.reason||'fonte sospesa'));
+  return {label,day:x.as_of,state:complete?'research':'review',extra:valid.length+'/'+expected+' livelli validi; velocità '+velocity+'/'+expected+'; accelerazione '+acceleration+'/'+expected+'. '+(rows.length!==expected||unique.size!==expected?'Perimetro incompleto o duplicato. ':'')+missing.join('; ')};
+ });
+}
 function read(data,today,globals=root){
  const o=data||{},rows=[];
  const add=(name,items,note)=>rows.push({name,items,note});
  add('Forex e coppie',[item('Fixing BCE',o.currencyPrices?.last_as_of,today,4),item('28 coppie',o.pairs?.price_asof,today,4)],'Fixing di riferimento, non intraday.');
  add('Scenario macro',[item('Elaborazione G8',o.macroObserved?.generated_europe_rome_day,today,4)],'Data elaborazione ≠ data ultima pubblicazione di ogni serie.');
+ add('Copertura motore economico',cycleCoverage(o.macroObserved,today),'Copertura dei livelli e dei calcoli pubblicati: non certifica l’ultimo rilascio delle fonti né la validità predittiva.');
  add('Tassi governativi',G8.map(c=>item(c,o.rates?.[c]?.date,today,7)),'Archivio 2Y/10Y di base. Fonti alternative possono avere date diverse; non equivalgono automaticamente a una curva completa.');
  add('Pricing monetario',G8.map(c=>{
   const r=o.oisOperational?.currencies?.[c],s=item(c,r?.as_of,today,7,r?.operational_status||'stato non disponibile');
@@ -96,7 +116,7 @@ const names={observed:'Data entro soglia',review:'Data da verificare',missing:'A
 function render(health,esc){
  return '<details class="panel" data-data-health-v1><summary><strong>Affidabilità degli aggiornamenti</strong> · '+(health.attention?'Controlli aperti':'Date entro le soglie indicative')+'</summary><p>Data presente non significa fonte aggiornata all’ultimo rilascio. Controllo diagnostico, non certificazione di freschezza. Nessun effetto sui ranking.</p>'+health.rows.map(r=>'<details><summary><strong>'+esc(r.name)+'</strong> · '+r.items.filter(x=>x.state!=='observed').length+'/'+r.items.length+' da verificare</summary><p>'+esc(r.note)+'</p><div style="overflow-x:auto"><table><thead><tr><th>Fonte / indicatore</th><th>Periodo</th><th>Stato</th></tr></thead><tbody>'+r.items.map(x=>'<tr><td>'+esc(x.label)+'</td><td>'+esc(x.day||'—')+'</td><td><span class="badge '+(x.state==='observed'?'neutral':'warning')+'">'+esc(names[x.state])+'</span> '+esc(x.extra)+'</td></tr>').join('')+'</tbody></table></div></details>').join('')+'</details>';
 }
-const api={read,render,periodEnd};
+const api={read,render,periodEnd,cycleCoverage};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 else root.FXQuantDataHealth=api;
 })(typeof window==='undefined'?globalThis:window);
