@@ -47,7 +47,8 @@ for(const mode of ['setup','thesis']){
 assert.equal(overlap(result,'unapproved'),null);
 assert.equal(overlap({setup:[{code:'EURUSD'}]},'setup'),null);
 const invalidFocus=structuredClone(result);
-invalidFocus.setup[0].fav='CAD';
+const invalidLeg=invalidFocus.setup[0].code;
+invalidFocus.setup[0].fav=FX.find(c=>c!==invalidLeg.slice(0,3)&&c!==invalidLeg.slice(3));
 assert.equal(overlap(invalidFocus,'setup'),null,'a source-contradicting favored currency fails closed');
 
 for(const mode of ['setup','thesis']){

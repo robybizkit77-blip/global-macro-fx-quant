@@ -85,6 +85,16 @@
         "evidence": "validation/fixtures/rbnz_b2_postroll_2026-11-26_reviewed_release.json",
         "manual_approval_reference": "https://github.com/robybizkit77-blip/global-macro-fx-quant/pull/1720",
         "automatic_promotion_allowed": false
+      },
+      "postroll_recurring_observations": {
+        "status": "SAME_BENCHMARK_OBSERVATIONAL_ONLY",
+        "benchmark_roll_date": "2026-10-30",
+        "benchmark_2Y": "April 2029",
+        "benchmark_10Y": "April 2037",
+        "same_edition_html_xlsx_required": true,
+        "append_only": true,
+        "cross_roll_allowed": false,
+        "core_pit_fx_backtests_allowed": false
       }
     }
   },

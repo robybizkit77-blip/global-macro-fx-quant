@@ -15,6 +15,8 @@ on:
       - 'validation/rates/reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/check_nzd_postroll_release_readiness_v1.py'
       - 'validation/rates/prove_nzd_postroll_runtime_release_v1.py'
+      - 'validation/rates/continue_nzd_postroll_observations_v1.py'
+      - 'validation/rates/test_continue_nzd_postroll_observations_v1.py'
       - 'validation/rates/test_check_nzd_postroll_release_readiness_v1.py'
       - 'validation/rates/test_reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
@@ -46,6 +48,8 @@ on:
       - 'validation/rates/reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/check_nzd_postroll_release_readiness_v1.py'
       - 'validation/rates/prove_nzd_postroll_runtime_release_v1.py'
+      - 'validation/rates/continue_nzd_postroll_observations_v1.py'
+      - 'validation/rates/test_continue_nzd_postroll_observations_v1.py'
       - 'validation/rates/test_check_nzd_postroll_release_readiness_v1.py'
       - 'validation/rates/test_reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
@@ -111,6 +115,7 @@ jobs:
           python3 validation/rates/test_collect_rbnz_b2_daily_web_v1.py
           python3 validation/rates/test_reconcile_fxv2_nzd_b2_postroll_v1.py
           python3 validation/rates/test_check_nzd_postroll_release_readiness_v1.py
+          python3 validation/rates/test_continue_nzd_postroll_observations_v1.py
           python3 validation/rates/test_fxv2_nzd_manual_public_source_v1.py
           python3 validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py
           python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
@@ -348,15 +353,15 @@ jobs:
           done
           echo 'No update accepted after retries; previous research feed preserved' >&2
           exit 1
-      - name: One-time reviewed NZD canonical release after exact official source recheck
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.rbnz_reconciled.outputs.verified == 'true'
+      - name: Continue same-benchmark NZD canonical observations after exact official source recheck
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.rbnz_reconciled.outputs.verified == 'true'
         shell: bash
         run: |
           set -euo pipefail
           git diff --exit-code -- live_data payload
           BASE=$(git rev-parse HEAD)
           OUT=/tmp/nzd-reviewed-native.json
-          python3 validation/rates/prove_nzd_postroll_runtime_release_v1.py "$OUT" --reviewed-release
+          python3 validation/rates/continue_nzd_postroll_observations_v1.py "$OUT"
           if [ ! -s "$OUT" ]; then exit 0; fi
           python3 validation/update_live_direct_section.py --section NATIVE_RATES_DATA --replacement "$OUT" --apply
           python3 validation/build_rates_audit_metadata.py --audit-date "$(date -u +%F)" --output /tmp/nzd-reviewed-audit.json
@@ -365,12 +370,13 @@ jobs:
           python3 validation/check_live_update_contract.py
           python3 validation/rebuild_live_data_runtime.py --verify-only
           python3 validation/rates/verify_weekly_rate_change_contract_v1.py
+          python3 validation/check_nzd_rates_reviewed_snapshot_v1.py
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add live_data/sections/NATIVE_RATES_DATA.json live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-15.txt
-          git commit -m 'Promote exact reviewed NZD B2 post-roll snapshot 26 Nov 2026'
+          git commit -m 'data(rates): append reconciled same-benchmark NZD B2 observation'
           python3 validation/rates/push_rates_safe_v1.py --mode rates --base "$BASE"
-          echo NZD_POSTROLL_REVIEWED_RELEASE_MAIN_PASS
+          echo NZD_RECURRING_OBSERVATION_MAIN_PASS
 
       - name: Keep source review evidence
         if: always()

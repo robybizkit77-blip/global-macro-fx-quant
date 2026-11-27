@@ -86,6 +86,14 @@ def validate(rates: dict, registry: dict, *, root: Path = ROOT) -> dict:
             "official same-basis / no-estimate policy relaxed")
     meta = registry["currencies"]["NZD"]
     row = rates["NZD"]
+    if row.get("date", "") > "2026-11-26":
+        from rates.continue_nzd_postroll_observations_v1 import verify_row
+        anchor = review_file(root, meta["postroll_reviewed_release"]["evidence"])
+        base = validate_postroll(anchor["canonical_row"], meta, root)
+        latest = json.loads((root/"site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json").read_text())
+        verify_row(row, anchor, latest, meta["postroll_recurring_observations"])
+        return {**base,"as_of":row["date"],"2Y":row["2Y"],"10Y":row["10Y"],
+                "source_access":"HTML_XLSX_RECONCILED_RECURRING_OBSERVATION"}
     if row.get("date", "") >= "2026-10-30":
         return validate_postroll(row, meta, root)
     require(meta.get("adapter_status") == "OPERATIONAL_MANUAL_OFFICIAL_VERIFIED__RUNNER_ACCESS_BLOCKED",

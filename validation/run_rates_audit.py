@@ -54,7 +54,7 @@ def main():
     try:
         nz_review=validate_nzd(rates,reg)
         state='NO_CHANGE'
-        nz_reason=('Exact reviewed post-roll HTML/XLSX snapshot; recurring canonical promotion not approved' if nz_review.get('source_access')=='HTML_XLSX_RECONCILED_ONE_TIME' else meta.get('reason'))
+        nz_reason=('Exact reconciled same-benchmark HTML/XLSX observation; no PIT/Core promotion' if nz_review.get('source_access','').startswith('HTML_XLSX_RECONCILED') else meta.get('reason'))
     except (ValueError, KeyError, TypeError, OSError) as exc:
         state='CURRENT_SNAPSHOT_REGISTRY_MISMATCH'
         nz_review=None

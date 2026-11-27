@@ -14,7 +14,15 @@ function readApproved(root='.') {
  const rates=JSON.parse(fs.readFileSync(path.join(root,RATES),'utf8'));
  const registry=JSON.parse(fs.readFileSync(path.join(root,REGISTRY),'utf8'));
  const base=registry.currencies?.NZD;
- const approved=rates.NZD?.date>='2026-10-30'?base?.postroll_reviewed_release:base;
+ let approved=rates.NZD?.date>='2026-10-30'?base?.postroll_reviewed_release:base;
+ if(rates.NZD?.date>'2026-11-26'){
+  const receipt=rates.NZD.reconciled_release_receipt,latest=JSON.parse(fs.readFileSync(path.join(root,'site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json'),'utf8'));
+  if(base?.postroll_recurring_observations?.status!=='SAME_BENCHMARK_OBSERVATIONAL_ONLY'||!receipt||receipt.publication_date>latest.publication_date||
+     JSON.stringify(receipt.observations)!==JSON.stringify(latest.observations.slice(0,receipt.observations.length))||
+     (receipt.publication_date===latest.publication_date&&JSON.stringify(receipt)!==JSON.stringify(latest)))throw Error('NZD recurring source receipt mismatch');
+  const last=receipt.observations.at(-1);
+  approved={...approved,current_snapshot:last.date,current_2Y:last['2Y'],current_10Y:last['10Y']};
+ }
  if(!approved||!rates.NZD)throw Error('NZD approved canonical Rates/registry unavailable');
  return {approved,canonical:rates.NZD};
 }
