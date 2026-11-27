@@ -481,3 +481,31 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  for(const path of ['macro-strength-estimated-v1.js','pair-rankings.js'])assert.doesNotMatch(read('site/fx-quant-v2/next/'+path),/FXQuantRatesResearchScore/);
  console.log('RATES_RESEARCH_SCORE_EXACT_INTERVAL_PASS');
 }
+
+{
+ const score=require('../site/fx-quant-v2/next/positioning-research-score-v1.js');
+ const desk=require('../site/fx-quant-v2/next/cot-report-reading-v26.js');
+ const history=JSON.parse(read('live_data/sections/V250_COT_CHART_DATA.json'));
+ const archive=JSON.parse(read('site/fx-quant-v2/design-studio-cot-v1-data.json'));
+ const today=JSON.parse(read('site/control-room-preview/macro-v3-current-evidence.json')).generated_europe_rome_day;
+ for(const currency of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+  const x=score.evaluate({currency,history,archive,desk,today});
+  assert.ok(x);
+  assert.equal(x.affectsFxRanking,false);
+  assert.equal(x.eligibleForTrading,false);
+  assert.equal(x.pointInTimeCertified,false);
+  assert.ok(x.score===null||x.score>=0&&x.score<=10);
+  if(x.score!==null){
+   const clip=v=>Math.max(-1,Math.min(1,v));
+   assert.ok(Math.abs(x.score-(5+5*(.6*clip(x.flow1/2)+.4*clip(x.previous3/2))))<1e-10);
+   assert.ok(Math.abs(x.acceleration-(x.flow1-x.previous3))<1e-10);
+  }
+  assert.doesNotMatch(score.render(x,String),/undefined|NaN/);
+  const old=new Date(Date.parse(x.asof)+15*864e5).toISOString().slice(0,10);
+  assert.equal(score.evaluate({currency,history,archive,desk,today:old}).score,null);
+ }
+ const bad=JSON.parse(JSON.stringify(history));bad.USD.net[bad.USD.net.length-1]+=100;
+ assert.equal(score.evaluate({currency:'USD',history:bad,archive,desk,today}),null);
+ for(const file of ['macro-strength-estimated-v1.js','pair-rankings.js'])assert.doesNotMatch(read('site/fx-quant-v2/next/'+file),/FXQuantPositioningResearchScore/);
+ console.log('POSITIONING_RESEARCH_SCORE_G8_PASS');
+}
