@@ -669,8 +669,15 @@ async function macroDriversJourney(page,label){
  assert(meaning.toLowerCase().includes('liquidità')&&meaning.toLowerCase().includes('credito'),
   label+' liquidity-to-credit divergence narrative missing');
  const jpySources=await locator(page,'.drivers-source-provenance-fold').textContent();
- assert(jpySources.includes('STORICO')&&jpySources.includes('osservazione precedente'),
-  label+' historical source age and observed changes must be explicit');
+ assert(/STORICO|DATATO/.test(jpySources)&&jpySources.includes('osservazione precedente'),
+  label+' source age and observed changes must be explicit');
+ const actualJPY=readSource('live_data/sections/NATIVE_LIQ_DATA.json').JPY;
+ for(const role of ['liquidity','credit','conditions']){
+  const data=actualJPY[role];
+  if(!data?.last_date)continue;
+  const fact=locator(page,'[data-liq-role="'+role+'"]');
+  assert((await fact.textContent()).includes(data.last_date),label+' JPY '+role+' must show real observation period');
+ }
  const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format();
  const risk=readSource('site/fx-quant-v2/cross-asset-live-data.json');
  assert(meaning.includes('USD/JPY')&&meaning.includes(riskCheck(risk,today)),
