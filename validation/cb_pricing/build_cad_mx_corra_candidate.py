@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+try:
+ from .cad_corra_plausibility_v1 import settlement,validate_changes,TENORS
+except ImportError:
+ from cad_corra_plausibility_v1 import settlement,validate_changes,TENORS
 import argparse,datetime as dt,json,pathlib
 ROOT=pathlib.Path(__file__).resolve().parents[2]
 OIS=ROOT/'live_data'/'sections'/'OIS_DATA.json'; NATIVE=ROOT/'live_data'/'sections'/'NATIVE_CB_DATA.json'; REG=ROOT/'validation'/'cb_pricing'/'CB_PRICING_SOURCE_STATUS_2026-10-08.json'
@@ -16,6 +20,7 @@ def main():
  s=json.loads(a.snapshot.read_text());
  if s.get('schema')!='GMFQ_CB_PRICING_SOURCE_SNAPSHOT_V1' or s.get('currency')!='CAD':raise SystemExit('invalid CAD snapshot')
  if not all(s.get('validation',{}).get(k) is True for k in ('official_source','direct_settlements','no_interpolation','homogeneous_contracts')):raise SystemExit('snapshot validation incomplete')
+ validate_changes(s['observations'],s['change_1d_bp'],s['change_1w_bp'])
  rg=json.loads(REG.read_text())['currencies']['CAD']
  if rg.get('status')!='ACTIVE' or rg.get('official_source')!='Montréal Exchange':raise SystemExit('registry does not authorize CAD MX pricing')
  live=json.loads(OIS.read_text())['currencies']['CAD']
