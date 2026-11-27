@@ -1,0 +1,28 @@
+name: Final liquidity three contracts source proof
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/prepare_final_liquidity_contracts_v1.py'
+      - 'validation/macro/test_prepare_final_liquidity_contracts_v1.py'
+      - '.github/workflows/final-liquidity-three-contracts-proof-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest validation.macro.test_prepare_final_liquidity_contracts_v1 -v
+      - run: python -m validation.macro.prepare_final_liquidity_contracts_v1 --output /tmp/final-liquidity
+      - if: always()
+        run: git diff --exit-code
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-liquidity-source-receipt
+          path: /tmp/final-liquidity/receipt.json
