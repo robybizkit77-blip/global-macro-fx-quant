@@ -31,8 +31,15 @@ assert.deepEqual(result.coverage.pairs,28);
 const gbpGrowth=doc.countries.GBP.growth;
 const jpyGrowth=doc.countries.JPY.growth;
 const chfGrowth=doc.countries.CHF.growth;
-assert.equal(result.coverage.withGDPAcceleration,2+[gbpGrowth,jpyGrowth,chfGrowth]
- .filter(growth=>growth.prior_documented_quarter).length);
+assert.equal(result.coverage.withGDPAcceleration,FX.filter(ccy=>{
+ const g=doc.countries[ccy].growth,p=g.prior_documented_quarter;
+ const qnum=s=>Number(s.slice(0,4))*4+Number(s.slice(-1));
+ return p&&/^\d{4}Q[1-4]$/.test(p.reference_quarter)&&
+  qnum(g.reference_quarter)-qnum(p.reference_quarter)===1&&
+  /^\d{4}-\d{2}-\d{2}$/.test(p.publisher_release_day)&&p.publisher_release_day<=now&&
+  Number.isFinite(p.nonannualized_qoq_descriptive_pct)&&
+  g.later_revisions_not_identical_to_first_release===true;
+ }).length);
 if(gbpGrowth.reference_quarter==='2026Q3'&&gbpGrowth.prior_documented_quarter)
  assert.equal(result.by.GBP.growthTrend,1);
 if(jpyGrowth.reference_quarter==='2026Q3'&&jpyGrowth.prior_documented_quarter)
@@ -70,8 +77,11 @@ assert.equal(result.by.NZD.rate.score,
 assert.equal(result.by.NZD.rate.quality==='UFFICIALE',false,'Bank-bill proxy must never count as official OIS');
 const missingNZProxy=structuredClone(ois);
 missingNZProxy.currencies.NZD.horizons['6m'].change_1w_bp=null;
-assert.equal(run({ois:missingNZProxy}).by.NZD.rate.quality,'ASSENTE',
- 'No 6M same-contract weekly move means no directional proxy');
+const fallbackNZD=run({ois:missingNZProxy}).by.NZD.rate;
+assert.notEqual(fallbackNZD.kind,'BANK_BILL_6M_DIRECTIONAL_PROXY');
+assert(['ASSENTE','PROXY'].includes(fallbackNZD.quality));
+if(fallbackNZD.quality==='PROXY')assert.equal(fallbackNZD.kind,'GOV_2Y_PROXY');
+assert.equal(run({ois:missingNZProxy,rates:{...rates,NZD:{...rates.NZD,weekly2_validation:null}}}).by.NZD.rate.quality,'ASSENTE');
 assert.equal(result.by.USD.rate.kind,'GOV_2Y_PROXY');
 assert.equal(result.by.GBP.rate.kind,'OIS');
 assert.equal(result.by.JPY.rate.kind,'FUTURES');
@@ -109,6 +119,18 @@ const fake=structuredClone(doc);fake.safe_to_recompute_structural_pair_theses=tr
 assert.equal(run({observed:fake}).status,'STIMA_SOSPESA','Reject fake certified core flags');
 const missing=structuredClone(doc);missing.countries.NZD.inflation=null;
 assert.equal(run({observed:missing}).status,'STIMA_SOSPESA','Missing G8 pillars fail closed');
+// Exact strict GDP acceleration thresholds: binary representation must
+// not turn 0.4 - 0.3 into a material acceleration (or its mirror).
+const boundary=structuredClone(doc.countries.AUD);
+for(const [current,prior,expected] of [[.4,.3,0],[.3,.4,0],[.400001,.3,1],[.299999,.4,-1],[.399999,.3,0]]){
+ boundary.growth.nonannualized_qoq_descriptive_pct=current;
+ boundary.growth.prior_documented_quarter.nonannualized_qoq_descriptive_pct=prior;
+ assert.equal(engine.inputCountry(boundary,now).gTrend,expected);
+}
+boundary.labour.change_over_three_observation_intervals_pp=.3-.2;
+assert.equal(engine.inputCountry(boundary,now).labour,-1);
+boundary.labour.change_over_three_observation_intervals_pp=.2-.3;
+assert.equal(engine.inputCountry(boundary,now).labour,1);
 const futureGDP=structuredClone(doc);futureGDP.countries.USD.growth.publisher_release_day='2099-11-12';
 assert.equal(run({observed:futureGDP}).status,'STIMA_SOSPESA','No future GDP');
 const oldPrice=structuredClone(prices);oldPrice.last_as_of='2026-09-25';
@@ -121,7 +143,7 @@ const pair=fs.readFileSync(path.join(ROOT,next,'pair-rankings.js'),'utf8');
 const currency=fs.readFileSync(path.join(ROOT,next,'currency-studio.js'),'utf8');
 const narrative=fs.readFileSync(path.join(ROOT,next,'pair-desk-narrative.js'),'utf8');
 const journey=fs.readFileSync(path.join(ROOT,next,'decision-journey.js'),'utf8');
-assert(index.includes('macro-strength-estimated-v1.js?v=4'));
+assert(/macro-strength-estimated-v1\.js\?v=[5-9]\d*/.test(index));
 assert(index.indexOf('pair-rankings.js')<index.indexOf('macro-strength-estimated-v1.js'));
 assert(index.indexOf('macro-strength-estimated-v1.js')<index.indexOf('app.js'));
 assert(app.includes("get('estimatedMacro')")&&app.includes('function estimatedMacro()'));
