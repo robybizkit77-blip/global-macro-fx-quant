@@ -105,7 +105,7 @@ function render(x,esc=s=>String(s??'')){
  const n=v=>finite(v)?v.toLocaleString('it-IT',{minimumFractionDigits:1,maximumFractionDigits:1}):'—';
  const tone=v=>!finite(v)?'neutral':v>=6?'green':v<=4?'red':'amber';
  const sym=v=>v===1?'↑':v===-1?'↓':v===0?'→':'—';
- return '<details class="rd-detail" data-macro-multifactor-shadow-v1><summary><strong>Macro Score multidimensionale · ricerca</strong> · '+esc(x.score===null?'Non valutabile':n(x.score)+'/10')+'</summary>'+
+ return '<details class="macro-score-research" data-macro-multifactor-shadow-v1><summary><strong>Macro Score multidimensionale · ricerca</strong> · '+esc(x.score===null?'Non valutabile':n(x.score)+'/10')+'</summary>'+
  '<p class="rd-fine">Modello sperimentale, non modifica il ranking FX. Copertura '+x.present+'/8 famiglie; '+esc(n(x.effectiveCoverage))+'% del peso teorico osservabile. Pesi fissi non calibrati. Nessuna classifica comparabile, previsione o backtest validato.</p>'+
  '<div style="overflow-x:auto"><table><thead><tr><th>Famiglia</th><th>Peso</th><th>Score</th><th>Copertura</th><th>Contributo*</th></tr></thead><tbody>'+
  x.families.map(f=>'<tr><td>'+esc(f.label)+'</td><td>'+f.weight+'%</td><td class="'+tone(f.score)+'">'+esc(n(f.score))+'</td><td>'+esc(n(100*f.coverage))+'%</td><td>'+esc(f.score===null?'—':n(f.contribution))+'</td></tr>').join('')+'</tbody></table></div>'+
