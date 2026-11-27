@@ -92,6 +92,12 @@ class SourceScheduleGate(unittest.TestCase):
         self.assertIn("--upstream-source-verified",workflow)
         self.assertIn("steps.parent_rates.outputs.source_verified",workflow)
         self.assertIn("actions: read",workflow)
+        concurrency=workflow.split('concurrency:',1)[1].split('jobs:',1)[0]
+        self.assertIn('queue: max',concurrency)
+        self.assertIn('cancel-in-progress: false',concurrency)
+        self.assertIn("github.event_name == 'pull_request'",concurrency)
+        self.assertIn('fxv2-chf-nzd-validation-pr-{0}',concurrency)
+        self.assertIn('fxv2-chf-nzd-benchmark-research',concurrency)
         self.assertIn("certify_rates_parent_source_execution_v1.py",workflow)
         self.assertIn('if [ "$VENDOR_SLOT" != "true" ]; then', workflow)
         self.assertIn("report_fxv2_chf_nzd_freshness_v1.py", workflow)
