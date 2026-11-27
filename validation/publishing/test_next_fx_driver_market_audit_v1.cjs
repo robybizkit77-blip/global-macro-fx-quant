@@ -91,14 +91,14 @@ const page=(c,data=inputs,today=latestQuote)=>banks.render({
 });
 for(const c of ccys){
  const html=page(c);
- const lead=html.split('<div class="drivers-bank-story">')[1].split('<div class="drivers-links">')[0];
+ const lead=html.split('<div class="drivers-bank-story">')[1].split('<div class="bank-policy-first">')[0];
  assert.doesNotMatch(lead,/%|punti base|\bOIS\b|\b6M\b/);
  for(const heading of ["Cosa va","Cosa frena","Cosa guardare"])assert(lead.includes("<h3>"+heading+"</h3>"));
  assert.match(html,/WANT · COSA COMUNICA/);
  assert.match(html,/CAN · MARGINE DI MANOVRA/);
  assert.match(html,/COSA PREZZA IL MERCATO/);
  assert.match(html,/CONFERMA SUL FOREX/);
- assert.match(html,/<details class="drivers-fold drivers-bank-sources"><summary>Apri decisione, tassi attesi e fonti/);
+ assert.match(html,/<details class="drivers-fold drivers-bank-sources"><summary>Approfondisci evidenze macro, riferimenti di mercato e fonti/);
  assert.equal((html.match(/aria-pressed="true"/g)||[]).length,1);
  assert(html.includes('data-bank-target="'+c+'"'),c);
  assert.equal((html.match(/Tasso ufficiale <strong>/g)||[]).length,1);
