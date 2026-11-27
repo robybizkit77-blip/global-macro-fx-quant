@@ -123,7 +123,7 @@ print("CROSS_ASSET_PUBLIC_DELIVERY_CONTRACT_PASS")
 # condition. Both source completion and code pushes must check the data and
 # the readers, not just branch equality. All paths here are owned by V2.
 pricing_block=s.split("pricing_paths = ",1)[1].split("government_paths =",1)[0].strip()
-government_block=s.split("government_paths = ",1)[1].split("rate_workflows =",1)[0].strip()
+government_block=s.split("government_paths = ",1)[1].split("cot_paths =",1)[0].strip()
 pricing_paths=set(literal_eval(pricing_block))
 government_paths=set(literal_eval(government_block))
 expected_pricing={
@@ -153,3 +153,16 @@ assert 'label = "OIS_RATES_PUBLIC_HTTP"' in s
 assert "paths = pricing_paths + (" in s and "paths = government_paths + (" in s
 assert "paths = tuple(dict.fromkeys(paths))" in s
 print("OIS_GOVERNMENT_READER_PUBLIC_DELIVERY_CONTRACT_PASS",len(pricing_paths|government_paths))
+
+# CFTC producer commits are made with GITHUB_TOKEN; publish and verify even
+# after a NO_UPDATE run so a missed earlier publication can recover.
+producer=(workflow_dir/'cot-persistent-weekly-v1.yml').read_text().splitlines()[0].removeprefix('name: ')
+assert producer=='COT Persistent Weekly V1'
+assert "'"+producer+"'" in triggers and "'"+producer+"'" in proof_if
+cot_paths=set(literal_eval(s.split('cot_paths = ',1)[1].split('rate_workflows =',1)[0].strip()))
+expected_cot={'cot-official-oi-v1.json','positioning-research-score-v1.js','global-fx-research-composite-v1.js','cot-studio.js','currency-studio.js','app.js','index.html'}
+assert cot_paths=={'site/fx-quant-v2/next/'+x for x in expected_cot}
+assert all((root/x).is_file() for x in cot_paths)
+assert 'paths += cot_paths' in s
+assert 'elif source_workflow == "COT Persistent Weekly V1":\n              label = "NEXT_COT_OFFICIAL_OI_PUBLIC_HTTP"\n              paths = cot_paths' in s
+print('COT_OFFICIAL_OI_PUBLIC_DELIVERY_CONTRACT_PASS',len(cot_paths))
