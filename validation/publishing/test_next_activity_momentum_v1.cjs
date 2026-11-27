@@ -74,3 +74,19 @@ assert.match(m.sectorReading({measurement:'STOCK',horizon:'STOCK_3M_ENDPOINT',mo
 assert.match(m.sectorReading({measurement:'QUANTITY',momentum_pct:-8,velocity_pp:-3,acceleration_pp:-.2}),/contrazione si approfondisce/);
 cb.next_meeting='2026-12-09';o.operational_status='GREEN_OFFICIAL';o.horizons['6m']={rate:-762,policy_delta_bp:-76450,change_1w_bp:-76498.5};
 assert.doesNotMatch(m.marketReading('CAD',market,today,fmt),/Futures 6M ufficiali:|76450/);
+
+const compact={...feed,activity_momentum_research:{...feed.activity_momentum_research,safe_to_update_pairs:false},
+ sector_financial_status:sf.sector_financial_status,sector_financial_dynamics:sf.sector_financial_dynamics};
+assert.match(m.countryFirstRead(compact,today,'EUR',fmt),/Produzione \(2026-10 · \+1.00%\).*perde velocità.*senza modificare il punteggio FX/);
+assert.equal(m.countryFirstRead(compact,'2026-12-10','EUR',fmt),'');
+assert.equal(m.countryFirstRead(compact,'2026-11-25','EUR',fmt),'');
+assert.equal(m.countryFirstRead({...compact,activity_momentum_status:'WITHHELD'},today,'EUR',fmt),'');
+const testCredit={pillar:'credit',measurement:'STOCK',label:'Prestiti imprese',reference_period:'2026-10',momentum_pct:1,velocity_pp:-.2,horizon:'STOCK_3M_ENDPOINT'};
+const testNominal={...row,label:'Spesa famiglie',nominal_not_real:true};
+const nominalFeed={...compact,activity_momentum_research:{...compact.activity_momentum_research,countries:{...countries,AUD:[testNominal]}},
+ sector_financial_dynamics:{...sf.sector_financial_dynamics,countries:{...sf.sector_financial_dynamics.countries,AUD:[testCredit]}}};
+const first=m.countryFirstRead(nominalFeed,today,'AUD',fmt);
+assert.match(first,/Non misura la crescita dei volumi reali/);
+assert.match(first,/Prestiti imprese.*Non misura flussi né crescita reale/);
+assert.doesNotMatch(first,/Industry/);
+console.log('G8_CYCLE_FIRST_READ_PASS');
