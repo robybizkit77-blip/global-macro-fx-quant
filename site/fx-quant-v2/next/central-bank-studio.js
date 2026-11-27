@@ -250,6 +250,14 @@
    '<h2>'+esc(story.title)+'</h2></div></div>'+
    '<div class="drivers-bank-story">'+
    (last&&story.lead?'<p class="drivers-lead">'+esc(story.lead)+'</p>':'')+
+   '<div class="bank-first-grid">'+
+   '<article class="bank-first-axis"><h3>Cosa va</h3><p>'+esc(reading.support)+'</p></article>'+
+   '<article class="bank-first-axis"><h3>Cosa frena</h3><p>'+esc(reading.constraint)+'</p></article>'+
+   '<article class="bank-first-axis"><h3>Cosa guardare</h3><p>'+esc(reading.watch)+'</p></article>'+
+   '</div>'+
+   (root.FXQuantIssuerContext?.narrative(get('macroObserved'),[selected],today)?'<p class="drivers-lead">'+esc(root.FXQuantIssuerContext.narrative(get('macroObserved'),[selected],today))+'</p>':'')+
+   '</div>'+
+   '<div class="bank-policy-first">'+
    '<p class="drivers-lead">Tasso ufficiale <strong>'+esc(rate)+'</strong> · decisione '+esc(last?date(last):'da verificare')+
    (nextMeeting?' · prossima riunione '+esc(date(nextMeeting)):' · prossima riunione da verificare')+'</p>'+
    '<div class="drivers-want-can">'+
@@ -258,12 +266,6 @@
     '<article class="drivers-analysis"><span>CAN · MARGINE DI MANOVRA</span><h3>'+esc(can.title)+'</h3><p>'+esc(can.text)+'</p>'+
       (evidence?'<small>'+esc(evidence)+'</small>':'')+'</article>'+
    '</div>'+
-   '<div class="bank-first-grid">'+
-   '<article class="bank-first-axis"><h3>Cosa va</h3><p>'+esc(reading.support)+'</p></article>'+
-   '<article class="bank-first-axis"><h3>Cosa frena</h3><p>'+esc(reading.constraint)+'</p></article>'+
-   '<article class="bank-first-axis"><h3>Cosa guardare</h3><p>'+esc(reading.watch)+'</p></article>'+
-   '</div>'+
-   (root.FXQuantIssuerContext?.narrative(get('macroObserved'),[selected],today)?'<p class="drivers-lead">'+esc(root.FXQuantIssuerContext.narrative(get('macroObserved'),[selected],today))+'</p>':'')+
    '</div>'+
    '<div class="drivers-links"><button type="button" data-bank-open="rates" data-bank-target="'+selected+'">Verifica il repricing in Tassi &amp; OIS ↗</button>'+
    '<button type="button" data-bank-open="currencies" data-bank-target="'+selected+'">Valuta '+selected+' ↗</button><a href="#macro">Scenario macro ↗</a><a href="#news">Calendario e Notizie ↗</a></div>'+
@@ -271,7 +273,7 @@
    (root.FXQuantIssuerContext?.render(get('macroObserved'),[selected],today)||'')+
    renderPolicyMacroContext(macroContext,esc,fmt)+
    '<div class="drivers-market-audit" aria-label="Mercato e Forex '+selected+'"><div class="drivers-market-grid">'+
-    '<div class="drivers-market-item"><span>RIFERIMENTO DI MERCATO · APPROFONDIMENTO</span><h3>'+esc(market.title)+'</h3>'+
+    '<div class="drivers-market-item"><span>COSA PREZZA IL MERCATO</span><h3>'+esc(market.title)+'</h3>'+
       (market.evidence?'<p class="drivers-observation">'+esc(market.evidence)+'</p>':'')+'<p>'+esc(market.text)+'</p></div>'+
     '<div class="drivers-market-item"><span>CONFERMA SUL FOREX</span><p>'+esc(fx?.text||'Conferma del prezzo da verificare.')+'</p>'+
      '</div>'+
