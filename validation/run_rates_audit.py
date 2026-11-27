@@ -28,6 +28,9 @@ def main():
     uj=load_module('rates_usd_jpy',VAL/'fetch_rates_usd_jpy.py')
     for c,src in [('USD',uj.parse_treasury(uj.fetch(uj.TREASURY_URL))),('JPY',uj.parse_mof(uj.fetch(uj.MOF_URL)))]:
         state=compare(rates[c],src['date'],src['2Y'],src['10Y']); out['currencies'][c]={'state':state,'coverage_mode':'LIVE_FETCH','authority':src['authority'],'official':{'date':src['date'],'2Y':src['2Y'],'10Y':src['10Y']},'current':{'date':rates[c]['date'],'2Y':rates[c]['2Y'],'10Y':rates[c]['10Y']}}
+        if c=='JPY':
+            for tenor in ('5Y','30Y'):
+                if tenor in src: out['currencies'][c]['official'][tenor]=src[tenor]
         if state in {'SOURCE_OLDER_THAN_CURRENT','SAME_DATE_VALUE_MISMATCH'}: failures.append(c)
     eg=load_module('rates_eur_gbp',VAL/'fetch_rates_eur_gbp.py'); e2=eg.ecb('SR_2Y'); e10=eg.ecb('SR_10Y')
     if e2[0]!=e10[0]: raise RuntimeError(f'ECB same-day mismatch {e2[0]} vs {e10[0]}')

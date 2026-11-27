@@ -8,6 +8,9 @@ on:
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
       - 'validation/build_rates_candidate_from_audit.py'
+      - 'validation/fetch_rates_usd_jpy.py'
+      - 'validation/run_rates_audit.py'
+      - 'validation/test_jpy_secondary_tenors_v1.py'
       - 'validation/rates/verify_weekly_rate_change_contract_v1.py'
       - 'validation/rates/test_weekly_rate_change_contract_v1.py'
       - 'validation/rates/push_rates_safe_v1.py'
@@ -35,6 +38,9 @@ on:
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
       - 'validation/build_rates_candidate_from_audit.py'
+      - 'validation/fetch_rates_usd_jpy.py'
+      - 'validation/run_rates_audit.py'
+      - 'validation/test_jpy_secondary_tenors_v1.py'
       - 'validation/rates/verify_weekly_rate_change_contract_v1.py'
       - 'validation/rates/test_weekly_rate_change_contract_v1.py'
       - 'validation/rates/push_rates_safe_v1.py'
@@ -122,6 +128,22 @@ jobs:
 
       - name: Test safe Rates publish under concurrent non-Rates/overlapping source writers
         run: python3 -m unittest validation.rates.test_push_rates_safe_v1 -v
+
+      - name: Test JGB same-row secondary tenor guards
+        run: python3 -m unittest validation.test_jpy_secondary_tenors_v1 -v
+
+      - name: Verify actual official MOF secondary tenor source on consolidation PR
+        if: github.event_name == 'pull_request' && github.head_ref == 'fix/jpy-secondary-tenor-recurring-20261127'
+        run: |
+          python3 - <<'PY'
+          import json
+          from datetime import date
+          from validation.fetch_rates_usd_jpy import fetch,parse_mof,MOF_URL
+          r=parse_mof(fetch(MOF_URL))
+          print('JPY_SECONDARY_TENOR_SOURCE_PROOF',json.dumps(r))
+          assert {'2Y','5Y','10Y','30Y'} <= set(r),r
+          assert 0 <= (date.today()-date.fromisoformat(r['date'])).days <= 5,r
+          PY
 
       - name: Resolve Rates schedule and Rome publication window
         id: gate
