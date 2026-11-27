@@ -80,6 +80,7 @@ on:
     # completed run as an independent publication signal after its main write.
     workflows:
       - 'G8 Economic Semaphore Source Recovery V1'
+      - 'COT Persistent Weekly V1'
       - 'FX Quant Next RBNZ Monthly Liquidity Research'
       - 'BoE GBP Weekly Reserves Research Refresh V1'
       - 'US Fed H8 Bank Credit Research Refresh V1'
@@ -321,6 +322,7 @@ jobs:
            github.event.workflow_run.name == 'OIS Estimated Snapshot Repricing V1' ||
            github.event.workflow_run.name == 'FX Quant V2 Relative Pricing 28-Pair Research' ||
            github.event.workflow_run.name == 'G8 Economic Semaphore Source Recovery V1' ||
+           github.event.workflow_run.name == 'COT Persistent Weekly V1' ||
            github.event.workflow_run.name == 'FX Quant Next RBNZ Monthly Liquidity Research' ||
            github.event.workflow_run.name == 'BoE GBP Weekly Reserves Research Refresh V1' ||
            github.event.workflow_run.name == 'US Fed H8 Bank Credit Research Refresh V1' ||
@@ -395,6 +397,15 @@ jobs:
               "site/fx-quant-v2/next/currency-data-fallback.js",
               "site/fx-quant-v2/next/rates-studio.js",
           )
+          cot_paths = (
+              "site/fx-quant-v2/next/cot-official-oi-v1.json",
+              "site/fx-quant-v2/next/positioning-research-score-v1.js",
+              "site/fx-quant-v2/next/global-fx-research-composite-v1.js",
+              "site/fx-quant-v2/next/cot-studio.js",
+              "site/fx-quant-v2/next/currency-studio.js",
+              "site/fx-quant-v2/next/app.js",
+              "site/fx-quant-v2/next/index.html",
+          )
           rate_workflows = {
               "OIS G8 History Persistent Daily V1",
               "OIS Estimated Snapshot Repricing V1",
@@ -418,6 +429,10 @@ jobs:
               paths += ("site/fx-quant-v2/cross-asset-live-data.json", "site/fx-quant-v2/cross-asset.html",
                         base + "risk-evidence-reading.js")
               paths += pricing_paths + government_paths
+              paths += cot_paths
+          elif source_workflow == "COT Persistent Weekly V1":
+              label = "NEXT_COT_OFFICIAL_OI_PUBLIC_HTTP"
+              paths = cot_paths
           elif source_workflow in rate_workflows:
               label = "OIS_RATES_PUBLIC_HTTP"
               paths = pricing_paths + (
