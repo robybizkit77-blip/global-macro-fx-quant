@@ -1,5 +1,5 @@
 import unittest
-from validation.macro.v2_sector_financial_dynamics_v1 import parse,calculate,run
+from validation.macro.v2_sector_financial_dynamics_v1 import parse,calculate,run,nzd_rows
 class TestSectorFinancialDynamics(unittest.TestCase):
     def test_period_aliases(self):
         self.assertEqual(parse("2026Q3","Q"),parse("2026-07-01","Q"))
@@ -19,7 +19,9 @@ class TestSectorFinancialDynamics(unittest.TestCase):
     def test_archive(self):
         d=run()
         self.assertEqual(len(d["countries"]),8)
-        self.assertEqual(sum(map(len,d["countries"].values())),53)
-        self.assertEqual(d["countries"]["NZD"],[])
+        self.assertEqual(sum(map(len,d["countries"].values())),60)
+        self.assertEqual(len(d["countries"]["NZD"]),7)
+        self.assertEqual(len(nzd_rows("",__import__("datetime").date(2026,11,27))),7)
+        self.assertTrue(all(r["measurement"]=="WITHHELD" for r in nzd_rows("",__import__("datetime").date(2026,11,27))))
         self.assertFalse(d["safe_to_publish_D"])
         print("SECTOR_VALIDATED", {c:sum(r["measurement"]!="WITHHELD" for r in rs) for c,rs in d["countries"].items()})

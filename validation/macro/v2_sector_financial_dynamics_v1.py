@@ -150,6 +150,76 @@ def build(series,today):
     return dict(schema=SCHEMA,as_of=today.isoformat(),countries=out,safe_to_publish_D=False,
                 safe_to_update_pairs=False,writes_live_data=False,no_cross_country_aggregation=True,
                 historical_PIT_certified=False)
+# These series are already collected by the existing RBNZ workflow.
+NZD_PATH="site/fx-quant-v2/next/nzd-rbnz-liquidity-research-v1.js"
+NZD_MONTHLY=(("liquidity","RBNZ_D10_SETTLEMENT_CASH","Settlement cash medio","liquidity"),
+             ("money","RBNZ_C50_BROAD_MONEY","Massa monetaria ampia","liquidity"),
+             ("credit","RBNZ_C50_PRIVATE_SECTOR_CREDIT","Credito settore privato","credit"))
+NZD_SURVEY=(("demand_sme","Domanda credito PMI"),
+            ("demand_corporate","Domanda credito grandi imprese"),
+            ("availability_sme","Disponibilità credito PMI"),
+            ("availability_corporate","Disponibilità credito grandi imprese"))
+def nzd_rows(raw,today):
+    prefix="window.FXQuantNZDRBNZLiquidity = "
+    try:
+        if not raw.startswith(prefix) or not raw.strip().endswith(";"):
+            raise ValueError("unexpected RBNZ sidecar format")
+        p=json.loads(raw[len(prefix):].strip()[:-1])
+    except (ValueError,TypeError) as exc:
+        p={}
+    rows=[]
+    def checked(v,positive=False):
+        if not isinstance(v,(int,float)) or isinstance(v,bool) or not math.isfinite(v) or (positive and v<=0):
+            raise ValueError("invalid RBNZ value")
+        return v
+    for key,rid,label,pillar in NZD_MONTHLY:
+        base=dict(series_id=rid,label=label,frequency="M",pillar=pillar)
+        try:
+            h=p["history"]
+            latest=max(h)
+            release=date.fromisoformat(p["released"])
+            month=date.fromisoformat(latest+"-01")
+            if latest!=p["period"] or release>today or (release.year-month.year)*12+release.month-month.month!=1:
+                raise ValueError("RBNZ monthly release mismatch")
+            data={parse(k,"M")[0]:(k,checked(v[key],True)) for k,v in h.items()}
+            if sorted(data)!=list(range(min(data),max(data)+1)):raise ValueError("RBNZ monthly gap")
+            result=calculate(data,"M","STOCK")
+            # Also expose the actual 1M change even if 3M history is unavailable.
+            t=max(data)
+            result["change_1m_pct"]=100*(data[t][1]/data[t-1][1]-1) if t-1 in data else None
+            rows.append(dict(base,measurement="STOCK",unit="NZD millions",
+                quality="OFFICIAL_RBNZ_PUBLISHED_RESEARCH_NOT_PIT",released=p["released"],**result))
+        except (ValueError,KeyError,TypeError,ArithmeticError) as exc:
+            rows.append(dict(base,measurement="WITHHELD",quality="SOURCE_CHECK_FAILED",reason=str(exc)))
+    for key,label in NZD_SURVEY:
+        base=dict(series_id="RBNZ_C60_"+key.upper(),label=label,frequency="H",pillar="credit")
+        try:
+            h=p["credit_conditions"]
+            if (h["series_id"]!="RBNZ_C60_ACTUAL_CREDIT_AVAILABILITY" or h["frequency"]!="H"
+                or h["source_url"]!="https://www.rbnz.govt.nz/statistics/series/lending-and-monetary/credit-conditions"
+                or h["first_release_pit_verified"] is not False or h["eligible_for_fx_core"] is not False
+                or h["eligible_for_backtest"] is not False or h["positive_means"]!="easing"):
+                raise ValueError("RBNZ C60 provenance mismatch")
+            dates=h["dates"]; vals=h[key]
+            if len(dates)!=len(vals) or len(dates)<3 or dates[-1]!=h["latest_observation"] or date.fromisoformat(h["released"])>today:
+                raise ValueError("RBNZ C60 release or length mismatch")
+            serial=[parse(d,"M")[0] for d in dates]
+            if any(b-a!=6 for a,b in zip(serial,serial[1:])) or any(d[-2:] not in ("03","09") for d in dates):
+                raise ValueError("nonconsecutive half-years")
+            if (date.fromisoformat(h["released"]).year*12+date.fromisoformat(h["released"]).month-1)-serial[-1]!=1:
+                raise ValueError("RBNZ C60 release period mismatch")
+            data={i:(d,checked(v)) for i,d,v in zip(range(len(dates)),dates,vals)}
+            if any(abs(v)>100 for _,v in data.values()):raise ValueError("C60 index out of bounds")
+            rows.append(dict(base,measurement="BALANCE",unit="index points",quality="OFFICIAL_RBNZ_PUBLISHED_RESEARCH_NOT_PIT",
+                released=h["released"],horizon="HALF_YEAR",**rate_dynamics(data)))
+        except (ValueError,KeyError,TypeError,ArithmeticError) as exc:
+            rows.append(dict(base,measurement="WITHHELD",quality="SOURCE_CHECK_FAILED",reason=str(exc)))
+    return rows
+
 def run():
-    return build(json.loads((ROOT/"live_data/sections/MACRO_SERIES.json").read_text()),
-                 datetime.now(ZoneInfo("Europe/Rome")).date())
+    today=datetime.now(ZoneInfo("Europe/Rome")).date()
+    result=build(json.loads((ROOT/"live_data/sections/MACRO_SERIES.json").read_text()),today)
+    try: raw=(ROOT/NZD_PATH).read_text()
+    except OSError: raw=""
+    result["countries"]["NZD"]=nzd_rows(raw,today)
+    return result
