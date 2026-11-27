@@ -35,6 +35,36 @@ jobs:
       - name: Read and validate all three live source tables
         run: python3 validation/publishing/collect_next_rbnz_liquidity.py "$RUNNER_TEMP/nzd.js" --require-c60
 
+      - name: Inspect official D10 and C50 workbook identities and recent observations
+        if: github.head_ref == 'research/rbnz-workbook-history-20261127'
+        run: |
+          python3 -m pip install openpyxl==3.1.5
+          python3 - <<'PY'
+          import io, hashlib, urllib.request, urllib.parse
+          from openpyxl import load_workbook
+          urls={
+            'D10':'https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/d-f-r/d10/hd10.xlsx',
+            'C50':'https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/c/c50/hc50.xlsx',
+          }
+          for key,url in urls.items():
+              req=urllib.request.Request(url,headers={'User-Agent':'RBNZ-Automated-Agent/GlobalMacroFXQuant/LiquidityResearch'})
+              with urllib.request.urlopen(req,timeout=25) as response:
+                  assert urllib.parse.urlsplit(response.geturl()).hostname in ('www.rbnz.govt.nz','rbnz.govt.nz')
+                  raw=response.read(2000001)
+              assert len(raw)<2000001 and raw.startswith(b'PK')
+              wb=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
+              print('WORKBOOK',key,hashlib.sha256(raw).hexdigest(),wb.sheetnames)
+              for ws in wb:
+                  print('SHEET',ws.title,ws.max_row,ws.max_column)
+                  if ws.max_column>100 or ws.max_row>20000: continue
+                  rows=list(ws.values)
+                  for i,row in enumerate(rows[:18],1):
+                      print('HEADER',i,repr(row)[:3000])
+                  for i,row in enumerate(rows[-12:],len(rows)-11):
+                      print('TAIL',i,repr(row)[:3000])
+              wb.close()
+          PY
+
   refresh:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
