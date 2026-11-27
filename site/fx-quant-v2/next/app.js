@@ -573,6 +573,42 @@ function homeFxRankStrip(){
  const pairRows=chosen.map((x,i)=>'<button type="button" class="home-fx-pair-row" data-pair="'+esc(x.key)+'" aria-label="Apri dossier '+esc(x.name)+'"><span class="home-fx-number">'+(i+1)+'</span><span><strong>'+esc(x.name)+'</strong><small>'+esc(x.favored)+' favorito</small></span><span class="home-fx-pair-status"><small>Tesi: '+esc(x.thesisStrength)+'</small><small>Trade: '+esc(x.tradeAttractiveness)+'</small></span><span aria-hidden="true">›</span></button>').join('');
  return '<section class="home-fx-rank-strip" aria-label="Classifica stimata G8 e coppie da verificare"><div class="home-fx-rank-head"><div><span class="morning-section-label">DALLA MACRO AL FOREX</span><h2>Valute e coppie da seguire</h2></div><small>Stima del '+esc(date(e.asof))+' · fixing BCE '+esc(date(e.priceAsOf))+'</small></div><div class="home-fx-rank-grid"><article class="home-fx-rank-panel"><h3>Forza relativa G8</h3><p>Classifica del modello: macro, tassi e prezzo.</p>'+currencyRows+'<a href="#currencies">Approfondisci le 8 valute ↗</a></article><article class="home-fx-rank-panel"><h3>Top 5 · coppie da verificare</h3><p>Selezione di ricerca, non segnali di ingresso.</p>'+(pairRows||'<p>Nessuna coppia supera il filtro attuale.</p>')+(chosen.length<5&&chosen.length>0?'<small class="home-fx-note">Solo '+chosen.length+' coppie superano il filtro attuale.</small>':'')+'<a href="#pairs">Classifica completa delle 28 coppie ↗</a></article></div></section>';
 }
+// Single first-read matrix, reusing the same research scores as Valute G8.
+ // No new signal, rank, source or factor weight.
+function homeG8Read(){
+ if(typeof window==='undefined')return '';
+ const w=window,today=dayNow(),cycle=w.FXQuantMacroDesk,composite=w.FXQuantGlobalResearchComposite;
+ if(!cycle?.countryReadings||!composite?.evaluate)return '';
+ const catalog=get('macroSeries'),cycles=catalog?cycle.countryReadings(catalog,today,get('semaphoreExtra')):{};
+ const rows=FX.map(currency=>{
+  const detail=cycles?.[currency];
+  const macro=w.FXQuantMacroMultifactorShadow?.evaluate({country:currency,rows:detail?.r||[],observed:get('macroObserved'),day:today});
+  const rates=w.FXQuantRatesResearchScore?.evaluate({pricing:w.FXQuantPricingMoves,archive:w.FXQuantPricingHistory,snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),history:get('oisHistory'),rates:get('rates'),today,currency});
+  const positioning=w.FXQuantPositioningResearchScore?.evaluate({history:get('cotHistory'),archive:get('cotPriorReference'),officialOI:get('cotOfficialOI'),desk:w.FXQuantCOTDeskV26,today,currency});
+  const price=w.FXQuantPriceResearchScore?.evaluate({currency,prices:get('currencyPrices'),today,ranker:w.FXQuantPairRankings?.currencyRanking,momentum:w.FXQuantCurrencyStrength?.momentum});
+  const e=composite.evaluate({currency,macro,rates,positioning,price})?.enhanced;
+  const r=rates?.row,rate=e?.rates;
+  return {currency,cycle:detail?.o?.reading?.label||null,macro,rate,r,positioning,price,e};
+ });
+ const tone=(n,center=0)=>!finite(n)?'neutral':n>center?'positive':n<center?'negative':'neutral';
+ const cell=(value,unit,when,center=0,quality='')=>'<td><strong class="'+tone(value,center)+'">'+esc(finite(value)?(center===5?fmt(value,1):sign(value,1,unit)):'—')+'</strong><small>'+esc(when||'Non disponibile')+(quality?' · '+esc(quality):'')+'</small></td>';
+ const body=rows.map(x=>{
+  const rate=x.rate,official=x.positioning?.quality==='OFFICIAL_OI_RESEARCH';
+  const rateQuality=rate?.quality||'';
+  const rateUnit=rateQuality.includes('2Y')?'2Y proxy · ':'';
+  const coverage=x.e?.coverage;
+  return '<tr data-control-room-ccy="'+x.currency+'"><th scope="row"><a href="#currencies" data-ccy="'+x.currency+'">'+esc(FLAGS[x.currency]+' '+x.currency)+'</a></th>'+
+   '<td><strong>'+esc(x.cycle||'Non classificabile')+'</strong><small>'+esc(finite(x.macro?.score)?'Macro '+fmt(x.macro.score,1)+'/10 · '+fmt(x.macro.effectiveCoverage,0)+'% coperto':'Macro non valutabile')+'</small></td>'+
+   cell(rate?.bp,' pb',rate?.asof?rateUnit+date(rate.asof):null,0,rateQuality)+
+   cell(x.positioning?.flow1,'%',x.positioning?.asof?date(x.positioning.asof):null,0,x.positioning?.score!=null?(official?'OI ufficiale':'OI stimato'):'')+
+   cell(x.price?.return20,'%',x.price?.asof?date(x.price.asof):null)+
+   '<td><strong class="'+tone(x.e?.score,5)+'">'+esc(finite(x.e?.score)?fmt(x.e.score,1)+'/10':'—')+'</strong><small>'+esc(finite(coverage)?fmt(coverage,0)+'% calcolo · '+fmt(x.e.estimatedWeight,0)+'% stimato':'Non disponibile')+'</small></td></tr>';
+ }).join('');
+ return '<section class="control-room-g8" data-control-room-g8><header><div><span class="morning-section-label">CONTROL ROOM / QUADRO G8</span><h2>Macro, tassi, fondi e prezzo</h2><p>Leggi ogni valuta da sinistra a destra: le evidenze possono confermarsi o contraddirsi. Ordine fisso, non una classifica.</p></div></header>'+
+ '<div class="control-room-table-wrap" role="region" aria-label="Quadro G8 scorrevole" tabindex="0"><table><thead><tr><th>Valuta</th><th>Ciclo macro</th><th>Tassi 1W</th><th>COT Δ netto / OI 1W</th><th>Prezzo 20 sedute</th><th>Enhanced</th></tr></thead><tbody>'+body+'</tbody></table></div>'+
+ '<p class="control-room-note">Date e strumenti distinti. Enhanced è una sintesi sperimentale 0–10, non una probabilità o un segnale di ingresso. Il 100% di calcolo non equivale al 100% di osservazioni.</p>'+
+ '<nav aria-label="Approfondimenti del quadro G8"><a href="#macro">Ciclo economico ↗</a><a href="#rates">Tassi ↗</a><a href="#cot">COT ↗</a><a href="#currencies">Dossier valute ↗</a></nav></section>';
+}
 function overview(){
  // Source-first monetary evidence is a separately dated observation,
  // not part of either the hourly editorial analysis or frozen morning report.
@@ -604,9 +640,10 @@ function overview(){
   hourlyFeed?.provenance?.web_source_urls?.includes('https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml');
  const renderedHourly=desk?.render?desk.render({feed:hourlyFeed,check:get('hourlyCheck'),risk:get('risk'),
   currencyPrices:get('currencyPrices'),calendar,news,references,esc,date,dayNow,marketChart:homeScreenChart(dollarTheme?'usd-comparison':'fx')}):null;
- const fxRankStrip=homeFxRankStrip();
- const hourly=renderedHourly?renderedHourly.replace('<section class="hourly-decision-section"',
-   fxRankStrip+recalcProof+moneyProof+'<section class="hourly-decision-section"'):renderedHourly;
+ const fxRankStrip=homeG8Read()+homeFxRankStrip();
+ const technicalProof=(recalcProof||moneyProof)?'<details class="control-room-diagnostics"><summary>Verifiche quantitative e fonti</summary>'+recalcProof+moneyProof+'</details>':'';
+ const hourlyAnchor='<section class="hourly-decision-section"';
+ const hourly=renderedHourly?(renderedHourly.includes(hourlyAnchor)?renderedHourly.replace(hourlyAnchor,fxRankStrip+technicalProof+hourlyAnchor):renderedHourly+fxRankStrip+technicalProof):renderedHourly;
  if(hourly&&!desk.preferMorning?.(morning,hourlyFeed,dayNow()))return hourly;
  if(typeof window!=='undefined' && window.FXQuantMorningDesk?.build && morning){
   // A new, independently dated FX snapshot must never rewrite the archived
@@ -627,8 +664,8 @@ function overview(){
   });
   if(edition){
    const post=window.FXQuantMorningDesk.postRelease?.(morning,get('news'),esc,dayNow)||'';
-   return edition.replace('<section class="morning-prose"',
-     fxRankStrip+post+recalcProof+moneyProof+'<section class="morning-prose"');
+   const anchor='<section class="morning-prose"';
+   return edition.includes(anchor)?edition.replace(anchor,fxRankStrip+post+technicalProof+anchor):edition+fxRankStrip+post+technicalProof;
   }
  }
  if(hourly)return hourly;
@@ -912,7 +949,6 @@ function overview(){
  +'</header>'
  +currentContext()
  +fxRankStrip
- +recalcProof
  +'<section class="dashboard-reading-story" aria-label="Il racconto del desk"><div class="dashboard-reading-eyebrow">LA LETTURA FX DEL DESK · '+date(fxDesk.asof)+'</div>'
  +'<div class="dashboard-reading-body"><p>'+esc(fxDesk.why)+'</p><p>'+esc(fxDesk.policy)+'</p><p>'+esc(fxDesk.market)+'</p>'
  +'<p class="dashboard-reading-verdict"><strong>Il mio giudizio.</strong> '+esc(fxDesk.verdict)+'</p>'
@@ -923,7 +959,7 @@ function overview(){
  ' · '+esc(pairData[k].setup?.price?.text||'Prezzo da verificare')+' ↗</button>').join(''):'')+'</div>'
  +'<nav class="dashboard-reading-source-links" aria-label="Verifica la lettura nei dossier"><a href="#currencies">Valute G8 ↗</a><a href="#pairs">28 coppie FX ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#macro">Macro ↗</a><a href="#cot">COT ↗</a><a href="#risk">Rischio ↗</a><a href="#news">Notizie ↗</a></nav>'
  +'<p class="dashboard-reading-quality">I fixing BCE e le 28 coppie guidano la lettura. Macro, tassi, COT, volatilità e credito servono a spiegare o mettere alla prova le tesi FX, non a sostituirle.</p></section>'
- +moneyProof
+ +technicalProof
  +'<section class="dashboard-main dashboard-reading-chart"><div class="dashboard-section-head"><span>IL PREZZO FX DIETRO LA LETTURA</span><p>Confronta i movimenti delle valute prima di cercare conferme in altri mercati.</p></div>'
  +'<div class="dashboard-chart-grid"><figure class="letter-chart dashboard-chart"><figcaption><span>DATI DI MERCATO</span><strong>Chi sta guadagnando terreno nel G8?</strong><p>Forza relativa nei fixing BCE, confrontabile tra valute e date; nessuna quotazione intraday.</p></figcaption>'
  +'<div class="letter-chart-visual">'+homeScreenChart()+'</div></figure></div></section>'
@@ -1048,13 +1084,14 @@ function pairs(){
   (window.FXQuantIssuerContext?.narrative(get('macroObserved'),[state.pair.slice(0,3),state.pair.slice(3)],dayNow())?'<p class="pairs-primary-story">'+esc(window.FXQuantIssuerContext.narrative(get('macroObserved'),[state.pair.slice(0,3),state.pair.slice(3)],dayNow()))+'</p>':'')+
   (pairProfile?.closes?.length>=22?
    '<button type="button" class="ghost-btn small pairs-chart-jump" data-pair-chart-jump aria-controls="fx-pair-price-chart">Vedi il grafico del cambio</button>':'')+
-  '<details class="pairs-optional-panel pairs-evidence"><summary><strong>Apri numeri, stime e cosa monitorare</strong><span class="pairs-open-icon" aria-hidden="true">+</span></summary><div class="pairs-details-body">'+
-  (window.FXQuantIssuerContext?.render(get('macroObserved'),[state.pair.slice(0,3),state.pair.slice(3)],dayNow())||'')+
-  '<span class="badge info">'+esc(quality)+'</span><p class="pairs-primary-story">'+esc(driverDetail)+'</p>'+
   '<div class="pairs-three-answers">'+
    '<div><span>TESI FONDAMENTALE</span><strong>'+esc(activePair?.thesisStrength||'NON VALUTABILE')+'</strong></div>'+
    '<div class="pairs-trade-assessment" data-pairs-trade-tone="'+tradeTone+'"><span>TRADE ATTRACTIVENESS</span><strong>'+esc(tradeStatus)+'</strong></div>'+
-   '<div class="pairs-price-assessment"><span>IL PREZZO SEGUE LA TESI?</span>'+priceRead+'</div></div>'+
+   '<div class="pairs-price-assessment"><span>IL PREZZO SEGUE LA TESI?</span><strong>'+esc(!fav?'TESI NON DISTINTA':activePair.opposite?'CONTRARIO':activePair.aligned?'COERENTE':'NON DECISIVO')+'</strong></div></div>'+
+  '<details class="pairs-optional-panel pairs-evidence"><summary><strong>Conferme, invalidazioni, rischio e fonti</strong><span class="pairs-open-icon" aria-hidden="true">+</span></summary><div class="pairs-details-body">'+
+  (window.FXQuantIssuerContext?.render(get('macroObserved'),[state.pair.slice(0,3),state.pair.slice(3)],dayNow())||'')+
+  '<div class="pairs-price-detail">'+priceRead+'</div>'+
+  '<span class="badge info">'+esc(quality)+'</span><p class="pairs-primary-story">'+esc(driverDetail)+'</p>'+
   '<p class="pairs-timing-reading"><strong>Prima di valutare un ingresso.</strong> '+esc(tradeText)+'</p>'+
   '<p class="pairs-why-no-entry"><strong>Rischio operativo.</strong> '+esc(riskReading)+
    ' Una buona tesi fondamentale non equivale a un buon ingresso.</p>'+
@@ -1084,7 +1121,7 @@ function pairs(){
  const originalDecision=typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?
   window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).pair():
   '<div class="empty">Grafico e lettura del prezzo non disponibili.</div>';
- const detail='<details class="pairs-optional-panel pairs-optional-chart"><summary><span><strong>Apri grafico, pricing e analisi completa</strong><small>Fixing BCE, 5/20 sedute, tassi differenziali, rischi e livelli di riferimento</small></span><span class="pairs-open-icon">+</span></summary>'+
+ const detail='<details class="pairs-optional-panel pairs-optional-chart"><summary><span><strong>Grafico del cambio e analisi completa</strong><small>Fixing BCE, 5/20 sedute, tassi differenziali, rischi e livelli di riferimento</small></span><span class="pairs-open-icon">+</span></summary>'+
   '<div class="pairs-details-body">'+originalDecision+'</div></details>';
  const chooser='<section class="pairs-chooser"><div class="pairs-chooser-top">'+choice+
   '<button class="watch-btn '+(saved?'saved':'')+'" type="button" data-watch="'+state.pair+'" aria-pressed="'+saved+'" aria-label="Watchlist '+esc(getPairName(state.pair))+'">'+pairWatchLabel(saved)+'</button></div>'+
@@ -1127,12 +1164,13 @@ function risk(){
  const streams=get('risk')?.streams||{},a=streams[state.riskStream],x=window.FXQuantRiskEvidence?.read?.(streams,dayNow())||{ready:false,asof:null,headline:'Il quadro del rischio resta aperto',opening:'Il confronto tra azioni, volatilità e credito è in attesa delle serie.',fx:'Per collegare questi movimenti ai cambi serve una finestra comune.',observation:'Intervallo comune da verificare.',judgement:'',monitor:'Ricontrolla alla prossima chiusura confrontabile.',sourceDates:'date da verificare',quality:'NON VALIDATO'};
  const streamOpts=[['SP500','S&P 500'],['NASDAQCOM','Nasdaq'],['DJIA','Dow Jones'],['SX5E','Euro Stoxx 50'],['VIX','VIX'],['IG_OAS','Credito IG'],['HY_OAS','Credito HY']].filter(v=>!['DJIA','SX5E'].includes(v[0])||streams[v[0]]?.quality==='PUBLISHED_SOURCE_RESEARCH_ONLY');
  const pts=priceHistory(state.riskStream).slice(-Number(state.riskWindow));
- return pageHero('RISCHIO DI MERCATO',esc(x.headline),esc(x.opening))
+ return pageHero('CROSS-ASSET / RISCHIO DI MERCATO',esc(x.headline),esc(x.opening))
  +(window.FXQuantRiskEvidence?.renderFirstRead?.(streams,dayNow(),x)||'')
+ +'<section class="risk-next-step" aria-label="Approfondimenti cross-asset"><div><strong>Mercati e condizioni finanziarie: due letture diverse</strong><p>Qui osserviamo azioni, volatilità e spread obbligazionari. Nel dossier Liquidità &amp; Credito verifichiamo riserve bancarie, prestiti e condizioni di concessione.</p></div><nav><a href="#liquidity">Liquidità &amp; Credito ↗</a><a href="../cross-asset.html">Monitor cross-asset completo ↗</a></nav></section>'
  +sectionTitle('Grafici del rischio','Ogni serie mostra la propria data di chiusura')
  +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><h2>'+esc(streamOpts.find(v=>v[0]===state.riskStream)?.[1]||state.riskStream)+'</h2><p>'+esc(a?.publisher||'Fonte da verificare')+' · '+date(a?.date)+'</p></div></div><div class="filters"><div class="pill-controls">'+streamOpts.map(v=>'<button class="pill '+(v[0]===state.riskStream?'active':'')+'" data-risk="'+v[0]+'" type="button" aria-pressed="'+String(v[0]===state.riskStream)+'">'+v[1]+'</button>').join('')+'</div><div class="pill-controls">'+choose('',[{label:'5 sedute',value:5},{label:'20 sedute',value:20},{label:'Tutto',value:9999}],state.riskWindow,'data-risk-window')+'</div></div>'
  +plot({lines:[{name:streamOpts.find(v=>v[0]===state.riskStream)?.[1],color:state.riskStream==='VIX'||state.riskStream.includes('OAS')?'#ed6679':'#83cdec',values:pts}],unit:state.riskStream.includes('OAS')?'%':'',label:'Grafico '+state.riskStream})+'<div class="chart-summary" style="margin-top:11px">Ultima rilevazione: '+fmt(a?.value)+' · '+(state.riskStream.includes('OAS')?'Variazione dello spread '+sign(finite(a?.value)&&finite(a?.previous)?(a.value-a.previous)*100:null,1,' pb'):'Variazione percentuale '+sign(a?.change_1d_pct,2,'%'))+'. '+esc(a?.not_intraday?'Dato di chiusura, non intraday.':'Verificare orario di rilevazione.')+'</div></section>'
- +'<section class="panel risk-research-reading" data-risk-asof="'+esc(x.asof||'')+'"><div class="panel-head"><div><h2>Qualità del confronto</h2></div></div>'
+ +'<section class="panel risk-research-reading" data-risk-asof="'+esc(x.asof||'')+'"><div class="panel-head"><div><h2>Qualità delle evidenze</h2></div></div>'
  +'<p class="notice '+(x.stale||!x.ready?'warn':'')+'">'+esc(x.quality+(x.asof?' · '+date(x.asof):''))+'</p>'
  +'<details class="drivers-fold"><summary>Date delle fonti e variazioni allineate</summary><p class="focus-subtitle">'+esc(x.observation)+'</p>'
  +'<p class="source-caption">'+esc('Ultime rilevazioni per serie · '+x.sourceDates)+'</p></details></section></div>';
@@ -1168,9 +1206,11 @@ function news(){
   +'<p class="source-caption"><strong>Qualità.</strong> '+esc(x.quality)+'</p>'
   +(x.displayTitle&&x.displayTitle!==x.title?'<p class="source-caption"><strong>Titolo originale.</strong> '+esc(x.title)+'</p>':'')
   +'</div></details></article>';
- return pageHero('NOTIZIE / EVENTI','Dalla notizia <em>alla prova.</em>',
+ return pageHero('CALENDARIO & NOTIZIE','Eventi e notizie da monitorare',
     'Distingui ciò che è stato pubblicato da quello che cambia davvero le aspettative. Una variazione dei futures non è automaticamente una sorpresa macro o la reazione a un comunicato.')
-  +operationalCalendar
+  +'<nav class="desk-section-nav" aria-label="Percorso eventi e notizie"><button type="button" data-section-jump="desk-calendar">01 · Calendario e pubblicazioni</button><button type="button" data-section-jump="desk-news">02 · Notizie e reazioni</button></nav>'
+  +'<section id="desk-calendar" tabindex="-1" aria-label="Calendario macro">'+operationalCalendar+'</section>'
+  +'<section id="desk-news" tabindex="-1" aria-label="Notizie e reazioni"><h2 class="desk-section-title">Notizie e reazioni dei mercati</h2>'
   +'<div class="filters"><div class="pill-controls">'+choose('',[
     {label:'Movimenti di mercato ('+evidence.pulse.length+')',value:'pulse'},
     {label:'Comunicazioni ufficiali ('+evidence.official.length+')',value:'official'}
@@ -1193,7 +1233,7 @@ function news(){
   +'<div class="news-research-links"><a href="#rates">Tassi & OIS <span aria-hidden="true">↗</span></a>'
   +'<a href="#currencies">Valute G8 <span aria-hidden="true">↗</span></a>'
   +'<a href="#pairs">Coppie FX <span aria-hidden="true">↗</span></a></div>'
-  +'<p class="news-research-quality">'+esc(evidence.quality)+' · Impatto intraday da verificare.</p></aside></div>';
+  +'<p class="news-research-quality">'+esc(evidence.quality)+' · Impatto intraday da verificare.</p></aside></div></section>';
 }
 function quickEntries(){
  const sections=Object.entries(ROUTES).map(([value,label])=>({key:value,label,subtitle:'SEZIONE · Research terminal',kind:'route',value}));
@@ -1221,6 +1261,7 @@ function researchRibbon(route){
 // These are visual states only: data, ranking and FX reasoning remain untouched.
 const G8_DISCLOSURES=[
  'details.strength-evidence-fold',
+ 'details.strength-quant-fold',
  'details.strength-shadow-fold',
  'details.strength-pair-fold',
  'details.orient-thesis-details',
@@ -1238,7 +1279,10 @@ function render(){
  const views={overview,currencies,pairs,macro,banks,rates,liquidity,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
  const health=window.FXQuantDataHealth?.read(state.data,dayNow());
  const activity=window.FXQuantActivityMomentum?.read(get('macroObserved'),dayNow(),route,route==='banks'?state.cbCcy:state.ccy,state.pairDetailOpen?state.pair:null,{cb:get('cb'),ois:get('oisOperational'),rates:get('rates'),cot:get('cotHistory'),prices:get('currencyPrices')});
- $('content').innerHTML=views[route]()+ (activity?window.FXQuantActivityMomentum.render(activity,esc,fmt):'')+ (route==='overview'&&health?window.FXQuantDataHealth.render(health,esc):'');
+ const activityHTML=activity?window.FXQuantActivityMomentum.render(activity,esc,fmt):'';
+ const healthHTML=route==='overview'&&health?window.FXQuantDataHealth.render(health,esc):'';
+ const diagnosticOpen=route==='overview'&&$('content').querySelector('details[data-control-room-diagnostics]')?.open;
+ $('content').innerHTML=views[route]()+ (route==='overview'&&(activityHTML||healthHTML)?'<details class="control-room-diagnostics" data-control-room-diagnostics'+(diagnosticOpen?' open':'')+'><summary>Monitor degli aggiornamenti e affidabilità delle fonti</summary>'+activityHTML+healthHTML+'</details>':activityHTML);
  // Restore after replacing the DOM; nested details must not close when the
  // user changes currency, comparison, return window or research sorting.
  for(const selector of openG8){
@@ -1394,6 +1438,10 @@ document.addEventListener('click',e=>{
   const c=bankCountry.dataset.bankCountry;
   if(FX.includes(c)){state.cbCcy=c;state.ccy=c;render();}
   return;
+ }
+ const bankFromRates=e.target.closest('[data-rates-openbank]');
+ if(bankFromRates&&state.route==='rates'&&FX.includes(bankFromRates.dataset.ratesOpenbank)){
+  e.preventDefault();state.cbCcy=bankFromRates.dataset.ratesOpenbank;state.route='banks';location.hash='#banks';return;
  }
  const bankGo=e.target.closest('[data-bank-open]');
  if(bankGo&&state.route==='banks'){

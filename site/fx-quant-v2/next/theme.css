@@ -284,3 +284,40 @@ body{background:radial-gradient(ellipse 70% 45% at 90% 0,rgba(20,62,82,.28),tran
  html{scroll-behavior:auto}
  #sidebar,.nav a,.quick-launch{transition:none}
 }
+
+/* Control Room v1: presentation only, existing DARK DESK palette. */
+#sidebar #nav.next-area-nav .nav-subheading{margin:9px 5px 3px;padding:6px 8px 0;font-size:9px;letter-spacing:.08em}
+#sidebar #nav.next-area-nav a{min-height:35px;padding:5px 10px;font-size:12px}
+#sidebar #nav.next-area-nav .nav-icon{font-size:17px}
+#sidebar #nav.next-area-nav .nav-subheading:first-child{margin-top:0;border-top:0}
+.control-room-g8{margin:20px 0 22px;padding:20px;background:#102131;border:1px solid #38556a;border-radius:14px;min-width:0}
+.control-room-g8 h2{margin:6px 0;font-size:23px;line-height:1.2;color:#edf5f8}
+.control-room-g8 p{margin:7px 0;color:#a9c1d1;font-size:12px;line-height:1.55}
+.control-room-table-wrap{overflow-x:auto;max-width:100%;margin-top:15px}
+.control-room-g8 table{border-collapse:collapse;width:100%;min-width:680px;text-align:left;font-size:12px}
+.control-room-g8 th,.control-room-g8 td{padding:11px 9px;border-bottom:1px solid #2b4356;vertical-align:top}
+.control-room-g8 thead th{font-size:10px;color:#a9c1d1;font-weight:700}
+.control-room-g8 td small{display:block;font-size:10px;color:#9bb3c3;line-height:1.4;margin-top:4px}
+.control-room-g8 th a,.control-room-g8 nav a{color:#90d5e4;text-decoration:none}
+.control-room-g8 .positive{color:#75d8ae}.control-room-g8 .negative{color:#f28791}.control-room-g8 .neutral{color:#a9c1d1}
+.control-room-g8 nav{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:12px}
+.control-room-diagnostics{margin:16px 0;padding:14px 16px;background:#0e1e2d;border:1px solid #32495c;border-radius:12px}
+.control-room-diagnostics>summary{font-size:13px;font-weight:700;color:#c3d9e6;cursor:pointer}
+.control-room-diagnostics[open]>summary{margin-bottom:12px}
+@media(max-width:600px){.control-room-g8{padding:13px;margin:15px 0}.control-room-g8 h2{font-size:20px}.control-room-g8 table{min-width:660px}.control-room-g8 td,.control-room-g8 th{padding:9px 7px}}
+
+/* Cross-asset handoff: separate market stress from banking transmission. */
+.risk-next-step{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin:16px 0 24px;padding:16px;border:1px solid #38556a;background:#102131;border-radius:12px}
+.risk-next-step strong{font-size:14px;color:#edf5f8}.risk-next-step p{font-size:12px;color:#a9c1d1;margin:5px 0;line-height:1.5;max-width:720px}
+.risk-next-step nav{display:flex;flex-wrap:wrap;gap:14px}.risk-next-step a{font-size:12px;color:#90d5e4}
+.strength-quant-fold{margin:13px 0;padding:14px;border:1px solid #38556a;border-radius:12px;background:#102131}.strength-quant-fold>summary{cursor:pointer;color:#c3d9e6;font-size:13px}
+.strength-enhanced-summary{padding:12px 14px;margin:12px 0;background:#112635;border:1px solid #38556a;border-radius:10px;font-size:13px;color:#c3d9e6}
+
+/* Shared reading hierarchy for events and research archive. */
+.desk-section-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.desk-section-nav button{cursor:pointer;color:#c3d9e6;background:#102131;border:1px solid #38556a;border-radius:8px;padding:10px 13px;font:inherit;font-size:12px}
+.desk-section-nav button:focus-visible{outline:2px solid #90d5e4;outline-offset:2px}
+.desk-section-title{margin:22px 0 12px;font-size:22px;color:#edf5f8}
+#desk-calendar,#desk-news{scroll-margin-top:85px}
+.rl-disclaimer>summary{cursor:pointer;font-weight:700;color:#c3d9e6;font-size:13px}
+.rl-disclaimer[open]>summary{margin-bottom:14px}

@@ -257,10 +257,7 @@
    '</div>'+
    (root.FXQuantIssuerContext?.narrative(get('macroObserved'),[selected],today)?'<p class="drivers-lead">'+esc(root.FXQuantIssuerContext.narrative(get('macroObserved'),[selected],today))+'</p>':'')+
    '</div>'+
-   '<div class="drivers-links"><button type="button" data-bank-open="rates" data-bank-target="'+selected+'">Vedi i tassi attesi ↗</button>'+
-   '<button type="button" data-bank-open="currencies" data-bank-target="'+selected+'">Valuta '+selected+' ↗</button><a href="#macro">Scenario macro ↗</a><a href="#news">Calendario e Notizie ↗</a></div>'+
-   '<details class="drivers-fold drivers-bank-sources"><summary>Apri decisione, tassi attesi e fonti</summary>'+
-   (root.FXQuantIssuerContext?.render(get('macroObserved'),[selected],today)||'')+
+   '<div class="bank-policy-first">'+
    '<p class="drivers-lead">Tasso ufficiale <strong>'+esc(rate)+'</strong> · decisione '+esc(last?date(last):'da verificare')+
    (nextMeeting?' · prossima riunione '+esc(date(nextMeeting)):' · prossima riunione da verificare')+'</p>'+
    '<div class="drivers-want-can">'+
@@ -269,6 +266,11 @@
     '<article class="drivers-analysis"><span>CAN · MARGINE DI MANOVRA</span><h3>'+esc(can.title)+'</h3><p>'+esc(can.text)+'</p>'+
       (evidence?'<small>'+esc(evidence)+'</small>':'')+'</article>'+
    '</div>'+
+   '</div>'+
+   '<div class="drivers-links"><button type="button" data-bank-open="rates" data-bank-target="'+selected+'">Verifica il repricing in Tassi &amp; OIS ↗</button>'+
+   '<button type="button" data-bank-open="currencies" data-bank-target="'+selected+'">Valuta '+selected+' ↗</button><a href="#macro">Scenario macro ↗</a><a href="#news">Calendario e Notizie ↗</a></div>'+
+   '<details class="drivers-fold drivers-bank-sources"><summary>Approfondisci evidenze macro, riferimenti di mercato e fonti</summary>'+
+   (root.FXQuantIssuerContext?.render(get('macroObserved'),[selected],today)||'')+
    renderPolicyMacroContext(macroContext,esc,fmt)+
    '<div class="drivers-market-audit" aria-label="Mercato e Forex '+selected+'"><div class="drivers-market-grid">'+
     '<div class="drivers-market-item"><span>COSA PREZZA IL MERCATO</span><h3>'+esc(market.title)+'</h3>'+
