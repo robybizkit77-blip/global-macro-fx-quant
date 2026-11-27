@@ -200,9 +200,20 @@ def audit(*, today=None, root=ROOT):
     assert "VARIANT_NOT_ALIGNED" in (
         root / GATE.relative_to(ROOT)).read_text(encoding="utf-8"), "SLOOS quarantine missing"
     cad = [x for x in research["CAD"] if x.get("id") == "CA_BUSINESS_LOANS_OUTSTANDING_history_value"]
-    assert len(cad) == 1 and not runtime["CAD"].get("credit"), (
-        "CAD research-only credit/canonical gap changed: review promotion before claiming source certification"
-    )
+    assert len(cad) == 1, "Canadian macro identity must remain unique"
+    cad_mapping=source_registry.get("CAD.credit", {})
+    cad_ready=cad_mapping.get("automation_ready") is True
+    native_cad=runtime["CAD"].get("credit")
+    if cad_ready:
+        assert cad_mapping.get("series_key")=="V122667770"
+        assert cad_mapping.get("macro_series_id")==cad[0]["id"]
+        assert cad[0]["current_vintage_provenance"]["source_series_id"]=="V122667770"
+        assert cad[0]["current_vintage_provenance"]["source_series_first_release_PIT_certified"] is False
+        assert cad[0]["unit"]=="CAD millions" and cad[0]["frequency"]=="M"
+        assert native_cad and len(native_cad["dates"])>=24
+        assert all(native_cad[k]==cad[0][k] for k in ("dates","values","last_date","last_value"))
+    else:
+        assert native_cad is None, "unapproved Canadian credit must remain absent"
     count = lambda key, expected: sum(i.get(key) == expected for i in items)
     return {
         "schema": "GMFQ_NEXT_LIQUIDITY_FRESHNESS_AUDIT_V1",
@@ -216,7 +227,7 @@ def audit(*, today=None, root=ROOT):
         "missing_series": count("freshness", "MISSING_SERIES"),
         "not_source_mapping_ready": sum(not x["source_mapping_ready_at_registry_snapshot"] for x in items),
         "sloos_variant": conflict,
-        "cad_research_candidate_not_promoted": True,
+        "cad_research_candidate_not_promoted": not cad_ready,
         "research_source_cannot_override_canonical": True,
         "records": items,
         "separate_source_inventory": separate_source_inventory(root,today,runtime),
@@ -234,7 +245,7 @@ def markdown(report):
         "",
         "## Criticità da risolvere",
         "- **USD SLOOS:** la mappatura del feed storico resta sospesa in attesa di certificazione della variante; l’accordo sul periodo comune non certifica da solo la fonte. La scheda USD mostra separatamente DRTSCILM quando verificata.",
-        "- **CAD credito:** presente solo una candidata nel dataset di ricerca; non promossa al feed operativo.",
+        ("- **CAD credito:** candidata nel dataset di ricerca; non promossa al feed operativo." if report["cad_research_candidate_not_promoted"] else "- **CAD credito:** identità V122667770 e parità archivio nativo/macro verificate; continuità non certificata."),
         "- **Acquisizione:** una mappatura fonte pronta non dimostra aggiornamento eseguito; non presentare i feed come live.",
         "",
         "## G8 · ultimo periodo economico per canale",
@@ -272,9 +283,10 @@ def selftest():
     assert not compare_labeled_sloos(sample_runtime,sample_research)["native_period_overlap_agrees"]
     assert compare_labeled_sloos(sample_runtime,sample_research)["resolution"]=="WITHHELD_PENDING_EXACT_VARIANT"
     data = audit(today=date(2026, 11, 24))
-    assert data["channels"] == 24 and data["missing_series"] >= 3
+    assert data["channels"] == 24 and data["missing_series"] == sum(x["freshness"]=="MISSING_SERIES" for x in data["records"])
     assert data["sloos_variant"]["resolution"] == "WITHHELD_PENDING_EXACT_VARIANT"
-    assert data["cad_research_candidate_not_promoted"]
+    cad_record=next(x for x in data["records"] if x["ccy"]=="CAD" and x["role"]=="credit")
+    assert data["cad_research_candidate_not_promoted"] == (not cad_record["source_mapping_ready_at_registry_snapshot"])
     assert data["not_fx_signal_or_new_source_fetch"]
     inventory=data["separate_source_inventory"]
     assert len(inventory["records"])==24

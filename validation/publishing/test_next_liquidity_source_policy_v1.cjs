@@ -45,9 +45,31 @@ assert.equal(sourceSLOOS.current_vintage_provenance.source_series_id,'DRTSCILM')
 assert.equal(sourceSLOOS.values[matched],nativeSLOOS.last_value);
 assert.equal(policy.mapped['USD.conditions'].verification.receipt_status,'READY');
 assert.equal(sourceGate.check('USD','conditions').withheld,false);
-assert.equal(runtime.CAD.credit,null);
-assert(research.CAD.some(x=>x.id==='CA_BUSINESS_LOANS_OUTSTANDING_history_value'));
-assert.equal(sourceGate.check('CAD','credit').code,'NO_APPROVED_MAPPING');
+const cadMacro=research.CAD.find(x=>x.id==='CA_BUSINESS_LOANS_OUTSTANDING_history_value');
+assert(cadMacro);
+function checkCadCredit(mapping,native,macro){
+ if(!mapping?.automation_ready){
+  assert.equal(native,null,'Unapproved CAD credit must remain absent');
+  return false;
+ }
+ assert.equal(mapping.series_key,'V122667770');
+ assert.equal(mapping.macro_series_id,'CA_BUSINESS_LOANS_OUTSTANDING_history_value');
+ assert.equal(macro.current_vintage_provenance?.source_series_id,'V122667770');
+ assert.equal(macro.current_vintage_provenance?.source_series_first_release_PIT_certified,false);
+ assert.equal(macro.unit,'CAD millions');
+ assert.equal(macro.frequency,'M');
+ assert(native && native.dates.length>=24);
+ for(const k of ['dates','values','last_date','last_value'])assert.deepEqual(native[k],macro[k],k+' Canadian history mismatch');
+ return true;
+}
+const cadReady=checkCadCredit(policy.mapped['CAD.credit'],runtime.CAD.credit,cadMacro);
+assert.equal(sourceGate.check('CAD','credit').ready,cadReady);
+const futureMapping={automation_ready:true,series_key:'V122667770',macro_series_id:cadMacro.id};
+const exactFixture=Object.fromEntries(['dates','values','last_date','last_value'].map(k=>[k,structuredClone(cadMacro[k])]));
+assert(checkCadCredit(futureMapping,exactFixture,cadMacro));
+assert.throws(()=>checkCadCredit(null,exactFixture,cadMacro));
+assert.throws(()=>checkCadCredit(futureMapping,{...exactFixture,last_value:exactFixture.last_value+1},cadMacro));
+assert.throws(()=>checkCadCredit({...futureMapping,series_key:'wrong'},exactFixture,cadMacro));
 const fmt=(x,n=2)=>Number(x).toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n});
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const api=(ccy)=>({get:k=>k==='liquidity'?runtime:null,FX,
@@ -72,11 +94,17 @@ assert(usConditions.includes(nativeSLOOS.last_date));
 assert(!usConditions.includes("SLOOS IN VERIFICA"));
 const cad=page.render(api('CAD'));
 const caCredit=cad.split('data-liq-role="credit"')[1]?.split('</div>')[0]||'';
-assert.match(caCredit,/MAPPATURA ASSENTE/);
-assert.match(caCredit,/Misura non verificabile/);
+if(cadReady){
+ assert.match(caCredit,/data-source-safety="mapped"/);
+ assert(caCredit.includes(runtime.CAD.credit.last_date));
+ assert(!caCredit.includes('Misura non verificabile'));
+}else{
+ assert.match(caCredit,/MAPPATURA ASSENTE/);
+ assert.match(caCredit,/Misura non verificabile/);
+}
 console.log('NEXT_LIQUIDITY_SOURCE_POLICY_PASS',JSON.stringify({
   currencies:FX.length,channels:FX.length*roles.length,asof:sourceGate.AS_OF,
-  usdSLOOS:'VERIFIED_OFFICIAL_DRTSCILM',cadCredit:'RESEARCH_NOT_PROMOTED'
+  usdSLOOS:'VERIFIED_OFFICIAL_DRTSCILM',cadCredit:cadReady?'VERIFIED_NATIVE_PARITY':'RESEARCH_NOT_PROMOTED'
 }));
 
 const residual=load('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json');

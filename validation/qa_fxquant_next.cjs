@@ -658,8 +658,14 @@ async function macroDriversJourney(page,label){
    const text=await survey.innerText();
    assert(text.includes('Negativo = allentamento')&&text.includes('positivo = irrigidimento'),label+' CAD survey sign semantics');
   }
-  assert(cadDossier.includes('Serie non disponibile'),
-  label+' missing CAD direct credit must not be invented');
+ const cadGate=await page.evaluate(()=>window.FXQuantLiquiditySourcePolicy.check('CAD','credit'));
+ const nativeCadCredit=locator(page,'[data-liq-role="credit"]');
+ if(cadGate.ready){
+  assert.equal(await nativeCadCredit.getAttribute('data-source-safety'),'mapped');
+  assert(!(await nativeCadCredit.textContent()).includes('Misura non verificabile'),label+' mapped CAD credit must be present');
+ }else{
+  assert((await nativeCadCredit.textContent()).includes('Serie non disponibile'),label+' missing CAD direct credit must not be invented');
+ }
  assert(cadDossier.includes('Copertura')&&cadDossier.includes('QUALITÀ TEMPORALE'),
   label+' liquidity status must reflect actual coverage and dated sources');
  assert(cadDossier.includes('punti della survey')&&!cadDossier.includes('−208,33%'),
