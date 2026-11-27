@@ -195,19 +195,20 @@ def collect_monthly(previous, today):
     last_known = max(history)
     if last_known not in overlap:
         raise ValueError("No matching recent overlap with the last published release")
-    anchors = set(SEED) & overlap if not previous else {last_known}
+    # Reconcile every common published observation, including older periods.
+    # Do not invent missing months or silently accept historical revisions.
+    anchors = set(history) & overlap
     if any(observed[key][stamp] != value for stamp in anchors for key, value in history[stamp].items()):
-        raise ValueError("Last published observation was revised; review before extending history")
+        raise ValueError("A published observation was revised; review before extending history")
     for stamp in sorted(overlap):
-        if stamp > last_known:
-            prior = date.fromisoformat(max(history) + "-01")
-            following = date.fromisoformat(stamp + "-01")
-            if (following.year - prior.year) * 12 + following.month - prior.month != 1:
-                raise ValueError("Gap in published monthly history")
+        if stamp not in history:
             history[stamp] = {key: values[stamp] for key, values in observed.items()}
+    dates = [date.fromisoformat(stamp + "-01") for stamp in sorted(history)]
+    if any((b.year-a.year)*12+b.month-a.month != 1 for a,b in zip(dates,dates[1:])):
+        raise ValueError("Gap in published monthly history")
     if max(history) != period:
         raise ValueError("Latest reference period is absent from the common history")
-    print(f"RBNZ D10/C50 {period} released {released}: {history[period]}, next {upcoming}")
+    print(f"RBNZ D10/C50 {period} released {released}: {history[period]}, next {upcoming}; history {min(history)}–{max(history)} ({len(history)} months)")
     return {"period": period, "released": released, "next": upcoming, "history": history}
 
 
