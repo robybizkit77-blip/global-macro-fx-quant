@@ -81,15 +81,17 @@ note('macro','Serie Macro',macroCount+' indicatori: le osservazioni hanno freque
 // Inventory the actual underlying archive separately from newer page overlays.
 // Period age is a triage heuristic, NOT an official release-calendar assertion.
 // Never infer missing frequencies or mark an old historical series as live.
-const {normalize,cadence}=require('./macro_archive_cadence_v1.cjs');
+const {normalize,cadence,surveyQuarter}=require('./macro_archive_cadence_v1.cjs');
 const inventoryThresholds={D:7,W:21,M:75,Q:160,A:550};
 const inventory=[];
 for(const c of ccy){
  for(const series of macro[c]||[]){
   const raw=series.last_date;
-  const frequency=series.frequency||null;
+  const declaredFrequency=series.frequency||null;
+  const survey=surveyQuarter(series,today);
+  const frequency=declaredFrequency||survey?.frequency||null;
   const limit=inventoryThresholds[frequency]??null;
-  const parsed=normalize(raw);
+  const parsed=survey?.period_start||normalize(raw);
   const historical=cadence(series);
   const observedLimit=inventoryThresholds[historical.observed_frequency]??null;
   const parsedTime=parsed&&Date.parse(parsed+'T00:00:00Z');
@@ -100,7 +102,9 @@ for(const c of ccy){
   const state=!valid||age<0||!valuePresent?'INVALID_OBSERVATION':
     limit===null?'FREQUENCY_UNDECLARED':age>limit?'AGE_REVIEW_REQUIRED':'WITHIN_AGE_SCREEN';
   inventory.push({currency:c,id:series.id,label:series.label,category:series.category,
-   frequency,...historical,raw_last_date:raw,normalized_period_start:parsed,calendar_age_days:age,
+   frequency,declared_frequency:declaredFrequency,frequency_basis:survey?.basis||null,
+   observed_availability_upper_bound:survey?.available_by||null,
+   ...historical,raw_last_date:raw,normalized_period_start:parsed,calendar_age_days:age,
    observed_cadence_age_screen:!valid||age<0||observedLimit===null?null:age>observedLimit?'AGE_REVIEW_REQUIRED':'WITHIN_AGE_SCREEN',
    screening_limit_days:limit,state,source_file:series.source_file||null,
    last_history_date:lastHistoryDate,value_present:valuePresent});
