@@ -129,6 +129,30 @@ function narrative(rows,esc,market,today,fmt,route,focusedPair){
  const currencies=[...new Set(rows.map(r=>r.currency))];
  return currencies.map(c=>rows.filter(r=>r.currency===c).map(r=>'<p><strong>'+esc(r.currency+' · '+r.label)+'</strong> — '+esc(reading(r))+' <small>('+esc(r.reference_period)+')</small></p>').join('')+'<p><strong>'+esc(c)+' · politica monetaria e mercato</strong> — '+esc(marketReading(c,market,today,fmt))+'</p>').join('')+(route==='pairs'&&focusedPair&&currencies.length===2?'<p><strong>Prezzo relativo</strong> — '+esc(priceReading(currencies[0],currencies[1],market,today,fmt))+'</p>':'');
 }
+// A compact, explicitly selected domestic context. Never feeds the FX score.
+function countryFirstRead(feed,today,currency,fmt){
+ const x=read(feed,today,'currencies',currency);
+ if(!x||x.status==='unavailable'||!recent(x.day,today,7))return '';
+ const periodOK=r=>typeof r.reference_period==='string'&&
+  (/^\d{4}-\d{2}(?:-\d{2})?$/.test(r.reference_period)
+   ?r.reference_period<=today
+   :/^\d{4}Q[1-4]$/.test(r.reference_period)&&
+    r.reference_period.slice(0,4)+'-'+String(Number(r.reference_period.at(-1))*3).padStart(2,'0')<=today.slice(0,7));
+ const value=(v,u)=>Number.isFinite(v)?(v>0?'+':'')+fmt(v,2)+u:'';
+ const describe=(r,sector=false)=>{
+  const amount=Number.isFinite(r.momentum_pct)?' · '+value(r.momentum_pct,'%'):'';
+  return r.label+' ('+r.reference_period+amount+'): '+(sector?sectorReading(r):reading(r));
+ };
+ const activity=x.rows.filter(r=>periodOK(r)&&Number.isFinite(r.momentum_pct)).slice(0,2);
+ const sectors=(x.sectors||[]).filter(r=>periodOK(r)&&r.measurement!=='WITHHELD');
+ // Stable priority, not selection by largest or most favourable movement.
+ const housing=sectors.find(r=>r.pillar==='housing'&&r.measurement==='QUANTITY'&&Number.isFinite(r.momentum_pct));
+ const output=sectors.find(r=>['manufacturing','services'].includes(r.pillar)&&
+  (r.measurement==='QUANTITY'?Number.isFinite(r.momentum_pct):r.measurement==='BALANCE'&&Number.isFinite(r.velocity_pp)));
+ const credit=sectors.find(r=>r.pillar==='credit'&&r.measurement==='STOCK'&&Number.isFinite(r.momentum_pct));
+ const parts=activity.map(r=>describe(r)).concat([housing||output,credit].filter(Boolean).map(r=>describe(r,true)));
+ return parts.length?parts.join(' ')+' Quadro complementare, senza modificare il punteggio FX; periodi e misure distinti.':'';
+}
 function render(x,esc,fmt){
  if(!x)return '';
  const number=(v,unit)=>Number.isFinite(v)?esc((v>0?'+':'')+fmt(v,2)+unit):'—';
@@ -138,5 +162,5 @@ function render(x,esc,fmt){
  const table='<div style="overflow-x:auto"><table><thead><tr><th>Valuta / indicatore</th><th>Periodo</th><th>Livello</th><th>Momentum</th><th>Velocità</th><th>Accelerazione</th><th>Svolta</th></tr></thead><tbody>'+x.rows.map(r=>'<tr><td>'+esc(r.currency+' · '+r.label)+(r.nominal_not_real?' (nominale)':'')+'</td><td>'+esc(r.reference_period)+'</td><td>'+number(r.level,'')+' '+esc(r.unit||'')+'</td><td>'+colored(r.momentum_pct,'%')+'</td><td>'+colored(r.velocity_pp,' pp')+'</td><td>'+colored(r.acceleration_pp,' pp')+'</td><td>'+esc(turn[r.turning_point]||'Non valutabile')+'</td></tr>').join('')+'</tbody></table></div>';
  return '<details class="panel" data-activity-momentum-v1'+(x.route!=='overview'&&(x.route!=='pairs'||x.focusedPair)?' open':'')+'> <summary><strong>Momentum dell’attività economica</strong> · ricerca</summary><p>'+(x.status==='unavailable'?'Diagnostica non ancora pubblicata o non validabile.':(x.status==='historical'?'Elaborazione precedente: ':'Elaborazione del giorno: ')+esc(x.day)+'. Il periodo di ogni indicatore resta distinto dalla data di elaborazione.')+'</p>'+(x.status==='unavailable'?'':narrative(x.rows,esc,x.market,x.today,fmt,x.route,x.focusedPair)+dynamicsTable(x.dynamics,esc,fmt)+sectorTable(x.sectors,x.wanted,esc,fmt)+'<details><summary>Dettaglio quantitativo</summary>'+table+'</details>'+'<p>Mensili: ultimi tre mesi rispetto ai tre precedenti. Trimestrali: trimestre su trimestre. Velocità = variazione del momentum; accelerazione = variazione della velocità. Svolta del momentum, non del livello economico. Serie riviste, non point-in-time; nessun ranking o segnale Forex. La spesa AUD nominale e il retail NZD trimestrale non sono confrontabili direttamente con le altre serie reali mensili.</p>')+'</details>';
 }
-const api={read,render,reading,marketReading,positionReading,priceReading,readDynamics,dynamicsReading,readSectors,sectorTable,sectorReading};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FXQuantActivityMomentum=api;
+const api={read,render,reading,marketReading,positionReading,priceReading,readDynamics,dynamicsReading,readSectors,sectorTable,sectorReading,countryFirstRead};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FXQuantActivityMomentum=api;
 })(typeof window==='undefined'?globalThis:window);
