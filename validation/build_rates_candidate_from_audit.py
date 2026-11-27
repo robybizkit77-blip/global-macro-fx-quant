@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, copy, hashlib, json, pathlib, sys
+import argparse, copy, hashlib, json, math, pathlib, sys
 from datetime import date, timedelta
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
@@ -197,6 +197,10 @@ def main():
         for t in obj.get('tenors',[]):
             if t.get('tenor')=='2Y': t['value']=y2; t['date']=dt
             if t.get('tenor')=='10Y': t['value']=y10; t['date']=dt
+            if c=='JPY' and t.get('tenor') in ('5Y','30Y') and t['tenor'] in src:
+                value=src[t['tenor']]
+                if type(value) in (int,float) and math.isfinite(value) and -5<=value<=25:
+                    t['value']=value; t['date']=dt
         append_hist(obj,'history2',dt,y2); append_hist(obj,'history10',dt,y10)
         obj['freshness_status']='CURRENT_OFFICIAL_SAME_BASIS'
         obj['freshness_note']=f'Official same-basis 2Y/10Y updated through {dt}.'
