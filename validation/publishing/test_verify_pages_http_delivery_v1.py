@@ -101,6 +101,14 @@ def main():
     wrong = next(r for r in macro_stale["checks"]
                  if r["path"] == "live_data/sections/MACRO_SERIES.json")
     assert not wrong["http_200_and_sha256_match"]
+    # A stale liquidity archive, policy or renderer must not pass with green Macro.
+    for name in ["live_data/sections/NATIVE_LIQ_DATA.json","site/fx-quant-v2/next/liquidity-source-policy-gate-v1.js","site/fx-quant-v2/next/liquidity-credit-studio.js"]:
+        assert name in FILES
+        stale_liquidity = case(False, name)
+        assert stale_liquidity["status"] == "FAIL", stale_liquidity
+        wrong_liquidity = next(r for r in stale_liquidity["checks"] if r["path"] == name)
+        assert wrong_liquidity["http_status"] == 200
+        assert not wrong_liquidity["http_200_and_sha256_match"]
     # A stale News Pulse renderer is a deployment failure even when the
     # official-actual JSON and all other operational feeds already match.
     renderer_delayed = case(True, "dashboard/calendar-news-operational-v1.js")

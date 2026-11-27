@@ -28,6 +28,10 @@ FILES = (
     "live_data/sections/MACRO_THERMOMETER_DATA.json",
     # Canonical source and thermometer must converge as separate exact-byte files.
     "live_data/sections/MACRO_SERIES.json",
+    # Verify the published liquidity dataset, readiness policy and renderer independently.
+    "live_data/sections/NATIVE_LIQ_DATA.json",
+    "site/fx-quant-v2/next/liquidity-source-policy-gate-v1.js",
+    "site/fx-quant-v2/next/liquidity-credit-studio.js",
     # Home Market Pulse: exact public bytes, not just network HTTP 200.
     "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
     # News Pulse actuals are unusable if the public CDN still serves old render code.
