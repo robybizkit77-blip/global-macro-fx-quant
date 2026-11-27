@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-26",
-  "generated_at_utc": "2026-11-27T10:57:28.559298Z",
+  "generated_at_utc": "2026-11-27T13:12:51.871658Z",
   "items": [
     {
       "as_of": "2026-11-26",
@@ -301,7 +301,7 @@
       "title": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     }
   ],
-  "last_checked_at_utc": "2026-11-27T10:57:28.559298Z",
+  "last_checked_at_utc": "2026-11-27T13:12:51.871658Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1080,13 +1080,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-16",
+            "date": "2026-11-26",
             "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Reserve Bank of New Zealand · B2 government bond closing yields · 2026-10-16 · reviewed public table",
+            "quality": "FULL_CURRENT_OFFICIAL_POSTROLL_RECONCILED",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Reserve Bank of New Zealand B2 · NZFMA indicative government bond closing yields · HTML/XLSX reconciled",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.89
+            "yield_2y_pct": 3.79
           }
         },
         "source": "Reserve Bank of New Zealand",
@@ -1128,13 +1128,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-16",
+            "date": "2026-11-26",
             "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Reserve Bank of New Zealand · B2 government bond closing yields · 2026-10-16 · reviewed public table",
+            "quality": "FULL_CURRENT_OFFICIAL_POSTROLL_RECONCILED",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Reserve Bank of New Zealand B2 · NZFMA indicative government bond closing yields · HTML/XLSX reconciled",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.89
+            "yield_2y_pct": 3.79
           }
         },
         "source": "Reserve Bank of New Zealand",
