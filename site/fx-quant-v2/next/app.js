@@ -1087,9 +1087,10 @@ function pairs(){
   '<div class="pairs-three-answers">'+
    '<div><span>TESI FONDAMENTALE</span><strong>'+esc(activePair?.thesisStrength||'NON VALUTABILE')+'</strong></div>'+
    '<div class="pairs-trade-assessment" data-pairs-trade-tone="'+tradeTone+'"><span>TRADE ATTRACTIVENESS</span><strong>'+esc(tradeStatus)+'</strong></div>'+
-   '<div class="pairs-price-assessment"><span>IL PREZZO SEGUE LA TESI?</span>'+priceRead+'</div></div>'+
+   '<div class="pairs-price-assessment"><span>IL PREZZO SEGUE LA TESI?</span><strong>'+esc(!fav?'TESI NON DISTINTA':activePair.opposite?'CONTRARIO':activePair.aligned?'COERENTE':'NON DECISIVO')+'</strong></div></div>'+
   '<details class="pairs-optional-panel pairs-evidence"><summary><strong>Conferme, invalidazioni, rischio e fonti</strong><span class="pairs-open-icon" aria-hidden="true">+</span></summary><div class="pairs-details-body">'+
   (window.FXQuantIssuerContext?.render(get('macroObserved'),[state.pair.slice(0,3),state.pair.slice(3)],dayNow())||'')+
+  '<div class="pairs-price-detail">'+priceRead+'</div>'+
   '<span class="badge info">'+esc(quality)+'</span><p class="pairs-primary-story">'+esc(driverDetail)+'</p>'+
   '<p class="pairs-timing-reading"><strong>Prima di valutare un ingresso.</strong> '+esc(tradeText)+'</p>'+
   '<p class="pairs-why-no-entry"><strong>Rischio operativo.</strong> '+esc(riskReading)+
