@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
-from check_child_execution_steps_v1 import inspect, REQUIRED_STEPS
+from check_child_execution_steps_v1 import inspect, REQUIRED_STEPS, MACRO_PR_ONLY_JOBS
 
 root = Path(__file__).resolve().parents[2]
 orchestrator = json.loads((root / "validation/orchestration/DAILY_DATA_ORCHESTRATOR_V2_2026-10-15.json").read_text())
@@ -53,6 +54,38 @@ for workflow, names in REQUIRED_STEPS.items():
     duplicate["jobs"][0]["steps"].append(duplicate["jobs"][0]["steps"][0])
     assert inspect(workflow, duplicate)["status"] == "FAIL_SKIPPED_OR_INCOMPLETE"
 
+
+# Reproduce the production Macro job list: historical PR-only proofs are
+# intentionally skipped on every non-PR run. Never relax the real worker.
+macro = "macro-persistent-daily-v1.yml"
+macro_yaml = (root / ".github/workflows" / macro).read_text(encoding="utf-8")
+job_blocks = re.split(r"(?m)^  ([a-z0-9-]+):\n", macro_yaml.split("\njobs:\n", 1)[1])
+pr_only = {
+    name for name, block in zip(job_blocks[1::2], job_blocks[2::2])
+    if re.search(r"(?m)^    if: github\.event_name == 'pull_request' && ", block)
+    and not re.search(r"(?m)^    name:", block)
+}
+assert pr_only == MACRO_PR_ONLY_JOBS, (pr_only - MACRO_PR_ONLY_JOBS, MACRO_PR_ONLY_JOBS - pr_only)
+macro_worker = {
+    "name": "persist-macro", "status": "completed", "conclusion": "success",
+    "steps": [{"name": n, "status": "completed", "conclusion": "success"}
+              for n in REQUIRED_STEPS[macro]],
+}
+expected_skips = [{"name": n, "status": "completed", "conclusion": "skipped", "steps": None}
+                  for n in sorted(pr_only)]
+macro_proof = inspect(macro, {"jobs": [macro_worker, *expected_skips]})
+assert macro_proof["status"] == "PASS_EXECUTED", macro_proof
+assert set(macro_proof["expected_pr_only_jobs_skipped"]) == pr_only
+assert inspect(macro, {"jobs": expected_skips})["status"] == "FAIL_SKIPPED_OR_INCOMPLETE"
+for unexpected in (
+    {"name": "unexpected-production-job", "status": "completed", "conclusion": "skipped", "steps": None},
+    dict(expected_skips[0], conclusion="failure"),
+    dict(expected_skips[0], steps=macro_worker["steps"]),
+    dict(expected_skips[0], status="in_progress"),
+):
+    assert inspect(macro, {"jobs": [macro_worker, unexpected]})["status"] == "FAIL_SKIPPED_OR_INCOMPLETE"
+assert inspect(macro, {"jobs": [dict(macro_worker, conclusion="skipped"), *expected_skips]})["status"] == "FAIL_SKIPPED_OR_INCOMPLETE"
+print("MACRO_PR_ONLY_EXPECTED_SKIP_PROOF_PASS", len(pr_only))
 
 # Actual 12 Nov night incident: GitHub successfully verified a mirror no-op
 # and exact public HTTP bytes (43/43), but the write-only branch check was
