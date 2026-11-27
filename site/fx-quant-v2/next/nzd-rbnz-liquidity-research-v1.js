@@ -12,6 +12,21 @@ window.FXQuantNZDRBNZLiquidity = {
       "liquidity": 27036,
       "money": 459840,
       "credit": 630847
+    },
+    "2026-05": {
+      "liquidity": 26219,
+      "money": 451046,
+      "credit": 615418
+    },
+    "2026-06": {
+      "liquidity": 28172,
+      "money": 454697,
+      "credit": 621637
+    },
+    "2026-07": {
+      "liquidity": 28303,
+      "money": 458490,
+      "credit": 621266
     }
   },
   "credit_conditions": {
