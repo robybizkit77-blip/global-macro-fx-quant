@@ -356,7 +356,7 @@
        +'<span><b>Composizione 1W</b> long '+sign(q?.dLong,0)+' / short '+sign(q?.dShort,0)+'</span></div>'
        +'<p class="cot-velocity-note">Velocity stimata da Net e Net/OI arrotondato: utile per confrontare il ritmo dei fondi, non è Open Interest certificato come serie separata.</p>'
        +interpretation(a)
-       +(root.FXQuantPositioningResearchScore?.render(root.FXQuantPositioningResearchScore.evaluate({history:get('cotHistory'),archive:get('cotPriorReference'),desk:root.FXQuantCOTDeskV26,today:dayNow(),currency:ccy}),esc)||'')
+       +(root.FXQuantPositioningResearchScore?.render(root.FXQuantPositioningResearchScore.evaluate({history:get('cotHistory'),archive:get('cotPriorReference'),officialOI:get('cotOfficialOI'),desk:root.FXQuantCOTDeskV26,today:dayNow(),currency:ccy}),esc)||'')
        +'<section class="cot-graph-theatre"><div class="cot-analysis-head"><div><span class="chapter-kicker">05 / CHART STUDIO</span>'
        +'<h2>Le evidenze. <em>Stock, flusso e prezzo.</em></h2></div>'
        +'<p>Seleziona metrica e intervallo. I due grafici hanno scale indipendenti; nessuna correlazione forzata.</p></div>'

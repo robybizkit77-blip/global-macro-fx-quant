@@ -36,6 +36,7 @@ const SOURCES={
  cot:'../../../live_data/sections/V247_COT_STORIES.json',
  cotHistory:'../../../live_data/sections/V250_COT_CHART_DATA.json',
  cotPriorReference:'../design-studio-cot-v1-data.json',
+ cotOfficialOI:'./cot-official-oi-v1.json',
  risk:'../cross-asset-live-data.json',
  ois:'../ois-pricing-snapshot.json',
  oisOperational:'../../../live_data/sections/OIS_OPERATIONAL_VIEW.json',

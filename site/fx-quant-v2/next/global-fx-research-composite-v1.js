@@ -46,7 +46,7 @@
   const values=[
    {key:'macro',label:'Macro',weight:40,score:m?.score??null,estimatedWeight:m?40*m.estimatedShare/100:0,quality:m?.quality||'ASSENTE'},
    {key:'rates',label:'Tassi attesi',weight:30,score:r?.score??null,estimatedWeight:r?.estimated?30:0,quality:r?.quality||'ASSENTE'},
-   {key:'positioning',label:'Posizionamento',weight:15,score:c?.score??null,estimatedWeight:c?15:0,quality:c?'OI stimato · '+c.asof:'ASSENTE'},
+   {key:'positioning',label:'Posizionamento',weight:15,score:c?.score??null,estimatedWeight:c?.quality==='ESTIMATED_OI_RESEARCH'?15:0,quality:c?(c.quality==='OFFICIAL_OI_RESEARCH'?'OI ufficiale CFTC · ':'OI stimato · ')+c.asof:'ASSENTE'},
    {key:'price',label:'Prezzo',weight:15,score:d?.score??null,estimatedWeight:0,quality:d?'Fixing BCE · '+d.asof:'ASSENTE'}
   ];
   const coverage=values.reduce((s,f)=>s+(good(f.score)?f.weight:0),0);
@@ -61,12 +61,12 @@
   const valid=x=>x?.affectsFxRanking===false&&x.eligibleForTrading===false;
   const a=valid(macro)&&macro.country===currency&&good(macro.score)&&finite(macro.effectiveCoverage)&&macro.effectiveCoverage>0&&macro.effectiveCoverage<=100?macro:null;
   const b=valid(rates)&&rates.row?.currency===currency?rates.row:null;
-  const c=valid(positioning)&&positioning.currency===currency&&good(positioning.score)&&positioning.quality==='ESTIMATED_OI_RESEARCH'?positioning:null;
+  const c=valid(positioning)&&positioning.currency===currency&&good(positioning.score)&&['ESTIMATED_OI_RESEARCH','OFFICIAL_OI_RESEARCH'].includes(positioning.quality)?positioning:null;
   const d=valid(price)&&price.currency===currency&&good(price.score)&&price.quality==='OFFICIAL_REFERENCE_FIXINGS'?price:null;
   const items={
    macro:{score:a?.score??null,fraction:a?a.effectiveCoverage/100:0,quality:'Euristico; copertura delle dimensioni misurate'},
    rates:{score:b?.quality==='UFFICIALE'&&good(b.officialScore)?b.officialScore:null,fraction:b?.quality==='UFFICIALE'&&good(b.officialScore)?1:0,quality:b?.quality||'ASSENTE'},
-   positioning:{score:c?.score??null,fraction:c?1:0,quality:c?'OI stimato; rilevazione '+c.asof:'ASSENTE'},
+   positioning:{score:c?.score??null,fraction:c?1:0,quality:c?(c.quality==='OFFICIAL_OI_RESEARCH'?'OI ufficiale CFTC; rilevazione ':'OI stimato; rilevazione ')+c.asof:'ASSENTE'},
    price:{score:d?.score??null,fraction:d?1:0,quality:d?'Fixing BCE '+d.asof:'ASSENTE'}
   };
   function summarize(rateScenario){
@@ -96,7 +96,7 @@
   const band=s=>esc(n(s.lower)+' – '+n(s.upper));
   const e=x.enhanced;
   const enhanced=e?'<section class="global-fx-enhanced-research" data-global-fx-enhanced-v1><h3>Enhanced · stime esplicite</h3>'+
-   '<p><strong>'+esc(e.complete?n(e.score)+'/10':'Non valutabile')+'</strong> · copertura di calcolo '+esc(n(e.coverage))+'% · peso stimato/proxy '+esc(n(e.estimatedWeight))+'% (include OI COT stimato).</p>'+
+   '<p><strong>'+esc(e.complete?n(e.score)+'/10':'Non valutabile')+'</strong> · copertura di calcolo '+esc(n(e.coverage))+'% · peso stimato/proxy '+esc(n(e.estimatedWeight))+'% (include OI COT stimato solo se quello ufficiale non è riconciliato).</p>'+
    '<div style="overflow-x:auto"><table><thead><tr><th>Fattore</th><th>Score</th><th>Peso stimato</th><th>Metodo</th></tr></thead><tbody>'+
    e.values.map(f=>'<tr><td>'+esc(f.label)+'</td><td>'+esc(n(f.score))+'</td><td>'+esc(n(f.estimatedWeight))+'%</td><td>'+esc(f.quality)+'</td></tr>').join('')+'</tbody></table></div>'+
    (e.rates?.contract?'<p>Futures secondari '+esc(e.rates.contract)+': '+esc(n(e.rates.bp))+' pb · '+esc(e.rates.from+' → '+e.rates.asof)+' · '+esc(e.rates.source)+'. Ultima settimana esatta disponibile, termina un giorno prima del livello corrente. Non OIS ufficiale.</p>':e.rates?.source?'<p>Proxy governativo 2Y: '+esc(n(e.rates.bp))+' pb · '+esc(e.rates.from+' → '+e.rates.asof)+' · '+esc(e.rates.source)+'. Attenuazione euristica del 50%, non una stima certificata del 6M.</p>':'')+
