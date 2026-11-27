@@ -26,23 +26,25 @@ for(const ccy of FX){
       ccy+'.'+role+' source contract snapshot drift');
     const current=sourceGate.check(ccy,role);
     assert(current.narrative.length>30,ccy+'.'+role+' must explain the source constraint');
-    if(input?.automation_ready===true&&ccy+'.'+role!=='USD.conditions')
+    if(input?.automation_ready===true)
       assert(current.ready,ccy+'.'+role+' mapped but erroneously withheld');
     if(!input?.automation_ready)assert(!current.ready,ccy+'.'+role+' falsely auto-certified');
   }
 }
-assert.equal(sourceGate.check('USD','conditions').code,'VARIANT_NOT_ALIGNED');
-assert(sourceGate.check('USD','conditions').withheld);
+assert.equal(sourceGate.check('USD','conditions').code,'AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY');
+assert.equal(sourceGate.check('USD','conditions').withheld,false);
 const sourceSLOOS=research.USD.find(x=>x.id==='US_SLOOS_CI_LARGE_MIDDLE_history_value');
 assert(sourceSLOOS);
 const nativeSLOOS=runtime.USD.conditions;
 const matched=sourceSLOOS.dates.indexOf(nativeSLOOS.last_date);
 assert(matched>=0,'Require the comparable native vintage to remain identifiable');
-// Equal values at the overlapping date are evidence for a mapping review,
-// not an authorization to change the registry or substitute the newer edition.
+// Production parity receipt and exact official identity are required for release.
 assert(Number.isFinite(sourceSLOOS.values[matched])&&Number.isFinite(nativeSLOOS.last_value));
 assert(sourceSLOOS.last_date>=nativeSLOOS.last_date,'Research SLOOS cannot roll back the known native date');
-assert.equal(sourceGate.check('USD','conditions').withheld,true,'Keep explicit source quarantine until registry review');
+assert.equal(sourceSLOOS.current_vintage_provenance.source_series_id,'DRTSCILM');
+assert.equal(sourceSLOOS.values[matched],nativeSLOOS.last_value);
+assert.equal(policy.mapped['USD.conditions'].verification.receipt_status,'READY');
+assert.equal(sourceGate.check('USD','conditions').withheld,false);
 assert.equal(runtime.CAD.credit,null);
 assert(research.CAD.some(x=>x.id==='CA_BUSINESS_LOANS_OUTSTANDING_history_value'));
 assert.equal(sourceGate.check('CAD','credit').code,'NO_APPROVED_MAPPING');
@@ -65,17 +67,16 @@ for(const ccy of FX){
 }
 const usd=page.render(api('USD'));
 const usConditions=usd.split('data-liq-role="conditions"')[1]?.split('</div>')[0]||'';
-assert.match(usConditions,/data-source-safety="withheld"/);
-assert.match(usConditions,/Dato sospeso · variante da armonizzare/);
-assert.match(usConditions,/SLOOS IN VERIFICA/);
-assert.doesNotMatch(usConditions,/Ultimo 2026-07-01 · 0,00/);
+assert.match(usConditions,/data-source-safety="mapped"/);
+assert(usConditions.includes(nativeSLOOS.last_date));
+assert(!usConditions.includes("SLOOS IN VERIFICA"));
 const cad=page.render(api('CAD'));
 const caCredit=cad.split('data-liq-role="credit"')[1]?.split('</div>')[0]||'';
 assert.match(caCredit,/MAPPATURA ASSENTE/);
 assert.match(caCredit,/Misura non verificabile/);
 console.log('NEXT_LIQUIDITY_SOURCE_POLICY_PASS',JSON.stringify({
   currencies:FX.length,channels:FX.length*roles.length,asof:sourceGate.AS_OF,
-  usdSLOOS:'WITHHELD_UNRESOLVED_VARIANT',cadCredit:'RESEARCH_NOT_PROMOTED'
+  usdSLOOS:'VERIFIED_OFFICIAL_DRTSCILM',cadCredit:'RESEARCH_NOT_PROMOTED'
 }));
 
 const residual=load('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json');
