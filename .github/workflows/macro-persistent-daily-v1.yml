@@ -927,7 +927,7 @@ jobs:
           python - <<'PY'
           import json
           d=json.load(open('/tmp/g8-native-parity/receipt.json'))
-          assert len(d['series'])==5 and all(x['status'] in ('READY','NO_CHANGE') for x in d['series']),d
+          assert len(d['series'])==6 and all(x['status'] in ('READY','NO_CHANGE') for x in d['series']),d
           assert all(x['full_count']>=x['native_overlap'] for x in d['series']),d
           PY
 
@@ -1328,6 +1328,23 @@ jobs:
               assert {'AU_CREDIT_BUSINESS_CURRENT_SA_history_value','AU_MORTGAGE_RATE_OWNER_OCC_OUTSTANDING_history_value','AU_BUSINESS_LENDING_RATE_MEDIUM_OUTSTANDING_history_value'} <= {r['id'] for r in approved},d
           assert all(r['after']>=r['before'] for r in approved),d
           assert all(r.get('reason') for r in d['series'] if r['status']=='WITHHELD'),d
+          PY
+      - name: Verify AUD credit candidate reconciles full native history without writes
+        if: github.head_ref == 'probe/aud-rba-d2-f6-f7-exact-identity-20261127'
+        run: |
+          python -m unittest validation.macro.test_prepare_g8_native_liquidity_parity_v1 -v
+          python - <<'PY'
+          import json
+          from datetime import datetime,timezone
+          from validation.macro import prepare_g8_native_liquidity_parity_v1 as parity
+          macro=json.load(open('/tmp/aud-rba-proof/candidate.json'))
+          native=json.load(open('live_data/sections/NATIVE_LIQ_DATA.json'))
+          parity.CONFIG={k:v for k,v in parity.CONFIG.items() if k==('AUD','credit')}
+          out,receipt=parity.prepare(macro,native,datetime.now(timezone.utc))
+          print('AUD_NATIVE_CREDIT_PARITY_PROOF',json.dumps(receipt,sort_keys=True))
+          assert len(receipt['series'])==1 and receipt['series'][0]['status'] in ('READY','NO_CHANGE'),receipt
+          assert receipt['series'][0]['full_count']>=receipt['series'][0]['native_overlap'],receipt
+          assert out['AUD']['credit']['last_date']==next(r['last_date'] for r in macro['AUD'] if r['id']=='AU_CREDIT_BUSINESS_CURRENT_SA_history_value')
           PY
       - uses: actions/upload-artifact@v4
         if: always()
@@ -4530,12 +4547,12 @@ jobs:
           receipt=json.load(open('/tmp/macro-persistent/native-liq-g8-parity.json'))
           assert set(old)==set(new)
           allowed={(r['ccy'],r['role']) for r in receipt['series'] if r['status']=='READY'}
-          assert allowed <= {('USD','liquidity'),('CHF','money'),('AUD','money'),('AUD','liquidity'),('CAD','liquidity')}
+          assert allowed <= {('USD','liquidity'),('CHF','money'),('AUD','money'),('AUD','liquidity'),('AUD','credit'),('CAD','liquidity')}
           assert all(set(old[c])==set(new[c]) for c in old)
           assert {(c,k) for c in old for k in old[c] if old[c][k]!=new[c][k]}==allowed
           PY
 
-      - name: Persist verified native five G8 liquidity lanes only
+      - name: Persist verified native six G8 liquidity lanes only
         if: github.ref == 'refs/heads/main' && steps.native_g8_parity.outcome == 'success'
         shell: bash
         run: |
@@ -4554,7 +4571,7 @@ jobs:
           managed=('live_data/sections/NATIVE_LIQ_DATA.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-01.txt')
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           assert changed and changed.issubset(set(managed)),changed
-          print(json.dumps(persist(managed=managed,protected=('live_data/sections/MACRO_SERIES.json',),commit_message='Synchronize five certified native G8 liquidity lanes with verified Macro histories'),sort_keys=True))
+          print(json.dumps(persist(managed=managed,protected=('live_data/sections/MACRO_SERIES.json',),commit_message='Synchronize six certified native G8 liquidity lanes with verified Macro histories'),sort_keys=True))
           PY
 
       # Existing Macro refresh cadence only. Freeze a single first-seen
