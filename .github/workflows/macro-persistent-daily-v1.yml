@@ -695,7 +695,7 @@ jobs:
           import json
           d=json.load(open('/tmp/gbp-boe-iadb-proof/receipt.json'))
           for r in d['series']: print(r)
-          assert len(d['series'])==6
+          assert len(d['series'])==9
           # Prove each verified row and require meaningful real-source coverage;
           # independent withheld rows are explicit, never promoted.
           approved=[r for r in d['series'] if r['status'] in ('READY','NO_CHANGE')]
@@ -1324,6 +1324,8 @@ jobs:
           # independent withheld rows are explicit, never promoted.
           approved=[r for r in d['series'] if r['status'] in ('READY','NO_CHANGE')]
           assert len(approved)>=4,d
+          if '${{ github.head_ref }}' == 'probe/aud-rba-d2-f6-f7-exact-identity-20261127':
+              assert {'AU_CREDIT_BUSINESS_CURRENT_SA_history_value','AU_MORTGAGE_RATE_OWNER_OCC_OUTSTANDING_history_value','AU_BUSINESS_LENDING_RATE_MEDIUM_OUTSTANDING_history_value'} <= {r['id'] for r in approved},d
           assert all(r['after']>=r['before'] for r in approved),d
           assert all(r.get('reason') for r in d['series'] if r['status']=='WITHHELD'),d
           PY
@@ -4334,7 +4336,7 @@ jobs:
           python - <<'PY'
           import json
           j=json.load(open('/tmp/macro-persistent/aud-rba-revised-receipt.json'))
-          assert len(j['series'])==6 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
+          assert len(j['series'])==9 and j['first_release_PIT_certified'] is False and j['affects_fx_core'] is False
           for row in j['series']:
               if row['status']=='WITHHELD': print('::warning::AUD RBA '+row['id']+' '+row['reason'])
           PY
