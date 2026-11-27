@@ -18,7 +18,7 @@
  "eligible_for_fx_core": false,
  "eligible_for_backtest": false,
  "observation_is_not_publication_date": true,
- "last_checked_rome": "2026-11-26",
+ "last_checked_rome": "2026-11-27",
  "latest_observation": "2026-09",
  "dates": [
   "2024-10",
@@ -84,7 +84,8 @@
    "2026-11-20",
    "2026-11-23",
    "2026-11-24",
-   "2026-11-25"
+   "2026-11-25",
+   "2026-11-26"
   ],
   "values": [
    70898.0,
@@ -92,9 +93,10 @@
    76970.0,
    77485.0,
    77280.0,
-   77252.0
+   77252.0,
+   83302.0
   ],
-  "latest_observation": "2026-11-25",
+  "latest_observation": "2026-11-26",
   "preliminary_may_be_revised": true,
   "canonical_monthly_equivalence_verified": false,
   "eligible_for_fx_core": false,
