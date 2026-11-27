@@ -147,7 +147,7 @@ const anchor=load('site/fx-quant-v2/nzd-asx-government-anchor-v1.json');
 const research=load('site/fx-quant-v2/chf-nzd-benchmark-research.json');
 const quoteDay=new Date(Date.parse(anchor.government_as_of+'T00:00:00Z')+86400000).toISOString().slice(0,10);
 // Explicit historical canonical state for the estimate fallback exercise.
-const staleGov={...gov,NZD:{...gov.NZD,date:anchor.government_as_of}};
+const staleGov={...gov,NZD:{...gov.NZD,date:'2026-09-30'}};
 const scenario={
  rates:staleGov,
  nzdAsxGovernmentAnchor:anchor,
