@@ -29,14 +29,15 @@ class Tests(unittest.TestCase):
         self.assertEqual(result["last_date"],"2026-10")
         self.assertEqual(len(result["dates"]),130)
 
-    def test_six_full_windows_and_idempotence(self):
+    def test_all_full_windows_and_idempotence(self):
         m,n,f=fixture();old=copy.deepcopy(n);out,r=prepare(m,n,NOW,f)
-        self.assertEqual([x["status"] for x in r["series"]],["READY"]*6)
+        self.assertEqual([x["status"] for x in r["series"]],["READY"]*len(CONFIG))
         self.assertEqual(n,old)
-        self.assertEqual([x["status"] for x in prepare(m,out,NOW,f)[1]["series"]],["NO_CHANGE"]*6)
+        self.assertEqual([x["status"] for x in prepare(m,out,NOW,f)[1]["series"]],["NO_CHANGE"]*len(CONFIG))
     def test_reject_vintage_and_keep_other_lanes(self):
         m,n,f=fixture();m["USD"][0]["values"][0]+=1
         out,r=prepare(m,n,NOW,f)
-        self.assertEqual([x["status"] for x in r["series"]],["WITHHELD"]+["READY"]*5)
-        self.assertEqual(out["USD"],n["USD"])
+        self.assertEqual([x["status"] for x in r["series"]],["WITHHELD"]+["READY"]*(len(CONFIG)-1))
+        self.assertEqual(out["USD"]["liquidity"],n["USD"]["liquidity"])
+        self.assertNotEqual(out["USD"]["credit"],n["USD"]["credit"])
 if __name__=="__main__":unittest.main()
