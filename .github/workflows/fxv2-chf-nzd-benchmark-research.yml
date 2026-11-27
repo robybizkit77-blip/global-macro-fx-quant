@@ -81,7 +81,10 @@ permissions:
   actions: read
 
 concurrency:
-  group: fxv2-chf-nzd-benchmark-research
+  # Keep scheduled recovery attempts queued rather than replacing the single
+  # pending run. PR validation must not occupy the production writer queue.
+  group: ${{ github.event_name == 'pull_request' && format('fxv2-chf-nzd-validation-pr-{0}', github.event.pull_request.number) || 'fxv2-chf-nzd-benchmark-research' }}
+  queue: max
   cancel-in-progress: false
 
 jobs:
