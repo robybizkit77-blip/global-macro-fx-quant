@@ -13,6 +13,7 @@ on:
       - 'validation/test_fxv2_same_origin_multi_page_feeds_v1.cjs'
       - 'validation/qa_fxv2_ois_2y_fx_context_v1.cjs'
       - 'validation/qa_fx_quant_v2_freshness.cjs'
+      - 'validation/macro_archive_cadence_v1.cjs'
       - 'validation/fxv2_research_core_readiness_v1.cjs'
       - 'validation/test_fxv2_research_core_readiness_v1.cjs'
       - 'validation/qa_fxv2_rates_working_v1.cjs'
@@ -47,6 +48,7 @@ on:
       - 'validation/test_fxv2_same_origin_multi_page_feeds_v1.cjs'
       - 'validation/qa_fxv2_ois_2y_fx_context_v1.cjs'
       - 'validation/qa_fx_quant_v2_freshness.cjs'
+      - 'validation/macro_archive_cadence_v1.cjs'
       - 'validation/fxv2_research_core_readiness_v1.cjs'
       - 'validation/test_fxv2_research_core_readiness_v1.cjs'
       - 'validation/qa_fxv2_rates_working_v1.cjs'
@@ -132,7 +134,9 @@ jobs:
       - name: Test two-track V2 research vs Core certification contract
         run: node validation/test_fxv2_research_core_readiness_v1.cjs
       - name: Read canonical source dates and emit separate research/Core readiness receipts
-        run: node validation/qa_fx_quant_v2_freshness.cjs
+        run: |
+          node validation/macro_archive_cadence_v1.cjs
+          node validation/qa_fx_quant_v2_freshness.cjs
       - name: Save source freshness JSON and readable report
         if: always()
         uses: actions/upload-artifact@v4
