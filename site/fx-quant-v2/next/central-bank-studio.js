@@ -88,6 +88,38 @@
   }
   return {title,text,inflation,labour,inf,unemp};
  }
+ // Same admitted macro data as the country dossier. Descriptive CAN, not a rate forecast.
+ function policyMacroContext({engine,catalog,overlay,country,today}){
+  if(!engine||!catalog||!valid(country)||!day(today))return null;
+  const clean=x=>x?.available&&finite(x.value)&&!x.stale&&['M','Q'].includes(x.freq);
+  const prices=engine.inflationContext(catalog,today,country,overlay)||[];
+  const wages=engine.wageContext(catalog,today,country,overlay)||[];
+  const jobs=(engine.model(catalog,today,country,overlay)||[]).find(r=>r.key==='jobs');
+  const core=prices.slice(1).filter(clean),wage=wages.filter(clean);
+  const up=x=>x.direction==='accelera',down=x=>x.direction==='rallenta';
+  const sentences=[];
+  if(core.length){
+   if(core.every(up))sentences.push('Le misure di inflazione sottostante accelerano: aumenta il vincolo sui prezzi.');
+   else if(core.every(down))sentences.push('Le misure di inflazione sottostante rallentano: il vincolo sui prezzi potrebbe attenuarsi.');
+   else sentences.push('Le misure di inflazione sottostante non mostrano una direzione uniforme di accelerazione.');
+  }else sentences.push('Inflazione sottostante corrente non verificabile.');
+  if(wage.length){
+   const proxy=wage.some(x=>/proxy/i.test(x.label));
+   sentences.push((proxy?'Il riferimento salariale settoriale, non i salari dell’intera economia,':'La crescita salariale nominale')+
+    (wage.every(up)?' accelera.':wage.every(down)?' rallenta.':' non mostra un’accelerazione uniforme.'));
+  }else sentences.push('Manca una misura salariale corrente utilizzabile: nessuna inferenza sui salari.');
+  if(jobs?.signal?.tone==='red')sentences.push('Il quadro del lavoro segnala deterioramento: attenzione al rischio per la crescita.');
+  if(jobs?.signal?.tone==='green')sentences.push('Il quadro del lavoro è favorevole secondo gli indicatori disponibili.');
+  if(jobs?.signal?.tone==='amber')sentences.push('Il quadro del lavoro presenta segnali misti o moderati.');
+  return {sentences,prices:prices.filter(clean),wages:wage,missingWages:!wage.length,jobs:jobs?.signal?.tone||'neutral',researchOnly:true};
+ }
+ function renderPolicyMacroContext(x,esc,fmt){
+  if(!x)return '';
+  const row=a=>'<li>'+esc(a.label)+' · '+esc(fmt(a.value,2))+'% · '+esc(a.period)+' · '+esc(a.direction||'direzione n.d.')+' · '+esc(a.source||'Fonte n.d.')+'</li>';
+  return '<div class="drivers-analysis" data-cb-canonical-macro-context><span>CAN · INFLAZIONE SOTTOSTANTE, SALARI E LAVORO</span>'+
+   '<p>'+esc(x.sentences.join(' '))+'</p><details><summary>Osservazioni e fonti del dossier macro</summary><ul>'+
+   [...x.prices,...x.wages].map(row).join('')+'</ul><p>Frequenze e definizioni nazionali possono differire. Non è una previsione della prossima decisione.</p></details></div>';
+ }
  function macroEvidence(reading,fmt,date){
   const month=value=>day(value)?date(value):value.slice(5,7)+'/'+value.slice(0,4);
   const trend={SALE:'in aumento',SCENDE:'in calo',STABILE:'stabile'};
@@ -187,6 +219,7 @@
   const nextMeeting=day(b?.next_meeting)&&b.next_meeting>=today?b.next_meeting:null;
   const rate=last?(b?.rate_text||(finite(b?.rate)?fmt(b.rate,3)+'%':'n.d.')):'n.d.';
   const market=marketReading(selected,get,today,fmt,date);
+  const macroContext=policyMacroContext({engine:root.FXQuantRecessionLight,catalog:get('macroSeries'),overlay:get('semaphoreExtra'),country:selected,today});
   const audit=root.FXQuantDriverMarketAudit;
   const fx=audit?.fx(selected,get('pairs'),today);
   const risk=audit?.riskCheck(get('risk'),today);
@@ -234,6 +267,7 @@
     '<article class="drivers-analysis"><span>CAN · MARGINE DI MANOVRA</span><h3>'+esc(can.title)+'</h3><p>'+esc(can.text)+'</p>'+
       (evidence?'<small>'+esc(evidence)+'</small>':'')+'</article>'+
    '</div>'+
+   renderPolicyMacroContext(macroContext,esc,fmt)+
    '<div class="drivers-market-audit" aria-label="Mercato e Forex '+selected+'"><div class="drivers-market-grid">'+
     '<div class="drivers-market-item"><span>COSA PREZZA IL MERCATO</span><h3>'+esc(market.title)+'</h3>'+
       (market.evidence?'<p class="drivers-observation">'+esc(market.evidence)+'</p>':'')+'<p>'+esc(market.text)+'</p></div>'+
@@ -244,7 +278,7 @@
    '<p class="drivers-source-note">'+(source?'<a href="'+esc(source)+'" target="_blank" rel="noopener noreferrer">Comunicazione ufficiale ↗</a> · ':'')+
    esc(o?.source||'Fonte di mercato da verificare')+'. '+esc(risk||'')+'</p></details></section>';
  }
- const api={classifyAction,render};
+ const api={classifyAction,render,policyMacroContext,renderPolicyMacroContext};
  root.FXQuantCentralBanks=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
