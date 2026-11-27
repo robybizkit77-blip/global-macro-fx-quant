@@ -97,10 +97,15 @@ def calculate(data,freq,kind):
         v=lambda i:data[i][1] if i in data else None
         x,y,z=v(t),v(t-step),v(t-2*step)
         if kind=="STOCK":
-            a=100*(x/y-1) if y and y>0 and x>0 else None
-            b=100*(y/z-1) if y and z and z>0 and y>0 else None
+            # Three consecutive interval growth rates need four exact endpoints.
+            # Missing/nonpositive observations remain unavailable; never bridge gaps.
+            w=v(t-3*step)
+            def change(current,previous):
+                return 100*(current/previous-1) if current is not None and previous is not None and current>0 and previous>0 else None
+            a,b,c=change(x,y),change(y,z),change(z,w)
             return dict(reference_period=data[t][0],level=x,momentum_pct=a,
-                        velocity_pp=a-b if a is not None and b is not None else None,acceleration_pp=None,
+                        velocity_pp=a-b if a is not None and b is not None else None,
+                        acceleration_pp=a-2*b+c if None not in (a,b,c) else None,
                         horizon="EXACT_CALENDAR_DAY" if freq=="D" else "EXACT_7_CALENDAR_DAYS")
         v1=x-y if y is not None else None
         return dict(reference_period=data[t][0],level=x,velocity_pp=v1,
