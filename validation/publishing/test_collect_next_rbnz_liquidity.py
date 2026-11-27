@@ -24,3 +24,31 @@ class TestRBNZMonthlyBackfill(unittest.TestCase):
     def test_no_overlap(self):
         with self.assertRaisesRegex(ValueError,"overlap"):
             self.collect(["2026-07","2026-08"])
+
+    def test_workbook_overlap_and_continuity(self):
+        months=[f"{i//12:04d}-{i%12+1:02d}" for i in range(2023*12+9,2026*12+9)]
+        d10={k:{"liquidity":100+i} for i,k in enumerate(months)}
+        c50={k:{"money":1000+i,"credit":2000+i} for i,k in enumerate(months)}
+        payload={"period":months[-1],"history":{k:{**d10[k],**c50[k]} for k in months[-5:]}}
+        self.assertEqual(len(m.backfill_monthly(payload,[d10,c50])),36)
+        d10[months[-1]]={"liquidity":999}
+        with self.assertRaisesRegex(ValueError,"overlap mismatch"):
+            m.backfill_monthly(payload,[d10,c50])
+        d10[months[-1]]={"liquidity":135}
+        del c50[months[0]]
+        with self.assertRaisesRegex(ValueError,"incomplete"):
+            m.backfill_monthly(payload,[d10,c50])
+
+    def test_workbook_identity_and_rounding(self):
+        from datetime import datetime
+        rows=[[None]*24 for _ in range(7)]
+        rows[0][0]="D10 Influences on Settlement Cash"
+        rows[1][1]="($NZ million)"
+        rows[3][0]="Date"
+        rows[3][23]="9.  Average settlement cash"
+        rows[6][0]=datetime(2026,7,31)
+        rows[6][23]=28302.8994
+        self.assertEqual(m.workbook_series(rows,"d10"),{"2026-07":{"liquidity":28303}})
+        rows[3][23]="Cash at end of month"
+        with self.assertRaisesRegex(ValueError,"identity"):
+            m.workbook_series(rows,"d10")

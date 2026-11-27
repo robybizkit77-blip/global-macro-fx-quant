@@ -25,20 +25,24 @@ jobs:
   validate:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - run: python3 -m pip install openpyxl==3.1.5
       - name: Test historical backfill and revision guard
         run: python3 -m unittest validation.publishing.test_collect_next_rbnz_liquidity -v
       - name: Read and validate all three live source tables
-        run: python3 validation/publishing/collect_next_rbnz_liquidity.py "$RUNNER_TEMP/nzd.js" --require-c60
+        run: |
+          cp site/fx-quant-v2/next/nzd-rbnz-liquidity-research-v1.js "$RUNNER_TEMP/nzd.js"
+          python3 validation/publishing/collect_next_rbnz_liquidity.py "$RUNNER_TEMP/nzd.js" --require-c60
+          python3 -c 'import json,sys; d=json.loads(open(sys.argv[1]).read().split(" = ",1)[1].strip().removesuffix(";")); assert len(d["history"])>=36 and d["history_backfill"]["first_release_pit_verified"] is False; print("RBNZ_36_MONTHS_VERIFIED",len(d["history"]))' "$RUNNER_TEMP/nzd.js"
 
   refresh:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
-    timeout-minutes: 4
+    timeout-minutes: 6
     permissions:
       contents: write
     concurrency:
@@ -48,6 +52,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - run: python3 -m pip install openpyxl==3.1.5
       - name: Refresh official D10, C50 and C60 data
         env:
           TARGET: site/fx-quant-v2/next/nzd-rbnz-liquidity-research-v1.js
