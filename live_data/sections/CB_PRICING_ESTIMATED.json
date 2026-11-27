@@ -140,20 +140,20 @@
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
-          "futures_price": 97.175,
+          "futures_price": 97.1625,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-25T22:05:15Z",
-          "quote_as_of": "2026-11-25",
+          "price_valid_until": "2026-11-26T22:05:26Z",
+          "quote_as_of": "2026-11-26",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.825,
+          "rate": 2.8375,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 32.5,
+          "raw_level_minus_spot_policy_bp": 33.7,
           "symbol": "EUREX:FST3G2027"
         }
       },
