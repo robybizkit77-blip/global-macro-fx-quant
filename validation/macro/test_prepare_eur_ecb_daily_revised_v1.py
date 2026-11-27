@@ -1,8 +1,8 @@
 import csv,io,unittest
 from datetime import datetime,timezone,timedelta,date
-from validation.macro.prepare_eur_ecb_daily_revised_v1 import CONFIG,prepare,prepare_row
+from validation.macro.prepare_eur_ecb_daily_revised_v1 import CONFIG,prepare,prepare_row,WEEKLY_ASSETS,WEEKLY_KEY
 NOW=datetime(2026,11,26,tzinfo=timezone.utc)
-IDS=list(CONFIG)
+IDS=[i for i in CONFIG if i!=WEEKLY_ASSETS]
 def val(i,n):return [2000000+n,.03+n*.00001,129+n*.01][IDS.index(i)]
 def row(i):
     _,unit,suffix,*_=CONFIG[i]
@@ -71,7 +71,23 @@ class ECBTests(unittest.TestCase):
             if i==IDS[0]:raise OSError("unavailable")
             return source(i,alternative="SS_CI." in url)
         out,r=prepare(original,now=NOW,fetcher=fetch)
-        self.assertEqual([x["status"] for x in r["series"]],["WITHHELD","READY","READY"])
+        self.assertEqual([x["status"] for x in r["series"]],["WITHHELD","READY","READY","WITHHELD"])
         self.assertEqual(out["EUR"][0],original["EUR"][0])
         self.assertEqual(out["USD"],original["USD"])
+    def test_weekly_assets_exact_identity_and_no_future_or_missing_weeks(self):
+        ds=[date(2025,2,28)+timedelta(days=7*n) for n in range(91)]
+        labels=[f"{d.isocalendar().year:04d}-W{d.isocalendar().week:02d}" for d in ds]
+        vs=[5900000+n*100 for n in range(len(ds))]
+        def weekly_row():
+            return {"id":WEEKLY_ASSETS,"source_file":WEEKLY_ASSETS.removesuffix("_value")+".csv","unit":"EUR millions","frequency":"W","dates":labels[:82],"values":vs[:82],"last_date":labels[81],"last_value":vs[81]}
+        def feed(key=WEEKLY_KEY,mult="6",skip=None,offset=0,future=False):
+            rows=[f"{key},{d},{v+offset},{mult}" for n,(d,v) in enumerate(zip(labels,vs)) if n!=skip]
+            if future:rows.append(f"{key},2026-W49,5900000,6")
+            return "KEY,TIME_PERIOD,OBS_VALUE,UNIT_MULT\n"+"\n".join(rows)
+        x=weekly_row()
+        self.assertEqual(prepare_row(x,WEEKLY_ASSETS,NOW,lambda u:feed())["status"],"READY")
+        self.assertEqual(x["last_date"],labels[-1])
+        self.assertEqual(prepare_row(x,WEEKLY_ASSETS,NOW,lambda u:feed())["status"],"NO_CHANGE")
+        for bad in (feed(key="ILM.WRONG"),feed(mult="3"),feed(skip=5),feed(skip=85),feed(offset=900000),feed(future=True)):
+            with self.assertRaises(ValueError):prepare_row(weekly_row(),WEEKLY_ASSETS,NOW,lambda u:bad)
 if __name__=="__main__":unittest.main()
