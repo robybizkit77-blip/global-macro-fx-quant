@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-27T16:29:43.252122Z",
-  "edition_time_rome": "2026-11-27 17:29",
-  "material_digest": "da5a0b480e09fc6e6313921a927bc6768d68a535ea7301ac4f0a91b5c3d59803",
+  "generated_at_utc": "2026-11-27T16:39:41.846214Z",
+  "edition_time_rome": "2026-11-27 17:39",
+  "material_digest": "839be969a039a059499a23b4d1732ca97c58a1ec85ebcbd53e07ee501a68cbc1",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in rialzo",
@@ -61,7 +61,7 @@
     {
       "headline": "Global electricity generation more than doubled from 2000 to 2025",
       "analysis": "Questo approfondimento aiuta a leggere come cambia l’offerta di energia.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-27",
       "event_date": "2026-11-27",
       "market_area": "ENERGIA",
@@ -100,8 +100,8 @@
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
-      "news": "2026-11-26",
-      "rss_checked_at_utc": "2026-11-27T16:29:43.252122Z",
+      "news": "2026-11-27",
+      "rss_checked_at_utc": "2026-11-27T16:39:41.846214Z",
       "commodities": "2026-11-27"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-27T16:29:43.252122Z",
+      "headline": "Dollaro in rialzo",
+      "material_digest": "da5a0b480e09fc6e6313921a927bc6768d68a535ea7301ac4f0a91b5c3d59803"
+    },
     {
       "generated_at_utc": "2026-11-27T13:58:06.960881Z",
       "headline": "Dollaro in calo",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-25T08:58:10.175873Z",
       "headline": "Dollaro misto",
       "material_digest": "c901634bb55781ac54786d2fb4f45f808a6864e9cc1b9ed2127d38ac392b2c60"
-    },
-    {
-      "generated_at_utc": "2026-11-25T06:04:24.414808Z",
-      "headline": "Dollaro misto",
-      "material_digest": "4705ba54f6bd3acd8ad92ac6c72128486fedcd7f239fff8d5b7823a92caf7cd6"
     }
   ]
 }
