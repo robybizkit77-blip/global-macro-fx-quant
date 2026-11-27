@@ -1,7 +1,7 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-11-26",
+      "as_of": "2026-11-27",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -38,20 +38,20 @@
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3H2027",
           "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
           "expiration": "2027-06-15",
-          "futures_price": 99.78,
+          "futures_price": 99.79,
           "mapping": "nearest ICE SARON accrual start to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-26T17:42:09Z",
-          "quote_as_of": "2026-11-26",
+          "price_valid_until": "2026-11-27T17:56:19Z",
+          "quote_as_of": "2026-11-27",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.22,
+          "rate": 0.21,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 22.0,
+          "raw_level_minus_spot_policy_bp": 21.0,
           "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
           "symbol": "ICEEUR:SA3H2027"
         },
@@ -88,7 +88,7 @@
       "status": "ESTIMATED_ACTIVE"
     },
     "EUR": {
-      "as_of": "2026-11-25",
+      "as_of": "2026-11-26",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -123,15 +123,15 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "contract": "FST3X2026",
           "contract_description": "Nov 2026",
           "expiration": "2027-02-17",
           "futures_price": 97.4,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-25T22:05:22Z",
-          "quote_as_of": "2026-11-25",
+          "price_valid_until": "2026-11-26T22:05:12Z",
+          "quote_as_of": "2026-11-26",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": 2.6,
