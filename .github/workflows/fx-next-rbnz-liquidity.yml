@@ -25,53 +25,24 @@ jobs:
   validate:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - run: python3 -m pip install openpyxl==3.1.5
       - name: Test historical backfill and revision guard
         run: python3 -m unittest validation.publishing.test_collect_next_rbnz_liquidity -v
       - name: Read and validate all three live source tables
-        run: python3 validation/publishing/collect_next_rbnz_liquidity.py "$RUNNER_TEMP/nzd.js" --require-c60
-
-      - name: Inspect official D10 and C50 workbook identities and recent observations
-        if: github.head_ref == 'research/rbnz-workbook-history-20261127'
         run: |
-          python3 -m pip install openpyxl==3.1.5
-          python3 - <<'PY'
-          import io, hashlib, urllib.request, urllib.parse
-          from openpyxl import load_workbook
-          urls={
-            'D10':'https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/d-f-r/d10/hd10.xlsx',
-            'C50':'https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/c/c50/hc50.xlsx',
-          }
-          for key,url in urls.items():
-              req=urllib.request.Request(url,headers={'User-Agent':'RBNZ-Automated-Agent/GlobalMacroFXQuant/LiquidityResearch'})
-              with urllib.request.urlopen(req,timeout=25) as response:
-                  assert urllib.parse.urlsplit(response.geturl()).hostname in ('www.rbnz.govt.nz','rbnz.govt.nz')
-                  raw=response.read(2000001)
-              assert len(raw)<2000001 and raw.startswith(b'PK')
-              wb=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
-              print('WORKBOOK',key,hashlib.sha256(raw).hexdigest(),wb.sheetnames)
-              for ws in wb:
-                  print('SHEET',ws.title,ws.max_row,ws.max_column)
-                  ws.reset_dimensions()
-                  rows=list(ws.values)
-                  assert len(rows)<20000
-                  for i,row in enumerate(rows[:14],1):
-                      cells=[(j+1,v) for j,v in enumerate(row) if v is not None]
-                      print('HEADER',i,repr(cells)[:9000])
-                  for i,row in enumerate(rows[-10:],len(rows)-9):
-                      cells=[(j+1,v) for j,v in enumerate(row) if v is not None]
-                      print('TAIL',i,repr(cells)[:9000])
-              wb.close()
-          PY
+          cp site/fx-quant-v2/next/nzd-rbnz-liquidity-research-v1.js "$RUNNER_TEMP/nzd.js"
+          python3 validation/publishing/collect_next_rbnz_liquidity.py "$RUNNER_TEMP/nzd.js" --require-c60
+          python3 -c 'import json,sys; d=json.loads(open(sys.argv[1]).read().split(" = ",1)[1].strip().removesuffix(";")); assert len(d["history"])>=36 and d["history_backfill"]["first_release_pit_verified"] is False; print("RBNZ_36_MONTHS_VERIFIED",len(d["history"]))' "$RUNNER_TEMP/nzd.js"
 
   refresh:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
-    timeout-minutes: 4
+    timeout-minutes: 6
     permissions:
       contents: write
     concurrency:
@@ -81,6 +52,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - run: python3 -m pip install openpyxl==3.1.5
       - name: Refresh official D10, C50 and C60 data
         env:
           TARGET: site/fx-quant-v2/next/nzd-rbnz-liquidity-research-v1.js
