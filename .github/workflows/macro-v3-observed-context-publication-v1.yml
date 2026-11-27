@@ -241,7 +241,7 @@ jobs:
               assert result['checked_through'] is not None, 'Durable checkpoint not created'
               assert json.loads(target.read_text())['checked_through']==result['checked_through']
           PY
-      - name: Collect official real UK services output into existing research archive
+      - name: Collect official UK and Canadian real sector output into existing research archive
         run: |
           python -m unittest validation.macro.test_collect_sector_output_research_v1 -v
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
@@ -264,7 +264,7 @@ jobs:
           import os
           if d['sector_financial_status']=='RESEARCH_ONLY':
               m=d['sector_financial_dynamics']
-              assert len(m['countries'])==8 and sum(map(len,m['countries'].values()))==61
+              assert len(m['countries'])==8 and sum(map(len,m['countries'].values()))==63
               assert m['safe_to_update_pairs'] is False and m['safe_to_publish_D'] is False
               print('SECTOR_FINANCIAL_COVERAGE', {c:sum(r['measurement']!='WITHHELD' for r in rs) for c,rs in m['countries'].items()})
               print('SECTOR_FINANCIAL_WITHHELD_ROWS', [(r['series_id'],r['reason']) for rs in m['countries'].values() for r in rs if r['measurement']=='WITHHELD'])

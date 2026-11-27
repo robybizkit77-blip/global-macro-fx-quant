@@ -243,6 +243,36 @@ def uk_services_row(today):
     except (OSError,ValueError,KeyError,TypeError,ArithmeticError) as exc:
         return dict(base,measurement="WITHHELD",quality="SOURCE_CHECK_FAILED",reason=str(exc))
 
+def cad_sector_rows(today):
+    from validation.macro.collect_sector_output_research_v1 import ARCHIVE,CAD_SPECS,CAD_URL
+    out=[]
+    for ident,(pillar,label,aliases) in CAD_SPECS.items():
+        base=dict(series_id=ident,label=label,frequency="M",pillar=pillar)
+        try:
+            p=json.loads(ARCHIVE.read_text());r=p["series"][ident]
+            if (p["schema"]!="GMFQ_SECTOR_OUTPUT_RESEARCH_V1" or r["source_url"]!=CAD_URL or
+                r["source_table"]!="36100434" or not re.fullmatch(r"v\d+",r["source_series_id"]) or
+                r["currency"]!="CAD" or r["frequency"]!="M" or r["pillar"]!=pillar or
+                r["source_series_first_release_PIT_certified"] is not False or
+                r["quality"]!="STATCAN_CURRENT_REVISED_HISTORY_NOT_PIT"):
+                raise ValueError("StatCan sector provenance mismatch")
+            ds,vs=r["dates"],r["values"]
+            if len(ds)!=len(vs) or len(ds)<36 or ds[-1]!=r["latest_period"] or ds[-1]>=today.isoformat()[:7]:
+                raise ValueError("StatCan sector history mismatch")
+            data={}
+            for d,v in zip(ds,vs):
+                i,stamp=parse(d,"M")
+                if i in data or not isinstance(v,(int,float)) or isinstance(v,bool) or not math.isfinite(v) or v<=0:
+                    raise ValueError("invalid monthly output history")
+                data[i]=(stamp,v)
+            if sorted(data)!=list(range(min(data),max(data)+1)):
+                raise ValueError("missing sector output months")
+            out.append(dict(base,measurement="QUANTITY",unit=r["unit"],quality=r["quality"],
+                            source_series_id=r["source_series_id"],**calculate(data,"M","QUANTITY")))
+        except (OSError,ValueError,KeyError,TypeError,ArithmeticError) as exc:
+            out.append(dict(base,measurement="WITHHELD",quality="SOURCE_CHECK_FAILED",reason=str(exc)))
+    return out
+
 def run():
     today=datetime.now(ZoneInfo("Europe/Rome")).date()
     result=build(json.loads((ROOT/"live_data/sections/MACRO_SERIES.json").read_text()),today)
@@ -250,4 +280,5 @@ def run():
     except OSError: raw=""
     result["countries"]["NZD"]=nzd_rows(raw,today)
     result["countries"]["GBP"].append(uk_services_row(today))
+    result["countries"]["CAD"].extend(cad_sector_rows(today))
     return result
