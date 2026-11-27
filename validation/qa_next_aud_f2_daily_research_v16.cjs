@@ -66,7 +66,11 @@ for(const [label,mutation] of [
  assert(!mod.snapshot(rates,price,'AUDJPY',fixtureModelDay,fixtureNow,changed).ready,label+' must not produce false ready status');
 }
 assert(!mod.snapshot(rates,price,'EURCHF',base,now,fake).ready,'CHF remains separate and stale');
-assert(!mod.snapshot(rates,price,'NZDUSD',base,now,fake).ready,'NZD remains separate and stale');
+assert.deepEqual(mod.snapshot(rates,price,'NZDUSD',base,now,fake),
+ mod.snapshot(rates,price,'NZDUSD',base,now),
+ 'AUD F2 research must not affect the NZD cross, regardless of current NZD coverage');
+const staleNZD={...rates,NZD:{...rates.NZD,date:'2026-09-30'}};
+assert(!mod.snapshot(staleNZD,price,'NZDUSD',base,now,fake).ready,'Explicit stale NZD fixture must remain unavailable');
 assert(!mod.snapshot(rates,price,'AUDJPY',fixtureModelDay,later(fixtureNow,30),fake).ready,
  'Old research cannot remain current');
 // Separately exercise the actual moving model date. A source that was valid
