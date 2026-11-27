@@ -108,7 +108,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 157.29999999999995,
+              "bp": 134.60000000000002,
               "material": true,
               "side": "AUD"
             }
@@ -138,7 +138,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 157.29999999999995,
+            "bp": 134.60000000000002,
             "material": true,
             "side": "AUD"
           }
@@ -157,12 +157,13 @@
         "A": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -257,7 +258,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 452.59999999999997,
+              "bp": 429.90000000000003,
               "material": true,
               "side": "AUD"
             }
@@ -287,7 +288,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 452.59999999999997,
+            "bp": 429.90000000000003,
             "material": true,
             "side": "AUD"
           }
@@ -306,12 +307,13 @@
         "A": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -407,7 +409,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 306.59999999999997,
+              "bp": 283.90000000000003,
               "material": true,
               "side": "AUD"
             }
@@ -437,7 +439,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 306.59999999999997,
+            "bp": 283.90000000000003,
             "material": true,
             "side": "AUD"
           }
@@ -456,12 +458,13 @@
         "A": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -559,9 +562,9 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 92.29999999999995,
-              "material": true,
-              "side": "AUD"
+              "bp": 69.60000000000002,
+              "material": false,
+              "side": "—"
             }
           },
           "macroSide": "AUD",
@@ -589,18 +592,18 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 92.29999999999995,
-            "material": true,
-            "side": "AUD"
+            "bp": 69.60000000000002,
+            "material": false,
+            "side": "—"
           }
         },
         "macroSide": "AUD",
         "policySide": null
       },
       "transition": {
-        "state": "DIVERGENZA RELATIVA DA MONITORARE",
-        "cls": "transWatch",
-        "note": "il driver strutturale favorisce AUD, ma la dinamica relativa favorisce NZD: divergenza da monitorare, non segnale automatico"
+        "state": "NESSUNA DIVERGENZA RELATIVA CHIARA",
+        "cls": "transNeutral",
+        "note": "la dinamica relativa non contraddice né rafforza chiaramente il vantaggio strutturale di AUD"
       },
       "relative_dynamics": {
         "a": "AUD",
@@ -608,12 +611,13 @@
         "A": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -632,8 +636,8 @@
         },
         "aNet": -1,
         "bNet": -1,
-        "state": "TURNING POINT ASIMMETRICO",
-        "fav": "NZD"
+        "state": "MISTO",
+        "fav": "—"
       },
       "price_state": null
     },
@@ -678,7 +682,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 20.29999999999994,
+              "bp": -2.400000000000002,
               "material": false,
               "side": "—"
             }
@@ -708,7 +712,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 20.29999999999994,
+            "bp": -2.400000000000002,
             "material": false,
             "side": "—"
           }
@@ -727,12 +731,13 @@
         "A": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -1244,7 +1249,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -184.43006971999995,
+              "bp": -161.73006972000002,
               "material": true,
               "side": "AUD"
             }
@@ -1274,7 +1279,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -184.43006971999995,
+            "bp": -161.73006972000002,
             "material": true,
             "side": "AUD"
           }
@@ -1306,12 +1311,13 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -2173,7 +2179,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -20.051771729519352,
+              "bp": 2.6482282704805904,
               "material": false,
               "side": "—"
             }
@@ -2203,7 +2209,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -20.051771729519352,
+            "bp": 2.6482282704805904,
             "material": false,
             "side": "—"
           }
@@ -2233,12 +2239,13 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
