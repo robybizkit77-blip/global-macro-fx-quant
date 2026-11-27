@@ -408,11 +408,22 @@ jobs:
           import json
           x=json.load(open('/tmp/rates-persistent/RATES_AUDIT_METADATA.json'))
           assert x['rates']['CHF']['status']=='VALIDATED_HISTORICAL_OFFICIAL_SNAPSHOT', x['rates']['CHF']
-          assert x['rates']['NZD']['source_access']=='RBNZ_B2_MANUAL_DOUBLE_REVIEW', x['rates']['NZD']
           actual=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
           assert all(x['rates'][c]['current_as_of']==actual[c]['date'] for c in actual)
           assert x['rates']['CHF']['action']=='CHECK_NEXT_SOURCE_PUBLICATION'
-          assert x['rates']['NZD']['status'].startswith('MANUAL_REVIEWED_')
+          from datetime import date
+          nz=actual['NZD']
+          meta=x['rates']['NZD']
+          recent=(date.fromisoformat(x['audit_date'])-date.fromisoformat(nz['date'])).days<=5
+          if nz['quality']=='FULL_CURRENT_OFFICIAL_POSTROLL_RECONCILED':
+              expected_access=('RBNZ_B2_HTML_XLSX_RECONCILED_RECURRING'
+                  if nz['freshness_status']=='OFFICIAL_POSTROLL_RECONCILED_RECURRING_OBSERVATION'
+                  else 'RBNZ_B2_HTML_XLSX_RECONCILED_ONE_TIME')
+              assert meta['source_access']==expected_access, meta
+              assert meta['status']==('OFFICIAL_POSTROLL_RECONCILED_RECENT' if recent else 'OFFICIAL_POSTROLL_RECONCILED_LAGGING'), meta
+          else:
+              assert meta['source_access']=='RBNZ_B2_MANUAL_DOUBLE_REVIEW', meta
+              assert meta['status']==('MANUAL_REVIEWED_RECENT' if recent else 'MANUAL_REVIEWED_LAGGING'), meta
           print('RATES_METADATA_SOURCE_AGE_PREVIEW_PASS')
           PY
 
