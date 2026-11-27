@@ -25,7 +25,22 @@ const {chromium}=require('playwright');
    await page.getByLabel('Valuta base').selectOption('GBP');
    await page.getByLabel('Controvaluta').selectOption('JPY');
    assert.match(await page.locator('#view').innerText(),/GBP\/JPY/);
+   assert.equal(await page.locator('#pair-evidence .sector-read').count(),4);
+   assert.match(await page.locator('#view').innerText(),/Solidità della tesi.*Attrattività operativa/s);
+   const checked=await page.evaluate(()=>{
+     const res=[];for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++){
+       const a=FX[i],b=FX[j],x=pairEvidence(a,b),y=pairEvidence(b,a);
+       res.push({a,b,sameFavored:x.x?.favored===y.x?.favored,flow:x.flow===null?y.flow===null:Math.abs(x.flow+y.flow)<1e-9,pricing:x.rp===null?y.rp===null:Math.abs(x.rp.bp+y.rp.bp)<1e-9});
+     }return res;
+   });
+   assert.equal(checked.length,28);assert(checked.every(x=>x.sameFavored&&x.flow&&x.pricing));
    assert.match(await page.locator('#studio-research .plain-reading').innerText(),/Da seguire:/);
+   await page.getByRole('button',{name:'Forza G8',exact:true}).click();
+   for(const c of ['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD']){
+     await page.evaluate(c=>{state.ccy=c;render()},c);
+     assert.equal(await page.locator('#currency-dossier .sector-read').count(),4);
+     assert.match(await page.locator('#currency-dossier h2').innerText(),new RegExp(c+' · Giudizio'));
+   }
    // Native components only: no embedded legacy pages or DOM reuse.
    assert.equal(await page.locator('iframe').count(),0);
    await page.getByRole('button',{name:'COT',exact:true}).click();
