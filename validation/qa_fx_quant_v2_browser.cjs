@@ -525,17 +525,23 @@ async function audit(browser,name,file,selector,view,viewport){
     for(const ccy of ['CHF','NZD']){
       await page.locator('#countryTabs button[data-ccy="'+ccy+'"]').click({timeout:10000});
       await page.waitForFunction(
-        ({currency})=>{
+        ({currency,officialDate,officialSource})=>{
           const grade=document.querySelector('#asof2')?.textContent||'';
-          return currency==='CHF'
-            ?grade.includes('STIMA 2Y')||grade.includes('OSSERVATO 2Y')
-            :(grade.includes('PROXY 2Y')||grade.includes('STIMA 2Y'));
-        },{currency:ccy},{timeout:12000}
+          if(currency==='CHF')return grade.includes('STIMA 2Y')||grade.includes('OSSERVATO 2Y');
+          if(officialDate)return grade==='As-of '+officialDate&&
+            (document.querySelector('#yieldSource')?.textContent||'').includes(officialSource);
+          return grade.includes('PROXY 2Y')||grade.includes('STIMA 2Y');
+        },{currency:ccy,
+           officialDate:ccy==='NZD'&&!spreadLegNZD.estimated&&/^FULL_CURRENT_OFFICIAL/.test(baseRates.NZD.quality||'')
+             ?baseRates.NZD.date.split('-').reverse().join('/'):null,
+           officialSource:baseRates.NZD.source},{timeout:12000}
       );
       const level=((await page.locator('#curveLevel').textContent())||'').trim();
       const why=((await page.locator('#curveExplanation').textContent())||'').trim();
+      const nzdOfficial=ccy==='NZD'&&!spreadLegNZD.estimated&&/^FULL_CURRENT_OFFICIAL/.test(baseRates.NZD.quality||'');
       if(!/\d/.test(level)||!(why.includes('CALCOLO INDICATIVO')||
-            (ccy==='CHF'&&why.includes('RICERCA SNB OSSERVATA'))))
+            (ccy==='CHF'&&why.includes('RICERCA SNB OSSERVATA'))||
+            (nzdOfficial&&why.includes('non la curva OIS'))))
         issue(name,view,'working_estimate_missing',ccy+' · '+level+' · '+why);
     }
     await page.locator('#compareA').selectOption('CHF');
