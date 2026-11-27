@@ -305,3 +305,10 @@ body{background:radial-gradient(ellipse 70% 45% at 90% 0,rgba(20,62,82,.28),tran
 .control-room-diagnostics>summary{font-size:13px;font-weight:700;color:#c3d9e6;cursor:pointer}
 .control-room-diagnostics[open]>summary{margin-bottom:12px}
 @media(max-width:600px){.control-room-g8{padding:13px;margin:15px 0}.control-room-g8 h2{font-size:20px}.control-room-g8 table{min-width:660px}.control-room-g8 td,.control-room-g8 th{padding:9px 7px}}
+
+/* Cross-asset handoff: separate market stress from banking transmission. */
+.risk-next-step{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin:16px 0 24px;padding:16px;border:1px solid #38556a;background:#102131;border-radius:12px}
+.risk-next-step strong{font-size:14px;color:#edf5f8}.risk-next-step p{font-size:12px;color:#a9c1d1;margin:5px 0;line-height:1.5;max-width:720px}
+.risk-next-step nav{display:flex;flex-wrap:wrap;gap:14px}.risk-next-step a{font-size:12px;color:#90d5e4}
+.strength-quant-fold{margin:13px 0;padding:14px;border:1px solid #38556a;border-radius:12px;background:#102131}.strength-quant-fold>summary{cursor:pointer;color:#c3d9e6;font-size:13px}
+.strength-enhanced-summary{padding:12px 14px;margin:12px 0;background:#112635;border:1px solid #38556a;border-radius:10px;font-size:13px;color:#c3d9e6}
