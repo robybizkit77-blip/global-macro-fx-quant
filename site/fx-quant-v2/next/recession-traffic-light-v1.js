@@ -278,12 +278,36 @@ function parsePeriod(s){
  if(dt.getUTCFullYear()!==y||dt.getUTCMonth()!==month-1||dt.getUTCDate()!==day)return null;
  return dt.toISOString().slice(0,10);
 }
+// Official M15 survey quarter labels can be later than the first observed
+// publication availability. Admit only the exact documented terminal source;
+// keep the original quarter label and never certify a historical PIT vintage.
+function admittedPeriodDate(source,period,today){
+ const end=parsePeriod(period);
+ if(!end)return null;
+ if(end<=today)return end;
+ const p=source?.current_vintage_provenance;
+ const match=/^(\d{4})-(03|06|09|12)$/.exec(period);
+ const code=/^NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_(CPI_(?:1|2|5|10)Y|Unemp_[12]Y|Wage_[12]Y)$/.exec(source?.id||'');
+ if(!match||!code||period!==source.last_date||source.dates?.at(-1)!==period||
+    source.values?.at(-1)!==source.last_value||
+    source.source_file!=='NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent.csv'||
+    p?.status!=='RBNZ_M15_CURRENT_PUBLISHED_SURVEY_NOT_PIT'||
+    p.source_series_id!=='RBNZ_M15_AGGREGATE_WEIGHTED_MEAN_'+code[1]||
+    p.source_url!=='https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m15/hm15.xlsx'||
+    p.reference_period_semantics!=='survey quarter; observed availability upper bound, not certified release date'||
+    p.source_series_first_release_PIT_certified!==false||
+    !/^[a-f0-9]{64}$/.test(p.source_payload_sha256||'')||
+    !/^\d{4}-\d{2}-\d{2}$/.test(p.available_by_date||'')||
+    parsePeriod(p.available_by_date)!==p.available_by_date||p.available_by_date>today)return null;
+ const start=match[1]+'-'+String(Number(match[2])-2).padStart(2,'0')+'-01';
+ return p.available_by_date>=start&&p.available_by_date<=end?p.available_by_date:null;
+}
 function recentTwo(series,today){
  if(!series||!Array.isArray(series.dates)||!Array.isArray(series.values)||
      series.dates.length!==series.values.length)return null;
  const distinct=new Map();
  series.dates.forEach((period,i)=>{
-  const date=parsePeriod(period),value=series.values[i];
+  const date=admittedPeriodDate(series,period,today),value=series.values[i];
   if(date&&date<=today&&finite(value))distinct.set(date,{period,date,value});
  });
  const a=[...distinct.values()].sort((x,y)=>x.date.localeCompare(y.date));
@@ -341,7 +365,7 @@ function cycleMetric(metric,source,today,frequency,stale=false){
  source=cycleHistory(source,today,freq);
  const records=new Map();
  source.dates.forEach((period,i)=>{
-   const date=parsePeriod(period),value=source.values[i];
+   const date=admittedPeriodDate(source,period,today),value=source.values[i];
    if(!date||date>today||!finite(value))return;
    const y=Number(date.slice(0,4)),m=Number(date.slice(5,7));
    const key=months?y*12+Math.floor((m-1)/months)*months:Date.parse(date)/864e5;
