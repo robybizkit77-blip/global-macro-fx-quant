@@ -10,6 +10,12 @@ class TestONSServiceOutput(unittest.TestCase):
         r=collect_ons(date(2026,11,27),lambda _:json.dumps(p).encode())
         self.assertEqual(len(r["dates"]),48)
         self.assertFalse(r["source_series_first_release_PIT_certified"])
+    def test_missing_unit_and_conflicting_unit(self):
+        p=self.payload();p["description"]["unit"]=""
+        r=collect_ons(date(2026,11,27),lambda _:json.dumps(p).encode())
+        self.assertEqual(r["publisher_unit_raw"],"")
+        p["description"]["unit"]="Percent"
+        with self.assertRaises(ValueError):collect_ons(date(2026,11,27),lambda _:json.dumps(p).encode())
     def test_wrong_id_and_gap(self):
         p=self.payload();p["description"]["cdid"]="BAD"
         with self.assertRaises(ValueError):collect_ons(date(2026,11,27),lambda _:json.dumps(p).encode())
