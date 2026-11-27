@@ -1,16 +1,16 @@
 'use strict';
-/* FX Quant Next — read-only source contract, as of 2026-10-13.
+/* FX Quant Next — read-only source contract, as of 2026-11-27.
  * Exact snapshot derived from validation/liquidity/LIQUIDITY_SOURCE_POLICY_V1_2026-10-12.json.
  * PROVENANCE READY ≠ source refreshed ≠ current release. Always fail closed.
  * Updated via audited policy only; no market scoring or Core writes.
  */
 (function(root){
- const AS_OF="2026-10-13";
+ const AS_OF="2026-11-27";
  const MAP={
  "USD": {
   "liquidity": {
    "ready": true,
-   "status": "AUTOMATION_CONTRACT_PROVEN_CONTROLLED_APPLY"
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
   "credit": {
    "ready": false,
@@ -27,8 +27,8 @@
    "status": "OFFICIAL_SERIES_CONFIRMED"
   },
   "credit": {
-   "ready": false,
-   "status": "OFFICIAL_SERIES_IDENTIFIED_REVISION_CONTRACT_PENDING"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
   "conditions": {
    "ready": false,
@@ -76,8 +76,8 @@
  },
  "CAD": {
   "liquidity": {
-   "ready": false,
-   "status": "OFFICIAL_PROVIDER_CONFIRMED_AGGREGATION_MATCH_PENDING"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
   "credit": null,
   "conditions": {
@@ -87,12 +87,12 @@
  },
  "AUD": {
   "liquidity": {
-   "ready": false,
-   "status": "CANDIDATE_COLLECTOR_READY_APPLY_NOT_WIRED"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
   "credit": {
-   "ready": false,
-   "status": "OFFICIAL_SERIES_IDENTIFIED_REVISION_CONTRACT_PENDING"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
   "conditions": null
  },
