@@ -58,3 +58,13 @@ const lf={generated_europe_rome_day:today,labour_inflation_status:'RESEARCH_ONLY
 assert.equal(m.readDynamics(lf,today,['EUR','USD']).length,2);
 assert.equal(m.readDynamics(lf,'2026-12-04',['EUR']),null);
 console.log('LABOUR_INFLATION_UI_PASS');
+
+const sr={currency:'EUR',pillar:'manufacturing',measurement:'BALANCE',label:'Industry',level:-3.4,frequency:'M',unit:'balance pp'};
+const sh=m.sectorTable([sr],['EUR','NZD'],String,fmt);
+assert.match(sh,/Copertura non disponibile qui: NZD/);
+assert.match(sh,/Saldo indagine/);
+assert.match(sh,/non flussi né crescita reale/);
+const sf={generated_europe_rome_day:today,sector_financial_status:'RESEARCH_ONLY',sector_financial_dynamics:{schema:'GMFQ_G8_SECTOR_FINANCIAL_DYNAMICS_RESEARCH_V1',as_of:today,safe_to_publish_D:false,safe_to_update_pairs:false,historical_PIT_certified:false,no_cross_country_aggregation:true,countries:Object.fromEntries(['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].map(c=>[c,c==='EUR'?[sr]:[]]))}};
+assert.equal(m.readSectors(sf,today,['EUR','NZD']).length,1);
+assert.equal(m.readSectors(sf,'2026-12-04',['EUR']),null);
+console.log('SECTOR_FINANCIAL_UI_PASS');
