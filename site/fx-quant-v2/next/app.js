@@ -573,6 +573,42 @@ function homeFxRankStrip(){
  const pairRows=chosen.map((x,i)=>'<button type="button" class="home-fx-pair-row" data-pair="'+esc(x.key)+'" aria-label="Apri dossier '+esc(x.name)+'"><span class="home-fx-number">'+(i+1)+'</span><span><strong>'+esc(x.name)+'</strong><small>'+esc(x.favored)+' favorito</small></span><span class="home-fx-pair-status"><small>Tesi: '+esc(x.thesisStrength)+'</small><small>Trade: '+esc(x.tradeAttractiveness)+'</small></span><span aria-hidden="true">›</span></button>').join('');
  return '<section class="home-fx-rank-strip" aria-label="Classifica stimata G8 e coppie da verificare"><div class="home-fx-rank-head"><div><span class="morning-section-label">DALLA MACRO AL FOREX</span><h2>Valute e coppie da seguire</h2></div><small>Stima del '+esc(date(e.asof))+' · fixing BCE '+esc(date(e.priceAsOf))+'</small></div><div class="home-fx-rank-grid"><article class="home-fx-rank-panel"><h3>Forza relativa G8</h3><p>Classifica del modello: macro, tassi e prezzo.</p>'+currencyRows+'<a href="#currencies">Approfondisci le 8 valute ↗</a></article><article class="home-fx-rank-panel"><h3>Top 5 · coppie da verificare</h3><p>Selezione di ricerca, non segnali di ingresso.</p>'+(pairRows||'<p>Nessuna coppia supera il filtro attuale.</p>')+(chosen.length<5&&chosen.length>0?'<small class="home-fx-note">Solo '+chosen.length+' coppie superano il filtro attuale.</small>':'')+'<a href="#pairs">Classifica completa delle 28 coppie ↗</a></article></div></section>';
 }
+// Single first-read matrix, reusing the same research scores as Valute G8.
+ // No new signal, rank, source or factor weight.
+function homeG8Read(){
+ if(typeof window==='undefined')return '';
+ const w=window,today=dayNow(),cycle=w.FXQuantMacroDesk,composite=w.FXQuantGlobalResearchComposite;
+ if(!cycle?.countryReadings||!composite?.evaluate)return '';
+ const catalog=get('macroSeries'),cycles=catalog?cycle.countryReadings(catalog,today,get('semaphoreExtra')):{};
+ const rows=FX.map(currency=>{
+  const detail=cycles?.[currency];
+  const macro=w.FXQuantMacroMultifactorShadow?.evaluate({country:currency,rows:detail?.r||[],observed:get('macroObserved'),day:today});
+  const rates=w.FXQuantRatesResearchScore?.evaluate({pricing:w.FXQuantPricingMoves,archive:w.FXQuantPricingHistory,snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),history:get('oisHistory'),rates:get('rates'),today,currency});
+  const positioning=w.FXQuantPositioningResearchScore?.evaluate({history:get('cotHistory'),archive:get('cotPriorReference'),officialOI:get('cotOfficialOI'),desk:w.FXQuantCOTDeskV26,today,currency});
+  const price=w.FXQuantPriceResearchScore?.evaluate({currency,prices:get('currencyPrices'),today,ranker:w.FXQuantPairRankings?.currencyRanking,momentum:w.FXQuantCurrencyStrength?.momentum});
+  const e=composite.evaluate({currency,macro,rates,positioning,price})?.enhanced;
+  const r=rates?.row,rate=e?.rates;
+  return {currency,cycle:detail?.o?.reading?.label||null,macro,rate,r,positioning,price,e};
+ });
+ const tone=(n,center=0)=>!finite(n)?'neutral':n>center?'positive':n<center?'negative':'neutral';
+ const cell=(value,unit,when,center=0,quality='')=>'<td><strong class="'+tone(value,center)+'">'+esc(finite(value)?(center===5?fmt(value,1):sign(value,1,unit)):'—')+'</strong><small>'+esc(when||'Non disponibile')+(quality?' · '+esc(quality):'')+'</small></td>';
+ const body=rows.map(x=>{
+  const rate=x.rate,official=x.positioning?.quality==='OFFICIAL_OI_RESEARCH';
+  const rateQuality=rate?.quality||'';
+  const rateUnit=rateQuality.includes('2Y')?'2Y proxy · ':'';
+  const coverage=x.e?.coverage;
+  return '<tr data-control-room-ccy="'+x.currency+'"><th scope="row"><a href="#currencies" data-ccy="'+x.currency+'">'+esc(FLAGS[x.currency]+' '+x.currency)+'</a></th>'+
+   '<td><strong>'+esc(x.cycle||'Non classificabile')+'</strong><small>'+esc(finite(x.macro?.score)?'Macro '+fmt(x.macro.score,1)+'/10 · '+fmt(x.macro.effectiveCoverage,0)+'% coperto':'Macro non valutabile')+'</small></td>'+
+   cell(rate?.bp,' pb',rate?.asof?rateUnit+date(rate.asof):null,0,rateQuality)+
+   cell(x.positioning?.flow1,'%',x.positioning?.asof?date(x.positioning.asof):null,0,x.positioning?.score!=null?(official?'OI ufficiale':'OI stimato'):'')+
+   cell(x.price?.return20,'%',x.price?.asof?date(x.price.asof):null)+
+   '<td><strong class="'+tone(x.e?.score,5)+'">'+esc(finite(x.e?.score)?fmt(x.e.score,1)+'/10':'—')+'</strong><small>'+esc(finite(coverage)?fmt(coverage,0)+'% calcolo · '+fmt(x.e.estimatedWeight,0)+'% stimato':'Non disponibile')+'</small></td></tr>';
+ }).join('');
+ return '<section class="control-room-g8" data-control-room-g8><header><div><span class="morning-section-label">CONTROL ROOM / QUADRO G8</span><h2>Macro, tassi, fondi e prezzo</h2><p>Leggi ogni valuta da sinistra a destra: le evidenze possono confermarsi o contraddirsi. Ordine fisso, non una classifica.</p></div></header>'+
+ '<div class="control-room-table-wrap" role="region" aria-label="Quadro G8 scorrevole" tabindex="0"><table><thead><tr><th>Valuta</th><th>Ciclo macro</th><th>Tassi 1W</th><th>COT Δ netto / OI 1W</th><th>Prezzo 20 sedute</th><th>Enhanced</th></tr></thead><tbody>'+body+'</tbody></table></div>'+
+ '<p class="control-room-note">Date e strumenti distinti. Enhanced è una sintesi sperimentale 0–10, non una probabilità o un segnale di ingresso. Il 100% di calcolo non equivale al 100% di osservazioni.</p>'+
+ '<nav aria-label="Approfondimenti del quadro G8"><a href="#macro">Ciclo economico ↗</a><a href="#rates">Tassi ↗</a><a href="#cot">COT ↗</a><a href="#currencies">Dossier valute ↗</a></nav></section>';
+}
 function overview(){
  // Source-first monetary evidence is a separately dated observation,
  // not part of either the hourly editorial analysis or frozen morning report.
@@ -604,9 +640,10 @@ function overview(){
   hourlyFeed?.provenance?.web_source_urls?.includes('https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml');
  const renderedHourly=desk?.render?desk.render({feed:hourlyFeed,check:get('hourlyCheck'),risk:get('risk'),
   currencyPrices:get('currencyPrices'),calendar,news,references,esc,date,dayNow,marketChart:homeScreenChart(dollarTheme?'usd-comparison':'fx')}):null;
- const fxRankStrip=homeFxRankStrip();
- const hourly=renderedHourly?renderedHourly.replace('<section class="hourly-decision-section"',
-   fxRankStrip+recalcProof+moneyProof+'<section class="hourly-decision-section"'):renderedHourly;
+ const fxRankStrip=homeG8Read()+homeFxRankStrip();
+ const technicalProof=(recalcProof||moneyProof)?'<details class="control-room-diagnostics"><summary>Verifiche quantitative e fonti</summary>'+recalcProof+moneyProof+'</details>':'';
+ const hourlyAnchor='<section class="hourly-decision-section"';
+ const hourly=renderedHourly?(renderedHourly.includes(hourlyAnchor)?renderedHourly.replace(hourlyAnchor,fxRankStrip+technicalProof+hourlyAnchor):renderedHourly+fxRankStrip+technicalProof):renderedHourly;
  if(hourly&&!desk.preferMorning?.(morning,hourlyFeed,dayNow()))return hourly;
  if(typeof window!=='undefined' && window.FXQuantMorningDesk?.build && morning){
   // A new, independently dated FX snapshot must never rewrite the archived
@@ -627,8 +664,8 @@ function overview(){
   });
   if(edition){
    const post=window.FXQuantMorningDesk.postRelease?.(morning,get('news'),esc,dayNow)||'';
-   return edition.replace('<section class="morning-prose"',
-     fxRankStrip+post+recalcProof+moneyProof+'<section class="morning-prose"');
+   const anchor='<section class="morning-prose"';
+   return edition.includes(anchor)?edition.replace(anchor,fxRankStrip+post+technicalProof+anchor):edition+fxRankStrip+post+technicalProof;
   }
  }
  if(hourly)return hourly;
@@ -912,7 +949,6 @@ function overview(){
  +'</header>'
  +currentContext()
  +fxRankStrip
- +recalcProof
  +'<section class="dashboard-reading-story" aria-label="Il racconto del desk"><div class="dashboard-reading-eyebrow">LA LETTURA FX DEL DESK · '+date(fxDesk.asof)+'</div>'
  +'<div class="dashboard-reading-body"><p>'+esc(fxDesk.why)+'</p><p>'+esc(fxDesk.policy)+'</p><p>'+esc(fxDesk.market)+'</p>'
  +'<p class="dashboard-reading-verdict"><strong>Il mio giudizio.</strong> '+esc(fxDesk.verdict)+'</p>'
@@ -923,7 +959,7 @@ function overview(){
  ' · '+esc(pairData[k].setup?.price?.text||'Prezzo da verificare')+' ↗</button>').join(''):'')+'</div>'
  +'<nav class="dashboard-reading-source-links" aria-label="Verifica la lettura nei dossier"><a href="#currencies">Valute G8 ↗</a><a href="#pairs">28 coppie FX ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#macro">Macro ↗</a><a href="#cot">COT ↗</a><a href="#risk">Rischio ↗</a><a href="#news">Notizie ↗</a></nav>'
  +'<p class="dashboard-reading-quality">I fixing BCE e le 28 coppie guidano la lettura. Macro, tassi, COT, volatilità e credito servono a spiegare o mettere alla prova le tesi FX, non a sostituirle.</p></section>'
- +moneyProof
+ +technicalProof
  +'<section class="dashboard-main dashboard-reading-chart"><div class="dashboard-section-head"><span>IL PREZZO FX DIETRO LA LETTURA</span><p>Confronta i movimenti delle valute prima di cercare conferme in altri mercati.</p></div>'
  +'<div class="dashboard-chart-grid"><figure class="letter-chart dashboard-chart"><figcaption><span>DATI DI MERCATO</span><strong>Chi sta guadagnando terreno nel G8?</strong><p>Forza relativa nei fixing BCE, confrontabile tra valute e date; nessuna quotazione intraday.</p></figcaption>'
  +'<div class="letter-chart-visual">'+homeScreenChart()+'</div></figure></div></section>'
@@ -1238,7 +1274,10 @@ function render(){
  const views={overview,currencies,pairs,macro,banks,rates,liquidity,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
  const health=window.FXQuantDataHealth?.read(state.data,dayNow());
  const activity=window.FXQuantActivityMomentum?.read(get('macroObserved'),dayNow(),route,route==='banks'?state.cbCcy:state.ccy,state.pairDetailOpen?state.pair:null,{cb:get('cb'),ois:get('oisOperational'),rates:get('rates'),cot:get('cotHistory'),prices:get('currencyPrices')});
- $('content').innerHTML=views[route]()+ (activity?window.FXQuantActivityMomentum.render(activity,esc,fmt):'')+ (route==='overview'&&health?window.FXQuantDataHealth.render(health,esc):'');
+ const activityHTML=activity?window.FXQuantActivityMomentum.render(activity,esc,fmt):'';
+ const healthHTML=route==='overview'&&health?window.FXQuantDataHealth.render(health,esc):'';
+ const diagnosticOpen=route==='overview'&&$('content').querySelector('details[data-control-room-diagnostics]')?.open;
+ $('content').innerHTML=views[route]()+ (route==='overview'&&(activityHTML||healthHTML)?'<details class="control-room-diagnostics" data-control-room-diagnostics'+(diagnosticOpen?' open':'')+'><summary>Monitor degli aggiornamenti e affidabilità delle fonti</summary>'+activityHTML+healthHTML+'</details>':activityHTML);
  // Restore after replacing the DOM; nested details must not close when the
  // user changes currency, comparison, return window or research sorting.
  for(const selector of openG8){
