@@ -6,11 +6,13 @@ from hashlib import sha256
 from pathlib import Path
 from urllib.parse import urlencode,urlsplit
 from urllib.request import Request,urlopen
-from validation.sources.eur_eurostat_core import API_BASE as EUROSTAT,extract_series
+from validation.sources.eur_eurostat_core import API_BASE as EUROSTAT,extract_series,category_positions,get_value
 from validation.sources.gbp_ons_core import API_BASE as ONS,extract_months,month_shift
 
 SOURCE=Path(__file__).resolve().parents[2]/"live_data/sections/MACRO_SERIES.json"
 CONFIG={
+ ("EUR","EA_UNEMP_history_value"):("EA_UNEMP_history.csv","%","UNEMP_EA21"),
+ ("EUR","EA_EMPLOYMENT_history_value"):("EA_EMPLOYMENT_history.csv","Thousands of persons","EMP_DC_EA21"),
  ("EUR","EA_HICP_CORE_YOY_history_value"):("EA_HICP_CORE_YOY_history.csv","Percent YoY","TOT_X_NRG_FOOD"),
  ("EUR","EA_HICP_SERVICES_YOY_history_value"):("EA_HICP_SERVICES_YOY_history.csv","Percent YoY","SERV"),
  ("GBP","UK_CPI_CORE_YOY_history_value"):("UK_CPI_CORE_YOY_history.csv","Percent","/economy/inflationandpriceindices/timeseries/dko8/mm23"),
@@ -28,7 +30,62 @@ def fetch(url):
         raw=res.read(6_000_001)
     require(0<len(raw)<=6_000_000,"invalid source response size")
     return raw
+def prepare_ea_labour(ident,row,now,fetcher):
+    source_file,unit,code=CONFIG[("EUR",ident)]
+    quarterly=code=="EMP_DC_EA21"
+    freq="Q" if quarterly else "M"
+    require(row["source_file"]==source_file and row["unit"]==unit and row["frequency"]==freq,"EA labour definition mismatch")
+    require(len(row["dates"])==len(row["values"]) and row["dates"][-1]==row["last_date"] and row["values"][-1]==row["last_value"],"inconsistent local row")
+    dataset="namq_10_pe" if quarterly else "une_rt_m"
+    filters={"freq":"Q","unit":"THS_PER","na_item":"EMP_DC","s_adj":"SCA","geo":"EA21"} if quarterly else {"freq":"M","s_adj":"SA","age":"TOTAL","unit":"PC_ACT","sex":"T","geo":"EA21"}
+    normalize=lambda d: str(d).replace("Q","-Q") if quarterly and "-Q" not in str(d) else str(d) if quarterly else str(d)[:7]
+    start=normalize(row["dates"][0]); before=normalize(row["last_date"])
+    url=EUROSTAT+"/"+dataset+"?"+urlencode({"lang":"EN",**filters,"sinceTimePeriod":start})
+    raw=fetcher(url); payload=json.loads(raw)
+    require(set(payload["id"])==set(filters)|{"time"},"Eurostat dimensions not fully constrained")
+    if quarterly:
+        # Every non-time dimension is singleton and has the exact identity.
+        ids=payload["id"]; sizes=payload["size"]; dims=payload["dimension"]
+        require(len(ids)==len(sizes) and len(set(ids))==len(ids),"invalid quarterly dimensions")
+        for dim,expected in filters.items():
+            positions=category_positions(dims[dim]["category"])
+            require(positions=={expected:0} and sizes[ids.index(dim)]==1,"quarterly dimension mismatch: "+dim)
+        times=category_positions(dims["time"]["category"])
+        require(len(times)==sizes[ids.index("time")],"quarterly time size mismatch")
+        observations=[(normalize(d),float(v)) for d,pos in times.items() if (v:=get_value(payload["value"],pos)) is not None]
+    else:
+        observations=[(d[:7],v) for d,v in extract_series(payload,filters)]
+    pairs=sorted((d,v) for d,v in observations if d>=start)
+    require(len(pairs)>=2,"insufficient revised EA labour history")
+    ds,vs=map(list,zip(*pairs))
+    def ordinal(d):
+        import re
+        require(bool(re.fullmatch(r"\d{4}-Q[1-4]" if quarterly else r"\d{4}-(0[1-9]|1[0-2])",d)),"invalid EA labour period")
+        return int(d[:4])*(4 if quarterly else 12)+int(d[-1] if quarterly else d[-2:])
+    current=str(now.year)+"-Q"+str((now.month-1)//3+1) if quarterly else now.date().isoformat()[:7]
+    require(ds[0]==start and ds[-1]>=before and ordinal(ds[-1])<ordinal(current),"EA labour source coverage or future period")
+    require(all(ordinal(b)-ordinal(a)==1 for a,b in zip(ds,ds[1:])),"nonconsecutive EA labour history")
+    require(set(map(normalize,row["dates"]))<=set(ds),"historical coverage regression")
+    require(all(math.isfinite(v) and (100000<v<250000 if quarterly else 0<v<100) for v in vs),"EA labour values out of range")
+    if quarterly:
+        # Confirm the archived definition against the full overlap before replacing
+        # the fixed-composition series; do not splice the flash growth rate into levels.
+        lookup=dict(zip(ds,vs))
+        overlap=[abs(float(v)/lookup[normalize(d)]-1) for d,v in zip(row["dates"],row["values"])]
+        require(len(overlap)>=12 and statistics.median(overlap)<=.025 and max(overlap)<=.05,"employment level definition not reconciled")
+    definition={"dataset":dataset,"filters":filters,"geography":"EA21 fixed composition"}
+    old=row.get("current_vintage_provenance",{})
+    changed=row["dates"]!=ds or row["values"]!=vs or old.get("definition")!=definition
+    if changed:
+        row.update(dates=ds,values=vs,last_date=ds[-1],last_value=vs[-1],
+            current_vintage_provenance={"status":"OFFICIAL_CURRENT_REVISED_HISTORY_NOT_PIT","source_url":url,"definition":definition,
+             "source_json_sha256":sha256(raw).hexdigest(),"runner_first_seen_utc":now.isoformat(),
+             "source_series_first_release_PIT_certified":False,"historical_levels_may_be_revised_again":True})
+    return {"currency":"EUR","id":ident,"status":"READY" if changed else "NO_CHANGE","before":before,"after":ds[-1],"latest":vs[-1],"source_url":url}
+
 def prepare_row(currency,ident,row,now,fetcher):
+    if currency=="EUR" and ident in ("EA_UNEMP_history_value","EA_EMPLOYMENT_history_value"):
+        return prepare_ea_labour(ident,row,now,fetcher)
     source_file,old_unit,code=CONFIG[(currency,ident)]
     require(row["source_file"]==source_file and row["frequency"]=="M" and row["unit"]==old_unit,"local series identity mismatch")
     require(len(row["dates"])==len(row["values"]) and row["dates"][-1]==row["last_date"] and row["values"][-1]==row["last_value"],"inconsistent local row")
