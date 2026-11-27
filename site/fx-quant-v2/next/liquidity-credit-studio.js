@@ -680,12 +680,28 @@
     series.values.at(-1)===series.last_value&&series.unit==='NZD mln'&&
     series.last_date<release.period&&release.history[series.last_date]?.[key]===series.last_value;
   }))return null;
+  // Use the existing workbook-verified monthly window, not just its last print.
+  // Require exact identity for every overlapping native observation and a
+  // contiguous source window; do not interpolate or silently rebase revisions.
+  const proof=release.history_backfill;
+  const ordinal=p=>Number(p.slice(0,4))*12+Number(p.slice(5));
+  const verified=Boolean(proof&&periods.length>=36&&
+   proof.first_period===periods[0]&&periods.includes(proof.last_period)&&
+   ordinal(proof.last_period)-ordinal(proof.first_period)>=35&&
+   proof.overlap_display_precision_nzd_million===true&&proof.first_release_pit_verified===false&&
+   proof.source_urls?.d10==='https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/d-f-r/d10/hd10.xlsx'&&
+   proof.source_urls?.c50==='https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/c/c50/hc50.xlsx'&&
+   ['d10','c50'].every(k=>/^[a-f0-9]{64}$/.test(proof.source_sha256?.[k]||''))&&
+   periods.every((p,i)=>!i||ordinal(p)-ordinal(periods[i-1])===1));
+  if(proof&&!verified)return null;
+  if(verified&&!roles.every(key=>row[key].dates.every((d,i)=>
+    Object.hasOwn(release.history,d)&&release.history[d][key]===row[key].values[i])))return null;
   const updated=Object.fromEntries(roles.map(key=>{
    const s=row[key];
    const pending=periods.filter(p=>p>s.last_date);
-   const appended=pending.map(p=>release.history[p][key]);
-   return [key,{...s,dates:[...s.dates,...pending],values:[...s.values,...appended],
-    last_date:release.period,last_value:appended.at(-1)}];
+   const dates=verified?periods:[...s.dates,...pending];
+   const values=verified?periods.map(p=>release.history[p][key]):[...s.values,...pending.map(p=>release.history[p][key])];
+   return [key,{...s,dates,values,last_date:release.period,last_value:values.at(-1)}];
   }));
   const direction=s=>s.last_value>s.values.at(-2)?'IN AUMENTO':
    s.last_value<s.values.at(-2)?'IN CALO':'STABILE';
@@ -1044,7 +1060,7 @@
    (hasCharts?'</section>':'')+
    '<section class="liq-evidence-region" id="liquidity-market" tabindex="-1" aria-label="Credito di mercato e spread USA">'+market+'</section>';
  }
- const api={series,direction,interpret,observationDate,sourceEvidence,creditMarket,marketFirstRead,render};
+ const api={series,direction,interpret,observationDate,sourceEvidence,creditMarket,marketFirstRead,nzdDossier,render};
  root.FXQuantLiquidityCredit=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
