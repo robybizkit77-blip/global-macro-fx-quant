@@ -1,34 +1,83 @@
 {
-  "content_as_of": "2026-11-26",
-  "generated_at_utc": "2026-11-27T13:57:31.497871Z",
+  "content_as_of": "2026-11-27",
+  "generated_at_utc": "2026-11-27T16:38:45.501272Z",
   "items": [
     {
-      "as_of": "2026-11-26",
+      "as_of": "2026-11-27",
       "category": "MARKET_FX_ECB_FIXING",
       "ccy": "USD",
       "confidence": "A",
-      "detail": "1 USD = 159.26196 JPY al fixing 2026-11-26; variazione vs 2026-11-25. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "detail": "1 USD = 159.54185 JPY al fixing 2026-11-27; variazione vs 2026-11-26. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
       "importance": "MEDIUM",
       "pair": "USDJPY",
       "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-25",
+      "reference_previous_date": "2026-11-26",
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "USD/JPY: -0.04% fra due fixing BCE"
+      "title": "USD/JPY: +0.18% fra due fixing BCE"
     },
     {
-      "as_of": "2026-11-26",
+      "as_of": "2026-11-27",
       "category": "MARKET_FX_ECB_FIXING",
       "ccy": "EUR",
       "confidence": "A",
-      "detail": "1 EUR = 1.09750 USD al fixing 2026-11-26; variazione vs 2026-11-25. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "detail": "1 EUR = 1.09570 USD al fixing 2026-11-27; variazione vs 2026-11-26. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
       "importance": "MEDIUM",
       "pair": "EURUSD",
       "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-25",
+      "reference_previous_date": "2026-11-26",
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "EUR/USD: +0.37% fra due fixing BCE"
+      "title": "EUR/USD: -0.16% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-27",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Movimento 1D +0.0 bp sul bucket 6M; variazione 1W -6.3 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+      "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-11-27",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "1 AUD = 0.94991 CAD al fixing 2026-11-27; variazione vs 2026-11-26. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "AUDCAD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-26",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "AUD/CAD: +0.61% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-26",
+      "category": "OIS_REPRICING",
+      "ccy": "GBP",
+      "confidence": "A",
+      "detail": "Movimento 1D +3.0 bp sul bucket 12M; variazione 1W -10.6 bp.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+      "title": "GBP: repricing OIS più hawkish (+3.0 bp 12M in 1D)"
+    },
+    {
+      "as_of": "2026-11-26",
+      "category": "MARKET_VOLATILITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 26.80; confronto con chiusura 2026-11-25. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-25",
+      "source": "Cboe Global Markets, VIX daily close",
+      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "title": "VIX: -1.49 punti nella chiusura del 2026-11-26"
     },
     {
       "as_of": "2026-11-26",
@@ -41,17 +90,6 @@
       "reference_previous_date": "2026-11-25",
       "source": "European Central Bank · AAA Svensson spot curve · 2026-11-26",
       "title": "EUR: governativo 2Y +6.2 pb, 10Y +4.6 pb"
-    },
-    {
-      "as_of": "2026-11-26",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "JPY",
-      "confidence": "A",
-      "detail": "Movimento 1D +0.0 bp sul bucket 6M; variazione 1W -6.3 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
     },
     {
       "as_of": "2026-11-26",
@@ -75,20 +113,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
       "title": "AUD: repricing implicito da futures più hawkish (+1.0 bp 6M in 1D)"
-    },
-    {
-      "as_of": "2026-11-26",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "1 AUD = 0.94420 CAD al fixing 2026-11-26; variazione vs 2026-11-25. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "AUDCAD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-25",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "AUD/CAD: +0.80% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-25",
@@ -157,17 +181,6 @@
     },
     {
       "as_of": "2026-11-25",
-      "category": "OIS_REPRICING",
-      "ccy": "GBP",
-      "confidence": "A",
-      "detail": "Movimento 1D -5.6 bp sul bucket 12M; variazione 1W -7.5 bp.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "title": "GBP: repricing OIS più dovish (-5.6 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-25",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "AUD",
       "confidence": "A",
@@ -220,19 +233,6 @@
       "source": "Nasdaq, Inc. via FRED",
       "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
       "title": "Nasdaq Composite: -0.62% nella chiusura del 2026-11-25"
-    },
-    {
-      "as_of": "2026-11-25",
-      "category": "MARKET_VOLATILITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 28.29; confronto con chiusura 2026-11-24. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-24",
-      "source": "Cboe Global Markets, VIX daily close",
-      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "title": "VIX: +1.93 punti nella chiusura del 2026-11-25"
     },
     {
       "as_of": "2026-11-25",
@@ -301,7 +301,7 @@
       "title": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     }
   ],
-  "last_checked_at_utc": "2026-11-27T13:57:31.497871Z",
+  "last_checked_at_utc": "2026-11-27T16:38:45.501272Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -486,6 +486,94 @@
     "headlines": [
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "ENERGY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "ENERGY_STRUCTURE",
+          "verify_next": "Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
+          "why_watch": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio."
+        },
+        "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68525",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-27T14:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "energy_supply_context": {
+            "reason": "La pubblicazione EIA non fornisce in questa pipeline uno snapshot certificato di scorte/produzione prima e dopo.",
+            "status": "ARTICLE_TITLE_ONLY"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "reason": "Titolo EIA validato, ma nessuno snapshot WTI pre/post; nessuna reazione o attribuzione causale dimostrata.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "wti": {
+            "reason": "Assenti prezzi WTI intraday pre/post collegati al rilascio.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          }
+        },
+        "source": "U.S. Energy Information Administration",
+        "source_id": "EIA_ENERGY",
+        "title": "Global electricity generation more than doubled from 2000 to 2025",
+        "url": "https://www.eia.gov/todayinenergy/detail.php?id=68525"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "EUR",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/govcdec/otherdec/2026/html/ecb.gc261127~13ecadc0f2.en.html",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-27T14:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-26",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-26",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.0307478957
+          }
+        },
+        "source": "Banca centrale europea",
+        "source_id": "ECB_PRESS",
+        "title": "Decisions taken by the Governing Council of the ECB (in addition to decisions setting interest rates)",
+        "url": "https://www.ecb.europa.eu//press/govcdec/otherdec/2026/html/ecb.gc261127~13ecadc0f2.en.html"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "EUR",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -558,11 +646,11 @@
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
             "6m_rate_pct": 1.585,
-            "date": "2026-11-26",
+            "date": "2026-11-27",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Tokyo Financial Exchange · Three-month TONA Futures",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -613,11 +701,11 @@
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
             "6m_rate_pct": 1.585,
-            "date": "2026-11-26",
+            "date": "2026-11-27",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Tokyo Financial Exchange · Three-month TONA Futures",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -667,12 +755,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.6066,
-            "date": "2026-11-25",
+            "6m_rate_pct": 4.6291,
+            "date": "2026-11-26",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -722,12 +810,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.6066,
-            "date": "2026-11-25",
+            "6m_rate_pct": 4.6291,
+            "date": "2026-11-26",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -751,54 +839,6 @@
         "source_id": "BOE_NEWS",
         "title": "Statistical Notice 2026/09 - Update to the classification of accounts guide",
         "url": "https://www.bankofengland.co.uk/statistics/notice/2026/statistical-notice-2026-09"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "EUR",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/accounts/2026/html/ecb.mg261126~ccf28c8071.en.html",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-26T12:30:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-26",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-26",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0307478957
-          }
-        },
-        "source": "Banca centrale europea",
-        "source_id": "ECB_PRESS",
-        "title": "Meeting of 28-29 October 2026",
-        "url": "https://www.ecb.europa.eu//press/accounts/2026/html/ecb.mg261126~ccf28c8071.en.html"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -1020,7 +1060,7 @@
         },
         "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68504",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-24T14:00:00Z",
+        "published_at_utc": "2026-11-25T14:00:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
         "reaction_evidence": {
           "causal_attribution": "NOT_ESTABLISHED",
@@ -1043,7 +1083,7 @@
         },
         "source": "U.S. Energy Information Administration",
         "source_id": "EIA_ENERGY",
-        "title": "How does EIA compare different types of energy?",
+        "title": "Almost 60% of primary energy used for electricity is lost to conversion and transmission",
         "url": "https://www.eia.gov/todayinenergy/detail.php?id=68504"
       },
       {
@@ -1144,7 +1184,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-27",
-    "latest_published_at_utc": "2026-11-27T09:00:00Z",
+    "latest_published_at_utc": "2026-11-27T14:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1168,9 +1208,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 11,
+        "accepted_items": 12,
         "ccy": "EUR",
-        "entries_rejected": 4,
+        "entries_rejected": 3,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -1240,8 +1280,8 @@
       {
         "accepted_items": 5,
         "ccy": "ENERGY",
-        "entries_rejected": 27,
-        "feed_entries_seen": 32,
+        "entries_rejected": 28,
+        "feed_entries_seen": 33,
         "feed_url": "https://www.eia.gov/rss/todayinenergy.xml",
         "source": "U.S. Energy Information Administration",
         "source_id": "EIA_ENERGY",
