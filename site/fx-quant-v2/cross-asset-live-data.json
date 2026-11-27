@@ -23,16 +23,12 @@
   "source_errors": {},
   "streams": {
     "SP500": {
-      "date": "2026-11-24",
-      "previous_date": "2026-11-23",
-      "value": 7201.09,
-      "previous": 7237.17,
-      "change_1d_pct": -0.4985,
+      "date": "2026-11-25",
+      "previous_date": "2026-11-24",
+      "value": 7182.78,
+      "previous": 7201.09,
+      "change_1d_pct": -0.2543,
       "history": [
-        [
-          "2026-07-07",
-          7503.85
-        ],
         [
           "2026-07-08",
           7482.71
@@ -428,6 +424,10 @@
         [
           "2026-11-24",
           7201.09
+        ],
+        [
+          "2026-11-25",
+          7182.78
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -436,7 +436,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 3,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
