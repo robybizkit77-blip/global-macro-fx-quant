@@ -2926,6 +2926,44 @@
           "turning_point": "NONE",
           "unit": "index",
           "velocity_pp": -0.1
+        },
+        {
+          "acceleration_pp": 0.26435957256911724,
+          "change_interval": "MONTH",
+          "frequency": "M",
+          "horizon": "ROLLING_3M_OVER_PREVIOUS_3M",
+          "label": "PIL reale manifattura",
+          "level": 202895.0,
+          "measurement": "QUANTITY",
+          "momentum_pct": 1.4394712364590445,
+          "pillar": "manufacturing",
+          "previous_momentum_pct": 1.7269816955392647,
+          "quality": "STATCAN_CURRENT_REVISED_HISTORY_NOT_PIT",
+          "reference_period": "2026-08",
+          "series_id": "CA_MANUFACTURING_REAL_GDP",
+          "source_series_id": "v65201263",
+          "turning_point": "NONE",
+          "unit": "million chained 2017 CAD SAAR",
+          "velocity_pp": -0.2875104590802202
+        },
+        {
+          "acceleration_pp": -0.1219602171314893,
+          "change_interval": "MONTH",
+          "frequency": "M",
+          "horizon": "ROLLING_3M_OVER_PREVIOUS_3M",
+          "label": "PIL reale servizi",
+          "level": 1778199.0,
+          "measurement": "QUANTITY",
+          "momentum_pct": 0.6967625473764061,
+          "pillar": "services",
+          "previous_momentum_pct": 0.7601789118827584,
+          "quality": "STATCAN_CURRENT_REVISED_HISTORY_NOT_PIT",
+          "reference_period": "2026-08",
+          "series_id": "CA_SERVICES_REAL_GDP",
+          "source_series_id": "v65201212",
+          "turning_point": "UP_TO_DOWN",
+          "unit": "million chained 2017 CAD SAAR",
+          "velocity_pp": -0.06341636450635235
         }
       ],
       "CHF": [
@@ -3235,6 +3273,25 @@
           "series_id": "UK_BOE_APF_LOAN_history_value",
           "unit": "GBP millions",
           "velocity_pp": 0.0
+        },
+        {
+          "acceleration_pp": -0.09789461658269438,
+          "change_interval": "MONTH",
+          "frequency": "M",
+          "horizon": "ROLLING_3M_OVER_PREVIOUS_3M",
+          "label": "Produzione reale dei servizi — ONS",
+          "level": 103.8,
+          "measurement": "QUANTITY",
+          "momentum_pct": 0.9737098344693385,
+          "pillar": "services",
+          "previous_momentum_pct": 0.910273081924573,
+          "quality": "ONS_CURRENT_REVISED_HISTORY_NOT_PIT",
+          "reference_period": "2026-09",
+          "series_id": "UK_SERVICES_REAL_OUTPUT_S2KU",
+          "source_series_id": "S2KU",
+          "turning_point": "NONE",
+          "unit": "Index (ONS IoS, seasonally adjusted)",
+          "velocity_pp": 0.06343675254476544
         }
       ],
       "JPY": [
@@ -3478,6 +3535,26 @@
           "turning_point": "DOWN_TO_UP",
           "unit": "index points",
           "velocity_pp": 8.4
+        },
+        {
+          "acceleration_pp": -0.20855805510851022,
+          "change_interval": "MONTH",
+          "frequency": "M",
+          "horizon": "ROLLING_3M_OVER_PREVIOUS_3M",
+          "label": "Nuove abitazioni autorizzate — destagionalizzate",
+          "level": 3218,
+          "measurement": "QUANTITY",
+          "momentum_pct": -8.183066361556069,
+          "pillar": "housing",
+          "previous_momentum_pct": -5.081150866838802,
+          "quality": "STATSNZ_CURRENT_REVISED_HISTORY_NOT_PIT",
+          "reference_period": "2026-09",
+          "released": "2026-11-03",
+          "series_id": "NZ_NEW_DWELLINGS_CONSENTED_SA",
+          "source_series_id": "BLDM.SFTZ1100A1S",
+          "turning_point": "NONE",
+          "unit": "abitazioni (SA)",
+          "velocity_pp": -3.101915494717267
         }
       ],
       "USD": [
@@ -3648,7 +3725,7 @@
     "writes_live_data": false
   },
   "sector_financial_status": "RESEARCH_ONLY",
-  "snapshot_content_sha256": "62c39c4f00d78162ac24a189b3f2a1b37076c91950d0a454db97bc29faf98b3d",
+  "snapshot_content_sha256": "b5144eea6c0998e1e4ddfca76e2cb1e2ae540cd7030e98a7c44010a422796548",
   "source_observation_periods_not_release_days": true,
   "source_receipt_sha256": "172df8e058fd28b63946716ca795b10304b54097ac4e8d2b99d819db25d3d811",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
