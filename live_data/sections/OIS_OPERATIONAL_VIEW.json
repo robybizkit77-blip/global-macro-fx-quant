@@ -165,22 +165,22 @@
       "direction_vs_policy": null,
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-15",
-          "futures_price": 96.9425,
+          "futures_price": 96.9675,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-26T14:37:04Z",
-          "quote_as_of": "2026-11-26",
+          "price_valid_until": "2026-11-27T13:52:13Z",
+          "quote_as_of": "2026-11-27",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 55.8,
+          "raw_level_minus_spot_policy_bp": 53.3,
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
@@ -248,8 +248,8 @@
         "horizons": {
           "12m": {
             "contract": "FST3U2027",
-            "quote_as_of": "2026-11-26",
-            "rate_indicative": 3.0575,
+            "quote_as_of": "2026-11-27",
+            "rate_indicative": 3.0325,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           },
           "3m": {
