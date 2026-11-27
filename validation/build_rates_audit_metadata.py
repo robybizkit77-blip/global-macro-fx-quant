@@ -75,8 +75,8 @@ def build(src: dict, audit_date: str) -> dict:
             status={
                 'status':'OFFICIAL_POSTROLL_RECONCILED_RECENT' if recent else 'OFFICIAL_POSTROLL_RECONCILED_LAGGING',
                 'action':'SOURCE_DATE_VALIDATED' if recent else 'RECONCILED_SOURCE_REFRESH_REVIEW_REQUIRED',
-                'source_access':'RBNZ_B2_HTML_XLSX_RECONCILED_ONE_TIME',
-                'reason':'Official same-edition HTML/XLSX government benchmark yields reconciled; one-time reviewed release, no recurring canonical continuity certification.'
+                'source_access':('RBNZ_B2_HTML_XLSX_RECONCILED_RECURRING' if d.get('freshness_status')=='OFFICIAL_POSTROLL_RECONCILED_RECURRING_OBSERVATION' else 'RBNZ_B2_HTML_XLSX_RECONCILED_ONE_TIME'),
+                'reason':('Official same-edition B2 append-only benchmark observation; no PIT/Core or recurring continuity certification.' if d.get('freshness_status')=='OFFICIAL_POSTROLL_RECONCILED_RECURRING_OBSERVATION' else 'Official same-edition HTML/XLSX government benchmark yields reconciled; one-time reviewed release, no recurring canonical continuity certification.')
             }
         expected[c]=obs
         rates[c]={
