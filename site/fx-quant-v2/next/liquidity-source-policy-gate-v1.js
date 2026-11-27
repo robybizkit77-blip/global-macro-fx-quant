@@ -79,7 +79,10 @@
    "ready": true,
    "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
-  "credit": null,
+  "credit": {
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
+  },
   "conditions": {
    "ready": true,
    "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"

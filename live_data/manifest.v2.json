@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "7d1280e3f233560056763cc83e4aa6c097ee052a431973a69d8af75843da67a5",
-  "runtime_bytes": 3285333,
+  "runtime_sha256": "ce24c1eb0f3c015ad858179078938b708e760f17273a9e39c4af51f3f45cd6d9",
+  "runtime_bytes": 3288889,
   "part_count": 16,
   "direct_section_count": 12,
   "derived_section_count": 2,
@@ -81,8 +81,8 @@
       "key": "NATIVE_LIQ_DATA",
       "file": "NATIVE_LIQ_DATA.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 143364,
-      "sha256": "19416d32d10704bc744f5b830c5281117f153bfc0000e6c4265c72c347a539f9",
+      "bytes": 146920,
+      "sha256": "3a539f51d0ceb05778c6b93456d2d3c7bf0aeea7d8c9b491526322c60360251a",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true

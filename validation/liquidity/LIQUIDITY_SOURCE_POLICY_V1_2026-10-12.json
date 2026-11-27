@@ -720,13 +720,36 @@
         "latest_value_all_enterprises": 13,
         "source_url": "https://www.boj.or.jp/en/statistics/tk/yoshi/tk2609.htm"
       }
+    },
+    "CAD.credit": {
+      "label": "Prestiti alle imprese",
+      "publisher": "Bank of Canada",
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "Credit extended to corporate sector — outstanding business loans, total",
+      "frequency": "MONTHLY",
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
+      "series_key": "V122667770",
+      "source_url": "https://www.bankofcanada.ca/valet/observations/V122667770/json?start_date=2019-09-01",
+      "macro_series_id": "CA_BUSINESS_LOANS_OUTSTANDING_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45994799500,
+        "job_id": 140491408045,
+        "receipt_status": "READY",
+        "native_last_date": "2026-09-01",
+        "native_last_value": 949456.0,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false,
+        "evidence_scope": "SOURCE_AND_ISOLATED_CANDIDATE_PROOF_NOT_PRODUCTION_PUBLICATION"
+      }
     }
   },
   "unresolved": [],
   "coverage": {
-    "total_subseries": 26,
-    "source_mapped_subseries": 26,
-    "automation_ready_subseries": 24,
+    "total_subseries": 27,
+    "source_mapped_subseries": 27,
+    "automation_ready_subseries": 25,
     "mapping_pending_subseries": 2,
     "unresolved_subseries": 0
   },
