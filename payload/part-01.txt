@@ -33442,7 +33442,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-10-28",
         "2026-11-04",
         "2026-11-11",
-        "2026-11-18"
+        "2026-11-18",
+        "2026-11-25"
       ],
       "values": [
         231666.0,
@@ -33535,20 +33536,21 @@ window.__GMFQ_DATA.MACRO_SERIES={
         183590.0,
         181737.0,
         185950.0,
-        188015.0
+        188015.0,
+        163941.0
       ],
       "unit": "AUD millions",
       "frequency": "W",
       "source_file": "AU_EXCHANGE_SETTLEMENT_BALANCES_history.csv",
-      "last_date": "2026-11-18",
-      "last_value": 188015.0,
+      "last_date": "2026-11-25",
+      "last_value": 163941.0,
       "current_vintage_provenance": {
         "status": "RBA_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_url": "https://www.rba.gov.au/statistics/tables/csv/a1-data.csv",
         "source_series_id": "ARBALESBW",
         "source_unit": "$ million",
-        "source_csv_sha256": "cc24251bfceafbd199b3b0569fca93cd5db4a500dede488f46df549b5c65ff51",
-        "runner_first_seen_utc": "2026-11-26T09:30:11.616392+00:00",
+        "source_csv_sha256": "431c2ca369028015707cc9849f25f62ef7e53176751b014b8cc383892663b423",
+        "runner_first_seen_utc": "2026-11-27T05:55:21.292086+00:00",
         "source_series_first_release_PIT_certified": false,
         "historical_levels_may_be_revised_again": true,
         "stock_level_not_break_adjusted_growth": true
@@ -33649,7 +33651,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-10-28",
         "2026-11-04",
         "2026-11-11",
-        "2026-11-18"
+        "2026-11-18",
+        "2026-11-25"
       ],
       "values": [
         420483.0,
@@ -33742,20 +33745,21 @@ window.__GMFQ_DATA.MACRO_SERIES={
         343212.0,
         345927.0,
         351968.0,
-        344956.0
+        344956.0,
+        353482.0
       ],
       "unit": "AUD millions",
       "frequency": "W",
       "source_file": "AU_RBA_TOTAL_ASSETS_history.csv",
-      "last_date": "2026-11-18",
-      "last_value": 344956.0,
+      "last_date": "2026-11-25",
+      "last_value": 353482.0,
       "current_vintage_provenance": {
         "status": "RBA_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_url": "https://www.rba.gov.au/statistics/tables/csv/a1-data.csv",
         "source_series_id": "ARBAATAW",
         "source_unit": "$ million",
-        "source_csv_sha256": "cc24251bfceafbd199b3b0569fca93cd5db4a500dede488f46df549b5c65ff51",
-        "runner_first_seen_utc": "2026-11-26T09:30:11.616392+00:00",
+        "source_csv_sha256": "431c2ca369028015707cc9849f25f62ef7e53176751b014b8cc383892663b423",
+        "runner_first_seen_utc": "2026-11-27T05:55:21.292086+00:00",
         "source_series_first_release_PIT_certified": false,
         "historical_levels_may_be_revised_again": true,
         "stock_level_not_break_adjusted_growth": true
