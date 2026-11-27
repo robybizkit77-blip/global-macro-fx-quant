@@ -42,7 +42,11 @@ assert.equal(midnight.fresh('2026-10-27',5),false,'future official date is rejec
 assert.equal(midnight.fresh('2026-10-25',0),false,'yesterday is not today');
 assert.equal(midnight.fresh('2026-10-25',1),true,'yesterday valid when allowed');
 assert.equal(midnight.fresh('2026-02-30',5),false,'impossible source date rejected');
-const {approved,canonical}=readApproved('.');
+const current=readApproved('.');
+// The fixed October DST boundary scenarios use their original dated source.
+const canonical=current.canonical.date>='2026-10-30'?JSON.parse(fs.readFileSync('validation/fixtures/rbnz_b2_pre_roll_canonical_2026-10-16.json')):current.canonical;
+const approved=current.canonical.date>='2026-10-30'?JSON.parse(fs.readFileSync('validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json')).currencies.NZD:current.approved;
+assert.equal(canonical.date,'2026-10-16');
 const onRomeMidnight=new Date('2026-10-20T22:30:00Z'); // 00:30 CEST on 21 Oct
 assert.equal(oisRomeToday(onRomeMidnight),'2026-10-21');
 assert.equal(romeAgeDays('2026-10-16',onRomeMidnight),5);

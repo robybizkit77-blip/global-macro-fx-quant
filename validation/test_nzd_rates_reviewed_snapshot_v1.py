@@ -32,6 +32,21 @@ def main():
     wrong = copy.deepcopy(rates)
     wrong["NZD"]["tenors"][0]["date"] = "2026-10-15"
     expect_hold(wrong, reg, "tenor date drift")
+    if rates["NZD"]["date"] >= "2026-10-30":
+        for key, value in (("current_snapshot","2026-11-27"),("current_2Y",4.12),
+                           ("manual_approval_reference",""),("evidence","bad"),
+                           ("automatic_promotion_allowed",True)):
+            wrong = copy.deepcopy(reg)
+            wrong["currencies"]["NZD"]["postroll_reviewed_release"][key] = value
+            expect_hold(rates, wrong, "postroll contract drift: "+key)
+        wrong = copy.deepcopy(rates)
+        wrong["NZD"]["legacy_pre_roll"]["history2"]["values"][0] += 0.1
+        expect_hold(wrong, reg, "legacy history mutation")
+        wrong = copy.deepcopy(rates)
+        wrong["NZD"]["source_sha256"]["html"] = "bad"
+        expect_hold(wrong, reg, "source hash mutation")
+        print("NZD_POSTROLL_REVIEWED_SNAPSHOT_FAIL_CLOSED_PASS")
+        return
     wrong = copy.deepcopy(reg)
     wrong["currencies"]["NZD"]["current_snapshot"] = "2026-10-20"
     expect_hold(rates, wrong, "registry modified alone")

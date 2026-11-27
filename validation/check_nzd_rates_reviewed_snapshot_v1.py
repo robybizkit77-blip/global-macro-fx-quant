@@ -42,6 +42,41 @@ def review_file(root: Path, relative: str) -> dict:
     return json.loads((root / relative).read_text(encoding="utf-8"))
 
 
+def validate_postroll(row, meta, root):
+    contract = meta["postroll_reviewed_release"]
+    require(contract.get("automatic_promotion_allowed") is False and meta.get("automatic_promotion_allowed") is False,
+            "post-roll automatic promotion forbidden")
+    require(contract.get("manual_approval_reference") == "https://github.com/robybizkit77-blip/global-macro-fx-quant/pull/1720",
+            "reviewed release reference changed")
+    require(contract.get("evidence") == "validation/fixtures/rbnz_b2_postroll_2026-11-26_reviewed_release.json", "approved evidence path changed")
+    doc = review_file(root, contract["evidence"])
+    require(doc.get("schema") == "GMFQ_NZD_APPROVED_POSTROLL_RELEASE_V1", "wrong reviewed release schema")
+    require(row == doc["canonical_row"], "canonical NZD differs from exact reviewed release")
+    ev = doc["reconciled_source"]
+    require(ev.get("status") == "RBNZ_B2_HTML_XLSX_AGREE_POSTROLL_RESEARCH_ONLY"
+            and ev.get("source_url") == OFFICIAL_PAGE and ev.get("eligible_for_automatic_promotion") is False,
+            "invalid official source provenance")
+    require(row.get("quality") == "FULL_CURRENT_OFFICIAL_POSTROLL_RECONCILED"
+            and row.get("freshness_status") == "OFFICIAL_POSTROLL_RECONCILED_ONE_TIME_RELEASE"
+            and row["date"] == contract["current_snapshot"] == ev["last_observation_date"] == "2026-11-26",
+            "unapproved post-roll source date or quality")
+    require(row["source_sha256"] == {"html": ev["html_sha256"], "xlsx": ev["xlsx_sha256"]}
+            and ev["html_sha256"] == "78682ece82c944eb4353ddc1d49f5821bff438d640470f74b2a20fcd8d782b48"
+            and ev["xlsx_sha256"] == "011739d660510e1d7d0612d0a9fda7b4b0e27f8dc97b2ac88c59ec9eb907b2fa",
+            "approved source hash changed")
+    require(eq(row["2Y"], contract["current_2Y"]) and eq(row["10Y"], contract["current_10Y"])
+            and eq(row["2Y"], 3.79) and eq(row["10Y"], 4.69), "approved yield changed")
+    require(row["benchmark_roll_date"] == ev["benchmark_roll_date"] == "2026-10-30"
+            and row["cross_roll_change_allowed"] is False and row["first_release_pit_certified"] is False,
+            "roll/PIT protection changed")
+    for tenor, key in (("2Y", "history2"), ("10Y", "history10")):
+        require(row[key]["dates"] == [r["date"] for r in ev["observations"]]
+                and row[key]["values"] == [r[tenor] for r in ev["observations"]], "post-roll history mismatch")
+    require(row["legacy_pre_roll"]["date"] < row["benchmark_roll_date"], "legacy segment crossed roll")
+    return {"status":"PASS","currency":"NZD","as_of":row["date"],"2Y":row["2Y"],"10Y":row["10Y"],
+            "basis":"RBNZ_B2_OFFICIAL_GOVERNMENT_CLOSE","review_reference":contract["manual_approval_reference"],
+            "source_access":"HTML_XLSX_RECONCILED_ONE_TIME","automatic_promotion_allowed":False}
+
 def validate(rates: dict, registry: dict, *, root: Path = ROOT) -> dict:
     require(set(rates) >= {"USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"},
             "canonical G8 Rates coverage missing")
@@ -51,6 +86,8 @@ def validate(rates: dict, registry: dict, *, root: Path = ROOT) -> dict:
             "official same-basis / no-estimate policy relaxed")
     meta = registry["currencies"]["NZD"]
     row = rates["NZD"]
+    if row.get("date", "") >= "2026-10-30":
+        return validate_postroll(row, meta, root)
     require(meta.get("adapter_status") == "OPERATIONAL_MANUAL_OFFICIAL_VERIFIED__RUNNER_ACCESS_BLOCKED",
             "NZD manual RBNZ-only source policy changed")
     day = meta.get("current_snapshot")
