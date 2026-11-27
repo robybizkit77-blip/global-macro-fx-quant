@@ -8,6 +8,8 @@ on:
       - main
     paths:
       - .github/workflows/liquidity-jpy-m3-persistent-daily-v1.yml
+      - validation/jpy_m3_schedule_gate_v1.py
+      - validation/test_jpy_m3_schedule_gate_v1.py
       - validation/fetch_boj_jpy_m3_exact_candidate.py
       - validation/apply_boj_jpy_m3_exact_candidate.py
       - validation/check_liquidity_remaining_blockers_v1.py
@@ -17,6 +19,8 @@ on:
       - main
     paths:
       - .github/workflows/liquidity-jpy-m3-persistent-daily-v1.yml
+      - validation/jpy_m3_schedule_gate_v1.py
+      - validation/test_jpy_m3_schedule_gate_v1.py
       - validation/fetch_boj_jpy_m3_exact_candidate.py
       - validation/apply_boj_jpy_m3_exact_candidate.py
   workflow_dispatch:
@@ -45,16 +49,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Test delay-tolerant JPY M3 schedule contract
+        run: python -m unittest validation.test_jpy_m3_schedule_gate_v1 -v
       - name: Rome schedule gate
         id: gate
         shell: bash
+        env:
+          JPY_M3_EVENT: ${{ github.event_name }}
+          JPY_M3_CRON: ${{ github.event.schedule }}
         run: |
-          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
-          if [[ "${{ github.event_name }}" != schedule || " 02:00 02:30 " == *" $hhmm "* ]]; then
-            echo should_run=true >> "$GITHUB_OUTPUT"
-          else
-            echo should_run=false >> "$GITHUB_OUTPUT"
-          fi
+          set -euo pipefail
+          python -m validation.jpy_m3_schedule_gate_v1 \
+            --event "$JPY_M3_EVENT" --cron "$JPY_M3_CRON" \
+            --output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
       - name: Snapshot baseline and withholding contract
         if: steps.gate.outputs.should_run == 'true'
         run: |
