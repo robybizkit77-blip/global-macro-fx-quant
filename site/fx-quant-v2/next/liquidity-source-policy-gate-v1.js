@@ -31,8 +31,8 @@
    "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   },
   "conditions": {
-   "ready": false,
-   "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   }
  },
  "GBP": {
@@ -45,8 +45,8 @@
    "status": "AUTOMATION_CONTRACT_PROVEN_CONTROLLED_APPLY"
   },
   "conditions": {
-   "ready": false,
-   "status": "OFFICIAL_SOURCE_CONFIRMED_VALUE_MAPPING_PENDING"
+   "ready": true,
+   "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY"
   }
  },
  "JPY": {

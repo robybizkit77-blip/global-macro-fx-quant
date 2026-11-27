@@ -537,13 +537,36 @@
     },
     "EUR.conditions": {
       "label": "BLS — standard credito imprese",
-      "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
       "publisher": "European Central Bank / ESCB",
-      "source_contract": "Euro area Bank Lending Survey",
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "ECB BLS actual enterprise credit standards, positive means tightening, observation quarter precedes publication quarter",
       "frequency": "QUARTERLY",
-      "automation_ready": false,
-      "series_mapping_status": "PENDING_EXACT_SERIES_KEY",
-      "source_url": "https://data.ecb.europa.eu/data/datasets/BLS"
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_SERIES_KEY_FULL_HISTORY_PARITY",
+      "series_key": "BLS.Q.U2.ALL.O.E.Z.B3.ST.S.WFNET",
+      "source_url": "https://data-api.ecb.europa.eu/service/data/BLS/Q.U2.ALL.O.E.Z.B3.ST.S.WFNET?format=csvdata&startPeriod=2016-Q1",
+      "macro_series_id": "EA_BLS_CREDIT_STANDARDS_ENTERPRISES_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45996547735,
+        "job_id": 140497254796,
+        "receipt_status": "READY",
+        "native_last_date": "2026-Q3",
+        "native_last_value": 8.55228309538633,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false,
+        "evidence_scope": "PRODUCTION_MAIN_NATIVE_MACRO_PARITY_PUBLICATION_NOT_YET_CERTIFIED"
+      },
+      "previous_contract_snapshot": {
+        "label": "BLS — standard credito imprese",
+        "status": "OFFICIAL_PROVIDER_CONFIRMED_SERIES_MAPPING_PENDING",
+        "publisher": "European Central Bank / ESCB",
+        "source_contract": "Euro area Bank Lending Survey",
+        "frequency": "QUARTERLY",
+        "automation_ready": false,
+        "series_mapping_status": "PENDING_EXACT_SERIES_KEY",
+        "source_url": "https://data.ecb.europa.eu/data/datasets/BLS"
+      }
     },
     "GBP.liquidity": {
       "label": "BoE — reserve balances",
@@ -588,15 +611,38 @@
     },
     "GBP.conditions": {
       "label": "Disponibilità credito corporate",
-      "status": "OFFICIAL_SOURCE_CONFIRMED_VALUE_MAPPING_PENDING",
       "publisher": "Bank of England",
-      "source_contract": "Credit Conditions Survey — corporate credit availability",
+      "status": "AUTOMATION_CONTRACT_VERIFIED_NATIVE_PARITY",
+      "source_contract": "BoE CCS actual corporate availability, positive means increased availability; latest official table plus retained historical prefix",
       "frequency": "QUARTERLY",
-      "automation_ready": false,
-      "series_mapping_status": "PENDING_MACHINE_READABLE_SERIES_KEY_OR_STABLE_TABLE_EXTRACT",
-      "latest_verified_release": "2026-Q3",
-      "latest_release_date": "2026-10-08",
-      "source_url": "https://www.bankofengland.co.uk/credit-conditions-survey/2026/2026-q3"
+      "automation_ready": true,
+      "series_mapping_status": "EXACT_ACTUAL_TABLE_VERIFIED_OVERLAP_RETAINED_PREFIX",
+      "series_key": "BOE_CCS_CORPORATE_AVAILABILITY_ACTUAL",
+      "source_url": "https://www.bankofengland.co.uk/credit-conditions-survey/2026/2026-q3",
+      "macro_series_id": "UK_CCS_CORPORATE_CREDIT_AVAILABILITY_history_value",
+      "verification": {
+        "as_of": "2026-11-27",
+        "run_id": 45996547735,
+        "job_id": 140497254796,
+        "receipt_status": "READY",
+        "native_last_date": "2026-Q3",
+        "native_last_value": -0.1,
+        "source_first_release_PIT_certified": false,
+        "continuity_certified": false,
+        "evidence_scope": "PRODUCTION_MAIN_NATIVE_MACRO_PARITY_PUBLICATION_NOT_YET_CERTIFIED"
+      },
+      "previous_contract_snapshot": {
+        "label": "Disponibilità credito corporate",
+        "status": "OFFICIAL_SOURCE_CONFIRMED_VALUE_MAPPING_PENDING",
+        "publisher": "Bank of England",
+        "source_contract": "Credit Conditions Survey — corporate credit availability",
+        "frequency": "QUARTERLY",
+        "automation_ready": false,
+        "series_mapping_status": "PENDING_MACHINE_READABLE_SERIES_KEY_OR_STABLE_TABLE_EXTRACT",
+        "latest_verified_release": "2026-Q3",
+        "latest_release_date": "2026-10-08",
+        "source_url": "https://www.bankofengland.co.uk/credit-conditions-survey/2026/2026-q3"
+      }
     },
     "JPY.liquidity": {
       "label": "BoJ — reserve balances",
@@ -734,14 +780,14 @@
       "macro_series_id": "CA_BUSINESS_LOANS_OUTSTANDING_history_value",
       "verification": {
         "as_of": "2026-11-27",
-        "run_id": 45994799500,
-        "job_id": 140491408045,
+        "run_id": 45996547735,
+        "job_id": 140497254796,
         "receipt_status": "READY",
         "native_last_date": "2026-09-01",
-        "native_last_value": 949456.0,
+        "native_last_value": 949456,
         "source_first_release_PIT_certified": false,
         "continuity_certified": false,
-        "evidence_scope": "SOURCE_AND_ISOLATED_CANDIDATE_PROOF_NOT_PRODUCTION_PUBLICATION"
+        "evidence_scope": "PRODUCTION_MAIN_NATIVE_MACRO_PARITY_PUBLICATION_NOT_YET_CERTIFIED"
       }
     }
   },
@@ -749,9 +795,9 @@
   "coverage": {
     "total_subseries": 27,
     "source_mapped_subseries": 27,
-    "automation_ready_subseries": 25,
-    "mapping_pending_subseries": 2,
+    "automation_ready_subseries": 27,
+    "mapping_pending_subseries": 0,
     "unresolved_subseries": 0
   },
-  "status": "PARTIAL_POLICY_FAIL_CLOSED"
+  "status": "ALL_REGISTERED_CONTRACTS_MAPPED_CONTINUITY_NOT_CERTIFIED"
 }

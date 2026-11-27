@@ -52,8 +52,22 @@ assert.match(cad,/V122667770/);
 assert(cad.includes(source.latest_observation),'Render current official source date');
 assert.match(cad,/Fonte: Bank of Canada/);
 const creditCard=cad.split('data-liq-role="credit"')[1].split('</div>')[0];
-assert.match(creditCard,/Misura non verificabile/);
-assert.doesNotMatch(creditCard,/(9\d{5}) milioni CAD/);
+const gate=require(path.join(root,'site/fx-quant-v2/next/liquidity-source-policy-gate-v1.js'));
+const mapping=gate.check('CAD','credit');
+const macro=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/MACRO_SERIES.json'),'utf8'));
+if(mapping.ready){
+ const row=macro.CAD.find(x=>x.id==='CA_BUSINESS_LOANS_OUTSTANDING_history_value');
+ assert(row&&native.CAD.credit);
+ assert.equal(row.current_vintage_provenance.source_series_id,'V122667770');
+ assert.equal(row.current_vintage_provenance.source_series_first_release_PIT_certified,false);
+ for(const k of ['dates','values','last_date','last_value'])assert.deepEqual(native.CAD.credit[k],row[k]);
+ assert(creditCard.includes(row.last_date));
+ assert(creditCard.includes(fmt(row.last_value,2)));
+ assert.doesNotMatch(creditCard,/Misura non verificabile/);
+}else{
+ assert.equal(native.CAD.credit,null);
+ assert.match(creditCard,/Misura non verificabile/);
+}
 assert(!studio.render(api('USD')).includes('drivers-cad-official'));
 console.log('CAD_OFFICIAL_CREDIT_RESEARCH_SIDECAR_PASS',JSON.stringify({
  observations:source.dates.length,latest:source.latest_observation,
