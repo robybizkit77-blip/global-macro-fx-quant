@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import csv, io, json, pathlib, re, sys, urllib.request
+import csv, io, json, math, pathlib, re, sys, urllib.request
 from datetime import datetime
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
@@ -92,7 +92,24 @@ def parse_mof(raw:bytes)->dict:
         vals.append((dt,y2,y10))
     if not vals: raise RuntimeError('MOF: no valid rows')
     dt,y2,y10=max(vals,key=lambda x:x[0])
-    return {'date':dt.isoformat(),'2Y':y2,'10Y':y10,'source_url':MOF_URL,'authority':'Japan Ministry of Finance'}
+    result={'date':dt.isoformat(),'2Y':y2,'10Y':y10,'source_url':MOF_URL,'authority':'Japan Ministry of Finance'}
+    # Secondary tenors must come from the SAME exact official row, never
+    # from another date or an ambiguous maturity header.
+    matching=[]
+    for row in rows[hi+1:]:
+        try:
+            if parse_date(row[di])==dt: matching.append(row)
+        except (IndexError,ValueError): continue
+    if len(matching)==1:
+        headers=[norm(x) for x in rows[hi]]
+        for n in (5,30):
+            keys={f'{n}y',f'{n}year',f'{n}years',f'{n}yr',f'{n}yrs'}
+            hits=[i for i,h in enumerate(headers) if h in keys]
+            if len(hits)!=1: continue
+            try: value=float(matching[0][hits[0]])
+            except (ValueError,IndexError): continue
+            if math.isfinite(value) and -5<=value<=25: result[f'{n}Y']=value
+    return result
 
 def cmp(cur:dict, src:dict)->dict:
     cd=cur.get('date'); sd=src['date']
