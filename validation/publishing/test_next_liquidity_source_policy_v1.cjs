@@ -81,7 +81,7 @@ for(const ccy of FX){
  const html=page.render(api(ccy));
  assert.equal((html.match(/data-liq-country=/g)||[]).length,8,ccy);
  assert.equal((html.match(/data-liq-role=/g)||[]).length,3,ccy);
- const detail=html.indexOf('<details class="drivers-source-provenance-fold"><summary>Fonti e storico</summary>');
+ const detail=html.indexOf('<details class="drivers-source-provenance-fold"><summary>Verifica dati, copertura e fonti bancarie</summary>');
  assert(detail>html.indexOf('PERCHÉ CONTA PER IL CAMBIO'),ccy);
  assert(html.indexOf('data-liq-role=')>detail,ccy+' technical evidence must be in the disclosure');
  assert(html.indexOf('COPERTURA')<0,ccy+' remove duplicate coverage badge');
