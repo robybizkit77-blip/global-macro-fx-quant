@@ -2761,7 +2761,7 @@
           "velocity_pp": -0.5612946275441066
         },
         {
-          "acceleration_pp": null,
+          "acceleration_pp": -12.707139617656981,
           "frequency": "W",
           "horizon": "EXACT_7_CALENDAR_DAYS",
           "label": "Exchange Settlement balances",
@@ -2776,7 +2776,7 @@
           "velocity_pp": -13.914811108371506
         },
         {
-          "acceleration_pp": null,
+          "acceleration_pp": 8.202394901902267,
           "frequency": "W",
           "horizon": "EXACT_7_CALENDAR_DAYS",
           "label": "RBA — totale attivi",
@@ -3150,7 +3150,7 @@
           "velocity_pp": -0.11422653662149784
         },
         {
-          "acceleration_pp": null,
+          "acceleration_pp": -2.1564314061106815,
           "frequency": "D",
           "horizon": "EXACT_CALENDAR_DAY",
           "label": "Liquidità in eccesso",
@@ -3245,7 +3245,7 @@
           "velocity_pp": -0.7673650097831386
         },
         {
-          "acceleration_pp": null,
+          "acceleration_pp": -2.236727649752668,
           "frequency": "W",
           "horizon": "EXACT_7_CALENDAR_DAYS",
           "label": "BoE — reserve balances",
@@ -3260,7 +3260,7 @@
           "velocity_pp": -0.72482660345079
         },
         {
-          "acceleration_pp": null,
+          "acceleration_pp": 0.0,
           "frequency": "W",
           "horizon": "EXACT_7_CALENDAR_DAYS",
           "label": "BoE — APF loan",
@@ -3613,8 +3613,9 @@
           "velocity_pp": 2.756588072122046
         },
         {
-          "acceleration_pp": null,
+          "acceleration_pp": -0.2400000000000002,
           "frequency": "W",
+          "horizon": "PMMS_WEEKLY_RELEASE",
           "label": "Mutuo 30Y",
           "level": 7.21,
           "measurement": "RATE",
@@ -3623,10 +3624,10 @@
           "reference_period": "2026-11-25",
           "series_id": "US_MORTGAGE30US_history_MORTGAGE30US",
           "unit": "Percent",
-          "velocity_pp": null
+          "velocity_pp": -0.07000000000000028
         },
         {
-          "acceleration_pp": null,
+          "acceleration_pp": -0.14666346150380427,
           "frequency": "W",
           "horizon": "EXACT_7_CALENDAR_DAYS",
           "label": "Credito bancario totale",
@@ -3656,7 +3657,7 @@
           "velocity_pp": 1.7
         },
         {
-          "acceleration_pp": null,
+          "acceleration_pp": -0.5382284995186559,
           "frequency": "W",
           "horizon": "EXACT_7_CALENDAR_DAYS",
           "label": "Fed — totale attivi",
@@ -3671,7 +3672,7 @@
           "velocity_pp": -0.41654963743291695
         },
         {
-          "acceleration_pp": null,
+          "acceleration_pp": -0.18428026385104435,
           "frequency": "W",
           "horizon": "EXACT_7_CALENDAR_DAYS",
           "label": "Riserve bancarie",
@@ -3725,7 +3726,7 @@
     "writes_live_data": false
   },
   "sector_financial_status": "RESEARCH_ONLY",
-  "snapshot_content_sha256": "b5144eea6c0998e1e4ddfca76e2cb1e2ae540cd7030e98a7c44010a422796548",
+  "snapshot_content_sha256": "3cae6dbc6e230101a3775323f7fd945d07247a4bdee5f15feb5af97a107f1b3e",
   "source_observation_periods_not_release_days": true,
   "source_receipt_sha256": "172df8e058fd28b63946716ca795b10304b54097ac4e8d2b99d819db25d3d811",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
