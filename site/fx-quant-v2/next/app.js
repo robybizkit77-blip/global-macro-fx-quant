@@ -1205,9 +1205,11 @@ function news(){
   +'<p class="source-caption"><strong>Qualità.</strong> '+esc(x.quality)+'</p>'
   +(x.displayTitle&&x.displayTitle!==x.title?'<p class="source-caption"><strong>Titolo originale.</strong> '+esc(x.title)+'</p>':'')
   +'</div></details></article>';
- return pageHero('NOTIZIE / EVENTI','Dalla notizia <em>alla prova.</em>',
+ return pageHero('CALENDARIO & NOTIZIE','Eventi e notizie da monitorare',
     'Distingui ciò che è stato pubblicato da quello che cambia davvero le aspettative. Una variazione dei futures non è automaticamente una sorpresa macro o la reazione a un comunicato.')
-  +operationalCalendar
+  +'<nav class="desk-section-nav" aria-label="Percorso eventi e notizie"><button type="button" data-section-jump="desk-calendar">01 · Calendario e pubblicazioni</button><button type="button" data-section-jump="desk-news">02 · Notizie e reazioni</button></nav>'
+  +'<section id="desk-calendar" tabindex="-1" aria-label="Calendario macro">'+operationalCalendar+'</section>'
+  +'<section id="desk-news" tabindex="-1" aria-label="Notizie e reazioni"><h2 class="desk-section-title">Notizie e reazioni dei mercati</h2>'
   +'<div class="filters"><div class="pill-controls">'+choose('',[
     {label:'Movimenti di mercato ('+evidence.pulse.length+')',value:'pulse'},
     {label:'Comunicazioni ufficiali ('+evidence.official.length+')',value:'official'}
@@ -1230,7 +1232,7 @@ function news(){
   +'<div class="news-research-links"><a href="#rates">Tassi & OIS <span aria-hidden="true">↗</span></a>'
   +'<a href="#currencies">Valute G8 <span aria-hidden="true">↗</span></a>'
   +'<a href="#pairs">Coppie FX <span aria-hidden="true">↗</span></a></div>'
-  +'<p class="news-research-quality">'+esc(evidence.quality)+' · Impatto intraday da verificare.</p></aside></div>';
+  +'<p class="news-research-quality">'+esc(evidence.quality)+' · Impatto intraday da verificare.</p></aside></div></section>';
 }
 function quickEntries(){
  const sections=Object.entries(ROUTES).map(([value,label])=>({key:value,label,subtitle:'SEZIONE · Research terminal',kind:'route',value}));
