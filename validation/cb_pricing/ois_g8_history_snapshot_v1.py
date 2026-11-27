@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -125,6 +126,11 @@ def append_snapshots(view: dict, captured_at_utc: str, path: Path, *, official_o
                 continue
             if row.get("official_status") != "ACTIVE" or row.get("backtest_eligible_as_official") is not True:
                 raise SystemExit(f"{c}: official history requires a certified active curve")
+        if c == "CAD" and row.get("operational_status") == "GREEN_OFFICIAL":
+            rates = [(row.get("horizons", {}).get(t) or {}).get("rate") for t in HORIZONS]
+            if any(type(v) not in (int,float) or not math.isfinite(v) or not -5 <= v <= 25 for v in rates):
+                print("CAD_CORRA_ARCHIVE_WITHHELD_IMPLAUSIBLE_CURVE")
+                continue
         rec = make_record(c, row, captured_at_utc)
         if latest_fp.get(c) == rec["fingerprint"]:
             continue
