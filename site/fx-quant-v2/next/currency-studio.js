@@ -493,7 +493,9 @@ function build(api){
   // Reuse the same canonical country interpretation as Scenario macro.
   // No contribution to the estimated FX ranking, and no new economic score.
   const cycleCatalog=get('macroSeries'),cycleOverlay=get('semaphoreExtra');
-  const cycleCountry=cycleCatalog&&root.FXQuantMacroDesk?.countryReadings?.(cycleCatalog,dayNow(),cycleOverlay)?.[country]?.o;
+  const cycleDetails=cycleCatalog&&root.FXQuantMacroDesk?.countryReadings?.(cycleCatalog,dayNow(),cycleOverlay)?.[country];
+  const cycleCountry=cycleDetails?.o;
+  const shadowMacro=root.FXQuantMacroMultifactorShadow?.evaluate({country,rows:cycleDetails?.r||[],observed:get('macroObserved'),day:dayNow()});
   const cycleReading=cycleCountry?.reading;
   const cycleJudgment=cycleReading?
    cycleReading.label+' · '+cycleCountry.coverage+'/7 aree classificabili. '+cycleReading.quality+'. '+
@@ -515,6 +517,7 @@ function build(api){
    '<p><strong>Che cosa mostra il Forex.</strong> '+esc(opening.lead)+'</p>'+
    '</div>'+
    (cycleContext?'<p class="source-caption" data-g8-cycle-first-read><strong>Ciclo economico e condizioni finanziarie.</strong> '+esc(cycleContext)+' <a href="#macro">Scenario macro ↗</a></p>':'')+
+   (root.FXQuantMacroMultifactorShadow?.render(shadowMacro,esc)||'')+
    '<p class="strength-first-watch"><strong>Cosa guardare.</strong> '+esc(sourceRelease?nextCheck:cur?.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?'Verifica se NZD/USD e AUD/NZD confermano la direzione del riferimento neozelandese. Il proxy non sostituisce le attese RBNZ.':cur?.rate.quality==='ASSENTE'?'La prossima variazione verificabile dei tassi chiarirà se il prezzo relativo è sostenuto anche dalle aspettative monetarie.':positive.length&&negative.length?'Verifica quale dei segnali contrari cambia per primo e se le attese sui tassi e la valuta si riallineano.':nextCheck)+'</p>'+
    (root.FXQuantIssuerContext?.narrative(get('macroObserved'),[country],dayNow())?'<p class="source-caption">'+esc(root.FXQuantIssuerContext.narrative(get('macroObserved'),[country],dayNow()))+'</p>':'')+
    '<details class="strength-evidence-fold"><summary><strong>Apri numeri, date, stime e fonti di '+country+'</strong>'+
