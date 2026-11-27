@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-27T04:23:05.428389Z",
-  "edition_time_rome": "2026-11-27 05:23",
-  "material_digest": "35fd4c11d4259e6c0bbb20058908d86cf05ae5905631a836f45d81fe78a65049",
+  "generated_at_utc": "2026-11-27T05:51:27.213660Z",
+  "edition_time_rome": "2026-11-27 06:51",
+  "material_digest": "8aac6e84ee84778e3d04690bb4c5385aeb13749c0d7ec225243ca43a8a580a18",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in calo",
@@ -50,14 +50,14 @@
       "headline": "Oro e petrolio in rialzo",
       "analysis": "Se il movimento del petrolio prosegue, guarda come reagisce il dollaro canadese.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-26",
-      "event_date": "2026-11-26",
+      "published_date": "2026-11-27",
+      "event_date": "2026-11-27",
       "market_area": "COMMODITIES",
       "sources": [
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
         "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
       ],
-      "evidence": "Proxy futures da fonte secondaria. Oro +1,63% al 26 novembre. WTI +0,81% al 26 novembre."
+      "evidence": "Proxy futures da fonte secondaria. Oro +3,56% al 27 novembre. WTI +2,50% al 27 novembre."
     },
     {
       "headline": "Keynote speech by Executive Director KAMIYAMA at the IMF MCM-OAP Seminar in Tokyo (Digital Money and Payments: Transitioning Toward a New Paradigm)",
@@ -72,21 +72,21 @@
       "evidence": ""
     },
     {
-      "headline": "Speech by Board Member TAMURA in Yamanashi (Economic Activity, Prices, and Monetary Policy in Japan)",
-      "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
+      "headline": "How does EIA compare different types of energy?",
+      "analysis": "Questo approfondimento aiuta a leggere come cambia l’offerta di energia.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-26",
-      "event_date": "2026-11-26",
-      "market_area": "BANCHE CENTRALI",
+      "published_date": "2026-11-24",
+      "event_date": "2026-11-24",
+      "market_area": "ENERGIA",
       "sources": [
-        "https://www.boj.or.jp/en/about/press/koen_2026/ko261126a.htm"
+        "https://www.eia.gov/todayinenergy/detail.php?id=68504"
       ],
       "evidence": ""
     }
   ],
   "desk_judgment": "Il 26 novembre il dollaro ha ceduto contro euro e yen. Alla chiusura del 25 novembre, il Nasdaq Composite ha perso terreno. Nella seduta del 25 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
   "fx_implications": "Il 30 novembre alle 09:00 italiane è in programma Swiss quarterly GDP (CHF). Da verificare la risposta dei tassi e di CHF.",
-  "what_changed": "Nei proxy futures del 26 novembre l’oro sale e il WTI sale. Nella seduta del 25 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
+  "what_changed": "Nei proxy futures del 27 novembre l’oro sale e il WTI sale. Nella seduta del 25 novembre, il confronto tra i rendimenti governativi a breve si è mosso a favore degli Stati Uniti.",
   "contrary_evidence": "La tenuta del movimento dipende anche dal sostegno dei tassi a breve.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
@@ -96,21 +96,26 @@
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-3rd-quarter-2026",
-      "https://www.boj.or.jp/en/about/press/koen_2026/ko261126a.htm",
       "https://www.boj.or.jp/en/about/press/koen_2026/ko261127a.htm",
-      "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
+      "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "https://www.eia.gov/todayinenergy/detail.php?id=68504"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-26",
-      "rss_checked_at_utc": "2026-11-27T04:23:05.428389Z",
-      "commodities": "2026-11-26"
+      "rss_checked_at_utc": "2026-11-27T05:51:27.213660Z",
+      "commodities": "2026-11-27"
     },
     "no_paid_api": true,
     "no_ai_model": true,
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-27T04:23:05.428389Z",
+      "headline": "Dollaro in calo",
+      "material_digest": "35fd4c11d4259e6c0bbb20058908d86cf05ae5905631a836f45d81fe78a65049"
+    },
     {
       "generated_at_utc": "2026-11-27T02:15:55.333089Z",
       "headline": "Dollaro in calo",
@@ -225,11 +230,6 @@
       "generated_at_utc": "2026-11-25T04:19:08.033254Z",
       "headline": "Dollaro misto",
       "material_digest": "7126109fb83f8dda2d18dc79ce6862f4cd57715253ab650d9293989b06fb91a6"
-    },
-    {
-      "generated_at_utc": "2026-11-25T00:42:00.599896Z",
-      "headline": "Dollaro misto",
-      "material_digest": "55f1bc802cc1467c712d11a742241b96f7de8cd8d096399c19769937b82395a8"
     }
   ]
 }
