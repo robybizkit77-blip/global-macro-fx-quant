@@ -101,12 +101,14 @@
   if(core.length){
    if(core.every(up))sentences.push('Le misure di inflazione sottostante accelerano: aumenta il vincolo sui prezzi.');
    else if(core.every(down))sentences.push('Le misure di inflazione sottostante rallentano: il vincolo sui prezzi potrebbe attenuarsi.');
-   else sentences.push('Le misure di inflazione sottostante non mostrano una direzione uniforme di accelerazione.');
+   else if(core.every(x=>x.direction==='stabile'))sentences.push('Le misure di inflazione sottostante sono stabili.');
+   else if(core.some(x=>!x.direction))sentences.push('Inflazione sottostante disponibile, ma direzione non interamente verificata.');
+   else sentences.push('Le misure di inflazione sottostante mostrano dinamiche diverse.');
   }else sentences.push('Inflazione sottostante corrente non verificabile.');
   if(wage.length){
    const proxy=wage.some(x=>/proxy/i.test(x.label));
    sentences.push((proxy?'Il riferimento salariale settoriale, non i salari dell’intera economia,':'La crescita salariale nominale')+
-    (wage.every(up)?' accelera.':wage.every(down)?' rallenta.':' non mostra un’accelerazione uniforme.'));
+    (wage.every(up)?' accelera.':wage.every(down)?' rallenta.':wage.every(x=>x.direction==='stabile')?' è stabile.':wage.some(x=>!x.direction)?' ha una direzione non interamente verificata.':' mostra dinamiche diverse.'));
   }else sentences.push('Manca una misura salariale corrente utilizzabile: nessuna inferenza sui salari.');
   if(jobs?.signal?.tone==='red')sentences.push('Il quadro del lavoro segnala deterioramento: attenzione al rischio per la crescita.');
   if(jobs?.signal?.tone==='green')sentences.push('Il quadro del lavoro è favorevole secondo gli indicatori disponibili.');
