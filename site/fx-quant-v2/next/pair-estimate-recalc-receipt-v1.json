@@ -1,12 +1,12 @@
 {
   "schema": "GMFQ_NEXT_ESTIMATED_FX_RECALC_RECEIPT_V1",
   "status": "NO_MATERIAL_THESIS_CHANGE",
-  "checkedAtUtc": "2026-11-27T07:13:53.846Z",
+  "checkedAtUtc": "2026-11-27T08:05:17.654Z",
   "checkedDay": "2026-11-27",
-  "sourceCommit": "5afc10482125c575c586333b14849d22329a01fb",
+  "sourceCommit": "6ea109fe9d84e92218b8382450c128b3077aeca3",
   "method": "c54bb6f6a2fa76470e8c616c72b478e70735166b10c36cd32f35dddcf8cd0379",
   "sourceHashes": {
-    "observed": "150f033b51927889bd95f8c7503cfa18b1a8232580bc0f31229b288bfa11a34e",
+    "observed": "b9ef6ac9356dcd01b5b339cffbe00b496e98568507c157675d8e3ab336e89c25",
     "prices": "0a6041dbefd8a5da49aa08e3d2c78d7ea770ce18c938db63dca933aeae7de642",
     "ois": "c9783a9bb9e324b1478c498bc59feafd8cdbf906f4437f72d50d6a2bc99b6c74",
     "rates": "95accb665c705d85c42ba4c0efcb26e6107d13b2fd0371ba9f47bfbde8de1662",
