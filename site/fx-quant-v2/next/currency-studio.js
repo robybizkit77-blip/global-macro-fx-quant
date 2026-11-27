@@ -497,7 +497,7 @@ function build(api){
   const cycleCountry=cycleDetails?.o;
   const shadowMacro=root.FXQuantMacroMultifactorShadow?.evaluate({country,rows:cycleDetails?.r||[],observed:get('macroObserved'),day:dayNow()});
   const shadowPrice=root.FXQuantPriceResearchScore?.evaluate({currency:country,prices:FXDATA,today:dayNow(),ranker:root.FXQuantPairRankings?.currencyRanking,momentum:root.FXQuantCurrencyStrength?.momentum});
-  const shadowPositioning=root.FXQuantPositioningResearchScore?.evaluate({history:get('cotHistory'),archive:get('cotPriorReference'),desk:root.FXQuantCOTDeskV26,today:dayNow(),currency:country});
+  const shadowPositioning=root.FXQuantPositioningResearchScore?.evaluate({history:get('cotHistory'),archive:get('cotPriorReference'),officialOI:get('cotOfficialOI'),desk:root.FXQuantCOTDeskV26,today:dayNow(),currency:country});
   const shadowRates=root.FXQuantRatesResearchScore?.evaluate({pricing:root.FXQuantPricingMoves,archive:root.FXQuantPricingHistory,snapshot:get('ois'),operational:get('oisOperational'),research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),history:get('oisHistory'),rates:get('rates'),today:dayNow(),currency:country});
   const composite=root.FXQuantGlobalResearchComposite?.evaluate({currency:country,macro:shadowMacro,rates:shadowRates,positioning:shadowPositioning,price:shadowPrice});
   const cycleReading=cycleCountry?.reading;
