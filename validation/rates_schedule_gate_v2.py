@@ -96,6 +96,13 @@ def resolve(event: str, cron: str, now: dt.datetime, *,
             out.update(should_run=True,
                        reason="TRUSTED_SERIAL_MACRO_MORNING_RATES_RECOVERY")
             return out
+        # The primary hourly schedule can also recover missing morning Rates
+        # crons. This is permission to READ sources, never proof of a close
+        # or timely publication. Keep the backup desk evening-only.
+        if evening_primary and dt.time(7,20) <= local.time() < dt.time(10):
+            out.update(should_run=True,
+                       reason="TRUSTED_SCHEDULED_HOURLY_MORNING_RATES_RECOVERY")
+            return out
         if not (19 <= local.hour <= 23):
             out["reason"] = "OUTSIDE_EVENING_SOURCE_PUBLICATION_WINDOW"
             return out
