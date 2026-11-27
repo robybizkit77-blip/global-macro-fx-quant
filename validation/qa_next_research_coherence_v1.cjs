@@ -686,3 +686,18 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  assert.match(app,/composite.evaluate\(\{currency,macro,rates,positioning,price\}\)/);
  console.log('CONTROL_ROOM_SEVEN_AREAS_AND_REUSED_RESEARCH_PASS');
 }
+
+{
+ const base='site/fx-quant-v2/next/';
+ const cb=read(base+'central-bank-studio.js'),rates=read(base+'rates-studio.js');
+ const cr=cb.slice(cb.indexOf(' function render(api)'));
+ assert(cr.indexOf('WANT · COSA COMUNICA')<cr.indexOf('drivers-bank-sources'));
+ assert(cr.indexOf('CAN · MARGINE DI MANOVRA')<cr.indexOf('drivers-bank-sources'));
+ const rr=rates.slice(rates.lastIndexOf(' function render(){'));
+ assert(rr.indexOf('renderOverview')<rr.indexOf('rates-hero'));
+ assert(rr.indexOf('id="rates-expected"')<rr.indexOf('id="rates-government"'));
+ assert(rr.indexOf('id="rates-government"')<rr.indexOf('id="rates-fx"'));
+ assert.match(rr,/data-rates-openbank/);
+ assert.match(app,/state.cbCcy=bankFromRates.dataset.ratesOpenbank/);
+ console.log('MONETARY_POLICY_RATES_HIERARCHY_PASS');
+}
