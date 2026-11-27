@@ -67,12 +67,12 @@
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)"
     },
     "CHF": {
-      "as_of": "2026-11-26",
+      "as_of": "2026-11-27",
       "backtest_eligible_as_official": false,
       "change_1d_available": false,
       "change_1w_available": false,
       "confidence": "B",
-      "direction_vs_policy": null,
+      "direction_vs_policy": "WITHHELD",
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
@@ -89,29 +89,29 @@
           "quote_as_of": "2026-11-27",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": null,
+          "rate": 0.53,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": 53.0,
           "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3H2027",
           "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
           "expiration": "2027-06-15",
-          "futures_price": 99.78,
+          "futures_price": 99.79,
           "mapping": "nearest ICE SARON accrual start to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-26T17:42:09Z",
-          "quote_as_of": "2026-11-26",
+          "price_valid_until": "2026-11-27T17:56:19Z",
+          "quote_as_of": "2026-11-27",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": null,
+          "rate": 0.21,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 22.0,
+          "raw_level_minus_spot_policy_bp": 21.0,
           "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
           "symbol": "ICEEUR:SA3H2027"
         },
@@ -130,7 +130,7 @@
           "quote_as_of": "2026-11-27",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": null,
+          "rate": 0.385,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": 38.5,
           "symbol": "ICEEUR:SA3M2027"
@@ -140,7 +140,7 @@
       "market_direction_proxy": null,
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
       "official_status": "WITHHELD",
-      "operational_status": "WITHHELD",
+      "operational_status": "GREEN_ESTIMATED",
       "policy_rate": 0.0,
       "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
@@ -154,42 +154,10 @@
         "weekly_min_age_days": 5,
         "weekly_reference_captured_at_utc": null
       },
-      "secondary_quote_context": {
-        "backtest_eligible_as_official": false,
-        "cross_date_join_allowed": false,
-        "date_mismatch": true,
-        "full_curve_usable": false,
-        "horizons": {
-          "12m": {
-            "contract": "SA3Z2027",
-            "quote_as_of": "2026-11-27",
-            "rate_indicative": 0.53,
-            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
-          },
-          "3m": {
-            "contract": "SA3H2027",
-            "quote_as_of": "2026-11-26",
-            "rate_indicative": 0.22,
-            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
-          },
-          "6m": {
-            "contract": "SA3M2027",
-            "quote_as_of": "2026-11-27",
-            "rate_indicative": 0.385,
-            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
-          }
-        },
-        "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
-        "policy_delta_allowed": false,
-        "repricing_signal_allowed": false,
-        "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-        "status": "INDICATIVE_OBSERVATIONS_NON_OIS"
-      },
-      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
+      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
     },
     "EUR": {
-      "as_of": "2026-11-25",
+      "as_of": "2026-11-26",
       "backtest_eligible_as_official": false,
       "change_1d_available": false,
       "change_1w_available": false,
@@ -216,7 +184,7 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3X2026",
@@ -225,8 +193,8 @@
           "futures_price": 97.4,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-25T22:05:22Z",
-          "quote_as_of": "2026-11-25",
+          "price_valid_until": "2026-11-26T22:05:12Z",
+          "quote_as_of": "2026-11-26",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
@@ -286,7 +254,7 @@
           },
           "3m": {
             "contract": "FST3X2026",
-            "quote_as_of": "2026-11-25",
+            "quote_as_of": "2026-11-26",
             "rate_indicative": 2.6,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           },
@@ -410,42 +378,42 @@
       },
       "input_mode": "NATIVE_CB_FALLBACK",
       "market_direction_proxy": {
-        "as_of": "2026-11-26",
+        "as_of": "2026-11-27",
         "basis_warning": "Bank-bill/FRA rates contain bank-credit and term/basis components. Do not treat these levels as OCR OIS and do not compute OCR policy deltas from them.",
         "confidence_grade": "B_FOR_DIRECTION_C_FOR_POLICY_LEVEL",
         "horizons": {
           "12m": {
-            "change_1d_bp": null,
-            "change_1w_bp": -8.0,
+            "change_1d_bp": 3.0,
+            "change_1w_bp": -2.0,
             "expiration": "2027-12-15",
             "expiry_label": "Dec 2027",
-            "implied_bank_bill_rate": 3.83,
+            "implied_bank_bill_rate": 3.86,
             "mapping": "nearest listed expiry to trade_date+365d; no interpolation",
-            "settlement_change": null,
-            "settlement_price": 96.17,
-            "weekly_reference_trade_date": "2026-11-19"
+            "settlement_change": -0.03,
+            "settlement_price": 96.14,
+            "weekly_reference_trade_date": "2026-11-20"
           },
           "3m": {
-            "change_1d_bp": null,
-            "change_1w_bp": -4.0,
+            "change_1d_bp": 3.0,
+            "change_1w_bp": 0.0,
             "expiration": "2027-03-10",
             "expiry_label": "Mar 2027",
-            "implied_bank_bill_rate": 3.49,
+            "implied_bank_bill_rate": 3.52,
             "mapping": "nearest listed expiry to trade_date+90d; no interpolation",
-            "settlement_change": null,
-            "settlement_price": 96.51,
-            "weekly_reference_trade_date": "2026-11-19"
+            "settlement_change": -0.03,
+            "settlement_price": 96.48,
+            "weekly_reference_trade_date": "2026-11-20"
           },
           "6m": {
-            "change_1d_bp": 1.0,
-            "change_1w_bp": -4.0,
+            "change_1d_bp": 2.0,
+            "change_1w_bp": -1.0,
             "expiration": "2027-06-16",
             "expiry_label": "Jun 2027",
-            "implied_bank_bill_rate": 3.69,
+            "implied_bank_bill_rate": 3.71,
             "mapping": "nearest listed expiry to trade_date+180d; no interpolation",
-            "settlement_change": -0.01,
-            "settlement_price": 96.31,
-            "weekly_reference_trade_date": "2026-11-19"
+            "settlement_change": -0.02,
+            "settlement_price": 96.29,
+            "weekly_reference_trade_date": "2026-11-20"
           }
         },
         "instrument": "ASX New Zealand 90 Day Bank Accepted Bill Futures (BB)",
@@ -453,7 +421,7 @@
         "policy_delta_from_proxy_allowed": false,
         "source": "ASX official NZ futures end-of-day total traded report",
         "source_quality": "OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY",
-        "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261126ZFT.htm",
+        "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261127ZFT.htm",
         "status": "LIVE_DIRECTIONAL_PROXY_READY",
         "substitutes_for_ois_level": false
       },
@@ -600,9 +568,9 @@
   "status": "PARTIAL_WITHHELD",
   "summary": {
     "g8_total": 8,
-    "green_estimated": 0,
+    "green_estimated": 1,
     "green_official": 4,
-    "operational_green": 4,
-    "operational_withheld": 4
+    "operational_green": 5,
+    "operational_withheld": 3
   }
 }
