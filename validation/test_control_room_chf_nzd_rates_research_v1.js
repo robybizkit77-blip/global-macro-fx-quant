@@ -7,7 +7,13 @@ const chf=JSON.parse(fs.readFileSync('live_data/sections/CHF_SNB_10Y_SPOT_CONTEX
 const nzd=JSON.parse(fs.readFileSync('live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'));
 // Date-relative QA: official SNB 10Y publication may advance without changing historical 2Y.
 const shift=(iso,days)=>new Date(Date.parse(iso+'T00:00:00Z')+days*86400000).toISOString().slice(0,10);
-const now=shift(chf.as_of,1),view=ratesContinuity(rates,chf,nzd,now);
+const now=shift(chf.as_of,1);
+if(rates.NZD.date>='2026-10-30'){
+ const current=ratesContinuity(rates,chf,nzd,now);
+ assert(current.CHF&&current.NZD===null,'Superseded NZD research must not displace canonical release');
+ rates.NZD=JSON.parse(fs.readFileSync('validation/fixtures/rbnz_b2_pre_roll_canonical_2026-10-16.json'));
+}
+const view=ratesContinuity(rates,chf,nzd,now);
 assert.equal(view.schema,'GMFQ_CHF_NZD_2Y10Y_DATED_RESEARCH_V1');
 assert.equal(view.official_rates_modified,false);
 assert.equal(view.official_spread_signals,false);

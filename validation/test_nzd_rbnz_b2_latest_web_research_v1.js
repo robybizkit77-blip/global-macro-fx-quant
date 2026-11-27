@@ -9,6 +9,10 @@ old=x('live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),
 latest=x('live_data/sections/NZD_B2_GOVT_LATEST_WEB_RESEARCH.json');
 // Keep the SNB dated context independently current; this test primarily audits the RBNZ research-only source.
 const now=new Date(Date.parse(chf.as_of+'T00:00:00Z')+86400000).toISOString().slice(0,10);
+if(rates.NZD.date>='2026-10-30'){
+ assert.equal(ratesContinuity(rates,chf,old,now,latest).NZD,null,'Historical web candidate superseded by approved canonical release');
+ rates.NZD=x('validation/fixtures/rbnz_b2_pre_roll_canonical_2026-10-16.json');
+}
 const result=ratesContinuity(rates,chf,old,now,latest);
 assert(result.CHF&&result.NZD);
 assert.equal(result.NZD.unapproved_pair_date,'2026-10-29');

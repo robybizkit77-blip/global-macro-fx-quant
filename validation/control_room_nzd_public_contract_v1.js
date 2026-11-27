@@ -13,7 +13,8 @@ const REGISTRY='validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json';
 function readApproved(root='.') {
  const rates=JSON.parse(fs.readFileSync(path.join(root,RATES),'utf8'));
  const registry=JSON.parse(fs.readFileSync(path.join(root,REGISTRY),'utf8'));
- const approved=registry.currencies?.NZD;
+ const base=registry.currencies?.NZD;
+ const approved=rates.NZD?.date>='2026-10-30'?base?.postroll_reviewed_release:base;
  if(!approved||!rates.NZD)throw Error('NZD approved canonical Rates/registry unavailable');
  return {approved,canonical:rates.NZD};
 }
@@ -40,9 +41,14 @@ function verifyPublicNzd(mirror,approved,canonical,notes='',now=new Date()) {
     !same(x.y2,approved.current_2Y)||!same(x.y10,approved.current_10Y)||
     !same(x.y2,y.y2)||!same(x.y10,y.y10))
     throw Error('NZD public Rates differs from approved date/2Y/10Y');
- if(x.quality!=='FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED'||x.quality!==y.quality||
+ const postroll=x.date>='2026-10-30';
+ const expectedQuality=postroll?'FULL_CURRENT_OFFICIAL_POSTROLL_RECONCILED':'FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED';
+ if(x.quality!==expectedQuality||x.quality!==y.quality||
     x.source!==y.source||!x.source.includes('Reserve Bank of New Zealand')||
-    !x.source.includes('B2')||!x.source.includes(x.date))
+    !x.source.includes('B2')||(!postroll&&!x.source.includes(x.date))||
+    (postroll&&(!x.source.includes('HTML/XLSX reconciled')||mirror.cross_roll_change_allowed!==false||
+     mirror.first_release_pit_certified!==false||JSON.stringify(mirror.source_sha256)!==JSON.stringify(canonical.source_sha256)||
+     JSON.stringify(mirror.history2)!==JSON.stringify(canonical.history2)||JSON.stringify(mirror.history10)!==JSON.stringify(canonical.history10))))
     throw Error('NZD public source quality/provenance mismatch');
  for(const [tenor,h,t] of [['2Y','history2','tenor2'],['10Y','history10','tenor10']]){
     const value=tenor==='2Y'?x.y2:x.y10;
@@ -61,7 +67,7 @@ function verifyPublicNzd(mirror,approved,canonical,notes='',now=new Date()) {
  // A dated official observation stays official, but may no longer be current.
  // An optional AUD beta proxy is allowed only when the official NZD is stale.
  return {status:'PASS',as_of:x.date,age_calendar_days:age,
-  official_manual_verified:true,operationally_recent:recent,
+  official_manual_verified:!postroll,official_postroll_reconciled:postroll,operationally_recent:recent,
   aud_proxy_allowed:!recent,automatic_promotion:false};
 }
 module.exports={readApproved,normalized,romeAgeDays,verifyPublicNzd};
