@@ -1,7 +1,7 @@
 {
   "currencies": {
     "AUD": {
-      "as_of": "2026-11-25",
+      "as_of": "2026-11-26",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -10,21 +10,21 @@
       "horizons": {
         "12m": {
           "change_1d_bp": 1.0,
-          "change_1w_bp": -25.5,
-          "policy_delta_bp": -31.0,
-          "rate": 4.54
+          "change_1w_bp": -6.5,
+          "policy_delta_bp": -30.0,
+          "rate": 4.55
         },
         "3m": {
-          "change_1d_bp": 0.5,
-          "change_1w_bp": -1.0,
+          "change_1d_bp": 0.0,
+          "change_1w_bp": 0.0,
           "policy_delta_bp": -0.5,
           "rate": 4.845
         },
         "6m": {
-          "change_1d_bp": 1.5,
-          "change_1w_bp": -8.5,
-          "policy_delta_bp": -3.0,
-          "rate": 4.82
+          "change_1d_bp": 1.0,
+          "change_1w_bp": 0.0,
+          "policy_delta_bp": -2.0,
+          "rate": 4.83
         }
       },
       "official_status": "ACTIVE",
@@ -42,14 +42,14 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 0.0,
-          "change_1w_bp": -6.0,
-          "policy_delta_bp": 68.0,
+          "change_1d_bp": 0,
+          "change_1w_bp": -6,
+          "policy_delta_bp": 68,
           "rate": 3.18
         },
         "3m": {
-          "change_1d_bp": -1.0,
-          "change_1w_bp": 2.0,
+          "change_1d_bp": -1,
+          "change_1w_bp": 2,
           "policy_delta_bp": 31.5,
           "rate": 2.815
         },
