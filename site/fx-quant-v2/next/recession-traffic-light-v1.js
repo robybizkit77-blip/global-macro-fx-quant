@@ -282,7 +282,13 @@ function parsePeriod(s){
 // publication availability. Admit only the exact documented terminal source;
 // keep the original quarter label and never certify a historical PIT vintage.
 function admittedPeriodDate(source,period,today){
- const end=parsePeriod(period);
+ // Eurostat monthly unemployment stores some observations as YYYY-MM-01
+ // and others as YYYY-MM. Both are reference months, not daily releases.
+ // Limit normalization to the identified monthly series and source.
+ const monthlyEA=source?.id==='EA_UNEMP_history_value'&&source.frequency==='M'&&
+  source.source_file==='EA_UNEMP_history.csv';
+ const normalized=monthlyEA&&/^\d{4}-\d{2}-01$/.test(period)?period.slice(0,7):period;
+ const end=parsePeriod(normalized);
  if(!end)return null;
  if(end<=today)return end;
  const p=source?.current_vintage_provenance;
