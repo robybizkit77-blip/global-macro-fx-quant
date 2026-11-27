@@ -85,11 +85,26 @@ jobs:
         run: |
           git diff --name-only | sort > /tmp/changed.txt
           cat /tmp/changed.txt
-          printf '%s\n' \
-            'live_data/manifest.v2.json' \
-            'live_data/sections/D.json' \
-            'payload/part-00.txt' | sort > /tmp/expected.txt
-          diff -u /tmp/expected.txt /tmp/changed.txt
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.load(open('/tmp/vix-apply-receipt.json'))
+          c=json.load(open('/tmp/vix-candidate.json'))
+          d=json.load(open('live_data/sections/D.json'))['risk']['VIX']
+          before=json.load(open('/tmp/D.before.json'))['risk']['VIX']
+          assert d['last_date']==c['latest_date'] and d['last_value']==c['latest_value']
+          count=r['appended_observation_count']
+          assert count==len(d['dates'])-len(before['dates']) and count>=0
+          expected={'live_data/manifest.v2.json','live_data/sections/D.json','payload/part-00.txt'} if count else set()
+          changed=set(Path('/tmp/changed.txt').read_text().splitlines())
+          assert changed==expected, (changed,expected)
+          print('VIX_EXACT_SCOPE_PASS', 'APPEND' if count else 'OFFICIAL_NO_CHANGE')
+          PY
+          if [[ ! -s /tmp/changed.txt ]]; then
+            sha256sum -c /tmp/D.before.sha256
+            sha256sum -c /tmp/part00.before.sha256
+            sha256sum -c /tmp/manifest.before.sha256
+          fi
 
       - name: Prove second apply is idempotent
         run: |

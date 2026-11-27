@@ -15,6 +15,16 @@ def fx_row(day, aud, jpy=160, nzd=2, chf=.94, usd=1.10):
 
 
 class HyForwardTest(unittest.TestCase):
+    def test_workflow_handles_outside_window_and_not_yet_mature_outcome(self):
+        workflow = (Path(__file__).resolve().parents[2] /
+                    ".github/workflows/research-hy-fx-risk-forward-v1.yml").read_text()
+        self.assertIn("capture_log=$(python -m validation.quant.hy_fx_risk_forward_v1 --capture)", workflow)
+        self.assertIn("grep -Fxq 'SKIP: outside strict future-only Rome capture window'", workflow)
+        self.assertIn('test -s "$snapshot"', workflow)
+        self.assertIn('if [[ -f "$outcome" ]]; then', workflow)
+        self.assertIn('git ls-files --error-unmatch "$outcome"', workflow)
+        self.assertLess(workflow.index("grep -Fxq 'SKIP:"), workflow.index('git add -- "$snapshot"'))
+
     def test_frozen_contract(self):
         p, fingerprint = m.check_policy()
         self.assertEqual(p["earliest_eligible_capture_rome"], "2026-11-10")

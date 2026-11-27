@@ -8,7 +8,8 @@ No market data or website changes.
 from __future__ import annotations
 import re
 import unittest
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+from validation.fetch_cboe_vix_candidate_v2 import business_days_between
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -23,6 +24,17 @@ def policy_text():
 
 
 class VIXScheduleTests(unittest.TestCase):
+    def test_official_regular_session_closures_keep_strict_one_session_lag(self):
+        lag = lambda a, b: business_days_between(date.fromisoformat(a), date.fromisoformat(b))
+        self.assertEqual(lag("2026-11-25", "2026-11-27"), 1)
+        self.assertEqual(lag("2026-11-25", "2026-11-26"), 0)
+        self.assertEqual(lag("2026-11-25", "2026-11-30"), 2)
+        self.assertEqual(lag("2026-11-27", "2026-11-30"), 1)
+        self.assertEqual(lag("2026-12-23", "2026-12-28"), 2)
+        self.assertEqual(lag("2027-11-24", "2027-11-26"), 1)
+        self.assertEqual(lag("2028-01-03", "2028-01-04"), 1)
+        self.assertEqual(lag("2026-11-27", "2026-11-25"), -1)
+
     def test_schedule_admission_is_unconditional_after_checkout(self):
         text=policy_text()
         gate=text.split("      - name: Admit delayed Rome schedule runs",1)[1].split(

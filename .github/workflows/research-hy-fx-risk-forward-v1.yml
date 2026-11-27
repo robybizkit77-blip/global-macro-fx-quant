@@ -55,8 +55,24 @@ jobs:
           for attempt in 1 2 3; do
             git fetch origin main
             git reset --hard origin/main
-            python -m validation.quant.hy_fx_risk_forward_v1 --capture
-            git add -- validation/quant/prospective/HY_FX_RISK_FROZEN_SNAPSHOTS_V1.jsonl validation/quant/prospective/HY_FX_RISK_FUTURE_ECB_OUTCOMES_V1.jsonl
+            capture_log=$(python -m validation.quant.hy_fx_risk_forward_v1 --capture)
+            printf '%s\n' "$capture_log"
+            if grep -Fxq 'SKIP: outside strict future-only Rome capture window' <<< "$capture_log"; then
+              echo "No observation due; no ledger mutation or certification"
+              exit 0
+            fi
+            snapshot=validation/quant/prospective/HY_FX_RISK_FROZEN_SNAPSHOTS_V1.jsonl
+            outcome=validation/quant/prospective/HY_FX_RISK_FUTURE_ECB_OUTCOMES_V1.jsonl
+            # In-window capture must produce or retain a snapshot. Outcomes
+            # may legitimately not exist until two later ECB fixings mature.
+            test -s "$snapshot"
+            git add -- "$snapshot"
+            if [[ -f "$outcome" ]]; then
+              git add -- "$outcome"
+            elif git ls-files --error-unmatch "$outcome" >/dev/null 2>&1; then
+              echo "Previously tracked outcomes ledger disappeared" >&2
+              exit 1
+            fi
             if git diff --cached --quiet; then
               echo "No new prospective observations at this actual capture instant"
               exit 0
