@@ -408,6 +408,14 @@
             "source_class": "SECONDARY_SAME_CONTRACT",
             "derived": false,
             "captured_at_utc": "2026-11-26T10:43:57.801816Z"
+          },
+          {
+            "date": "2026-11-27",
+            "rate": 4.515,
+            "contract": "ZQK2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-27T10:47:35.280498Z"
           }
         ],
         "12m": [
@@ -623,29 +631,7 @@
       },
       "latest_date": "2026-11-27",
       "observed_dates": 27,
-      "derived_reference_points": 0,
-      "estimated_roll_momentum": {
-        "20": {
-          "from": "2026-10-29",
-          "to": "2026-11-26",
-          "roll_date": "2026-11-18",
-          "old_contract": "ZQJ2027",
-          "new_contract": "ZQK2027",
-          "start_rate": 4.32,
-          "old_roll_rate": 4.495,
-          "new_roll_rate": 4.55,
-          "end_rate": 4.48,
-          "old_move_bp": 17.5,
-          "new_move_bp": -7.0,
-          "change_bp": 10.5,
-          "capture_gap_hours": 4.804,
-          "old_capture_utc": "2026-11-18T21:50:30.443447Z",
-          "new_capture_utc": "2026-11-19T02:38:45.888047Z",
-          "basis": "ESTIMATED_SINGLE_ROLL_SAME_SOURCE_NOT_SYNCHRONIZED",
-          "official_ois_created": false,
-          "fx_engine_effect": "NONE"
-        }
-      }
+      "derived_reference_points": 0
     },
     "EUR": {
       "kind": "FUTURES SECONDARI",
@@ -3934,7 +3920,7 @@
         "current_rate": 3.69,
         "change_bp": -27.0,
         "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261029ZFT.htm",
-        "source_sha256": "f776746035a4bde58bcc68781b0c4817802a9395a808a549e904985540c80f76",
+        "source_sha256": "f633e68283fe149d52b6fcf16e8ff8eb07b411205cdb3b8ddeb4a829d2070f8c",
         "basis": "EXACT_LISTED_ASX_BANK_BILL_CONTRACT_NOT_OIS"
       }
     },
