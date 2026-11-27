@@ -10,6 +10,12 @@ on:
       - 'validation/cb_pricing/run_active_cb_pricing_daily.sh'
       - 'validation/cb_pricing/apply_aud_asx_ib_candidate.py'
       - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'
+      - 'validation/cb_pricing/collect_cad_mx_corra.py'
+      - 'validation/cb_pricing/build_cad_mx_corra_candidate.py'
+      - 'validation/cb_pricing/cad_corra_plausibility_v1.py'
+      - 'validation/cb_pricing/test_cad_corra_plausibility_v1.py'
+      - 'validation/cb_pricing/restore_cad_corra_incident_v1.py'
+      - 'validation/cb_pricing/CAD_CORRA_LAST_GOOD_2026-11-25.json'
       - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
       - 'validation/cb_pricing/build_gbp_boe_ois_candidate.py'
       - 'validation/cb_pricing/test_gbp_boe_event_day_temporal_safety_v1.py'
@@ -28,6 +34,12 @@ on:
       - 'validation/cb_pricing/run_active_cb_pricing_daily.sh'
       - 'validation/cb_pricing/apply_aud_asx_ib_candidate.py'
       - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'
+      - 'validation/cb_pricing/collect_cad_mx_corra.py'
+      - 'validation/cb_pricing/build_cad_mx_corra_candidate.py'
+      - 'validation/cb_pricing/cad_corra_plausibility_v1.py'
+      - 'validation/cb_pricing/test_cad_corra_plausibility_v1.py'
+      - 'validation/cb_pricing/restore_cad_corra_incident_v1.py'
+      - 'validation/cb_pricing/CAD_CORRA_LAST_GOOD_2026-11-25.json'
       - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
       - 'validation/cb_pricing/build_gbp_boe_ois_candidate.py'
       - 'validation/cb_pricing/test_gbp_boe_event_day_temporal_safety_v1.py'
@@ -88,6 +100,28 @@ jobs:
         with:
           fetch-depth: 2
           persist-credentials: true
+
+      - name: CAD CORRA incident regression and exact historical recovery
+        run: |
+          python3 -m unittest validation.cb_pricing.test_cad_corra_plausibility_v1 -v
+          python3 -m validation.cb_pricing.restore_cad_corra_incident_v1
+          if ! git diff --quiet; then
+            python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
+            python3 validation/rebuild_live_data_runtime.py --verify-only
+            python3 validation/cb_pricing/check_ois_readiness_parity_v1.py
+            if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+              git restore -- live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/manifest.v2.json payload/part-00.txt
+            elif [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+              python3 - <<'PY'
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          scope=("live_data/sections/OIS_DATA.json","live_data/sections/NATIVE_CB_DATA.json","live_data/sections/OIS_OPERATIONAL_VIEW.json","live_data/manifest.v2.json","payload/part-00.txt")
+          result=persist(managed=scope,max_attempts=6,commit_message="Quarantine invalid CAD CORRA 26 November and restore 25 November vintage")
+          assert result["status"] in ("PERSISTED","NO_TRACKED_CHANGES","NO_STAGED_CHANGE"),result
+          PY
+            else
+              exit 1
+            fi
+          fi
 
       - name: Rome schedule gate (DST and GitHub cron delay tolerant)
         id: gate

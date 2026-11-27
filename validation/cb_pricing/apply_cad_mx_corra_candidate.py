@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+try:
+ from .cad_corra_plausibility_v1 import settlement,validate_changes,TENORS
+except ImportError:
+ from cad_corra_plausibility_v1 import settlement,validate_changes,TENORS
 import argparse,json,pathlib
 ROOT=pathlib.Path(__file__).resolve().parents[2]
 OIS=ROOT/'live_data'/'sections'/'OIS_DATA.json'; NATIVE=ROOT/'live_data'/'sections'/'NATIVE_CB_DATA.json'; PAYLOAD=ROOT/'payload'/'part-00.txt'
@@ -21,6 +25,8 @@ def main():
  ap=argparse.ArgumentParser(); ap.add_argument('--candidate',required=True,type=pathlib.Path); a=ap.parse_args(); c=json.loads(a.candidate.read_text())
  if c.get('schema')!='GMFQ_CB_PRICING_CANDIDATE_V1' or c.get('currency')!='CAD' or c.get('status')!='READY_FOR_DRY_RUN':raise SystemExit('invalid CAD candidate')
  if not all(c.get('validation',{}).get(k) is True for k in ('source_validated','asof_validated','meeting_path_validated','changes_validated','current_real','previous_real','week_real','source_registry_authorized')):raise SystemExit('candidate validation incomplete')
+ validate_changes(c['observations'],{k:c['horizons'][k]['change_1d_bp'] for k in TENORS},{k:c['horizons'][k]['change_1w_bp'] for k in TENORS})
+ if any(abs(c['horizons'][k]['rate']-c['observations']['current'][k])>1e-6 for k in TENORS):raise SystemExit('CAD candidate rate mismatch')
  o=json.loads(OIS.read_text()); n=json.loads(NATIVE.read_text()); bo=json.loads(json.dumps(o)); bn=json.loads(json.dumps(n)); h=c['horizons']; cm=c['contract_mapping']
  x=o['currencies']['CAD']; x.update({'status':'ACTIVE','as_of':c['as_of'],'source':c['source'],'source_url':c['source_url'],'source_meta':{'official_public':True,'paid':False,'subscription_required':False,'licensed_feed_required':False,'instrument':c['instrument'],'quotation':c['quotation'],'horizon_mapping':'Dec-26 / Mar-27 / Sep-27 direct quarterly settlement buckets; no interpolation','contract_mapping':cm},'policy_rate':c['policy_rate'],'meetings':c['meeting_path'],'horizons':{k:{'rate':r4(h[k]['rate']),'change_1d_bp':r1(h[k]['change_1d_bp']),'change_1w_bp':r1(h[k]['change_1w_bp']),'policy_delta_bp':r1(h[k]['policy_delta_bp'])} for k in ('3m','6m','12m')},'cuts_hikes_priced':{f'{k}_bp':r1(h[k]['policy_delta_bp']) for k in ('3m','6m','12m')},'direction':c['direction'],'change_direction_1d':c['change_direction_1d'],'change_direction_1w':c['change_direction_1w'],'validation':{k:v for k,v in c['validation'].items() if k not in ('runtime_mutated','payload_mutated','source_registry_authorized')},'provenance':{'method':c['provenance']['method'],'weekly_reference_rule':c['provenance']['weekly_reference_rule'],'observations':c['observations']}})
  g=n['CAD']; vals={k:r4(h[k]['rate']) for k in ('3m','6m','12m')}; ids=[c['observations'][z]['market_review_id'] for z in ('weekly_reference','t_minus_1','current')]

@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+try:
+ from .cad_corra_plausibility_v1 import settlement,validate_changes,TENORS
+except ImportError:
+ from cad_corra_plausibility_v1 import settlement,validate_changes,TENORS
 import argparse,datetime as dt,json,pathlib,re,requests
 from bs4 import BeautifulSoup
 ROOT=pathlib.Path(__file__).resolve().parents[2]; OIS=ROOT/'live_data'/'sections'/'OIS_DATA.json'; BASE='https://www.m-x.ca/en/trading/data/market-review'
@@ -48,7 +52,7 @@ def build(asof=None):
   if d in seen or (asof and d>asof):continue
   seen.add(d)
   if not all(x in cs for x in cm.values()):continue
-  rates={h:round(100-cs[x]['settlement'],6) for h,x in cm.items()}; obs.append((d,rates,rid,{h:cs[x] for h,x in cm.items()}))
+  rates={h:round(100-settlement(cs[x]['settlement']),6) for h,x in cm.items()}; obs.append((d,rates,rid,{h:cs[x] for h,x in cm.items()}))
  obs.sort(key=lambda x:x[0])
  if not obs: raise SystemExit('no complete CRA observations')
  matches=[x for x in obs if x[0]==asof] if asof else obs
