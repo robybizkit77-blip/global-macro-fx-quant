@@ -10397,7 +10397,16 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-W35",
         "2026-W36",
         "2026-W37",
-        "2026-W38"
+        "2026-W38",
+        "2026-W39",
+        "2026-W40",
+        "2026-W41",
+        "2026-W42",
+        "2026-W43",
+        "2026-W44",
+        "2026-W45",
+        "2026-W46",
+        "2026-W47"
       ],
       "values": [
         6319531.0,
@@ -10481,13 +10490,39 @@ window.__GMFQ_DATA.MACRO_SERIES={
         5915343.0,
         5912178.0,
         5911237.0,
-        5898477.0
+        5898477.0,
+        5897262.0,
+        5947826.0,
+        5943911.0,
+        5935346.0,
+        5934983.0,
+        5945410.0,
+        5913173.0,
+        5906258.0,
+        5923063.0
       ],
       "unit": "EUR millions",
       "frequency": "W",
       "source_file": "EA_EUROSYSTEM_TOTAL_ASSETS_history.csv",
-      "last_date": "2026-W38",
-      "last_value": 5898477.0
+      "last_date": "2026-W47",
+      "last_value": 5923063.0,
+      "current_vintage_provenance": {
+        "status": "ECB_CURRENT_REVISED_HISTORY_NOT_PIT",
+        "source_url": "https://data-api.ecb.europa.eu/service/data/ILM/W.U2.C.T000000.Z5.Z01?format=csvdata&startPeriod=2025-W09",
+        "source_series_id": "ILM.W.U2.C.T000000.Z5.Z01",
+        "source_csv_sha256": "8006f737b7c66104789911b7fa3255d4355c028b08921cd6de1422aca7c3223a",
+        "historical_overlap_exact": 82,
+        "historical_overlap_audit": {
+          "count": 82,
+          "exact": 82,
+          "median_scaled_error": 0.0,
+          "max_scaled_error": 0.0
+        },
+        "no_synthetic_dates": true,
+        "source_series_first_release_PIT_certified": false,
+        "historical_levels_may_be_revised_again": true,
+        "runner_first_seen_utc": "2026-11-27T09:56:29.027730+00:00"
+      }
     },
     {
       "id": "EA_EXCESS_LIQUIDITY_history_value",
