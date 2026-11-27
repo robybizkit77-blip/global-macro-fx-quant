@@ -49,3 +49,12 @@ assert.match(m.priceReading('EUR','USD',flow,'2026-12-04',fmt),/non validabili/)
 cot.net[1]=9;
 assert.match(m.positionReading('USD',flow,today,fmt),/non validato/);
 console.log('ACTIVITY_COT_ECB_CONTEXT_PASS');
+
+const lr={measurement:'RATE',pillar:'inflation',velocity_pp:-.2,acceleration_pp:.1};
+assert.match(m.dynamicsReading(lr),/Inflazione in diminuzione, movimento meno rapido/);
+assert.match(m.dynamicsReading({...lr,velocity_pp:.2,acceleration_pp:.1}),/Inflazione in aumento, movimento più rapido/);
+assert.match(m.dynamicsReading({...lr,measurement:'WITHHELD'}),/nessuna inferenza/);
+const lf={generated_europe_rome_day:today,labour_inflation_status:'RESEARCH_ONLY',labour_inflation_dynamics:{schema:'GMFQ_G8_LABOUR_INFLATION_DYNAMICS_RESEARCH_V1',as_of:today,safe_to_publish_D:false,safe_to_update_pairs:false,historical_PIT_certified:false,no_cross_country_aggregation:true,countries:Object.fromEntries(['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].map(c=>[c,[lr]]))}};
+assert.equal(m.readDynamics(lf,today,['EUR','USD']).length,2);
+assert.equal(m.readDynamics(lf,'2026-12-04',['EUR']),null);
+console.log('LABOUR_INFLATION_UI_PASS');

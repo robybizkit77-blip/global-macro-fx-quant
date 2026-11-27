@@ -27,7 +27,7 @@ def ensure(ok, why):
         raise ValueError("MACRO_V3_PUBLICATION_REJECTED: " + why)
 
 
-def snapshot(src, momentum=None):
+def snapshot(src, momentum=None, dynamics=None):
     day = datetime.now(ZoneInfo("Europe/Rome")).date()
     ensure(src.get("schema") == SOURCE_SCHEMA
            and src.get("status") == "COMPLETE_CURRENT_ECONOMIC_OBSERVATION_8_G8_28_PAIRS_NOT_FX_SIGNAL"
@@ -104,6 +104,20 @@ def snapshot(src, momentum=None):
         result["activity_momentum_status"] = "RESEARCH_ONLY"
     else:
         result["activity_momentum_status"] = "WITHHELD"
+    if dynamics is not None:
+        ensure(dynamics.get("schema") == "GMFQ_G8_LABOUR_INFLATION_DYNAMICS_RESEARCH_V1"
+               and dynamics.get("as_of") == src["as_of"]
+               and dynamics.get("safe_to_publish_D") is False
+               and dynamics.get("safe_to_update_pairs") is False
+               and dynamics.get("historical_PIT_certified") is False
+               and dynamics.get("no_cross_country_aggregation") is True
+               and dynamics.get("writes_live_data") is False
+               and set(dynamics.get("countries", {})) == set(FX),
+               "invalid labour inflation dynamics")
+        result["labour_inflation_dynamics"] = dynamics
+        result["labour_inflation_status"] = "RESEARCH_ONLY"
+    else:
+        result["labour_inflation_status"] = "WITHHELD"
     result["snapshot_content_sha256"] = hashlib.sha256(
         json.dumps(result, sort_keys=True, separators=(",", ":"),
                    ensure_ascii=False).encode("utf-8")).hexdigest()
@@ -126,6 +140,11 @@ def main():
         # Preserve independently verified raw macro observations on diagnostic failure.
         print("ACTIVITY_MOMENTUM_WITHHELD:", type(exc).__name__, str(exc), flush=True)
         result = snapshot(src)
+    from validation.macro.v2_labour_inflation_dynamics_v1 import run as dynamics_run
+    try:
+        result = snapshot(src, result.get("activity_momentum_research"), dynamics_run())
+    except (ValueError, KeyError, TypeError, OSError, ArithmeticError) as exc:
+        print("LABOUR_INFLATION_WITHHELD:", type(exc).__name__, str(exc), flush=True)
     target.parent.mkdir(parents=True, exist_ok=True)
     encoded = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
     target.write_text(encoded, encoding="utf-8")
@@ -138,6 +157,7 @@ def main():
         "output": str(target),
         "replaced_D_scores": 0,
         "new_trade_biases": 0,
+        "labour_inflation_rows": sum(map(len,result.get("labour_inflation_dynamics",{}).get("countries",{}).values())),
         "activity_momentum_countries": len(result.get("activity_momentum_research", {}).get("countries", {})),
     }, sort_keys=True))
 
