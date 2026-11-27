@@ -1,5 +1,6 @@
 import unittest
-from validation.macro.v2_sector_financial_dynamics_v1 import parse,calculate,run,nzd_rows
+from datetime import date
+from validation.macro.v2_sector_financial_dynamics_v1 import parse,calculate,run,nzd_rows,pmms_weekly_rate
 class TestSectorFinancialDynamics(unittest.TestCase):
     def test_period_aliases(self):
         self.assertEqual(parse("2026Q3","Q"),parse("2026-07-01","Q"))
@@ -13,6 +14,38 @@ class TestSectorFinancialDynamics(unittest.TestCase):
         r=calculate({1:("a",-5),2:("b",-3),3:("c",-4)},"M","BALANCE")
         self.assertEqual(r["velocity_pp"],-1)
         self.assertEqual(r["acceleration_pp"],-3)
+    def test_exact_daily_and_weekly_stock_acceleration(self):
+        for freq,step in (("D",1),("W",7)):
+            with self.subTest(freq=freq):
+                data={i*step:(str(i),value) for i,value in enumerate((100,110,132,145.2))}
+                r=calculate(data,freq,"STOCK")
+                self.assertAlmostEqual(r["momentum_pct"],10)
+                self.assertAlmostEqual(r["velocity_pp"],-10)
+                self.assertAlmostEqual(r["acceleration_pp"],-20)
+                # Without the oldest exact endpoint, no invented acceleration.
+                del data[0]
+                partial=calculate(data,freq,"STOCK")
+                self.assertAlmostEqual(partial["velocity_pp"],-10)
+                self.assertIsNone(partial["acceleration_pp"])
+                # An adjacent but off-grid observation cannot replace it.
+                if step==7:
+                    data[1]=("off-grid",100)
+                    self.assertIsNone(calculate(data,freq,"STOCK")["acceleration_pp"])
+                data[0]=("invalid",0)
+                self.assertIsNone(calculate(data,freq,"STOCK")["acceleration_pp"])
+    def test_pmms_holiday_shift_and_no_week_gap_bridge(self):
+        rows={"2026-11-12":7.11,"2026-11-19":7.28,"2026-11-25":7.21}
+        data={date.fromisoformat(d).toordinal():(d,v) for d,v in rows.items()}
+        r=pmms_weekly_rate(data)
+        self.assertEqual(r["reference_period"],"2026-11-25")
+        self.assertAlmostEqual(r["velocity_pp"],-0.07)
+        self.assertAlmostEqual(r["acceleration_pp"],-0.24)
+        self.assertEqual(r["horizon"],"PMMS_WEEKLY_RELEASE")
+        del data[date(2026,11,19).toordinal()]
+        self.assertIsNone(pmms_weekly_rate(data)["velocity_pp"])
+        data[date(2026,11,26).toordinal()]=("2026-11-26",7.21)
+        with self.assertRaisesRegex(ValueError,"duplicate"):
+            pmms_weekly_rate(data)
     def test_daily_gap(self):
         r=calculate({1:("a",100),4:("b",110)},"D","STOCK")
         self.assertIsNone(r["momentum_pct"])

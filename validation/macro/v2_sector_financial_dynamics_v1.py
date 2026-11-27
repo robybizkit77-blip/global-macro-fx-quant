@@ -97,10 +97,15 @@ def calculate(data,freq,kind):
         v=lambda i:data[i][1] if i in data else None
         x,y,z=v(t),v(t-step),v(t-2*step)
         if kind=="STOCK":
-            a=100*(x/y-1) if y and y>0 and x>0 else None
-            b=100*(y/z-1) if y and z and z>0 and y>0 else None
+            # Three consecutive interval growth rates need four exact endpoints.
+            # Missing/nonpositive observations remain unavailable; never bridge gaps.
+            w=v(t-3*step)
+            def change(current,previous):
+                return 100*(current/previous-1) if current is not None and previous is not None and current>0 and previous>0 else None
+            a,b,c=change(x,y),change(y,z),change(z,w)
             return dict(reference_period=data[t][0],level=x,momentum_pct=a,
-                        velocity_pp=a-b if a is not None and b is not None else None,acceleration_pp=None,
+                        velocity_pp=a-b if a is not None and b is not None else None,
+                        acceleration_pp=a-2*b+c if None not in (a,b,c) else None,
                         horizon="EXACT_CALENDAR_DAY" if freq=="D" else "EXACT_7_CALENDAR_DAYS")
         v1=x-y if y is not None else None
         return dict(reference_period=data[t][0],level=x,velocity_pp=v1,
@@ -118,6 +123,21 @@ def calculate(data,freq,kind):
                     acceleration_pp=a-2*b+c if None not in (a,b,c) else None,
                     horizon="STOCK_3M_ENDPOINT" if freq=="M" else "STOCK_QOQ_ENDPOINT")
     return rate_dynamics(data)
+def pmms_weekly_rate(data):
+    # Freddie Mac PMMS: Thursday, or Wednesday when Thursday is a US holiday.
+    # Map only this exact series to the week of publication, preserving the
+    # observed source date. Never fill a skipped week or permit two prints.
+    weeks={}
+    for ordinal,(label,value) in data.items():
+        d=date.fromordinal(ordinal)
+        if d.weekday() not in (2,3):
+            raise ValueError("unexpected PMMS release weekday")
+        week=ordinal-d.weekday()
+        if week in weeks:
+            raise ValueError("duplicate PMMS release week")
+        weeks[week]=(label,value)
+    return dict(calculate(weeks,"W","RATE"),horizon="PMMS_WEEKLY_RELEASE")
+
 def build(series,today):
     out={}
     for c in FX:
@@ -143,7 +163,13 @@ def build(series,today):
                 t=max(data)
                 if t>parse(today.isoformat(),freq)[0] or t!=parse(row["last_date"],freq)[0] or data[t][1]!=row["last_value"]:
                     raise ValueError("latest date or value mismatch")
-                result.append(dict(base,measurement=kind,unit=row.get("unit") or unit,quality=p["status"],**calculate(data,freq,kind)))
+                if rid=="US_MORTGAGE30US_history_MORTGAGE30US":
+                    if p.get("source_series_id")!="MORTGAGE30US" or freq!="W" or kind!="RATE":
+                        raise ValueError("PMMS source identity mismatch")
+                    measures=pmms_weekly_rate(data)
+                else:
+                    measures=calculate(data,freq,kind)
+                result.append(dict(base,measurement=kind,unit=row.get("unit") or unit,quality=p["status"],**measures))
             except (ValueError,KeyError,TypeError,ArithmeticError) as exc:
                 result.append(dict(base,measurement="WITHHELD",quality="SOURCE_CHECK_FAILED",reason=str(exc)))
         out[c]=result

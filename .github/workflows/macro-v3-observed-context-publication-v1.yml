@@ -245,11 +245,26 @@ jobs:
               assert result['checked_through'] is not None, 'Durable checkpoint not created'
               assert json.loads(target.read_text())['checked_through']==result['checked_through']
           PY
-      - name: Collect official UK and Canadian real sector output into existing research archive
+      - name: Collect official UK, Canadian and NZ sector output into existing research archive
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
+          set -euo pipefail
           python -m unittest validation.macro.test_collect_sector_output_research_v1 validation.macro.test_collect_nzd_building_consents_v1 -v
+          # Collector changes require live proof; unrelated calculation changes
+          # can be tested against the prior validated archive on issuer outage.
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            python -m validation.macro.collect_sector_output_research_v1 --strict
+            test -n "$PR_BASE_SHA"
+            changed="$(git diff --name-only "$PR_BASE_SHA" HEAD)"
+            if grep -Eq '^validation/macro/(test_)?collect_(sector_output_research|nzd_building_consents)_v1\.py$' <<< "$changed"; then
+              python -m validation.macro.collect_sector_output_research_v1 --strict
+            else
+              python -m validation.macro.collect_sector_output_research_v1 | tee /tmp/sector-source-check.log
+              if grep -q 'WITHHELD_OR_PRIOR_RETAINED' /tmp/sector-source-check.log; then
+                echo "::warning::Independent sector source not revalidated; calculation tests use previously verified archive, not a new source receipt."
+                cat /tmp/sector-source-check.log >> "$GITHUB_STEP_SUMMARY"
+              fi
+            fi
           else
             python -m validation.macro.collect_sector_output_research_v1
           fi
