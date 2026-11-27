@@ -4639,6 +4639,19 @@ jobs:
           print(json.dumps(persist(managed=managed,protected=('live_data/sections/MACRO_SERIES.json',),commit_message='Synchronize certified native G8 liquidity lanes with verified Macro histories'),sort_keys=True))
           PY
 
+      - name: Align verified ECB and BoE lending surveys to canonical and native histories
+        if: github.ref == 'refs/heads/main' && success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.macro.apply_final_liquidity_surveys_v1 --output /tmp/macro-persistent/final-surveys --apply
+          python - <<'PY'
+          import json
+          from validation.macro.apply_final_liquidity_surveys_v1 import MANAGED
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          print(json.dumps(persist(managed=MANAGED,commit_message='Synchronize verified ECB and BoE actual lending surveys'),sort_keys=True))
+          PY
+
       # Existing Macro refresh cadence only. Freeze a single first-seen
       # prospective model vintage per Rome date, even on no-new-source days.
       # Commits an append-only research file with GitHub Contents create-only;
