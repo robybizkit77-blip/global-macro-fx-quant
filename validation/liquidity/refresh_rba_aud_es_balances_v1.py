@@ -19,7 +19,7 @@ import re
 import sys
 import urllib.parse
 import urllib.request
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from html.parser import HTMLParser
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -135,13 +135,29 @@ def parse(html,*,today=None):
       "source_release_timestamp_verified":False
     }
 
-def validate_canonical():
-    raw=json.loads(CANONICAL.read_text(encoding="utf-8"))
+def validate_canonical(raw=None):
+    raw=json.loads(CANONICAL.read_text(encoding="utf-8")) if raw is None else raw
     a=raw["AUD"]["liquidity"]
-    require(a["last_date"]==ANCHOR_DATE and a["last_value"]==ANCHOR_VALUE,
+    dates,values=a["dates"],a["values"]
+    require(bool(dates) and len(dates)==len(values) and dates==sorted(set(dates)),
+            "invalid canonical RBA weekly chronology")
+    require(a["last_date"]==dates[-1] and a["last_value"]==values[-1],
+            "canonical RBA weekly last observation mismatch")
+    history=dict(zip(dates,values))
+    # Preserve the verified historical observation, not the old end of series.
+    require(history.get(ANCHOR_DATE)==ANCHOR_VALUE,
             "existing canonical weekly AUD liquidity anchor changed: recheck overlap")
-    require(a["dates"][-1]==ANCHOR_DATE and a["values"][-1]==ANCHOR_VALUE,
-            "existing canonical RBA weekly liquidity time-series anchor drift")
+    return history
+
+def validate_source_overlap(parsed,history):
+    observed=parsed["source_period"]
+    previous=(date.fromisoformat(observed)-timedelta(days=7)).isoformat()
+    for period,value in ((observed,parsed["latest_balance_million_aud"]),
+                         (previous,parsed["previous_implied_million_aud"])):
+        if period in history:
+            require(history[period]==value,
+                    "RBA weekly source/canonical overlap mismatch on "+period)
+    return [period for period in (observed,previous) if period in history]
 
 def emit_js(data,checked):
     obj={
@@ -182,9 +198,10 @@ def previous_values(text):
 
 def run(*,destination=DEST,fixture=None,apply=False,today=None):
     today=today or datetime.now(ZoneInfo("Europe/Rome")).date()
-    validate_canonical()
+    history=validate_canonical()
     parsed=parse(Path(fixture).read_text(encoding="utf-8") if fixture else fetch(),
                  today=today)
+    overlap=validate_source_overlap(parsed,history)
     old=previous_values(destination.read_text(encoding="utf-8")) if destination.exists() else None
     require(old is None or parsed["source_period"]>=old["source_period"],
             "issuer rolled back to an older balance-sheet observation")
@@ -201,6 +218,7 @@ def run(*,destination=DEST,fixture=None,apply=False,today=None):
        "value_million_aud":parsed["latest_balance_million_aud"],
        "weekly_movement_million_aud":parsed["weekly_movement_million_aud"],
        "prior_balance_implied_not_directly_observed":True,
+       "current_source_canonical_overlap_dates":overlap,
        "canonical_overlap":ANCHOR_DATE,
        "canonical_overlap_value":ANCHOR_VALUE,
        "checked_rome":today.isoformat(),
