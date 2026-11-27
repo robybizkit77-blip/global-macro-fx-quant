@@ -393,3 +393,38 @@ assert.match(issuer.render(releaseSnapshot,['AUD'],'2026-11-25'),/4,9%/);
 assert.match(issuer.render(releaseSnapshot,['AUD'],'2026-11-25'),/3,8%/);
 for(const path of ['macro-approved-layout.js','central-bank-studio.js','currency-studio.js','rates-studio.js','app.js'])assert.match(read('site/fx-quant-v2/next/'+path),/FXQuantIssuerContext/);
 console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
+
+{
+ const shadow=require('../site/fx-quant-v2/next/macro-multifactor-shadow-v1.js');
+ const cycle=require('../site/fx-quant-v2/next/recession-traffic-light-v1.js');
+ const catalog=JSON.parse(read('live_data/sections/MACRO_SERIES.json'));
+ const supplement=JSON.parse(read('site/fx-quant-v2/next/semaphore-supplement-v1.json'));
+ const observed=JSON.parse(read('site/control-room-preview/macro-v3-current-evidence.json'));
+ const day=observed.generated_europe_rome_day;
+ assert.equal(shadow.FAMILY.reduce((s,x)=>s+x[2],0),100);
+ assert.deepEqual(shadow.dimensions({direction:1,level:null,acceleration:null,persistence:null}),{value:1,coverage:.5});
+ assert.deepEqual(shadow.dimensions({}),{value:null,coverage:0});
+ assert.equal(shadow.area({signal:{tone:'neutral'},items:[]}),null);
+ assert.equal(shadow.finance(null,{value:1,coverage:.8,evidence:[]}).coverage,.4);
+ for(const country of cycle.coverage){
+  const rows=cycle.model(catalog,day,country,supplement);
+  const result=shadow.evaluate({country,rows,observed,day});
+  assert.equal(result.families.length,8);
+  assert.equal(result.affectsFxRanking,false);
+  assert.equal(result.eligibleForTrading,false);
+  assert.equal(result.pointInTimeCertified,false);
+  assert.ok(result.effectiveCoverage>=0&&result.effectiveCoverage<=100);
+  assert.ok(result.score===null||result.score>=0&&result.score<=10);
+  assert.ok(result.families.every(x=>x.score===null||x.score>=0&&x.score<=10));
+  assert.doesNotMatch(shadow.render(result,String),/NaN|undefined/);
+  assert.match(shadow.render(result,String),/non modifica il ranking FX/);
+  assert.equal(shadow.evaluate({country,rows:[],observed:null,day}).score,null);
+ }
+ assert.equal(shadow.gdp({...observed,safe_to_republish_D:true},'USD',day),null);
+ assert.equal(shadow.money({...observed,sector_financial_status:'WITHHELD'},'USD',day),null);
+ const next= new Date(Date.parse(day)+8*864e5).toISOString().slice(0,10);
+ assert.equal(shadow.gdp(observed,'USD',next),null);
+ for(const path of ['macro-approved-layout.js','currency-studio.js']) assert.match(read('site/fx-quant-v2/next/'+path),/FXQuantMacroMultifactorShadow/);
+ for(const path of ['macro-strength-estimated-v1.js','pair-rankings.js']) assert.doesNotMatch(read('site/fx-quant-v2/next/'+path),/FXQuantMacroMultifactorShadow/);
+ console.log('G8_MULTIFACTOR_MACRO_SHADOW_PASS');
+}
