@@ -1,8 +1,52 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-26T19:05:24Z",
+  "generated_at_utc": "2026-11-27T02:14:38Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c545ada812764f34bd55",
+      "observed_at_utc": "2026-11-26T22:54:36Z",
+      "headline": "Brazil's Embraer criticizes new US tariffs, warns of air travel inflation",
+      "summary": "Reuters riporta: Brazil's Embraer criticizes new US tariffs, warns of air travel inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQY25OMnN4NU9UMkpqZXcxWk5oMkdHRnR3alJpWVZfMnZVOEN2U1k3Z0xkVTdEZTFoSm9KdXExUnVReGhGeDl5SnprUncxOXpzSGpOazRVOEMzREczYzF2ODNaTkh4b2l4Q1dCU1JhekJIVXFNX1J1eTdlNmFpbTVSYU5BRUQwRmZzU3BvMjEyTmhOd3JXZlRjY1cwUjV0LWl0QkhVTVUzQmFKYmlJaEtQdXZORUdnZ25GZnZHcU04UEMtWDg?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-5794080f2960f6d125b8",
+      "observed_at_utc": "2026-11-26T22:13:21Z",
+      "headline": "Trump demands probe of GDP data released before midterms",
+      "summary": "Reuters riporta: Trump demands probe of GDP data released before midterms. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxPdjAtVm85ZE55RGw0MXhaM3NVV1NlaHdlazNjODRQQjRPOGh2eDQ5aWYzcmxNSHpVWHNacEhhMDFaRDZ3YWIxalJzY3JCTXdjLVE4RXpmbktlZXNZTUc3RlE0LVhtTlo5Rl8xMm9nOXVPZmZ1eEd2XzJjcXQxX2otajdiUHN6djBScGpldmJvUXBIaG9UeUJxeW5kSWtnTTQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-15e827eab933a1e32138",
+      "observed_at_utc": "2026-11-26T17:45:38Z",
+      "headline": "Canadian dollar edges lower as investors await key GDP data",
+      "summary": "Reuters riporta: Canadian dollar edges lower as investors await key GDP data. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "USD",
+        "CAD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNUUc4WG9ENXhCb3pYbkROeHlGUFFQRWVhYzFienJfUDJxSmdJbUsxYjMyVldjMm44ZFNrWW1IVmhvUVBDd3d0ek1fSUpySzgzc19sdE5iZkNBRU5NdmVzaWdRUExsU2pmRVFpbnJBakI3eVdjalhNanVEa3RUZmg0cW5USEE4cWo1Z1psb3otY05ScUpJcG13X1NuSWdfQU1uY0EzTTB3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-413532ec37b77ef62aa9",
       "observed_at_utc": "2026-11-26T12:06:18Z",
@@ -1382,45 +1426,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE54bXROVllJenE5YjBRSmpWNjRWdnRMTFgyYl8zNUJJdEMzZy10MUJYVnphOHhkYlNlakhhUTlmS0hVZXJycmJIdk1HOVlncDVUS1paUmkzUGozLXJKYmZyeWdxQkZrdDJlN0M3SlF3?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-a562fe33113b4f0da70a",
-      "observed_at_utc": "2026-11-14T23:46:00Z",
-      "headline": "New Orleans port sues to get control of tanker that crashed into cruise ship on Mississippi River",
-      "summary": "AP News riporta: New Orleans port sues to get control of tanker that crashed into cruise ship on Mississippi River. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNSkpYTERHb0JjNU1SY2JyaXFOREZsSzkxdTZVa1lXVW1xVjV3ZTdqZmhFLXl3eExxZmdPY1B2dURNSmRwQVczSG81emlfOEh0NTNhcW44cVBFcU03Y2hadEFmVlRPVHR3bDRPX0p0ZF9JR3B3QkZQUnVxVUZfMXNsSzJDclQ1elJ6ZVBHZGZpRXVUM09KcmgxWmdHajA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-95e1637c076018caac8f",
-      "observed_at_utc": "2026-11-14T22:54:19Z",
-      "headline": "Iran's navy says three tankers on fire after hitting mines in Hormuz",
-      "summary": "Reuters riporta: Iran's navy says three tankers on fire after hitting mines in Hormuz. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPZWt1cHFualJEVktnTTVvd21uVnljc0FqR2dRaWpaRnYwZ3luZ2t1dUlJNVUtLTVlWHJFOS1ocDBlaVZsTFNZdjRMeldFVFE1Q0Jqem9FbU9fMmp1YTBUTUhqTmYzR3FJN1Z1Y1dHY2d0Yjlzb2lBR0JvNllyT3pScjI2SEpkbkhiYzZSWW9Tb3dwemdWaVVmMjBPbXZqd0hOZzdpRDVSZlVlbzBnV1BjMQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-e2757d8cf6538705a790",
-      "observed_at_utc": "2026-11-14T04:59:36Z",
-      "headline": "Stocks mostly ease with tech, Nvidia concerns; airline shares fall late in session",
-      "summary": "Reuters riporta: Stocks mostly ease with tech, Nvidia concerns; airline shares fall late in session. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOZ0cyVmdPTTRkWGt3UlMtUFRyOGhvdDNlM1FYVy1MSVN0elpQZHgtWXctVEE1M2RjQm9IcmwzUGU4cEhEQnhsQWlOX2RhUFk1NzBXeFkwM3lMek16ajB1ZmozdGpLR0cwQ2JTcGVlTTJwMEc2ZFZ3bklxeTk4eElFaHZLaw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
