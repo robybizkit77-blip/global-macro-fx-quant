@@ -14,6 +14,7 @@ on:
       - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
       - 'validation/rates/reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/check_nzd_postroll_release_readiness_v1.py'
+      - 'validation/rates/prove_nzd_postroll_runtime_release_v1.py'
       - 'validation/rates/test_check_nzd_postroll_release_readiness_v1.py'
       - 'validation/rates/test_reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
@@ -44,6 +45,7 @@ on:
       - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
       - 'validation/rates/reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/check_nzd_postroll_release_readiness_v1.py'
+      - 'validation/rates/prove_nzd_postroll_runtime_release_v1.py'
       - 'validation/rates/test_check_nzd_postroll_release_readiness_v1.py'
       - 'validation/rates/test_reconcile_fxv2_nzd_b2_postroll_v1.py'
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
@@ -120,6 +122,28 @@ jobs:
           set -euo pipefail
           DAY=$(python3 -c "import json; print(json.load(open('site/fx-quant-v2/nzd-rbnz-b2-reconciled-research.json'))['publication_date'])")
           python3 validation/rates/check_nzd_postroll_release_readiness_v1.py --as-of "$DAY" --output /tmp/fxv2-nzd-postroll-release-review.json --candidate-output /tmp/fxv2-nzd-postroll-isolated-candidate.json
+          git diff --exit-code -- live_data payload
+
+      - name: Exercise full NZD candidate runtime in isolated PR checkout
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          python3 validation/rates/prove_nzd_postroll_runtime_release_v1.py /tmp/nzd-postroll-native-candidate.json
+          python3 validation/update_live_direct_section.py --section NATIVE_RATES_DATA --replacement /tmp/nzd-postroll-native-candidate.json --apply
+          python3 validation/build_rates_audit_metadata.py --audit-date "$(date -u +%F)" --output /tmp/nzd-postroll-audit.json
+          python3 validation/update_live_derived_sections.py --rates /tmp/nzd-postroll-audit.json --apply
+          python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json
+          python3 validation/check_live_update_contract.py
+          python3 validation/rebuild_live_data_runtime.py --verify-only
+          python3 validation/rates/verify_weekly_rate_change_contract_v1.py
+          python3 - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={'live_data/sections/NATIVE_RATES_DATA.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','payload/part-00.txt','payload/part-15.txt'}
+          assert 'live_data/sections/NATIVE_RATES_DATA.json' in changed and changed<=allowed,changed
+          print('NZD_POSTROLL_FULL_RUNTIME_DRY_RUN_PASS',sorted(changed))
+          PY
+          git checkout -- live_data payload
           git diff --exit-code -- live_data payload
 
       - name: Prove upstream Rates actually executed dated market-source audit
