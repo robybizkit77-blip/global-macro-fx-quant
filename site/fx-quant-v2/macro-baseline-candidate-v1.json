@@ -1013,5 +1013,5 @@
   "eligible_for_backtests": false,
   "eligible_for_automatic_core_rebase": false,
   "canonical_fx_core_untouched": true,
-  "source_content_sha256": "ee6f24ca3a62b211b873db7ea8acf57cb602f3e0c2a8cebecf2fba82f6250ebb"
+  "source_content_sha256": "953f047a76fb436c78a982e6c078f79fdbe2a47d4ec0866405077aba4c6ae850"
 }
