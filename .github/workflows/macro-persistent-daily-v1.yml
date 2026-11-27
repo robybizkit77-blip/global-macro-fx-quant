@@ -4598,7 +4598,7 @@ jobs:
           print(json.dumps(persist(managed=managed,protected=('live_data/sections/MACRO_SERIES.json',),commit_message='Synchronize native EUR excess liquidity, M3 and NFC loans with verified Macro histories'),sort_keys=True))
           PY
 
-      - name: Validate exact native five G8 liquidity lanes parity
+      - name: Validate exact native G8 liquidity and credit lanes parity
         id: native_g8_parity
         shell: bash
         run: |
@@ -4612,12 +4612,12 @@ jobs:
           receipt=json.load(open('/tmp/macro-persistent/native-liq-g8-parity.json'))
           assert set(old)==set(new)
           allowed={(r['ccy'],r['role']) for r in receipt['series'] if r['status']=='READY'}
-          assert allowed <= {('USD','liquidity'),('CHF','money'),('AUD','money'),('AUD','liquidity'),('AUD','credit'),('CAD','liquidity'),('USD','credit'),('GBP','liquidity'),('JPY','liquidity'),('CHF','liquidity'),('CHF','credit')}
+          assert allowed <= {('USD','liquidity'),('CHF','money'),('AUD','money'),('AUD','liquidity'),('AUD','credit'),('CAD','liquidity'),('USD','credit'),('GBP','liquidity'),('JPY','liquidity'),('CHF','liquidity'),('CHF','credit'),('USD','conditions'),('GBP','credit'),('JPY','conditions'),('CAD','conditions')}
           assert all(set(old[c])==set(new[c]) for c in old)
           assert {(c,k) for c in old for k in old[c] if old[c][k]!=new[c][k]}==allowed
           PY
 
-      - name: Persist verified native six G8 liquidity lanes only
+      - name: Persist verified native G8 liquidity and credit lanes only
         if: github.ref == 'refs/heads/main' && steps.native_g8_parity.outcome == 'success'
         shell: bash
         run: |
