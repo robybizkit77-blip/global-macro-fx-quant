@@ -694,7 +694,7 @@ console.log('SHARED_ISSUER_CONTEXT_CONSUMERS_PASS');
  assert(cr.indexOf('WANT · COSA COMUNICA')<cr.indexOf('drivers-bank-sources'));
  assert(cr.indexOf('CAN · MARGINE DI MANOVRA')<cr.indexOf('drivers-bank-sources'));
  const rr=rates.slice(rates.lastIndexOf(' function render(){'));
- assert(rr.indexOf('renderOverview')<rr.indexOf('rates-hero'));
+ assert(rr.indexOf('rates-jumps')<rr.indexOf('renderOverview')&&rr.indexOf('renderOverview')<rr.indexOf('rates-hero'));
  assert(rr.indexOf('id="rates-expected"')<rr.indexOf('id="rates-government"'));
  assert(rr.indexOf('id="rates-government"')<rr.indexOf('id="rates-fx"'));
  assert.match(rr,/data-rates-openbank/);
