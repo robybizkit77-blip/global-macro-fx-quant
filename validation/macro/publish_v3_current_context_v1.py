@@ -27,7 +27,7 @@ def ensure(ok, why):
         raise ValueError("MACRO_V3_PUBLICATION_REJECTED: " + why)
 
 
-def snapshot(src, momentum=None, dynamics=None):
+def snapshot(src, momentum=None, dynamics=None, sectors=None):
     day = datetime.now(ZoneInfo("Europe/Rome")).date()
     ensure(src.get("schema") == SOURCE_SCHEMA
            and src.get("status") == "COMPLETE_CURRENT_ECONOMIC_OBSERVATION_8_G8_28_PAIRS_NOT_FX_SIGNAL"
@@ -118,6 +118,20 @@ def snapshot(src, momentum=None, dynamics=None):
         result["labour_inflation_status"] = "RESEARCH_ONLY"
     else:
         result["labour_inflation_status"] = "WITHHELD"
+    if sectors is not None:
+        ensure(sectors.get("schema") == "GMFQ_G8_SECTOR_FINANCIAL_DYNAMICS_RESEARCH_V1"
+               and sectors.get("as_of") == src["as_of"]
+               and sectors.get("safe_to_publish_D") is False
+               and sectors.get("safe_to_update_pairs") is False
+               and sectors.get("historical_PIT_certified") is False
+               and sectors.get("no_cross_country_aggregation") is True
+               and sectors.get("writes_live_data") is False
+               and set(sectors.get("countries", {})) == set(FX),
+               "invalid sector and financial dynamics")
+        result["sector_financial_dynamics"] = sectors
+        result["sector_financial_status"] = "RESEARCH_ONLY"
+    else:
+        result["sector_financial_status"] = "WITHHELD"
     result["snapshot_content_sha256"] = hashlib.sha256(
         json.dumps(result, sort_keys=True, separators=(",", ":"),
                    ensure_ascii=False).encode("utf-8")).hexdigest()
@@ -145,6 +159,11 @@ def main():
         result = snapshot(src, result.get("activity_momentum_research"), dynamics_run())
     except (ValueError, KeyError, TypeError, OSError, ArithmeticError) as exc:
         print("LABOUR_INFLATION_WITHHELD:", type(exc).__name__, str(exc), flush=True)
+    from validation.macro.v2_sector_financial_dynamics_v1 import run as sectors_run
+    try:
+        result = snapshot(src, result.get("activity_momentum_research"), result.get("labour_inflation_dynamics"), sectors_run())
+    except (ValueError, KeyError, TypeError, OSError, ArithmeticError) as exc:
+        print("SECTOR_FINANCIAL_WITHHELD:", type(exc).__name__, str(exc), flush=True)
     target.parent.mkdir(parents=True, exist_ok=True)
     encoded = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
     target.write_text(encoded, encoding="utf-8")
@@ -157,6 +176,7 @@ def main():
         "output": str(target),
         "replaced_D_scores": 0,
         "new_trade_biases": 0,
+        "sector_financial_rows": sum(map(len,result.get("sector_financial_dynamics",{}).get("countries",{}).values())),
         "labour_inflation_rows": sum(map(len,result.get("labour_inflation_dynamics",{}).get("countries",{}).values())),
         "activity_momentum_countries": len(result.get("activity_momentum_research", {}).get("countries", {})),
     }, sort_keys=True))
