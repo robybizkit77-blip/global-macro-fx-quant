@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-27T02:14:38Z",
+  "generated_at_utc": "2026-11-27T10:56:48Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c410cdce7c40ea97cbb1",
+      "observed_at_utc": "2026-11-27T00:03:00Z",
+      "headline": "Cautious consumers gear up for Black Friday as inflation woes bite",
+      "summary": "Reuters riporta: Cautious consumers gear up for Black Friday as inflation woes bite. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNXzUyQUp1enhRcjVIdWlBejd2XzFsdXVwaFF1SUswaVBuTzBKMkE2cU5GdnVSX2tiMjVIYnQzLXFKN3E2UWZ0bVZkX3dvdjEzaHRQRUdsM1pBOF9vaG0wYWVKZ2JNam5zWXZmT25QcVhPcWIwcDQ5cEx2U3QyQW1LcE43UEpGQVhpMF94bjVid21hYm9YbEZ0UnhBTnhPdlBJRFpzbFhsbWxBNndmeGNjcHptNXhJMnlQNk94TQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-20ba6367a77ccc9de690",
+      "observed_at_utc": "2026-11-26T23:42:00Z",
+      "headline": "Tokyo core inflation at 16-month high, bolsters case for BOJ hike",
+      "summary": "Reuters riporta: Tokyo core inflation at 16-month high, bolsters case for BOJ hike. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "JPY"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNbUU2UTdMSzhabVJEYUYzN1Y1SGk3MWdLeVo4cV9iWDVCd3RZWDVDR2lFZ0dtUTRlUUxxbExIRlJDeGx3dEVVLVBuRU1qaDlrXzd6aHpwUHVWTEhMemE2ZzdaSjROTy1HQUF2dkdDcFhNYWtnMU51a2dsSURKSmlfdjlkTnMzeDdySmZLbWotTnR2clUxR0hrQ255ekNnM3dR?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-b8120a48e5753c235124",
+      "observed_at_utc": "2026-11-26T13:54:22Z",
+      "headline": "Brazil mid-November inflation eases, comes in below expectations",
+      "summary": "Reuters riporta: Brazil mid-November inflation eases, comes in below expectations. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNR1Y0bzlCd0lTS3FZTV9nZjV5ZVZ1ZlhIQ3pDVE9JRERtZllJTGdERHo3R1YzR0R4LVpEWDhWTTdDM2hobHlsQlNVclhwV0R0ZHhYaFpQVlZmcVdfSS00ekNldzdTSENDVnFaV0VDX1ZhdmFBcVBUTi1vb1Q2QUthdzd6eW16Nk9Way1OOEtUbzZHaXllX2pxSDVjemlvTjYzZi1VQmd0cS1oSWtwaHpMdg?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-c545ada812764f34bd55",
       "observed_at_utc": "2026-11-26T22:54:36Z",
@@ -1385,47 +1426,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE1FaG5xVzV3VGJuY29sNEVOeGNIaWNwMzRKaGN5czF5LTdSSnRiNUFERGt3WXJNdEVCUlpVcEFpcGdLTGxvd2NXclBKYktRSWpzNGN3M3JiOEFlTHdWaDAyb1RKU0ZpRWNoeFpz?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-447e9bc083f696653772",
-      "observed_at_utc": "2026-11-14T16:00:00Z",
-      "headline": "Retail sales and Fed minutes in focus next week",
-      "summary": "AP News riporta: Retail sales and Fed minutes in focus next week. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNSjh3amNkSEV6QzBaQTU5U3VQZ3huY1ozMUR0VWFhV25kTVNGcktjRFNJcWdtSExNaDF0NUFiVWtDZmswbVVad0pjal82REhmYVdLakhLQW9pTjlxNWdUSnd2cU9Wb0dnZmZmY2FMa29WYmxBaHlCRy1EbWtFZGlQamk2cFNLZldGWWNfak5ZNFpjWURDM0U0OXNidjdDOEp6Tm9Z?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c491499050093fa74722",
-      "observed_at_utc": "2026-11-15T04:10:52Z",
-      "headline": "ProShares Investment Grade-Interest Rate Hdg ETF (IGHG.N) | Stock Price & Latest News",
-      "summary": "Reuters riporta: ProShares Investment Grade-Interest Rate Hdg ETF (IGHG.N) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE1ldWpsU0hZbEdjRFA3WkFyemF4X1Z0LWNVMHM4YU1WU1dzRWFxd1c4Y1pqZXlNY1hyYnBuanZjXzVaVlhOel9PSEZEUFFCaE5EdjJGVHBxRnVMbkstanhHSGpac1ZMUkdxNVFjOVRB?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-ce0f51309a3b6cb1a7b8",
-      "observed_at_utc": "2026-11-15T00:16:42Z",
-      "headline": "JPMorgan Inflation Managed Bond ETF (JCPI.N) | Stock Price & Latest News",
-      "summary": "Reuters riporta: JPMorgan Inflation Managed Bond ETF (JCPI.N) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE54bXROVllJenE5YjBRSmpWNjRWdnRMTFgyYl8zNUJJdEMzZy10MUJYVnphOHhkYlNlakhhUTlmS0hVZXJycmJIdk1HOVlncDVUS1paUmkzUGozLXJKYmZyeWdxQkZrdDJlN0M3SlF3?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
