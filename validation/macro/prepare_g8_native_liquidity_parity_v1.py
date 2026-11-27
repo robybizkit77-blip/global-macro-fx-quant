@@ -1,4 +1,4 @@
-"""Align five native liquidity lanes with verified full official current vintages."""
+"""Align six native liquidity lanes with verified full official current vintages."""
 import argparse,copy,csv,io,json,math,statistics
 from datetime import datetime,timezone
 from pathlib import Path
@@ -9,6 +9,7 @@ CONFIG={
  ("USD","liquidity"):("US_M2SL_history_value","M2SL","M2","Billions of U.S. dollars, seasonally adjusted","M","FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT"),
  ("CHF","money"):("CH_M3_history_value","EPB@SNB.snbmonagg{B,GM3}","M3","CHF millions","M","SNB_CURRENT_REVISED_HISTORY_NOT_PIT"),
  ("AUD","money"):("AU_BROAD_MONEY_SA_history_value","DMABMS","Broad money","AUD billions","M","RBA_CURRENT_REVISED_HISTORY_NOT_PIT"),
+ ("AUD","credit"):("AU_CREDIT_BUSINESS_CURRENT_SA_history_value","DLCACSFBS","Credito imprese","AUD billions","M","RBA_CURRENT_REVISED_HISTORY_NOT_PIT"),
  ("AUD","liquidity"):("AU_EXCHANGE_SETTLEMENT_BALANCES_history_value","ARBALESBW","Exchange Settlement balances","AUD millions","W","RBA_CURRENT_REVISED_HISTORY_NOT_PIT"),
  ("CAD","liquidity"):("CA_SETTLEMENT_BALANCES_history_value","V41886561","Settlement balances","CAD millions","M","BOC_CURRENT_REVISED_HISTORY_NOT_PIT"),
 }

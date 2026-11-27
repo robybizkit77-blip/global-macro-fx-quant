@@ -38,4 +38,23 @@ class RbaTests(unittest.TestCase):
     def test_scale_mismatch_rejected(self):
         x=row(IDENT);x.update(values=[100000,101000],last_value=101000)
         with self.assertRaises(ValueError):prepare_row(x,IDENT,NOW,fixture())
+    def test_exact_new_rate_and_business_stock_sources(self):
+        import calendar
+        for ident in ("AU_CREDIT_BUSINESS_CURRENT_SA_history_value","AU_MORTGAGE_RATE_OWNER_OCC_OUTSTANDING_history_value","AU_BUSINESS_LENDING_RATE_MEDIUM_OUTSTANDING_history_value"):
+            table,code,title,freq,unit,target=CONFIG[ident]
+            dates=[date(2024+n//12,n%12+1,calendar.monthrange(2024+n//12,n%12+1)[1]) for n in range(33)]
+            vals=[1500+n if table=="d2" else 5+n/100 for n in range(33)]
+            def feed(mult=1,bad_code=False,bad_unit=False):
+                u="$ billion" if table=="d2" else "Per cent per annum"
+                lines=["Title,"+title,"Units,"+("wrong" if bad_unit else u),"Frequency,Monthly","Series ID,"+("WRONG" if bad_code else code)]
+                return ("\n".join(lines+[f"{d.isoformat()},{v*mult}" for d,v in zip(dates,vals)])+"\n").encode()
+            def old():
+                ds=[d.strftime("%d/%m/%Y") for d in dates[:31]]
+                return {"id":ident,"source_file":ident.removesuffix("_value")+".csv","frequency":"M","unit":unit,"dates":ds,"values":vals[:31],"last_date":ds[-1],"last_value":vals[30]}
+            x=old()
+            self.assertEqual(prepare_row(x,ident,NOW,feed())["status"],"READY")
+            self.assertEqual(x["last_date"],"30/09/2026")
+            self.assertEqual(prepare_row(x,ident,NOW,feed())["status"],"NO_CHANGE")
+            for bad in (feed(mult=1.2),feed(bad_code=True),feed(bad_unit=True)):
+                with self.assertRaises(ValueError):prepare_row(old(),ident,NOW,bad)
 if __name__=="__main__":unittest.main()
