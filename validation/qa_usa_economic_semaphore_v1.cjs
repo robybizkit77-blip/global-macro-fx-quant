@@ -60,6 +60,18 @@ assert.match(render({catalog,esc,dayNow,country:'GBP'}),/Regno Unito/);
 assert.match(render({catalog,esc,dayNow,country:'JPY'}),/BoJ/);
 assert.match(render({catalog,esc,dayNow,country:'NZD'}),/Nessuna serie idonea nel feed attuale/);
 assert.equal(nz.find(r=>r.key==='leading').signal.tone,'green','RBNZ one-year unemployment expectations cover NZD leading surveys');
+ // A quarter-end survey label is not a publication date. Only the documented
+ // already-observed terminal M15 vintage may enter the current descriptive view.
+ const m15={id:'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_Unemp_1Y',source_file:'NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent.csv',dates:['2026-03','2026-06','2026-09','2026-12'],values:[5.18,5.5,5.22,5.25],last_date:'2026-12',last_value:5.25,current_vintage_provenance:{status:'RBNZ_M15_CURRENT_PUBLISHED_SURVEY_NOT_PIT',source_series_id:'RBNZ_M15_AGGREGATE_WEIGHTED_MEAN_Unemp_1Y',source_url:'https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/m/m15/hm15.xlsx',reference_period_semantics:'survey quarter; observed availability upper bound, not certified release date',source_series_first_release_PIT_certified:false,source_payload_sha256:'a'.repeat(64),available_by_date:'2026-11-26'}};
+ const m15Item=(row,day)=>model({NZD:[row]},day,'NZD').find(r=>r.key==='leading').items[0];
+ assert.equal(m15Item(m15,'2026-11-25').period,'2026-09');
+ assert.equal(m15Item(m15,'2026-11-27').period,'2026-12');
+ assert.equal(m15Item(m15,'2026-11-27').current,5.25);
+ assert.equal(m15Item(m15,'2026-11-27').cycle.observations,4);
+ assert.equal(m15Item({...m15,current_vintage_provenance:null},'2026-11-27').period,'2026-09');
+ assert.equal(m15Item({...m15,current_vintage_provenance:{...m15.current_vintage_provenance,available_by_date:'2026-11-28'}},'2026-11-27').period,'2026-09');
+ assert.equal(m15Item({...m15,dates:['2026-03','2026-06','2026-09','2027-03'],last_date:'2027-03'},'2026-11-27').period,'2026-09');
+
 // Underlying data may not be available after a severe lag: no false green/red.
 for(const currency of coverage){
  assert.ok(model({},asof,currency).every(x=>x.signal.tone==='neutral'));
