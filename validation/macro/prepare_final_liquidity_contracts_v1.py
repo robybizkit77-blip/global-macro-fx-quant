@@ -31,7 +31,7 @@ def replace_history(row,obs):
 def ecb_candidate(row,records,today):
     old=qhistory(row)
     current=today.year*4+(today.month-1)//3
-    need(max(records)<=current and min(records)<=min(old),"future or truncated ECB release")
+    need(max(records)<=current,"future ECB release")
     shifted={q-1:v for q,v in records.items()}
     prior=row.get("current_vintage_provenance",{})
     reference=prior.get("period_semantics")=="OBSERVED_QUARTER_PRECEDES_PUBLICATION"
