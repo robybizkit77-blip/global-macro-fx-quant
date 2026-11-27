@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-26",
-  "generated_at_utc": "2026-11-27T08:54:49.588867Z",
+  "generated_at_utc": "2026-11-27T09:55:31.464463Z",
   "items": [
     {
       "as_of": "2026-11-26",
@@ -301,7 +301,7 @@
       "title": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     }
   ],
-  "last_checked_at_utc": "2026-11-27T08:54:49.588867Z",
+  "last_checked_at_utc": "2026-11-27T09:55:31.464463Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -484,6 +484,54 @@
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "EUR",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "MONITOR",
+          "topic": "MACRO_EXPECTATIONS",
+          "verify_next": "Leggere i numeri e confrontarli con precedente e consenso quando disponibili; poi controllare OIS/futures, 2Y e cambio.",
+          "why_watch": "Pubblicazione collegata alle aspettative o allo scenario macro; il titolo non rivela sorpresa né variazioni dei valori."
+        },
+        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261127~2e53af695e.en.html",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-27T09:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-25",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-25",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 2.9686993028
+          }
+        },
+        "source": "Banca centrale europea",
+        "source_id": "ECB_PRESS",
+        "title": "ECB Consumer Expectations Survey results – October 2026",
+        "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261127~2e53af695e.en.html"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "JPY",
@@ -919,54 +967,6 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "EUR",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261125_1~6333a90f3a.en.html",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-25T17:30:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-25",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-25",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 2.9686993028
-          }
-        },
-        "source": "Banca centrale europea",
-        "source_id": "ECB_PRESS",
-        "title": "ECB and Sveriges Riksbank conclude agreement for Sweden to join T2",
-        "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261125_1~6333a90f3a.en.html"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "CAD",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -1158,7 +1158,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-27",
-    "latest_published_at_utc": "2026-11-27T05:00:00Z",
+    "latest_published_at_utc": "2026-11-27T09:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1182,9 +1182,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 10,
+        "accepted_items": 11,
         "ccy": "EUR",
-        "entries_rejected": 5,
+        "entries_rejected": 4,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
