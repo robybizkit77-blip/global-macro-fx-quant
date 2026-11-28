@@ -64,7 +64,9 @@ const {chromium}=require('playwright');
    assert.equal(enhanced.length,8);
    assert(enhanced.every(x=>Number.isFinite(x.coverage)&&x.coverage>=0&&x.coverage<=100&&Number.isFinite(x.estimated)&&x.estimated>=0&&x.estimated<=x.coverage&&x.ranking===false&&(x.coverage===100?Number.isFinite(x.score)&&x.score>=0&&x.score<=10:x.score===null)));
    console.log('STUDIO_ENHANCED_G8',JSON.stringify(enhanced));
+   await page.locator('#desk-source-detail > summary').click();
    assert.match(await page.locator('#studio-health').innerText(),/Affidabilità degli aggiornamenti/);
+   await page.locator('#desk-source-detail > summary').click();
 
    for(const route of ['Control Room','Macro','Tassi','Forex','Cross-Asset','Calendario','Report']){
     await page.locator('#nav button').getByText(route,{exact:true}).click();
