@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-27T22:01:51.561366Z",
-  "edition_time_rome": "2026-11-27 23:01",
-  "material_digest": "462fdb5bb7d4802a1348e8b71a4cfe181cc02c090d8b23ff82b7170acaf33595",
+  "generated_at_utc": "2026-11-28T00:02:53.578498Z",
+  "edition_time_rome": "2026-11-28 01:02",
+  "material_digest": "649b526e8afb7919ff5b343bdd8209c06312707e1e1d52429226523d75217f6a",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in rialzo",
@@ -103,7 +103,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-27",
-      "rss_checked_at_utc": "2026-11-27T22:01:51.561366Z",
+      "rss_checked_at_utc": "2026-11-28T00:02:53.578498Z",
       "commodities": "2026-11-27"
     },
     "no_paid_api": true,
@@ -111,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-27T22:01:51.561366Z",
+      "headline": "Dollaro in rialzo",
+      "material_digest": "462fdb5bb7d4802a1348e8b71a4cfe181cc02c090d8b23ff82b7170acaf33595"
+    },
     {
       "generated_at_utc": "2026-11-27T20:01:41.209708Z",
       "headline": "Dollaro in rialzo",
@@ -225,11 +230,6 @@
       "generated_at_utc": "2026-11-25T15:41:27.798249Z",
       "headline": "Dollaro misto",
       "material_digest": "d8140c527176eaca4e5dc21130e79afd0ab2719d537ab6d77cefde8efce04034"
-    },
-    {
-      "generated_at_utc": "2026-11-25T14:31:42.616659Z",
-      "headline": "Dollaro misto",
-      "material_digest": "20f0624ac796212744b19b4569c6b0ff6b01eae37bc28189e68da46c3935a4e3"
     }
   ]
 }
