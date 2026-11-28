@@ -13,6 +13,18 @@ const {chromium}=require('playwright');
    assert.match(status,/11\/11 feed letti/,'Actual repository feeds must load: '+status);
    assert.match(status,/motore FX disponibile/,'Existing FX engine must evaluate: '+status);
    assert.equal(await page.locator('#studio-enhanced tbody tr').count(),8);
+   assert.equal(await page.locator('#premium-home .premium-market-card').count(),5);
+   assert.equal(await page.locator('#premium-home .market-spark').count(),5);
+   assert.equal(await page.locator('#premium-home .premium-decision').count(),1);
+   const marketSemantic=await page.evaluate(()=>({vix:marketTone('VIX',-1),hy:marketTone('HY_OAS',2),flat:marketTone('IG_OAS',0),missing:marketTone('VIX',null),equity:marketTone('SP500',1)}));
+   assert.deepEqual(marketSemantic,{vix:'green',hy:'red',flat:'muted',missing:'muted',equity:'green'});
+   const actual=await page.evaluate(()=>[...document.querySelectorAll('.premium-market-card')].map(el=>{const x=data.risk.streams[el.dataset.marketKey];return el.querySelector('.pulse-value').textContent===fmt(x.value,2)+(el.dataset.marketKey.includes('OAS')?'%':'')&&el.lastElementChild.textContent===dateIT(x.date)}));
+   assert(actual.every(Boolean));
+   await page.locator('[data-market-key="VIX"]').click();
+   assert.equal(await page.evaluate(()=>state.page==='risk'&&riskKey==='VIX'),true);
+   await page.locator('#nav button').getByText('Control Room',{exact:true}).click();
+   console.log('STUDIO_PREMIUM_HOME_PASS',width);
+
    assert.equal(await page.locator('#studio-health').count(),1);
    assert.equal(await page.locator('#studio-source-audit .sector-read').count(),6);
    const audit=await page.evaluate(()=>({feeds:studioSourceAudit(),coverage:studioRelativeCoverage()}));
