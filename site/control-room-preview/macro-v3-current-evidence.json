@@ -1,6 +1,6 @@
 {
   "activity_momentum_research": {
-    "as_of": "2026-11-27",
+    "as_of": "2026-11-28",
     "countries": {
       "AUD": [
         {
@@ -904,10 +904,10 @@
   "economic_data_coverage": "8/8_G8_THREE_PILLARS",
   "eligible_for_trading_or_forward_backtest": false,
   "fx_price_as_of": "2026-11-27",
-  "generated_europe_rome_day": "2026-11-27",
+  "generated_europe_rome_day": "2026-11-28",
   "historic_PIT_OOS_not_certified": true,
   "labour_inflation_dynamics": {
-    "as_of": "2026-11-27",
+    "as_of": "2026-11-28",
     "countries": {
       "AUD": [
         {
@@ -2697,7 +2697,7 @@
   "safe_to_republish_D": false,
   "schema": "GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1",
   "sector_financial_dynamics": {
-    "as_of": "2026-11-27",
+    "as_of": "2026-11-28",
     "countries": {
       "AUD": [
         {
@@ -3726,9 +3726,9 @@
     "writes_live_data": false
   },
   "sector_financial_status": "RESEARCH_ONLY",
-  "snapshot_content_sha256": "34ab8da664a5aab0c47add9a834d0ec74a71858f6351a8be221e283edf8e25d8",
+  "snapshot_content_sha256": "487895da2f1670fd1482ac2dfa769703714d151869c21dfd7b69fbbe52254f11",
   "source_observation_periods_not_release_days": true,
-  "source_receipt_sha256": "03dad5e47d60ffc66957ee0cc6d5c6e10f858a4661e5b175432652a1901295ee",
+  "source_receipt_sha256": "1efcbed0fd1ae5e0b774f4d762cf0c466f8a60d71087be522945c0f3931f6341",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
   "status": "OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL",
   "summary": {
