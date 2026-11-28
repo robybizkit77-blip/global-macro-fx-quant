@@ -4761,7 +4761,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-10-21",
         "2026-10-28",
         "2026-11-04",
-        "2026-11-11"
+        "2026-11-11",
+        "2026-11-18"
       ],
       "values": [
         18065.2246,
@@ -4835,42 +4836,43 @@ window.__GMFQ_DATA.MACRO_SERIES={
         19646.069,
         19660.3214,
         19684.2237,
-        19656.0844,
-        19681.286,
-        19774.8299,
-        19749.5097,
-        19779.1086,
-        19795.1134,
-        19806.5435,
-        19846.5214,
-        19853.4355,
-        19860.0585,
-        19897.0439,
-        19911.2898,
-        19891.6143,
-        19907.8564,
-        19950.9531,
-        19990.9722,
-        20016.9282,
-        20022.4133,
-        20070.9042,
-        20133.1843
+        19656.0846,
+        19681.2865,
+        19774.8272,
+        19749.5087,
+        19779.1098,
+        19795.1146,
+        19807.6378,
+        19848.7385,
+        19856.6542,
+        19864.416,
+        19902.4388,
+        19917.8877,
+        19899.3122,
+        19912.751,
+        19954.2031,
+        19993.0383,
+        20017.9803,
+        20022.2709,
+        20072.432,
+        20134.671,
+        20147.3554
       ],
       "unit": "Billions of U.S. Dollars",
       "frequency": "W",
       "source_file": "US_TOTBKCR_history.csv",
-      "last_date": "2026-11-11",
-      "last_value": 20133.1843,
+      "last_date": "2026-11-18",
+      "last_value": 20147.3554,
       "current_vintage_provenance": {
         "status": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_series_id": "TOTBKCR",
         "source_url": "https://fred.stlouisfed.org/series/TOTBKCR",
         "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=TOTBKCR&cosd=2025-02-19",
-        "source_csv_sha256": "11d3bc2c390c11f2e62b91e2446d9bd0c5ebbd017f1592b8a7ee2e46d014ff0f",
-        "source_metadata_sha256": "1628ef5f214ba59977f3ff5f0026f6b9477cd430be16c2ece5bdd9ebbe55a418",
+        "source_csv_sha256": "30d243f8515d2c41b7454c92da149922333280eacae8b96ee8c14a5431a47efc",
+        "source_metadata_sha256": "0cd75f23cf84963a0385d4b4391d8c52a2c8a6047f30d56f84cbd9b6f65338b2",
         "source_units_verified": "billions of u.s. dollars , seasonally adjusted",
         "source_series_first_release_PIT_certified": false,
-        "runner_first_seen_utc": "2026-11-26T08:49:09.227707+00:00",
+        "runner_first_seen_utc": "2026-11-28T11:57:26.499525+00:00",
         "historical_levels_may_be_revised_again": true
       }
     },
@@ -5110,7 +5112,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-10-28",
         "2026-11-04",
         "2026-11-11",
-        "2026-11-18"
+        "2026-11-18",
+        "2026-11-25"
       ],
       "values": [
         6766101.0,
@@ -5203,23 +5206,24 @@ window.__GMFQ_DATA.MACRO_SERIES={
         6745635.0,
         6748145.0,
         6758867.0,
-        6741452.0
+        6741452.0,
+        6732044.0
       ],
       "unit": "Millions of U.S. Dollars",
       "frequency": "W",
       "source_file": "US_WALCL_history.csv",
-      "last_date": "2026-11-18",
-      "last_value": 6741452.0,
+      "last_date": "2026-11-25",
+      "last_value": 6732044.0,
       "current_vintage_provenance": {
         "status": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_series_id": "WALCL",
         "source_url": "https://fred.stlouisfed.org/series/WALCL",
         "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=WALCL&cosd=2025-02-26",
-        "source_csv_sha256": "2e298e1d45917328de0318eeae205230cfe429e360b6ae5ba372ad732dcfcc44",
-        "source_metadata_sha256": "de81aa5bc367ee99b5f8acc0fbd16a9908eb1791444a702095e1711bc42b6ae8",
+        "source_csv_sha256": "b1a6e98ea0a25932e0914e8751d7f52604174786ebcd7b7af96f0d8498ae8cb6",
+        "source_metadata_sha256": "0af6afb3f6794fb090831d004d2346f24cd230ceaa4e310fd54cc19213f22ae7",
         "source_units_verified": "millions of u.s. dollars , not seasonally adjusted",
         "source_series_first_release_PIT_certified": false,
-        "runner_first_seen_utc": "2026-11-26T08:49:09.227707+00:00",
+        "runner_first_seen_utc": "2026-11-28T11:57:26.499525+00:00",
         "historical_levels_may_be_revised_again": true
       }
     },
@@ -5512,7 +5516,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-10-28",
         "2026-11-04",
         "2026-11-11",
-        "2026-11-18"
+        "2026-11-18",
+        "2026-11-25"
       ],
       "values": [
         3327249.0,
@@ -5605,23 +5610,24 @@ window.__GMFQ_DATA.MACRO_SERIES={
         2893770.0,
         2930088.0,
         2960603.0,
-        2979656.0
+        2979656.0,
+        2963667.0
       ],
       "unit": "Millions of U.S. Dollars",
       "frequency": "W",
       "source_file": "US_WRESBAL_history.csv",
-      "last_date": "2026-11-18",
-      "last_value": 2979656.0,
+      "last_date": "2026-11-25",
+      "last_value": 2963667.0,
       "current_vintage_provenance": {
         "status": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_series_id": "WRESBAL",
         "source_url": "https://fred.stlouisfed.org/series/WRESBAL",
         "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=WRESBAL&cosd=2025-02-26",
-        "source_csv_sha256": "287cb3d0e4d641624d4fd94c4351f8f432a1b19d45bbc804bbe98639df516fac",
-        "source_metadata_sha256": "9a151f76b9b070ba00ca92d3074e9909e6b9c6729e445e3c1645d2eefaa18514",
+        "source_csv_sha256": "f005d5cd9a4f323a693f7699231334ee06c222472284180dc3fc7a47d473c27f",
+        "source_metadata_sha256": "4dccd49ed3023f63ad0c8cede3577dc1ab39c8d28fa7361f88408664f0bdb13a",
         "source_units_verified": "millions of u.s. dollars , not seasonally adjusted",
         "source_series_first_release_PIT_certified": false,
-        "runner_first_seen_utc": "2026-11-26T08:49:09.227707+00:00",
+        "runner_first_seen_utc": "2026-11-28T11:57:26.499525+00:00",
         "historical_levels_may_be_revised_again": true
       }
     },
@@ -6241,7 +6247,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-11-20",
         "2026-11-23",
         "2026-11-24",
-        "2026-11-25"
+        "2026-11-25",
+        "2026-11-27"
       ],
       "values": [
         2.39,
@@ -6369,23 +6376,24 @@ window.__GMFQ_DATA.MACRO_SERIES={
         2.15,
         2.13,
         2.12,
-        2.12
+        2.12,
+        2.15
       ],
       "unit": "Percent",
       "frequency": "D",
       "source_file": "US_T10YIE_history.csv",
-      "last_date": "2026-11-25",
-      "last_value": 2.12,
+      "last_date": "2026-11-27",
+      "last_value": 2.15,
       "current_vintage_provenance": {
         "status": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_series_id": "T10YIE",
         "source_url": "https://fred.stlouisfed.org/series/T10YIE",
         "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=T10YIE&cosd=2026-05-27",
-        "source_csv_sha256": "8ff418ec281353c8ab4909618f6ab4b10dbd52c70105b4e2cad5eaf6ca296f37",
-        "source_metadata_sha256": "95157c032afc7bc750c89d3eb8948f641724c4b60c13ff06763d7bc5de136a7f",
+        "source_csv_sha256": "30cd792db1cbe397b233f63aacb858efda64ff1e0e7231865fb7d01e3afe307d",
+        "source_metadata_sha256": "51b049f854b37c32201d1e4b7386e0606d52dd26b9e9ba22c1c9e085d3453912",
         "source_units_verified": "percent , not seasonally adjusted",
         "source_series_first_release_PIT_certified": false,
-        "runner_first_seen_utc": "2026-11-26T08:49:09.227707+00:00",
+        "runner_first_seen_utc": "2026-11-28T11:57:26.499525+00:00",
         "historical_levels_may_be_revised_again": true
       }
     },
@@ -6519,7 +6527,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-11-19",
         "2026-11-20",
         "2026-11-23",
-        "2026-11-24"
+        "2026-11-24",
+        "2026-11-25"
       ],
       "values": [
         2.1,
@@ -6647,23 +6656,24 @@ window.__GMFQ_DATA.MACRO_SERIES={
         2.88,
         2.77,
         2.79,
-        2.79
+        2.79,
+        2.73
       ],
       "unit": "Percent",
       "frequency": "D",
       "source_file": "US_DFII10_history.csv",
-      "last_date": "2026-11-24",
-      "last_value": 2.79,
+      "last_date": "2026-11-25",
+      "last_value": 2.73,
       "current_vintage_provenance": {
         "status": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_series_id": "DFII10",
         "source_url": "https://fred.stlouisfed.org/series/DFII10",
         "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFII10&cosd=2026-05-26",
-        "source_csv_sha256": "9f094f58a1f357ba1fe2360329f5b11ff14f5566df25f89d57c578e68776984c",
-        "source_metadata_sha256": "1defddfcaf8a8982bbca2360000495c02908254e1aef7fc14bba3b73ddb75a10",
+        "source_csv_sha256": "15bff113aab68b39a804d6ae8ce45d903fcc7e44e0adc0435a6f082fc1412b31",
+        "source_metadata_sha256": "5b13d302cb25fa7e36e985643e7ebc5ca303fbc858436fca37dcc304071f53e8",
         "source_units_verified": "percent , not seasonally adjusted",
         "source_series_first_release_PIT_certified": false,
-        "runner_first_seen_utc": "2026-11-26T08:49:09.227707+00:00",
+        "runner_first_seen_utc": "2026-11-28T11:57:26.499525+00:00",
         "historical_levels_may_be_revised_again": true
       }
     },
@@ -6974,7 +6984,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-11-19",
         "2026-11-20",
         "2026-11-23",
-        "2026-11-24"
+        "2026-11-24",
+        "2026-11-25"
       ],
       "values": [
         4.48,
@@ -7101,23 +7112,24 @@ window.__GMFQ_DATA.MACRO_SERIES={
         5.04,
         4.92,
         4.92,
-        4.91
+        4.91,
+        4.85
       ],
       "unit": "Percent",
       "frequency": "D",
       "source_file": "US_DGS10_history.csv",
-      "last_date": "2026-11-24",
-      "last_value": 4.91,
+      "last_date": "2026-11-25",
+      "last_value": 4.85,
       "current_vintage_provenance": {
         "status": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_series_id": "DGS10",
         "source_url": "https://fred.stlouisfed.org/series/DGS10",
         "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10&cosd=2026-05-27",
-        "source_csv_sha256": "65a8e7d4855039c27e2859438d84c04ea3f1422acb4cad42b86001c08836b00b",
-        "source_metadata_sha256": "33f9a90f09450db8c5d2dbd00842ad1faa796e163c9af9995a6b3479cfc123b6",
+        "source_csv_sha256": "526d118dbca2f905ff6fa73dd0599774af4e48a51c2316acb6e408c8df7c407c",
+        "source_metadata_sha256": "974e8fb16851e44a821dc1208d649752ba9d2580de5a06045fd78970d978db08",
         "source_units_verified": "percent , not seasonally adjusted",
         "source_series_first_release_PIT_certified": false,
-        "runner_first_seen_utc": "2026-11-26T08:49:09.227707+00:00",
+        "runner_first_seen_utc": "2026-11-28T11:57:26.499525+00:00",
         "historical_levels_may_be_revised_again": true
       }
     },
@@ -7250,7 +7262,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-11-19",
         "2026-11-20",
         "2026-11-23",
-        "2026-11-24"
+        "2026-11-24",
+        "2026-11-25"
       ],
       "values": [
         4.0,
@@ -7377,23 +7390,24 @@ window.__GMFQ_DATA.MACRO_SERIES={
         4.76,
         4.63,
         4.63,
-        4.63
+        4.63,
+        4.61
       ],
       "unit": "Percent",
       "frequency": "D",
       "source_file": "US_DGS2_history.csv",
-      "last_date": "2026-11-24",
-      "last_value": 4.63,
+      "last_date": "2026-11-25",
+      "last_value": 4.61,
       "current_vintage_provenance": {
         "status": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_series_id": "DGS2",
         "source_url": "https://fred.stlouisfed.org/series/DGS2",
         "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS2&cosd=2026-05-27",
-        "source_csv_sha256": "e32accf7e87df130122aaa05a0fff61d4b7dd4989b449c7c4a57c4ba808ef69f",
-        "source_metadata_sha256": "62ec24a21fc80ae28a21bfb4ce77c180c69df6e1ecfe9f3a46171976345f071c",
+        "source_csv_sha256": "413a0c5fc9414d5026f1cf9d468f726494dbdc80e9435ba3e9bd7661c937eea8",
+        "source_metadata_sha256": "33dcb5186bfc9f7da5f8306622e00d8f71a9d924c207b4449c01b669a7c53cc7",
         "source_units_verified": "percent , not seasonally adjusted",
         "source_series_first_release_PIT_certified": false,
-        "runner_first_seen_utc": "2026-11-26T08:49:09.227707+00:00",
+        "runner_first_seen_utc": "2026-11-28T11:57:26.499525+00:00",
         "historical_levels_may_be_revised_again": true
       }
     },
@@ -7527,7 +7541,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-11-19",
         "2026-11-20",
         "2026-11-23",
-        "2026-11-24"
+        "2026-11-24",
+        "2026-11-25"
       ],
       "values": [
         5.03,
@@ -7655,23 +7670,24 @@ window.__GMFQ_DATA.MACRO_SERIES={
         5.4,
         5.31,
         5.29,
-        5.3
+        5.3,
+        5.24
       ],
       "unit": "Percent",
       "frequency": "D",
       "source_file": "US_DGS30_history.csv",
-      "last_date": "2026-11-24",
-      "last_value": 5.3,
+      "last_date": "2026-11-25",
+      "last_value": 5.24,
       "current_vintage_provenance": {
         "status": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_series_id": "DGS30",
         "source_url": "https://fred.stlouisfed.org/series/DGS30",
         "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS30&cosd=2026-05-26",
-        "source_csv_sha256": "4ad9cd3536785c4b21ae157f9cde6eef55abe6e6070f1c99ef09551c7564fa21",
-        "source_metadata_sha256": "e31971429c2e9e63e3b8c976f19d7a023e493df69e3377f8251f3bad3ecd00ae",
+        "source_csv_sha256": "1a4f0c9ba7efd7b4995ff733567eb3c92a504fd1c68a4f29d0532afb6086531f",
+        "source_metadata_sha256": "9b606b49ad122d25ffa56a0a915c02d653210d54607b7bbd0a144e0a5b7f5c91",
         "source_units_verified": "percent , not seasonally adjusted",
         "source_series_first_release_PIT_certified": false,
-        "runner_first_seen_utc": "2026-11-26T08:49:09.227707+00:00",
+        "runner_first_seen_utc": "2026-11-28T11:57:26.499525+00:00",
         "historical_levels_may_be_revised_again": true
       }
     },
@@ -7805,7 +7821,8 @@ window.__GMFQ_DATA.MACRO_SERIES={
         "2026-11-19",
         "2026-11-20",
         "2026-11-23",
-        "2026-11-24"
+        "2026-11-24",
+        "2026-11-25"
       ],
       "values": [
         4.19,
@@ -7933,23 +7950,24 @@ window.__GMFQ_DATA.MACRO_SERIES={
         4.86,
         4.71,
         4.74,
-        4.69
+        4.69,
+        4.65
       ],
       "unit": "Percent",
       "frequency": "D",
       "source_file": "US_DGS5_history.csv",
-      "last_date": "2026-11-24",
-      "last_value": 4.69,
+      "last_date": "2026-11-25",
+      "last_value": 4.65,
       "current_vintage_provenance": {
         "status": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
         "source_series_id": "DGS5",
         "source_url": "https://fred.stlouisfed.org/series/DGS5",
         "source_csv_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS5&cosd=2026-05-26",
-        "source_csv_sha256": "ed31ecc661a7541a040df2fe26df6d1ac10ef8e3ba2b5e12d631acb2593208fd",
-        "source_metadata_sha256": "7325053e128a3d99d29f814acd08a9014ec9025388fdc4a2bc654bb1b05e0acf",
+        "source_csv_sha256": "1d15598c8e6155fb439c6b2baa986c0578bb01711911a8ec2e0fb182f1a30771",
+        "source_metadata_sha256": "202da61472c8051515bf5049191c8e7f6c6ee21988fa66db6d280a25ba4bea63",
         "source_units_verified": "percent , not seasonally adjusted",
         "source_series_first_release_PIT_certified": false,
-        "runner_first_seen_utc": "2026-11-26T08:49:09.227707+00:00",
+        "runner_first_seen_utc": "2026-11-28T11:57:26.499525+00:00",
         "historical_levels_may_be_revised_again": true
       }
     },
