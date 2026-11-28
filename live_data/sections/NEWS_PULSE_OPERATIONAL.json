@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-27",
-  "generated_at_utc": "2026-11-27T20:00:52.112815Z",
+  "generated_at_utc": "2026-11-28T00:39:40.671641Z",
   "items": [
     {
       "as_of": "2026-11-27",
@@ -15,6 +15,18 @@
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "title": "USD/JPY: +0.18% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-27",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "Fra 2026-11-25 e 2026-11-27; 2Y 4.690%, 10Y 4.940%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-25",
+      "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-27",
+      "title": "USD: governativo 2Y +8.0 pb, 10Y +9.0 pb"
     },
     {
       "as_of": "2026-11-27",
@@ -78,6 +90,32 @@
       "source": "Cboe Global Markets, VIX daily close",
       "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "title": "VIX: -1.49 punti nella chiusura del 2026-11-26"
+    },
+    {
+      "as_of": "2026-11-26",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 3.77%; confronto con chiusura 2026-11-25. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-25",
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
+      "title": "Credito HY OAS: +0.0 pb nella chiusura del 2026-11-26"
+    },
+    {
+      "as_of": "2026-11-26",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 0.99%; confronto con chiusura 2026-11-25. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-25",
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
+      "title": "Credito IG OAS: +0.0 pb nella chiusura del 2026-11-26"
     },
     {
       "as_of": "2026-11-26",
@@ -211,18 +249,6 @@
     },
     {
       "as_of": "2026-11-25",
-      "category": "MARKET_GOVERNMENT_RATES",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "Fra 2026-11-24 e 2026-11-25; 2Y 4.610%, 10Y 4.850%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
-      "importance": "MEDIUM",
-      "quality": "FULL_CURRENT_OFFICIAL",
-      "reference_previous_date": "2026-11-24",
-      "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-25",
-      "title": "USD: governativo 2Y -2.0 pb, 10Y -6.0 pb"
-    },
-    {
-      "as_of": "2026-11-25",
       "category": "MARKET_EQUITY_CLOSE",
       "ccy": "",
       "confidence": "B",
@@ -257,51 +283,9 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
       "title": "CAD: repricing implicito da futures più dovish (-1.0 bp 3M in 1D)"
-    },
-    {
-      "as_of": "2026-11-24",
-      "category": "MARKET_CREDIT_OAS",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 3.72%; confronto con chiusura 2026-11-23. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-23",
-      "source": "ICE Data Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
-      "title": "Credito HY OAS: +9.0 pb nella chiusura del 2026-11-24"
-    },
-    {
-      "as_of": "2026-11-24",
-      "category": "MARKET_CREDIT_OAS",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 0.98%; confronto con chiusura 2026-11-23. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-23",
-      "source": "ICE Data Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
-      "title": "Credito IG OAS: +1.0 pb nella chiusura del 2026-11-24"
-    },
-    {
-      "as_of": "2026-11-20",
-      "category": "MACRO_OFFICIAL_ACTUAL",
-      "ccy": "JPY",
-      "confidence": "A",
-      "detail": "Fonte ufficiale per 2026-10: +2,2%. Previsione pre-evento con provenienza sufficiente non disponibile. Non attribuiamo causalmente il movimento di tassi, OIS o FX alla pubblicazione senza quotazioni pre/post sincronizzate. Prima osservazione del nostro runner: 2026-11-20T09:50:27Z. Composizione della stessa pubblicazione nazionale: headline +2,3%; core esclusi freschi +2,2%; esclusi freschi ed energia +2,2%. Base indice 2025, variazioni annue NSA; NON CPI preliminare di Tokyo.",
-      "event_key": "JPY|2026-11-20|INFLATION|Japan Consumer Price Index",
-      "event_type": "INFLATION",
-      "first_runner_observed_at_utc": "2026-11-20T09:50:27Z",
-      "importance": "HIGH",
-      "metric_id": "JP_CPI_OCT26_CORE_EX_FRESH_FOOD_YOY_NSA",
-      "quality": "STATISTICS_BUREAU_JAPAN_NATIONAL_CPI_RUNNER_FIRST_SEEN_NOT_ISSUER_PIT",
-      "source": "Statistics Bureau of Japan",
-      "source_url": "https://www.stat.go.jp/data/cpi/sokuhou/tsuki/index-z.html",
-      "title": "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a: +2,2%"
     }
   ],
-  "last_checked_at_utc": "2026-11-27T20:00:52.112815Z",
+  "last_checked_at_utc": "2026-11-28T00:39:40.671641Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -920,7 +904,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 4.515,
+            "date": "2026-11-27",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -929,13 +920,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-25",
+            "date": "2026-11-27",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-25",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-27",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.61
+            "yield_2y_pct": 4.69
           }
         },
         "source": "Federal Reserve Board",
@@ -968,7 +959,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 4.515,
+            "date": "2026-11-27",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -977,13 +975,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-25",
+            "date": "2026-11-27",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-25",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-27",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.61
+            "yield_2y_pct": 4.69
           }
         },
         "source": "Federal Reserve Board",
@@ -1183,7 +1181,7 @@
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/new-rbnz-research-sheds-light-on-economic-impacts-of-drought"
       }
     ],
-    "last_attempt_day_rome": "2026-11-27",
+    "last_attempt_day_rome": "2026-11-28",
     "latest_published_at_utc": "2026-11-27T14:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
@@ -1230,8 +1228,8 @@
       {
         "accepted_items": 11,
         "ccy": "JPY",
-        "entries_rejected": 37,
-        "feed_entries_seen": 48,
+        "entries_rejected": 36,
+        "feed_entries_seen": 47,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
