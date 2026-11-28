@@ -56,7 +56,7 @@ function countryEvidence(c){
  const m=data.macro,core=m?.countries?.[c],valid=x=>x&&finite(x.level)&&finite(x.velocity_pp)&&x.measurement!=='WITHHELD'&&x.quality!=='SOURCE_CHECK_FAILED';
  return {core,activity:(m?.activity_momentum_research?.countries?.[c]||[]).filter(x=>valid(x)&&finite(x.momentum_pct)),lab:(m?.labour_inflation_dynamics?.countries?.[c]||[]).filter(valid),sector:(m?.sector_financial_dynamics?.countries?.[c]||[]).filter(valid)};
 }
-const changeWord=(x,e=.005)=>x>e?'in aumento':x< -e?'in calo':'quasi stabile';
+const changeWord=(x,e=.005)=>!finite(x)?'non verificabile':x>e?'in aumento':x< -e?'in calo':'quasi stabile';
 function momentumWords(x){
  const n=x.momentum_pct,v=x.velocity_pp,a=x.acceleration_pp;
  if(!finite(n)||!finite(v))return 'direzione non verificata';
@@ -78,7 +78,7 @@ function countryStory(c){
  if(!loaded.macro||!e.core)return ['Quadro macro non verificabile','Il feed macro non è disponibile.','La fotografia precedente non costituisce un giudizio aggiornato.','Ripristinare le fonti prima di valutare la valuta.'];
  const q=g?.nonannualized_qoq_descriptive_pct,prev=g?.prior_documented_quarter?.nonannualized_qoq_descriptive_pct;
  const gOK=finite(q)&&finite(prev);
- const gtext=gOK?'Nell’ultimo trimestre disponibile il PIL '+(q>.005?'cresce':q< -.005?'si contrae':'ristagna')+(q-prev>.005?' e il ritmo migliora':q-prev< -.005?' e il ritmo peggiora':' a un ritmo simile al precedente')+' ('+g.reference_quarter+').':'Confronto trimestrale del PIL incompleto.';
+ const gtext=gOK?'PIL '+fmt(q,2)+'% t/t, da '+fmt(prev,2)+'% ('+g.reference_quarter+'): '+(q>.005?'l’economia cresce':q< -.005?'l’economia si contrae':'l’economia ristagna')+(q-prev>.005?', con ritmo in miglioramento':q-prev< -.005?', con ritmo in peggioramento':', a ritmo simile')+'.':'Confronto trimestrale del PIL incompleto.';
  const real=e.activity.filter(x=>!x.nominal_not_real),nom=e.activity.filter(x=>x.nominal_not_real);
  const cons=real.find(x=>/consum|retail|dettaglio/i.test(x.label)),ind=real.find(x=>/produc|industr|PIL/i.test(x.label));
  const activity=[ind,cons,...real.filter(x=>x!==ind&&x!==cons)].filter(Boolean).slice(0,2);
@@ -97,9 +97,9 @@ function countryStory(c){
  let title=growthWeak?'L’attività reale è sotto pressione':slowing?'La domanda recente perde slancio':faster?'L’attività recente recupera':gOK&&q<=eps?'Crescita debole o ferma':'Crescita con segnali da confrontare';
  if(infUp&&(growthWeak||slowing||weakJobs))title+=' mentre i prezzi risalgono';
  else if(infDown&&weakJobs)title+=' e il lavoro si indebolisce';
- const implication=infUp&&(growthWeak||slowing||weakJobs)?'La banca centrale affronta un dilemma: pressioni sui prezzi in aumento mentre l’attività o il lavoro mostrano fragilità. Non è un segnale automatico di rialzo.':infUp?'La dinamica dei prezzi limita, a parità di altre condizioni, lo spazio per una politica meno restrittiva.':infDown&&weakJobs?'Prezzi in raffreddamento e lavoro più fragile possono aumentare lo spazio per un allentamento, se il movimento persiste.':infDown?'La pressione sui prezzi si attenua nell’indicatore scelto; non basta per prevedere la prossima decisione.':'L’inflazione non cambia molto nell’indicatore scelto: il quadro dipende anche da crescita e lavoro.';
+ const implication=infUp&&(growthWeak||slowing||weakJobs)?'La banca centrale affronta un dilemma: pressioni sui prezzi in aumento mentre l’attività o il lavoro mostrano fragilità. Non è un segnale automatico di rialzo.':infUp?'La dinamica dei prezzi limita, a parità di altre condizioni, lo spazio per una politica meno restrittiva.':infDown&&weakJobs?'Prezzi in raffreddamento e lavoro più fragile possono aumentare lo spazio per un allentamento, se il movimento persiste.':infDown?'La pressione sui prezzi si attenua nell’indicatore scelto; non basta per prevedere la prossima decisione.':!i?'La pressione dei prezzi non è verificabile: non possiamo valutare lo spazio di manovra della banca.':'L’inflazione non cambia molto nell’indicatore scelto: il quadro dipende anche da crescita e lavoro.';
  const rate=monetaryModels()?.[c],mid=rate?.rows?.[1],w=mid?.week?.bp;
- const pricing=finite(w)?'Il riferimento monetario 6M '+direction(w,.05)+' nella settimana ('+bp(w)+', '+rate.sourceType+').':'Il repricing settimanale 6M non è certificato.';
+ const pricing=finite(w)&&validDay(mid?.asof)&&(Date.parse(day())-Date.parse(mid.asof))/864e5<=7?'Il riferimento monetario 6M '+direction(w,.05)+' nella settimana ('+bp(w)+', '+rate.sourceType+'; '+dateIT(mid.asof)+').':'Il repricing settimanale 6M recente non è certificato.';
  const px=loaded.prices?basket(c,20):null;
  const fx=finite(px)?'Il cambio, nel paniere delle altre sette valute, '+direction(px,.01)+' nelle ultime venti sedute.':'Forza relativa del cambio non verificata.';
  return [title,gtext+' '+acttext+' '+inftext+' '+labtext,implication+' '+pricing+' '+fx,'Verificare se domanda reale, lavoro e prezzi confermano il quadro; confrontare poi le aspettative monetarie con quelle delle altre valute.'];
@@ -596,13 +596,21 @@ function monetaryHistoryRead(h){
  const f=finite(v?.bp)?v:w,contrast=finite(v?.bp)&&finite(w?.bp)&&Math.sign(v.bp)*Math.sign(w.bp)<0;
  return plainRead('Come cambiano le aspettative','Il riferimento 6M '+direction(f.bp,.05)+' sul confronto di '+f.days+' giorni feriali ('+bp(f.bp)+'). '+(contrast?'L’ultima settimana va nella direzione opposta.':''),'Il confronto riguarda '+(f.basis||'la serie validata')+'. '+(contrast?'Possibile cambio di passo, non svolta confermata.':'Non è una previsione della prossima decisione.'),'Cercare continuità nelle prossime osservazioni.');
 }
+function governmentShape(d2,d10){
+ if(!finite(d2)||!finite(d10))return {title:'Movimento non verificabile',meaning:'Mancano variazioni confrontabili.'};
+ const slope=d10-d2,up=d2>.5&&d10>.5,down=d2<-.5&&d10<-.5;
+ if(Math.abs(slope)<1)return {title:up?'Rendimenti in rialzo quasi parallelo':down?'Rendimenti in calo quasi parallelo':'La pendenza cambia poco',meaning:'I due tratti si muovono quasi allo stesso ritmo.'};
+ if(up)return {title:slope>0?'Bear steepening · sale di più il 10Y':'Bear flattening · sale di più il 2Y',meaning:slope>0?'Il lungo termine sale più del breve: controllare crescita, inflazione e premio a termine.':'Il breve sale più del lungo: verificare se il mercato riduce le attese di taglio o aumenta quelle di rialzo.'};
+ if(down)return {title:slope>0?'Bull steepening · scende di più il 2Y':'Bull flattening · scende di più il 10Y',meaning:slope>0?'Il breve scende più del lungo: verificare se aumentano le attese di allentamento.':'Il lungo scende più del breve: verificare crescita futura, inflazione e domanda di duration.'};
+ return {title:slope>0?'La curva si irripidisce · movimento misto':'La curva si appiattisce · movimento misto',meaning:'I due tratti non si muovono nello stesso modo: non forzare un’etichetta bull o bear.'};
+}
 function governmentRead(series){
  const m=new Map((series[1]?.points||[]).map(p=>[p.date,p.value])),aligned=(series[0]?.points||[]).filter(p=>finite(p.value)&&finite(m.get(p.date)));
  if(aligned.length<6)return plainRead('Curva governativa da verificare','Mancano sei rilevazioni comuni del 2Y e del 10Y.','Non confrontiamo date diverse.','Verificare gli aggiornamenti.');
  const a=aligned.at(-6),b=aligned.at(-1),d2=(b.value-a.value)*100,d10=(m.get(b.date)-m.get(a.date))*100,slope=d10-d2;
  if((Date.parse(day()+'T12:00:00Z')-Date.parse(b.date+'T12:00:00Z'))/864e5>7)return plainRead('Rendimenti non recenti','Ultima data comune: '+dateIT(b.date)+'.','Il grafico è utile come storico, non come lettura della seduta.','Attendere dati aggiornati.');
- const title=Math.abs(slope)<1?'La pendenza cambia poco':slope>0?'La curva si irripidisce':'La curva si appiattisce';
- return plainRead(title,'Nelle ultime cinque variazioni comuni, il 2Y '+direction(d2,.5)+' e il 10Y '+direction(d10,.5)+'.',(Math.abs(slope)<1?'I due tratti si muovono quasi allo stesso ritmo.':slope>0?'Il lungo termine sale di più o scende di meno del breve.':'Il breve sale di più o scende di meno del lungo.')+' La causa non è identificata dalla curva da sola.','Confrontare attese monetarie, crescita, inflazione e premio a termine.');
+ const shape=governmentShape(d2,d10),title=shape.title;
+ return plainRead(title,'Ultime cinque variazioni comuni fino al '+dateIT(b.date)+': 2Y '+bp(d2)+', 10Y '+bp(d10)+', pendenza '+bp(slope)+'.',shape.meaning+' La causa non è identificata dalla curva da sola.','Confrontare attese monetarie, crescita, inflazione e premio a termine.');
 }
 function simpleCot(q){
  const flow=window.FXQuantCOTDeskV26?.flowLabel(q)||'Composizione da verificare';
