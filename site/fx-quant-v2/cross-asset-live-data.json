@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1",
-  "status": "SEVEN_STREAMS_VERIFIED",
+  "status": "PARTIAL_SOURCE_SUCCESS",
   "collected_on": "2026-11-28",
   "attempted_sources": [
     "DJIA",
@@ -13,14 +13,15 @@
   ],
   "verified_on_attempt": [
     "DJIA",
-    "SX5E",
     "SP500",
     "NASDAQCOM",
     "IG_OAS",
     "HY_OAS",
     "VIX"
   ],
-  "source_errors": {},
+  "source_errors": {
+    "SX5E": "HTTP Error 503: Service Unavailable"
+  },
   "streams": {
     "SP500": {
       "date": "2026-11-25",
