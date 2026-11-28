@@ -58,6 +58,34 @@ const {chromium}=require('playwright');
      return result;
    });
    assert.equal(relativeTests.length,28);
+   const windows=await page.evaluate(()=>{
+     const counts={observed:0,indicative:0,unavailable:0},results=[];
+     for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++){
+       const a=FX[i],b=FX[j],p=studioPricingComparison(a,b)?.common,inv=studioPricingComparison(b,a)?.common;
+       const x=[p?.short,p?.medium].filter(Boolean);
+       const grade=x.some(z=>z.grade==='OBSERVED')?'observed':x.length?'indicative':'unavailable';
+       counts[grade]++;
+       results.push({a,b,grade,symmetric:['short','medium'].every(k=>!p?.[k]&&!inv?.[k]||p?.[k]&&inv?.[k]&&p[k].from===inv[k].from&&p[k].asof===inv[k].asof&&Math.abs(p[k].relativeBp+inv[k].relativeBp)<1e-8),valid:x.every(z=>z.from<z.asof&&z.span>0&&z.span<=(z.n===1?4:12)&&Number.isFinite(z.fxPct)&&Number.isFinite(z.relativeBp))});
+     }
+     const dates=['2026-11-19','2026-11-20','2026-11-23','2026-11-24','2026-11-25','2026-11-26'];
+     const fake=(kind,contract,source_class)=>({kind,tenors:{'6m':dates.map((date,i)=>({date,rate:3+i/10,contract,source_class,derived:false}))}});
+     const a=fake('FUTURES SECONDARI','A','SECONDARY_SAME_CONTRACT'),b=fake('OIS',null,'OFFICIAL_TENOR'),prices=new Map(dates.map((d,i)=>[d,1+i/100]));
+     const good=commonMonetaryWindows(a,b,prices,'2026-11-27');
+     a.tenors['6m'][3].contract='B';
+     const roll=commonMonetaryWindows(a,b,prices,'2026-11-27');
+     const representative=commonMonetaryWindows(fake('FUTURES',null,'OFFICIAL_TENOR'),b,prices,'2026-11-27');
+     const stale=commonMonetaryWindows(a,b,prices,'2026-12-10');
+     return {counts,results,good:good.medium?.grade,roll:roll.medium,representative:representative.medium?.grade,stale:stale.short};
+   });
+   assert(windows.results.every(x=>x.symmetric&&x.valid));
+   assert(windows.counts.observed>1);
+   assert(windows.counts.indicative>0);
+   assert.equal(windows.good,'OBSERVED');
+   assert.equal(windows.roll,null);
+   assert.equal(windows.representative,'REPRESENTATIVE');
+   assert.equal(windows.stale,null);
+   console.log('STUDIO_COMMON_MONETARY_WINDOWS',JSON.stringify(windows.counts));
+
    assert(relativeTests.every(x=>x.dateOK&&x.matched));
    assert(relativeTests.some(x=>x.gov));
    console.log('STUDIO_RELATIVE_RATES',JSON.stringify(relativeTests));
