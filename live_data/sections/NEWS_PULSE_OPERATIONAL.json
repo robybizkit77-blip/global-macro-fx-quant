@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-27",
-  "generated_at_utc": "2026-11-28T00:39:40.671641Z",
+  "generated_at_utc": "2026-11-28T05:02:41.620769Z",
   "items": [
     {
       "as_of": "2026-11-27",
@@ -27,6 +27,19 @@
       "reference_previous_date": "2026-11-25",
       "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-27",
       "title": "USD: governativo 2Y +8.0 pb, 10Y +9.0 pb"
+    },
+    {
+      "as_of": "2026-11-27",
+      "category": "MARKET_VOLATILITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 23.81; confronto con chiusura 2026-11-26. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-26",
+      "source": "Cboe Global Markets, VIX daily close",
+      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "title": "VIX: -2.99 punti nella chiusura del 2026-11-27"
     },
     {
       "as_of": "2026-11-27",
@@ -77,19 +90,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
       "title": "GBP: repricing OIS più hawkish (+3.0 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-26",
-      "category": "MARKET_VOLATILITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 26.80; confronto con chiusura 2026-11-25. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-25",
-      "source": "Cboe Global Markets, VIX daily close",
-      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "title": "VIX: -1.49 punti nella chiusura del 2026-11-26"
     },
     {
       "as_of": "2026-11-26",
@@ -285,7 +285,7 @@
       "title": "CAD: repricing implicito da futures più dovish (-1.0 bp 3M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-28T00:39:40.671641Z",
+  "last_checked_at_utc": "2026-11-28T05:02:41.620769Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
