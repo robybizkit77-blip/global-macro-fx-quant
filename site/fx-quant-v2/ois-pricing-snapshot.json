@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_FXV2_PRICING_SNAPSHOT_V1",
-  "snapshot_built_from_repo_date": "2026-11-27",
+  "snapshot_built_from_repo_date": "2026-11-28",
   "ui_only": true,
   "eligible_for_fx_engine": false,
   "notes": "Automatically refreshed from dated G8 operational futures/OIS, secondary estimated futures and NZD ASX bank-bill proxy. Each tenor retains its own observation date; no fake OIS, no FX signal.",
@@ -48,8 +48,8 @@
           "contract": "FST3X2026"
         },
         "6m": {
-          "rate": 2.8375,
-          "as_of": "2026-11-26",
+          "rate": 2.8275,
+          "as_of": "2026-11-27",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3G2027"
