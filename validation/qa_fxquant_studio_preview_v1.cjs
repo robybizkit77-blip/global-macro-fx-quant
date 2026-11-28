@@ -26,7 +26,7 @@ const {chromium}=require('playwright');
    assert.match(status,/11\/11 feed letti/,'Actual repository feeds must load: '+status);
    assert.match(status,/motore FX disponibile/,'Existing FX engine must evaluate: '+status);
    assert.equal(await page.locator('.desk-edition').count(),1);
-   assert.match(await page.locator('.desk-edition').innerText(),/Giudizio del desk.*Perché conta.*Cosa guardare/s);
+   assert.match(await page.locator('.desk-edition').innerText(),/Giudizio del desk.*Perché conta.*Cosa guardare/is);
    assert.equal(await page.locator('#desk-market-charts .native-chart svg').count(),1);
    assert.equal(await page.locator('#desk-market-charts .hbar').count(),8);
    assert.equal(await page.locator('#desk-source-detail').getAttribute('open'),null);
