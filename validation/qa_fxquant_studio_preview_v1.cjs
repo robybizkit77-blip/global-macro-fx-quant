@@ -47,6 +47,23 @@ const {chromium}=require('playwright');
    await page.getByLabel('Controvaluta').selectOption('JPY');
    assert.match(await page.locator('#view').innerText(),/GBP\/JPY/);
    assert.equal(await page.locator('#pair-evidence .sector-read').count(),4);
+   assert.equal(await page.locator('#pair-operational').count(),1);
+   assert.match(await page.locator('#pair-operational').innerText(),/Cosa sostiene la tesi.*Cosa la contraddice.*Prima di valutare/s);
+   const pairOps=await page.evaluate(()=>{
+    const today='2026-11-28',date='2026-11-27',q={date:'2026-11-17'},r={grade:'OBSERVED',from:'2026-11-20',asof:date,relativeBp:8,fxPct:.6};
+    const e={x:{favored:'GBP',thesisStrength:'FORTE'},px:1,px5:.5,A:{q},B:{q},flow:.1,matched:r};
+    const read=(x,d=date)=>pairOperationalRead('GBP','JPY',x,today,d);
+    const real=[];for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++){const a=FX[i],b=FX[j],x=pairOperationalRead(a,b,pairEvidence(a,b)),y=pairOperationalRead(b,a,pairEvidence(b,a));real.push({same:x.status===y.status,valid:[x,y].every(z=>[z.status,z.support,z.against,z.before].every(v=>typeof v==='string'&&v.length>0))});}
+    return {aligned:read(e),contrary:read({...e,px5:-.5}),indicative:read({...e,matched:{...r,grade:'REPRESENTATIVE'}}),stale:read(e,'2026-10-27'),none:read({...e,x:null}),real};
+   });
+   assert.match(pairOps.aligned.status,/coerente con tassi e prezzo/);
+   assert.match(pairOps.contrary.against,/5 fixing/);
+   assert.match(pairOps.indicative.before,/rappresentativo/);
+   assert.match(pairOps.stale.before,/Prezzo non recente/);
+   assert.match(pairOps.none.status,/Nessuna direzione/);
+   assert.equal(pairOps.real.length,28);assert(pairOps.real.every(x=>x.valid),JSON.stringify(pairOps.real));
+   console.log('STUDIO_PAIR_OPERATIONAL_PASS',width);
+
    assert.equal(await page.locator('#pair-gov').count(),1);
    assert.equal(await page.locator('#pair-monetary').count(),1);
    const relativeTests=await page.evaluate(()=>{
