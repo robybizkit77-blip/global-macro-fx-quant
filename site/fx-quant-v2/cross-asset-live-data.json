@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1",
   "status": "SEVEN_STREAMS_VERIFIED",
-  "collected_on": "2026-11-27",
+  "collected_on": "2026-11-28",
   "attempted_sources": [
     "DJIA",
     "SX5E",
@@ -436,7 +436,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 3,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -854,7 +854,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 3,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -1272,7 +1272,7 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -1690,7 +1690,7 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -2108,21 +2108,17 @@
       "kind": "VOLATILITY_INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "DJIA": {
-      "date": "2026-11-25",
-      "previous_date": "2026-11-24",
-      "value": 50182.95,
-      "previous": 50018.7,
-      "change_1d_pct": 0.3284,
+      "date": "2026-11-27",
+      "previous_date": "2026-11-25",
+      "value": 50774.94,
+      "previous": 50182.95,
+      "change_1d_pct": 1.1797,
       "history": [
-        [
-          "2026-07-08",
-          52348.39
-        ],
         [
           "2026-07-09",
           52487.41
@@ -2518,6 +2514,10 @@
         [
           "2026-11-25",
           50182.95
+        ],
+        [
+          "2026-11-27",
+          50774.94
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -2526,7 +2526,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -2808,7 +2808,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 0,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     }
