@@ -20,7 +20,7 @@
     "VIX"
   ],
   "source_errors": {
-    "SX5E": "HTTP Error 503: Service Unavailable"
+    "SX5E": "The read operation timed out"
   },
   "streams": {
     "SP500": {
@@ -442,16 +442,12 @@
       "no_core_or_backtest_effect": true
     },
     "NASDAQCOM": {
-      "date": "2026-11-25",
-      "previous_date": "2026-11-24",
-      "value": 23585.8,
-      "previous": 23733.54,
-      "change_1d_pct": -0.6225,
+      "date": "2026-11-27",
+      "previous_date": "2026-11-25",
+      "value": 24129.5,
+      "previous": 23585.8,
+      "change_1d_pct": 2.3052,
       "history": [
-        [
-          "2026-07-08",
-          25870.65
-        ],
         [
           "2026-07-09",
           26206.89
@@ -847,6 +843,10 @@
         [
           "2026-11-25",
           23585.8
+        ],
+        [
+          "2026-11-27",
+          24129.5
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -855,7 +855,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 3,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
