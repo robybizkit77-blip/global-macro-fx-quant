@@ -93,17 +93,17 @@
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
-          "futures_price": 97.1625,
+          "futures_price": 97.1725,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-11-26T22:05:26Z",
-          "quote_as_of": "2026-11-26",
+          "price_valid_until": "2026-11-27T22:15:05Z",
+          "quote_as_of": "2026-11-27",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.8375,
+          "rate": 2.8275,
           "symbol": "EUREX:FST3G2027"
         }
       },
@@ -140,7 +140,7 @@
           "expiration": "2027-03-01",
           "futures_price": 95.71,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-11-27T09:54:11Z",
+          "price_valid_until": "2026-11-27T21:15:04Z",
           "quote_as_of": "2026-11-27",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
@@ -170,7 +170,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-11-28T01:53:51.000582Z",
+  "generated_at_utc": "2026-11-28T10:14:21.746439Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
