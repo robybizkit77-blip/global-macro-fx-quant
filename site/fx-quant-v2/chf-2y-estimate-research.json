@@ -79,6 +79,11 @@
       "date": "2026-11-26",
       "yield_percent": 0.575,
       "source_sha256": "7ebc85cc41cdfedaef024e15d67901e92fcad112688d80ca02eafa7113686a38"
+    },
+    {
+      "date": "2026-11-27",
+      "yield_percent": 0.589,
+      "source_sha256": "b435d59592317ac6093adc6bb02de0a9c725d9f9f6bae0afa818d941291c5ad9"
     }
   ],
   "calibration": {
