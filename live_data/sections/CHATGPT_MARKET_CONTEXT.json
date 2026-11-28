@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-27T18:50:49Z",
-  "evaluation_date_europe_rome": "2026-11-27",
+  "generated_at_utc": "2026-11-28T01:53:07Z",
+  "evaluation_date_europe_rome": "2026-11-28",
   "reference_only": true,
   "policy": {
     "fail_closed": true,
@@ -15,12 +15,12 @@
     "ois_official": {
       "USD": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-26",
+        "as_of": "2026-11-27",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "EUR": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-25",
+        "as_of": "2026-11-26",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "GBP": {
@@ -77,7 +77,7 @@
       },
       "CHF": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-26",
+        "as_of": "2026-11-27",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "CAD": {
@@ -141,13 +141,13 @@
     "government_rates": {
       "USD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-25",
-        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-25",
-        "government_2y_pct": 4.61,
-        "government_10y_pct": 4.85,
-        "10y_minus_2y_bp": 24.0,
-        "change_2y_bp": -19.0,
-        "change_10y_bp": -22.0
+        "as_of": "2026-11-27",
+        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-27",
+        "government_2y_pct": 4.69,
+        "government_10y_pct": 4.94,
+        "10y_minus_2y_bp": 25.0,
+        "change_2y_bp": 6.0,
+        "change_10y_bp": 2.0
       },
       "EUR": {
         "state": "AVAILABLE_CERTIFIED",
@@ -182,7 +182,7 @@
       "CHF": {
         "state": "STALE",
         "as_of": "2026-09-30",
-        "reason": "Age 58d exceeds the 3d alert limit."
+        "reason": "Age 59d exceeds the 3d alert limit."
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
@@ -211,93 +211,9 @@
       }
     },
     "cot_weekly": {
-      "state": "AVAILABLE_CERTIFIED",
+      "state": "STALE",
       "as_of": "2026-11-17",
-      "source": "CFTC Legacy Commitments of Traders (weekly, Tuesday position date)",
-      "percentile_rule": "Display rounded integer; classify on rounded percentile: >=80 extreme long, <=20 extreme short.",
-      "net_oi_rule": "Display one decimal; alert inclusive if abs(displayed Net/OI)>=30.0%",
-      "currencies": {
-        "USD": {
-          "net_noncommercial": 13345,
-          "delta_net_1w": -468,
-          "long": 36596,
-          "short": 23251,
-          "net_oi_pct": 23.9,
-          "net_oi_alert_abs_ge_30pct": false,
-          "percentile_104w_rounded": 81,
-          "signal": "EXTREME_LONG"
-        },
-        "EUR": {
-          "net_noncommercial": -142710,
-          "delta_net_1w": -6314,
-          "long": 230074,
-          "short": 372784,
-          "net_oi_pct": -16.5,
-          "net_oi_alert_abs_ge_30pct": false,
-          "percentile_104w_rounded": 3,
-          "signal": "EXTREME_SHORT"
-        },
-        "GBP": {
-          "net_noncommercial": -32304,
-          "delta_net_1w": 10912,
-          "long": 70999,
-          "short": 103303,
-          "net_oi_pct": -13.8,
-          "net_oi_alert_abs_ge_30pct": false,
-          "percentile_104w_rounded": 51,
-          "signal": "NEUTRAL"
-        },
-        "JPY": {
-          "net_noncommercial": 116317,
-          "delta_net_1w": -6796,
-          "long": 258756,
-          "short": 142439,
-          "net_oi_pct": 29.8,
-          "net_oi_alert_abs_ge_30pct": false,
-          "percentile_104w_rounded": 81,
-          "signal": "EXTREME_LONG"
-        },
-        "CHF": {
-          "net_noncommercial": -8281,
-          "delta_net_1w": 872,
-          "long": 33456,
-          "short": 41737,
-          "net_oi_pct": -6.6,
-          "net_oi_alert_abs_ge_30pct": false,
-          "percentile_104w_rounded": 100,
-          "signal": "EXTREME_LONG"
-        },
-        "CAD": {
-          "net_noncommercial": -45048,
-          "delta_net_1w": -12456,
-          "long": 111591,
-          "short": 156639,
-          "net_oi_pct": -12.6,
-          "net_oi_alert_abs_ge_30pct": false,
-          "percentile_104w_rounded": 80,
-          "signal": "EXTREME_LONG"
-        },
-        "AUD": {
-          "net_noncommercial": -182060,
-          "delta_net_1w": -30307,
-          "long": 81148,
-          "short": 263208,
-          "net_oi_pct": -48.6,
-          "net_oi_alert_abs_ge_30pct": true,
-          "percentile_104w_rounded": 1,
-          "signal": "EXTREME_SHORT"
-        },
-        "NZD": {
-          "net_noncommercial": -63245,
-          "delta_net_1w": -7879,
-          "long": 17291,
-          "short": 80536,
-          "net_oi_pct": -46.1,
-          "net_oi_alert_abs_ge_30pct": true,
-          "percentile_104w_rounded": 3,
-          "signal": "EXTREME_SHORT"
-        }
-      }
+      "reason": "Age 11d exceeds the 10d alert limit."
     },
     "fx_ecb_fixing": {
       "state": "AVAILABLE_CERTIFIED",
