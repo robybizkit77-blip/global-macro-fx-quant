@@ -1,13 +1,13 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-28T09:48:34.516877Z",
-  "edition_time_rome": "2026-11-28 10:48",
-  "material_digest": "8aa2eaf28af0f42cd06896df447e989285afcb191dbd6334b461469b800eca4a",
+  "generated_at_utc": "2026-11-28T11:57:12.981907Z",
+  "edition_time_rome": "2026-11-28 12:57",
+  "material_digest": "44d24456eeabfe8a170a53bdc0ec86baadc44501ea5cb827006e02623f7c26af",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in rialzo",
-  "lead": "Il 27 novembre il dollaro ha guadagnato contro euro e yen. La volatilità azionaria è scesa alla chiusura del 27 novembre.",
+  "lead": "Il 27 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 27 novembre, il Nasdaq Composite ha guadagnato terreno.",
   "news": [
     {
       "headline": "Dollaro in rialzo",
@@ -34,16 +34,17 @@
       "evidence": "PIL reale USA annualizzato: 4,3% (periodo precedente 2,2%)"
     },
     {
-      "headline": "Il quadro del rischio",
-      "analysis": "La volatilità azionaria è scesa alla chiusura del 27 novembre. Da seguire se il movimento prosegue anche alla prossima chiusura.",
+      "headline": "Il Nasdaq Composite sale",
+      "analysis": "Alla chiusura del 27 novembre, il Nasdaq Composite ha guadagnato terreno. Da seguire se il movimento prosegue anche alla prossima chiusura.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-27",
       "event_date": "2026-11-27",
       "market_area": "RISCHIO",
       "sources": [
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
         "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
       ],
-      "evidence": "Alla chiusura del 27 novembre, VIX −2,99 punti."
+      "evidence": "Alla chiusura del 27 novembre, Nasdaq Composite +2,31% e VIX −2,99 punti."
     },
     {
       "headline": "L’oro sale, il petrolio scende",
@@ -61,7 +62,7 @@
     {
       "headline": "Boris Vujčić: Interview with Kurier",
       "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-28",
       "event_date": "2026-11-28",
       "market_area": "BANCHE CENTRALI",
@@ -83,7 +84,7 @@
       "evidence": ""
     }
   ],
-  "desk_judgment": "Il 27 novembre il dollaro ha guadagnato contro euro e yen. La volatilità azionaria è scesa alla chiusura del 27 novembre.",
+  "desk_judgment": "Il 27 novembre il dollaro ha guadagnato contro euro e yen. Alla chiusura del 27 novembre, il Nasdaq Composite ha guadagnato terreno.",
   "fx_implications": "Il 30 novembre alle 09:00 italiane è in programma Swiss quarterly GDP (CHF). Da verificare la risposta dei tassi e di CHF.",
   "what_changed": "Nei proxy futures del 27 novembre l’oro sale e il WTI scende.",
   "contrary_evidence": "La tenuta del movimento dipende anche dal sostegno dei tassi a breve.",
@@ -91,6 +92,7 @@
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-3rd-quarter-2026",
@@ -101,7 +103,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-27",
-      "rss_checked_at_utc": "2026-11-28T09:48:34.516877Z",
+      "rss_checked_at_utc": "2026-11-28T11:57:12.981907Z",
       "commodities": "2026-11-27"
     },
     "no_paid_api": true,
@@ -109,6 +111,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-28T09:48:34.516877Z",
+      "headline": "Dollaro in rialzo",
+      "material_digest": "8aa2eaf28af0f42cd06896df447e989285afcb191dbd6334b461469b800eca4a"
+    },
     {
       "generated_at_utc": "2026-11-28T04:03:00.215958Z",
       "headline": "Dollaro in rialzo",
@@ -223,11 +230,6 @@
       "generated_at_utc": "2026-11-25T20:07:59.593011Z",
       "headline": "Dollaro in rialzo",
       "material_digest": "2d7ad56a76bc6e7938e91797f5a7ec50d705d814a46584edfcc762d265f92a83"
-    },
-    {
-      "generated_at_utc": "2026-11-25T17:14:40.248454Z",
-      "headline": "Dollaro in rialzo",
-      "material_digest": "220933420c316b2cd3e0c91f278d6865f7b9249d86f552e9c9eb0dd534b243cf"
     }
   ]
 }
