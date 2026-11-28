@@ -7,14 +7,30 @@ const {chromium}=require('playwright');
   for(const width of [1440,390]){
    const page=await browser.newPage({viewport:{width,height:900}});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
-   await page.goto('http://127.0.0.1:8765/site/fx-quant-v2/studio/');
+   let releaseInitial;const initialGate=new Promise(resolve=>{releaseInitial=resolve});
+   await page.route('**/ECB_G8_PRICE_HISTORY.json',async route=>{await initialGate;await route.continue()});
+   try{
+    await page.goto('http://127.0.0.1:8765/site/fx-quant-v2/studio/',{waitUntil:'domcontentloaded'});
+    assert.equal(await page.locator('#studio-loading').count(),1);
+    assert.equal(await page.locator('#studio-enhanced').count(),0);
+    assert.equal(await page.locator('body > .shell').count(),1);
+    assert.equal(await page.locator('#view').getAttribute('aria-busy'),'true');
+    assert.equal(await page.locator('.sub a[href*="/next/"]').count(),0);
+   }finally{releaseInitial();}
+   await page.waitForFunction(()=>!document.getElementById('refresh').disabled,{},{timeout:40000});
+   await page.unroute('**/ECB_G8_PRICE_HISTORY.json');
+   assert.equal(await page.locator('#studio-loading').count(),0);
+   assert.equal(await page.locator('#view').getAttribute('aria-busy'),'false');
    await page.waitForFunction(()=>!document.getElementById('refresh').disabled,{},{timeout:40000});
    const status=await page.locator('#source-state').innerText();
    assert.match(status,/11\/11 feed letti/,'Actual repository feeds must load: '+status);
    assert.match(status,/motore FX disponibile/,'Existing FX engine must evaluate: '+status);
    assert.equal(await page.locator('#studio-enhanced tbody tr').count(),8);
    assert.equal(await page.locator('#studio-health').count(),1);
-   assert.equal(await page.locator('#studio-source-audit .sector-read').count(),6);
+   assert.equal(await page.locator('#studio-source-audit .sector-read').count(),9);
+   for(const label of ['Governativi G8','Acquisizione Cross-Asset','Consenso macro'])assert.equal(await page.locator('#studio-source-audit .sector-read h3').filter({hasText:label}).count(),1);
+   const shapes=await page.evaluate(()=>[governmentShape(5,15).title,governmentShape(15,5).title,governmentShape(-15,-5).title,governmentShape(-5,-15).title,governmentShape(5,-5).title,governmentShape(null,5).title,changeWord(null)]);
+   assert.match(shapes[0],/^Bear steepening/);assert.match(shapes[1],/^Bear flattening/);assert.match(shapes[2],/^Bull steepening/);assert.match(shapes[3],/^Bull flattening/);assert.match(shapes[4],/movimento misto/);assert.match(shapes[5],/non verificabile/);assert.equal(shapes[6],'non verificabile');
    const audit=await page.evaluate(()=>({feeds:studioSourceAudit(),coverage:studioRelativeCoverage()}));
    assert.equal(audit.feeds.total,30);
    assert(audit.feeds.read>=28&&audit.feeds.read<=30);
@@ -44,6 +60,23 @@ const {chromium}=require('playwright');
    await page.getByLabel('Controvaluta').selectOption('JPY');
    assert.match(await page.locator('#view').innerText(),/GBP\/JPY/);
    assert.equal(await page.locator('#pair-evidence .sector-read').count(),4);
+   assert.equal(await page.locator('#pair-operational').count(),1);
+   assert.match(await page.locator('#pair-operational').innerText(),/Cosa sostiene la tesi.*Cosa la contraddice.*Prima di valutare/s);
+   const pairOps=await page.evaluate(()=>{
+    const today='2026-11-28',date='2026-11-27',q={date:'2026-11-17'},r={grade:'OBSERVED',from:'2026-11-20',asof:date,relativeBp:8,fxPct:.6};
+    const e={x:{favored:'GBP',thesisStrength:'FORTE'},px:1,px5:.5,A:{q},B:{q},flow:.1,matched:r};
+    const read=(x,d=date)=>pairOperationalRead('GBP','JPY',x,today,d);
+    const real=[];for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++){const a=FX[i],b=FX[j],x=pairOperationalRead(a,b,pairEvidence(a,b)),y=pairOperationalRead(b,a,pairEvidence(b,a));real.push({same:x.status===y.status,valid:[x,y].every(z=>[z.status,z.support,z.against,z.before].every(v=>typeof v==='string'&&v.length>0))});}
+    return {aligned:read(e),contrary:read({...e,px5:-.5}),indicative:read({...e,matched:{...r,grade:'REPRESENTATIVE'}}),stale:read(e,'2026-10-27'),none:read({...e,x:null}),real};
+   });
+   assert.match(pairOps.aligned.status,/coerente con tassi e prezzo/);
+   assert.match(pairOps.contrary.against,/5 fixing/);
+   assert.match(pairOps.indicative.before,/rappresentativo/);
+   assert.match(pairOps.stale.before,/Prezzo non recente/);
+   assert.match(pairOps.none.status,/Nessuna direzione/);
+   assert.equal(pairOps.real.length,28);assert(pairOps.real.every(x=>x.valid),JSON.stringify(pairOps.real));
+   console.log('STUDIO_PAIR_OPERATIONAL_PASS',width);
+
    assert.equal(await page.locator('#pair-gov').count(),1);
    assert.equal(await page.locator('#pair-monetary').count(),1);
    const relativeTests=await page.evaluate(()=>{
@@ -100,6 +133,17 @@ const {chromium}=require('playwright');
    assert.equal(checked.length,28);assert(checked.every(x=>x.sameFavored&&x.flow&&x.pricing));
    assert.match(await page.locator('#studio-research .plain-reading').innerText(),/Da seguire:/);
    await page.getByRole('button',{name:'Forza G8',exact:true}).click();
+   const judgments=await page.evaluate(()=>{
+     const e={m:['Crescita rallenta'],current:1,recent:-.2,q:{date:'2026-11-17',net:100,delta1:-20}};
+     const c=[{state:'aligned',rate:1},{state:'divergent',rate:-1},{state:'indicative'},{state:'flat'}];
+     return {mixed:currencyJudgment(e,c,'2026-11-28','2026-11-27'),stale:currencyJudgment(e,c,'2026-12-20','2026-11-27'),empty:currencyJudgment({...e,q:null},[],'2026-11-28','2026-11-27'),real:FX.map(k=>({k,peers:currencyRelativeEvidence(k)}))};
+   });
+   assert.match(judgments.mixed.title,/movimento recente si oppone/);assert.equal(judgments.mixed.usable,3);assert.match(judgments.mixed.meaning,/1 concordanti.*1 divergenti.*3\/7.*rappresentativi esclusi/);
+   assert.match(judgments.stale.title,/Prezzo non recente/);assert.match(judgments.stale.meaning,/COT datato/);
+   assert.equal(judgments.empty.usable,0);assert.match(judgments.empty.meaning,/Nessun confronto/);
+   assert(judgments.real.every(x=>x.peers.length===7&&new Set(x.peers.map(y=>y.peer)).size===7&&x.peers.every(y=>y.peer!==x.k)));
+   console.log('STUDIO_CURRENCY_JUDGMENT_PASS',width);
+
    for(const c of ['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD']){
      await page.evaluate(c=>{state.ccy=c;render()},c);
      assert.equal(await page.locator('#currency-dossier .sector-read').count(),4);
@@ -194,6 +238,15 @@ const {chromium}=require('playwright');
    assert.notEqual(await page.locator('#studio-research .plain-reading').innerText(),originalReading);
    assert(await page.locator('#studio-research svg').count()>0);
    await page.locator('#nav button').getByText('Cross-Asset',{exact:true}).click();
+   const operational=await page.evaluate(()=>{
+     const r={date:'2026-11-26','2Y':3,'10Y':4};
+     const partial={source_errors:{SX5E:'HTTP 503'},streams:{SX5E:{date:'2026-11-27'}}};
+     return {recent:governmentEvidence(r,'2026-11-28').state,stale:governmentEvidence({...r,date:'2026-09-30'},'2026-11-28').state,manual:governmentEvidence({...r,freshness_status:'OFFICIAL_POSTROLL_RECONCILED_ONE_TIME_RELEASE'},'2026-11-28').state,future:governmentEvidence({...r,date:'2026-11-29'},'2026-11-28').state,missing:governmentEvidence(null,'2026-11-28').state,partial:riskAcquisitionIssues(partial),note:riskAcquisitionNote(partial),clean:riskAcquisitionNote({source_errors:{}}),consensus:calendarCoverageNote({coverage:{upcoming_total_events:73,consensus_available_events:0}}),unknown:calendarEvidence({}),invalid:calendarEvidence({coverage:{upcoming_total_events:2,consensus_available_events:3}})};
+   });
+   assert.equal(operational.recent,'recent');assert.equal(operational.stale,'stale');assert.equal(operational.manual,'manual');assert.equal(operational.future,'missing');assert.equal(operational.missing,'missing');
+   assert.equal(operational.partial.length,1);assert.equal(operational.partial[0].date,'2026-11-27');assert.match(operational.note,/Euro Stoxx 50.*HTTP 503/);assert.equal(operational.clean,'');
+   assert.match(operational.consensus,/0\/73.*non stimare la sorpresa/);assert.equal(operational.unknown,null);assert.equal(operational.invalid,null);
+   console.log('STUDIO_OPERATIONAL_EVIDENCE_PASS',width);
    const riskCheck=await page.evaluate(()=>{
      const q=crossRiskStory().q;
      const dates=['2026-11-19','2026-11-20','2026-11-23','2026-11-24','2026-11-25','2026-11-26'];
@@ -253,6 +306,16 @@ const {chromium}=require('playwright');
    assert.equal(errors.length,0,errors.join('\n'));
    await page.locator('#nav button').getByText('Control Room',{exact:true}).click();
    assert.match(await page.locator('#view').innerText(),/Ultimi dati macro documentati.*Prossimo catalizzatore in agenda/s);
+   await page.evaluate(()=>choosePair('GBP','JPY'));
+   await page.reload({waitUntil:'domcontentloaded'});
+   await page.waitForFunction(()=>!document.getElementById('refresh').disabled,{},{timeout:40000});
+   assert.equal(await page.getByLabel('Valuta base').inputValue(),'GBP');
+   assert.equal(await page.getByLabel('Controvaluta').inputValue(),'JPY');
+   assert.equal(await page.locator('body > .shell').count(),1);
+   assert.equal(await page.locator('iframe').count(),0);
+   await page.locator('#nav button').getByText('Control Room',{exact:true}).click();
+   const moduleCount=await page.locator('script[data-studio-module]').count();
+   assert(moduleCount>0);
    await page.route('**/ECB_G8_PRICE_HISTORY.json',route=>route.abort());
    await page.locator('#refresh').click();
    await page.waitForFunction(()=>!document.getElementById('refresh').disabled,{},{timeout:40000});
@@ -261,6 +324,10 @@ const {chromium}=require('playwright');
    assert.equal(fallback.prices,false);
    assert.equal(fallback.coverage.gov,0);
    assert.equal(fallback.coverage.monetary,0);
+   assert.equal(await page.locator('script[data-studio-module]').count(),moduleCount);
+   const unique=await page.locator('script[data-studio-module]').evaluateAll(nodes=>new Set(nodes.map(x=>x.dataset.studioModule)).size);
+   assert.equal(unique,moduleCount);
+   console.log('STUDIO_SINGLE_INTERFACE_RELOAD_PASS',width);
 
    assert.equal(errors.length,0,errors.join('\n'));
    console.log('STUDIO_PREVIEW_REAL_FEEDS_NAVIGATION_FALLBACK_PASS',width);
