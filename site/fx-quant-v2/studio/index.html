@@ -191,14 +191,37 @@ function rateBrief(e){
 }
 function priceBrief(e){
  if(!finite(e.current)||!finite(e.recent))return 'Fixing BCE non disponibile.';
- return 'Nel paniere G8 la valuta '+direction(e.current,.01)+' su 20 sedute; '+(e.current*e.recent<0?'le ultime cinque vanno in senso opposto.':'nelle ultime cinque '+direction(e.recent,.01)+'.')+' Fixing '+dateIT(priceDates[2])+'.';
+ return 'Nel paniere G8 la valuta '+direction(e.current,.01)+' su 20 sedute ('+sign(e.current,2)+'%); '+(e.current*e.recent<0?'le ultime cinque vanno in senso opposto':'nelle ultime cinque '+direction(e.recent,.01))+' ('+sign(e.recent,2)+'%). Fixing '+dateIT(priceDates[2])+'.';
+}
+function currencyRelativeEvidence(c){
+ return FX.filter(k=>k!==c).map(k=>{
+  const r=studioPricingComparison(c,k),x=r?.weekExact||r?.common?.medium;
+  if(!x||!finite(x.relativeBp)||!finite(x.fxPct)||!validDay(x.from)||!validDay(x.asof)||x.from>=x.asof)return {peer:k,state:'missing'};
+  if(x.grade==='REPRESENTATIVE')return {peer:k,state:'indicative',from:x.from,to:x.asof};
+  if(!['MATCHED_EXACT_INTERVAL','OBSERVED'].includes(x.grade))return {peer:k,state:'missing'};
+  const rate=Math.abs(x.relativeBp)>.05?Math.sign(x.relativeBp):0,price=Math.abs(x.fxPct)>.05?Math.sign(x.fxPct):0;
+  return {peer:k,state:rate&&price?(rate===price?'aligned':'divergent'):'flat',rate,price,from:x.from,to:x.asof,relativeBp:x.relativeBp,fxPct:x.fxPct};
+ });
+}
+function currencyJudgment(e,comparisons,today=day(),fixingDate=priceDates[2]){
+ const dateOK=(d,max)=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(Date.parse(d))&&d<=today&&(Date.parse(today)-Date.parse(d))/864e5<=max;
+ const pxOK=dateOK(fixingDate,7)&&finite(e.current)&&finite(e.recent);
+ const p=pxOK&&Math.abs(e.current)>.05?Math.sign(e.current):0,short=pxOK&&Math.abs(e.recent)>.05?Math.sign(e.recent):0;
+ const aligned=comparisons.filter(x=>x.state==='aligned'),divergent=comparisons.filter(x=>x.state==='divergent'),flat=comparisons.filter(x=>x.state==='flat'),indicative=comparisons.filter(x=>x.state==='indicative');
+ const usable=aligned.length+divergent.length+flat.length,positive=aligned.filter(x=>x.rate>0).length,negative=aligned.filter(x=>x.rate<0).length;
+ let title=!pxOK?'Prezzo non recente o non verificato':!p?'Il prezzo non dà una direzione distinta':p>0?'La valuta guadagna terreno':'La valuta perde terreno';
+ if(p&&short===-p)title+=', ma il movimento recente si oppone';
+ else if(p&&short===p)title+=', con continuità recente';
+ const macro=e.m?'Economia: '+e.m[0]+'.':'Economia non verificata.';
+ const relative=usable?'Confronti 6M/FX su date comuni: '+aligned.length+' concordanti ('+positive+' a favore, '+negative+' contro), '+divergent.length+' divergenti, '+flat.length+' senza direzione; '+usable+'/7 utilizzabili.':'Nessun confronto 6M/FX osservato su date comuni.';
+ const positioning=!e.q?'COT non riconciliato.':!dateOK(e.q.date,14)?'COT datato: solo contesto storico.':'COT del '+dateIT(e.q.date)+': '+(e.q.net>0?'net long':e.q.net<0?'net short':'neutro')+', netto '+(e.q.delta1>0?'in aumento':e.q.delta1<0?'in diminuzione':'stabile')+'. Non è un flusso spot.';
+ const meaning=relative+(indicative.length?' '+indicative.length+' confronti rappresentativi esclusi dal giudizio.':'')+' '+positioning+' Le finestre e gli strumenti possono differire fra coppie: nessun punteggio o causalità implicita.';
+ const watch=!pxOK?'Ripristinare il prezzo recente prima di valutare il timing.':!usable?'Attendere confronti monetari omogenei prima di attribuire il movimento ai tassi.':divergent.length?'Indagare le coppie divergenti; controllare rischio, macro e posizionamento prima di scegliere la controvaluta.':p&&short===-p?'Attendere conferma o esaurimento del movimento opposto; verificare i differenziali.':'Cercare la coppia con evidenze coerenti e verificare timing e rischio.';
+ return {title,what:macro+' '+(pxOK?priceBrief(e):'Ultimo fixing non utilizzabile come lettura corrente.'),meaning,watch,usable};
 }
 function currencyDossier(){
- const c=state.ccy,e=fxEvidence(c),w=e.p?.week?.bp,px=e.current,q=e.q;
- const rateSign=finite(w)&&Math.abs(w)>.05?Math.sign(w):0,priceSign=finite(px)&&Math.abs(px)>.05?Math.sign(px):0;
- const title=rateSign&&priceSign?(rateSign===priceSign?'Tassi attesi e cambio si muovono nella stessa direzione':'Il cambio non segue la direzione dei tassi attesi'):'Manca una conferma direzionale tra tassi e prezzo';
- const meaning=rateSign&&priceSign&&rateSign!==priceSign?'Il mercato valutario può riflettere il differenziale con le altre economie o altri driver: il solo tasso domestico non spiega il cambio.':'Il confronto è descrittivo: servono differenziali relativi e date comparabili, non una causalità presunta.';
- return '<section class="panel section-gap" id="currency-dossier"><h2>'+flag[c]+' '+c+' · Giudizio sulla valuta</h2>'+ccySelector()+plainRead(title,priceBrief(e),meaning,'Verificare il differenziale monetario e la continuità del posizionamento, prima di scegliere la controvaluta.')+'<div class="grid2">'+[['Economia',e.m?e.m[0]+'. '+e.m[1]:'Quadro macro non disponibile.'],['Aspettative monetarie',rateBrief(e)],['Posizionamento',cotBrief(e)],['Prezzo',priceBrief(e)]].map(([k,v])=>'<article class="sector-read"><h3>'+safe(k)+'</h3><p>'+safe(v)+'</p></article>').join('')+'</div><div class="controls"><button onclick="go(\'macro\')">Economia completa</button><button onclick="go(\'rates\')">Curve e rendimenti</button><button onclick="state.fxmode=\'cot\';render()">COT completo</button></div></section>';
+ const c=state.ccy,e=fxEvidence(c),comparisons=currencyRelativeEvidence(c),j=currencyJudgment(e,comparisons);
+ return '<section class="panel section-gap" id="currency-dossier"><h2>'+flag[c]+' '+c+' · Giudizio sulla valuta</h2>'+ccySelector()+plainRead(j.title,j.what,j.meaning,j.watch)+'<div class="grid2">'+[['Economia',e.m?e.m[0]+'. '+e.m[1]+' '+e.m[2]:'Quadro macro non disponibile.'],['Aspettative monetarie',rateBrief(e)],['Posizionamento',cotBrief(e)],['Prezzo',priceBrief(e)]].map(([k,v])=>'<article class="sector-read"><h3>'+safe(k)+'</h3><p>'+safe(v)+'</p></article>').join('')+'</div><div class="controls"><button onclick="go(\'macro\')">Economia completa</button><button onclick="go(\'rates\')">Curve e rendimenti</button><button onclick="state.fxmode=\'cot\';render()">COT completo</button></div></section>';
 }
 function exactRelativePricing(a,b){
  const api=window.FXQuantPricingHistory;if(!api)return null;
@@ -218,7 +241,7 @@ function pairEvidence(a,b){
  const fxside=finite(px)&&Math.abs(px)>=.15?Math.sign(px):0,shortside=finite(px5)&&Math.abs(px5)>=.05?Math.sign(px5):0;
  const pside=rp&&Math.abs(rp.bp)>.05?Math.sign(rp.bp):0;
  const summary=!favored?'Nessun vantaggio fondamentale distinto':x.thesisStrength==='CONTRASTATA'?'Tesi a favore di '+favored+', ma contrastata':'Tesi stimata a favore di '+favored;
- const timing=!favored?'Il movimento del cambio non basta a identificare una tesi.':fxside===-factor||shortside===-factor?'Il prezzo non conferma pienamente la direzione stimata: non anticipare l’ingresso.':fxside===factor&&shortside===factor?'Il prezzo è coerente su 5 e 20 fixing; manca ancora la verifica tecnica e del rischio.':'Il prezzo non offre una conferma uniforme.';
+ const timing=!favored?'Il movimento del cambio non basta a identificare una tesi.':!loaded.prices||!validDay(priceDates[2])||(Date.parse(day())-Date.parse(priceDates[2]))/864e5>7?'Prezzo non recente o non verificato: timing non valutabile.':fxside===-factor||shortside===-factor?'Il prezzo non conferma pienamente la direzione stimata: non anticipare l’ingresso.':fxside===factor&&shortside===factor?'Il prezzo è coerente su 5 e 20 fixing; manca ancora la verifica tecnica e del rischio.':'Il prezzo non offre una conferma uniforme.';
  const rateText=rp?'Il differenziale dei riferimenti 6M '+direction(rp.bp,.05)+' (base meno controvaluta: '+bp(rp.bp)+'). '+dateIT(rp.from)+'–'+dateIT(rp.to)+'. '+(rp.comparable?'Confronto indicativo fra strumenti dello stesso tipo.':'Strumenti diversi: confronto indicativo, non spread OIS puro.'):'Manca un confronto settimanale omogeneo per date e contratti dei riferimenti monetari. Non calcoliamo una variazione relativa.';
  const flowText=cotOK?'Rispetto all’OI corrente di ciascun mercato, il netto settimanale '+(Math.abs(flow)<.005?'cambia in misura relativa simile':flow>0?'migliora maggiormente (o peggiora meno) per '+a:'migliora maggiormente (o peggiora meno) per '+b)+'. Non sono flussi spot.':'COT non confrontabile sulla stessa rilevazione.';
  const rateConflict=factor&&pside?(factor===pside?'Il repricing indicativo è coerente con la tesi.':'Il repricing indicativo è contrario alla tesi.'):'Il repricing relativo non dà una conferma distinta.';
