@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-28T04:03:00.215958Z",
-  "edition_time_rome": "2026-11-28 05:03",
-  "material_digest": "1e6adb31b0907c0616d5a6b8744c2f9c1dd53464d5335796a3789f1e4a81a38e",
+  "generated_at_utc": "2026-11-28T09:48:34.516877Z",
+  "edition_time_rome": "2026-11-28 10:48",
+  "material_digest": "8aa2eaf28af0f42cd06896df447e989285afcb191dbd6334b461469b800eca4a",
   "editorial_contract": "V3_SOURCE_DATED_SESSION_READING",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Dollaro in rialzo",
@@ -46,7 +46,7 @@
       "evidence": "Alla chiusura del 27 novembre, VIX −2,99 punti."
     },
     {
-      "headline": "Oro e petrolio in rialzo",
+      "headline": "L’oro sale, il petrolio scende",
       "analysis": "Se il movimento del petrolio prosegue, guarda come reagisce il dollaro canadese.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-27",
@@ -56,7 +56,19 @@
         "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
         "https://query1.finance.yahoo.com/v8/finance/chart/CL=F"
       ],
-      "evidence": "Proxy futures da fonte secondaria. Oro +3,75% al 27 novembre. WTI +2,50% al 27 novembre."
+      "evidence": "Proxy futures da fonte secondaria. Oro +3,75% al 27 novembre. WTI −0,72% al 27 novembre."
+    },
+    {
+      "headline": "Boris Vujčić: Interview with Kurier",
+      "analysis": "Conta se dalle parole emerge un cambiamento di posizione sui tassi.",
+      "kind": "NEWS",
+      "published_date": "2026-11-28",
+      "event_date": "2026-11-28",
+      "market_area": "BANCHE CENTRALI",
+      "sources": [
+        "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261128~10e11f78f1.en.html"
+      ],
+      "evidence": ""
     },
     {
       "headline": "Global electricity generation more than doubled from 2000 to 2025",
@@ -69,23 +81,11 @@
         "https://www.eia.gov/todayinenergy/detail.php?id=68525"
       ],
       "evidence": ""
-    },
-    {
-      "headline": "ECB Consumer Expectations Survey results – October 2026",
-      "analysis": "Da seguire se le prospettive per crescita e prezzi cambiano le attese sui tassi.",
-      "kind": "FOLLOW_UP",
-      "published_date": "2026-11-27",
-      "event_date": "2026-11-27",
-      "market_area": "BANCHE CENTRALI",
-      "sources": [
-        "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261127~2e53af695e.en.html"
-      ],
-      "evidence": ""
     }
   ],
   "desk_judgment": "Il 27 novembre il dollaro ha guadagnato contro euro e yen. La volatilità azionaria è scesa alla chiusura del 27 novembre.",
   "fx_implications": "Il 30 novembre alle 09:00 italiane è in programma Swiss quarterly GDP (CHF). Da verificare la risposta dei tassi e di CHF.",
-  "what_changed": "Nei proxy futures del 27 novembre l’oro sale e il WTI sale.",
+  "what_changed": "Nei proxy futures del 27 novembre l’oro sale e il WTI scende.",
   "contrary_evidence": "La tenuta del movimento dipende anche dal sostegno dei tassi a breve.",
   "watch": "Dopo il dato, guarda se il cambio segue lo spostamento delle attese sui tassi.",
   "provenance": {
@@ -94,14 +94,14 @@
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-3rd-quarter-2026",
-      "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261127~2e53af695e.en.html",
+      "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261128~10e11f78f1.en.html",
       "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "https://www.eia.gov/todayinenergy/detail.php?id=68525"
     ],
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-27",
-      "rss_checked_at_utc": "2026-11-28T04:03:00.215958Z",
+      "rss_checked_at_utc": "2026-11-28T09:48:34.516877Z",
       "commodities": "2026-11-27"
     },
     "no_paid_api": true,
@@ -109,6 +109,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-28T04:03:00.215958Z",
+      "headline": "Dollaro in rialzo",
+      "material_digest": "1e6adb31b0907c0616d5a6b8744c2f9c1dd53464d5335796a3789f1e4a81a38e"
+    },
     {
       "generated_at_utc": "2026-11-28T02:46:12.917633Z",
       "headline": "Dollaro in rialzo",
@@ -223,11 +228,6 @@
       "generated_at_utc": "2026-11-25T17:14:40.248454Z",
       "headline": "Dollaro in rialzo",
       "material_digest": "220933420c316b2cd3e0c91f278d6865f7b9249d86f552e9c9eb0dd534b243cf"
-    },
-    {
-      "generated_at_utc": "2026-11-25T17:02:15.881049Z",
-      "headline": "Dollaro in rialzo",
-      "material_digest": "cf0463098cddff9a8e930293b2d88daa78816149daafeb22c9083a5eea497e68"
     }
   ]
 }
