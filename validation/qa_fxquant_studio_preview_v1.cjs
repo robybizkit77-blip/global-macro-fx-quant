@@ -62,6 +62,17 @@ const {chromium}=require('playwright');
    await page.getByRole('button',{name:'Long / Short',exact:true}).click();
    assert(await page.locator('#studio-research .native-chart svg').count()>=2);
    await page.locator('#nav button').getByText('Tassi',{exact:true}).click();
+   assert.equal(await page.locator('[data-studio-bank]').count(),8);
+   for(const c of ['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD']){
+     await page.locator('[data-studio-bank="'+c+'"]').click();
+     assert.equal(await page.locator('#bank-dossier .sector-read').count(),4);
+     const t=await page.locator('#bank-dossier').innerText();
+     assert.match(t,/Tasso ufficiale.*decisione.*WANT.*CAN.*PRICE.*Forex/s);
+     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'Bank dossier overflow '+c+' '+width);
+   }
+   const absent=await page.evaluate(()=>{const old=loaded.cb;delete loaded.cb;try{return bankEvidence('USD').valid}finally{loaded.cb=old}});
+   assert.equal(absent,false);
+
    await page.locator('.native-curve-card').first().waitFor({timeout:45000});
    assert.equal(await page.locator('.native-curve-card').count(),8);
    assert.equal(await page.locator('.native-curve-card svg').count(),8);
