@@ -194,6 +194,15 @@ const {chromium}=require('playwright');
    assert.notEqual(await page.locator('#studio-research .plain-reading').innerText(),originalReading);
    assert(await page.locator('#studio-research svg').count()>0);
    await page.locator('#nav button').getByText('Cross-Asset',{exact:true}).click();
+   const operational=await page.evaluate(()=>{
+     const r={date:'2026-11-26','2Y':3,'10Y':4};
+     const partial={source_errors:{SX5E:'HTTP 503'},streams:{SX5E:{date:'2026-11-27'}}};
+     return {recent:governmentEvidence(r,'2026-11-28').state,stale:governmentEvidence({...r,date:'2026-09-30'},'2026-11-28').state,manual:governmentEvidence({...r,freshness_status:'OFFICIAL_POSTROLL_RECONCILED_ONE_TIME_RELEASE'},'2026-11-28').state,future:governmentEvidence({...r,date:'2026-11-29'},'2026-11-28').state,missing:governmentEvidence(null,'2026-11-28').state,partial:riskAcquisitionIssues(partial),note:riskAcquisitionNote(partial),clean:riskAcquisitionNote({source_errors:{}}),consensus:calendarCoverageNote({coverage:{upcoming_total_events:73,consensus_available_events:0}}),unknown:calendarEvidence({}),invalid:calendarEvidence({coverage:{upcoming_total_events:2,consensus_available_events:3}})};
+   });
+   assert.equal(operational.recent,'recent');assert.equal(operational.stale,'stale');assert.equal(operational.manual,'manual');assert.equal(operational.future,'missing');assert.equal(operational.missing,'missing');
+   assert.equal(operational.partial.length,1);assert.equal(operational.partial[0].date,'2026-11-27');assert.match(operational.note,/Euro Stoxx 50.*HTTP 503/);assert.equal(operational.clean,'');
+   assert.match(operational.consensus,/0\/73.*non stimare la sorpresa/);assert.equal(operational.unknown,null);assert.equal(operational.invalid,null);
+   console.log('STUDIO_OPERATIONAL_EVIDENCE_PASS',width);
    const riskCheck=await page.evaluate(()=>{
      const q=crossRiskStory().q;
      const dates=['2026-11-19','2026-11-20','2026-11-23','2026-11-24','2026-11-25','2026-11-26'];
