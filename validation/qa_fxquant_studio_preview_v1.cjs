@@ -34,6 +34,24 @@ const {chromium}=require('playwright');
    await page.getByLabel('Controvaluta').selectOption('JPY');
    assert.match(await page.locator('#view').innerText(),/GBP\/JPY/);
    assert.equal(await page.locator('#pair-evidence .sector-read').count(),4);
+   assert.equal(await page.locator('#pair-gov').count(),1);
+   assert.equal(await page.locator('#pair-monetary').count(),1);
+   const relativeTests=await page.evaluate(()=>{
+     const result=[];
+     for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++){
+       const a=FX[i],b=FX[j],g=studioGovComparison(a,b),m=studioPricingComparison(a,b);
+       const rows=g?.rows||[],dateOK=rows.every((x,i)=>!i||x.date>rows[i-1].date);
+       const exacts=[m?.oneExact,m?.weekExact].filter(Boolean);
+       const matched=exacts.every(x=>x.grade==='MATCHED_EXACT_INTERVAL'&&Number.isFinite(x.fxPct)&&x.from<x.asof);
+       result.push({a,b,dateOK,matched,gov:!!g?.ready,monetary:exacts.length});
+     }
+     return result;
+   });
+   assert.equal(relativeTests.length,28);
+   assert(relativeTests.every(x=>x.dateOK&&x.matched));
+   assert(relativeTests.some(x=>x.gov));
+   console.log('STUDIO_RELATIVE_RATES',JSON.stringify(relativeTests));
+
    assert.match(await page.locator('#view').innerText(),/Solidità della tesi.*Attrattività operativa/s);
    const checked=await page.evaluate(()=>{
      const res=[];for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++){
