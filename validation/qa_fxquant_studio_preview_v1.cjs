@@ -149,6 +149,14 @@ const {chromium}=require('playwright');
    assert.equal(riskCheck.missing,false);
    assert.equal(await page.locator('#risk-common tbody tr').count(),5);
    assert.equal(await page.locator('#risk-financial .sector-read').count(),2);
+   const sourceCoverage=await page.evaluate(()=>FX.map(c=>({c,rows:supplementalFinancial(c).length})));
+   assert(sourceCoverage.every(x=>x.rows>0),JSON.stringify(sourceCoverage));
+   assert.equal(await page.locator('#studio-commodities .sector-read').count(),3);
+   assert(await page.locator('#studio-supplemental .sector-read').count()>0);
+   const gaps=await page.evaluate(()=>({same:tenorConnect({date:'03M',asof:'2026-11-26'},{date:'06M',asof:'2026-11-26'}),different:tenorConnect({date:'03M',asof:'2026-11-25'},{date:'06M',asof:'2026-11-26'}),missing:tenorConnect({date:'03M'},{date:'06M'}),skip:tenorConnect({date:'03M',asof:'2026-11-26'},{date:'12M',asof:'2026-11-26'})}));
+   assert(gaps.same&&!gaps.different&&!gaps.missing&&!gaps.skip);
+   console.log('STUDIO_SUPPLEMENTAL_COVERAGE',JSON.stringify(sourceCoverage));
+
 
    assert(await page.locator('#studio-research svg').count()>=2);
    await page.getByRole('button',{name:'VIX',exact:true}).click();
