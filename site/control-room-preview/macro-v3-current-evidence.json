@@ -3627,19 +3627,19 @@
           "velocity_pp": -0.07000000000000028
         },
         {
-          "acceleration_pp": -0.14666346150380427,
+          "acceleration_pp": -0.3066197575834595,
           "frequency": "W",
           "horizon": "EXACT_7_CALENDAR_DAYS",
           "label": "Credito bancario totale",
-          "level": 20133.1843,
+          "level": 20147.3554,
           "measurement": "STOCK",
-          "momentum_pct": 0.3103004198485415,
+          "momentum_pct": 0.06299780115603948,
           "pillar": "credit",
           "quality": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
-          "reference_period": "2026-11-11",
+          "reference_period": "2026-11-18",
           "series_id": "US_TOTBKCR_history_value",
           "unit": "Billions of U.S. Dollars",
-          "velocity_pp": 0.0681173259654555
+          "velocity_pp": -0.24707424193270988
         },
         {
           "acceleration_pp": 9.799999999999999,
@@ -3657,34 +3657,34 @@
           "velocity_pp": 1.7
         },
         {
-          "acceleration_pp": -0.5382284995186559,
+          "acceleration_pp": 0.5346566601465264,
           "frequency": "W",
           "horizon": "EXACT_7_CALENDAR_DAYS",
           "label": "Fed — totale attivi",
-          "level": 6741452.0,
+          "level": 6732044.0,
           "measurement": "STOCK",
-          "momentum_pct": -0.2576615281821626,
+          "momentum_pct": -0.1395545054685532,
           "pillar": "liquidity",
           "quality": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
-          "reference_period": "2026-11-18",
+          "reference_period": "2026-11-25",
           "series_id": "US_WALCL_history_value",
           "unit": "Millions of U.S. Dollars",
-          "velocity_pp": -0.41654963743291695
+          "velocity_pp": 0.1181070227136094
         },
         {
-          "acceleration_pp": -0.18428026385104435,
+          "acceleration_pp": -0.7822719309129367,
           "frequency": "W",
           "horizon": "EXACT_7_CALENDAR_DAYS",
           "label": "Riserve bancarie",
-          "level": 2979656.0,
+          "level": 2963667.0,
           "measurement": "STOCK",
-          "momentum_pct": 0.6435513305904195,
+          "momentum_pct": -0.5366055678910575,
           "pillar": "liquidity",
           "quality": "FRED_PUBLISHED_CURRENT_REVISED_HISTORY_NOT_PIT",
-          "reference_period": "2026-11-18",
+          "reference_period": "2026-11-25",
           "series_id": "US_WRESBAL_history_value",
           "unit": "Millions of U.S. Dollars",
-          "velocity_pp": -0.3978849675685403
+          "velocity_pp": -1.180156898481477
         },
         {
           "acceleration_pp": 0.008314040220191998,
@@ -3726,7 +3726,7 @@
     "writes_live_data": false
   },
   "sector_financial_status": "RESEARCH_ONLY",
-  "snapshot_content_sha256": "487895da2f1670fd1482ac2dfa769703714d151869c21dfd7b69fbbe52254f11",
+  "snapshot_content_sha256": "b4aeae5ae0debf48255b3df9bc5ce5f3d114225643065cf9cdd8e49a9eef1a1d",
   "source_observation_periods_not_release_days": true,
   "source_receipt_sha256": "1efcbed0fd1ae5e0b774f4d762cf0c466f8a60d71087be522945c0f3931f6341",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
