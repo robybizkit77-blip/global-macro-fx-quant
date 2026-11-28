@@ -25,6 +25,26 @@ const {chromium}=require('playwright');
    const status=await page.locator('#source-state').innerText();
    assert.match(status,/11\/11 feed letti/,'Actual repository feeds must load: '+status);
    assert.match(status,/motore FX disponibile/,'Existing FX engine must evaluate: '+status);
+   assert.equal(await page.locator('.desk-edition').count(),1);
+   assert.match(await page.locator('.desk-edition').innerText(),/Giudizio del desk.*Perché conta.*Cosa guardare/s);
+   assert.equal(await page.locator('#desk-market-charts .native-chart svg').count(),1);
+   assert.equal(await page.locator('#desk-market-charts .hbar').count(),8);
+   assert.equal(await page.locator('#desk-source-detail').getAttribute('open'),null);
+   assert.equal(await page.locator('#desk-quant-detail').getAttribute('open'),null);
+   assert.equal(await page.locator('#desk-hourly-detail').getAttribute('open'),null);
+   await page.locator('#desk-source-detail > summary').click();
+   assert(await page.locator('#studio-health').isVisible());
+   await page.locator('#desk-source-detail > summary').click();
+   for(const label of ['Grafici macro →','Curve OIS e governativi →','Grafici Forex →','Grafici COT →','Azioni, credito e volatilità →']){
+     await page.getByRole('button',{name:label,exact:true}).click();
+     assert(await page.locator('#studio-research').isVisible(),label);
+     assert(await page.locator('#studio-research svg').count()>0,label+' has no graph');
+     assert(await page.getByRole('button',{name:'Vai ai grafici ↓',exact:true}).isVisible());
+     await page.getByRole('button',{name:'Torna al giudizio ↑',exact:true}).click();
+     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),label+' overflow '+width);
+     await page.locator('#nav button').getByText('Control Room',{exact:true}).click();
+   }
+   console.log('STUDIO_PROFESSIONAL_EDITORIAL_PASS',width);
    assert.equal(await page.locator('#studio-enhanced tbody tr').count(),8);
    assert.equal(await page.locator('#studio-health').count(),1);
    assert.equal(await page.locator('#studio-source-audit .sector-read').count(),9);
