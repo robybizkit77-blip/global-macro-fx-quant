@@ -103,6 +103,17 @@ const {chromium}=require('playwright');
    assert.equal(checked.length,28);assert(checked.every(x=>x.sameFavored&&x.flow&&x.pricing));
    assert.match(await page.locator('#studio-research .plain-reading').innerText(),/Da seguire:/);
    await page.getByRole('button',{name:'Forza G8',exact:true}).click();
+   const judgments=await page.evaluate(()=>{
+     const e={m:['Crescita rallenta'],current:1,recent:-.2,q:{date:'2026-11-17',net:100,delta1:-20}};
+     const c=[{state:'aligned',rate:1},{state:'divergent',rate:-1},{state:'indicative'},{state:'flat'}];
+     return {mixed:currencyJudgment(e,c,'2026-11-28','2026-11-27'),stale:currencyJudgment(e,c,'2026-12-20','2026-11-27'),empty:currencyJudgment({...e,q:null},[],'2026-11-28','2026-11-27'),real:FX.map(k=>({k,peers:currencyRelativeEvidence(k)}))};
+   });
+   assert.match(judgments.mixed.title,/movimento recente si oppone/);assert.equal(judgments.mixed.usable,3);assert.match(judgments.mixed.meaning,/1 concordanti.*1 divergenti.*3\/7.*rappresentativi esclusi/);
+   assert.match(judgments.stale.title,/Prezzo non recente/);assert.match(judgments.stale.meaning,/COT datato/);
+   assert.equal(judgments.empty.usable,0);assert.match(judgments.empty.meaning,/Nessun confronto/);
+   assert(judgments.real.every(x=>x.peers.length===7&&new Set(x.peers.map(y=>y.peer)).size===7&&x.peers.every(y=>y.peer!==x.k)));
+   console.log('STUDIO_CURRENCY_JUDGMENT_PASS',width);
+
    for(const c of ['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD']){
      await page.evaluate(c=>{state.ccy=c;render()},c);
      assert.equal(await page.locator('#currency-dossier .sector-read').count(),4);
