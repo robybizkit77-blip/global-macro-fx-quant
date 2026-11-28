@@ -14,6 +14,16 @@ const {chromium}=require('playwright');
    assert.match(status,/motore FX disponibile/,'Existing FX engine must evaluate: '+status);
    assert.equal(await page.locator('#studio-enhanced tbody tr').count(),8);
    assert.equal(await page.locator('#studio-health').count(),1);
+   assert.equal(await page.locator('#studio-source-audit .sector-read').count(),6);
+   const audit=await page.evaluate(()=>({feeds:studioSourceAudit(),coverage:studioRelativeCoverage()}));
+   assert.equal(audit.feeds.total,30);
+   assert(audit.feeds.read>=28&&audit.feeds.read<=30);
+   assert.equal(audit.coverage.pairs.length,28);
+   assert(audit.coverage.gov>0&&audit.coverage.gov<=28&&audit.coverage.monetary<=28);
+   assert.equal(await page.locator('#studio-source-audit table').first().locator('tbody tr').count(),30);
+   assert.equal(await page.locator('#studio-source-audit table').last().locator('tbody tr').count(),28);
+   console.log('STUDIO_SOURCE_AUDIT',JSON.stringify({read:audit.feeds.read,total:audit.feeds.total,gov:audit.coverage.gov,monetary:audit.coverage.monetary,historical:audit.coverage.historical}));
+
    const enhanced=await page.evaluate(()=>researchG8().map(x=>({currency:x.currency,coverage:x.result?.enhanced?.coverage,score:x.result?.enhanced?.score,estimated:x.result?.enhanced?.estimatedWeight,ranking:x.result?.affectsFxRanking})));
    assert.equal(enhanced.length,8);
    assert(enhanced.every(x=>Number.isFinite(x.coverage)&&x.coverage>=0&&x.coverage<=100&&Number.isFinite(x.estimated)&&x.estimated>=0&&x.estimated<=x.coverage&&x.ranking===false&&(x.coverage===100?Number.isFinite(x.score)&&x.score>=0&&x.score<=10:x.score===null)));
@@ -188,6 +198,11 @@ const {chromium}=require('playwright');
    await page.locator('#refresh').click();
    await page.waitForFunction(()=>!document.getElementById('refresh').disabled,{},{timeout:40000});
    assert.match(await page.locator('#source-state').innerText(),/10\/11 feed letti.*motore FX non disponibile.*prices/);
+   const fallback=await page.evaluate(()=>({prices:studioSourceAudit().rows.find(r=>r.k==='prices').ok,coverage:studioRelativeCoverage()}));
+   assert.equal(fallback.prices,false);
+   assert.equal(fallback.coverage.gov,0);
+   assert.equal(fallback.coverage.monetary,0);
+
    assert.equal(errors.length,0,errors.join('\n'));
    console.log('STUDIO_PREVIEW_REAL_FEEDS_NAVIGATION_FALLBACK_PASS',width);
    await page.close();
