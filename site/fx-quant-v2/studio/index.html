@@ -306,6 +306,51 @@ function enhancedCountry(c){
  const rows=e.values.map(f=>'<tr><td>'+safe(f.label)+'</td><td>'+f.weight+'%</td><td>'+fmt(f.score,1)+'</td><td>'+fmt(f.estimatedWeight,1)+'%</td><td>'+safe(f.quality)+'</td></tr>').join('');
  return '<section class="panel section-gap" id="enhanced-country"><h2>'+flag[c]+' '+c+' · Sintesi quantitativa di ricerca</h2><div class="grid3"><div class="metric"><small>Enhanced</small><div class="v">'+fmt(e.score,1)+'/10</div></div><div class="metric"><small>Copertura di calcolo</small><div class="v">'+fmt(e.coverage,0)+'%</div></div><div class="metric"><small>Peso stimato / proxy</small><div class="v">'+fmt(e.estimatedWeight,1)+'%</div></div></div><p>Il punteggio sintetizza fattori diversi. '+(finite(e.score)?'È una misura sperimentale, non una probabilità di successo.':'Il motore non consente una sintesi completa: non riempiamo le lacune artificialmente.')+'</p>'+fold('Dettaglio delle componenti e qualità','<div class="tablewrap"><table><thead><tr><th>Fattore</th><th>Peso</th><th>Score</th><th>Peso stimato</th><th>Metodo</th></tr></thead><tbody>'+rows+'</tbody></table></div><p>Baseline senza completamento: intervallo teorico '+fmt(b?.lower,1)+'–'+fmt(b?.upper,1)+'/10 · peso utilizzabile '+fmt(b?.known,1)+'%. Non è un intervallo di confidenza. '+safe(e.rates?.quality||'')+' '+safe(e.rates?.source||'')+'</p>')+'</section>';
 }
+
+let auditCache=null;
+function studioSourceAudit(){
+ const rows=[...Object.entries(urls).map(([k,path])=>({k,path,group:'Base',doc:loaded[k]?data[k]:null,ok:!!loaded[k]})),...Object.entries(extraPaths).map(([k,path])=>({k,path,group:'Ricerca',doc:extra[k],ok:Object.prototype.hasOwnProperty.call(extra,k)&&!extraError[k]}))];
+ const observation=(r)=>{
+  const j=r.doc;if(!j)return '—';
+  if(r.k==='rates')return FX.map(c=>c+' '+(j[c]?.date||'—')).join(' · ');
+  if(r.k==='ois')return FX.map(c=>c+' '+(j.currencies?.[c]?.horizons?.['6m']?.as_of||'—')).join(' · ');
+  if(r.k==='risk')return Object.entries(j.streams||{}).map(([k,v])=>k+' '+(v.date||'—')).join(' · ');
+  if(r.k==='cotHistory')return FX.map(c=>c+' '+(j[c]?.dates?.at(-1)||'—')).join(' · ');
+  if(r.k==='dailyReports')return j.file||'Indice senza file';
+  if(r.k==='weeklyReports')return Array.isArray(j.files)?j.files.length+' documenti indicizzati':'Indice non valido';
+  if(r.k==='macro')return 'Motore generato '+(j.generated_europe_rome_day||'—')+'; periodi per serie distinti';
+  if(r.k==='hourlyCheck')return 'Controllo '+deskTime(j.checked_at_utc);
+  if(r.k==='hourlyDesk')return 'Edizione '+deskTime(j.generated_at_utc);
+  return j.last_as_of||j.content_as_of||j.as_of||j.data_as_of||j.last_observation_date||j.price_asof||j.snapshot_built_from_repo_date||j.last_checked_at_utc||'Date per serie / fonte';
+ };
+ return {rows:rows.map(r=>({...r,doc:undefined,observed:observation(r)})),read:rows.filter(r=>r.ok).length,total:rows.length};
+}
+function studioRelativeCoverage(){
+ if(auditCache)return auditCache;
+ const pairs=[];
+ for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++){
+  const a=FX[i],b=FX[j],g=studioGovComparison(a,b),m=studioPricingComparison(a,b);
+  const recent=Boolean(m?.oneExact||m?.weekExact);
+  pairs.push({a,b,gov:!!g?.ready,estimate:!!g?.estimate,monetary:recent,historical:!!m?.observations?.length});
+ }
+ return auditCache={pairs,gov:pairs.filter(x=>x.gov).length,estimate:pairs.filter(x=>!x.gov&&x.estimate).length,monetary:pairs.filter(x=>x.monetary).length,historical:pairs.filter(x=>x.historical).length};
+}
+function freshnessPanel(){
+ const a=studioSourceAudit(),r=studioRelativeCoverage(),f=hourlyEvidence(extra.hourlyDesk,extra.hourlyCheck),lib=window.FXQuantResearchLibrary,daily=lib?.remoteReport?.(extra.dailyReports?.file),dStatus=daily?lib.editionStatus(daily,day()):null;
+ const st=(condition)=>condition?'green':'amber';
+ const info=[
+ ['Feed leggibili',a.read+'/'+a.total,a.read===a.total,'Risposta JSON letta; non certifica qualità, freschezza o ultima release.'],
+ ['2Y / Forex',r.gov+'/28',r.gov===28,'Confronti recenti osservati su date comuni; '+r.estimate+' ulteriori confronti stimati separati.'],
+ ['6M / Forex',r.monetary+'/28',r.monetary===28,'Confronti recenti con date iniziali e finali certificate; '+r.historical+'/28 hanno almeno un intervallo storico disponibile.'],
+ ['Desk orario',f.checked?deskTime(extra.hourlyCheck.checked_at_utc):'Da verificare',f.checked&&f.checkAge<=3,'Ultimo controllo di questa edizione; non equivale a pubblicazione di nuove notizie.'],
+ ['Briefing HTML',daily?dateIT(daily.date):'Non disponibile',!!dStatus&&['today','latest-business'].includes(dStatus.state)&&reportChecks[daily.file]==='verified',dStatus?.text||'Indice da verificare.'],
+ ['Fixing BCE',loaded.prices?dateIT(data.prices.last_as_of):'Non disponibile',!!loaded.prices,'Ultima data osservata, non quotazione intraday.']
+ ];
+ const sources=a.rows.map(x=>'<tr><td>'+safe(x.k)+'</td><td>'+safe(x.group)+'</td><td class="'+st(x.ok)+'">'+(x.ok?'Letto':'Non caricato')+'</td><td>'+safe(x.observed)+'</td><td><a class="link" href="'+ROOT+x.path+'" target="_blank" rel="noopener noreferrer">JSON ↗</a></td></tr>').join('');
+ const detail=r.pairs.map(x=>'<tr><td><button onclick="choosePair(\''+x.a+'\',\''+x.b+'\')">'+x.a+'/'+x.b+'</button></td><td class="'+st(x.gov)+'">'+(x.gov?'Osservato':x.estimate?'Stima separata':'Non verificato')+'</td><td class="'+st(x.monetary)+'">'+(x.monetary?'Allineato':x.historical?'Solo storico':'Non verificato')+'</td></tr>').join('');
+ return '<section class="panel section-gap" id="studio-source-audit"><h2>Stato operativo delle fonti</h2><p class="note">Controlli della lettura corrente. Non certificano che ogni workflow automatico abbia acquisito nuovi dati o che tutte le fonti ufficiali siano aggiornate.</p><div class="grid3">'+info.map(([label,value,ok,note])=>'<article class="sector-read"><h3>'+safe(label)+'</h3><div class="v '+st(ok)+'">'+safe(value)+'</div><p>'+safe(note)+'</p></article>').join('')+'</div>'+fold('Disponibilità dei singoli feed · '+a.total,'<div class="tablewrap"><table><thead><tr><th>Feed</th><th>Tipo</th><th>Lettura</th><th>Data / periodo</th><th>Fonte</th></tr></thead><tbody>'+sources+'</tbody></table></div>')+fold('Copertura reale dei differenziali · 28 coppie','<div class="tablewrap"><table><thead><tr><th>Coppia</th><th>2Y recente</th><th>6M / FX</th></tr></thead><tbody>'+detail+'</tbody></table></div>')+'</section>';
+}
+
 function healthStudio(){
  const api=window.FXQuantDataHealth;if(!api)return noEvidence('Diagnostica non caricata');
  const h=api.read({currencyPrices:data.prices,pairs:data.pairs,macroObserved:data.macro,rates:data.rates,oisOperational:extra.oisOp,cb:data.cb,liquidity:extra.liquidity,ois:data.ois,nzdDirectionalProxy:extra.nzdProxy,cotHistory:extra.cotHistory,risk:data.risk,news:data.news,calendar:data.calendar,residualResearch:extra.residual,chfSpot:extra.chfSpot,chfResearch:extra.chfHistory,audDailyResearch:extra.audDaily,nzdPostroll:extra.nzdPostroll,nzdReconciled:extra.nzdReconciled},day(),window);
@@ -319,7 +364,7 @@ function healthStudio(){
 function homeDesk(){
  const r=crossRiskStory(),ranks=loaded.prices?[...FX].sort((a,b)=>basket(b)-basket(a)):[],first=ranks[0],last=ranks.at(-1);
  const fxText=first?'Nel confronto dei fixing BCE a 20 sedute guida '+first+'; '+last+' è in coda ('+dateIT(priceDates[2])+'). '+(basket(first,5)<0?'La valuta leader perde terreno nelle ultime cinque sedute.':''):'Fixing non disponibile: nessuna nuova graduatoria di forza osservata.';
- return '<div class="hero"><div><div class="eyebrow">01 / lettura della seduta</div><h1>'+safe(r.title)+'</h1><p>'+safe(r.what)+'</p><p>'+safe(fxText)+'</p></div><div class="watch"><div class="eyebrow amber">Giudizio operativo</div><p>'+safe(r.meaning)+'</p><p>'+safe(r.watch)+'</p></div></div>'+(loaded.risk?metrics(market.slice(0,5)):noEvidence('Feed mercati non verificato'))+deskCatalysts()+hourlyDeskPanel()+enhancedMatrix()+'<div class="main-grid section-gap"><section class="panel"><div class="panel-head"><div><h2>Mappa valutaria G8</h2><small>Direzione e ritmo del prezzo</small></div><button onclick="state.fxmode=\'strength\';go(\'fx\')">Forex →</button></div>'+(loaded.prices?matrixEditorial():noEvidence('Prezzo non verificato'))+'</section><div class="stack"><section class="panel"><h2>Tesi da verificare</h2>'+(estimate?estimate.pairs.slice(0,3).map(x=>'<button class="pairrow" onclick="choosePair(\''+x.base+'\',\''+x.quote+'\')"><div><strong>'+safe(x.name)+'</strong><br><small>'+safe(x.thesisStrength)+' · '+safe(x.tradeAttractiveness)+'</small></div><span class="blue">›</span></button>').join(''):noEvidence('Motore fondamentale non disponibile'))+'<p class="note">Priorità del motore esistente, stima non validata; nessun ingresso automatico.</p></section><section class="panel"><h2>Cosa monitorare</h2><p>'+safe(r.watch)+'</p><button onclick="go(\'risk\')">Apri Cross-Asset →</button></section></div></div>'+healthStudio();
+ return '<div class="hero"><div><div class="eyebrow">01 / lettura della seduta</div><h1>'+safe(r.title)+'</h1><p>'+safe(r.what)+'</p><p>'+safe(fxText)+'</p></div><div class="watch"><div class="eyebrow amber">Giudizio operativo</div><p>'+safe(r.meaning)+'</p><p>'+safe(r.watch)+'</p></div></div>'+(loaded.risk?metrics(market.slice(0,5)):noEvidence('Feed mercati non verificato'))+deskCatalysts()+hourlyDeskPanel()+enhancedMatrix()+'<div class="main-grid section-gap"><section class="panel"><div class="panel-head"><div><h2>Mappa valutaria G8</h2><small>Direzione e ritmo del prezzo</small></div><button onclick="state.fxmode=\'strength\';go(\'fx\')">Forex →</button></div>'+(loaded.prices?matrixEditorial():noEvidence('Prezzo non verificato'))+'</section><div class="stack"><section class="panel"><h2>Tesi da verificare</h2>'+(estimate?estimate.pairs.slice(0,3).map(x=>'<button class="pairrow" onclick="choosePair(\''+x.base+'\',\''+x.quote+'\')"><div><strong>'+safe(x.name)+'</strong><br><small>'+safe(x.thesisStrength)+' · '+safe(x.tradeAttractiveness)+'</small></div><span class="blue">›</span></button>').join(''):noEvidence('Motore fondamentale non disponibile'))+'<p class="note">Priorità del motore esistente, stima non validata; nessun ingresso automatico.</p></section><section class="panel"><h2>Cosa monitorare</h2><p>'+safe(r.watch)+'</p><button onclick="go(\'risk\')">Apri Cross-Asset →</button></section></div></div>'+freshnessPanel()+healthStudio();
 }
 function riskDesk(){
  const r=crossRiskStory();
@@ -399,6 +444,7 @@ async function refreshExtra(){
  await script('macro-approved-layout.js').catch(()=>{extraError['macro-approved-layout.js']=true});
  await checkStudioReports();
  researchCache=null;
+ auditCache=null;
  extraBusy=false;
 }
 function noEvidence(t){return '<p class="evidence-flag">'+safe(t)+(extraBusy?' · caricamento in corso':'')+'</p>'}
@@ -608,7 +654,7 @@ function studioPricingComparison(a,b){
  const A=archive.country(extra.oisHistory,a,0),B=archive.country(extra.oisHistory,b,0);
  const prices=new Map((data.prices.rows||[]).filter(r=>validDay(r.Date)&&finite(r[a])&&finite(r[b])&&r[a]>0&&r[b]>0).map(r=>[r.Date,r[b]/r[a]]));
  const observations=(one.observations||[]).filter(x=>prices.has(x.from)&&prices.has(x.to)).map(x=>({...x,fxPct:100*(prices.get(x.to)/prices.get(x.from)-1)}));
- const exact=(m)=>{const v=m.live;if(!v||v.grade!=='MATCHED_EXACT_INTERVAL'||!prices.has(v.from)||!prices.has(v.asof))return null;
+ const exact=(m)=>{const v=m.live;if(!v||v.grade!=='MATCHED_EXACT_INTERVAL'||!validDay(v.asof)||!validDay(v.from)||v.from>=v.asof||(Date.parse(day())-Date.parse(v.asof))/864e5>7||!prices.has(v.from)||!prices.has(v.asof))return null;
  return {...v,fxPct:100*(prices.get(v.asof)/prices.get(v.from)-1)}};
  return {one,week,oneExact:exact(one),weekExact:exact(week),observations,kindA:A?.kind||one.a?.kind,kindB:B?.kind||one.b?.kind};
 }
