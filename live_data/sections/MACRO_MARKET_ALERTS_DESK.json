@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-28T02:44:57Z",
+  "generated_at_utc": "2026-11-28T11:54:33Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-54843a73c7aa6e055e3a",
+      "observed_at_utc": "2026-11-28T09:05:43Z",
+      "headline": "Weather, supply uncertainties may accelerate India inflation, report says",
+      "summary": "Reuters riporta: Weather, supply uncertainties may accelerate India inflation, report says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQQnFCVFNaUTFCYVRvQ2t2Wi1oeG1zUWdkQnpqT1R1MG1sQy10cHZ6SmpycF9tSG05dV9fV2EtbUJrR1lhUEtYVWt1N0lzWnFSdlYwdVRpTFNPXzJVQjhHc2c4S1ZnN004UE9ydk05VjFxUDZVT2h0UWxEdXZtamxqSlkwS0hJdTFkTHRaaFhJYXBoMmZldHBuUmNaYjJSQkhiYTZPVlZqWVE5VWdDdFVoX1RhRjBRYnpLa2l3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-f3117fce8eaabddc527d",
+      "observed_at_utc": "2026-11-27T11:12:49Z",
+      "headline": "Zambia central bank holds key rate as inflation expected to stay within target",
+      "summary": "Reuters riporta: Zambia central bank holds key rate as inflation expected to stay within target. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNd0pjaHRyOXVRQTNuSWVtOWlTdGVqY1NqazM0MmxtaF9ZWXhRdUdqeUx5WC1TZzVqc0FFQURQWUhTNmMzYm43LWU2ZVBTcWZXaUZVVFktVXAxMnBKRGpmbGpXUjdtZGxOZ0ZCMnNyS0VLdU5MRTlZa0JxNXNNQkVJX3d4QldWamh6SjVWdW53bmpXQmltR21icTRZWU1UTTlybFNkZjJJNks2azN6S3BXMXI2UEdyZw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-13a5840d73231754fe6e",
+      "observed_at_utc": "2026-11-27T09:03:45Z",
+      "headline": "Euro zone consumers sharply increase inflation expectation, ECB survey shows",
+      "summary": "Reuters riporta: Euro zone consumers sharply increase inflation expectation, ECB survey shows. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "EUR"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxONDJybGR6alVxTF8wSTQ3RDJ0ZUVpYlkzeGd6SzdTV3hOd3UxY1Y3TzNZN2Y3ZGJSbXJaZDQ3LURoN09xdTFrVllIWlE2M2VCcmVUSW1CbU1RekZfSWdBYnhlclR4OE9ucm5tV0g4YmRJNlExdjQwSmM5YkZ0ZVRneXZweXdSNi1rQ1UzVnVfcXZEdWY4OG1tQUNiODVwTUZCYWloVlhUdFItYy1RRDktQXoxamNjTlBUU3c3QzR6YmdONDhu?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-5e9878119249df4aa00e",
       "observed_at_utc": "2026-11-27T19:21:23Z",
@@ -1384,51 +1425,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPZkdhelNXT1laWnBWei1ZTGMybnc1U1FxOUtGdjdoaGxDX29kd0pvc3FoLVhYdVh4SkdQdGN1cFU1UjVmb0lGWlJsdTlJOHppUjh0eGVrTFJBajZxUV9CVWFrN0F5S0RqVVpMWlR4ZW05R0duTFdvZjJNbGNhcEl2V002d0xWejFMRmR2ZjRDanBqZndnZndWOF96b3NxdVdaWnp4LWdzQ1RhdEdXdkhfcUJaSQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-94ec3c5a1ed486cf2cf3",
-      "observed_at_utc": "2026-11-16T01:09:00Z",
-      "headline": "Yen steady against euro and dollar after soft Japanese GDP data",
-      "summary": "Reuters riporta: Yen steady against euro and dollar after soft Japanese GDP data. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "USD",
-        "EUR",
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPZkdhelNXT1laWnBWei1ZTGMybnc1U1FxOUtGdjdoaGxDX29kd0pvc3FoLVhYdVh4SkdQdGN1cFU1UjVmb0lGWlJsdTlJOHppUjh0eGVrTFJBajZxUV9CVWFrN0F5S0RqVVpMWlR4ZW05R0duTFdvZjJNbGNhcEl2V002d0xWejFMRmR2ZjRDanBqZndnZndWOF96b3NxdVdaWnp4LWdzQ1RhdEdXdkhfcUJaSQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f07058fad323decab590",
-      "observed_at_utc": "2026-11-16T00:13:00Z",
-      "headline": "Japan's economy unexpectedly shrinks as inflation squeezes households",
-      "summary": "Reuters riporta: Japan's economy unexpectedly shrinks as inflation squeezes households. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQeXFYOEg3cHpDTUFrTU9IRlQyWDlvRGVMVVN3VmxOelY3WnhCREJNdElKcEY5ZWpBSmhoalMzWDdaM0Y5Z0VXbkxVemg3YmdhSUg5UmYybnhFOHhWbVhXdjdoT1BUUGNQUFVtX2o1SkJRSnBJNEdLX081amJyUll6WHFpUk5SaWlkd2JGN0VnRFZKYi1WT1B0NzFUOUVKdkFfcTQ5RmdFeHdvcWI5c2pRaXF6MFBydw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-1987ba3dc0e052ba88a1",
-      "observed_at_utc": "2026-11-16T02:00:00Z",
-      "headline": "Oil prices fall on expectations of coming supply surplus",
-      "summary": "Reuters riporta: Oil prices fall on expectations of coming supply surplus. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "COMMODITIES",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNSXlabl9ocWtiOEZLcnc2SGNVSEh2bjltWURkWU1RSDVTejZWMEtNYTR4QW9sT19DQy05SVhHVmphTEtIQXdtVzlUS25Vdk1oS0hjdWZ0MHpUb01NQUp4dzlBcE55anIwR0hKVmhCUDRsT3V3ek9jTURVYkcySDNBM1B0RmJ3emdUaHpPVWpENENfZ2JGRHB3MlJuekVfUWlFa2lfUQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
