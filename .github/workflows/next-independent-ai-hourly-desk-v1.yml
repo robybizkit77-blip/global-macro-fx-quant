@@ -166,3 +166,62 @@ jobs:
             ${{ runner.temp }}/hourly-market-desk-check.json
             ${{ runner.temp }}/next-home-public-proof.json
           retention-days: 14
+
+
+  record-failed-attempt:
+    # Never replace the last successful source receipt on failure.
+    needs: [validate, generate-and-publish]
+    if: >-
+      always() &&
+      github.event_name != 'pull_request' &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        contains(fromJSON('["schedule","push","workflow_dispatch","workflow_run"]'),
+                 github.event.workflow_run.event))) &&
+      (needs.validate.result == 'failure' ||
+       needs.generate-and-publish.result == 'failure')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, fetch-depth: 1}
+      - name: Record failed desk attempt without replacing last valid edition
+        shell: bash
+        env:
+          VALIDATE_RESULT: ${{ needs.validate.result }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+          receipt = {
+              "schema": "GMFQ_NEXT_HOURLY_FAILURE_V1",
+              "status": "FAILED",
+              "recorded_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+              "phase": "VALIDATION" if os.environ["VALIDATE_RESULT"] == "failure" else "BUILD_OR_PUBLICATION",
+              "run_url": f'{os.environ["GITHUB_SERVER_URL"]}/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{os.environ["GITHUB_RUN_ID"]}',
+              "meaning": "A failure was recorded; the last successful source receipt is unchanged."
+          }
+          (Path(os.environ["RUNNER_TEMP"]) / "hourly-market-desk-failure.json").write_text(json.dumps(receipt, indent=2) + "\n")
+          PY
+          for attempt in 1 2 3; do
+            git fetch origin gh-pages --no-tags
+            dir="$RUNNER_TEMP/free-hourly-failure-$attempt"
+            git worktree add --detach "$dir" origin/gh-pages
+            mkdir -p "$dir/market-desk"
+            cp "$RUNNER_TEMP/hourly-market-desk-failure.json" "$dir/market-desk/hourly-market-desk-failure.json"
+            (
+              cd "$dir"
+              git add -- market-desk/hourly-market-desk-failure.json
+              git config user.name 'github-actions[bot]'
+              git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+              git diff --cached --quiet || git commit -m "Record failed hourly desk attempt without changing successful receipt"
+              git push origin HEAD:gh-pages
+            ) && exit 0
+            sleep 3
+          done
+          exit 1

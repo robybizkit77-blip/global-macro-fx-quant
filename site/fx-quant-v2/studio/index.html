@@ -387,13 +387,27 @@ function hourlyEvidence(feed,check,now=Date.now()){
  const checked=valid&&check?.schema==='GMFQ_NEXT_HOURLY_CHECK_V1'&&check.status==='VERIFIED'&&check.material_digest===feed.material_digest&&check.edition_generated_at_utc===feed.generated_at_utc&&stamp(check.checked_at_utc)&&Date.parse(check.checked_at_utc)>=Date.parse(feed.generated_at_utc);
  return {valid,checked,age:valid?(now-Date.parse(feed.generated_at_utc))/3600000:null,checkAge:checked?(now-Date.parse(check.checked_at_utc))/3600000:null};
 }
+
+let hourlyFailure=null;
+function currentHourlyFailure(f,check,now=Date.now()){
+ if(f?.schema!=='GMFQ_NEXT_HOURLY_FAILURE_V1'||f.status!=='FAILED'||!['VALIDATION','BUILD_OR_PUBLICATION'].includes(f.phase)||typeof f.recorded_at_utc!=='string')return null;
+ const stamp=Date.parse(f.recorded_at_utc),checked=Date.parse(check?.checked_at_utc);
+ if(!Number.isFinite(stamp)||stamp>now||Number.isFinite(checked)&&stamp<=checked)return null;
+ const url=typeof f.run_url==='string'&&/^https:\/\/github\.com\/robybizkit77-blip\/global-macro-fx-quant\/actions\/runs\/\d+$/.test(f.run_url)?f.run_url:null;
+ return {stamp:f.recorded_at_utc,phase:f.phase,url};
+}
+function hourlyFailureNote(){
+ const f=currentHourlyFailure(hourlyFailure,extra.hourlyCheck);
+ return f?'<p class="amber" id="studio-hourly-failure">Tentativo fallito registrato il '+safe(deskTime(f.stamp))+' · '+(f.phase==='VALIDATION'?'Validazione':'Generazione o pubblicazione')+'. L’ultima edizione valida resta disponibile. '+(f.url?source(f.url,'Dettaglio esecuzione'):'')+'</p>':'';
+}
+
 function hourlyDeskPanel(full=false){
  const f=extra.hourlyDesk,k=extra.hourlyCheck,v=hourlyEvidence(f,k);
  const head='<section id="studio-hourly" class="panel section-gap"><div class="eyebrow">RESEARCH DESK / AGGIORNAMENTI</div>';
- if(!v.valid)return head+'<h2>Analisi oraria non disponibile</h2><p>Il feed pubblico del desk non è stato verificato in questa lettura. Non generiamo notizie sostitutive.</p></section>';
+ if(!v.valid)return head+hourlyFailureNote()+'<h2>Analisi oraria non disponibile</h2><p>Il feed pubblico del desk non è stato verificato in questa lettura. Non generiamo notizie sostitutive.</p></section>';
  const time='<p class="note">Ultima analisi pubblicata: '+safe(deskTime(f.generated_at_utc))+' · ultimo controllo delle fonti: '+safe(v.checked?deskTime(k.checked_at_utc):'Non verificato per questa edizione')+' (ora italiana).</p>';
  const cards=f.news.filter(x=>typeof x?.headline==='string'&&typeof x.analysis==='string'&&validDay(x.published_date)).slice(0,full?20:4).map(x=>'<article class="sector-read"><h3>'+safe(x.headline)+'</h3><small>'+safe(x.market_area||'Mercato')+' · '+dateIT(x.published_date)+'</small>'+(x.evidence?'<p>'+safe(x.evidence)+'</p>':'<p class="note">Titolo documentato; dati numerici non verificati nel feed.</p>')+'<p>'+safe(x.analysis)+'</p>'+ (Array.isArray(x.sources)?x.sources.slice(0,4).map((u,i)=>source(u,'Fonte '+(i+1))).join(' '):'')+'</article>').join('');
- return head+'<h2>'+safe(f.headline)+'</h2>'+time+(v.age>3?'<p class="amber">Edizione precedente: sono trascorse oltre tre ore dalla pubblicazione. Non è una nuova analisi della seduta.</p>':'')+(v.checked&&v.checkAge>3?'<p class="amber">Ultimo controllo delle fonti oltre tre ore fa.</p>':'')+'<p>'+safe(f.lead)+'</p><div class="grid2">'+cards+'</div><p><b>Giudizio.</b> '+safe(f.desk_judgment||'Da verificare.')+'</p><p><b>Cosa contraddice la lettura.</b> '+safe(f.contrary_evidence||'Non documentato.')+'</p><p class="monitor"><b>Da monitorare.</b> '+safe(f.watch||'Verificare le nuove osservazioni.')+'</p>'+(!full?'<button onclick="go(\'events\')">Apri notizie e calendario</button>':'')+'<p class="note">Feed pubblico deterministico da fonti e prezzi datati; distinto dalle automazioni ChatGPT. Controllo riuscito non significa nuova notizia o fonte aggiornata.</p></section>';
+ return head+'<h2>'+safe(f.headline)+'</h2>'+time+hourlyFailureNote()+(v.age>3?'<p class="amber">Edizione precedente: sono trascorse oltre tre ore dalla pubblicazione. Non è una nuova analisi della seduta.</p>':'')+(v.checked&&v.checkAge>3?'<p class="amber">Ultimo controllo delle fonti oltre tre ore fa.</p>':'')+'<p>'+safe(f.lead)+'</p><div class="grid2">'+cards+'</div><p><b>Giudizio.</b> '+safe(f.desk_judgment||'Da verificare.')+'</p><p><b>Cosa contraddice la lettura.</b> '+safe(f.contrary_evidence||'Non documentato.')+'</p><p class="monitor"><b>Da monitorare.</b> '+safe(f.watch||'Verificare le nuove osservazioni.')+'</p>'+(!full?'<button onclick="go(\'events\')">Apri notizie e calendario</button>':'')+'<p class="note">Feed pubblico deterministico da fonti e prezzi datati; distinto dalle automazioni ChatGPT. Controllo riuscito non significa nuova notizia o fonte aggiornata.</p></section>';
 }
 function newsDesk(){
  const n=loaded.news?data.news:null;
@@ -442,7 +456,7 @@ async function refreshExtra(){
  await Promise.all(['fx-rates-bridge.js','rates-relative-pricing-v1.js'].map(n=>script(n).catch(()=>{extraError[n]=true})));
  await Promise.all(['us-h8-bank-credit-research-v1.js','eur-ecb-nfc-credit-research-v1.js','gbp-boe-reserves-research-v1.js','gbp-boe-secured-credit-research-v1.js','jpy-boj-bank-credit-research-v1.js','cad-official-credit-research-v1.js','aud-rba-business-credit-growth-research-v1.js','aud-rba-es-balances-research-v1.js','nzd-rbnz-liquidity-research-v1.js'].map(n=>script(n).then(()=>delete extraError[n]).catch(()=>{extraError[n]=true})));
  await script('macro-approved-layout.js').catch(()=>{extraError['macro-approved-layout.js']=true});
- await checkStudioReports();
+ await Promise.all([checkStudioReports(),readJSON('market-desk/hourly-market-desk-failure.json').then(x=>{hourlyFailure=x}).catch(()=>{hourlyFailure=null})]);
  researchCache=null;
  auditCache=null;
  extraBusy=false;

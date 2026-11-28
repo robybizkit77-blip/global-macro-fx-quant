@@ -213,6 +213,14 @@ const {chromium}=require('playwright');
    });
    assert(hours.valid.valid&&hours.valid.checked&&hours.valid.age===2&&hours.valid.checkAge===1);
    assert(hours.wrong.valid&&!hours.wrong.checked&&!hours.missing.valid);
+   const failure=await page.evaluate(()=>{
+     const now=Date.parse('2026-11-27T10:00:00Z'),f={schema:'GMFQ_NEXT_HOURLY_FAILURE_V1',status:'FAILED',recorded_at_utc:'2026-11-27T09:00:00Z',phase:'VALIDATION',run_url:'https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/123'};
+     return {newer:currentHourlyFailure(f,{checked_at_utc:'2026-11-27T08:00:00Z'},now),older:currentHourlyFailure(f,{checked_at_utc:'2026-11-27T09:30:00Z'},now),future:currentHourlyFailure({...f,recorded_at_utc:'2026-11-27T11:00:00Z'},null,now)};
+   });
+   assert.equal(failure.newer.phase,'VALIDATION');
+   assert.equal(failure.older,null);
+   assert.equal(failure.future,null);
+
    await page.locator('#nav button').getByText('Report',{exact:true}).click();
    assert.equal(await page.locator('#studio-reports a[href*="/reports/"][href$=".html"]').count(),8);
    await page.getByRole('button',{name:'Daily Forex',exact:true}).click();
