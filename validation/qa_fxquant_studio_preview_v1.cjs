@@ -34,6 +34,24 @@ const {chromium}=require('playwright');
    await page.getByLabel('Controvaluta').selectOption('JPY');
    assert.match(await page.locator('#view').innerText(),/GBP\/JPY/);
    assert.equal(await page.locator('#pair-evidence .sector-read').count(),4);
+   assert.equal(await page.locator('#pair-gov').count(),1);
+   assert.equal(await page.locator('#pair-monetary').count(),1);
+   const relativeTests=await page.evaluate(()=>{
+     const result=[];
+     for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++){
+       const a=FX[i],b=FX[j],g=studioGovComparison(a,b),m=studioPricingComparison(a,b);
+       const rows=g?.rows||[],dateOK=rows.every((x,i)=>!i||x.date>rows[i-1].date);
+       const exacts=[m?.oneExact,m?.weekExact].filter(Boolean);
+       const matched=exacts.every(x=>x.grade==='MATCHED_EXACT_INTERVAL'&&Number.isFinite(x.fxPct)&&x.from<x.asof);
+       result.push({a,b,dateOK,matched,gov:!!g?.ready,monetary:exacts.length});
+     }
+     return result;
+   });
+   assert.equal(relativeTests.length,28);
+   assert(relativeTests.every(x=>x.dateOK&&x.matched));
+   assert(relativeTests.some(x=>x.gov));
+   console.log('STUDIO_RELATIVE_RATES',JSON.stringify(relativeTests));
+
    assert.match(await page.locator('#view').innerText(),/Solidità della tesi.*Attrattività operativa/s);
    const checked=await page.evaluate(()=>{
      const res=[];for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++){
@@ -56,6 +74,24 @@ const {chromium}=require('playwright');
    await page.getByRole('button',{name:'COT',exact:true}).click();
    await page.locator('.native-cot-table').waitFor({timeout:45000});
    assert.equal(await page.locator('.native-cot-table tbody tr').count(),8);
+   const cotChecks=await page.evaluate(()=>{
+     const m=FX.map(c=>cotModel(c)).filter(Boolean).map(cotResearch);
+     const official=m.filter(x=>Number.isFinite(x.oi));
+     return {n:m.length,official:official.length,valid:official.every(x=>Math.abs(x.netoi-100*x.q.net/x.oi)<1e-9),extremes:m.filter(x=>x.q.rounded>=80).length};
+   });
+   assert.equal(cotChecks.n,8);assert.equal(cotChecks.valid,true);assert(cotChecks.official>0);
+   await page.getByRole('button',{name:'Extreme Long',exact:true}).click();
+   assert.equal(await page.locator('.native-cot-table tbody tr').count(),cotChecks.extremes);
+   await page.getByRole('button',{name:'Tutte',exact:true}).click();
+   await page.getByRole('button',{name:'Velocità',exact:true}).click();
+   const velocities=await page.evaluate(()=>cotOrdered(FX.map(c=>cotModel(c)).filter(Boolean).map(cotResearch)).map(x=>x.velocity).filter(Number.isFinite));
+   assert(velocities.every((v,i)=>i===0||v<=velocities[i-1]));
+   await page.getByRole('button',{name:'Percentile storico',exact:true}).click();
+   assert.match(await page.locator('#studio-research').innerText(),/Percentili storici pubblicati/);
+   await page.getByLabel('Controvaluta COT').selectOption({index:1});
+   assert.equal(await page.locator('#cot-peer svg').count(),1);
+   console.log('STUDIO_COT_QA',JSON.stringify(cotChecks));
+
    assert.match(await page.locator('#studio-research .plain-reading').innerText(),/I fondi|Il netto/);
    assert.match(await page.locator('.native-cot-table').innerText(),/P104.*Z104/s);
    assert.equal(await page.locator('.native-cot-table tbody tr td:nth-child(8)').evaluateAll(cells=>cells.filter(c=>/^\d+$/.test(c.textContent.trim())).length),8);
