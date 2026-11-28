@@ -331,9 +331,9 @@ function studioRelativeCoverage(){
  for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++){
   const a=FX[i],b=FX[j],g=studioGovComparison(a,b),m=studioPricingComparison(a,b);
   const recent=Boolean(m?.oneExact||m?.weekExact);
-  pairs.push({a,b,gov:!!g?.ready,estimate:!!g?.estimate,monetary:recent,historical:!!m?.observations?.length});
+  pairs.push({a,b,gov:!!g?.ready,estimate:!!g?.estimate,monetary:recent,historical:!!m?.observations?.length,commonObserved:[m?.common?.short,m?.common?.medium].some(p=>p?.grade==='OBSERVED'),commonIndicative:[m?.common?.short,m?.common?.medium].some(p=>p?.grade==='REPRESENTATIVE')});
  }
- return auditCache={pairs,gov:pairs.filter(x=>x.gov).length,estimate:pairs.filter(x=>!x.gov&&x.estimate).length,monetary:pairs.filter(x=>x.monetary).length,historical:pairs.filter(x=>x.historical).length};
+ return auditCache={pairs,gov:pairs.filter(x=>x.gov).length,estimate:pairs.filter(x=>!x.gov&&x.estimate).length,monetary:pairs.filter(x=>x.monetary).length,historical:pairs.filter(x=>x.historical).length,commonObserved:pairs.filter(x=>x.commonObserved).length,commonIndicative:pairs.filter(x=>!x.commonObserved&&x.commonIndicative).length};
 }
 function freshnessPanel(){
  const a=studioSourceAudit(),r=studioRelativeCoverage(),f=hourlyEvidence(extra.hourlyDesk,extra.hourlyCheck),lib=window.FXQuantResearchLibrary,daily=lib?.remoteReport?.(extra.dailyReports?.file),dStatus=daily?lib.editionStatus(daily,day()):null;
@@ -341,13 +341,13 @@ function freshnessPanel(){
  const info=[
  ['Feed leggibili',a.read+'/'+a.total,a.read===a.total,'Risposta JSON letta; non certifica qualità, freschezza o ultima release.'],
  ['2Y / Forex',r.gov+'/28',r.gov===28,'Confronti recenti osservati su date comuni; '+r.estimate+' ulteriori confronti stimati separati.'],
- ['6M / Forex',r.monetary+'/28',r.monetary===28,'Confronti recenti con date iniziali e finali certificate; '+r.historical+'/28 hanno almeno un intervallo storico disponibile.'],
+ ['6M / Forex',r.monetary+'/28',r.monetary===28,'Confronti recenti con date iniziali e finali certificate; '+r.commonObserved+'/28 con finestre comuni osservate e '+r.commonIndicative+'/28 con solo tenore rappresentativo indicativo.'],
  ['Desk orario',f.checked?deskTime(extra.hourlyCheck.checked_at_utc):'Da verificare',f.checked&&f.checkAge<=3,'Ultimo controllo di questa edizione; non equivale a pubblicazione di nuove notizie.'],
  ['Briefing HTML',daily?dateIT(daily.date):'Non disponibile',!!dStatus&&['today','latest-business'].includes(dStatus.state)&&reportChecks[daily.file]==='verified',dStatus?.text||'Indice da verificare.'],
  ['Fixing BCE',loaded.prices?dateIT(data.prices.last_as_of):'Non disponibile',!!loaded.prices,'Ultima data osservata, non quotazione intraday.']
  ];
  const sources=a.rows.map(x=>'<tr><td>'+safe(x.k)+'</td><td>'+safe(x.group)+'</td><td class="'+st(x.ok)+'">'+(x.ok?'Letto':'Non caricato')+'</td><td>'+safe(x.observed)+'</td><td><a class="link" href="'+ROOT+x.path+'" target="_blank" rel="noopener noreferrer">JSON ↗</a></td></tr>').join('');
- const detail=r.pairs.map(x=>'<tr><td><button onclick="choosePair(\''+x.a+'\',\''+x.b+'\')">'+x.a+'/'+x.b+'</button></td><td class="'+st(x.gov)+'">'+(x.gov?'Osservato':x.estimate?'Stima separata':'Non verificato')+'</td><td class="'+st(x.monetary)+'">'+(x.monetary?'Allineato':x.historical?'Solo storico':'Non verificato')+'</td></tr>').join('');
+ const detail=r.pairs.map(x=>'<tr><td><button onclick="choosePair(\''+x.a+'\',\''+x.b+'\')">'+x.a+'/'+x.b+'</button></td><td class="'+st(x.gov)+'">'+(x.gov?'Osservato':x.estimate?'Stima separata':'Non verificato')+'</td><td class="'+st(x.monetary)+'">'+(x.monetary?'Allineato':x.commonObserved?'Finestra comune osservata':x.commonIndicative?'Finestra comune indicativa':x.historical?'Solo storico':'Non verificato')+'</td></tr>').join('');
  return '<section class="panel section-gap" id="studio-source-audit"><h2>Stato operativo delle fonti</h2><p class="note">Controlli della lettura corrente. Non certificano che ogni workflow automatico abbia acquisito nuovi dati o che tutte le fonti ufficiali siano aggiornate.</p><div class="grid3">'+info.map(([label,value,ok,note])=>'<article class="sector-read"><h3>'+safe(label)+'</h3><div class="v '+st(ok)+'">'+safe(value)+'</div><p>'+safe(note)+'</p></article>').join('')+'</div>'+fold('Disponibilità dei singoli feed · '+a.total,'<div class="tablewrap"><table><thead><tr><th>Feed</th><th>Tipo</th><th>Lettura</th><th>Data / periodo</th><th>Fonte</th></tr></thead><tbody>'+sources+'</tbody></table></div>')+fold('Copertura reale dei differenziali · 28 coppie','<div class="tablewrap"><table><thead><tr><th>Coppia</th><th>2Y recente</th><th>6M / FX</th></tr></thead><tbody>'+detail+'</tbody></table></div>')+'</section>';
 }
 
@@ -645,6 +645,39 @@ function studioGovComparison(a,b){
  if(!api?.snapshot||!loaded.rates||!loaded.prices)return null;
  return api.snapshot(data.rates,data.prices,a+b,data.prices.last_as_of,day(),extra.audDaily,extra.chfHistory,extra.nzdPostroll,extra.nzdReconciled,data.chf);
 }
+
+function commonMonetaryWindows(A,B,prices,today){
+ if(!A||!B||!(prices instanceof Map)||!validDay(today))return {short:null,medium:null};
+ const points=m=>(m.tenors?.['6m']||[]).filter(p=>validDay(p.date)&&p.date<=today&&finite(p.rate)&&!p.derived);
+ const a=points(A),b=points(B),am=new Map(a.map(p=>[p.date,p])),bm=new Map(b.map(p=>[p.date,p]));
+ const dates=[...am.keys()].filter(d=>bm.has(d)&&finite(prices.get(d))&&prices.get(d)>0).sort();
+ const days=(x,y)=>(Date.parse(y+'T12:00:00Z')-Date.parse(x+'T12:00:00Z'))/864e5;
+ const end=dates.at(-1);
+ if(!end||days(end,today)>7)return {short:null,medium:null};
+ function leg(m,from,to){
+  const arr=(m.tenors?.['6m']||[]).filter(p=>p.date>=from&&p.date<=to);
+  const first=arr[0],last=arr.at(-1);
+  if(!first||!last||first.date!==from||last.date!==to||arr.some(p=>p.derived||!finite(p.rate)||p.source_class!==first.source_class))return null;
+  const constant=arr.every(p=>p.contract===first.contract);
+  if(!constant)return null;
+  const ois=m.kind==='OIS'&&first.source_class==='OFFICIAL_TENOR';
+  const identified=!!first.contract&&['OFFICIAL_TENOR','SECONDARY_SAME_CONTRACT','BANK_BILL_PROXY'].includes(first.source_class);
+  const representative=m.kind==='FUTURES'&&first.source_class==='OFFICIAL_TENOR'&&!first.contract;
+  if(!ois&&!identified&&!representative)return null;
+  return {bp:100*(last.rate-first.rate),kind:m.kind,contract:first.contract||null,grade:representative?'REPRESENTATIVE':'OBSERVED'};
+ }
+ function window(n,maxSpan){
+  if(dates.length<n+1)return null;
+  const from=dates.at(-(n+1)),span=days(from,end);
+  if(span<=0||span>maxSpan)return null;
+  const x=leg(A,from,end),y=leg(B,from,end);
+  if(!x||!y)return null;
+  return {from,asof:end,n,span,aBp:x.bp,bBp:y.bp,relativeBp:x.bp-y.bp,fxPct:100*(prices.get(end)/prices.get(from)-1),
+   grade:x.grade==='REPRESENTATIVE'||y.grade==='REPRESENTATIVE'?'REPRESENTATIVE':'OBSERVED',legs:[x,y]};
+ }
+ return {short:window(1,4),medium:window(5,12)};
+}
+
 function studioPricingComparison(a,b){
  const api=window.FXQuantRelativePricing,archive=window.FXQuantPricingHistory;
  if(!api?.read||!archive?.country||!loaded.prices)return null;
@@ -656,7 +689,7 @@ function studioPricingComparison(a,b){
  const observations=(one.observations||[]).filter(x=>prices.has(x.from)&&prices.has(x.to)).map(x=>({...x,fxPct:100*(prices.get(x.to)/prices.get(x.from)-1)}));
  const exact=(m)=>{const v=m.live;if(!v||v.grade!=='MATCHED_EXACT_INTERVAL'||!validDay(v.asof)||!validDay(v.from)||v.from>=v.asof||(Date.parse(day())-Date.parse(v.asof))/864e5>7||!prices.has(v.from)||!prices.has(v.asof))return null;
  return {...v,fxPct:100*(prices.get(v.asof)/prices.get(v.from)-1)}};
- return {one,week,oneExact:exact(one),weekExact:exact(week),observations,kindA:A?.kind||one.a?.kind,kindB:B?.kind||one.b?.kind};
+ return {one,week,oneExact:exact(one),weekExact:exact(week),common:commonMonetaryWindows(A,B,prices,day()),observations,kindA:A?.kind||one.a?.kind,kindB:B?.kind||one.b?.kind};
 }
 function spreadRead(fx,rate,a,b){
  if(!finite(fx)||!finite(rate))return 'Non emerge un confronto verificabile.';
@@ -686,8 +719,10 @@ function pricingFxPanel(a,b){
  if(!r)return '<section class="panel section-gap" id="pair-monetary">'+title+noEvidence('Fonti non caricate')+'</section>';
  const x=r.oneExact,y=r.weekExact,obs=r.observations;
  const card=comparisonCards([['Ultima variazione certificata 1D',x,x?.fxPct,x?.relativeBp,x?.from,x?.asof],['Variazione settimanale certificata 1W',y,y?.fxPct,y?.relativeBp,y?.from,y?.asof]],a,b);
+ const c=r.common||{},commonRows=[['1 intervallo comune',c.short],['5 intervalli comuni',c.medium]];
+ const commonCards='<h3>Ultima finestra comune osservata · ricerca</h3><p class="note">Finestra effettiva fra osservazioni comuni, non necessariamente l’ultima seduta o una settimana di calendario. Le date dei due estremi coincidono con il fixing BCE.</p><div class="grid2">'+commonRows.map(([label,p])=>'<article class="sector-read"><h3>'+safe(label)+'</h3>'+(p?'<small>'+dateIT(p.from)+' → '+dateIT(p.asof)+' · '+p.span+' giorni</small><p><b class="'+tone(p.fxPct)+'">'+safe(sign(p.fxPct,2))+'% FX</b> · <b class="'+tone(p.relativeBp)+'">'+safe(bp(p.relativeBp))+'</b></p><p class="note">'+safe(p.grade==='REPRESENTATIVE'?'Tenore futures rappresentativo: rollover non escludibile. Confronto indicativo.':'Livelli osservati OIS o contratti identificati invariati nel tratto disponibile; strumenti diversi non costituiscono uno spread OIS puro.')+'</p><p>'+safe(p.grade==='REPRESENTATIVE'?'Confronto descrittivo, da confermare con contratti identificati.':spreadRead(p.fxPct,p.relativeBp,a,b))+'</p>':'<p class="note">Finestra comune assente, discontinua o con cambio di contratto.</p>')+'</article>').join('')+'</div>';
  const hist=obs.length?'<div class="tablewrap"><table><thead><tr><th>Intervallo</th><th>Δ relativo 6M</th><th>FX</th></tr></thead><tbody>'+obs.map(p=>'<tr><td>'+dateIT(p.from)+' → '+dateIT(p.to)+'</td><td>'+cell(p.bp,' pb',1)+'</td><td>'+cell(p.fxPct,'%',2)+'</td></tr>').join('')+'</tbody></table></div><div class="grid2"><div><h3>Δ relativo 6M per intervallo</h3>'+nativeChart([{name:'Δ 6M '+a+' meno '+b,points:obs.map(p=>({date:p.to,value:p.bp,from:p.from}))}],'pb',()=>false)+'</div><div><h3>FX sul medesimo intervallo</h3>'+nativeChart([{name:a+'/'+b,points:obs.map(p=>({date:p.to,value:p.fxPct,from:p.from}))}],'%',()=>false)+'</div></div>':'<p class="note">Nessun intervallo storico con entrambe le variazioni monetarie non ricostruite e fixing alle stesse date.</p>';
- return '<section class="panel section-gap" id="pair-monetary">'+title+'<p class="note">'+safe(a+' · '+(r.kindA||'strumento da verificare')+' / '+b+' · '+(r.kindB||'strumento da verificare'))+'. Il Δ è la variazione relativa dei riferimenti, non uno spread OIS negoziabile.</p>'+card+'<h3>Ultimi intervalli comuni · storico</h3>'+hist+fold('Metodo e fonti','<p>Confronti 1D e 1W soltanto con date iniziali/finali certificate e fixing BCE presenti a entrambi gli estremi. Storico: esclusi riferimenti ricostruiti e passaggi fra contratti non confrontabili secondo il motore esistente. Nessuna interpolazione, nessun segnale automatico.</p>')+'</section>';
+ return '<section class="panel section-gap" id="pair-monetary">'+title+'<p class="note">'+safe(a+' · '+(r.kindA||'strumento da verificare')+' / '+b+' · '+(r.kindB||'strumento da verificare'))+'. Il Δ è la variazione relativa dei riferimenti, non uno spread OIS negoziabile.</p>'+card+commonCards+'<h3>Ultimi intervalli comuni · storico</h3>'+hist+fold('Metodo e fonti','<p>Confronti 1D e 1W soltanto con date iniziali/finali certificate e fixing BCE presenti a entrambi gli estremi. Storico: esclusi riferimenti ricostruiti e passaggi fra contratti non confrontabili secondo il motore esistente. Nessuna interpolazione, nessun segnale automatico.</p>')+'</section>';
 }
 
 function nativeFX(){const a=state.base,b=state.quote,rows=(data.prices?.rows||[]).filter(r=>validDay(r.Date)&&finite(r[a])&&r[a]>0&&finite(r[b])&&r[b]>0).slice(-fxDays);return '<section id="studio-research" class="panel section-gap"><h2>'+a+'/'+b+' · grafico del prezzo</h2>'+controlsNative([[20,'20 sedute'],[60,'60 sedute'],[120,'120 sedute']],fxDays,'selectFxDays')+nativeChart([{name:a+'/'+b,points:rows.map(r=>({date:r.Date,value:r[b]/r[a]}))}])+fxChartRead(a,b,rows)+ '<p>'+safe(estimate?.pairs?.find(v=>v.key===a+b||v.key===b+a)?.tradeReason||'Il fixing BCE documenta il movimento, non il timing intraday. Verificare la tesi e il rischio prima dell’ingresso.')+'</p></section>'+govFxPanel(a,b)+pricingFxPanel(a,b)}
