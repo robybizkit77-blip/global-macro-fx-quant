@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "9465da11a2c20e47f07d6bd9318d6b08ac25592f7df742df8e87b449e0a005ce",
+  "runtime_sha256": "265ef1be68aedaf6f295a4bde2a7d6e20080a1223963b278f5d9a450534f0765",
   "runtime_bytes": 3292560,
   "part_count": 16,
   "direct_section_count": 12,
@@ -142,7 +142,7 @@
       "file": "RATES_AUDIT_METADATA.json",
       "mode": "DERIVED_BUILDER_REQUIRED",
       "bytes": 3031,
-      "sha256": "f716da6dad44dfbe25e4ee5307ec186be7a1a23964bf7b2a1904f33186676241",
+      "sha256": "77adc85d61745e91c29e6ebeb12a9c76e45119733da794e7da007ce2a24325cf",
       "occurrences_in_payload": 0,
       "part": null,
       "direct_update_allowed": false
