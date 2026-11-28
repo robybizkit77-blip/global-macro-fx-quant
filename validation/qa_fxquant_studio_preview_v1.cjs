@@ -12,6 +12,14 @@ const {chromium}=require('playwright');
    const status=await page.locator('#source-state').innerText();
    assert.match(status,/11\/11 feed letti/,'Actual repository feeds must load: '+status);
    assert.match(status,/motore FX disponibile/,'Existing FX engine must evaluate: '+status);
+   assert.equal(await page.locator('#studio-enhanced tbody tr').count(),8);
+   assert.equal(await page.locator('#studio-health').count(),1);
+   const enhanced=await page.evaluate(()=>researchG8().map(x=>({currency:x.currency,coverage:x.result?.enhanced?.coverage,score:x.result?.enhanced?.score,estimated:x.result?.enhanced?.estimatedWeight,ranking:x.result?.affectsFxRanking})));
+   assert.equal(enhanced.length,8);
+   assert(enhanced.every(x=>Number.isFinite(x.coverage)&&x.coverage>=0&&x.coverage<=100&&Number.isFinite(x.estimated)&&x.estimated>=0&&x.estimated<=x.coverage&&x.ranking===false&&(x.coverage===100?Number.isFinite(x.score)&&x.score>=0&&x.score<=10:x.score===null)));
+   console.log('STUDIO_ENHANCED_G8',JSON.stringify(enhanced));
+   assert.match(await page.locator('#studio-health').innerText(),/Affidabilità degli aggiornamenti/);
+
    for(const route of ['Control Room','Macro','Tassi','Forex','Cross-Asset','Calendario','Report']){
     await page.locator('#nav button').getByText(route,{exact:true}).click();
     assert(await page.locator('#view h1').count(),route+' has no title');
@@ -39,6 +47,8 @@ const {chromium}=require('playwright');
    for(const c of ['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD']){
      await page.evaluate(c=>{state.ccy=c;render()},c);
      assert.equal(await page.locator('#currency-dossier .sector-read').count(),4);
+     assert.match(await page.locator('#enhanced-country h2').innerText(),new RegExp(c+' · Sintesi quantitativa'));
+
      assert.match(await page.locator('#currency-dossier h2').innerText(),new RegExp(c+' · Giudizio'));
    }
    // Native components only: no embedded legacy pages or DOM reuse.
